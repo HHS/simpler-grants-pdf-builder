@@ -2,7 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Document, Overview, Section
+from .models import Document, Organization, Overview, Section
+
+
+class OrganizationInline(admin.StackedInline):
+    model = Organization
 
 
 class OverviewInline(admin.StackedInline):
@@ -15,7 +19,7 @@ class SectionInline(admin.StackedInline):
 
 
 class DocumentAdmin(admin.ModelAdmin):
-    inlines = [OverviewInline, SectionInline]
+    inlines = [OrganizationInline, OverviewInline, SectionInline]
 
     list_display = ["title", "number"]
 

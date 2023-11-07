@@ -1,0 +1,13 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'documents/styles.css' %}">
+
+{% if document_list %}
+    <ul>
+    {% for document in document_list %}
+        <li><a href="{% url 'documents:detail' document.id %}">{{ document.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No NOFOs are available.</p>
+{% endif %}
