@@ -3,7 +3,7 @@ from django.db import models
 
 # Create your models here.
 class Document(models.Model):
-    shortTitle = models.CharField("short title", max_length=256, default="short title")
+    shortTitle = models.CharField("short title", max_length=256)
     title = models.CharField(max_length=256)
     number = models.CharField(max_length=128)
 
@@ -15,7 +15,7 @@ class Organization(models.Model):
     )
     agency = models.CharField(max_length=128)
     officeOrBureau = models.CharField(max_length=128)
-    division = models.CharField(max_length=128)
+    division = models.CharField(max_length=128, blank=True)
 
 
 class Overview(models.Model):
@@ -23,7 +23,7 @@ class Overview(models.Model):
         Document,
         on_delete=models.CASCADE,
     )
-    summary = models.TextField(default="summary")
+    summary = models.TextField()
     questions = models.TextField(blank=True)
     nofo_type = models.CharField("type", max_length=128)
     eligible_applications = models.TextField()

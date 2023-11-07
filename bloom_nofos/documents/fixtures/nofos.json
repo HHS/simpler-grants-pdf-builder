@@ -1,0 +1,186 @@
+[
+  {
+     "model":"documents.document",
+     "pk":1,
+     "fields":{
+        "shortTitle":"(HRSA) Primary Care Training and Enhancement",
+        "title":"Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program",
+        "number":"HRSA-24-019"
+     }
+  },
+  {
+     "model":"documents.document",
+     "pk":2,
+     "fields":{
+        "shortTitle":"(ACF) Head Start/Early Head Start Recipient",
+        "title":"Head Start/Early Head Start Recipient — Communities in the state of Florida",
+        "number":"HHS-2024-ACF-OHS-CH-R4-0105"
+     }
+  },
+  {
+    "model":"documents.document",
+    "pk":3,
+    "fields":{
+       "shortTitle":"2 (HRSA) Primary Care Training and Enhancement",
+       "title":"2 Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program",
+       "number":"2-HRSA-24-019"
+    }
+ },
+ {
+    "model":"documents.document",
+    "pk":4,
+    "fields":{
+       "shortTitle":"2 (ACF) Head Start/Early Head Start Recipient",
+       "title":"2 Head Start/Early Head Start Recipient — Communities in the state of Florida",
+       "number":"2-HHS-2024-ACF-OHS-CH-R4-0105"
+    }
+ },
+  {
+     "model":"documents.organization",
+     "pk":1,
+     "fields":{
+        "document":1,
+        "agency":"Heath Resources and Services Administration",
+        "officeOrBureau":"Bureau of Health Workforce",
+        "division":"Division of Medicine and Dentistry"
+     }
+  },
+  {
+     "model":"documents.organization",
+     "pk":2,
+     "fields":{
+        "document":2,
+        "agency":"Administration for Children and Families",
+        "officeOrBureau":"Office of Head Start",
+        "division":"Office of Head Start (DELETE)"
+     }
+  },
+  {
+    "model":"documents.organization",
+    "pk":3,
+    "fields":{
+       "document":3,
+       "agency":"Heath Resources and Services Administration",
+       "officeOrBureau":"Bureau of Health Workforce",
+       "division":"Division of Medicine and Dentistry"
+    }
+ },
+ {
+    "model":"documents.organization",
+    "pk":4,
+    "fields":{
+       "document":4,
+       "agency":"Administration for Children and Families",
+       "officeOrBureau":"Office of Head Start",
+       "division":"Office of Head Start (DELETE)"
+    }
+ },
+  {
+     "model":"documents.overview",
+     "pk":1,
+     "fields":{
+        "document":1,
+        "summary":"This program addresses the need to train primary care physician assistants in the prevention, identification, diagnosis, treatment, and referral services for behavioral health conditions. Our goal is to increase the number of trained physician assistants choosing to practice in rural areas after graduation. To do this, we support: \r\n\r\nClinical rotations\r\nNew and enhanced partnerships at rural rotation sites\r\nTraining and learning opportunities\r\nStipends for trainees",
+        "questions":"Go to Contacts & Support.",
+        "nofo_type":"Grant",
+        "eligible_applications":"Only an academically affiliated physician assistant training program accredited by the Accreditation Review Commission on Education for the Physician Assistant (ARC-PA) may apply.\r\n\r\nTo be eligible, your organization must be in the United States, the Commonwealth of Puerto Rico, the Northern Mariana Islands, American Samoa, Guam, the U.S. Virgin Islands, the Federated States of Micronesia, the Republic of the Marshall Islands, or the Republic of Palau.",
+        "expected_awards":"12 new grants",
+        "expected_funding":"$5,000,000 in FY 2024",
+        "expected_funding_per_recipient":"We plan to fund awards in five 12-month budget periods for a total five-year period of performance of July 1, 2024, through June 30, 2029.",
+        "cost_share_or_match_requirement":"This program has no cost-sharing requirement. If you choose to include cost-sharing funds, we will not consider it during review. We will hold you accountable for any funds you add, including through reporting.",
+        "performance_period":"",
+        "program_description":"This program’s purpose is to develop and implement clinical rotations for physician assistant students in rural areas that are at least three months long and integrate behavioral health with primary care services. \r\n\r\nThe program addresses the need to train primary care physician assistants in the prevention, identification, diagnosis, treatment, and referral services for behavioral health conditions. \r\nThe goal is to increase the number of primary care physician assistants trained to deliver mental and behavioral health services, including medications for opioid use disorder (MOUD), who choose to practice in rural areas after graduation.",
+        "application_deadline":""
+     }
+  },
+  {
+     "model":"documents.overview",
+     "pk":2,
+     "fields":{
+        "document":2,
+        "summary":"The goal of this NOFO is to ensure the distribution of resources to meet the demonstrated\r\ncommunity needs of children from birth to compulsory school age, ensuring continuity of\r\nservices and taking into account the availability of high-quality and comprehensive early\r\nchildhood education opportunities (which may include public pre-kindergarten programs for 4-\r\nyear-olds). Applicants proposing to serve pregnant women are expected to serve the newborn\r\nthrough the EHS program. Applicants should thoughtfully consider their reason for deciding to\r\napply to conduct a program to serve the proposed population, including the particular age group\r\nof children and, if applicable, pregnant women. This decision should be based on the needs of\r\nthe community. This NOFO provides applicants the opportunity to propose to reallocate funding\r\nbetween Head Start and EHS based on both the needs in the community and the applicant's\r\ncapacity and experience serving pregnant women, infants, toddlers, and/or preschool-age\r\nchildren. Applicants may explore combining Head Start and EHS funds with resources from other early childhood programs or funding streams, including state, local, and private sector\r\nfunding for child care, pre-kindergarten, and special education services. Please note that\r\napplicants responding to this NOFO will be expected to begin providing Head Start and/or EHS\r\nservices quickly after award, with a minimal start-up period, to support limited to no disruption\r\nin services to the currently enrolled children and families in this service area.",
+        "questions":"Grants.gov provides applicants 24/7 support via the toll-free number 1-800-518-4726 and email\r\nat support@grants.gov.\r\n\r\nFor questions related to this funding opportunity, please contact the number listed in the\r\napplication package.\r\n\r\nIf you are experiencing difficulties with your submission, it is best to call the Grants.gov Support\r\nCenter and get a ticket number. The Support Center ticket number will assist ACF with tracking\r\nand understanding background information on the issue.",
+        "nofo_type":"Grant",
+        "eligible_applications":"For profit organizations other than small businesses\r\nPublic housing authorities/Indian housing authorities\r\nPrivate institutions of higher education\r\nNonprofits that do not have a 501(c)(3) status with the IRS, other than institutions of higher education\r\nSmall businesses\r\nCounty governments\r\nNonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education\r\nPublic and State controlled institutions of higher education\r\nState governments\r\nIndependent school districts\r\nCity or township governments\r\nNative American tribal governments (Federally recognized)",
+        "expected_awards":"$51,688,997",
+        "expected_funding":"16",
+        "expected_funding_per_recipient":"Award floor: $1,000,000",
+        "cost_share_or_match_requirement":"Recipients must, unless a waiver is granted, contribute 20 percent of the total cost of the program\r\nfrom non-federal funds. A waiver may be granted for any of the grounds listed in 42 U.S.C.\r\n9835(b) (45 CFR § 1303.4).\r\n\r\nFor awards that contain real property projects, any portion of the cost of purchase, construction,\r\nor renovation contributed by or for the entity, or a related donor organization, to satisfy a\r\nmatching requirement, per 45 CFR §1303.44(c) and 1305.2, becomes part of the federal share of\r\nthe facility. Unless recipient equity contributions (sources) are used and meets the following: 1)\r\nare non-Head Start related funds (e.g., unrestricted funds such as income unrelated to Head Start,\r\ndonations, and contributions), 2) not used as match on the facility or related activities (45 CFR\r\n§1303.44(c)), 3) not included in the Head Start grant (45 CFR §1303.4), and 4) not used in other\r\nfederal funding sources (45 CFR §75.306(b)(5)).",
+        "performance_period":"60-month project period with five 12-month budget periods",
+        "program_description":"The Head Start and EHS programs provide grants to public and private non-profit and for-profit\r\nagencies to provide comprehensive child development services to predominately economically\r\ndisadvantaged children and families. Head Start's primary purpose is to prepare children to be\r\nready for school. In fiscal year (FY) 1995, the EHS program was established to serve pregnant\r\nwomen and children from birth to 3 years of age in recognition of the mounting evidence that the\r\nearliest years matter a great deal to children's growth and development. Since its beginning in\r\n1965, Head Start has served more than 37 million children and their families. In FY 2022 Head\r\nStart was funded to serve 833,075 children and families and of these, 197,455 were funded in the\r\nEHS program. These programs were operated by 1,560 Head Start recipients, including 1,137\r\nrecipients providing EHS.\r\n\r\nHead Start and EHS programs must provide, directly or through referral, early, continuous,\r\nintensive, and comprehensive child development and family support services that will enhance\r\nthe physical, social, emotional, and intellectual development of participating children in the key\r\ndomains of physical development and health; social and emotional development; approaches to learning, language, and literacy; cognition; and general knowledge. Programs support parent\r\nengagement in their roles as their children’s teachers and advocates, and help parents move\r\ntoward self-sufficiency. Head Start promotes school readiness by addressing the key domains of\r\nlanguage, literacy, mathematics, science, and social and emotional development",
+        "application_deadline":"Dec. 14, 2023, 12:00 a.m. EST"
+     }
+  },
+  {
+    "model":"documents.overview",
+    "pk":3,
+    "fields":{
+       "document":3,
+       "summary":"2 This program addresses the need to train primary care physician assistants in the prevention, identification, diagnosis, treatment, and referral services for behavioral health conditions. Our goal is to increase the number of trained physician assistants choosing to practice in rural areas after graduation. To do this, we support: \r\n\r\nClinical rotations\r\nNew and enhanced partnerships at rural rotation sites\r\nTraining and learning opportunities\r\nStipends for trainees",
+       "questions":"2 Go to Contacts & Support.",
+       "nofo_type":"Grant",
+       "eligible_applications":"Only an academically affiliated physician assistant training program accredited by the Accreditation Review Commission on Education for the Physician Assistant (ARC-PA) may apply.\r\n\r\nTo be eligible, your organization must be in the United States, the Commonwealth of Puerto Rico, the Northern Mariana Islands, American Samoa, Guam, the U.S. Virgin Islands, the Federated States of Micronesia, the Republic of the Marshall Islands, or the Republic of Palau.",
+       "expected_awards":"12 new grants",
+       "expected_funding":"$5,000,000 in FY 2024",
+       "expected_funding_per_recipient":"We plan to fund awards in five 12-month budget periods for a total five-year period of performance of July 1, 2024, through June 30, 2029.",
+       "cost_share_or_match_requirement":"This program has no cost-sharing requirement. If you choose to include cost-sharing funds, we will not consider it during review. We will hold you accountable for any funds you add, including through reporting.",
+       "performance_period":"",
+       "program_description":"This program’s purpose is to develop and implement clinical rotations for physician assistant students in rural areas that are at least three months long and integrate behavioral health with primary care services. \r\n\r\nThe program addresses the need to train primary care physician assistants in the prevention, identification, diagnosis, treatment, and referral services for behavioral health conditions. \r\nThe goal is to increase the number of primary care physician assistants trained to deliver mental and behavioral health services, including medications for opioid use disorder (MOUD), who choose to practice in rural areas after graduation.",
+       "application_deadline":""
+    }
+ },
+ {
+    "model":"documents.overview",
+    "pk":4,
+    "fields":{
+       "document":4,
+       "summary":"2 The goal of this NOFO is to ensure the distribution of resources to meet the demonstrated\r\ncommunity needs of children from birth to compulsory school age, ensuring continuity of\r\nservices and taking into account the availability of high-quality and comprehensive early\r\nchildhood education opportunities (which may include public pre-kindergarten programs for 4-\r\nyear-olds). Applicants proposing to serve pregnant women are expected to serve the newborn\r\nthrough the EHS program. Applicants should thoughtfully consider their reason for deciding to\r\napply to conduct a program to serve the proposed population, including the particular age group\r\nof children and, if applicable, pregnant women. This decision should be based on the needs of\r\nthe community. This NOFO provides applicants the opportunity to propose to reallocate funding\r\nbetween Head Start and EHS based on both the needs in the community and the applicant's\r\ncapacity and experience serving pregnant women, infants, toddlers, and/or preschool-age\r\nchildren. Applicants may explore combining Head Start and EHS funds with resources from other early childhood programs or funding streams, including state, local, and private sector\r\nfunding for child care, pre-kindergarten, and special education services. Please note that\r\napplicants responding to this NOFO will be expected to begin providing Head Start and/or EHS\r\nservices quickly after award, with a minimal start-up period, to support limited to no disruption\r\nin services to the currently enrolled children and families in this service area.",
+       "questions":"2 Grants.gov provides applicants 24/7 support via the toll-free number 1-800-518-4726 and email\r\nat support@grants.gov.\r\n\r\nFor questions related to this funding opportunity, please contact the number listed in the\r\napplication package.\r\n\r\nIf you are experiencing difficulties with your submission, it is best to call the Grants.gov Support\r\nCenter and get a ticket number. The Support Center ticket number will assist ACF with tracking\r\nand understanding background information on the issue.",
+       "nofo_type":"Grant",
+       "eligible_applications":"For profit organizations other than small businesses\r\nPublic housing authorities/Indian housing authorities\r\nPrivate institutions of higher education\r\nNonprofits that do not have a 501(c)(3) status with the IRS, other than institutions of higher education\r\nSmall businesses\r\nCounty governments\r\nNonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education\r\nPublic and State controlled institutions of higher education\r\nState governments\r\nIndependent school districts\r\nCity or township governments\r\nNative American tribal governments (Federally recognized)",
+       "expected_awards":"$51,688,997",
+       "expected_funding":"16",
+       "expected_funding_per_recipient":"Award floor: $1,000,000",
+       "cost_share_or_match_requirement":"Recipients must, unless a waiver is granted, contribute 20 percent of the total cost of the program\r\nfrom non-federal funds. A waiver may be granted for any of the grounds listed in 42 U.S.C.\r\n9835(b) (45 CFR § 1303.4).\r\n\r\nFor awards that contain real property projects, any portion of the cost of purchase, construction,\r\nor renovation contributed by or for the entity, or a related donor organization, to satisfy a\r\nmatching requirement, per 45 CFR §1303.44(c) and 1305.2, becomes part of the federal share of\r\nthe facility. Unless recipient equity contributions (sources) are used and meets the following: 1)\r\nare non-Head Start related funds (e.g., unrestricted funds such as income unrelated to Head Start,\r\ndonations, and contributions), 2) not used as match on the facility or related activities (45 CFR\r\n§1303.44(c)), 3) not included in the Head Start grant (45 CFR §1303.4), and 4) not used in other\r\nfederal funding sources (45 CFR §75.306(b)(5)).",
+       "performance_period":"60-month project period with five 12-month budget periods",
+       "program_description":"The Head Start and EHS programs provide grants to public and private non-profit and for-profit\r\nagencies to provide comprehensive child development services to predominately economically\r\ndisadvantaged children and families. Head Start's primary purpose is to prepare children to be\r\nready for school. In fiscal year (FY) 1995, the EHS program was established to serve pregnant\r\nwomen and children from birth to 3 years of age in recognition of the mounting evidence that the\r\nearliest years matter a great deal to children's growth and development. Since its beginning in\r\n1965, Head Start has served more than 37 million children and their families. In FY 2022 Head\r\nStart was funded to serve 833,075 children and families and of these, 197,455 were funded in the\r\nEHS program. These programs were operated by 1,560 Head Start recipients, including 1,137\r\nrecipients providing EHS.\r\n\r\nHead Start and EHS programs must provide, directly or through referral, early, continuous,\r\nintensive, and comprehensive child development and family support services that will enhance\r\nthe physical, social, emotional, and intellectual development of participating children in the key\r\ndomains of physical development and health; social and emotional development; approaches to learning, language, and literacy; cognition; and general knowledge. Programs support parent\r\nengagement in their roles as their children’s teachers and advocates, and help parents move\r\ntoward self-sufficiency. Head Start promotes school readiness by addressing the key domains of\r\nlanguage, literacy, mathematics, science, and social and emotional development",
+       "application_deadline":"Dec. 14, 2023, 12:00 a.m. EST"
+    }
+ },
+  {
+     "model":"documents.section",
+     "pk":1,
+     "fields":{
+        "section_title":"Step 2: Get Ready to Apply",
+        "body":"Get Registered\r\n\r\nSAM.gov\r\n\r\nYou must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI). SAM.gov registration can take several weeks. Begin that process today. \r\nTo register, go to SAM.gov Entity Registration and click Get Started. From the same page, you can also click on the Entity Registration Checklist for the information you will need to register.",
+        "document":1
+     }
+  },
+  {
+     "model":"documents.section",
+     "pk":2,
+     "fields":{
+        "section_title":"Step 2: Get Ready to Apply",
+        "body":"ELECTRONIC APPLICATION SUBMISSION INSTRUCTIONS\r\n\r\nYou are required to submit applications electronically unless you have received an exemption\r\nthat will allow submission in paper format. See Section IV.2 Application Submission Options for\r\ninformation about requesting an exemption.\r\nElectronic applications will only be accepted via Grants.gov. ACF will not accept applications\r\nsubmitted via email or via facsimile.",
+        "document":2
+     }
+  },
+  {
+    "model":"documents.section",
+    "pk":3,
+    "fields":{
+       "section_title":"Step 2: 2 Get Ready to Apply",
+       "body":"2 Get Registered\r\n\r\nSAM.gov\r\n\r\nYou must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI). SAM.gov registration can take several weeks. Begin that process today. \r\nTo register, go to SAM.gov Entity Registration and click Get Started. From the same page, you can also click on the Entity Registration Checklist for the information you will need to register.",
+       "document":3
+    }
+ },
+ {
+    "model":"documents.section",
+    "pk":4,
+    "fields":{
+       "section_title":"Step 2: 2 Get Ready to Apply",
+       "body":"2 ELECTRONIC APPLICATION SUBMISSION INSTRUCTIONS\r\n\r\nYou are required to submit applications electronically unless you have received an exemption\r\nthat will allow submission in paper format. See Section IV.2 Application Submission Options for\r\ninformation about requesting an exemption.\r\nElectronic applications will only be accepted via Grants.gov. ACF will not accept applications\r\nsubmitted via email or via facsimile.",
+       "document":4
+    }
+ }
+]
