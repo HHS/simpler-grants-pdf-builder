@@ -12,6 +12,7 @@ django = "^4.2.7"
 [tool.poetry.scripts]
 start = 'scripts.server:main'
 migrate = 'scripts.server:migrate'
+makemigrations = 'scripts.server:makemigrations'
 test = 'scripts.server:test'
 
 [build-system]

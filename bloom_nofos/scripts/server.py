@@ -6,6 +6,11 @@ def main():
     subprocess.run(cmd)
 
 
+def makemigrations():
+    cmd = ["python", "manage.py", "makemigrations", "documents"]
+    subprocess.run(cmd)
+
+
 def migrate():
     cmd = ["python", "manage.py", "migrate"]
     subprocess.run(cmd)

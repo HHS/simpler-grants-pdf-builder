@@ -13,15 +13,14 @@ class Overview(models.Model):
         on_delete=models.CASCADE,
     )
     nofo_type = models.CharField("type", max_length=64)
-    eligible_applications = models.CharField(max_length=64)
+    eligible_applications = models.TextField()
     expected_awards = models.CharField(max_length=64)
     expected_funding = models.CharField(max_length=64)
-    expected_funding_per_recipient = models.CharField(max_length=64)
-    cost_share_or_match_requirement = models.CharField(max_length=64)
-    performance_period = models.CharField(max_length=64)
+    expected_funding_per_recipient = models.TextField()
+    cost_share_or_match_requirement = models.TextField()
+    performance_period = models.CharField(max_length=64, blank=True)
     program_description = models.TextField()
-    application_deadline = models.CharField(max_length=64)
-    questions = models.TextField()
+    application_deadline = models.CharField(max_length=64, blank=True)
 
 
 class Section(models.Model):

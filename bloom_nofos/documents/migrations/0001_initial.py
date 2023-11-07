@@ -5,45 +5,79 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Document',
+            name="Document",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=256)),
-                ('number', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=256)),
+                ("number", models.CharField(max_length=64)),
             ],
         ),
         migrations.CreateModel(
-            name='Section',
+            name="Section",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('section_title', models.CharField(max_length=256)),
-                ('body', models.TextField()),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='documents.document')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("section_title", models.CharField(max_length=256)),
+                ("body", models.TextField()),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="documents.document",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Overview',
+            name="Overview",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nofo_type', models.CharField(max_length=64, verbose_name='type')),
-                ('eligible_applications', models.CharField(max_length=64)),
-                ('expected_awards', models.CharField(max_length=64)),
-                ('expected_funding', models.CharField(max_length=64)),
-                ('expected_funding_per_recipient', models.CharField(max_length=64)),
-                ('cost_share_or_match_requirement', models.CharField(max_length=64)),
-                ('performance_period', models.CharField(max_length=64)),
-                ('program_description', models.TextField()),
-                ('application_deadline', models.CharField(max_length=64)),
-                ('questions', models.TextField()),
-                ('document', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='documents.document')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nofo_type", models.CharField(max_length=64, verbose_name="type")),
+                ("eligible_applications", models.CharField(max_length=64)),
+                ("expected_awards", models.CharField(max_length=64)),
+                ("expected_funding", models.CharField(max_length=64)),
+                ("expected_funding_per_recipient", models.CharField(max_length=64)),
+                ("cost_share_or_match_requirement", models.CharField(max_length=64)),
+                ("performance_period", models.CharField(max_length=64)),
+                ("program_description", models.TextField()),
+                ("application_deadline", models.CharField(max_length=64)),
+                ("questions", models.TextField()),
+                (
+                    "document",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="documents.document",
+                    ),
+                ),
             ],
         ),
     ]
