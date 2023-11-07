@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "bloom-nofos"
+version = "0.1.0"
+description = ""
+authors = ["Paul Craig <paul@pcraig3.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^4.2.7"
+
+[tool.poetry.scripts]
+start = 'scripts.server:main'
+migrate = 'scripts.server:migrate'
+test = 'scripts.server:test'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
