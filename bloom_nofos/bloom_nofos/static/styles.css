@@ -24,3 +24,7 @@ body > footer {
     margin-top: 1rem;
   }
 }
+
+.back-link a:not(:hover) {
+  text-decoration: none;
+}

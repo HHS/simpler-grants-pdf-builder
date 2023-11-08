@@ -8,9 +8,11 @@
 - let's take it from there
 - add black formatter
 - why don't we know about imports
+- edit links in table
 
 # DONE
 
+- back links on every page
 - bring in the USWDS styles
 - set up super basic view
 - set up super basic table

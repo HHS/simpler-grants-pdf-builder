@@ -7,6 +7,9 @@
 {% block content %}
   <section class="usa-section">
     <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'documents:index' %}">← All NOFOs</a>
+      </div>
       <h1 class="font-heading-xl margin-y-0">{{ document.shortTitle }}</h1>
       <p>Overview page for this NOFO: {{ document.number }}</p>
       
