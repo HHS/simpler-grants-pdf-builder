@@ -1,14 +1,25 @@
 from django.db import models
 
 
-# Create your models here.
-class Document(models.Model):
+class BaseModel(models.Model):
+    def get_fields(self):
+        return [
+            (field.name, getattr(self, field.name))
+            for field in self._meta.fields
+            if field.name not in ["id", "document"]
+        ]
+
+    class Meta:
+        abstract = True
+
+
+class Document(BaseModel):
     shortTitle = models.CharField("short title", max_length=256)
     title = models.CharField(max_length=256)
     number = models.CharField(max_length=128)
 
 
-class Organization(models.Model):
+class Organization(BaseModel):
     document = models.OneToOneField(
         Document,
         on_delete=models.CASCADE,
@@ -18,7 +29,7 @@ class Organization(models.Model):
     division = models.CharField(max_length=128, blank=True)
 
 
-class Overview(models.Model):
+class Overview(BaseModel):
     document = models.OneToOneField(
         Document,
         on_delete=models.CASCADE,
@@ -36,7 +47,7 @@ class Overview(models.Model):
     application_deadline = models.CharField(max_length=128, blank=True)
 
 
-class Section(models.Model):
+class Section(BaseModel):
     section_title = models.CharField(max_length=256)
     body = models.TextField()
     document = models.ForeignKey(Document, on_delete=models.CASCADE)

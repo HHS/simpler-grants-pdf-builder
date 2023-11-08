@@ -1,1 +1,80 @@
-<h2>Document: {{ document.title }}</h2>
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ document.shortTitle }}
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <h1 class="font-heading-xl margin-y-0">{{ document.shortTitle }}</h1>
+      <p>Overview page for this NOFO: {{ document.number }}</p>
+      
+      <!-- Doc IDs -->
+      <h2>Name and number</h2>
+      <table class="usa-table usa-table--borderless width-full margin-bottom-8">
+        <caption>
+          Identifiers for this NOFO.
+        </caption>
+        <thead class="usa-sr-only">
+          <tr>
+            <th scope="col">Field</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f_name, f_value in document.get_fields %}
+            <tr>
+              <th scope="row">{{ f_name }}</th>
+              <td>{{ f_value }}</td>
+            <tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Org details -->
+      <h2>Organization</h2>
+      <table class="usa-table usa-table--borderless width-full margin-bottom-8">
+        <caption>
+          Information about the organization sponsoring this NOFO.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Field</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f_name, f_value in document.organization.get_fields %}
+            <tr>
+              <th scope="row">{{ f_name }}</th>
+              <td>{{ f_value }}</td>
+            <tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Overview details -->
+      <h2>Overview</h2>
+      <table class="usa-table usa-table--borderless width-full margin-bottom-8">
+        <caption>
+          Summary and overview information about this NOFO.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Field</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f_name, f_value in document.overview.get_fields %}
+            <tr>
+              <th scope="row">{{ f_name }}</th>
+              <td>{{ f_value }}</td>
+            <tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
