@@ -1,13 +1,38 @@
-{% load static %}
+{% extends 'base.html' %}
 
-<link rel="stylesheet" href="{% static 'documents/styles.css' %}">
+{% block title %}
+    NOFO Web Flow
+{% endblock %}
 
-{% if document_list %}
-    <ul>
-    {% for document in document_list %}
-        <li><a href="{% url 'documents:detail' document.id %}">{{ document.title }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No NOFOs are available.</p>
-{% endif %}
+{% block content %}
+    <section class="usa-section">
+        <div class="grid-container">
+            <h1 class="font-heading-xl margin-y-0">All NOFOs</h1>
+            {% if document_list %}
+                <table class="usa-table usa-table--borderless">
+                    <caption>
+                      It’s NOFOs, baby.
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Short title</th>
+                        <th scope="col">Organization</th>
+                        <th scope="col">Number</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in document_list %}
+                            <tr>
+                                <th scope="row"><a href="{% url 'documents:detail' document.id %}">{{ document.shortTitle }}</a></th>
+                                <td>{{ document.organization.officeOrBureau }}</td>
+                                <td>{{ document.number }}</td>
+                            <tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+            {% else %}
+                <p>No NOFOs are available.</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

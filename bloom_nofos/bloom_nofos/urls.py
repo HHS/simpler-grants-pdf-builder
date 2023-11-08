@@ -25,4 +25,5 @@ urlpatterns = [
     path("documents/", include("documents.urls")),
     path("admin/", admin.site.urls),
     path("404/", views.page_not_found),
+    path("", views.index),
 ]

@@ -6,12 +6,55 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
     <!-- Local files -->
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'styles.css' %}" rel="stylesheet">
     <!-- add favicon -->
 
     <title>It’s NOFOs, baby</title>
   </head>
   <body class="{% block body_class %}{% endblock %}">
-    {% block content %}{% endblock %}
+    <header class="usa-header usa-header--basic">
+      <div class="usa-nav-container">
+        <div class="usa-navbar">
+          <div class="usa-logo">
+            <em class="usa-logo__text"
+              ><a href="/" title="NOFO Web Flow homepage">NOFO Web Flow</a></em
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+    <main id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="usa-footer">
+      <div class="usa-footer__primary-section">
+        <nav class="usa-footer__nav" aria-label="Footer navigation">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-4
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="javascript:void(0);"
+                >Create a new NOFO</a
+              >
+            </li>
+            <li
+              class="
+                mobile-lg:grid-col-4
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <span class="usa-footer__primary-link" href="javascript:void(0);"
+                >A product by Bloomworks Digital</span
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>
