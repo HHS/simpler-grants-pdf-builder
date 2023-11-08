@@ -23,6 +23,7 @@
           <tr>
             <th scope="col">Field</th>
             <th scope="col">Value</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -30,6 +31,8 @@
             <tr>
               <th scope="row">{{ f_name }}</th>
               <td>{{ f_value }}</td>
+              <!-- todo accessible table label here -->
+              <td><a href="{% url 'documents:edit_title' document.id %}">Edit</a></td>
             <tr>
           {% endfor %}
         </tbody>

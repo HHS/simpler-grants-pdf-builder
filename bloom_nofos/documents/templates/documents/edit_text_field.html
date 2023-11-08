@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Edit NOFO Name
+{% endblock %}
+
+{% block content %}
+    <section class="usa-section">
+        <div class="grid-container">
+            <div class="back-link font-body-md margin-bottom-105">
+                <a href="{% url 'documents:detail' document.id %}">← {{ document.shortTitle }}</a>
+            </div>
+            <h1 class="font-heading-xl margin-y-0">Edit title</h1>
+            <p>This is the official title of your document. It will be publicly visible.</p>
+            <form action="{% url 'documents:edit_title' document.id %}" method="post">
+                {% csrf_token %}
+                <label class="usa-label text-bold" for="input-type-text">Text input label</label>
+                <textarea
+                    class="usa-textarea height-15"
+                    id="document__title"
+                    name="document__title"
+                >{{ document.title }}</textarea>
+
+                <div class="margin-y-4 grid-row">
+                    <a href="{% url 'documents:detail' document.id %}"><button type="button" class="usa-button usa-button--outline">Back to overview</button></a>
+                    <button type="submit" class="usa-button">Save and continue</button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+{% endblock %}
