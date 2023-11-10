@@ -15,15 +15,25 @@ class DetailView(generic.DetailView):
     model = Document
 
 
-def edit_title(request, pk):
+def edit_field(request, pk, field):
     document = get_object_or_404(Document, pk=pk)
 
     if request.method == "POST":
         # TODO error handling
         data = request.POST
-        new_title = data["document__title"]
-        document.title = new_title
+        # TODO what about fields on nested objects?
+        new_value = data[field]
+        if new_value:
+            setattr(document, field, new_value)
         document.save()
         return HttpResponseRedirect(reverse("documents:detail", args=(document.id,)))
 
-    return render(request, "documents/edit_text_field.html", {"document": document})
+    return render(
+        request,
+        "documents/edit_textarea.html",
+        {
+            "document": document,
+            "field": field,
+            "value": getattr(document, field),
+        },
+    )
