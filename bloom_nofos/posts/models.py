@@ -10,7 +10,7 @@ class Post(models.Model):
 
 
 class Section(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="sections")
     name = models.TextField()
 
     def __str__(self):
@@ -33,7 +33,7 @@ class Subsection(models.Model):
         choices=TAG_CHOICES,
     )
 
-    body = MartorField()
+    body = MartorField(blank=True)
 
     def __str__(self):
-        return self.title
+        return self.name
