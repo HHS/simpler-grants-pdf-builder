@@ -1,11 +1,21 @@
 from django.contrib import admin
-from django.db import models
 from django import forms
 
 
 from martor.widgets import AdminMartorWidget
 
 from .models import Post, Section, Subsection
+
+
+# Form classes
+class SubsectionModelForm(forms.ModelForm):
+    class Meta:
+        model = Subsection
+        fields = ["name", "tag", "body"]
+        widgets = {
+            "name": forms.TextInput(),
+            "body": AdminMartorWidget,
+        }
 
 
 class SectionModelForm(forms.ModelForm):
@@ -17,6 +27,16 @@ class SectionModelForm(forms.ModelForm):
         }
 
 
+class PostModelForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["title"]
+        widgets = {
+            "title": forms.TextInput(),
+        }
+
+
+# Inline classes
 class SectionLinkInline(admin.TabularInline):
     model = Section
     form = SectionModelForm
@@ -24,23 +44,22 @@ class SectionLinkInline(admin.TabularInline):
     show_change_link = True
 
 
-class PostAdmin(admin.ModelAdmin):
-    inlines = [SectionLinkInline]
-    list_display = ["title"]
-
-
 class SubsectionInline(admin.StackedInline):
+    form = SubsectionModelForm
     model = Subsection
     extra = 1
 
-    formfield_overrides = {
-        models.TextField: {"widget": AdminMartorWidget},
-    }
 
-
+# Admin classes
 class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionInline]
     model = Section
+
+
+class PostAdmin(admin.ModelAdmin):
+    form = PostModelForm
+    inlines = [SectionLinkInline]
+    list_display = ["title"]
 
 
 admin.site.register(Section, SectionAdmin)

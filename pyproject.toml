@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^4.2.7"
+martor = "^1.6.28"
 
 [tool.poetry.scripts]
 start = 'scripts.server:main'
