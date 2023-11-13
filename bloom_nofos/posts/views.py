@@ -1,5 +1,6 @@
+from django.contrib import messages
+from django.shortcuts import redirect, render
 from django.views.generic import ListView
-from django.shortcuts import render
 
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
@@ -12,14 +13,6 @@ class PostsListView(ListView):
     model = Post
 
 
-# maybe identify if it's an HTML file that's uploaded
-# if HTML, great. If MD, convert to HTML
-# loop through
-# find sections
-# create an object
-# show that object (?) can do it tomorrow
-
-
 def get_sections_from_soup(soup):
     # build a structure that looks like our model
     sections = []
@@ -29,11 +22,14 @@ def get_sections_from_soup(soup):
         if tag.name == "h1":
             section_num += 1
 
-        if len(sections) == section_num:
-            # add an empty array at a new index
-            sections.append({"name": tag.text, "order": section_num + 1, "body": []})
-        else:
-            sections[section_num]["body"].append(tag)
+        if section_num >= 0:
+            if len(sections) == section_num:
+                # add an empty array at a new index
+                sections.append(
+                    {"name": tag.text, "order": section_num + 1, "body": []}
+                )
+            else:
+                sections[section_num]["body"].append(tag)
 
     return sections
 
@@ -104,17 +100,38 @@ def create_post(title, sections):
 
 
 def simple_upload(request):
-    if request.method == "POST" and request.FILES["myfile"]:
-        myfile = request.FILES["myfile"]
-        # TODO: check file is good
-        my_file_html = Markdown().convert(myfile.read())
+    print(request.FILES)
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("nofo-upload", None)
+
+        if not uploaded_file:
+            messages.add_message(request, messages.ERROR, "Oops! No fos received")
+            return redirect("posts:posts_upload")
+
+        if uploaded_file.content_type != "text/markdown":
+            messages.add_message(
+                request, messages.ERROR, "Yikes! Please upload a Markdown file"
+            )
+            return redirect("posts:posts_upload")
+
+        my_file_html = Markdown().convert(uploaded_file.read())
         soup = BeautifulSoup(my_file_html, "html.parser")
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)
+        if not len(sections):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                "Sorry, that file doesn’t contain a NOFO.",
+            )
+            return redirect("posts:posts_upload")
+
         sections = get_subsections_from_sections(sections)
 
         # insert!!!
         create_post("Post 1", sections)
+        # TODO redirect somewhere more useful
         return render(request, "posts/upload.html", {"uploaded_file_url": my_file_html})
+
     return render(request, "posts/upload.html")

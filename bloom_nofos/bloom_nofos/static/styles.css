@@ -28,7 +28,3 @@ body > footer {
 .back-link a:not(:hover) {
   text-decoration: none;
 }
-
-h1 {
-  color: red;
-}
