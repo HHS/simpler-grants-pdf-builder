@@ -51,6 +51,10 @@ class SubsectionInline(admin.StackedInline):
 
 
 # Admin classes
+class SubsectionAdmin(admin.ModelAdmin):
+    model = Subsection
+
+
 class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionInline]
     model = Section
@@ -62,5 +66,6 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ["title"]
 
 
+admin.site.register(Subsection, SubsectionAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Post, PostAdmin)
