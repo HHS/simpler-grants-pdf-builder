@@ -241,6 +241,21 @@ code-syntax-highlighting = ["pygments (>=2.7.3)"]
 wavedrom = ["wavedrom"]
 
 [[package]]
+name = "markdownify"
+version = "0.11.6"
+description = "Convert HTML to markdown."
+optional = false
+python-versions = "*"
+files = [
+    {file = "markdownify-0.11.6-py3-none-any.whl", hash = "sha256:ba35fe289d5e9073bcd7d2cad629278fe25f1a93741fcdc0bfb4f009076d8324"},
+    {file = "markdownify-0.11.6.tar.gz", hash = "sha256:009b240e0c9f4c8eaf1d085625dcd4011e12f0f8cec55dedf9ea6f7655e49bfe"},
+]
+
+[package.dependencies]
+beautifulsoup4 = ">=4.9,<5"
+six = ">=1.15,<2"
+
+[[package]]
 name = "martor"
 version = "1.6.28"
 description = "Django Markdown Editor"
@@ -374,4 +389,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "94c2038ec9b416b99bc4df37c2679f2cf66d4d72eed32610148032c1876faef8"
+content-hash = "6cec94914d9c95ad9b1b20ebb76d170af750a529badd1dbd734caeed036f53ec"
