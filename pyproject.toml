@@ -9,6 +9,8 @@ readme = "README.md"
 python = "^3.12"
 django = "^4.2.7"
 martor = "^1.6.28"
+beautifulsoup4 = "^4.12.2"
+markdown2 = "^2.4.10"
 
 [tool.poetry.scripts]
 start = 'scripts.server:main'
