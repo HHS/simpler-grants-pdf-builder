@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     "martor",
+    "nofos.apps.NofosConfig",
     "posts.apps.PostsConfig",
     "documents.apps.DocumentsConfig",
     "django.contrib.admin",

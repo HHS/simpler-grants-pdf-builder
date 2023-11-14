@@ -1,33 +1,23 @@
-{% if error %}
-  <div class="usa-form-group usa-form-group--error">
-    <label class="usa-label" for="nofo-upload">
-      Upload NOFO file
-    </label>
-    <span class="usa-hint" id="nofo-upload--hint">Please only submit HTML or Markdown files</span>
-    <span class="usa-error-message" id="nofo-upload--error"
-      >{{ error }}</span
-    ><input
-      id="nofo-upload"
-      class="usa-file-input usa-file-input__input cursor-pointer padding-2 margin-bottom-2 border-2px border-dashed bg-secondary-lighter border-secondary"
-      type="file"
-      name="nofo-upload"
-      aria-describedby="nofo-upload--hint nofo-upload--error"
-      accept=".html,.md"
-    />
-  </div>
-{% else %}
-  <div class="usa-form-group">
-    <label class="usa-label" for="nofo-upload">
-      Upload NOFO file
-    </label>
-    <span class="usa-hint" id="nofo-upload--hint">Please only submit HTML or Markdown files</span>
-    <input
-      id="nofo-upload"
-      class="usa-file-input usa-file-input__input cursor-pointer padding-2 border-2px border-dashed border-base bg-base-lightest"
-      type="file"
-      name="nofo-upload"
-      aria-describedby="nofo-upload--hint"
-      accept=".html,.md"
-    />
-  </div>
-{% endif %}
+<div class="usa-form-group{% if error %} usa-form-group--error{% endif %}">
+  <label class="usa-label" for="{{ id }}">
+    {{ label }}
+  </label>
+  {% if hint %}
+    <span class="usa-hint" id="{{ id }}--hint">
+      {{ hint }}
+    </span>
+  {% endif %}
+  {% if error %}
+    <span class="usa-error-message" id="{{ id }}--error">
+      {{ error }}
+    </span>
+  {% endif %}
+  <input
+    id="{{ id }}"
+    class="usa-file-input usa-file-input__input cursor-pointer padding-2 border-2px border-dashed{% if error %} bg-secondary-lighter border-secondary{% else %} border-base bg-base-lightest{% endif %}"
+    type="file"
+    name="{{ id }}"
+    aria-describedby="{% if hint %}{{ id }}--hint{% endif %}{% if error %} {{ id }}--error{% endif %}"
+    accept=".html,.md"
+  />
+</div>
