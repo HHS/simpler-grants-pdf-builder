@@ -7,6 +7,19 @@
 {% block content %}
     <section class="usa-section">
         <div class="grid-container">
+            {% for message in messages %}
+                {% if "success" in message.tags %}
+                    <div class="usa-alert usa-alert--success margin-bottom-3">
+                        <div class="usa-alert__body">
+                            <h4 class="usa-alert__heading">NOFO imported successfully</h4>
+                            <p class="usa-alert__text">
+                                {{ message | safe }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
             <div class="back-link font-body-md margin-bottom-105">
                 <a href="{% url 'index' %}">← Homepage</a>
             </div>

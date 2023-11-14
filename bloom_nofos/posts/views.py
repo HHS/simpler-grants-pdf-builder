@@ -175,7 +175,14 @@ def nofo_name(request, pk):
         post.short_name = nofo_short_name
         post.save()
 
-        # TODO message about new post with link
+        # TODO update the link
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            "View NOFO: <a href='/posts/{}'>{}</a>.".format(
+                post.id, nofo_short_name or nofo_title
+            ),
+        )
         return redirect("posts:posts_list")
 
     return render(
