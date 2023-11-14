@@ -113,7 +113,7 @@ def create_nofo(title, sections):
             )
 
             if html_body:
-                md_body = md("".join(html_body))
+                md_body = md("\n".join(html_body))
 
             model_subsection = Subsection(
                 name=subsection.get("name", "Subsection X"),
@@ -149,14 +149,18 @@ def nofo_import(request):
             messages.add_message(request, messages.ERROR, "Oops! No fos received")
             return redirect("nofos:nofo_import")
 
-        if uploaded_file.content_type != "text/markdown":
+        if uploaded_file.content_type not in ["text/html", "text/markdown"]:
             messages.add_message(
-                request, messages.ERROR, "Yikes! Please import a Markdown file"
+                request, messages.ERROR, "Yikes! Please import an HTML or Markdown file"
             )
             return redirect("nofos:nofo_import")
 
-        my_file_html = Markdown().convert(uploaded_file.read())
-        soup = BeautifulSoup(my_file_html, "html.parser")
+        soup = None
+        if uploaded_file.content_type == "text/markdown":
+            my_file_html = Markdown().convert(uploaded_file.read())
+            soup = BeautifulSoup(my_file_html, "html.parser")
+        else:
+            soup = BeautifulSoup(uploaded_file.read(), "html.parser")
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)
