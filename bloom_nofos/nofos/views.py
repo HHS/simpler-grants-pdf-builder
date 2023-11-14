@@ -70,7 +70,10 @@ def get_subsections_from_sections(sections):
         # remove 'body' key
         body = section.pop("body", None)
 
-        for tag in body:
+        body_descendents = [
+            tag for tag in body if tag.parent.name in ["body", "[document]"]
+        ]
+        for tag in body_descendents:
             if tag.name in heading_tags:
                 # add existing subsection to array
                 if subsection:
@@ -106,14 +109,10 @@ def create_nofo(title, sections):
 
         for subsection in section.get("subsections", []):
             md_body = ""
-            html_body = (
-                [tag.text for tag in subsection.get("body")]
-                if subsection.get("body", False)
-                else None
-            )
+            html_body = [str(tag).strip() for tag in subsection.get("body", [])]
 
             if html_body:
-                md_body = md("\n".join(html_body))
+                md_body = md("".join(html_body))
 
             model_subsection = Subsection(
                 name=subsection.get("name", "Subsection X"),
