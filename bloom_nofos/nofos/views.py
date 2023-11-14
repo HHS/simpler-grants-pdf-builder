@@ -3,7 +3,7 @@ import datetime
 
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
@@ -14,6 +14,15 @@ from .models import Nofo, Section, Subsection
 
 class NofosListView(ListView):
     model = Nofo
+
+
+class NofosDetailView(DetailView):
+    model = Nofo
+
+
+class NofosEditView(DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_edit.html"
 
 
 def get_sections_from_soup(soup):
@@ -38,8 +47,22 @@ def get_sections_from_soup(soup):
 
 
 def get_subsections_from_sections(sections):
-    # h1s are gone since last method
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
+
+    def demote_tag(tag):
+        if tag.name == "h6":
+            return tag
+
+        newTags = {
+            "h2": "h3",
+            "h3": "h4",
+            "h4": "h5",
+            "h5": "h6",
+        }
+
+        return newTags[tag.name]
+
+    # h1s are gone since last method
     subsection = None
     for section in sections:
         subsection = None
@@ -57,7 +80,7 @@ def get_subsections_from_sections(sections):
                 subsection = {
                     "name": tag.text,
                     "order": len(section["subsections"]) + 1,
-                    "tag": tag.name,
+                    "tag": demote_tag(tag),
                     "body": [],
                 }
 
@@ -149,7 +172,7 @@ def nofo_import(request):
         nofo_title = suggest_nofo_title(soup)
 
         nofo = create_nofo(nofo_title, sections)
-        return redirect("nofos:nofo_name", pk=nofo.id)
+        return redirect("nofos:edit_name", pk=nofo.id)
 
     return render(request, "nofos/nofo_import.html")
 
@@ -169,7 +192,7 @@ def nofo_name(request, pk):
                 messages.ERROR,
                 "NOFO title can’t be empty",
             )
-            return redirect("nofos:nofo_name", pk=nofo.id)
+            return redirect("nofos:edit_name", pk=nofo.id)
 
         nofo.title = nofo_title
         nofo.short_name = nofo_short_name
@@ -179,7 +202,7 @@ def nofo_name(request, pk):
         messages.add_message(
             request,
             messages.SUCCESS,
-            "View NOFO: <a href='/nofos/{}'>{}</a>.".format(
+            "View NOFO: <a href='/nofos/{}/edit'>{}</a>.".format(
                 nofo.id, nofo_short_name or nofo_title
             ),
         )

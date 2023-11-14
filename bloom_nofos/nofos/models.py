@@ -25,7 +25,9 @@ class Section(models.Model):
 
 
 class Subsection(models.Model):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    section = models.ForeignKey(
+        Section, on_delete=models.CASCADE, related_name="subsections"
+    )
     name = models.TextField()
     order = models.IntegerField(null=True)
 

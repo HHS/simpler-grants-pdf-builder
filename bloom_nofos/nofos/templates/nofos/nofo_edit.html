@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_list' %}">← All NOFOs</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</h1>
+      <p>Edit page for this NOFO.</p>
+
+      <table class="usa-table usa-table--borderless width-full">
+        <caption>
+          <h2 class="margin-bottom-0">{% if nofo.short_name%}Short name and t{% else%}T{% endif %}itle</h2>
+        </caption>
+        <thead class="usa-sr-only">
+          <tr>
+            <th scope="col">Key</th>
+            <th scope="col">Value</th>
+            <th scope="col">Manage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if nofo.short_name %}
+            <tr>
+              <th scope="row">Short&nbsp;name</th>
+              <td>{{ nofo.short_name }}</td>
+              <td><a href="{% url 'nofos:edit_name' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
+            <tr>
+          {% endif %}
+          <tr>
+            <th scope="row">Title</th>
+            <td>{{ nofo.title }}</td>
+            <td><a href="{% url 'nofos:edit_name' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
+          <tr>
+        </tbody>
+      </table>
+
+      {% for section in nofo.sections.all %}
+        <table class="usa-table usa-table--borderless width-full">
+          <caption>
+            <h2 class="margin-bottom-0">{{ section.name }}</h2>
+          </caption>
+          <thead class="usa-sr-only">
+            <tr>
+              <th scope="col">Heading</th>
+              <th scope="col">Content</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subsection in section.subsections.all %}
+              <tr>
+                <th scope="row">{{ subsection.name }}</th>
+                <td>{% if subsection.body %}{{ subsection.body }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+              <tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+      
+    </div>
+  </section>
+{% endblock %}

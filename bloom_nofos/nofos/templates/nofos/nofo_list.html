@@ -25,21 +25,23 @@
 			</div>
 			<h1 class="font-heading-xl margin-y-0">All NOFOs</h1>
 			{% if nofo_list %}
-				<table class="usa-table usa-table--borderless">
+				<table class="usa-table usa-table--borderless width-full">
 					<caption>
 						All of your NOFOs in a big list
 					</caption>
 					<thead>
 						<tr>
-							<th scope="col">NOFO title</th>
-							<th scope="col">Number of sections</th>
+							<th scope="col">Name</th>
+							<th scope="col">Sections</th>
+							<th scope="col">Manage</th>
 						</tr>
 					</thead>
 					<tbody>
 						{% for nofo in nofo_list %}
 							<tr>
-								<th scope="row">{{ nofo.title }}</th>
+								<th scope="row"><a href="{% url 'nofos:nofo_detail' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
 								<td>{{ nofo.sections.count }}</td>
+								<td><a href="{% url 'nofos:nofo_edit' nofo.id %}">Edit<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
 							<tr>
 						{% endfor %}
 					</tbody>

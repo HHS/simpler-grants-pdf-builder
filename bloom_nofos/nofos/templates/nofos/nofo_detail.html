@@ -1,0 +1,46 @@
+{% extends 'base_barebones.html' %}
+{% load martortags %}
+
+{% block title %}
+{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+{% endblock %}
+
+{% block header %}
+  <header class="usa-header usa-header--basic">
+    <div class="usa-nav-container">
+      <div class="usa-navbar">
+        <div class="usa-logo">
+          <em class="usa-logo__text"
+            >{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</em
+          >
+        </div>
+      </div>
+      <nav aria-label="Primary navigation" class="usa-nav">
+        <ul class="usa-nav__primary usa-accordion">
+          <li class="usa-nav__primary-item">
+            <a href="{% url 'nofos:nofo_list' %}" class="usa-nav-link">← All NOFOs</a>
+            
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
+      {% for section in nofo.sections.all %}
+        <h2>{{ section.name }}</h2>
+
+        {% for subsection in section.subsections.all %}
+          {% with tag=subsection.tag content=subsection.name %}
+            {% include "includes/heading.html" with tag=tag content=content only %}
+          {% endwith %}
+          {{ subsection.body|safe_markdown }}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

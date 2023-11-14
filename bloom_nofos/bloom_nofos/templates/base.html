@@ -1,60 +1,48 @@
-<!DOCTYPE html>
-{% load static %}
-<html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{% extends 'base_barebones.html' %}
 
-    <!-- Local files -->
-    <link href="{% static 'styles.css' %}" rel="stylesheet">
-    <!-- add favicon -->
-
-    <title>{% block title %}It’s NOFOs, baby{% endblock %}</title>
-  </head>
-  <body class="{% block body_class %}{% endblock %}">
-    <header class="usa-header usa-header--basic">
-      <div class="usa-nav-container">
-        <div class="usa-navbar">
-          <div class="usa-logo">
-            <em class="usa-logo__text"
-              ><a href="{% url 'index' %}" title="NOFO Web Flow homepage">NOFO Web Flow</a></em
-            >
-          </div>
+{% block header %}
+  <header class="usa-header usa-header--basic">
+    <div class="usa-nav-container">
+      <div class="usa-navbar">
+        <div class="usa-logo">
+          <em class="usa-logo__text"
+            ><a href="{% url 'index' %}" title="NOFO Web Flow homepage">NOFO Web Flow</a></em
+          >
         </div>
       </div>
-    </header>
-    <main id="main-content">
-      {% block content %}{% endblock %}
-    </main>
-    <footer class="usa-footer">
-      <div class="usa-footer__primary-section">
-        <nav class="usa-footer__nav" aria-label="Footer navigation">
-          <ul class="grid-row grid-gap">
-            <li
-              class="
-                mobile-lg:grid-col-4
-                desktop:grid-col-auto
-                usa-footer__primary-content
-              "
+    </div>
+  </header>
+{% endblock %}
+
+{% block footer %}
+  <footer class="usa-footer">
+    <div class="usa-footer__primary-section">
+      <nav class="usa-footer__nav" aria-label="Footer navigation">
+        <ul class="grid-row grid-gap">
+          <li
+            class="
+              mobile-lg:grid-col-4
+              desktop:grid-col-auto
+              usa-footer__primary-content
+            "
+          >
+            <a class="usa-footer__primary-link" href="javascript:void(0);"
+              >Create a new NOFO</a
             >
-              <a class="usa-footer__primary-link" href="javascript:void(0);"
-                >Create a new NOFO</a
-              >
-            </li>
-            <li
-              class="
-                mobile-lg:grid-col-4
-                desktop:grid-col-auto
-                usa-footer__primary-content
-              "
+          </li>
+          <li
+            class="
+              mobile-lg:grid-col-4
+              desktop:grid-col-auto
+              usa-footer__primary-content
+            "
+          >
+            <span class="usa-footer__primary-link" href="javascript:void(0);"
+              >A product by Bloomworks Digital</span
             >
-              <span class="usa-footer__primary-link" href="javascript:void(0);"
-                >A product by Bloomworks Digital</span
-              >
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </footer>
-  </body>
-</html>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+{% endblock %}
