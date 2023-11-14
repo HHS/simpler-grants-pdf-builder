@@ -8,9 +8,9 @@
   <section class="usa-section">
     <div class="grid-container">
         <div class="back-link font-body-md margin-bottom-105">
-            <a href="{% url 'index' %}">← Homepage</a>
+          <a href="{% url 'posts:posts_list' %}">← All Posts</a>
         </div>
-        <h1 class="font-heading-xl margin-y-0">Upload a new NOFO</h1>
+        <h1 class="font-heading-xl margin-y-0">Import a new NOFO</h1>
         <form id="nofo-upload--form" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {% for message in messages %}

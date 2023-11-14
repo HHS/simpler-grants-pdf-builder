@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView
@@ -98,6 +100,8 @@ def create_post(title, sections):
             )
             model_subsection.save()
 
+    return model_post
+
 
 def nofo_upload(request):
     if request.method == "POST":
@@ -128,12 +132,18 @@ def nofo_upload(request):
 
         sections = get_subsections_from_sections(sections)
 
-        # insert!!!
-        create_post("Post 1", sections)
-        # TODO redirect somewhere more useful
-        return render(
-            request, "posts/nofo_upload.html", {"uploaded_file_url": my_file_html}
-        )
+        # TODO: use ISO datestamp
+        predict_name = "NOFO 1"
+        # TODO: clean up the compiles
+        name_element = soup.find(string=re.compile("^Opportunity Name:", re.IGNORECASE))
+        if name_element:
+            temp_name = re.sub(
+                "^Opportunity Name:", "", name_element.text, flags=re.IGNORECASE
+            )
+            predict_name = temp_name.strip() if temp_name else predict_name
+
+        post = create_post(predict_name, sections)
+        return redirect("posts:posts_name", pk=post.id)
 
     return render(request, "posts/nofo_upload.html")
 
@@ -159,11 +169,8 @@ def nofo_name(request, pk):
         post.short_name = nofo_short_name
         post.save()
 
-        return render(
-            request,
-            "posts/nofo_name.html",
-            {"title": post.title, "short_name": post.short_name},
-        )
+        # TODO message about new post with link
+        return redirect("posts:posts_list")
 
     return render(
         request,
