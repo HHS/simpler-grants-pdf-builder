@@ -134,12 +134,10 @@ def nofo_upload(request):
 
         # TODO: use ISO datestamp
         predict_name = "NOFO 1"
-        # TODO: clean up the compiles
-        name_element = soup.find(string=re.compile("^Opportunity Name:", re.IGNORECASE))
+        title_regex = re.compile("^Opportunity Name:", re.IGNORECASE)
+        name_element = soup.find(string=title_regex)
         if name_element:
-            temp_name = re.sub(
-                "^Opportunity Name:", "", name_element.text, flags=re.IGNORECASE
-            )
+            temp_name = title_regex.sub("", name_element.text)
             predict_name = temp_name.strip() if temp_name else predict_name
 
         post = create_post(predict_name, sections)
