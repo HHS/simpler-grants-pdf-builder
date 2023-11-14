@@ -1,4 +1,5 @@
 import re
+import datetime
 
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
@@ -103,6 +104,20 @@ def create_post(title, sections):
     return model_post
 
 
+def suggest_nofo_title(soup):
+    nofo_title = "NOFO: {}".format(
+        datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
+    )
+
+    title_regex = re.compile("^Opportunity Name:", re.IGNORECASE)
+    title_element = soup.find(string=title_regex)
+    if title_element:
+        temp_title = title_regex.sub("", title_element.text)
+        nofo_title = temp_title.strip() if temp_title else nofo_title
+
+    return nofo_title
+
+
 def nofo_upload(request):
     if request.method == "POST":
         uploaded_file = request.FILES.get("nofo-upload", None)
@@ -131,16 +146,9 @@ def nofo_upload(request):
             return redirect("posts:posts_upload")
 
         sections = get_subsections_from_sections(sections)
+        nofo_title = suggest_nofo_title(soup)
 
-        # TODO: use ISO datestamp
-        predict_name = "NOFO 1"
-        title_regex = re.compile("^Opportunity Name:", re.IGNORECASE)
-        name_element = soup.find(string=title_regex)
-        if name_element:
-            temp_name = title_regex.sub("", name_element.text)
-            predict_name = temp_name.strip() if temp_name else predict_name
-
-        post = create_post(predict_name, sections)
+        post = create_post(nofo_title, sections)
         return redirect("posts:posts_name", pk=post.id)
 
     return render(request, "posts/nofo_upload.html")
