@@ -9,7 +9,7 @@
     <link href="{% static 'styles.css' %}" rel="stylesheet">
     <!-- add favicon -->
 
-    <title>It’s NOFOs, baby</title>
+    <title>{% block title %}It’s NOFOs, baby{% endblock %}</title>
   </head>
   <body class="{% block body_class %}{% endblock %}">
     <header class="usa-header usa-header--basic">

@@ -1,35 +1,35 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Name your NOFO
+  Name your NOFO
 {% endblock %}
 
 {% block content %}
   <section class="usa-section">
     <div class="grid-container">
-        <div class="back-link font-body-md margin-bottom-105">
-            <a href="{% url 'index' %}">← Homepage</a>
-        </div>
-        <h1 class="font-heading-xl margin-y-0">Name your NOFO</h1>
-        <form id="nofo-name--form" method="post">
-          {% csrf_token %}
-          
-          {% with id="nofo-title" label="Official title of NOFO" hint="This will be publicly visible when the NOFO is published." hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" value=title %}
-            {% for message in messages %}
-              {% if "error" in message.tags %}
-                {% include "includes/text_input.html" with textarea=True id=id label=label value=value hint=hint hint2=hint2 error=message only %}
-              {% endif %}
-            {% empty %}
-              {% include "includes/text_input.html" with textarea=True id=id label=label value=value hint=hint hint2=hint2 only %}
-            {% endfor %}
-          {% endwith %}
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'index' %}">← Homepage</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">Name your NOFO</h1>
+      <form id="nofo-name--form" method="post">
+        {% csrf_token %}
+        
+        {% with id="nofo-title" label="Official title of NOFO" hint="This will be publicly visible when the NOFO is published." hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" value=title %}
+          {% for message in messages %}
+            {% if "error" in message.tags %}
+              {% include "includes/text_input.html" with textarea=True id=id label=label value=value hint=hint hint2=hint2 error=message only %}
+            {% endif %}
+          {% empty %}
+            {% include "includes/text_input.html" with textarea=True id=id label=label value=value hint=hint hint2=hint2 only %}
+          {% endfor %}
+        {% endwith %}
 
-          {% with id="nofo-short_name" label="Short name of NOFO (optional)" hint="A name to make it easier to see this NOFO in a list. It won’t be public." hint2="eg: “(HRSA) PA Rural Training Program”" value=short_name %}
-            {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 only %}
-          {% endwith %}
+        {% with id="nofo-short_name" label="Short name of NOFO (optional)" hint="A name to make it easier to see this NOFO in a list. It won’t be public." hint2="eg: “(HRSA) PA Rural Training Program”" value=short_name %}
+          {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 only %}
+        {% endwith %}
 
-          <button class="usa-button margin-top-3" type="submit">Save NOFO title</button>
-        </form>
+        <button class="usa-button margin-top-3" type="submit">Save NOFO title</button>
+      </form>
     </div>
   </section>
 {% endblock %}
