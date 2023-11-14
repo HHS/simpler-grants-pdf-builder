@@ -3,7 +3,8 @@ from martor.models import MartorField
 
 
 class Post(models.Model):
-    title = models.TextField()
+    title = models.TextField(blank=True)
+    short_name = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.title

@@ -1,0 +1,35 @@
+<label class="usa-label" for="{{ id }}">{{ label }}</label>
+{% if hint %}
+<div class="usa-hint" id="{{ id }}--hint-1">
+  {{ hint }}
+</div>
+{% endif %}
+{% if hint2 %}
+<div class="usa-hint" id="{{ id }}--hint-2">
+  {{ hint2 }}
+</div>
+{% endif %}
+{% if error %}
+<div class="usa-error-message" id="{{ id }}--error">
+  Error: {{ error }}
+</div>
+{% endif %}
+{% if textarea %}
+  <textarea
+    class="usa-textarea border-2px{% if error %} border-secondary{% endif %}"
+    id="{{ id }}"
+    name="{{ id }}"
+    aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
+  >{{ value }}</textarea>
+{% else %}
+  <input
+    class="usa-input border-2px{% if error %} border-secondary{% endif %}"
+    id="{{ id }}"
+    name="{{ id }}"
+    aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
+    value="{{ value }}"
+    />
+{% endif %}
+
+
+

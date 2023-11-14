@@ -21,12 +21,8 @@
             {% include "includes/file_input.html" %}
           {% endfor %}
 
-          <button class="usa-button" type="submit">Upload</button>
+          <button class="usa-button margin-top-3" type="submit">Upload</button>
         </form>
-
-        {% if uploaded_file_url %}
-          <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
-        {% endif %}
     </div>
   </section>
 {% endblock %}

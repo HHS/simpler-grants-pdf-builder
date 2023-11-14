@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView
 
 from bs4 import BeautifulSoup
@@ -99,8 +99,7 @@ def create_post(title, sections):
             model_subsection.save()
 
 
-def simple_upload(request):
-    print(request.FILES)
+def nofo_upload(request):
     if request.method == "POST":
         uploaded_file = request.FILES.get("nofo-upload", None)
 
@@ -132,6 +131,42 @@ def simple_upload(request):
         # insert!!!
         create_post("Post 1", sections)
         # TODO redirect somewhere more useful
-        return render(request, "posts/upload.html", {"uploaded_file_url": my_file_html})
+        return render(
+            request, "posts/nofo_upload.html", {"uploaded_file_url": my_file_html}
+        )
 
-    return render(request, "posts/upload.html")
+    return render(request, "posts/nofo_upload.html")
+
+
+def nofo_name(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if request.method == "POST":
+        # TODO error handling
+        data = request.POST
+        print("data: {}".format(data))
+        nofo_title = data.get("nofo-title", "")
+        nofo_short_name = data.get("nofo-short_name", "")
+
+        if not nofo_title:
+            messages.add_message(
+                request,
+                messages.ERROR,
+                "NOFO title can’t be empty",
+            )
+            return redirect("posts:posts_name", pk=post.id)
+
+        post.title = nofo_title
+        post.short_name = nofo_short_name
+        post.save()
+
+        return render(
+            request,
+            "posts/nofo_name.html",
+            {"title": post.title, "short_name": post.short_name},
+        )
+
+    return render(
+        request,
+        "posts/nofo_name.html",
+        {"title": post.title, "short_name": post.short_name},
+    )
