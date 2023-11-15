@@ -49,13 +49,15 @@
             <tr>
               <th scope="col">Heading</th>
               <th scope="col">Content</th>
+              <th scope="col">Manage</th>
             </tr>
           </thead>
           <tbody>
             {% for subsection in section.subsections.all %}
               <tr>
-                <th scope="row">{{ subsection.name }}</th>
-                <td>{% if subsection.body %}{{ subsection.body }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+                <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
+                <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+                <td><a href="{% url 'nofos:edit_subsection' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
               <tr>
             {% endfor %}
           </tbody>

@@ -28,3 +28,7 @@ body > footer {
 .back-link a:not(:hover) {
   text-decoration: none;
 }
+
+.nofo-edit-table--subsection--body {
+  word-break: break-word;
+}

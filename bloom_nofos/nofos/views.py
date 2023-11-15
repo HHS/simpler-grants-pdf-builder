@@ -2,6 +2,7 @@ import re
 import datetime
 
 from django.contrib import messages
+from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView, DetailView
 
@@ -215,4 +216,18 @@ def nofo_name(request, pk):
         request,
         "nofos/nofo_name.html",
         {"title": nofo.title, "short_name": nofo.short_name},
+    )
+
+
+def nofo_subsection_edit(request, pk, subsection_pk):
+    subsection = get_object_or_404(Subsection, pk=subsection_pk)
+    nofo = subsection.section.nofo
+
+    if pk != nofo.id:
+        raise HttpResponseBadRequest("Oops, bad NOFO id")
+
+    return render(
+        request,
+        "nofos/subsection_edit.html",
+        {"subsection": subsection, "nofo": nofo},
     )

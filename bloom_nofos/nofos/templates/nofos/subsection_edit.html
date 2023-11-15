@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Subsection: {{ subsection.name }}
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">Subsection: {{ subsection.name }}</h1>
+      <p>Edit page for this Subsection.</p>
+
+      <pre>
+        {{ subsection.body }}
+      </pre>
+    </div>
+  </section>
+{% endblock %}
