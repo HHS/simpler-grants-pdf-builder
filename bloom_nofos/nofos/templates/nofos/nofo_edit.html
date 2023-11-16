@@ -29,13 +29,13 @@
             <tr>
               <th scope="row">Short&nbsp;name</th>
               <td>{{ nofo.short_name }}</td>
-              <td><a href="{% url 'nofos:edit_name' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
+              <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
             <tr>
           {% endif %}
           <tr>
             <th scope="row">Title</th>
             <td>{{ nofo.title }}</td>
-            <td><a href="{% url 'nofos:edit_name' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
+            <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
           <tr>
         </tbody>
       </table>
@@ -57,7 +57,7 @@
               <tr>
                 <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
                 <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
-                <td><a href="{% url 'nofos:edit_subsection' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
+                <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
               <tr>
             {% endfor %}
           </tbody>

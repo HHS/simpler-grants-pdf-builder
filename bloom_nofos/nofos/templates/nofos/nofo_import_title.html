@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Name your NOFO
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'index' %}">← Homepage</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">Name your NOFO</h1>
+
+      <form id="nofo-name--form" method="post">
+        {% csrf_token %}
+
+        {% with id="title" label=form.title.label hint=form.title.help_text hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" value=form.title.value error=form.title.errors.0 %}
+          {% include "includes/text_input.html" with textarea=True id=id label=label value=value hint=hint hint2=hint2 error=error only %}
+        {% endwith %}
+
+        {% with id="short_name" label=form.short_name.label hint=form.short_name.help_text hint2="eg: “(HRSA) PA Rural Training Program”" value=form.short_name.value %}
+          {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 only %}
+        {% endwith %}
+
+        <button class="usa-button margin-top-3" type="submit">Save NOFO name</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

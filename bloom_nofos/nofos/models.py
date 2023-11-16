@@ -3,8 +3,16 @@ from martor.models import MartorField
 
 
 class Nofo(models.Model):
-    title = models.TextField(blank=True)
-    short_name = models.CharField(max_length=200, blank=True)
+    title = models.TextField(
+        "NOFO title",
+        blank=True,
+        help_text="This will be publicly visible when the NOFO is published.",
+    )
+    short_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
+    )
 
     def __str__(self):
         return self.title

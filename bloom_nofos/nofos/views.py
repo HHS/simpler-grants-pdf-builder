@@ -11,7 +11,7 @@ from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
 from .models import Nofo, Section, Subsection
-from .forms import SubsectionForm
+from .forms import NofoNameForm, SubsectionForm
 
 
 class NofosListView(ListView):
@@ -177,46 +177,61 @@ def nofo_import(request):
         nofo_title = suggest_nofo_title(soup)
 
         nofo = create_nofo(nofo_title, sections)
-        return redirect("nofos:edit_name", pk=nofo.id)
+        return redirect("nofos:nofo_import_title", pk=nofo.id)
 
     return render(request, "nofos/nofo_import.html")
 
 
-def nofo_name(request, pk):
+def nofo_import_title(request, pk):
     nofo = get_object_or_404(Nofo, pk=pk)
-    if request.method == "POST":
-        # TODO error handling
-        data = request.POST
-        print("data: {}".format(data))
-        nofo_title = data.get("nofo-title", "")
-        nofo_short_name = data.get("nofo-short_name", "")
 
-        if not nofo_title:
+    if request.method == "POST":
+        form = NofoNameForm(request.POST)
+
+        if form.is_valid():
+            nofo.title = form.cleaned_data["title"]
+            nofo.short_name = form.cleaned_data["short_name"]
+            nofo.save()
+
             messages.add_message(
                 request,
-                messages.ERROR,
-                "NOFO title can’t be empty",
+                messages.SUCCESS,
+                "View NOFO: <a href='/nofos/{}'>{}</a>.".format(
+                    nofo.id, nofo.short_name or nofo.title
+                ),
             )
-            return redirect("nofos:edit_name", pk=nofo.id)
+            return redirect("nofos:nofo_list")
 
-        nofo.title = nofo_title
-        nofo.short_name = nofo_short_name
-        nofo.save()
-
-        # TODO update the link
-        messages.add_message(
-            request,
-            messages.SUCCESS,
-            "View NOFO: <a href='/nofos/{}/edit'>{}</a>.".format(
-                nofo.id, nofo_short_name or nofo_title
-            ),
-        )
-        return redirect("nofos:nofo_list")
+    else:
+        form = NofoNameForm(instance=nofo)
 
     return render(
         request,
-        "nofos/nofo_name.html",
-        {"title": nofo.title, "short_name": nofo.short_name},
+        "nofos/nofo_import_title.html",
+        {"title": nofo.title, "short_name": nofo.short_name, "form": form},
+    )
+
+
+def nofo_title(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        form = NofoNameForm(request.POST)
+
+        if form.is_valid():
+            nofo.title = form.cleaned_data["title"]
+            nofo.short_name = form.cleaned_data["short_name"]
+            nofo.save()
+
+            return redirect("nofos:nofo_list")
+
+    else:
+        form = NofoNameForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_title.html",
+        {"nofo": nofo, "form": form},
     )
 
 

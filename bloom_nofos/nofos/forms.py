@@ -1,6 +1,16 @@
 from django import forms
-from .models import Subsection
+from .models import Nofo, Subsection
 from martor.fields import MartorFormField
+
+
+class NofoNameForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["title", "short_name"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].required = True
 
 
 class SubsectionForm(forms.ModelForm):
