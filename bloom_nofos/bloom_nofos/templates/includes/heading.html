@@ -1,11 +1,11 @@
 {% if tag == "h2" %}
-  <h2>{{ content }}</h2>
+  <h2 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h2>
 {% elif tag == "h3" %}
-  <h3>{{ content }}</h3>
+  <h3 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h3>
 {% elif tag == "h4" %}
-  <h4>{{ content }}</h4>
+  <h4 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h4>
 {% elif tag == "h5" %}
-  <h5>{{ content }}</h5>
+  <h5 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h5>
 {% elif tag == "h6" %}
-  <h6>{{ content }}</h6>
+  <h6 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h6>
 {% endif %}

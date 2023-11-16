@@ -23,6 +23,10 @@ class Nofo(models.Model):
 class Section(models.Model):
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
     name = models.TextField("Section name")
+    html_id = models.CharField(
+        max_length=200,
+        blank=True,
+    )
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -37,6 +41,10 @@ class Subsection(models.Model):
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
     name = models.TextField("Subsection name")
+    html_id = models.CharField(
+        max_length=200,
+        blank=True,
+    )
     order = models.IntegerField(null=True)
 
     class Meta:

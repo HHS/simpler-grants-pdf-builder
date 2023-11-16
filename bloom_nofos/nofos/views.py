@@ -40,7 +40,12 @@ def get_sections_from_soup(soup):
             if len(sections) == section_num:
                 # add an empty array at a new index
                 sections.append(
-                    {"name": tag.text, "order": section_num + 1, "body": []}
+                    {
+                        "name": tag.text,
+                        "order": section_num + 1,
+                        "html_id": tag.get("id", ""),
+                        "body": [],
+                    }
                 )
             else:
                 sections[section_num]["body"].append(tag)
@@ -86,6 +91,7 @@ def get_subsections_from_sections(sections):
                     "name": tag.text,
                     "order": len(section["subsections"]) + 1,
                     "tag": demote_tag(tag),
+                    "html_id": tag.get("id", ""),
                     "body": [],
                 }
 
@@ -102,6 +108,7 @@ def _build_nofo(nofo, sections):
         model_section = Section(
             name=section.get("name", "Section X"),
             order=section.get("order", ""),
+            html_id=section.get("html_id"),
             nofo=nofo,
         )
         model_section.save()
@@ -117,6 +124,7 @@ def _build_nofo(nofo, sections):
                 name=subsection.get("name", "Subsection X"),
                 order=subsection.get("order", ""),
                 tag=subsection.get("tag", "h6"),
+                html_id=subsection.get("html_id"),
                 body=md_body,  # body can be empty
                 section=model_section,
             )
