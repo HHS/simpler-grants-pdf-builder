@@ -29,12 +29,18 @@ body > footer {
   text-decoration: none;
 }
 
-.nofo-edit-table--subsection--body {
+.nofo_edit .nofo-edit-table--subsection--body {
   word-break: break-word;
 }
 
-.nofo-edit-table--subsection--body pre {
+.nofo_edit .nofo-edit-table--subsection--body pre {
   white-space: pre-wrap;
+}
+
+.nofo_edit caption {
+  top: 0px;
+  position: sticky;
+  background: white;
 }
 
 .main-martor {
