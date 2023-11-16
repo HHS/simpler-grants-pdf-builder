@@ -1,0 +1,62 @@
+@page  {
+  /* 
+  https://printcss.net/articles/running-headers-and-footers
+  https://github.com/Kozea/WeasyPrint/issues/17
+  */
+  size: A4;
+  margin: 20mm;
+}
+
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+table {
+  font-family: Source Sans Pro Web,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-size: 1.06rem;
+  line-height: 1.5;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: #1b1b1b;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+table caption {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .75rem;
+  text-align: left;
+}
+
+table th,
+table td {
+  background-color: #fff;
+  border: 1px solid #1b1b1b;
+  font-weight: 400;
+  padding: .5rem 1rem;
+}
+
+table thead th,
+table thead td {
+  background-color: #e6e6e6;
+  color: #1b1b1b;
+}
+
+table thead th {
+  background-clip: padding-box;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+ul, ol {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  line-height: 1.5;
+  padding-left: 3ch;
+}
+
+ul:last-child, ol:last-child {
+  margin-bottom: 0;
+}
