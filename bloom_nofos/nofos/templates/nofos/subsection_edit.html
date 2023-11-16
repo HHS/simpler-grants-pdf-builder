@@ -24,19 +24,15 @@
       <form class="form" method="post">
         {% csrf_token %}
         <div class="form-group">
-          {% with id=form.name.id_for_label label=form.name.label hint=form.name.help_text value=form.name.value %}
-            {% for message in messages %}
-              {% if "error" in message.tags %}
-                {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 error=message only %}
-              {% endif %}
-            {% empty %}
-              {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 only %}
-            {% endfor %}
+          {% with id="name" label=form.name.label hint=subsection.tag value=form.name.value error=form.name.errors.0 %}
+            {% include "includes/text_input.html" with id=id label=label value=value hint=hint error=error only %}
           {% endwith %}
         </div>
         <div class="form-group">
-          <label class="usa-label" for="{{ form.body.id_for_label }}">Contents of subsection</label>          
-          {{ form.body }}
+          <div class="border-2px border-base-lighter margin-top-4 radius-md">
+            <label class="usa-label usa-sr-only" for="{{ form.body.id_for_label }}">Subsection content</label>
+            {{ form.body }}
+          </div>
         </div>
         <div class="form-group">
           <button class="usa-button margin-top-3" type="submit">Save</button>

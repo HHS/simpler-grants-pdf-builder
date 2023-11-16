@@ -32,3 +32,8 @@ body > footer {
 .nofo-edit-table--subsection--body {
   word-break: break-word;
 }
+
+.main-martor {
+  margin-top: 0;
+  margin-bottom: 0;
+}

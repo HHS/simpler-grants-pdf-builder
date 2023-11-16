@@ -223,11 +223,23 @@ def nofo_name(request, pk):
 def nofo_subsection_edit(request, pk, subsection_pk):
     subsection = get_object_or_404(Subsection, pk=subsection_pk)
     nofo = subsection.section.nofo
+    form = None
 
     if pk != nofo.id:
         raise HttpResponseBadRequest("Oops, bad NOFO id")
 
-    form = SubsectionForm(instance=subsection)
+    if request.method == "POST":
+        # create a form instance and populate it with data from the request:
+        form = SubsectionForm(request.POST)
+        if form.is_valid():
+            subsection.name = form.cleaned_data["name"]
+            subsection.body = form.cleaned_data["body"]
+            subsection.save()
+
+            return redirect("nofos:nofo_edit", pk=nofo.id)
+
+    else:
+        form = SubsectionForm(instance=subsection)
 
     return render(
         request,

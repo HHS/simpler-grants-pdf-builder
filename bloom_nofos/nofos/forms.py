@@ -4,7 +4,7 @@ from martor.fields import MartorFormField
 
 
 class SubsectionForm(forms.ModelForm):
-    body = MartorFormField()
+    body = MartorFormField(required=False)
 
     class Meta:
         model = Subsection

@@ -174,7 +174,7 @@ MARTOR_TOOLBAR_BUTTONS = [
 ]
 
 # To setup the martor editor with title label or not (default is False)
-MARTOR_ENABLE_LABEL = False
+MARTOR_ENABLE_LABEL = True
 
 # Markdownify
 MARTOR_MARKDOWNIFY_FUNCTION = "martor.utils.markdownify"  # default

@@ -14,7 +14,7 @@ class Nofo(models.Model):
 # order = models.IntegerField(default=lambda: Section.objects.latest("order") + 1)
 class Section(models.Model):
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
-    name = models.TextField()
+    name = models.TextField("Section name")
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -28,7 +28,7 @@ class Subsection(models.Model):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
-    name = models.TextField()
+    name = models.TextField("Subsection name")
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -46,7 +46,7 @@ class Subsection(models.Model):
         choices=TAG_CHOICES,
     )
 
-    body = MartorField(blank=True)
+    body = MartorField("Content of subsection", blank=True)
 
     def __str__(self):
         return self.name
