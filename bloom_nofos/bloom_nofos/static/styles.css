@@ -33,6 +33,10 @@ body > footer {
   word-break: break-word;
 }
 
+.nofo-edit-table--subsection--body pre {
+  white-space: pre-wrap;
+}
+
 .main-martor {
   margin-top: 0;
   margin-bottom: 0;
