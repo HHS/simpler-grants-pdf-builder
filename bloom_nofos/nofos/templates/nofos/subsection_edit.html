@@ -16,7 +16,7 @@
   <section class="usa-section">
     <div class="grid-container">
       <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</a>
       </div>
       <h1 class="font-heading-xl margin-y-0">Subsection: {{ subsection.name }}</h1>
       <p>Edit page for this Subsection.</p>
@@ -24,7 +24,7 @@
       <form class="form" method="post">
         {% csrf_token %}
         <div class="form-group">
-          {% with id="name" label=form.name.label hint=subsection.tag value=form.name.value error=form.name.errors.0 %}
+          {% with id="name" label=form.name.label hint="Heading level: "|add:subsection.tag value=form.name.value error=form.name.errors.0 %}
             {% include "includes/text_input.html" with id=id label=label value=value hint=hint error=error only %}
           {% endwith %}
         </div>

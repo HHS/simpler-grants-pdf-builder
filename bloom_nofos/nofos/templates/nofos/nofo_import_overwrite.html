@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="usa-alert usa-alert--warning margin-bottom-3">
+        <div class="usa-alert__body">
+          <h4 class="usa-alert__heading">Warning</h4>
+          <p class="usa-alert__text">
+            Re-importing a NOFO overwrites all existing content except the title.
+          </p>
+          <p class="usa-alert__text">
+            If you continue, you will lose all manual edits made since creating the NOFO.
+          </p>
+        </div>
+      </div>
+
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to edit view for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+
+      <form id="nofo-import--form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% with id="nofo-import" label="Select NOFO file" hint="Please only submit HTML or Markdown files." value=title %}
+          {% for message in messages %}
+            {% if "error" in message.tags %}
+              {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
+            {% endif %}
+          {% empty %}
+            {% include "includes/file_input.html" with id=id label=label hint=hint only %}
+          {% endfor %}
+        {% endwith %}
+
+        <button class="usa-button margin-top-3" type="submit">Re-import</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

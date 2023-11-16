@@ -2,7 +2,7 @@
 {% load martortags %}
 
 {% block title %}
-{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+  Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
 {% endblock %}
 
 {% block content %}
@@ -11,8 +11,9 @@
       <div class="back-link font-body-md margin-bottom-105">
         <a href="{% url 'nofos:nofo_list' %}">← All NOFOs</a>
       </div>
-      <h1 class="font-heading-xl margin-y-0">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</h1>
-      <p>Edit page for this NOFO.</p>
+      <h1 class="font-heading-xl margin-y-0">Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+      <p>Make small edits to your NOFO here.</p>
+      <p>For more substantial edits, <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import your NOFO</a>.</p>
 
       <table class="usa-table usa-table--borderless width-full">
         <caption>

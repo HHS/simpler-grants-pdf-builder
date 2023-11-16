@@ -97,15 +97,12 @@ def get_subsections_from_sections(sections):
     return sections
 
 
-def create_nofo(title, sections):
-    model_nofo = Nofo(title=title)
-    model_nofo.save()
-
+def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(
             name=section.get("name", "Section X"),
             order=section.get("order", ""),
-            nofo=model_nofo,
+            nofo=nofo,
         )
         model_section.save()
 
@@ -125,7 +122,19 @@ def create_nofo(title, sections):
             )
             model_subsection.save()
 
-    return model_nofo
+    return nofo
+
+
+def overwrite_nofo(nofo, sections):
+    nofo.sections.all().delete()
+    nofo.save()
+    return _build_nofo(nofo, sections)
+
+
+def create_nofo(title, sections):
+    nofo = Nofo(title=title)
+    nofo.save()
+    return _build_nofo(nofo, sections)
 
 
 def suggest_nofo_title(soup):
@@ -142,19 +151,26 @@ def suggest_nofo_title(soup):
     return nofo_title
 
 
-def nofo_import(request):
+def nofo_import(request, pk=None):
+    view_path = "nofos:nofo_import"
+    kwargs = {}
+    if pk:
+        nofo = get_object_or_404(Nofo, pk=pk)
+        view_path = "nofos:nofo_import_overwrite"
+        kwargs = {"pk": nofo.id}
+
     if request.method == "POST":
         uploaded_file = request.FILES.get("nofo-import", None)
 
         if not uploaded_file:
-            messages.add_message(request, messages.ERROR, "Oops! No fos received")
-            return redirect("nofos:nofo_import")
+            messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
+            return redirect(view_path, **kwargs)
 
         if uploaded_file.content_type not in ["text/html", "text/markdown"]:
             messages.add_message(
                 request, messages.ERROR, "Yikes! Please import an HTML or Markdown file"
             )
-            return redirect("nofos:nofo_import")
+            return redirect(view_path, **kwargs)
 
         soup = None
         if uploaded_file.content_type == "text/markdown":
@@ -171,15 +187,34 @@ def nofo_import(request):
                 messages.ERROR,
                 "Sorry, that file doesn’t contain a NOFO.",
             )
-            return redirect("nofos:nofo_import")
+            return redirect(view_path, **kwargs)
 
         sections = get_subsections_from_sections(sections)
-        nofo_title = suggest_nofo_title(soup)
 
-        nofo = create_nofo(nofo_title, sections)
-        return redirect("nofos:nofo_import_title", pk=nofo.id)
+        if pk:
+            nofo = overwrite_nofo(nofo, sections)
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                "Re-imported NOFO: <a href='/nofos/{}'>{}</a>".format(
+                    nofo.id, nofo.short_name or nofo.title
+                ),
+            )
+            return redirect("nofos:nofo_list")
 
-    return render(request, "nofos/nofo_import.html")
+        else:
+            nofo_title = suggest_nofo_title(soup)
+            nofo = create_nofo(nofo_title, sections)
+            return redirect("nofos:nofo_import_title", pk=nofo.id)
+
+    if pk:
+        return render(
+            request,
+            "nofos/nofo_import_overwrite.html",
+            {"nofo": nofo},
+        )
+    else:
+        return render(request, "nofos/nofo_import.html")
 
 
 def nofo_import_title(request, pk):
@@ -196,7 +231,7 @@ def nofo_import_title(request, pk):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                "View NOFO: <a href='/nofos/{}'>{}</a>.".format(
+                "View NOFO: <a href='/nofos/{}'>{}</a>".format(
                     nofo.id, nofo.short_name or nofo.title
                 ),
             )
