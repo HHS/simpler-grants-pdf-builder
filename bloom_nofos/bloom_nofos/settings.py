@@ -142,7 +142,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # MARTOR MARKDOWN FIELD
 
 # Choices are: "semantic", "bootstrap"
-MARTOR_THEME = "semantic"
+MARTOR_THEME = "bootstrap"
 
 # Global martor settings
 # Input: string boolean, `true/false`

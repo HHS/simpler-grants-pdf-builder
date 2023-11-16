@@ -4,12 +4,14 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{% block title %}It’s NOFOs, baby{% endblock %}</title>
 
     <!-- Local files -->
     <link href="{% static 'styles.css' %}" rel="stylesheet">
-    <!-- add favicon -->
+    {% block css %}{% endblock %}
+    {% block js %}{% endblock %}
 
-    <title>{% block title %}It’s NOFOs, baby{% endblock %}</title>
+    <!-- add favicon -->
   </head>
   <body class="{% block body_class %}{% endblock %}">
     {% block header %}{% endblock %}
@@ -17,5 +19,6 @@
       {% block content %}{% endblock %}
     </main>
     {% block footer %}{% endblock %}
+    {% block js_footer %}{% endblock %}
   </body>
 </html>

@@ -11,6 +11,7 @@ from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
 from .models import Nofo, Section, Subsection
+from .forms import SubsectionForm
 
 
 class NofosListView(ListView):
@@ -226,8 +227,10 @@ def nofo_subsection_edit(request, pk, subsection_pk):
     if pk != nofo.id:
         raise HttpResponseBadRequest("Oops, bad NOFO id")
 
+    form = SubsectionForm(instance=subsection)
+
     return render(
         request,
         "nofos/subsection_edit.html",
-        {"subsection": subsection, "nofo": nofo},
+        {"subsection": subsection, "nofo": nofo, "form": form},
     )

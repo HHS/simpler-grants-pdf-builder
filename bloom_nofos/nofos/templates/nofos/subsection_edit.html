@@ -1,7 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
   Subsection: {{ subsection.name }}
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet" />
+  <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet" />
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -13,9 +21,44 @@
       <h1 class="font-heading-xl margin-y-0">Subsection: {{ subsection.name }}</h1>
       <p>Edit page for this Subsection.</p>
 
-      <pre>
-        {{ subsection.body }}
-      </pre>
+      <form class="form" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          {% with id=form.name.id_for_label label=form.name.label hint=form.name.help_text value=form.name.value %}
+            {% for message in messages %}
+              {% if "error" in message.tags %}
+                {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 error=message only %}
+              {% endif %}
+            {% empty %}
+              {% include "includes/text_input.html" with id=id label=label value=value hint=hint hint2=hint2 only %}
+            {% endfor %}
+          {% endwith %}
+        </div>
+        <div class="form-group">
+          <label class="usa-label" for="{{ form.body.id_for_label }}">Contents of subsection</label>          
+          {{ form.body }}
+        </div>
+        <div class="form-group">
+          <button class="usa-button margin-top-3" type="submit">Save</button>
+        </div>
+      </form>
     </div>
   </section>
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/resizable.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
 {% endblock %}
