@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load martortags %}
 
 {% block title %}
 {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
@@ -56,7 +57,7 @@
             {% for subsection in section.subsections.all %}
               <tr>
                 <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
-                <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+                <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body|safe_markdown }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
                 <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
               <tr>
             {% endfor %}
