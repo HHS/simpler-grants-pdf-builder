@@ -5,11 +5,11 @@
 - why don't we know about imports
 - remove 'documents' app
 - tables import without a header row
-- add datetime to NOFO creation
 - add updated to NOFOs
 
 # DONE
 
+- add datetime to NOFO creation
 - consistent table column widths
 - add audit trail
 - delete a NOFO

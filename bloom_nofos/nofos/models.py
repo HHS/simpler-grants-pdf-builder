@@ -26,6 +26,8 @@ class Nofo(models.Model):
         help_text="The coach has the primary responsibility for editing this NOFO.",
     )
 
+    created = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.title
 
