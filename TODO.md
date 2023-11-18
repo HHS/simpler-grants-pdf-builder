@@ -2,7 +2,6 @@
 
 - try out printing the first few pages
 - add black formatter
-- why don't we know about imports
 - remove 'documents' app
 - tables import without a header row
 - add updated to NOFOs
