@@ -16,10 +16,12 @@ from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 
 class NofosListView(ListView):
     model = Nofo
+    template_name = "nofos/nofo_index.html"
 
 
 class NofosDetailView(DetailView):
     model = Nofo
+    template_name = "nofos/nofo_view.html"
 
 
 class NofosEditView(DetailView):
@@ -208,7 +210,7 @@ def nofo_import(request, pk=None):
                     nofo.id, nofo.short_name or nofo.title
                 ),
             )
-            return redirect("nofos:nofo_list")
+            return redirect("nofos:nofo_index")
 
         else:
             nofo_title = suggest_nofo_title(soup)
@@ -243,7 +245,7 @@ def nofo_import_title(request, pk):
                     nofo.id, nofo.short_name or nofo.title
                 ),
             )
-            return redirect("nofos:nofo_list")
+            return redirect("nofos:nofo_index")
 
     else:
         form = NofoNameForm(instance=nofo)
@@ -255,7 +257,7 @@ def nofo_import_title(request, pk):
     )
 
 
-def nofo_title(request, pk):
+def nofo_edit_title(request, pk):
     nofo = get_object_or_404(Nofo, pk=pk)
 
     if request.method == "POST":
@@ -266,19 +268,19 @@ def nofo_title(request, pk):
             nofo.short_name = form.cleaned_data["short_name"]
             nofo.save()
 
-            return redirect("nofos:nofo_list")
+            return redirect("nofos:nofo_index")
 
     else:
         form = NofoNameForm(instance=nofo)
 
     return render(
         request,
-        "nofos/nofo_title.html",
+        "nofos/nofo_edit_title.html",
         {"nofo": nofo, "form": form},
     )
 
 
-def nofo_coach(request, pk):
+def nofo_edit_coach(request, pk):
     nofo = get_object_or_404(Nofo, pk=pk)
 
     if request.method == "POST":
@@ -288,14 +290,14 @@ def nofo_coach(request, pk):
             nofo.coach = form.cleaned_data["coach"]
             nofo.save()
 
-            return redirect("nofos:nofo_list")
+            return redirect("nofos:nofo_index")
 
     else:
         form = NofoCoachForm(instance=nofo)
 
     return render(
         request,
-        "nofos/nofo_coach.html",
+        "nofos/nofo_edit_coach.html",
         {"nofo": nofo, "form": form},
     )
 
