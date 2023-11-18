@@ -6,9 +6,11 @@
 - remove 'documents' app
 - tables import without a header row
 - add datetime to NOFO creation
+- add updated to NOFOs
 
 # DONE
 
+- consistent table column widths
 - add audit trail
 - delete a NOFO
 - add coach for nofos

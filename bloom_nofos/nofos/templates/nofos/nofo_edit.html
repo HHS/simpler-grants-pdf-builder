@@ -62,7 +62,7 @@
 
       <table class="usa-table usa-table--borderless width-full">
         <caption>
-          <h2 class="margin-bottom-0">Assigned coach</h2>
+          <h2 class="margin-bottom-0">{% if nofo.coach %}Assigned coach{% else %}Assign a coach{% endif %}</h2>
         </caption>
         <thead class="usa-sr-only">
           <tr>
@@ -74,7 +74,7 @@
         <tbody>
           <tr>
             <th scope="row">Name of coach</th>
-            <td>{{ nofo.get_coach_display }}</td>
+            <td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<i class="text-base">No coach</i>{% endif %}</td>
             <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
           <tr>
         </tbody>
