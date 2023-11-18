@@ -44,6 +44,26 @@
         </tbody>
       </table>
 
+      <table class="usa-table usa-table--borderless width-full">
+        <caption>
+          <h2 class="margin-bottom-0">Assigned coach</h2>
+        </caption>
+        <thead class="usa-sr-only">
+          <tr>
+            <th scope="col">Key</th>
+            <th scope="col">Value</th>
+            <th scope="col">Manage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Name of coach</th>
+            <td>{{ nofo.get_coach_display }}</td>
+            <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
+          <tr>
+        </tbody>
+      </table>
+
       {% for section in nofo.sections.all %}
         <table class="usa-table usa-table--borderless width-full">
           <caption>

@@ -21,9 +21,14 @@
         <div class="usa-hint" id="coach--hint-1">
           {{ form.coach.help_text }}
         </div>
-        <select class="usa-select" name="coach" id="coach" aria-describedby="coach--hint-1">
+        {% if form.errors.coach %}
+        <div class="usa-error-message" id="coach--error">
+          Error: {{ form.errors.coach.0 }}
+        </div>
+        {% endif %}
+        <select class="usa-select border-2px{% if form.errors.coach %} border-secondary-dark{% endif %}" name="coach" id="coach" aria-describedby="coach--hint-1 {% if form.errors.coach %}coach--error{% endif %}">
           {% for id, name in form.coach.field.choices %}
-            <option value="{{ id }}">{{ name }}</option>
+            <option value="{{ id }}" {% if nofo.coach == id %}selected{% endif%}>{{ name }}</option>
           {% endfor %}
         </select>
 

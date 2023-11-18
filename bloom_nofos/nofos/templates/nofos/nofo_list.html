@@ -32,7 +32,7 @@
 					<thead>
 						<tr>
 							<th scope="col">Name</th>
-							<th scope="col">Sections</th>
+							<th scope="col">Coach</th>
 							<th scope="col">Manage</th>
 						</tr>
 					</thead>
@@ -40,7 +40,7 @@
 						{% for nofo in nofo_list %}
 							<tr>
 								<th scope="row"><a href="{% url 'nofos:nofo_detail' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
-								<td>{{ nofo.sections.count }}</td>
+								<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}—{% endif %}</td>
 								<td><a href="{% url 'nofos:nofo_edit' nofo.id %}">Edit<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
 							<tr>
 						{% endfor %}
