@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "easyaudit",
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
 ]
 
 ROOT_URLCONF = "bloom_nofos.urls"
@@ -320,3 +322,10 @@ ALLOWED_HTML_ATTRIBUTES = [
     "type",
     "width",
 ]
+
+# Django easy audit settings
+# https://github.com/soynatan/django-easy-audit
+
+DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = False
+
+DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False

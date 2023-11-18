@@ -181,6 +181,21 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-easy-audit"
+version = "1.3.5"
+description = "Yet another Django audit log app, hopefully the simplest one."
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "django-easy-audit-1.3.5.tar.gz", hash = "sha256:1129cf13b183f1b8044dbc9fec9a5058b63c7c75b2136cd87e412c45d572726c"},
+    {file = "django_easy_audit-1.3.5-py3-none-any.whl", hash = "sha256:edf4ee6e0634a6b37b817c60562254596898f18bfb41e99430358cb30537fb8f"},
+]
+
+[package.dependencies]
+beautifulsoup4 = "*"
+django = ">=2.2,<5.0"
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -389,4 +404,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "6cec94914d9c95ad9b1b20ebb76d170af750a529badd1dbd734caeed036f53ec"
+content-hash = "6f1725ddeac43e60c2f261fb98bd6405e9911e44e215ceb1e4a2ae90f20a0c53"

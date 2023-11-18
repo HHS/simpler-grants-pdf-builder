@@ -6,10 +6,10 @@
 - remove 'documents' app
 - tables import without a header row
 - add datetime to NOFO creation
-- add audit trail
 
 # DONE
 
+- add audit trail
 - delete a NOFO
 - add coach for nofos
   - add a coach to the nofo import flow
