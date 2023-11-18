@@ -14,6 +14,18 @@ class Nofo(models.Model):
         help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
     )
 
+    COACH_CHOICES = [
+        ("july", "July"),
+        ("emily", "Emily"),
+        ("hannah", "Hannah"),
+    ]
+    coach = models.CharField(
+        max_length=16,
+        choices=COACH_CHOICES,
+        blank=True,
+        help_text="The coach has the primary responsibility for editing this NOFO.",
+    )
+
     def __str__(self):
         return self.title
 

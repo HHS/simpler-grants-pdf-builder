@@ -13,6 +13,16 @@ class NofoNameForm(forms.ModelForm):
         self.fields["title"].required = True
 
 
+class NofoCoachForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["coach"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["coach"].required = True
+
+
 class SubsectionForm(forms.ModelForm):
     body = MartorFormField(required=False)
 

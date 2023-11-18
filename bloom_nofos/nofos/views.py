@@ -11,7 +11,7 @@ from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
 from .models import Nofo, Section, Subsection
-from .forms import NofoNameForm, SubsectionForm
+from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 
 
 class NofosListView(ListView):
@@ -274,6 +274,28 @@ def nofo_title(request, pk):
     return render(
         request,
         "nofos/nofo_title.html",
+        {"nofo": nofo, "form": form},
+    )
+
+
+def nofo_coach(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        form = NofoCoachForm(request.POST)
+
+        if form.is_valid():
+            nofo.coach = form.cleaned_data["coach"]
+            nofo.save()
+
+            return redirect("nofos:nofo_list")
+
+    else:
+        form = NofoCoachForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_coach.html",
         {"nofo": nofo, "form": form},
     )
 

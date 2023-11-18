@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  NOFO coach
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">NOFO coach</h1>
+
+      <p>Assign a coach for “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”.</p>
+
+      <form id="nofo-coach--form" method="post">
+        {% csrf_token %}
+
+        <label class="usa-label" for="coach">{{ form.coach.label }}</label>
+        <div class="usa-hint" id="coach--hint-1">
+          {{ form.coach.help_text }}
+        </div>
+        <select class="usa-select" name="coach" id="coach" aria-describedby="coach--hint-1">
+          {% for id, name in form.coach.field.choices %}
+            <option value="{{ id }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+
+        <button class="usa-button margin-top-3" type="submit">Save</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}
