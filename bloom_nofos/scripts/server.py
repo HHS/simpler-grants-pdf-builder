@@ -7,7 +7,7 @@ def main():
 
 
 def makemigrations():
-    cmd = ["python", "manage.py", "makemigrations", "documents"]
+    cmd = ["python", "manage.py", "makemigrations"]
     subprocess.run(cmd)
 
 
@@ -17,5 +17,5 @@ def migrate():
 
 
 def test():
-    cmd = ["python", "manage.py", "test", "polls"]
+    cmd = ["python", "manage.py", "test", "nofos"]
     subprocess.run(cmd)
