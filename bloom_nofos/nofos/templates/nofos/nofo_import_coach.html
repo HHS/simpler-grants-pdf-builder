@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Assign a coach to this NOFO
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+      </div>
+      <h1 class="font-heading-xl margin-y-0">Assign a coach for “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+
+      <p>Assigning yourself as coach is a way for you to keep track of the NOFOs you are working on.</p>
+      <p>It doesn’t mean this NOFO can’t be edited by other people.</p>
+
+      <form id="nofo-coach--form" method="post">
+        {% csrf_token %}
+
+        {% with id="coach" label=form.coach.label hint=form.coach.help_text value=form.coach.value choices=form.coach.field.choices error=form.errors.coach.0 %}
+          {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+        {% endwith %}
+
+        <ul class="usa-button-group margin-top-3">
+          <li class="usa-button-group__item">
+            <button class="usa-button" type="submit">Assign coach</button>
+          </li>
+          <li class="usa-button-group__item">
+            <a href="{% url 'nofos:nofo_index' %}" class="usa-button usa-button--outline">I don’t want to assign a coach right now</a>
+          </li>
+        </ul>
+      </form>
+    </div>
+  </section>
+{% endblock %}

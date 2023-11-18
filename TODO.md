@@ -6,12 +6,13 @@
 - remove 'documents' app
 - tables import without a header row
 - add datetime to NOFO creation
-- add author to NOFO
 - add audit trail
 - delete a NOFO
 
 # DONE
 
+- add coach for nofos
+  - add a coach to the nofo import flow
 - preserve header ids on import
 - floating section headers in edit view
 - render the markdown in the edit screen

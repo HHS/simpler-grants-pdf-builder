@@ -20,7 +20,7 @@
       </div>
 
       <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to edit view for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</a>
       </div>
       <h1 class="font-heading-xl margin-y-0">Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
 

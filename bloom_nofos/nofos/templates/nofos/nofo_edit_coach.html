@@ -17,20 +17,9 @@
       <form id="nofo-coach--form" method="post">
         {% csrf_token %}
 
-        <label class="usa-label" for="coach">{{ form.coach.label }}</label>
-        <div class="usa-hint" id="coach--hint-1">
-          {{ form.coach.help_text }}
-        </div>
-        {% if form.errors.coach %}
-        <div class="usa-error-message" id="coach--error">
-          Error: {{ form.errors.coach.0 }}
-        </div>
-        {% endif %}
-        <select class="usa-select border-2px{% if form.errors.coach %} border-secondary-dark{% endif %}" name="coach" id="coach" aria-describedby="coach--hint-1 {% if form.errors.coach %}coach--error{% endif %}">
-          {% for id, name in form.coach.field.choices %}
-            <option value="{{ id }}" {% if nofo.coach == id %}selected{% endif%}>{{ name }}</option>
-          {% endfor %}
-        </select>
+        {% with id="coach" label=form.coach.label hint=form.coach.help_text value=form.coach.value choices=form.coach.field.choices error=form.errors.coach.0 %}
+          {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+        {% endwith %}
 
         <button class="usa-button margin-top-3" type="submit">Save</button>
       </form>

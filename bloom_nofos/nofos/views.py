@@ -238,6 +238,7 @@ def nofo_import_title(request, pk):
             nofo.short_name = form.cleaned_data["short_name"]
             nofo.save()
 
+            # Note: keep this here so that it always shows up, even if you skip adding a coach
             messages.add_message(
                 request,
                 messages.SUCCESS,
@@ -245,7 +246,8 @@ def nofo_import_title(request, pk):
                     nofo.id, nofo.short_name or nofo.title
                 ),
             )
-            return redirect("nofos:nofo_index")
+
+            return redirect("nofos:nofo_import_coach", pk=nofo.id)
 
     else:
         form = NofoNameForm(instance=nofo)
@@ -253,7 +255,29 @@ def nofo_import_title(request, pk):
     return render(
         request,
         "nofos/nofo_import_title.html",
-        {"title": nofo.title, "short_name": nofo.short_name, "form": form},
+        {"form": form},
+    )
+
+
+def nofo_import_coach(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        form = NofoCoachForm(request.POST)
+
+        if form.is_valid():
+            nofo.coach = form.cleaned_data["coach"]
+            nofo.save()
+
+            return redirect("nofos:nofo_index")
+
+    else:
+        form = NofoCoachForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_import_coach.html",
+        {"nofo": nofo, "form": form},
     )
 
 
@@ -268,7 +292,7 @@ def nofo_edit_title(request, pk):
             nofo.short_name = form.cleaned_data["short_name"]
             nofo.save()
 
-            return redirect("nofos:nofo_index")
+            return redirect("nofos:nofo_edit", pk=nofo.id)
 
     else:
         form = NofoNameForm(instance=nofo)
@@ -290,7 +314,7 @@ def nofo_edit_coach(request, pk):
             nofo.coach = form.cleaned_data["coach"]
             nofo.save()
 
-            return redirect("nofos:nofo_index")
+            return redirect("nofos:nofo_edit", pk=nofo.id)
 
     else:
         form = NofoCoachForm(instance=nofo)
