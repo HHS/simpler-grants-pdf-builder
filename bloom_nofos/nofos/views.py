@@ -4,7 +4,9 @@ import datetime
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import ListView, DetailView
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, DeleteView
+
 
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
@@ -27,6 +29,11 @@ class NofosDetailView(DetailView):
 class NofosEditView(DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
+
+
+class NofosDeleteView(DeleteView):
+    model = Nofo
+    success_url = reverse_lazy("nofos:nofo_index")
 
 
 def get_sections_from_soup(soup):
@@ -351,4 +358,26 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         request,
         "nofos/subsection_edit.html",
         {"subsection": subsection, "nofo": nofo, "form": form},
+    )
+
+
+def nofo_delete(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        nofo.delete()
+        if form.is_valid():
+            nofo.title = form.cleaned_data["title"]
+            nofo.short_name = form.cleaned_data["short_name"]
+            nofo.save()
+
+            return redirect("nofos:nofo_edit", pk=nofo.id)
+
+    else:
+        form = NofoNameForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_edit_title.html",
+        {"nofo": nofo, "form": form},
     )

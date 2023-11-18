@@ -15,7 +15,23 @@
       </div>
       <h1 class="font-heading-xl margin-y-0">Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
       <p>Make small edits to your NOFO here.</p>
-      <p>For more substantial edits, <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import your NOFO</a>.</p>
+      <div
+        class="usa-summary-box"
+        role="region"
+        aria-labelledby="summary-box-key-information"
+      >
+        <div class="usa-summary-box__body">
+          <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+            Other actions
+          </h2>
+          <div class="usa-summary-box__text">
+            <ul class="usa-list">
+              <li><a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import this NOFO</a>: upload an updated HTML file</li>
+              <li><a href="{% url 'nofos:nofo_delete' nofo.id %}">Delete this NOFO</a>: remove this NOFO completely</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
       <table class="usa-table usa-table--borderless width-full">
         <caption>

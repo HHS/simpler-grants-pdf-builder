@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+      <div class="usa-alert usa-alert--warning margin-bottom-3">
+        <div class="usa-alert__body">
+          <h4 class="usa-alert__heading">Warning</h4>
+          <p class="usa-alert__text">
+            Deleting a NOFO removes it permanently.
+          </p>
+          <p class="usa-alert__text">
+            If you want to update this NOFO with new content, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">re-import this NOFO</a> instead.
+          </p>
+        </div>
+      </div>
+
+      <div class="back-link font-body-md margin-bottom-105">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+      </div>
+
+      <h1 class="font-heading-xl margin-y-0">Delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+
+      <form id="nofo-name--form" method="post">
+        {% csrf_token %}
+        <p>Are you absolutely sure you want to delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”?</p>
+        {{ form }}
+
+        <ul class="usa-button-group margin-top-3">
+          <li class="usa-button-group__item">
+            <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
+          </li>
+          <li class="usa-button-group__item">
+            <a href="{% url 'nofos:nofo_view' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this NOFO</a>
+          </li>
+        </ul>
+      </form>
+
+    </div>
+  </section>
+{% endblock %}

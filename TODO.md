@@ -7,10 +7,10 @@
 - tables import without a header row
 - add datetime to NOFO creation
 - add audit trail
-- delete a NOFO
 
 # DONE
 
+- delete a NOFO
 - add coach for nofos
   - add a coach to the nofo import flow
 - preserve header ids on import
