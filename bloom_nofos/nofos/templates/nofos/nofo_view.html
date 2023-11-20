@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block title %}
-{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+ View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
 {% endblock %}
 
 {% block header %}
@@ -16,7 +16,7 @@
       <div class="usa-navbar">
         <div class="usa-logo">
           <em class="usa-logo__text"
-            >{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</em
+            ><a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a></em
           >
         </div>
       </div>
@@ -24,9 +24,6 @@
         <ul class="usa-nav__primary usa-accordion">
           <li class="usa-nav__primary-item">
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
-          </li>
-          <li class="usa-nav__primary-item">
-            <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">All NOFOs</a>
           </li>
         </ul>
       </nav>
@@ -37,17 +34,20 @@
 {% block content %}
   <section class="usa-section">
     <div class="grid-container">
-      <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
-      {% for section in nofo.sections.all %}
-        <h2 {% if section.html_id %}id="{{ section.html_id }}"{% endif %}>{{ section.name }}</h2>
-
-        {% for subsection in section.subsections.all %}
-          {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-            {% include "includes/heading.html" with tag=tag content=content id=id only %}
-          {% endwith %}
-          {{ subsection.body|safe_markdown }}
+      <div class="nofo-container">
+        <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
+        {% for section in nofo.sections.all %}
+          <section id="{{ section.name|slugify }}" class="section section--{{ forloop.counter }}">
+            <h2 {% if section.html_id %}id="{{ section.html_id }}"{% endif %}>{{ section.name }}</h2>
+            {% for subsection in section.subsections.all %}
+              {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+                {% include "includes/heading.html" with tag=tag content=content id=id only %}
+              {% endwith %}
+              {{ subsection.body|safe_markdown }}
+            {% endfor %}
+          </section>
         {% endfor %}
-      {% endfor %}
+      </div>
     </div>
   </section>
 {% endblock %}
