@@ -62,6 +62,14 @@ def get_sections_from_soup(soup):
     return sections
 
 
+def _convert_table_first_row_to_header_row(table):
+    first_row = table.find("tr")
+    if first_row:
+        first_row_cells = first_row.find_all("td")
+        for cell in first_row_cells:
+            cell.name = "th"
+
+
 def get_subsections_from_sections(sections):
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
 
@@ -106,6 +114,10 @@ def get_subsections_from_sections(sections):
 
             # if not a heading, add to existing subsection
             else:
+                # convert first row of header cells into th elements
+                if tag.name == "table":
+                    _convert_table_first_row_to_header_row(tag)
+
                 if subsection:
                     subsection["body"].append(tag)
 
