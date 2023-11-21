@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('nofos', '0002_alter_nofo_short_name_alter_nofo_title_and_more'),
+        ("nofos", "0002_alter_nofo_short_name_alter_nofo_title_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='section',
-            name='html_id',
+            model_name="section",
+            name="html_id",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AddField(
-            model_name='subsection',
-            name='html_id',
+            model_name="subsection",
+            name="html_id",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

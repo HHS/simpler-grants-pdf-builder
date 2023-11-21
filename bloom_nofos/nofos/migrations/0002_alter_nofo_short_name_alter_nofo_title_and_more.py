@@ -6,40 +6,53 @@ import martor.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('nofos', '0001_initial'),
+        ("nofos", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='nofo',
-            name='short_name',
-            field=models.CharField(blank=True, help_text='A name to make it easier to see this NOFO in a list. It won’t be public.', max_length=200),
+            model_name="nofo",
+            name="short_name",
+            field=models.CharField(
+                blank=True,
+                help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
+                max_length=200,
+            ),
         ),
         migrations.AlterField(
-            model_name='nofo',
-            name='title',
-            field=models.TextField(blank=True, help_text='This will be publicly visible when the NOFO is published.', verbose_name='NOFO title'),
+            model_name="nofo",
+            name="title",
+            field=models.TextField(
+                blank=True,
+                help_text="This will be publicly visible when the NOFO is published.",
+                verbose_name="NOFO title",
+            ),
         ),
         migrations.AlterField(
-            model_name='section',
-            name='name',
-            field=models.TextField(verbose_name='Section name'),
+            model_name="section",
+            name="name",
+            field=models.TextField(verbose_name="Section name"),
         ),
         migrations.AlterField(
-            model_name='subsection',
-            name='body',
-            field=martor.models.MartorField(blank=True, verbose_name='Content of subsection'),
+            model_name="subsection",
+            name="body",
+            field=martor.models.MartorField(
+                blank=True, verbose_name="Content of subsection"
+            ),
         ),
         migrations.AlterField(
-            model_name='subsection',
-            name='name',
-            field=models.TextField(verbose_name='Subsection name'),
+            model_name="subsection",
+            name="name",
+            field=models.TextField(verbose_name="Subsection name"),
         ),
         migrations.AlterField(
-            model_name='subsection',
-            name='section',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subsections', to='nofos.section'),
+            model_name="subsection",
+            name="section",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subsections",
+                to="nofos.section",
+            ),
         ),
     ]

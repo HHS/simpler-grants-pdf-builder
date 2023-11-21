@@ -6,45 +6,91 @@ import martor.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Nofo',
+            name="Nofo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.TextField(blank=True)),
-                ('short_name', models.CharField(blank=True, max_length=200)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.TextField(blank=True)),
+                ("short_name", models.CharField(blank=True, max_length=200)),
             ],
         ),
         migrations.CreateModel(
-            name='Section',
+            name="Section",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('order', models.IntegerField(null=True)),
-                ('nofo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sections', to='nofos.nofo')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("order", models.IntegerField(null=True)),
+                (
+                    "nofo",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sections",
+                        to="nofos.nofo",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('nofo', 'order')},
+                "unique_together": {("nofo", "order")},
             },
         ),
         migrations.CreateModel(
-            name='Subsection',
+            name="Subsection",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('order', models.IntegerField(null=True)),
-                ('tag', models.CharField(choices=[('h2', 'Heading 2'), ('h3', 'Heading 3'), ('h4', 'Heading 4'), ('h5', 'Heading 5'), ('h6', 'Heading 6')], max_length=2)),
-                ('body', martor.models.MartorField(blank=True)),
-                ('section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nofos.section')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("order", models.IntegerField(null=True)),
+                (
+                    "tag",
+                    models.CharField(
+                        choices=[
+                            ("h2", "Heading 2"),
+                            ("h3", "Heading 3"),
+                            ("h4", "Heading 4"),
+                            ("h5", "Heading 5"),
+                            ("h6", "Heading 6"),
+                        ],
+                        max_length=2,
+                    ),
+                ),
+                ("body", martor.models.MartorField(blank=True)),
+                (
+                    "section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="nofos.section"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('section', 'order')},
+                "unique_together": {("section", "order")},
             },
         ),
     ]

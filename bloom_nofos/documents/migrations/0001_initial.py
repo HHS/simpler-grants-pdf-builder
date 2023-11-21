@@ -5,69 +5,120 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Document',
+            name="Document",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('shortTitle', models.CharField(max_length=256, verbose_name='short title')),
-                ('title', models.CharField(max_length=256)),
-                ('number', models.CharField(max_length=128)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "shortTitle",
+                    models.CharField(max_length=256, verbose_name="short title"),
+                ),
+                ("title", models.CharField(max_length=256)),
+                ("number", models.CharField(max_length=128)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Section',
+            name="Section",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('section_title', models.CharField(max_length=256)),
-                ('body', models.TextField()),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='documents.document')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("section_title", models.CharField(max_length=256)),
+                ("body", models.TextField()),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="documents.document",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Overview',
+            name="Overview",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('summary', models.TextField()),
-                ('questions', models.TextField(blank=True)),
-                ('nofo_type', models.CharField(max_length=128, verbose_name='type')),
-                ('eligible_applications', models.TextField()),
-                ('expected_awards', models.CharField(max_length=128)),
-                ('expected_funding', models.CharField(max_length=128)),
-                ('expected_funding_per_recipient', models.TextField()),
-                ('cost_share_or_match_requirement', models.TextField()),
-                ('performance_period', models.CharField(blank=True, max_length=128)),
-                ('program_description', models.TextField()),
-                ('application_deadline', models.CharField(blank=True, max_length=128)),
-                ('document', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='documents.document')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("summary", models.TextField()),
+                ("questions", models.TextField(blank=True)),
+                ("nofo_type", models.CharField(max_length=128, verbose_name="type")),
+                ("eligible_applications", models.TextField()),
+                ("expected_awards", models.CharField(max_length=128)),
+                ("expected_funding", models.CharField(max_length=128)),
+                ("expected_funding_per_recipient", models.TextField()),
+                ("cost_share_or_match_requirement", models.TextField()),
+                ("performance_period", models.CharField(blank=True, max_length=128)),
+                ("program_description", models.TextField()),
+                ("application_deadline", models.CharField(blank=True, max_length=128)),
+                (
+                    "document",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="documents.document",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Organization',
+            name="Organization",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('agency', models.CharField(max_length=128)),
-                ('officeOrBureau', models.CharField(max_length=128)),
-                ('division', models.CharField(blank=True, max_length=128)),
-                ('document', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='documents.document')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("agency", models.CharField(max_length=128)),
+                ("officeOrBureau", models.CharField(max_length=128)),
+                ("division", models.CharField(blank=True, max_length=128)),
+                (
+                    "document",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="documents.document",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('nofos', '0003_section_html_id_subsection_html_id'),
+        ("nofos", "0003_section_html_id_subsection_html_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nofo',
-            name='coach',
-            field=models.CharField(blank=True, choices=[('july', 'July'), ('emily', 'Emily'), ('hannah', 'Hannah')], max_length=16),
+            model_name="nofo",
+            name="coach",
+            field=models.CharField(
+                blank=True,
+                choices=[("july", "July"), ("emily", "Emily"), ("hannah", "Hannah")],
+                max_length=16,
+            ),
         ),
     ]

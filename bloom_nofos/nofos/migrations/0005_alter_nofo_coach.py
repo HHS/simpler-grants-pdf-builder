@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('nofos', '0004_nofo_coach'),
+        ("nofos", "0004_nofo_coach"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='nofo',
-            name='coach',
-            field=models.CharField(blank=True, choices=[('july', 'July'), ('emily', 'Emily'), ('hannah', 'Hannah')], help_text='The coach has the primary responsibility for editing this NOFO.', max_length=16),
+            model_name="nofo",
+            name="coach",
+            field=models.CharField(
+                blank=True,
+                choices=[("july", "July"), ("emily", "Emily"), ("hannah", "Hannah")],
+                help_text="The coach has the primary responsibility for editing this NOFO.",
+                max_length=16,
+            ),
         ),
     ]
