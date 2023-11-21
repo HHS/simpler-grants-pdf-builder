@@ -87,9 +87,17 @@ WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
 DATABASES = {
     "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "bloom_nofos",
+        "USER": "paul",
+        "PASSWORD": "",
+        "HOST": "localhost",
+        "PORT": "",
+    },
+    "sqlite": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
+    },
 }
 
 
