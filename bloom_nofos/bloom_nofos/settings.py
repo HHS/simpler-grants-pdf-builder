@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 import environ
+import dj_database_url
 
 from pathlib import Path
 
@@ -90,19 +91,19 @@ WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+default_db_path = os.path.join(BASE_DIR, "db.sqlite3")
+# TODO: is_prod
+is_prod = False
+
+# if no "DATABASE_URL" env, fall back to the sqlite database
+database_url = (
+    env.get_value("DATABASE_URL", default=None) or f"sqlite:///{default_db_path}"
+)
+
 DATABASES = {
-    "default": {
-        "ENGINE": env("DATABASE_ENGINE"),
-        "NAME": env("DATABASE_NAME"),
-        "USER": env("DATABASE_USER"),
-        "PASSWORD": env("DATABASE_PASSWORD"),
-        "HOST": env("DATABASE_HOST"),
-        "PORT": env("DATABASE_PORT"),
-    },
-    "sqlite": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    },
+    "default": dj_database_url.parse(
+        database_url, conn_max_age=600, ssl_require=is_prod
+    )
 }
 
 
