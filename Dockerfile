@@ -4,10 +4,11 @@ FROM python:3.10.13-alpine
 WORKDIR /app
 
 # set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1s
-ENV DATABASE_URL="postgresql://host.docker.internal/bloom_nofos?root"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1s
 ENV PORT=8000
+
+ENV IS_DOCKER=1
 
 # install linux dependencies 
 RUN apk update && apk upgrade && \

@@ -117,6 +117,12 @@ if env("USE_CLOUD_SQL_AUTH_PROXY", default=None):
     DATABASES["default"]["HOST"] = "127.0.0.1"
     DATABASES["default"]["PORT"] = 5432
 
+if (
+    env("IS_DOCKER", cast=bool, default=False)
+    and DATABASES["default"]["HOST"] == "127.0.0.1"
+):
+    DATABASES["default"]["HOST"] = "host.docker.internal"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
