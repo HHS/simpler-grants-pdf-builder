@@ -14,7 +14,7 @@ import environ
 
 from pathlib import Path
 
-import google.auth
+# import google.auth
 from google.cloud import secretmanager
 
 # Initialise environment variables
@@ -24,6 +24,7 @@ environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# TODO pull secrets from container
 if env("GOOGLE_CLOUD_PROJECT", default=None):
     # Pull secrets from Secret Manager
     project_id = env("GOOGLE_CLOUD_PROJECT")
@@ -31,7 +32,8 @@ if env("GOOGLE_CLOUD_PROJECT", default=None):
     settings_name = "django_settings"
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-
+    print("===== GOOGLE_CLOUD_PROJECT")
+    print(payload)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -42,6 +44,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# TODO fix this
 # ALLOWED_HOSTS = [
 #     "0.0.0.0",
 #     "127.0.0.1",
@@ -113,7 +116,9 @@ database_url = (
 DATABASES = {"default": env.db_url_config(database_url)}
 
 # If the flag as been set, configure to use proxy
-if env("USE_CLOUD_SQL_AUTH_PROXY", default=None):
+if env("IS_PROD", cast=bool, default=False) and env(
+    "USE_CLOUD_SQL_AUTH_PROXY", default=None
+):
     DATABASES["default"]["HOST"] = "127.0.0.1"
     DATABASES["default"]["PORT"] = 5432
 
@@ -123,6 +128,8 @@ if (
 ):
     DATABASES["default"]["HOST"] = "host.docker.internal"
 
+print("===== DATABASES")
+print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
