@@ -6,7 +6,7 @@ authors = ["Paul Craig <paul@pcraig3.ca>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 django = "^4.2.7"
 martor = "^1.6.28"
 beautifulsoup4 = "^4.12.2"
