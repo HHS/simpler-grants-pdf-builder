@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 import environ
-import dj_database_url
 
 from pathlib import Path
+
+import google.auth
+from google.cloud import secretmanager
 
 # Initialise environment variables
 env = environ.Env()
@@ -21,6 +23,14 @@ environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if env("GOOGLE_CLOUD_PROJECT", default=None):
+    # Pull secrets from Secret Manager
+    project_id = env("GOOGLE_CLOUD_PROJECT")
+    client = secretmanager.SecretManagerServiceClient()
+    settings_name = "django_settings"
+    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,12 +42,12 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "0.0.0.0",
-    "127.0.0.1",
-    "localhost",
-]
-
+# ALLOWED_HOSTS = [
+#     "0.0.0.0",
+#     "127.0.0.1",
+#     "localhost",
+# ]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -100,11 +110,12 @@ database_url = (
     env.get_value("DATABASE_URL", default=None) or f"sqlite:///{default_db_path}"
 )
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        database_url, conn_max_age=600, ssl_require=is_prod
-    )
-}
+DATABASES = {"default": env.db_url_config(database_url)}
+
+# If the flag as been set, configure to use proxy
+if env("USE_CLOUD_SQL_AUTH_PROXY", default=None):
+    DATABASES["default"]["HOST"] = "127.0.0.1"
+    DATABASES["default"]["PORT"] = 5432
 
 
 # Password validation

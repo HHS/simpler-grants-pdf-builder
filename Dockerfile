@@ -23,6 +23,6 @@ RUN /root/.local/bin/poetry install
 
 # copy project
 COPY . .
-# run at port 8000
+
 EXPOSE $PORT
 CMD /app/bloom_nofos/scripts/start_server.sh
