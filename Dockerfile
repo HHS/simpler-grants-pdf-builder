@@ -30,4 +30,5 @@ RUN /root/.local/bin/poetry install
 COPY . .
 
 EXPOSE $PORT
+
 CMD /app/bloom_nofos/scripts/start_server.sh
