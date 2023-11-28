@@ -3,18 +3,21 @@
 - try out printing the first few pages
 - add black formatter
 - remove 'documents' app
-- tables import without a header row
 - add updated to NOFOs
-- Clean up deployment
-- Prefer SQLite
 - Write ADRs
 - New feature: add a section page
 - Add Google login
+- For deployed app, set secure flags
+- For deployed app, use domain for allowed domains
+- For deployed app, maybe logging?
 
 # DONE
 
+- Clean up deployment
+  - Prefer SQLite
 - add datetime to NOFO creation
 - consistent table column widths
+- tables import without a header row
 - add audit trail
 - delete a NOFO
 - add coach for nofos

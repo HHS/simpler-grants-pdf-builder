@@ -29,6 +29,8 @@ RUN /root/.local/bin/poetry install
 # copy project
 COPY . .
 
+RUN /root/.local/bin/poetry run python bloom_nofos/manage.py collectstatic --noinput
+
 EXPOSE $PORT
 
 CMD /app/bloom_nofos/scripts/start_server.sh

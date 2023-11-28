@@ -18,6 +18,7 @@ psycopg2 = "^2.9.9"
 django-environ = "^0.11.2"
 dj-database-url = "^2.1.0"
 gunicorn = "^21.2.0"
+whitenoise = "^6.6.0"
 
 [tool.poetry.scripts]
 start = 'scripts.server:main'
