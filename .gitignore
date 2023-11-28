@@ -4,6 +4,9 @@
 */__pycache__/*
 *.sqlite3
 .env
+.env*
+!.env.example
+data.json
 
 # other static folder
 bloom_nofos/static

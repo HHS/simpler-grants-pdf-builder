@@ -14,35 +14,36 @@ import environ
 
 from pathlib import Path
 
-# import google.auth
-from google.cloud import secretmanager
+from .utils import cast_to_boolean
 
-# Initialise environment variables
-env = environ.Env()
-environ.Env.read_env()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# TODO pull secrets from container
-if env("GOOGLE_CLOUD_PROJECT", default=None):
-    # Pull secrets from Secret Manager
-    project_id = env("GOOGLE_CLOUD_PROJECT")
-    client = secretmanager.SecretManagerServiceClient()
-    settings_name = "django_settings"
-    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-    print("===== GOOGLE_CLOUD_PROJECT")
-    print(payload)
+# Initialise environment variables
+env_file = ".env"
+is_docker = cast_to_boolean(os.environ.get("IS_DOCKER", False))
+if is_docker:
+    env_file = ".env.docker"
+
+is_prod = cast_to_boolean(os.environ.get("IS_PROD", False))
+if is_prod:
+    env_file = ".env.production"
+
+env = environ.Env()
+env_path = os.path.join(BASE_DIR, "bloom_nofos", env_file)
+environ.Env.read_env(env_path)
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
+if DEBUG:
+    print("=====")
+    print("Using env vars from: {}".format(env_file))
+    print("=====")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 # TODO fix this
 # ALLOWED_HOSTS = [
@@ -105,8 +106,6 @@ WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 default_db_path = os.path.join(BASE_DIR, "db.sqlite3")
-# TODO: is_prod
-is_prod = False
 
 # if no "DATABASE_URL" env, fall back to the sqlite database
 database_url = (
@@ -114,19 +113,6 @@ database_url = (
 )
 
 DATABASES = {"default": env.db_url_config(database_url)}
-
-# If the flag as been set, configure to use proxy
-if env("IS_PROD", cast=bool, default=False) and env(
-    "USE_CLOUD_SQL_AUTH_PROXY", default=None
-):
-    DATABASES["default"]["HOST"] = "127.0.0.1"
-    DATABASES["default"]["PORT"] = 5432
-
-if (
-    env("IS_DOCKER", cast=bool, default=False)
-    and DATABASES["default"]["HOST"] == "127.0.0.1"
-):
-    DATABASES["default"]["HOST"] = "host.docker.internal"
 
 print("===== DATABASES")
 print(DATABASES)

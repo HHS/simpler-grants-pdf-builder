@@ -5,6 +5,11 @@
 - remove 'documents' app
 - tables import without a header row
 - add updated to NOFOs
+- Clean up deployment
+- Prefer SQLite
+- Write ADRs
+- New feature: add a section page
+- Add Google login
 
 # DONE
 
