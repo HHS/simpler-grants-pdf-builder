@@ -26,7 +26,6 @@ app_name = "bloom_nofos"
 urlpatterns = [
     path("martor/", include("martor.urls")),
     path("nofos/", include("nofos.urls")),
-    path("documents/", include("documents.urls")),
     path("", include("users.urls")),
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),

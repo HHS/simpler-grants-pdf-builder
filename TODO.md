@@ -1,19 +1,19 @@
 # TODO
 
-- remove 'documents' app
 - add updated to NOFOs
 - Write ADRs
 - New feature: add a section page
-- Add Google login
+- Maybe: add Google login
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains
 - For deployed app, maybe logging?
-- Remove groups from Django admin
 - Password reset flow on command line
 - Password reset flow exists
 
 # DONE
 
+- remove 'documents' app
+- Remove groups from Django admin
 - Add second CSS file
 - Add auth to pages
 - Create login/logout flow

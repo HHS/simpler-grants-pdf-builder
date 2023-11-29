@@ -64,7 +64,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "nofos.apps.NofosConfig",
-    "documents.apps.DocumentsConfig",
     "users.apps.UsersConfig",
     "easyaudit",
 ]
