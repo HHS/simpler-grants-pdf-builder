@@ -1,0 +1,26 @@
+from django import forms
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+
+from .models import BloomUser
+
+
+class BloomUserCreationForm(UserCreationForm):
+    full_name = forms.CharField(
+        label="Full name",
+    )
+
+    class Meta:
+        model = BloomUser
+        fields = (
+            "full_name",
+            "email",
+        )
+
+
+class BloomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = BloomUser
+        fields = (
+            "full_name",
+            "email",
+        )

@@ -10,9 +10,14 @@
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains
 - For deployed app, maybe logging?
+- Create login/logout flow
+- Add auth to pages
+- Remove groupd from Django admin
+- Password reset flow on command line
 
 # DONE
 
+- Add accounts
 - Clean up deployment
   - Prefer SQLite
 - add datetime to NOFO creation

@@ -41,6 +41,13 @@
               >A product by Bloomworks Digital</a
             >
           </li>
+          <li>
+            {% if user.is_authenticated %}
+              <span>Welcome, {{ user.email }}. Thanks for logging in.</span>
+          {% else %}
+              <span>Welcome, new user. Please log in.</span>
+          {% endif %}
+          </li>
         </ul>
       </nav>
     </div>
