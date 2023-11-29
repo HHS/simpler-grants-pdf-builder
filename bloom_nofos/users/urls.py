@@ -1,9 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
-
-auth_views.LogoutView
-# from . import views
+from . import views
 
 app_name = "users"
 urlpatterns = [
@@ -16,5 +14,11 @@ urlpatterns = [
         "logout",
         auth_views.LogoutView.as_view(),
         name="logout",
+    ),
+    path("account", views.BloomUserDetailView.as_view(), name="user_view"),
+    path(
+        "account/password-change",
+        views.BloomPasswordChangeView.as_view(),
+        name="password_change",
     ),
 ]

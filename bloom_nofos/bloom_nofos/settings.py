@@ -174,6 +174,17 @@ LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
+# Password config: https://docs.djangoproject.com/en/4.2/topics/auth/passwords/#enabling-password-validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 8,
+        },
+    }
+]
+
+
 # MARTOR MARKDOWN FIELD
 
 # Choices are: "semantic", "bootstrap"

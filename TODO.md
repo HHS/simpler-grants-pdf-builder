@@ -1,18 +1,30 @@
 # TODO
 
 - add updated to NOFOs
+- add status to NOFOs
 - Write ADRs
 - New feature: add a section page
 - Maybe: add Google login
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains
 - For deployed app, maybe logging?
+- For deployed app, use Cloud Postgres
 - Password reset flow on command line
 - Password reset flow exists
+- Change password (use pw field)
+- Change name
+- Robots file
+- 404 page
+- Update top nav with "current page" if on profile
+- Refac: cleaner text inputs
+- Refac: macro for (success) messages
+- Refac: I think all of the HTML templates use
+- Maybe: new password form, no old password field
+- Maybe: redirect people who haven't changed their password
 
 # DONE
 
-- remove 'documents' app
+- Remove 'documents' app
 - Remove groups from Django admin
 - Add second CSS file
 - Add auth to pages

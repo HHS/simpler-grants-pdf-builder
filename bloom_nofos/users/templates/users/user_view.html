@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+  TODO View
+{% endblock %}
+
+{% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
+
+      {% for message in messages %}
+				{% if "success" in message.tags %}
+					<div class="usa-alert usa-alert--success margin-bottom-3">
+						<div class="usa-alert__body">
+							<h4 class="usa-alert__heading">Profile updated successfully</h4>
+							<p class="usa-alert__text">
+								{{ message | safe }}
+							</p>
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+
+      <h1 class="font-heading-xl margin-y-0">Profile</h1>
+
+      <table class="usa-table usa-table--borderless width-full">
+        <caption>
+          Profile information for your account.
+        </caption>
+        <thead >
+          <tr>
+            <th scope="col">Value</th>
+            <th scope="col">Info</th>
+            <th scope="col">Manage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Email address</th>
+            <td>
+              {{ user.email }}
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row">Name</th>
+            <td>
+              {{ user.full_name }}
+            </td>
+            <td>TODO: Change name</td>
+          </tr>
+          <tr>
+            <th scope="row">Password</th>
+            <td>
+              &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022;
+            </td>
+            <td><a href="{% url 'users:password_change' %}">Change password</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+
+
+    </div>
+  </section>
+{% endblock %}
