@@ -10,6 +10,22 @@
           >
         </div>
       </div>
+      <nav aria-label="Primary navigation" class="usa-nav">
+        <ul class="usa-nav__primary usa-accordion">
+          {% if user.is_authenticated %}
+            <li class="usa-nav__primary-item">
+              <p>paul@pcraig.ca</p>
+            </li>
+          {% endif %}
+          <li class="usa-nav__primary-item">
+            {% if user.is_authenticated %}
+              <a href="{% url 'users:logout' %}" class="usa-nav-link">Logout</a>
+            {% else %}
+              <a href="{% url 'users:login' %}" class="usa-nav-link">Login</a>
+            {% endif %}
+          </li>
+        </ul>
+      </nav>
     </div>
   </header>
 {% endblock %}
@@ -30,24 +46,13 @@
               >Back to top ↑</a
             >
           </li>
-          <li
-            class="
-              mobile-lg:grid-col-4
-              desktop:grid-col-auto
-              usa-footer__primary-content
-            "
-          >
-            <a class="usa-footer__primary-link" href="https://bloomworks.digital/" target="_blank"
-              >A product by Bloomworks Digital</a
-            >
-          </li>
-          <li>
-            {% if user.is_authenticated %}
-              <span>Welcome, {{ user.email }}. Thanks for logging in.</span>
-          {% else %}
-              <span>Welcome, new user. Please log in.</span>
+          {% if request.path == "/" %}
+            <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
+              <a class="usa-footer__primary-link" href="https://bloomworks.digital/" target="_blank">
+                A product by Bloomworks Digital
+              </a>
+            </li>
           {% endif %}
-          </li>
         </ul>
       </nav>
     </div>

@@ -56,3 +56,22 @@ body > footer {
   width: 5%;
   text-align: right;
 }
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+fieldset legend {
+  margin-bottom: -0.5rem;
+}
+
+.usa-footer__not-actually-a-link {
+  color: #565c65;
+  font-weight: 400;
+}
+
+.usa-footer__not-actually-a-link:hover {
+  text-decoration: none;
+}

@@ -10,13 +10,15 @@
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains
 - For deployed app, maybe logging?
-- Create login/logout flow
-- Add auth to pages
-- Remove groupd from Django admin
+- Remove groups from Django admin
 - Password reset flow on command line
+- Password reset flow exists
+- Add second CSS file
 
 # DONE
 
+- Add auth to pages
+- Create login/logout flow
 - Add accounts
 - Clean up deployment
   - Prefer SQLite

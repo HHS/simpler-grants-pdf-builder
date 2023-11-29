@@ -1,38 +1,55 @@
 {% extends "base.html" %}
 
+{% block title %}
+  Login — NOFO Web Flow
+{% endblock %}
+
 {% block content %}
+  <section class="usa-section">
+    <div class="grid-container">
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+      <h1 class="font-heading-xl margin-y-0">Login</h1>
 
-{% if next %}
-    {% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-    {% else %}
-    <p>Please login to see this page.</p>
-    {% endif %}
-{% endif %}
+      <!-- {% if form.errors %}
 
-<form method="post" action="{% url 'users:login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
+      <p>Your username and password didn't match. Please try again.</p>
+      {% endif %} -->
 
-<input type="submit" value="login">
-<input type="hidden" name="next" value="{{ next }}">
-</form>
+      {% if next %}
+          {% if user.is_authenticated %}
+          <p>Your account doesn't have access to this page. To proceed,
+          please login with an account that has access.</p>
+          {% else %}
+          <p>Please login to see this page.</p>
+          {% endif %}
+      {% endif %}
 
-{# Assumes you set up the password_reset view in your URLconf #}
-<p>Lost password?</p>
+      <form method="post" action="{% url 'users:login' %}">
+        <fieldset>
+          
+          {% if form.non_field_errors %}
+            <legend>
+              <div class="usa-error-message">
+                Error: {{ form.non_field_errors.0 }}
+              </div>
+            </legend>
+          {% endif %}
 
+          {% csrf_token %}
+
+          {% with id="username" label=form.username.label value=form.username.value error=form.username.errors.0 %}
+            {% include "includes/text_input.html" with id=id label=label value=value error=error only %}
+          {% endwith %}
+
+          {% with id="password" label=form.password.label error=form.password.errors.0 %}
+            {% include "includes/text_input.html" with password=True id=id label=label value=value error=error only %}
+          {% endwith %}
+        </fieldset>
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <button class="usa-button margin-top-3" type="submit">Login</button>
+      </form>
+
+    </div>
+  </section>
 {% endblock %}
