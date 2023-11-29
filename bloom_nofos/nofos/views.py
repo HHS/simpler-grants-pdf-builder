@@ -2,7 +2,6 @@ import re
 import datetime
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
@@ -17,7 +16,7 @@ from .models import Nofo, Section, Subsection
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 
 
-class NofosListView(LoginRequiredMixin, ListView):
+class NofosListView(ListView):
     model = Nofo
     template_name = "nofos/nofo_index.html"
 

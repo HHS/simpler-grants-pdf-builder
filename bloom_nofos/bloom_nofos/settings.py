@@ -79,6 +79,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
+    "nofos.middleware.NofosLoginRequiredMiddleware",
 ]
 
 ROOT_URLCONF = "bloom_nofos.urls"
