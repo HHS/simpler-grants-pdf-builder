@@ -1,7 +1,5 @@
 # TODO
 
-- try out printing the first few pages
-- add black formatter
 - remove 'documents' app
 - add updated to NOFOs
 - Write ADRs
@@ -13,10 +11,10 @@
 - Remove groups from Django admin
 - Password reset flow on command line
 - Password reset flow exists
-- Add second CSS file
 
 # DONE
 
+- Add second CSS file
 - Add auth to pages
 - Create login/logout flow
 - Add accounts
@@ -48,6 +46,7 @@
 - import a NOFO
   - as HTML
   - as MD
+- add black formatter
 - saving works
 - set up super basic edit flow
 - styles the view

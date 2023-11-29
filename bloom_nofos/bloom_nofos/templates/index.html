@@ -9,9 +9,19 @@
     <div class="grid-container">
       <h1 class="font-heading-xl margin-y-0">Create NOFOs online</h1>
       <p class="usa-intro">
-        Simplify the process of creating a Notice of Financial Opportunity (NOFO). This application provides a streamlined way to create NOFOs and turn them into accessible PDF files. 
+        Simplify the process of creating a Notice of Financial Opportunity (NOFO).
       </p>
-      <a class="usa-button usa-button--big" href="{% url 'nofos:nofo_index' %}">All NOFOs</a>
+      <p class="usa-intro">
+        Import your NOFOs and turn them into accessible PDF files. 
+      </p>
+      <a class="usa-button usa-button--big" href="{% url 'nofos:nofo_index' %}">
+        {% if user.is_authenticated %}
+          All NOFOs
+        {% else %}
+          Login to see NOFOs
+        {% endif %}
+      </a>
+      
       <p>Note that if you edit a NOFO at the same time as someone else, you may overwrite each others’ changes.</p>
     </div>
   </section>
