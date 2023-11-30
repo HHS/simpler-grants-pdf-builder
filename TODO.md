@@ -12,6 +12,7 @@
 
 # DONE
 
+- Fix: Don't allow people to see account management pages unless logged in
 - Force people who have logged in to reset password
 - Remove old password from the edit password screen
 - For deployed app, use Cloud Postgres

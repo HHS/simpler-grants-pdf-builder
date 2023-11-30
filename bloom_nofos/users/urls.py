@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 
 from . import views
 
@@ -15,21 +16,27 @@ urlpatterns = [
         auth_views.LogoutView.as_view(),
         name="logout",
     ),
-    path("account", views.BloomUserDetailView.as_view(), name="user_view"),
+    path(
+        "account", login_required(views.BloomUserDetailView.as_view()), name="user_view"
+    ),
     path(
         "account/edit/password",
-        views.BloomPasswordChangeView.as_view(title="Change your password"),
+        login_required(
+            views.BloomPasswordChangeView.as_view(title="Change your password")
+        ),
         {"force_password_change": "No way"},
         name="password_change",
     ),
     path(
         "account/edit/name",
-        views.BloomUserNameView.as_view(),
+        login_required(views.BloomUserNameView.as_view()),
         name="user_edit_name",
     ),
     path(
         "account/reset-password",
-        views.BloomPasswordChangeView.as_view(title="Reset your password"),
+        login_required(
+            views.BloomPasswordChangeView.as_view(title="Reset your password")
+        ),
         {"force_password_reset": True},
         name="user_force_password_reset",
     ),
