@@ -7,19 +7,7 @@
 {% block content %}
   <section class="usa-section">
     <div class="grid-container">
-
-      {% for message in messages %}
-				{% if "success" in message.tags %}
-					<div class="usa-alert usa-alert--success margin-bottom-3">
-						<div class="usa-alert__body">
-							<h4 class="usa-alert__heading">Profile updated successfully</h4>
-							<p class="usa-alert__text">
-								{{ message | safe }}
-							</p>
-						</div>
-					</div>
-				{% endif %}
-			{% endfor %}
+			{% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
 
       <h1 class="font-heading-xl margin-y-0">Your account</h1>
 

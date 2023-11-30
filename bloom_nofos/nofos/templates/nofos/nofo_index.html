@@ -7,27 +7,7 @@
 {% block content %}
 	<section class="usa-section">
 		<div class="grid-container">
-			{% for message in messages %}
-				{% if "success" in message.tags %}
-					<div class="usa-alert usa-alert--success margin-bottom-3">
-						<div class="usa-alert__body">
-							<h4 class="usa-alert__heading">NOFO imported successfully</h4>
-							<p class="usa-alert__text">
-								{{ message | safe }}
-							</p>
-						</div>
-					</div>
-				{% elif "error" in message.tags %}
-					<div class="usa-alert usa-alert--error margin-bottom-3" role="alert">
-						<div class="usa-alert__body">
-							<h4 class="usa-alert__heading">NOFO deleted</h4>
-							<p class="usa-alert__text">
-								{{ message | safe }}
-							</p>
-						</div>
-					</div>
-				{% endif %}
-			{% endfor %}
+			{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
 			<h1 class="font-heading-xl margin-y-0">All NOFOs</h1>
 			{% if nofo_list %}
