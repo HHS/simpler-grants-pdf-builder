@@ -11,19 +11,22 @@
 - For deployed app, use Cloud Postgres
 - Password reset flow on command line
 - Password reset flow exists
-- Change password (use pw field)
+- Use type="password" for password field
 - Change name
 - Robots file
 - 404 page
 - Update top nav with "current page" if on profile
 - Refac: cleaner text inputs
 - Refac: macro for (success) messages
-- Refac: I think all of the HTML templates use
+- Refac: I think all of the HTML templates use the columns
+- Refac: Headers with top links
 - Maybe: new password form, no old password field
 - Maybe: redirect people who haven't changed their password
 
 # DONE
 
+- Change name
+- Change password
 - Remove 'documents' app
 - Remove groups from Django admin
 - Add second CSS file

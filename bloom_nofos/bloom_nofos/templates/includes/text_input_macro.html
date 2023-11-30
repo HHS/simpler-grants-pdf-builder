@@ -1,0 +1,3 @@
+{% with id=field.name label=field.label value=field.value hint=field.help_text error=field.errors.0 %}
+  {% include "includes/text_input.html" with id=id label=label hint=hint value=value error=error only %}
+{% endwith %}

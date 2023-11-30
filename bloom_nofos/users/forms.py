@@ -24,3 +24,13 @@ class BloomUserChangeForm(UserChangeForm):
             "full_name",
             "email",
         )
+
+
+class BloomUserNameForm(forms.ModelForm):
+    class Meta:
+        model = BloomUser
+        fields = ["full_name"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["full_name"].required = True

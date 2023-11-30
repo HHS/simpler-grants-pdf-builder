@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-  TODO View
+  Your account
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
 				{% endif %}
 			{% endfor %}
 
-      <h1 class="font-heading-xl margin-y-0">Profile</h1>
+      <h1 class="font-heading-xl margin-y-0">Your account</h1>
 
       <table class="usa-table usa-table--borderless width-full">
         <caption>
@@ -47,7 +47,7 @@
             <td>
               {{ user.full_name }}
             </td>
-            <td>TODO: Change name</td>
+            <td><a href="{% url 'users:user_edit_name' %}">Change name</a></td>
           </tr>
           <tr>
             <th scope="row">Password</th>

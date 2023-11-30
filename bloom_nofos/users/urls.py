@@ -17,8 +17,13 @@ urlpatterns = [
     ),
     path("account", views.BloomUserDetailView.as_view(), name="user_view"),
     path(
-        "account/password-change",
+        "account/edit/password",
         views.BloomPasswordChangeView.as_view(),
         name="password_change",
+    ),
+    path(
+        "account/edit/name",
+        views.BloomUserNameView.as_view(),
+        name="user_edit_name",
     ),
 ]
