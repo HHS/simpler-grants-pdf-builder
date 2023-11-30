@@ -35,6 +35,13 @@ class NofosDeleteView(DeleteView):
     model = Nofo
     success_url = reverse_lazy("nofos:nofo_index")
 
+    def form_valid(self, form):
+        nofo = self.get_object()
+        messages.error(
+            self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
+        )
+        return super().form_valid(form)
+
 
 def get_sections_from_soup(soup):
     # build a structure that looks like our model

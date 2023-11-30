@@ -21,6 +21,10 @@ body > footer {
   }
 }
 
+table tbody tr:first-of-type td:last-of-type {
+  width: 25%;
+}
+
 .usa-nav__primary .usa-nav__primary-item a[aria-current] {
   text-decoration: underline;
 }

@@ -33,13 +33,10 @@
 
           {% csrf_token %}
 
-          {% with id="username" label=form.username.label value=form.username.value error=form.username.errors.0 %}
-            {% include "includes/text_input.html" with id=id label=label value=value error=error only %}
-          {% endwith %}
+          {% include "includes/text_input_macro.html" with field=form.username only %}
 
-          {% with id="password" label=form.password.label error=form.password.errors.0 %}
-            {% include "includes/text_input.html" with password=True id=id label=label value=value error=error only %}
-          {% endwith %}
+          {% include "includes/text_input_macro.html" with field=form.password only %}
+
         </fieldset>
         <input type="hidden" name="next" value="{{ next }}">
 

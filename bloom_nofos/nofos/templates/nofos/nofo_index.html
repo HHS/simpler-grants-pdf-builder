@@ -17,6 +17,15 @@
 							</p>
 						</div>
 					</div>
+				{% elif "error" in message.tags %}
+					<div class="usa-alert usa-alert--error margin-bottom-3" role="alert">
+						<div class="usa-alert__body">
+							<h4 class="usa-alert__heading">NOFO deleted</h4>
+							<p class="usa-alert__text">
+								{{ message | safe }}
+							</p>
+						</div>
+					</div>
 				{% endif %}
 			{% endfor %}
 

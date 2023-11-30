@@ -14,7 +14,7 @@
   Error: {{ error }}
 </div>
 {% endif %}
-{% if textarea %}
+{% if input_type == 'Textarea' %}
   <textarea
     class="usa-textarea border-2px{% if error %} border-secondary-dark{% endif %}"
     id="{{ id }}"
@@ -26,7 +26,7 @@
     class="usa-input border-2px{% if error %} border-secondary-dark{% endif %}"
     id="{{ id }}"
     name="{{ id }}"
-    type="{% if password %}password{% else %}text{% endif %}"
+    type="{% if input_type == 'PasswordInput' %}password{% else %}text{% endif %}"
     aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
     value="{{ value|default_if_none:'' }}"
     />

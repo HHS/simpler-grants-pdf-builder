@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView
 
@@ -24,9 +24,7 @@ class BloomUserDetailView(DetailView):
 class BloomPasswordChangeView(PasswordChangeView):
     template_name = "users/user_edit_password.html"
     title = "Change your password"
-
-    def get_success_url(self):
-        return reverse("users:user_view")
+    success_url = reverse_lazy("users:user_view")
 
     def form_valid(self, form):
         messages.success(self.request, "You changed your password.")
