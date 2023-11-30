@@ -5,24 +5,20 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
-      <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
-      </div>
-      <h1 class="font-heading-xl margin-y-0">NOFO coach</h1>
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+  </div>
+  <h1 class="font-heading-xl margin-y-0">NOFO coach</h1>
 
-      <p>Assign a coach for “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”.</p>
+  <p>Assign a coach for “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”.</p>
 
-      <form id="nofo-coach--form" method="post">
-        {% csrf_token %}
+  <form id="nofo-coach--form" method="post">
+    {% csrf_token %}
 
-        {% with id="coach" label=form.coach.label hint=form.coach.help_text value=form.coach.value choices=form.coach.field.choices error=form.errors.coach.0 %}
-          {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
-        {% endwith %}
+    {% with id="coach" label=form.coach.label hint=form.coach.help_text value=form.coach.value choices=form.coach.field.choices error=form.errors.coach.0 %}
+      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+    {% endwith %}
 
-        <button class="usa-button margin-top-3" type="submit">Save</button>
-      </form>
-    </div>
-  </section>
+    <button class="usa-button margin-top-3" type="submit">Save</button>
+  </form>
 {% endblock %}

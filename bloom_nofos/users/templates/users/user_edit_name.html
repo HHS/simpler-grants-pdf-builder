@@ -5,26 +5,20 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'users:user_view' %}">← Your account</a>
+  </div>
+  <h1 class="font-heading-xl margin-y-0">Change your name</h1>
 
-      <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'users:user_view' %}">← Your account</a>
-      </div>
-      <h1 class="font-heading-xl margin-y-0">Change your name</h1>
+  <p>Change the full name for this account.</p>
 
-      <p>Change the full name for this account.</p>
+  <form method="post" action="">
+    {% csrf_token %}
 
-      <form method="post" action="">
-        {% csrf_token %}
+    {% for field in form %}
+      {% include "includes/text_input_macro.html" with field=field only %}
+    {% endfor %}
 
-        {% for field in form %}
-          {% include "includes/text_input_macro.html" with field=field only %}
-        {% endfor %}
-
-        <button class="usa-button margin-top-3" type="submit">Change name</button>
-      </form>
-
-    </div>
-  </section>
+    <button class="usa-button margin-top-3" type="submit">Change name</button>
+  </form>
 {% endblock %}

@@ -5,21 +5,17 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
-      <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
-      </div>
-      <h1 class="font-heading-xl margin-y-0">NOFO title and short name</h1>
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
+  </div>
+  <h1 class="font-heading-xl margin-y-0">NOFO title and short name</h1>
 
-      <form id="nofo-name--form" method="post">
-        {% csrf_token %}
+  <form id="nofo-name--form" method="post">
+    {% csrf_token %}
 
-        {% include "includes/text_input_macro.html" with field=form.title hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" only %}
-        {% include "includes/text_input_macro.html" with field=form.short_name hint2="eg: “(HRSA) PA Rural Training Program”" only %}
+    {% include "includes/text_input_macro.html" with field=form.title hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" only %}
+    {% include "includes/text_input_macro.html" with field=form.short_name hint2="eg: “(HRSA) PA Rural Training Program”" only %}
 
-        <button class="usa-button margin-top-3" type="submit">Save</button>
-      </form>
-    </div>
-  </section>
+    <button class="usa-button margin-top-3" type="submit">Save</button>
+  </form>
 {% endblock %}

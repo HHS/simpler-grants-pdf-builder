@@ -12,14 +12,15 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Robots file
-- 404 page
-- Refac: I think all of the HTML templates use the columns
 - Refac: Headers with top links
 - Maybe: new password form, no old password field
 - Maybe: redirect people who haven't changed their password
+- A11y scan for all pages
 
 # DONE
 
+- Refac: Use section and div for all pages
+- 404 page
 - Refac: cleaner text inputs
 - Refac: macro for (success) messages
 - Update top nav with "current page" if on profile

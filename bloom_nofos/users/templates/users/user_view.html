@@ -5,50 +5,43 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
-			{% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
 
-      <h1 class="font-heading-xl margin-y-0">Your account</h1>
+  <h1 class="font-heading-xl margin-y-0">Your account</h1>
 
-      <table class="usa-table usa-table--borderless width-full">
-        <caption>
-          Profile information for your account.
-        </caption>
-        <thead >
-          <tr>
-            <th scope="col">Value</th>
-            <th scope="col">Info</th>
-            <th scope="col">Manage</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Email address</th>
-            <td>
-              {{ user.email }}
-            </td>
-            <td></td>
-          </tr>
-          <tr>
-            <th scope="row">Name</th>
-            <td>
-              {{ user.full_name }}
-            </td>
-            <td><a href="{% url 'users:user_edit_name' %}">Change name</a></td>
-          </tr>
-          <tr>
-            <th scope="row">Password</th>
-            <td>
-              <span class="usa-sr-only">Password is obscured</span><span aria-hidden="true">&#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022;</span>
-            </td>
-            <td><a href="{% url 'users:password_change' %}">Change password</a></td>
-          </tr>
-        </tbody>
-      </table>
-
-
-
-    </div>
-  </section>
+  <table class="usa-table usa-table--borderless width-full">
+    <caption>
+      Profile information for your account.
+    </caption>
+    <thead >
+      <tr>
+        <th scope="col">Value</th>
+        <th scope="col">Info</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Email address</th>
+        <td>
+          {{ user.email }}
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <th scope="row">Name</th>
+        <td>
+          {{ user.full_name }}
+        </td>
+        <td><a href="{% url 'users:user_edit_name' %}">Change name</a></td>
+      </tr>
+      <tr>
+        <th scope="row">Password</th>
+        <td>
+          <span class="usa-sr-only">Password is obscured</span><span aria-hidden="true">&#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022; &#x2022;</span>
+        </td>
+        <td><a href="{% url 'users:password_change' %}">Change password</a></td>
+      </tr>
+    </tbody>
+  </table>
 {% endblock %}

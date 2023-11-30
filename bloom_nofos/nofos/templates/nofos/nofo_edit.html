@@ -8,102 +8,97 @@
 {% block body_class %}nofo_edit{% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
-      <div class="back-link font-body-md margin-bottom-105">
-        <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+  </div>
+  <h1 class="font-heading-xl margin-y-0">Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+  <p>Make small edits to your NOFO here.</p>
+  <div
+    class="usa-summary-box"
+    role="region"
+    aria-labelledby="summary-box-key-information"
+  >
+    <div class="usa-summary-box__body">
+      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+        Other actions
+      </h2>
+      <div class="usa-summary-box__text">
+        <ul class="usa-list">
+          <li><a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import this NOFO</a>: upload an updated HTML file</li>
+          <li><a href="{% url 'nofos:nofo_delete' nofo.id %}">Delete this NOFO</a>: remove this NOFO completely</li>
+        </ul>
       </div>
-      <h1 class="font-heading-xl margin-y-0">Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
-      <p>Make small edits to your NOFO here.</p>
-      <div
-        class="usa-summary-box"
-        role="region"
-        aria-labelledby="summary-box-key-information"
-      >
-        <div class="usa-summary-box__body">
-          <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-            Other actions
-          </h2>
-          <div class="usa-summary-box__text">
-            <ul class="usa-list">
-              <li><a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import this NOFO</a>: upload an updated HTML file</li>
-              <li><a href="{% url 'nofos:nofo_delete' nofo.id %}">Delete this NOFO</a>: remove this NOFO completely</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <table class="usa-table usa-table--borderless width-full">
-        <caption>
-          <h2 class="margin-bottom-0">{% if nofo.short_name%}Short name and t{% else%}T{% endif %}itle</h2>
-        </caption>
-        <thead class="usa-sr-only">
-          <tr>
-            <th scope="col">Key</th>
-            <th scope="col">Value</th>
-            <th scope="col">Manage</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if nofo.short_name %}
-            <tr>
-              <th scope="row">Short&nbsp;name</th>
-              <td>{{ nofo.short_name }}</td>
-              <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
-            <tr>
-          {% endif %}
-          <tr>
-            <th scope="row">Title</th>
-            <td>{{ nofo.title }}</td>
-            <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
-          <tr>
-        </tbody>
-      </table>
-
-      <table class="usa-table usa-table--borderless width-full">
-        <caption>
-          <h2 class="margin-bottom-0">{% if nofo.coach %}Assigned coach{% else %}Assign a coach{% endif %}</h2>
-        </caption>
-        <thead class="usa-sr-only">
-          <tr>
-            <th scope="col">Key</th>
-            <th scope="col">Value</th>
-            <th scope="col">Manage</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Name of coach</th>
-            <td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<i class="text-base">No coach</i>{% endif %}</td>
-            <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
-          <tr>
-        </tbody>
-      </table>
-
-      {% for section in nofo.sections.all %}
-        <table class="usa-table usa-table--borderless width-full">
-          <caption>
-            <h2 class="margin-bottom-0">{{ section.name }}</h2>
-          </caption>
-          <thead class="usa-sr-only">
-            <tr>
-              <th scope="col">Heading</th>
-              <th scope="col">Content</th>
-              <th scope="col">Manage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for subsection in section.subsections.all %}
-              <tr>
-                <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
-                <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body|safe_markdown }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
-                <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
-              <tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% endfor %}
-      
     </div>
-  </section>
+  </div>
+
+  <table class="usa-table usa-table--borderless width-full">
+    <caption>
+      <h2 class="margin-bottom-0">{% if nofo.short_name%}Short name and t{% else%}T{% endif %}itle</h2>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if nofo.short_name %}
+        <tr>
+          <th scope="row">Short&nbsp;name</th>
+          <td>{{ nofo.short_name }}</td>
+          <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
+        <tr>
+      {% endif %}
+      <tr>
+        <th scope="row">Title</th>
+        <td>{{ nofo.title }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
+      <tr>
+    </tbody>
+  </table>
+
+  <table class="usa-table usa-table--borderless width-full">
+    <caption>
+      <h2 class="margin-bottom-0">{% if nofo.coach %}Assigned coach{% else %}Assign a coach{% endif %}</h2>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Name of coach</th>
+        <td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<i class="text-base">No coach</i>{% endif %}</td>
+        <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
+      <tr>
+    </tbody>
+  </table>
+
+  {% for section in nofo.sections.all %}
+    <table class="usa-table usa-table--borderless width-full">
+      <caption>
+        <h2 class="margin-bottom-0">{{ section.name }}</h2>
+      </caption>
+      <thead class="usa-sr-only">
+        <tr>
+          <th scope="col">Heading</th>
+          <th scope="col">Content</th>
+          <th scope="col">Manage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subsection in section.subsections.all %}
+          <tr>
+            <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
+            <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body|safe_markdown }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+            <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
+          <tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
 {% endblock %}

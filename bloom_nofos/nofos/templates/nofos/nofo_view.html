@@ -32,22 +32,18 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
-      <div class="nofo-container">
-        <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
-        {% for section in nofo.sections.all %}
-          <section id="{{ section.name|slugify }}" class="section section--{{ forloop.counter }}">
-            <h2 {% if section.html_id %}id="{{ section.html_id }}"{% endif %}>{{ section.name }}</h2>
-            {% for subsection in section.subsections.all %}
-              {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-                {% include "includes/heading.html" with tag=tag content=content id=id only %}
-              {% endwith %}
-              {{ subsection.body|safe_markdown }}
-            {% endfor %}
-          </section>
+  <div class="nofo-container">
+    <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
+    {% for section in nofo.sections.all %}
+      <section id="{{ section.name|slugify }}" class="section section--{{ forloop.counter }}">
+        <h2 {% if section.html_id %}id="{{ section.html_id }}"{% endif %}>{{ section.name }}</h2>
+        {% for subsection in section.subsections.all %}
+          {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+            {% include "includes/heading.html" with tag=tag content=content id=id only %}
+          {% endwith %}
+          {{ subsection.body|safe_markdown }}
         {% endfor %}
-      </div>
-    </div>
-  </section>
+      </section>
+    {% endfor %}
+  </div>
 {% endblock %}

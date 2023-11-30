@@ -17,7 +17,11 @@
   <body class="{% block body_class %}{% endblock %}" id="back-to-top">
     {% block header %}{% endblock %}
     <main id="main-content">
-      {% block content %}{% endblock %}
+      <section class="usa-section">
+        <div class="grid-container">
+          {% block content %}{% endblock %}
+        </div>
+      </section>
     </main>
     {% block footer %}{% endblock %}
     {% block js_footer %}{% endblock %}

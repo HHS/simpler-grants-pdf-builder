@@ -5,44 +5,38 @@
 {% endblock %}
 
 {% block content %}
-  <section class="usa-section">
-    <div class="grid-container">
+  <h1 class="font-heading-xl margin-y-0">Login</h1>
 
-      <h1 class="font-heading-xl margin-y-0">Login</h1>
+  {% if next %}
+      {% if user.is_authenticated %}
+      <p>
+        Your account doesn't have access to this page. To proceed, please login with an account that has access.
+      </p>
+      {% else %}
+      <p>Please login to see this page.</p>
+      {% endif %}
+  {% endif %}
 
-      {% if next %}
-          {% if user.is_authenticated %}
-          <p>
-            Your account doesn't have access to this page. To proceed, please login with an account that has access.
-          </p>
-          {% else %}
-          <p>Please login to see this page.</p>
-          {% endif %}
+  <form method="post" action="{% url 'users:login' %}">
+    <fieldset>
+      
+      {% if form.non_field_errors %}
+        <legend>
+          <div class="usa-error-message">
+            Error: {{ form.non_field_errors.0 }}
+          </div>
+        </legend>
       {% endif %}
 
-      <form method="post" action="{% url 'users:login' %}">
-        <fieldset>
-          
-          {% if form.non_field_errors %}
-            <legend>
-              <div class="usa-error-message">
-                Error: {{ form.non_field_errors.0 }}
-              </div>
-            </legend>
-          {% endif %}
+      {% csrf_token %}
 
-          {% csrf_token %}
+      {% include "includes/text_input_macro.html" with field=form.username only %}
 
-          {% include "includes/text_input_macro.html" with field=form.username only %}
+      {% include "includes/text_input_macro.html" with field=form.password only %}
 
-          {% include "includes/text_input_macro.html" with field=form.password only %}
+    </fieldset>
+    <input type="hidden" name="next" value="{{ next }}">
 
-        </fieldset>
-        <input type="hidden" name="next" value="{{ next }}">
-
-        <button class="usa-button margin-top-3" type="submit">Login</button>
-      </form>
-
-    </div>
-  </section>
+    <button class="usa-button margin-top-3" type="submit">Login</button>
+  </form>
 {% endblock %}
