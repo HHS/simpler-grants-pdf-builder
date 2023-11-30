@@ -5,10 +5,8 @@
 {% endblock %}
 
 {% block content %}
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
-  </div>
-  <h1 class="font-heading-xl margin-y-0">Name your NOFO</h1>
+  {% url 'nofos:nofo_index' as back_href %}
+  {% include "includes/page_heading.html" with title="Name your NOFO" back_text="All NOFOs" back_href=back_href only %}
 
   <form id="nofo-name--form" method="post">
     {% csrf_token %}

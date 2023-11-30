@@ -7,7 +7,8 @@
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
-	<h1 class="font-heading-xl margin-y-0">All NOFOs</h1>
+	{% include "includes/page_heading.html" with title="All NOFOs" only %}
+
 	{% if nofo_list %}
 		<table class="usa-table usa-table--borderless width-full">
 			<caption>

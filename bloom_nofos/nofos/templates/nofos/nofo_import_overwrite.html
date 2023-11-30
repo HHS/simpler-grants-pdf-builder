@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load nofo_name %}
 
 {% block title %}
   Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
@@ -17,10 +18,12 @@
     </div>
   </div>
 
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</a>
-  </div>
-  <h1 class="font-heading-xl margin-y-0">Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+  {% with nofo|nofo_name as nofo_name_str %}
+    {% with "Edit  “"|add:nofo_name_str|add:"”" as back_text %}
+      {% url 'nofos:nofo_edit' nofo.id as back_href %}
+      {% include "includes/page_heading.html" with title="Re-import “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
+    {% endwith %}
+  {% endwith %}
 
   <form id="nofo-import--form" method="post" enctype="multipart/form-data">
     {% csrf_token %}

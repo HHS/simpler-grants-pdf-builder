@@ -4,5 +4,5 @@ register = template.Library()
 
 
 @register.filter()
-def input_type(input):
-    return input.field.widget.__class__.__name__
+def nofo_name(nofo):
+    return nofo.short_name or nofo.title

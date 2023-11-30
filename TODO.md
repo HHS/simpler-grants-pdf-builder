@@ -12,13 +12,13 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Robots file
-- Refac: Headers with top links
 - Maybe: new password form, no old password field
 - Maybe: redirect people who haven't changed their password
 - A11y scan for all pages
 
 # DONE
 
+- Refac: Headers with top links
 - Refac: Use section and div for all pages
 - 404 page
 - Refac: cleaner text inputs

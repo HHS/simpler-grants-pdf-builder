@@ -1,17 +1,20 @@
 {% extends 'base.html' %}
-{% load martortags %}
+{% load martortags nofo_name %}
 
 {% block title %}
-  Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+  Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
 {% block body_class %}nofo_edit{% endblock %}
 
 {% block content %}
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
-  </div>
-  <h1 class="font-heading-xl margin-y-0">Edit “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Edit  “"|add:nofo_name_str|add:"”" as title %}
+    {% url 'nofos:nofo_index' as back_href %}
+    {% include "includes/page_heading.html" with title=title back_text="All NOFOs" back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
   <p>Make small edits to your NOFO here.</p>
   <div
     class="usa-summary-box"

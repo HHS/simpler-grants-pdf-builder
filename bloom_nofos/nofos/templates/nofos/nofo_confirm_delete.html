@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load nofo_name %}
 
 {% block title %}
-  Delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+  Delete “{{ nofo|nofo_name }}”
 {% endblock %}
 
 {% block content %}
@@ -17,11 +18,14 @@
     </div>
   </div>
 
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Back to {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a>
-  </div>
-
-  <h1 class="font-heading-xl margin-y-0">Delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”</h1>
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+  {% with "Delete “"|add:nofo_name_str|add:"”" as title %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title=title back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
 
   <form id="nofo-name--form" method="post">
     {% csrf_token %}

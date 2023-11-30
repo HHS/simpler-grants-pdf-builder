@@ -5,10 +5,8 @@
 {% endblock %}
 
 {% block content %}
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'users:user_view' %}">← Your account</a>
-  </div>
-  <h1 class="font-heading-xl margin-y-0">Change your name</h1>
+  {% url 'users:user_view' as back_href %}
+  {% include "includes/page_heading.html" with title="Change your name" back_text="Your account" back_href=back_href only %}
 
   <p>Change the full name for this account.</p>
 

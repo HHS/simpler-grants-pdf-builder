@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-  <h1 class="font-heading-xl margin-y-0">Login</h1>
+  {% include "includes/page_heading.html" with title="Login" only %}
 
   {% if next %}
       {% if user.is_authenticated %}
