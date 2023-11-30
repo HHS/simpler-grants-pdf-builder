@@ -33,7 +33,7 @@
         <td>
           {{ user.full_name }}
         </td>
-        <td><a href="{% url 'users:user_edit_name' %}">Change name</a></td>
+        <td><a href="{% url 'users:user_edit_name' %}">{% if user.full_name%}Change{% else %}Add your{% endif %} name</a></td>
       </tr>
       <tr>
         <th scope="row">Password</th>
