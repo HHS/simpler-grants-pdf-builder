@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.forms import SetPasswordForm
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -22,13 +23,27 @@ class BloomUserDetailView(DetailView):
 
 
 class BloomPasswordChangeView(PasswordChangeView):
+    form_class = SetPasswordForm
     template_name = "users/user_edit_password.html"
     title = "Change your password"
     success_url = reverse_lazy("users:user_view")
+    force_password_reset = False
 
     def form_valid(self, form):
         messages.success(self.request, "You changed your password.")
+
+        # once the form is successfully submitted, set "force_password_change" to False
+        self.request.user.force_password_reset = False
+        self.request.user.save()
+
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["force_password_reset"] = self.kwargs.get(
+            "force_password_reset", self.force_password_reset
+        )
+        return context
 
 
 class BloomUserNameView(View):

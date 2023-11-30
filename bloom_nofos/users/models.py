@@ -11,6 +11,10 @@ class BloomUser(AbstractUser):
     last_name = None
     full_name = models.CharField(blank=True, max_length=150, verbose_name="full name")
     email = models.EmailField(_("email address"), unique=True)
+    force_password_reset = models.BooleanField(
+        default=False,
+        help_text="Require this user to reset their password the next time they log in",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

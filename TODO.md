@@ -6,15 +6,15 @@
 - New feature: add a section page
 - Maybe: add Google login
 - For deployed app, maybe logging?
-- For deployed app, use Cloud Postgres
 - Password reset flow on command line
 - Password reset flow exists
-- Maybe: new password form, no old password field
-- Maybe: redirect people who haven't changed their password
 - A11y scan for all pages
 
 # DONE
 
+- Force people who have logged in to reset password
+- Remove old password from the edit password screen
+- For deployed app, use Cloud Postgres
 - Robots file
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains

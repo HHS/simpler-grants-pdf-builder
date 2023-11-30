@@ -18,12 +18,19 @@ urlpatterns = [
     path("account", views.BloomUserDetailView.as_view(), name="user_view"),
     path(
         "account/edit/password",
-        views.BloomPasswordChangeView.as_view(),
+        views.BloomPasswordChangeView.as_view(title="Change your password"),
+        {"force_password_change": "No way"},
         name="password_change",
     ),
     path(
         "account/edit/name",
         views.BloomUserNameView.as_view(),
         name="user_edit_name",
+    ),
+    path(
+        "account/reset-password",
+        views.BloomPasswordChangeView.as_view(title="Reset your password"),
+        {"force_password_reset": True},
+        name="user_force_password_reset",
     ),
 ]

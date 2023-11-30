@@ -1,4 +1,5 @@
 from django.contrib.auth.views import redirect_to_login
+from django.shortcuts import redirect
 from django.core.exceptions import ImproperlyConfigured
 
 from django.urls import resolve
@@ -26,5 +27,8 @@ class NofosLoginRequiredMiddleware:
             if not user.is_authenticated:
                 path = request.get_full_path()
                 return redirect_to_login(path)
+
+            if user.force_password_reset:
+                return redirect("users:user_force_password_reset")
 
         return self.get_response(request)
