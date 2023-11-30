@@ -42,16 +42,35 @@ if DEBUG:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 
-# TODO fix this
-# ALLOWED_HOSTS = [
-#     "0.0.0.0",
-#     "127.0.0.1",
-#     "localhost",
-# ]
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "0.0.0.0",
+    "127.0.0.1",
+    "localhost",
+]
+
+allowed_domain = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
+if allowed_domain:
+    ALLOWED_HOSTS.extend(allowed_domain.split(","))
+
+# SECURITY HEADERS
+SECURE_SSL_REDIRECT = is_prod
+SESSION_COOKIE_SECURE = is_prod
+CSRF_COOKIE_SECURE = is_prod
+CSRF_COOKIE_HTTPONLY = is_prod
+SECURE_BROWSER_XSS_FILTER = is_prod
+
+# Setting SECURE_SSL_REDIRECT on heroku was causing infinite redirects without this
+if is_prod:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# For sites that should only be accessed over HTTPS, instruct modern browsers to refuse to connect to your domain name via an insecure connection (for a given period of time)
+if is_prod:
+    SECURE_HSTS_SECONDS = 31536000
+
+# Instructs the browser to send a full URL, but only for same-origin links. No referrer will be sent for cross-origin links.
+SECURE_REFERRER_POLICY = "same-origin"
 
 # Application definition
 

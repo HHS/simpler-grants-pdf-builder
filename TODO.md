@@ -5,8 +5,6 @@
 - Write ADRs
 - New feature: add a section page
 - Maybe: add Google login
-- For deployed app, set secure flags
-- For deployed app, use domain for allowed domains
 - For deployed app, maybe logging?
 - For deployed app, use Cloud Postgres
 - Password reset flow on command line
@@ -18,6 +16,8 @@
 
 # DONE
 
+- For deployed app, set secure flags
+- For deployed app, use domain for allowed domains
 - Refac: Headers with top links
 - Refac: Use section and div for all pages
 - 404 page
