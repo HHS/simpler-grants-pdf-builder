@@ -135,6 +135,11 @@ database_url = (
 
 DATABASES = {"default": env.db_url_config(database_url)}
 
+# If the flag as been set, configure to use proxy
+if not is_prod and DATABASES["default"]["HOST"].startswith("/cloudsql"):
+    DATABASES["default"]["HOST"] = "127.0.0.1"
+    DATABASES["default"]["PORT"] = 5432
+
 print("===== DATABASES")
 print(DATABASES)
 
