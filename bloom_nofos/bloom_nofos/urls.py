@@ -15,7 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.http import HttpResponse
+from django.urls import include, path, re_path
 
 
 from . import views
@@ -24,6 +25,11 @@ handler404 = views.page_not_found
 
 app_name = "bloom_nofos"
 urlpatterns = [
+    re_path(
+        r"^robots.txt",
+        lambda x: HttpResponse("User-Agent: *\nDisallow: /", content_type="text/plain"),
+        name="robots_file",
+    ),
     path("martor/", include("martor.urls")),
     path("nofos/", include("nofos.urls")),
     path("", include("users.urls")),

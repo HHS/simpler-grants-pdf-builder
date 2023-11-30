@@ -9,13 +9,13 @@
 - For deployed app, use Cloud Postgres
 - Password reset flow on command line
 - Password reset flow exists
-- Robots file
 - Maybe: new password form, no old password field
 - Maybe: redirect people who haven't changed their password
 - A11y scan for all pages
 
 # DONE
 
+- Robots file
 - For deployed app, set secure flags
 - For deployed app, use domain for allowed domains
 - Refac: Headers with top links
