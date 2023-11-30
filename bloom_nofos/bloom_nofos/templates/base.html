@@ -14,7 +14,12 @@
         <ul class="usa-nav__primary usa-accordion">
           {% if user.is_authenticated %}
             <li class="usa-nav__primary-item">
-              <a href="{% url 'users:user_view' %}" class="usa-nav-link">{{ user.email }}</a>
+              <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
+            </li>
+          {% endif %}
+          {% if user.is_authenticated %}
+            <li class="usa-nav__primary-item">
+              <a href="{% url 'users:user_view' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'user_view' %}aria-current="page"{% endif %}><span class="usa-sr-only">Your account</span><span aria-hidden="true">{{ user.email }}</span></a>
             </li>
           {% endif %}
           <li class="usa-nav__primary-item">

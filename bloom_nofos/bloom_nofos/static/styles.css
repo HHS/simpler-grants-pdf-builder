@@ -21,6 +21,10 @@ body > footer {
   }
 }
 
+.usa-nav__primary .usa-nav__primary-item a[aria-current] {
+  text-decoration: underline;
+}
+
 .back-link a:not(:hover) {
   text-decoration: none;
 }
