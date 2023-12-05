@@ -9,9 +9,22 @@
 - Password reset flow on command line
 - Password reset flow exists
 - A11y scan for all pages
+- Build a title page
+  - Title of NOFO
+  - Background colour
+- Build section pages
+  - Title of section
+  - Background colour
+  - Links to H3s
+  - Links to other sections
+- Headers?
 
 # DONE
 
+- Build section pages
+  - Title of section
+  - Background colour
+  - Links to H3s
 - Fix: Don't allow people to see account management pages unless logged in
 - Force people who have logged in to reset password
 - Remove old password from the edit password screen

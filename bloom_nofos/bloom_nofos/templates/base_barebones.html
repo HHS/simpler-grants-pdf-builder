@@ -16,13 +16,15 @@
   </head>
   <body class="{% block body_class %}{% endblock %}" id="back-to-top">
     {% block header %}{% endblock %}
-    <main id="main-content">
-      <section class="usa-section">
+    {% block main_container_start %}
+      <main id="main-content">
         <div class="grid-container">
+    {% endblock %}
           {% block content %}{% endblock %}
+    {% block main_container_end %}
         </div>
-      </section>
-    </main>
+      </main>
+    {% endblock %}
     {% block footer %}{% endblock %}
     {% block js_footer %}{% endblock %}
   </body>

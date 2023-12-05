@@ -1,11 +1,33 @@
+/* Very helpful article about paged CSS rules: https://alistapart.com/article/boom/ */
+
+/* which section uses which named page */
+
+div.title-page { 
+  page: title
+}
+
+/* page breaks */
+
+div.titlepage {
+  page-break-before: always
+}
+
+/* page rules */
+
 @page  {
   /* 
   https://printcss.net/articles/running-headers-and-footers
-  https://github.com/Kozea/WeasyPrint/issues/17
   */
-  size: A4;
+  size: letter;
   margin: 20mm;
 }
+
+@page title {
+  background-color: #00659B;
+  margin: 0;
+}
+
+/* regular CSS */
 
 * {
   box-sizing: border-box;
@@ -13,7 +35,11 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 14px;
+}
+
+body {
+  background-color: transparent;
 }
 
 h1 {
@@ -117,14 +143,53 @@ ul:last-child, ol:last-child {
   margin-bottom: 0;
 }
 
-@media screen {
-  .nofo-container {
-    width: 75%;
-  }
+.grid-container {
+  padding: 0;
+}
 
-  h1 {
-    width: 125%;
-  }
+.section--title-page {
+  background-color: #00659B;
+  border: 1px solid #00659B;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.section--title-page--name {
+  padding: 150px 20mm 0 20mm;
+}
+
+.section--title-page h2 {
+  font-family: Source Sans Pro Web,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-size: 300%;
+  font-weight: 700;
+}
+
+.section--title-page--toc {
+  padding: 50px 20mm;
+}
+
+.section--title-page--section-nav {
+  padding: 50px 20mm 80px 20mm;
+  background-color: #143168;
+}
+
+.section--title-page--toc p,
+.section--title-page--section-nav p {
+  font-size: 120%;
+  font-weight: 700;
+}
+
+.section--title-page ul,
+.section--title-page li {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.section--title-page--toc ul {
+  list-style-type: none;
 }
 
 @media print {
