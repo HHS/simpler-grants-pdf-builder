@@ -151,7 +151,7 @@ ul:last-child, ol:last-child {
   background-color: #00659B;
   border: 1px solid #00659B;
   color: white;
-  height: 100vh;
+  min-height: calc(100vh + 40mm);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -167,12 +167,17 @@ ul:last-child, ol:last-child {
   font-weight: 700;
 }
 
+.section--title-page a {
+  color: white;
+  text-decoration: none;
+}
+
 .section--title-page--toc {
-  padding: 50px 20mm;
+  padding: 12mm 20mm;
 }
 
 .section--title-page--section-nav {
-  padding: 50px 20mm 80px 20mm;
+  padding: 12mm 20mm 20mm 20mm;
   background-color: #143168;
 }
 
@@ -183,9 +188,11 @@ ul:last-child, ol:last-child {
 }
 
 .section--title-page ul,
+.section--title-page ol,
 .section--title-page li {
   padding-left: 0;
   margin-left: 0;
+  list-style-position: inside;
 }
 
 .section--title-page--toc ul {
@@ -195,5 +202,9 @@ ul:last-child, ol:last-child {
 @media print {
   .usa-header {
     display: none;
+  }
+
+  .section--title-page {
+    min-height: calc(100vh + 40mm);
   }
 }

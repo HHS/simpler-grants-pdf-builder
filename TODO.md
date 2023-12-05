@@ -12,11 +12,12 @@
 - Build a title page
   - Title of NOFO
   - Background colour
+  - HRSA logo
+  - Big pic
+  - Opportunity number
 - Build section pages
-  - Title of section
-  - Background colour
-  - Links to H3s
-  - Links to other sections
+  - Counter! for the page references
+- Refac: clean up id generation for headers
 - Headers?
 
 # DONE
@@ -25,6 +26,8 @@
   - Title of section
   - Background colour
   - Links to H3s
+  - Links to other sections
+  - Full page colour
 - Fix: Don't allow people to see account management pages unless logged in
 - Force people who have logged in to reset password
 - Remove old password from the edit password screen
