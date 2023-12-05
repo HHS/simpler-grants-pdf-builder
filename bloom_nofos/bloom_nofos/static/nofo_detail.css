@@ -2,8 +2,12 @@
 
 /* which section uses which named page */
 
-div.title-page { 
+div.title-page {
   page: title
+}
+
+section.title-page {
+  page: cover
 }
 
 /* page breaks */
@@ -20,6 +24,10 @@ div.titlepage {
   */
   size: letter;
   margin: 20mm;
+}
+
+@page cover {
+  margin: 0;
 }
 
 @page title {
@@ -43,7 +51,9 @@ body {
 }
 
 h1 {
-  font-size: 2.10rem !important;
+  font-size: 3rem !important;
+  font-family: Helvetica,Roboto,Arial,sans-serif !important;
+  color: #163a60;
 }
 
 h2, h3, h4, h5, h6 {
@@ -147,11 +157,76 @@ ul:last-child, ol:last-child {
   padding: 0;
 }
 
+.nofo--title-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nofo--title-page--header,
+.nofo--title-page--title {
+    padding-left: 20mm;
+}
+
+.nofo--title-page--header,
+.nofo--title-page--title,
+.nofo--title-page--footer {
+    padding-right: 20mm;
+}
+
+.nofo--title-page--header--logo img {
+  width: 150px;
+}
+
+.nofo--title-page--header {
+  padding: 20mm;
+}
+
+.nofo--title-page--title {
+  padding-bottom: 20mm;
+}
+
+.nofo--title-page--footer {
+  position: relative;
+}
+
+
+.nofo--title-page--header .nofo--title-page--header--logo,
+.nofo--title-page--header .nofo--title-page--header--intro,
+.nofo--title-page--footer div {
+  display: float;
+  float: left;
+}
+
+.nofo--title-page--header .nofo--title-page--header--intro,
+.nofo--title-page--footer div:last-of-type {
+  float: right;
+}
+
+.nofo--title-page--footer div:last-of-type {
+  position: absolute;
+  bottom: 15mm;
+  right: 15mm;
+}
+
+.nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
+  font-size: 120%;
+  color: #336a90;
+  font-weight: 700;
+}
+
+.nofo--title-page--footer div:first-of-type img {
+  height: 400px;
+  border-radius: 0 80px 0 0;
+}
+
+.nofo--title-page--footer div:last-of-type img {
+  width: 100px;
+}
+
 .section--title-page {
   background-color: #00659B;
-  border: 1px solid #00659B;
   color: white;
-  min-height: calc(100vh + 40mm);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -205,6 +280,10 @@ ul:last-child, ol:last-child {
   }
 
   .section--title-page {
+    min-height: calc(100vh + 40mm);
+  }
+
+  .nofo--title-page {
     min-height: calc(100vh + 40mm);
   }
 }

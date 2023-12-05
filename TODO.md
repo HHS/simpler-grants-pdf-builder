@@ -10,11 +10,8 @@
 - Password reset flow exists
 - A11y scan for all pages
 - Build a title page
-  - Title of NOFO
-  - Background colour
-  - HRSA logo
-  - Big pic
-  - Opportunity number
+  - Refac: Big pic
+  - Refac: Opportunity number
 - Build section pages
   - Counter! for the page references
 - Refac: clean up id generation for headers
@@ -22,6 +19,9 @@
 
 # DONE
 
+- Build a title page
+  - Title of NOFO
+  - HRSA logo
 - Build section pages
   - Title of section
   - Background colour
