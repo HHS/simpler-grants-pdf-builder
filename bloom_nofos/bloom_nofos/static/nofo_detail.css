@@ -215,9 +215,16 @@ ul:last-child, ol:last-child {
   font-weight: 700;
 }
 
+.nofo--title-page--footer div:first-of-type {
+  height: 500px;
+  width: 85%;
+  overflow: hidden;
+}
+
 .nofo--title-page--footer div:first-of-type img {
-  height: 400px;
+  height: 100%;
   border-radius: 0 80px 0 0;
+  object-fit: cover;
 }
 
 .nofo--title-page--footer div:last-of-type img {
