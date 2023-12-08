@@ -12,9 +12,15 @@
 - Build a title page
   - Refac: Opportunity number
 - Build section pages
-  - Counter! for the page references
+  - New stepped header
 - Refac: clean up id generation for headers
-- Headers?
+- Observatory
+  - XXS header protection
+- Footer
+  - Bottom left: section name
+  - Bottom right: page number
+- Header
+  - Top
 
 # DONE
 
@@ -28,6 +34,7 @@
   - Links to H3s
   - Links to other sections
   - Full page colour
+  - Counter for the page references
 - Fix: Don't allow people to see account management pages unless logged in
 - Force people who have logged in to reset password
 - Remove old password from the edit password screen

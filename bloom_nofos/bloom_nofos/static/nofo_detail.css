@@ -205,8 +205,8 @@ ul:last-child, ol:last-child {
 
 .nofo--title-page--footer div:last-of-type {
   position: absolute;
-  bottom: 15mm;
-  right: 15mm;
+  bottom: 10mm;
+  right: 10mm;
 }
 
 .nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
@@ -229,6 +229,7 @@ ul:last-child, ol:last-child {
 
 .nofo--title-page--footer div:last-of-type img {
   width: 100px;
+  filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
 }
 
 .section--title-page {
@@ -267,6 +268,18 @@ ul:last-child, ol:last-child {
 .section--title-page--section-nav p {
   font-size: 120%;
   font-weight: 700;
+}
+
+.section--title-page--toc a {
+  display: inline-block;
+  position: relative;
+  width: 50%;
+}
+
+.section--title-page--toc a:after {
+  position: absolute;
+  right: 0;
+  content: "page" target-counter(attr(href, url), page);
 }
 
 .section--title-page ul,
