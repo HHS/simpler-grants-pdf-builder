@@ -3,6 +3,8 @@
 - add updated to NOFOs
 - add status to NOFOs
 - Write ADRs
+  - Why Python
+  - Why DocRaptor
 - New feature: add a section page
 - Maybe: add Google login
 - For deployed app, maybe logging?
@@ -24,10 +26,13 @@
 
 # DONE
 
+- Write ADRs
+  - Why DocRaptor
 - Build a title page
   - Title of NOFO
   - HRSA logo
   - Refac: Big pic
+  - HHS logo in the right colour
 - Build section pages
   - Title of section
   - Background colour
