@@ -13,8 +13,6 @@
 - Build section pages
   - New stepped header
 - Refac: clean up id generation for headers
-- Observatory
-  - XXS header protection
 - Header
   - Top
 - Fix the fonts!!
