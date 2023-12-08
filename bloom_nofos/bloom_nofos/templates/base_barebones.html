@@ -8,11 +8,13 @@
 
     <!-- Includes -->
     <link href="{% static 'usa.css' %}" rel="stylesheet">
-    <link href="{% static 'styles.css' %}" rel="stylesheet">
+    {% block base_css %}
+      <link href="{% static 'nofo_detail.css' %}" type="text/css" media="all" rel="stylesheet" />
+    {% endblock %}
     {% block css %}{% endblock %}
     {% block js %}{% endblock %}
 
-    <!-- add favicon -->
+  <!-- add favicon -->
   </head>
   <body class="{% block body_class %}{% endblock %}" id="back-to-top">
     {% block header %}{% endblock %}

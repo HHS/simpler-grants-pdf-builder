@@ -169,10 +169,6 @@ ul:last-child, ol:last-child {
   margin-bottom: 0;
 }
 
-.grid-container {
-  padding: 0;
-}
-
 .nofo--title-page {
   display: flex;
   flex-direction: column;
@@ -313,6 +309,10 @@ ul:last-child, ol:last-child {
 @media print {
   .usa-header {
     display: none;
+  }
+
+  .grid-container {
+    padding: 0;
   }
 
   .nofo--title-page,

@@ -1,4 +1,9 @@
 {% extends 'base_barebones.html' %}
+{% load static %}
+
+{% block base_css %}
+  <link href="{% static 'styles.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block header %}
   <header class="usa-header usa-header--basic">

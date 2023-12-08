@@ -1,10 +1,6 @@
 {% extends 'base_barebones.html' %}
 {% load static martortags nofo_section_name_separator section_id %}
 
-{% block css %}
-  <link href="{% static 'nofo_detail.css' %}" type="text/css" media="all" rel="stylesheet" />
-{% endblock %}
-
 {% block title %}
  View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
 {% endblock %}
