@@ -18,12 +18,28 @@ div.titlepage {
 
 /* page rules */
 
+h2 { 
+  string-set: sectiontitle content(); 
+}
+
 @page  {
   /* 
   https://printcss.net/articles/running-headers-and-footers
   */
   size: letter;
-  margin: 20mm;
+  margin: 20mm 20mm 16mm 20mm;
+
+  @bottom-left {
+    border-top: 2px solid #DDE2E8;
+    content: string(sectiontitle);
+    padding-bottom: 4mm;
+  }
+
+  @bottom-right {
+    border-top: 2px solid #DDE2E8;
+    content: counter(page);
+    padding-bottom: 4mm;
+  }
 }
 
 @page cover {
@@ -279,7 +295,7 @@ ul:last-child, ol:last-child {
 .section--title-page--toc a:after {
   position: absolute;
   right: 0;
-  content: "page" target-counter(attr(href, url), page);
+  content: "page " target-counter(attr(href, url), page);
 }
 
 .section--title-page ul,
@@ -299,11 +315,8 @@ ul:last-child, ol:last-child {
     display: none;
   }
 
+  .nofo--title-page,
   .section--title-page {
-    min-height: calc(100vh + 40mm);
-  }
-
-  .nofo--title-page {
-    min-height: calc(100vh + 40mm);
+    min-height: calc(100vh + 36mm);
   }
 }

@@ -4,13 +4,10 @@
 - add status to NOFOs
 - Write ADRs
   - Why Python
-  - Why DocRaptor
-- New feature: add a section page
 - Maybe: add Google login
 - For deployed app, maybe logging?
 - Password reset flow on command line
 - Password reset flow exists
-- A11y scan for all pages
 - Build a title page
   - Refac: Opportunity number
 - Build section pages
@@ -18,14 +15,16 @@
 - Refac: clean up id generation for headers
 - Observatory
   - XXS header protection
-- Footer
-  - Bottom left: section name
-  - Bottom right: page number
 - Header
   - Top
+- Fix the fonts!!
 
 # DONE
 
+- A11y scan for all pages
+- Footer
+  - Bottom left: section name
+  - Bottom right: page number
 - Write ADRs
   - Why DocRaptor
 - Build a title page
