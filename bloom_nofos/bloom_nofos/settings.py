@@ -145,8 +145,9 @@ if not is_prod and DATABASES["default"]["HOST"].startswith("/cloudsql"):
     DATABASES["default"]["HOST"] = "127.0.0.1"
     DATABASES["default"]["PORT"] = 5432
 
-print("===== DATABASES")
-print(DATABASES)
+if DEBUG:
+    print("===== DATABASES")
+    print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -404,3 +405,7 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 # If the header is set it must be available on the request or an Error will be thrown
 if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
+
+# View documents: for our PDF generating app
+VIEW_DOCUMENT_HEADER = env.get_value("VIEW_DOCUMENT_HEADER", default="")
+VIEW_DOCUMENT_VALUE = env.get_value("VIEW_DOCUMENT_VALUE", default="")
