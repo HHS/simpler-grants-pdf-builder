@@ -13,17 +13,15 @@
 - Build section pages
   - New stepped header
 - Refac: clean up id generation for headers
-- Header
-  - Top
-- Use CSS vars for colours
-- Fix the fonts
-  - Make sure the headings show up
-  - Add 2/3rds layout
+- New stepped header
 
 # DONE
 
+- Use CSS vars for colours
 - Fix the fonts
   - Get them to load at all
+  - Make sure the headings show up
+  - Add 2/3rds layout
 - A11y scan for all pages
 - Footer
   - Bottom left: section name

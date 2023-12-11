@@ -62,7 +62,7 @@ h2 {
 }
 
 @page title {
-  background-color: #00659B;
+  background-color: var(--color--med-blue);
   margin: 0;
 }
 
@@ -91,8 +91,10 @@ h2, h3, h4, h5, h6 {
   margin: 1rem 0;
 }
 
+h1,
 h2,
-h4 {
+h3,
+h5 {
   font-family: Merriweather Web,Georgia,Cambria,Times New Roman,Times,serif;
 }
 
@@ -103,28 +105,27 @@ h2 {
 }
 
 h3 {
-  font-size: 1.85rem;
-  color: #163a60;
+  font-size: 30.5px;
+  color: var(--color--med-blue);
   margin-top: 1.5rem;
+  font-weight: 400;
 }
 
 h4 {
-  font-size: 1.3rem;
-  color: #336a90;
+  font-size: 20.5px;
+  color: var(--color--dark-blue);
   margin-top: 1.5rem;
 }
 
 h5 {
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: #336a90;
-  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 700;
   margin-top: 1.15rem;
 }
 
 h6 {
-  font-size: 1rem;
-  color: #336a90;
+  font-size: 12px;
+  color: var(--color--med-blue);
   text-transform: uppercase;
   margin-top: 1.10rem;
 }
@@ -328,6 +329,10 @@ ul:last-child, ol:last-child {
 
 .section--title-page--toc ul {
   list-style-type: none;
+}
+
+.section--content {
+  width: 70%;
 }
 
 @media print {
