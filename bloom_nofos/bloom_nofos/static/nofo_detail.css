@@ -1,5 +1,17 @@
-/* Very helpful article about paged CSS rules: https://alistapart.com/article/boom/ */
+/* CSS vars */
+:root {
+  --color--black: #000000;
+  --color--white: #FFFFFF;
+  --color--table-grey: #EDF1F3;
+  --color--light-grey: #DDE2E8;
+  --color--med-grey: #475260;
+  --color--dark-blue: #274A64;
+  --color--med-blue: #336A90;
+  --color--light-blue: #BDD9ED;
+  --color--med-brown: #C0B0A2;
+}
 
+/* Very helpful article about paged CSS rules: https://alistapart.com/article/boom/ */
 /* which section uses which named page */
 
 div.title-page {
@@ -30,16 +42,16 @@ h2 {
   margin: 20mm 20mm 16mm 20mm;
 
   @bottom-left {
-    border-top: 2px solid #DDE2E8;
+    border-top: 2px solid var(--color--light-grey);
     content: string(sectiontitle);
     padding-bottom: 4mm;
     font-family: Merriweather Web,Georgia,Cambria,Times New Roman,Times,serif;
     font-weight: 700;
-    color: #274A64;
+    color: var(--color--dark-blue);
   }
 
   @bottom-right {
-    border-top: 2px solid #DDE2E8;
+    border-top: 2px solid var(--color--light-grey);
     content: counter(page);
     padding-bottom: 4mm;
   }
@@ -72,7 +84,7 @@ body {
 h1 {
   font-size: 3rem !important;
   font-family: Helvetica,Roboto,Arial,sans-serif !important;
-  color: #163a60;
+  color: var(--color--dark-blue);
 }
 
 h2, h3, h4, h5, h6 {
@@ -123,13 +135,22 @@ li {
   margin: .75rem 0;
 }
 
+a {
+  color: var(--color--med-blue);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color--light-grey);
+}
+
 table {
   font-family: Source Sans Pro Web,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
   font-size: 1.06rem;
   line-height: 1.5;
   border-collapse: collapse;
   border-spacing: 0;
-  color: #1b1b1b;
+  color: var(--color--black);
   margin: 1.25rem 0;
   text-align: left;
 }
@@ -143,15 +164,15 @@ table caption {
 
 table th,
 table td {
-  background-color: #fff;
-  border: 1px solid #1b1b1b;
+  background-color: var(--color--table-grey);
+  border: 2px solid var(--color--white);
   font-weight: 400;
   padding: .5rem 1rem;
 }
 
 table thead th,
 table thead td {
-  background-color: #e6e6e6;
+  background-color: transparent;
   color: #1b1b1b;
 }
 
@@ -226,7 +247,7 @@ ul:last-child, ol:last-child {
 
 .nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
   font-size: 120%;
-  color: #336a90;
+  color: var(--color--med-blue);
   font-weight: 700;
 }
 
@@ -249,7 +270,7 @@ ul:last-child, ol:last-child {
 
 .section--title-page {
   background-color: #00659B;
-  color: white;
+  color: var(--color--white);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -266,7 +287,7 @@ ul:last-child, ol:last-child {
 }
 
 .section--title-page a {
-  color: white;
+  color: var(--color--white);
   text-decoration: none;
 }
 
@@ -276,7 +297,7 @@ ul:last-child, ol:last-child {
 
 .section--title-page--section-nav {
   padding: 12mm 20mm 20mm 20mm;
-  background-color: #143168;
+  background-color: var(--color--dark-blue);
 }
 
 .section--title-page--toc p,
