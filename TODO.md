@@ -15,10 +15,15 @@
 - Refac: clean up id generation for headers
 - Header
   - Top
-- Fix the fonts!!
+- Use CSS vars for colours
+- Fix the fonts
+  - Make sure the headings show up
+  - Add 2/3rds layout
 
 # DONE
 
+- Fix the fonts
+  - Get them to load at all
 - A11y scan for all pages
 - Footer
   - Bottom left: section name

@@ -33,6 +33,9 @@ h2 {
     border-top: 2px solid #DDE2E8;
     content: string(sectiontitle);
     padding-bottom: 4mm;
+    font-family: Merriweather Web,Georgia,Cambria,Times New Roman,Times,serif;
+    font-weight: 700;
+    color: #274A64;
   }
 
   @bottom-right {
