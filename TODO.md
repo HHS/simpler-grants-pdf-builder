@@ -10,11 +10,12 @@
 - Password reset flow exists
 - Build a title page
   - Refac: Opportunity number
-- Running header that knows what section it is
+- Refac: short section names for breadcrumbs means we can loop
 
 # DONE
 
-- New stepped header
+- New running header
+  - Running header knows what section it is
 - Refac: clean up id generation for headers
 - Use CSS vars for colours
 - Fix the fonts
@@ -40,6 +41,7 @@
   - Full page colour
   - Counter for the page references
   - New stepped header
+  - New stepped header knows what section it is
 - Fix: Don't allow people to see account management pages unless logged in
 - Force people who haven't ever logged in to reset password
 - Remove old password from the edit password screen

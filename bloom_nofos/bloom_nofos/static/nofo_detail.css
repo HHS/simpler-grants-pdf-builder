@@ -248,8 +248,14 @@ ul:last-child, ol:last-child {
 }
 
 .header-nav--running-header li a {
-  border-top: 4px solid var(--color--med-grey);
+  border-top: 4px solid var(--color--light-grey);
   color: var(--color--med-grey);
+}
+
+.header-nav--running-header li a[aria-current] {
+  font-weight: 700;
+  border-top: 4px solid var(--color--med-blue);
+  color: var(--color--med-blue);
 }
 
 .nofo--title-page {
@@ -361,7 +367,11 @@ ul:last-child, ol:last-child {
 
 .section--title-page--toc p,
 .section--title-page--header-nav p {
-  font-size: 120%;
+  font-size: 115%;
+  font-weight: 700;
+}
+
+.section--title-page--header-nav a[aria-current] {
   font-weight: 700;
 }
 
