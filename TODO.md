@@ -10,13 +10,12 @@
 - Password reset flow exists
 - Build a title page
   - Refac: Opportunity number
-- Build section pages
-  - New stepped header
-- Refac: clean up id generation for headers
-- New stepped header
+- Running header that knows what section it is
 
 # DONE
 
+- New stepped header
+- Refac: clean up id generation for headers
 - Use CSS vars for colours
 - Fix the fonts
   - Get them to load at all
@@ -40,8 +39,9 @@
   - Links to other sections
   - Full page colour
   - Counter for the page references
+  - New stepped header
 - Fix: Don't allow people to see account management pages unless logged in
-- Force people who have logged in to reset password
+- Force people who haven't ever logged in to reset password
 - Remove old password from the edit password screen
 - For deployed app, use Cloud Postgres
 - Robots file

@@ -38,50 +38,7 @@ h2 {
   string-set: sectiontitle content(); 
 }
 
-.running-header {
-  display: none; /* only show when @media print */
-  position: running(breadcrumbs);
-  width: 100%;
-  height: 20mm;
-}
-
-.running-header ol {
-  counter-reset: n;
-  width: calc(100% + 5mm);
-  margin: 0;
-  display: flex;
-  justify-content: space-between;
-  list-style-type: none;
-  text-align: center;
-}
-
-.running-header li {
-  counter-increment: n; /* Increment the value of section counter by 1 */
-  margin: 0 0 0 -5mm;
-}
-
-.running-header li a {
-  font-size: 12px;
-  display: inline-block;
-  width: 85px;
-  border-top: 4px solid var(--color--med-grey);
-  color: var(--color--med-grey);
-  text-decoration: none;
-}
-
-.running-header li a:before {
-  content: counter(n) "."
-}
-
-.running-header li:last-of-type {
-  list-style-type: none;
-}
-
-.running-header li:last-of-type a:before {
-  content: none;
-}
-
-@page  {
+@page {
   /* 
   https://printcss.net/articles/running-headers-and-footers
   */
@@ -113,7 +70,7 @@ h2 {
 }
 
 @page title {
-  background-color: var(--color--med-blue);
+  background-color: var(--color--dark-blue);
   margin: 0;
 }
 
@@ -245,6 +202,56 @@ ul:last-child, ol:last-child {
   margin-bottom: 0;
 }
 
+.header-nav {
+  width: 100%;
+  height: 20mm;
+}
+
+.header-nav ol {
+  counter-reset: n;
+  width: calc(100% + 5mm);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  list-style-type: none; /* use CSS counters for the list numbers */
+  text-align: center;
+}
+
+.header-nav li {
+  counter-increment: n; /* Increment the value of counter by 1 for each list item */
+  margin: 0 0 0 -5mm;
+}
+
+.header-nav li a {
+  font-size: 12px;
+  display: inline-block;
+  width: 85px;
+  border-top: 4px solid var(--color--white);
+  text-decoration: none;
+}
+
+.header-nav li a:before {
+  content: counter(n) "."
+}
+
+.header-nav li:last-of-type {
+  list-style-type: none;
+}
+
+.header-nav li:last-of-type a:before {
+  content: none;
+}
+
+.header-nav--running-header {
+  display: none;
+  position: running(breadcrumbs);
+}
+
+.header-nav--running-header li a {
+  border-top: 4px solid var(--color--med-grey);
+  color: var(--color--med-grey);
+}
+
 .nofo--title-page {
   display: flex;
   flex-direction: column;
@@ -321,11 +328,11 @@ ul:last-child, ol:last-child {
 }
 
 .section--title-page {
-  background-color: #00659B;
+  background-color: var(--color--dark-blue);
   color: var(--color--white);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .section--title-page--name {
@@ -347,13 +354,13 @@ ul:last-child, ol:last-child {
   padding: 12mm 20mm;
 }
 
-.section--title-page--section-nav {
-  padding: 12mm 20mm 20mm 20mm;
-  background-color: var(--color--dark-blue);
+.section--title-page--header-nav {
+  padding: 0mm 20mm;
+  background-color: var(--color--med-blue);
 }
 
 .section--title-page--toc p,
-.section--title-page--section-nav p {
+.section--title-page--header-nav p {
   font-size: 120%;
   font-weight: 700;
 }
@@ -388,7 +395,8 @@ ul:last-child, ol:last-child {
 
 /* Media queries */
 @media print {
-  .running-header {
+  .running-header,
+  .header-nav--running-header {
     display: block;
   }
 
