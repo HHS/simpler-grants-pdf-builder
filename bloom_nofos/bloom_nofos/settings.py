@@ -406,6 +406,5 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
 
-# View documents: for our PDF generating app
-VIEW_DOCUMENT_HEADER = env.get_value("VIEW_DOCUMENT_HEADER", default="")
-VIEW_DOCUMENT_VALUE = env.get_value("VIEW_DOCUMENT_VALUE", default="")
+# Document IPs for our PDF generating app
+VIEW_DOCUMENT_IPS = env.get_value("VIEW_DOCUMENT_IPS", default="")

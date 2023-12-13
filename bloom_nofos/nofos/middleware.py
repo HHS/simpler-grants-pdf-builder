@@ -26,12 +26,13 @@ class NofosLoginRequiredMiddleware:
         if (
             resolve(request.path).app_name == self.APP_NAME
         ):  # match app_name defined in myapp.urls.py
+            safe_ips = settings.VIEW_DOCUMENT_IPS.split(",")
+            incoming_ip = request.headers.get("x-forwarded-for")
+
             if (
                 match_view_url(request.get_full_path())  # is a view URL
-                and request.headers.get(settings.VIEW_DOCUMENT_HEADER)  # has header val
-                and request.headers.get(settings.VIEW_DOCUMENT_HEADER).startswith(
-                    settings.VIEW_DOCUMENT_VALUE  # includes the value we expect
-                )
+                and len(incoming_ip)  # there is an incoming ip
+                and incoming_ip in safe_ips
             ):
                 pass
 

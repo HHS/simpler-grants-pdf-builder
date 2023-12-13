@@ -14,6 +14,7 @@
 
 # DONE
 
+- Safelist incoming IPs for document viewing
 - New running header
   - Running header knows what section it is
 - Refac: clean up id generation for headers

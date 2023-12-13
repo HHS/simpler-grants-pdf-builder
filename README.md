@@ -110,8 +110,13 @@ To deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.produ
 
   - default `""`: this means Django will default to using a local SQLite database.
 
-- `DJANGO_ALLOWED_HOSTS`: Django will not run correctly on the server unless the domain is specified ahead of time. This env var can contain 1 domain or a comma-separated list of domains.
+- `DJANGO_ALLOWED_HOSTS`: Django will not run correctly on the server unless the domain is specified ahead of time. This env var can contain 1 domain or a comma-separated list of domains
+
   - default `""`: no effect unless Django is running in production.
+
+- `VIEW_DOCUMENT_IPS`: Allows specific IPs access to the 'view' page for a NOFO draft, so that we can generate a PDF based on the HTML.
+
+  - default `""`: this means zero IPs are safelisted
 
 ## Build and run as a Docker container
 
