@@ -27,6 +27,7 @@
 {% endblock %}
 
 {% block content %}
+  <!-- TITLE PAGE -->
   <section class="title-page nofo--title-page">
     <div class="nofo--title-page--header clearfix">
       <div class="nofo--title-page--header--logo">
@@ -52,6 +53,7 @@
   </section>
   {% for section in nofo.sections.all %}
     <section id="{{ section.name|slugify }}" class="section section--{{ forloop.counter }}">
+      <!-- SECTION TITLE PAGE -->
       <div class="title-page section--title-page">
         <div class="section--title-page--name">
           <h2 id="{{ section.html_id }}">
@@ -85,7 +87,22 @@
           </ol>
         </div>
       </div>
-      
+
+      <!-- RUNNING HEADER -->
+      <!-- after first section title page -->
+      <div class="running-header">
+        <ol>
+          <li><a href="#{{ nofo.sections.all.0.html_id }}">Review</a></li>
+          <li><a href="#{{ nofo.sections.all.1.html_id }}">Get ready</a></li>
+          <li><a href="#{{ nofo.sections.all.2.html_id }}">Prepare</a></li>
+          <li><a href="#{{ nofo.sections.all.3.html_id }}">Learn</a></li>
+          <li><a href="#{{ nofo.sections.all.4.html_id }}">Submit</a></li>
+          <li><a href="#{{ nofo.sections.all.5.html_id }}">Award</a></li>
+          <li><a href="#{{ nofo.sections.all.6.html_id }}">Contacts</a></li>
+        </ol>
+      </div>
+
+      <!-- SECTION CONTENT -->
       <div class="section--content">
         {% for subsection in section.subsections.all %}
           {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
