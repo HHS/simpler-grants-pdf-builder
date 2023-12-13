@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator section_id %}
+{% load static martortags nofo_section_name_separator %}
 
 {% block title %}
  View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
@@ -10,9 +10,9 @@
     <div class="usa-nav-container">
       <div class="usa-navbar">
         <div class="usa-logo">
-          <em class="usa-logo__text"
-            ><a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a></em
-          >
+          <em class="usa-logo__text">
+            <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a>
+          </em>
         </div>
       </div>
       <nav aria-label="Primary navigation" class="usa-nav">
@@ -54,7 +54,7 @@
     <section id="{{ section.name|slugify }}" class="section section--{{ forloop.counter }}">
       <div class="title-page section--title-page">
         <div class="section--title-page--name">
-          <h2 id="{{ section|section_id }}">
+          <h2 id="{{ section.html_id }}">
             {% with section.name|nofo_section_name_separator as section_name %}
               <span>Step {% if section_name.number %}{{ section_name.number }}{% else %}{{ forloop.counter }}{% endif %}:</span>
               <br />
@@ -68,7 +68,7 @@
             {% for subsection in section.subsections.all %}
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                 {% if tag == 'h3' %}
-                  <li><a href="#{{ subsection|section_id }}">{{ content }}</a></li>
+                  <li><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
                 {% endif %}
               {% endwith %}
             {% endfor %}
@@ -79,7 +79,7 @@
           <ol>
             {% for section in nofo.sections.all %}
               {% with section.name|nofo_section_name_separator as section_name %}
-                <li><a href="#{{ section|section_id }}">{{ section_name.name }}</a></li>
+                <li><a href="#{{ section.html_id }}">{{ section_name.name }}</a></li>
               {% endwith %}
             {% endfor %}
           </ol>
@@ -88,7 +88,7 @@
       
       <div class="section--content">
         {% for subsection in section.subsections.all %}
-          {% with tag=subsection.tag content=subsection.name id=subsection|section_id %}            
+          {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
             {% include "includes/heading.html" with tag=tag content=content id=id only %}
           {% endwith %}
           {{ subsection.body|safe_markdown }}
