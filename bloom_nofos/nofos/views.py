@@ -12,8 +12,9 @@ from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
-from .models import Nofo, Section, Subsection
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
+from .models import Nofo, Section, Subsection
+from .nofo import convert_table_first_row_to_header_row
 
 
 class NofosListView(ListView):
@@ -69,14 +70,6 @@ def get_sections_from_soup(soup):
     return sections
 
 
-def _convert_table_first_row_to_header_row(table):
-    first_row = table.find("tr")
-    if first_row:
-        first_row_cells = first_row.find_all("td")
-        for cell in first_row_cells:
-            cell.name = "th"
-
-
 def get_subsections_from_sections(sections):
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
 
@@ -123,7 +116,7 @@ def get_subsections_from_sections(sections):
             else:
                 # convert first row of header cells into th elements
                 if tag.name == "table":
-                    _convert_table_first_row_to_header_row(tag)
+                    convert_table_first_row_to_header_row(tag)
 
                 if subsection:
                     subsection["body"].append(tag)
