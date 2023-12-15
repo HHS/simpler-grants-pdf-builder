@@ -31,6 +31,7 @@ class NofosLoginRequiredMiddleware:
 
             if (
                 match_view_url(request.get_full_path())  # is a view URL
+                and incoming_ip
                 and len(incoming_ip)  # there is an incoming ip
                 and incoming_ip in safe_ips
             ):
