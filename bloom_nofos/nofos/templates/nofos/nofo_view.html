@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator %}
+{% load static martortags nofo_section_name_separator add_captions_to_tables %}
 
 {% block title %}
  View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
@@ -110,7 +110,7 @@
           {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
             {% include "includes/heading.html" with tag=tag content=content id=id only %}
           {% endwith %}
-          {{ subsection.body|safe_markdown }}
+          {{ subsection.body|safe_markdown|add_captions_to_tables }}
         {% endfor %}
       </div>
     </section>

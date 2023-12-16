@@ -16,4 +16,4 @@ def add_caption_to_table(table):
 
     if caption:
         caption.name = "caption"  # reassign tag to <caption>
-        table.insert(1, caption)
+        table.insert(0, caption)
