@@ -3,7 +3,7 @@ from django.test import TestCase
 from bs4 import BeautifulSoup
 
 from .utils import match_view_url
-from .nofo import convert_table_first_row_to_header_row
+from .nofo import add_caption_to_table, convert_table_first_row_to_header_row
 
 
 class MatchUrlTests(TestCase):
@@ -28,12 +28,11 @@ class MatchUrlTests(TestCase):
 
 class HTMLTableTests(TestCase):
     def setUp(self):
-        # Your HTML content goes here
+        self.caption_text = "Physician Assistant Training Chart"
         self.html_filename = "nofos/fixtures/html/table.html"
         self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
 
-    def test_table_html_import(self):
-        # Find the table by class name
+    def test_table_before_convert_table_first_row_to_header_row(self):
         table = self.soup.find("table")
 
         # Confirm no header cells
@@ -53,8 +52,7 @@ class HTMLTableTests(TestCase):
         first_cell = first_row.find("td")
         self.assertIn("Year", first_cell.text.strip())
 
-    def test_table_html_import_after_convert(self):
-        # Find the table by class name
+    def test_table_after_convert_table_first_row_to_header_row(self):
         table = self.soup.find("table")
         # Convert first row of tds to ths
         convert_table_first_row_to_header_row(table)
@@ -75,3 +73,31 @@ class HTMLTableTests(TestCase):
         # Find the first cell and check its content
         first_cell = first_row.find("th")
         self.assertIn("Year", first_cell.text.strip())
+
+    def test_table_before_add_caption_to_table(self):
+        table = self.soup.find("table")
+
+        # table doesn't have a caption
+        self.assertIsNone(table.find("caption"))
+
+        # there is a paragraph tag with the caption
+        paragraph = self.soup.find("p", string=self.caption_text)
+        self.assertIsNotNone(paragraph)
+
+        # the paragraph tag has a span inside of it
+        self.assertIsNotNone(paragraph.find("span"))
+
+    def test_table_after_add_caption_to_table(self):
+        table = self.soup.find("table")
+        add_caption_to_table(table)
+
+        # no paragraph tag with the caption
+        paragraph = self.soup.find("p", string=self.caption_text)
+        self.assertIsNone(paragraph)
+
+        # table DOES have a caption
+        caption = table.find("caption", string=self.caption_text)
+        self.assertIsNotNone(caption)
+
+        # the caption tag has a span inside of it
+        self.assertIsNotNone(caption.find("span"))

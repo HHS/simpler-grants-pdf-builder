@@ -14,7 +14,7 @@ from markdownify import markdownify as md  # convert HTML to markdown
 
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 from .models import Nofo, Section, Subsection
-from .nofo import convert_table_first_row_to_header_row
+from .nofo import add_caption_to_table, convert_table_first_row_to_header_row
 
 
 class NofosListView(ListView):
@@ -117,6 +117,7 @@ def get_subsections_from_sections(sections):
                 # convert first row of header cells into th elements
                 if tag.name == "table":
                     convert_table_first_row_to_header_row(tag)
+                    add_caption_to_table(tag)
 
                 if subsection:
                     subsection["body"].append(tag)
