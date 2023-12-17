@@ -1,9 +1,12 @@
-from django.test import TestCase
-
+from freezegun import freeze_time
 from bs4 import BeautifulSoup
 
+
+from django.test import TestCase
+
+
 from .utils import match_view_url
-from .nofo import add_caption_to_table, convert_table_first_row_to_header_row
+from .nofo import add_caption_to_table, convert_table_first_row_to_header_row, suggest_nofo_title
 
 
 class MatchUrlTests(TestCase):
@@ -101,3 +104,25 @@ class HTMLTableTests(TestCase):
 
         # the caption tag has a span inside of it
         self.assertIsNotNone(caption.find("span"))
+
+class HTMLTableTests(TestCase):
+    def setUp(self):
+        self.nofo_title = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_suggest_nofo_title_returns_correct_title(self):
+        self.assertEqual(suggest_nofo_title(self.soup), self.nofo_title)
+
+    @freeze_time('1917-04-17')
+    def test_suggest_nofo_title_returns_default_title_for_bad_html(self):
+        default_name = "NOFO: 1917-04-17 00:00:00"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
+                    "html.parser"
+                )
+            ),
+            default_name
+        )

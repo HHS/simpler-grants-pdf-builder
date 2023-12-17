@@ -11,3 +11,5 @@ data.json
 # other static folder
 bloom_nofos/static
 
+# text fixture
+bloom_nofos/nofos/fixtures/html/nofo.html

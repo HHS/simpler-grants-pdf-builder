@@ -1,6 +1,3 @@
-import re
-import datetime
-
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
@@ -14,7 +11,7 @@ from markdownify import markdownify as md  # convert HTML to markdown
 
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 from .models import Nofo, Section, Subsection
-from .nofo import convert_table_first_row_to_header_row
+from .nofo import convert_table_first_row_to_header_row, suggest_nofo_title
 
 
 class NofosListView(ListView):
@@ -164,20 +161,6 @@ def create_nofo(title, sections):
     nofo = Nofo(title=title)
     nofo.save()
     return _build_nofo(nofo, sections)
-
-
-def suggest_nofo_title(soup):
-    nofo_title = "NOFO: {}".format(
-        datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
-    )
-
-    title_regex = re.compile("^Opportunity Name:", re.IGNORECASE)
-    title_element = soup.find(string=title_regex)
-    if title_element:
-        temp_title = title_regex.sub("", title_element.text)
-        nofo_title = temp_title.strip() if temp_title else nofo_title
-
-    return nofo_title
 
 
 def add_headings_to_nofo(nofo):
