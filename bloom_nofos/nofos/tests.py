@@ -136,20 +136,6 @@ class HTMLTableTests(TestCase):
 
 
 class HTMLSectionTests(TestCase):
-    def setUp(self):
-        self.html_filename = "nofos/fixtures/html/step_one.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
-
-    def test_get_sections_from_soup_html_file(self):
-        sections = get_sections_from_soup(self.soup)
-        self.assertEqual(len(sections), 1)
-
-        section = sections[0]
-        self.assertEqual(section.get("name"), "Step 1: Review the Opportunity")
-        self.assertEqual(section.get("html_id"), "")
-        self.assertEqual(section.get("order"), 1)
-        self.assertIsNotNone(section.get("body", None))
-
     def test_get_sections_from_soup(self):
         soup = BeautifulSoup("<h1>Section 1</h1><p>Section 1 body</p>", "html.parser")
         sections = get_sections_from_soup(soup)
@@ -187,14 +173,6 @@ class HTMLSectionTests(TestCase):
 
 
 class HTMLSubsectionTests(TestCase):
-    def setUp(self):
-        self.html_filename = "nofos/fixtures/html/step_one.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
-
-    # TODO
-    def test_get_sections_from_soup_html_file(self):
-        pass
-
     def test_get_subsections_from_soup(self):
         soup = BeautifulSoup(
             "<h1>Section 1</h1><h2>Subsection 1</h2><p>Section 1 body</p>",
@@ -303,3 +281,72 @@ class HTMLSubsectionTests(TestCase):
         self.assertEqual(
             str(subsection_two.get("body")[0]), "<p>Section 1 body continued</p>"
         )
+
+
+class HTMLNofoFileTests(TestCase):
+    def setUp(self):
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_get_sections_from_soup_html_file(self):
+        sections = get_sections_from_soup(self.soup)
+        self.assertEqual(len(sections), 7)
+
+        section = sections[0]
+        self.assertEqual(section.get("name"), "Step 1: Review the Opportunity")
+        self.assertEqual(section.get("html_id"), "")
+        self.assertEqual(section.get("order"), 1)
+        self.assertIsNotNone(section.get("body", None))
+
+    def test_get_subsections_from_soup_html_file(self):
+        sections = get_subsections_from_sections(get_sections_from_soup(self.soup))
+        self.assertEqual(len(sections), 7)
+
+        section_info = [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "subsections_len": 24,
+                "subsections_first_title": "Basic Information",
+            },
+            {
+                "name": "Step 2: Get Ready to Apply",
+                "subsections_len": 6,
+                "subsections_first_title": "Get Registered",
+            },
+            {
+                "name": "Step 3: Write Your Application",
+                "subsections_len": 32,
+                "subsections_first_title": "Application Contents & Format",
+            },
+            {
+                "name": "Step 4: Learn About Review & Award",
+                "subsections_len": 13,
+                "subsections_first_title": "Application Review",
+            },
+            {
+                "name": "Step 5: Submit Your Application",
+                "subsections_len": 8,
+                "subsections_first_title": "Application Submission & Deadlines",
+            },
+            {
+                "name": "Learn What Happens After Award",
+                "subsections_len": 4,
+                "subsections_first_title": "Post-Award Requirements & Administration",
+            },
+            {
+                "name": "Contacts & Support",
+                "subsections_len": 8,
+                "subsections_first_title": "Agency Contacts",
+            },
+        ]
+
+        for index, section in enumerate(sections):
+            self.assertEqual(section.get("name"), section_info[index].get("name"))
+            self.assertEqual(
+                len(section.get("subsections")),
+                section_info[index].get("subsections_len"),
+            )
+            self.assertEqual(
+                section.get("subsections")[0].get("name"),
+                section_info[index].get("subsections_first_title"),
+            )
