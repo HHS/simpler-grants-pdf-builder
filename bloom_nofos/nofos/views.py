@@ -12,8 +12,8 @@ from markdownify import markdownify as md  # convert HTML to markdown
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 from .models import Nofo, Section, Subsection
 from .nofo import (
-    convert_table_first_row_to_header_row,
     get_sections_from_soup,
+    get_subsections_from_sections,
     suggest_nofo_title,
 )
 
@@ -43,60 +43,6 @@ class NofosDeleteView(DeleteView):
             self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
         )
         return super().form_valid(form)
-
-
-def get_subsections_from_sections(sections):
-    heading_tags = ["h2", "h3", "h4", "h5", "h6"]
-
-    def demote_tag(tag):
-        if tag.name == "h6":
-            return tag
-
-        newTags = {
-            "h2": "h3",
-            "h3": "h4",
-            "h4": "h5",
-            "h5": "h6",
-        }
-
-        return newTags[tag.name]
-
-    # h1s are gone since last method
-    subsection = None
-    for section in sections:
-        subsection = None
-        section["subsections"] = []
-        # remove 'body' key
-        body = section.pop("body", None)
-
-        body_descendents = [
-            tag for tag in body if tag.parent.name in ["body", "[document]"]
-        ]
-        for tag in body_descendents:
-            if tag.name in heading_tags:
-                # add existing subsection to array
-                if subsection:
-                    section["subsections"].append(subsection)
-
-                # create new subsection
-                subsection = {
-                    "name": tag.text,
-                    "order": len(section["subsections"]) + 1,
-                    "tag": demote_tag(tag),
-                    "html_id": tag.get("id", ""),
-                    "body": [],
-                }
-
-            # if not a heading, add to existing subsection
-            else:
-                # convert first row of header cells into th elements
-                if tag.name == "table":
-                    convert_table_first_row_to_header_row(tag)
-
-                if subsection:
-                    subsection["body"].append(tag)
-
-    return sections
 
 
 def _build_nofo(nofo, sections):

@@ -49,6 +49,59 @@ def get_sections_from_soup(soup):
     return sections
 
 
+def get_subsections_from_sections(sections):
+    heading_tags = ["h2", "h3", "h4", "h5", "h6"]
+
+    def demote_tag(tag):
+        if tag.name == "h6":
+            return tag
+
+        newTags = {
+            "h2": "h3",
+            "h3": "h4",
+            "h4": "h5",
+            "h5": "h6",
+        }
+
+        return newTags[tag.name]
+
+    # h1s are gone since last method
+    subsection = None
+    for section in sections:
+        subsection = None
+        section["subsections"] = []
+        # remove 'body' key
+        body = section.pop("body", None)
+
+        body_descendents = [
+            tag for tag in body if tag.parent.name in ["body", "[document]"]
+        ]
+
+        for tag in body_descendents:
+            if tag.name in heading_tags:
+                # create new subsection
+                subsection = {
+                    "name": tag.text,
+                    "order": len(section["subsections"]) + 1,
+                    "tag": demote_tag(tag),
+                    "html_id": tag.get("id", ""),
+                    "body": [],
+                }
+
+                section["subsections"].append(subsection)
+
+            # if not a heading, add to existing subsection
+            else:
+                # convert first row of header cells into th elements
+                if tag.name == "table":
+                    convert_table_first_row_to_header_row(tag)
+
+                if subsection:
+                    subsection["body"].append(tag)
+
+    return sections
+
+
 def suggest_nofo_title(soup):
     nofo_title = "NOFO: {}".format(
         datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
