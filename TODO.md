@@ -8,12 +8,26 @@
 - For deployed app, maybe logging?
 - Password reset flow on command line
 - Password reset flow exists
+- Suggest opportunity number when importing a NOFO
+  - If number found, skip page
+  - If number not found, manual assignment
+  - Add to model + edit page
 - Build a title page
   - Refac: Opportunity number
+- Write tests
+  - Build nofo code
+  - Add header ids code
 - Refac: short section names for breadcrumbs means we can loop
 
 # DONE
 
+- Suggest opportunity number
+- Add caption element to tables
+- Write tests
+  - Suggestion code
+  - Section parsing code
+  - Subsection parsing code
+  - Table interpreting code
 - Safelist incoming IPs for document viewing
 - New running header
   - Running header knows what section it is

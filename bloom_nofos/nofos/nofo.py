@@ -1,6 +1,8 @@
 import re
 import datetime
 
+from .models import Nofo
+
 
 def add_caption_to_table(table):
     caption = None
@@ -102,15 +104,32 @@ def get_subsections_from_sections(sections):
     return sections
 
 
+def _suggest_by_startswith_string(soup, startswith_string):
+    suggestion = ""
+    regex = re.compile("^{}".format(startswith_string), re.IGNORECASE)
+    element = soup.find(string=regex)
+    if element:
+        suggestion = regex.sub("", element.text)
+
+    return suggestion.strip()
+
+
+def suggest_nofo_opportunity_number(soup):
+    nofo_number = 1
+    try:
+        nofo_number = Nofo.objects.latest("id").id + 1
+    except Nofo.DoesNotExist:
+        pass
+
+    opportunity_number = "NOFO #{}".format(nofo_number)
+    suggestion = _suggest_by_startswith_string(soup, "Opportunity Number:")
+    return suggestion or opportunity_number
+
+
 def suggest_nofo_title(soup):
     nofo_title = "NOFO: {}".format(
         datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
     )
 
-    title_regex = re.compile("^Opportunity Name:", re.IGNORECASE)
-    title_element = soup.find(string=title_regex)
-    if title_element:
-        temp_title = title_regex.sub("", title_element.text)
-        nofo_title = temp_title.strip() if temp_title else nofo_title
-
-    return nofo_title
+    suggestion = _suggest_by_startswith_string(soup, "Opportunity Name:")
+    return suggestion or nofo_title

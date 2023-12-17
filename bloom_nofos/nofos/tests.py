@@ -11,6 +11,7 @@ from .nofo import (
     convert_table_first_row_to_header_row,
     get_sections_from_soup,
     get_subsections_from_sections,
+    suggest_nofo_opportunity_number,
     suggest_nofo_title,
 )
 
@@ -112,7 +113,7 @@ class HTMLTableTests(TestCase):
         self.assertIsNotNone(caption.find("span"))
 
 
-class HTMLTableTests(TestCase):
+class HTMLSuggestTitleTests(TestCase):
     def setUp(self):
         self.nofo_title = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
         self.html_filename = "nofos/fixtures/html/nofo.html"
@@ -132,6 +133,31 @@ class HTMLTableTests(TestCase):
                 )
             ),
             default_name,
+        )
+
+
+class HTMLSuggestNumberTests(TestCase):
+    def setUp(self):
+        self.nofo_opportunity_number = "HRSA-24-019"
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_suggest_nofo_title_returns_correct_title(self):
+        self.assertEqual(
+            suggest_nofo_opportunity_number(self.soup), self.nofo_opportunity_number
+        )
+
+    @freeze_time("1917-04-17")
+    def test_suggest_nofo_title_returns_default_title_for_bad_html(self):
+        default_number = "NOFO #1"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
+                    "html.parser",
+                )
+            ),
+            default_number,
         )
 
 
