@@ -11,7 +11,11 @@ from markdownify import markdownify as md  # convert HTML to markdown
 
 from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
 from .models import Nofo, Section, Subsection
-from .nofo import convert_table_first_row_to_header_row, suggest_nofo_title
+from .nofo import (
+    convert_table_first_row_to_header_row,
+    get_sections_from_soup,
+    suggest_nofo_title,
+)
 
 
 class NofosListView(ListView):
@@ -39,32 +43,6 @@ class NofosDeleteView(DeleteView):
             self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
         )
         return super().form_valid(form)
-
-
-def get_sections_from_soup(soup):
-    # build a structure that looks like our model
-    sections = []
-    section_num = -1
-
-    for tag in soup.find_all(True):
-        if tag.name == "h1":
-            section_num += 1
-
-        if section_num >= 0:
-            if len(sections) == section_num:
-                # add an empty array at a new index
-                sections.append(
-                    {
-                        "name": tag.text,
-                        "order": section_num + 1,
-                        "html_id": tag.get("id", ""),
-                        "body": [],
-                    }
-                )
-            else:
-                sections[section_num]["body"].append(tag)
-
-    return sections
 
 
 def get_subsections_from_sections(sections):
