@@ -193,90 +193,48 @@ def nofo_import(request, pk=None):
         return render(request, "nofos/nofo_import.html")
 
 
-def nofo_import_title(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
-
-    if request.method == "POST":
-        form = NofoNameForm(request.POST)
-
-        if form.is_valid():
-            nofo.title = form.cleaned_data["title"]
-            nofo.short_name = form.cleaned_data["short_name"]
-            nofo.save()
-
-            # Note: keep this here so that it always shows up, even if you skip adding a coach
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                "View NOFO: <a href='/nofos/{}'>{}</a>".format(
-                    nofo.id, nofo.short_name or nofo.title
-                ),
-            )
-
-            if nofo.number.startswith("NOFO #"):
-                return redirect("nofos:nofo_import_number", pk=nofo.id)
-
-            return redirect("nofos:nofo_import_coach", pk=nofo.id)
-
-    else:
-        form = NofoNameForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_import_title.html",
-        {"form": form},
-    )
-
-
-def nofo_import_number(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
-
-    if request.method == "POST":
-        form = NofoNumberForm(request.POST)
-
-        if form.is_valid():
-            nofo.number = form.cleaned_data["number"]
-            nofo.save()
-
-            return redirect("nofos:nofo_import_coach", pk=nofo.id)
-
-    else:
-        form = NofoNumberForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_import_number.html",
-        {"nofo": nofo, "form": form},
-    )
-
-
-def nofo_import_coach(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
-
-    if request.method == "POST":
-        form = NofoCoachForm(request.POST)
-
-        if form.is_valid():
-            nofo.coach = form.cleaned_data["coach"]
-            nofo.save()
-
-            return redirect("nofos:nofo_index")
-
-    else:
-        form = NofoCoachForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_import_coach.html",
-        {"nofo": nofo, "form": form},
-    )
-
-
 class BaseNofoEditView(UpdateView):
     model = Nofo
 
     def get_success_url(self):
         return self.object.get_absolute_url()
+
+
+class NofoImportTitleView(BaseNofoEditView):
+    form_class = NofoNameForm
+    template_name = "nofos/nofo_import_title.html"
+
+    def form_valid(self, form):
+        nofo = self.object
+        nofo.title = form.cleaned_data["title"]
+        nofo.short_name = form.cleaned_data["short_name"]
+        nofo.save()
+
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "View NOFO: <a href='/nofos/{}'>{}</a>".format(
+                nofo.id, nofo.short_name or nofo.title
+            ),
+        )
+
+        if nofo.number.startswith("NOFO #"):
+            return redirect("nofos:nofo_import_number", pk=nofo.id)
+
+        return redirect("nofos:nofo_import_coach", pk=nofo.id)
+
+
+class NofoImportNumberView(BaseNofoEditView):
+    form_class = NofoNumberForm
+    template_name = "nofos/nofo_import_number.html"
+
+    def get_success_url(self):
+        return reverse_lazy("nofos:nofo_import_coach", kwargs={"pk": self.object.id})
+
+
+class NofoImportCoachView(BaseNofoEditView):
+    form_class = NofoCoachForm
+    template_name = "nofos/nofo_import_coach.html"
 
 
 class NofoEditTitleView(BaseNofoEditView):
@@ -319,26 +277,4 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         request,
         "nofos/subsection_edit.html",
         {"subsection": subsection, "nofo": nofo, "form": form},
-    )
-
-
-def nofo_delete(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
-
-    if request.method == "POST":
-        nofo.delete()
-        if form.is_valid():
-            nofo.title = form.cleaned_data["title"]
-            nofo.short_name = form.cleaned_data["short_name"]
-            nofo.save()
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-    else:
-        form = NofoNameForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_edit_title.html",
-        {"nofo": nofo, "form": form},
     )
