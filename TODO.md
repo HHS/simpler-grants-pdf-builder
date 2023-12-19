@@ -10,13 +10,13 @@
 - Password reset flow exists
 - Build a title page
   - Refac: Opportunity number
-- Write tests
-  - Build nofo code
-  - Add header ids code
 - Refac: short section names for breadcrumbs means we can loop
+- Add version number
+- Add a button to print the PDF
 
 # DONE
 
+- Add new coaches
 - Suggest opportunity number when importing a NOFO
   - If number found, skip page
   - If number not found, manual assignment
@@ -28,6 +28,9 @@
   - Section parsing code
   - Subsection parsing code
   - Table interpreting code
+  - Build nofo code
+  - Overwrite nofo code
+  - Add header ids code
 - Safelist incoming IPs for document viewing
 - New running header
   - Running header knows what section it is

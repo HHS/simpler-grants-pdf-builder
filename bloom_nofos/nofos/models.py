@@ -23,9 +23,12 @@ class Nofo(models.Model):
     )
 
     COACH_CHOICES = [
-        ("july", "July"),
         ("emily", "Emily"),
         ("hannah", "Hannah"),
+        ("july", "July"),
+        ("laura", "Laura"),
+        ("moira", "Moira"),
+        ("morgan", "Morgan"),
     ]
 
     coach = models.CharField(
