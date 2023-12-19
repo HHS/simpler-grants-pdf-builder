@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name %}
+{% load martortags nofo_name get_value_or_none %}
 
 {% block title %}
   Edit “{{ nofo|nofo_name }}”
@@ -36,7 +36,7 @@
 
   <table class="usa-table usa-table--borderless width-full">
     <caption>
-      <h2 class="margin-bottom-0">{% if nofo.short_name%}Short name and t{% else%}T{% endif %}itle</h2>
+      <h2 class="margin-bottom-0">NOFO metadata</h2>
     </caption>
     <thead class="usa-sr-only">
       <tr>
@@ -58,6 +58,11 @@
         <td>{{ nofo.title }}</td>
         <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
       <tr>
+      <tr>
+        <th scope="row">Number</th>
+        <td>{{ nofo.number|get_value_or_none:"number" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_number' nofo.id %}">Edit<span class="usa-sr-only"> number</span></a></td>
+      <tr>
     </tbody>
   </table>
 
@@ -75,7 +80,7 @@
     <tbody>
       <tr>
         <th scope="row">Name of coach</th>
-        <td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<i class="text-base">No coach</i>{% endif %}</td>
+        <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
       <tr>
     </tbody>
@@ -97,7 +102,7 @@
         {% for subsection in section.subsections.all %}
           <tr>
             <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
-            <td class="nofo-edit-table--subsection--body">{% if subsection.body %}{{ subsection.body|safe_markdown }}{% else %}<i class="text-base">No content</i>{% endif %}</td>
+            <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|get_value_or_none:"content" }}</td>
             <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
           <tr>
         {% endfor %}

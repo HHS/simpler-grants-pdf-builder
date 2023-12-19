@@ -14,11 +14,19 @@ class Nofo(models.Model):
         help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
     )
 
+    number = models.CharField(
+        "Opportunity number",
+        max_length=200,
+        blank=True,
+        help_text="The official number for this NOFO. It will be public.",
+    )
+
     COACH_CHOICES = [
         ("july", "July"),
         ("emily", "Emily"),
         ("hannah", "Hannah"),
     ]
+
     coach = models.CharField(
         max_length=16,
         choices=COACH_CHOICES,

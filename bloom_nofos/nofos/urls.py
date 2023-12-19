@@ -14,6 +14,7 @@ urlpatterns = [
     path("<int:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
     path("<int:pk>/edit/coach", views.nofo_edit_coach, name="nofo_edit_coach"),
     path("<int:pk>/edit/title", views.nofo_edit_title, name="nofo_edit_title"),
+    path("<int:pk>/edit/number", views.nofo_edit_number, name="nofo_edit_number"),
     path(
         "<int:pk>/edit/subsection/<int:subsection_pk>",
         views.nofo_subsection_edit,

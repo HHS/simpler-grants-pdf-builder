@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
-from .forms import NofoNameForm, NofoCoachForm, SubsectionForm
+from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, SubsectionForm
 from .models import Nofo, Section, Subsection
 from .nofo import (
     get_sections_from_soup,
@@ -284,6 +284,28 @@ def nofo_edit_coach(request, pk):
     return render(
         request,
         "nofos/nofo_edit_coach.html",
+        {"nofo": nofo, "form": form},
+    )
+
+
+def nofo_edit_number(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        form = NofoNumberForm(request.POST)
+
+        if form.is_valid():
+            nofo.number = form.cleaned_data["number"]
+            nofo.save()
+
+            return redirect("nofos:nofo_edit", pk=nofo.id)
+
+    else:
+        form = NofoNumberForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_edit_number.html",
         {"nofo": nofo, "form": form},
     )
 
