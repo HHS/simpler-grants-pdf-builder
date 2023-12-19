@@ -8,10 +8,6 @@
 - For deployed app, maybe logging?
 - Password reset flow on command line
 - Password reset flow exists
-- Suggest opportunity number when importing a NOFO
-  - If number found, skip page
-  - If number not found, manual assignment
-  - Add to model + edit page
 - Build a title page
   - Refac: Opportunity number
 - Write tests
@@ -21,7 +17,11 @@
 
 # DONE
 
-- Suggest opportunity number
+- Suggest opportunity number when importing a NOFO
+  - If number found, skip page
+  - If number not found, manual assignment
+  - Add to model + edit page
+  - Add to nofo index and admin listing
 - Add caption element to tables
 - Write tests
   - Suggestion code
