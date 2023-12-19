@@ -292,22 +292,19 @@ ul:last-child, ol:last-child {
 }
 
 
-.nofo--title-page--header .nofo--title-page--header--logo,
-.nofo--title-page--header .nofo--title-page--header--intro,
-.nofo--title-page--footer div {
-  display: float;
+.nofo--title-page--header .nofo--title-page--header--logo {
   float: left;
 }
 
 .nofo--title-page--header .nofo--title-page--header--intro,
-.nofo--title-page--footer div:last-of-type {
+.nofo--title-page--footer .nofo--title-page--footer--image {
   float: right;
 }
 
-.nofo--title-page--footer div:last-of-type {
+.nofo--title-page--footer .nofo--title-page--footer--logo {
   position: absolute;
   bottom: 10mm;
-  right: 10mm;
+  left: 10mm;
 }
 
 .nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
@@ -316,19 +313,19 @@ ul:last-child, ol:last-child {
   font-weight: 700;
 }
 
-.nofo--title-page--footer div:first-of-type {
+.nofo--title-page--footer--image {
   height: 500px;
   width: 85%;
   overflow: hidden;
 }
 
-.nofo--title-page--footer div:first-of-type img {
+.nofo--title-page--footer--image img {
   height: 100%;
-  border-radius: 0 80px 0 0;
+  border-radius: 80px 0 0 0;
   object-fit: cover;
 }
 
-.nofo--title-page--footer div:last-of-type img {
+.nofo--title-page--footer--logo img {
   width: 100px;
   filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
 }

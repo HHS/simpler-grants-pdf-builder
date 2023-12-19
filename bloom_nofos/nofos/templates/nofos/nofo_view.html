@@ -36,18 +36,18 @@
       <div class="nofo--title-page--header--intro">
         <span>Notice of Funding Opportunity</span>
         <br />
-        <span>Opportunity number: HRSA-24-019</span>
+        <span>Opportunity number: {{ nofo.number }}</span>
       </div>
     </div>
     <div class="nofo--title-page--title">
       <h1 class="font-heading-xl margin-y-0">{{ nofo.title }}</h1>
     </div>
     <div class="nofo--title-page--footer clearfix">
-      <div>
-        <img alt="Two doctors conversing" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic.jpg" />
-      </div>
-      <div>
+      <div class="nofo--title-page--footer--logo">
         <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg" />
+      </div>
+      <div class="nofo--title-page--footer--image">
+        <img alt="Two doctors conversing" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic.jpg" />
       </div>
     </div>
   </section>
