@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from martor.models import MartorField
 
 
@@ -38,6 +39,9 @@ class Nofo(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("nofos:nofo_edit", args=(self.id,))
 
 
 # TODO default lambda

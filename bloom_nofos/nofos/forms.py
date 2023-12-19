@@ -3,34 +3,39 @@ from .models import Nofo, Subsection
 from martor.fields import MartorFormField
 
 
-class NofoNameForm(forms.ModelForm):
+class BaseNofoRequiredFieldForm(forms.ModelForm):
+    """
+    Create a BaseNofoRequiredFieldForm that sets required=True for fields that are not specified in "not_required_field_labels"
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if (
+                hasattr(self, "not_required_field_labels")
+                and field.label not in self.not_required_field_labels
+            ):
+                field.required = True
+
+
+class NofoNameForm(BaseNofoRequiredFieldForm):
+    not_required_field_labels = ["Short name"]
+
     class Meta:
         model = Nofo
         fields = ["title", "short_name"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["title"].required = True
 
-
-class NofoCoachForm(forms.ModelForm):
+class NofoCoachForm(BaseNofoRequiredFieldForm):
     class Meta:
         model = Nofo
         fields = ["coach"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["coach"].required = True
 
-
-class NofoNumberForm(forms.ModelForm):
+class NofoNumberForm(BaseNofoRequiredFieldForm):
     class Meta:
         model = Nofo
         fields = ["number"]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["number"].required = True
 
 
 class SubsectionForm(forms.ModelForm):

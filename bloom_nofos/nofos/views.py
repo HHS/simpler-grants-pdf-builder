@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, DeleteView
+from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
 from slugify import slugify
 from bs4 import BeautifulSoup
@@ -243,71 +243,26 @@ def nofo_import_coach(request, pk):
     )
 
 
-def nofo_edit_title(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
+class BaseNofoEditView(UpdateView):
+    model = Nofo
 
-    if request.method == "POST":
-        form = NofoNameForm(request.POST)
-
-        if form.is_valid():
-            nofo.title = form.cleaned_data["title"]
-            nofo.short_name = form.cleaned_data["short_name"]
-            nofo.save()
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-    else:
-        form = NofoNameForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_edit_title.html",
-        {"nofo": nofo, "form": form},
-    )
+    def get_success_url(self):
+        return self.object.get_absolute_url()
 
 
-def nofo_edit_coach(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
-
-    if request.method == "POST":
-        form = NofoCoachForm(request.POST)
-
-        if form.is_valid():
-            nofo.coach = form.cleaned_data["coach"]
-            nofo.save()
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-    else:
-        form = NofoCoachForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_edit_coach.html",
-        {"nofo": nofo, "form": form},
-    )
+class NofoEditTitleView(BaseNofoEditView):
+    form_class = NofoNameForm
+    template_name = "nofos/nofo_edit_title.html"
 
 
-def nofo_edit_number(request, pk):
-    nofo = get_object_or_404(Nofo, pk=pk)
+class NofoEditCoachView(BaseNofoEditView):
+    form_class = NofoCoachForm
+    template_name = "nofos/nofo_edit_coach.html"
 
-    if request.method == "POST":
-        form = NofoNumberForm(request.POST)
 
-        if form.is_valid():
-            nofo.number = form.cleaned_data["number"]
-            nofo.save()
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-    else:
-        form = NofoNumberForm(instance=nofo)
-
-    return render(
-        request,
-        "nofos/nofo_edit_number.html",
-        {"nofo": nofo, "form": form},
-    )
+class NofoEditNumberView(BaseNofoEditView):
+    form_class = NofoNumberForm
+    template_name = "nofos/nofo_edit_number.html"
 
 
 def nofo_subsection_edit(request, pk, subsection_pk):

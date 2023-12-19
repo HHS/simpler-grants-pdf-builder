@@ -12,9 +12,17 @@ urlpatterns = [
     path("<int:pk>/import/title", views.nofo_import_title, name="nofo_import_title"),
     path("<int:pk>", views.NofosDetailView.as_view(), name="nofo_view"),
     path("<int:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
-    path("<int:pk>/edit/coach", views.nofo_edit_coach, name="nofo_edit_coach"),
-    path("<int:pk>/edit/title", views.nofo_edit_title, name="nofo_edit_title"),
-    path("<int:pk>/edit/number", views.nofo_edit_number, name="nofo_edit_number"),
+    path(
+        "<int:pk>/edit/coach", views.NofoEditCoachView.as_view(), name="nofo_edit_coach"
+    ),
+    path(
+        "<int:pk>/edit/title", views.NofoEditTitleView.as_view(), name="nofo_edit_title"
+    ),
+    path(
+        "<int:pk>/edit/number",
+        views.NofoEditNumberView.as_view(),
+        name="nofo_edit_number",
+    ),
     path(
         "<int:pk>/edit/subsection/<int:subsection_pk>",
         views.nofo_subsection_edit,
