@@ -5,15 +5,16 @@ from freezegun import freeze_time
 from django.test import TestCase
 
 
-from .utils import match_view_url
 from .nofo import (
     add_caption_to_table,
+    create_nofo,
     convert_table_first_row_to_header_row,
     get_sections_from_soup,
     get_subsections_from_sections,
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
 )
+from .utils import match_view_url
 
 
 class MatchUrlTests(TestCase):
@@ -376,3 +377,80 @@ class HTMLNofoFileTests(TestCase):
                 section.get("subsections")[0].get("name"),
                 section_info[index].get("subsections_first_title"),
             )
+
+
+class CreateNOFOTests(TestCase):
+    def setUp(self):
+        self.sections = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": ["<p>Section 1 body</p>"],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h4",
+                        "html_id": "subsection-2",
+                        "body": ["<p>Section 1 body continued</p>"],
+                    },
+                ],
+            }
+        ]
+
+    def test_create_nofo_success(self):
+        """
+        Test creating a nofo object successfully
+        """
+        nofo = create_nofo("Test Nofo", self.sections)
+        self.assertEqual(nofo.title, "Test Nofo")
+        self.assertEqual(nofo.number, "NOFO #999")
+        self.assertEqual(len(nofo.sections.all()), 1)
+        self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
+
+    def test_create_nofo_success_with_number(self):
+        """
+        Test creating a nofo object successfully with a custom nofo number
+        """
+        nofo = create_nofo("Test Nofo", self.sections, "HRSA-123")
+        self.assertEqual(nofo.title, "Test Nofo")
+        self.assertEqual(nofo.number, "HRSA-123")
+        self.assertEqual(len(nofo.sections.all()), 1)
+        self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
+
+    def test_create_nofo_success_duplicate_nofos(self):
+        """
+        Test creating two duplicate nofo objects successfully
+        """
+        nofo = create_nofo("Test Nofo", self.sections)
+        nofo2 = create_nofo("Test Nofo", self.sections)
+        self.assertEqual(nofo.title, nofo2.title)
+        self.assertEqual(nofo.number, nofo2.number)
+        self.assertEqual(len(nofo.sections.all()), len(nofo2.sections.all()))
+        self.assertEqual(
+            len(nofo.sections.first().subsections.all()),
+            len(nofo2.sections.first().subsections.all()),
+        )
+
+    def test_create_nofo_success_no_sections(self):
+        """
+        Test with empty nofo sections
+        """
+        nofo = create_nofo("Test Nofo", [])
+        self.assertEqual(nofo.title, "Test Nofo")
+        self.assertEqual(len(nofo.sections.all()), 0)
+
+    def test_create_nofo_success_no_title(self):
+        """
+        Test with empty nofo title and empty sections
+        """
+        nofo = create_nofo("", [])
+        self.assertEqual(nofo.title, "")
+        self.assertEqual(len(nofo.sections.all()), 0)

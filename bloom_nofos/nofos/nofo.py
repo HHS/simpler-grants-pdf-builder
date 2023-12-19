@@ -1,7 +1,11 @@
 import re
 import datetime
 
-from .models import Nofo
+
+from markdownify import markdownify as md  # convert HTML to markdown
+
+
+from .models import Nofo, Section, Subsection
 
 
 def add_caption_to_table(table):
@@ -15,6 +19,43 @@ def add_caption_to_table(table):
     if caption:
         caption.name = "caption"  # reassign tag to <caption>
         table.insert(0, caption)
+
+
+def _build_nofo(nofo, sections):
+    for section in sections:
+        model_section = Section(
+            name=section.get("name", "Section X"),
+            order=section.get("order", ""),
+            html_id=section.get("html_id"),
+            nofo=nofo,
+        )
+        model_section.save()
+
+        for subsection in section.get("subsections", []):
+            md_body = ""
+            html_body = [str(tag).strip() for tag in subsection.get("body", [])]
+
+            if html_body:
+                md_body = md("".join(html_body))
+
+            model_subsection = Subsection(
+                name=subsection.get("name", "Subsection X"),
+                order=subsection.get("order", ""),
+                tag=subsection.get("tag", "h6"),
+                html_id=subsection.get("html_id"),
+                body=md_body,  # body can be empty
+                section=model_section,
+            )
+            model_subsection.save()
+
+    return nofo
+
+
+def create_nofo(title, sections, nofo_number="NOFO #999"):
+    nofo = Nofo(title=title)
+    nofo.number = nofo_number
+    nofo.save()
+    return _build_nofo(nofo, sections)
 
 
 def convert_table_first_row_to_header_row(table):

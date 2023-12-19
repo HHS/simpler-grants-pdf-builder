@@ -12,6 +12,7 @@ from markdownify import markdownify as md  # convert HTML to markdown
 from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, SubsectionForm
 from .models import Nofo, Section, Subsection
 from .nofo import (
+    create_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
     suggest_nofo_title,
@@ -78,13 +79,6 @@ def _build_nofo(nofo, sections):
 
 def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
-    nofo.save()
-    return _build_nofo(nofo, sections)
-
-
-def create_nofo(title, sections, nofo_number="NOFO #999"):
-    nofo = Nofo(title=title)
-    nofo.number = nofo_number
     nofo.save()
     return _build_nofo(nofo, sections)
 
