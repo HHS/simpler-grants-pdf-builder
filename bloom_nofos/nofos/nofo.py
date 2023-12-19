@@ -58,6 +58,12 @@ def create_nofo(title, sections, nofo_number="NOFO #999"):
     return _build_nofo(nofo, sections)
 
 
+def overwrite_nofo(nofo, sections):
+    nofo.sections.all().delete()
+    nofo.save()
+    return _build_nofo(nofo, sections)
+
+
 def convert_table_first_row_to_header_row(table):
     first_row = table.find("tr")
     if first_row:

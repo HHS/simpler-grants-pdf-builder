@@ -10,9 +10,10 @@ from markdown2 import Markdown  # convert markdown to HTML
 from markdownify import markdownify as md  # convert HTML to markdown
 
 from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, SubsectionForm
-from .models import Nofo, Section, Subsection
+from .models import Nofo, Subsection
 from .nofo import (
     create_nofo,
+    overwrite_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
     suggest_nofo_title,
@@ -45,42 +46,6 @@ class NofosDeleteView(DeleteView):
             self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
         )
         return super().form_valid(form)
-
-
-def _build_nofo(nofo, sections):
-    for section in sections:
-        model_section = Section(
-            name=section.get("name", "Section X"),
-            order=section.get("order", ""),
-            html_id=section.get("html_id"),
-            nofo=nofo,
-        )
-        model_section.save()
-
-        for subsection in section.get("subsections", []):
-            md_body = ""
-            html_body = [str(tag).strip() for tag in subsection.get("body", [])]
-
-            if html_body:
-                md_body = md("".join(html_body))
-
-            model_subsection = Subsection(
-                name=subsection.get("name", "Subsection X"),
-                order=subsection.get("order", ""),
-                tag=subsection.get("tag", "h6"),
-                html_id=subsection.get("html_id"),
-                body=md_body,  # body can be empty
-                section=model_section,
-            )
-            model_subsection.save()
-
-    return nofo
-
-
-def overwrite_nofo(nofo, sections):
-    nofo.sections.all().delete()
-    nofo.save()
-    return _build_nofo(nofo, sections)
 
 
 def add_headings_to_nofo(nofo):
