@@ -3,6 +3,7 @@ import datetime
 
 
 from markdownify import markdownify as md  # convert HTML to markdown
+from slugify import slugify
 
 
 from .models import Nofo, Section, Subsection
@@ -19,6 +20,41 @@ def add_caption_to_table(table):
     if caption:
         caption.name = "caption"  # reassign tag to <caption>
         table.insert(0, caption)
+
+
+def add_headings_to_nofo(nofo):
+    new_ids = []
+
+    # add ids to all section headings
+    for section in nofo.sections.all():
+        section_id = slugify(section.name)
+
+        if section.html_id:
+            new_ids.append({"old_id": section.html_id, "new_id": section_id})
+
+        section.html_id = section_id
+        section.save()
+
+        # add ids to all subsection headings
+        for subsection in section.subsections.all():
+            subsection_id = "{}--{}".format(section_id, slugify(subsection.name))
+
+            if subsection.html_id:
+                new_ids.append({"old_id": subsection.html_id, "new_id": subsection_id})
+
+            subsection.html_id = subsection_id
+            subsection.save()
+
+    # replace all old ids with new ids
+    for section in nofo.sections.all():
+        for subsection in section.subsections.all():
+            body = subsection.body
+            for ids in new_ids:
+                subsection.body = body.replace(ids["old_id"], ids["new_id"])
+
+            subsection.save()
+
+    return nofo
 
 
 def _build_nofo(nofo, sections):

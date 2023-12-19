@@ -4,14 +4,13 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
-from slugify import slugify
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
-from markdownify import markdownify as md  # convert HTML to markdown
 
 from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, SubsectionForm
 from .models import Nofo, Subsection
 from .nofo import (
+    add_headings_to_nofo,
     create_nofo,
     overwrite_nofo,
     get_sections_from_soup,
@@ -46,41 +45,6 @@ class NofosDeleteView(DeleteView):
             self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
         )
         return super().form_valid(form)
-
-
-def add_headings_to_nofo(nofo):
-    new_ids = []
-
-    # add ids to all section headings
-    for section in nofo.sections.all():
-        section_id = slugify(section.name)
-
-        if section.html_id:
-            new_ids.append({"old_id": section.html_id, "new_id": section_id})
-
-        section.html_id = section_id
-        section.save()
-
-        # add ids to all subsection headings
-        for subsection in section.subsections.all():
-            subsection_id = "{}--{}".format(section_id, slugify(subsection.name))
-
-            if subsection.html_id:
-                new_ids.append({"old_id": subsection.html_id, "new_id": subsection_id})
-
-            subsection.html_id = subsection_id
-            subsection.save()
-
-    # replace all old ids with new ids
-    for section in nofo.sections.all():
-        for subsection in section.subsections.all():
-            body = subsection.body
-            for ids in new_ids:
-                subsection.body = body.replace(ids["old_id"], ids["new_id"])
-
-            subsection.save()
-
-    return nofo
 
 
 def nofo_import(request, pk=None):

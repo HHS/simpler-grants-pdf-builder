@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from .nofo import (
     add_caption_to_table,
+    add_headings_to_nofo,
     create_nofo,
     overwrite_nofo,
     convert_table_first_row_to_header_row,
@@ -380,31 +381,35 @@ class HTMLNofoFileTests(TestCase):
             )
 
 
+def _get_sections_dict():
+    return [
+        {
+            "name": "Section 1",
+            "order": 1,
+            "html_id": "",
+            "subsections": [
+                {
+                    "name": "Subsection 1",
+                    "order": 1,
+                    "tag": "h3",
+                    "html_id": "",
+                    "body": ["<p>Section 1 body</p>"],
+                },
+                {
+                    "name": "Subsection 2",
+                    "order": 2,
+                    "tag": "h4",
+                    "html_id": "subsection-2",
+                    "body": ["<p>Section 1 body continued</p>"],
+                },
+            ],
+        }
+    ]
+
+
 class CreateNOFOTests(TestCase):
     def setUp(self):
-        self.sections = [
-            {
-                "name": "Section 1",
-                "order": 1,
-                "html_id": "",
-                "subsections": [
-                    {
-                        "name": "Subsection 1",
-                        "order": 1,
-                        "tag": "h3",
-                        "html_id": "",
-                        "body": ["<p>Section 1 body</p>"],
-                    },
-                    {
-                        "name": "Subsection 2",
-                        "order": 2,
-                        "tag": "h4",
-                        "html_id": "subsection-2",
-                        "body": ["<p>Section 1 body continued</p>"],
-                    },
-                ],
-            }
-        ]
+        self.sections = _get_sections_dict()
 
     def test_create_nofo_success(self):
         """
@@ -459,29 +464,7 @@ class CreateNOFOTests(TestCase):
 
 class OverwriteNOFOTests(TestCase):
     def setUp(self):
-        self.sections = [
-            {
-                "name": "Section 1",
-                "order": 1,
-                "html_id": "",
-                "subsections": [
-                    {
-                        "name": "Subsection 1",
-                        "order": 1,
-                        "tag": "h3",
-                        "html_id": "",
-                        "body": ["<p>Section 1 body</p>"],
-                    },
-                    {
-                        "name": "Subsection 2",
-                        "order": 2,
-                        "tag": "h4",
-                        "html_id": "subsection-2",
-                        "body": ["<p>Section 1 body continued</p>"],
-                    },
-                ],
-            }
-        ]
+        self.sections = _get_sections_dict()
 
         self.new_sections = [
             {
@@ -524,7 +507,7 @@ class OverwriteNOFOTests(TestCase):
 
     def test_overwrite_nofo_success_empty_sections(self):
         """
-        Test creating two duplicate nofo objects successfully
+        Test overwriting a nofo with empty sections also succeeds
         """
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
@@ -537,3 +520,88 @@ class OverwriteNOFOTests(TestCase):
         self.assertEqual(nofo.title, "Test Nofo")  # same name
         self.assertEqual(nofo.number, "NOFO #999")  # same number
         self.assertEqual(len(nofo.sections.all()), 0)  # empty sections
+
+
+class AddHeadingsTests(TestCase):
+    def setUp(self):
+        self.sections = _get_sections_dict()
+        self.sections_with_link = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "custom-link",
+                        "body": [
+                            '<p>Section 1 body with <a href="#custom-link">custom link</a>.</p>'
+                        ],
+                    }
+                ],
+            }
+        ]
+
+    def test_add_headings_success(self):
+        nofo = create_nofo("Test Nofo", self.sections)
+        self.assertEqual(nofo.title, "Test Nofo")
+
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
+
+        # check section heading has no id
+        self.assertEqual(section.html_id, "")
+        # check first subsection heading has no html_id
+        self.assertEqual(subsection_1.html_id, "")
+        # check second subsection heading has html_id
+        self.assertEqual(subsection_2.html_id, "subsection-2")
+
+        ################
+        # ADD HEADINGS
+        ################
+        nofo = add_headings_to_nofo(nofo)
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
+
+        # check section heading has new html_id
+        self.assertEqual(section.html_id, "section-1")
+        # check subsection headings have new html_id
+        self.assertEqual(subsection_1.html_id, "section-1--subsection-1")
+        self.assertEqual(subsection_2.html_id, "section-1--subsection-2")
+
+    def test_add_headings_success_replace_link(self):
+        nofo = create_nofo("Test Nofo 2", self.sections_with_link)
+        self.assertEqual(nofo.title, "Test Nofo 2")
+
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+
+        # check section heading has no id
+        self.assertEqual(section.html_id, "")
+        # check subsection heading has html_id
+        self.assertEqual(subsection_1.html_id, "custom-link")
+        # check the body of subsection includes link
+        self.assertIn(
+            "Section 1 body with [custom link](#custom-link)", subsection_1.body
+        )
+
+        ################
+        # ADD HEADINGS
+        ################
+        nofo = add_headings_to_nofo(nofo)
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+
+        # check section heading has new html_id
+        self.assertEqual(section.html_id, "section-1")
+        # check subsection heading has new html_id
+        self.assertEqual(subsection_1.html_id, "section-1--subsection-1")
+        # check the body of subsection link is updated to new id
+        self.assertIn(
+            "Section 1 body with [custom link](#section-1--subsection-1)",
+            subsection_1.body,
+        )
