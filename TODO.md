@@ -8,14 +8,26 @@
 - For deployed app, maybe logging?
 - Password reset flow on command line
 - Password reset flow exists
-- Build a title page
-  - Refac: Opportunity number
 - Refac: short section names for breadcrumbs means we can loop
 - Add version number
 - Add a button to print the PDF
+- Add a theme to the NOFO
+  - use to swap CSS file
+- Images
+  - for cover page
+  - inline in documents
+- Callout boxes
+- Endnotes
+- Icons
+- Table of contents
+- Warning page
 
 # DONE
 
+- Add a theme to the NOFO
+  - add to model
+  - migrate
+  - add an edit page
 - Add new coaches
 - Suggest opportunity number when importing a NOFO
   - If number found, skip page
@@ -51,6 +63,7 @@
   - HRSA logo
   - Refac: Big pic
   - HHS logo in the right colour
+  - Refac: Opportunity number
 - Build section pages
   - Title of section
   - Background colour

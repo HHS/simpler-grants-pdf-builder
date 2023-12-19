@@ -7,7 +7,7 @@ from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 
-from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, SubsectionForm
+from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, NofoThemeForm, SubsectionForm
 from .models import Nofo, Subsection
 from .nofo import (
     add_headings_to_nofo,
@@ -173,6 +173,11 @@ class NofoEditCoachView(BaseNofoEditView):
 class NofoEditNumberView(BaseNofoEditView):
     form_class = NofoNumberForm
     template_name = "nofos/nofo_edit_number.html"
+
+
+class NofoEditThemeView(BaseNofoEditView):
+    form_class = NofoThemeForm
+    template_name = "nofos/nofo_edit_theme.html"
 
 
 def nofo_subsection_edit(request, pk, subsection_pk):

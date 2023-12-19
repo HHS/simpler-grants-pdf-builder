@@ -418,6 +418,7 @@ class CreateNOFOTests(TestCase):
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
         self.assertEqual(nofo.number, "NOFO #999")
+        self.assertEqual(nofo.theme, "portrait-hrsa-blue")
         self.assertEqual(len(nofo.sections.all()), 1)
         self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
 
@@ -428,8 +429,6 @@ class CreateNOFOTests(TestCase):
         nofo = create_nofo("Test Nofo", self.sections, "HRSA-123")
         self.assertEqual(nofo.title, "Test Nofo")
         self.assertEqual(nofo.number, "HRSA-123")
-        self.assertEqual(len(nofo.sections.all()), 1)
-        self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
 
     def test_create_nofo_success_duplicate_nofos(self):
         """

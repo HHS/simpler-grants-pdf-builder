@@ -22,6 +22,19 @@ class Nofo(models.Model):
         help_text="The official opportunity number for this NOFO. It will be public.",
     )
 
+    THEME_CHOICES = [
+        ("landscape-cdc-blue", "CDC (Blue)"),
+        ("portrait-hrsa-blue", "HRSA (Blue)"),
+    ]
+
+    theme = models.CharField(
+        max_length=32,
+        choices=THEME_CHOICES,
+        blank=False,
+        default="portrait-hrsa-blue",
+        help_text="The theme sets the orientation and colour pallete for this NOFO.",
+    )
+
     COACH_CHOICES = [
         ("emily", "Emily"),
         ("hannah", "Hannah"),

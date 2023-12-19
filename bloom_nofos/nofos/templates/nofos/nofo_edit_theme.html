@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO Theme
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO Theme" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <form id="nofo-theme--form" method="post">
+    {% csrf_token %}
+
+    {% with id="theme" label=form.theme.label hint=form.theme.help_text value=form.theme.value choices=form.theme.field.choices error=form.errors.theme.0 %}
+      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+    {% endwith %}
+
+    <button class="usa-button margin-top-3" type="submit">Save theme</button>
+  </form>
+{% endblock %}
