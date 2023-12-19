@@ -13,7 +13,7 @@
   {% endwith %}
   {% endwith %}
 
-  <form id="nofo-name--form" method="post">
+  <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
     {% include "includes/text_input_macro.html" with field=form.number hint2="eg: “HRSA-24-019”" only %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  Opportunity number for this NOFO
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+    {% url 'nofos:nofo_index' as back_href %}
+    {% include "includes/page_heading.html" with title="Opportunity number for “"|add:nofo_name_str|add:"”" back_text="All NOFOs" back_href=back_href only %}
+  {% endwith %}
+
+  <p>Your NOFO document doesn’t have an opportunity number that was easy to find.</p>
+  <p>Add the correct opportunity number, or use the auto-generated one for now (“{{ nofo.number }}”). Remember to update it before publishing though.</p>
+
+  <form id="nofo-number--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/text_input_macro.html" with field=form.number hint2="eg: “HRSA-24-019”" only %}
+
+    <ul class="usa-button-group margin-top-3">
+      <li class="usa-button-group__item">
+        <button class="usa-button" type="submit">Save opportunity number</button>
+      </li>
+      <li class="usa-button-group__item">
+        <a href="{% url 'nofos:nofo_import_coach' nofo.id %}" class="usa-button usa-button--outline">Use “{{ nofo.number }}” as the interim number</a>
+      </li>
+    </ul>
+  </form>
+{% endblock %}

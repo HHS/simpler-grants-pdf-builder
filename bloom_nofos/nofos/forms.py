@@ -11,9 +11,9 @@ class BaseNofoRequiredFieldForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            if (
+            if not (
                 hasattr(self, "not_required_field_labels")
-                and field.label not in self.not_required_field_labels
+                and field.label in self.not_required_field_labels
             ):
                 field.required = True
 

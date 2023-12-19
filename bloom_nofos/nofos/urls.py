@@ -8,8 +8,9 @@ urlpatterns = [
     path("import", views.nofo_import, name="nofo_import"),
     path("<int:pk>/delete", views.NofosDeleteView.as_view(), name="nofo_delete"),
     path("<int:pk>/import", views.nofo_import, name="nofo_import_overwrite"),
-    path("<int:pk>/import/coach", views.nofo_import_coach, name="nofo_import_coach"),
     path("<int:pk>/import/title", views.nofo_import_title, name="nofo_import_title"),
+    path("<int:pk>/import/number", views.nofo_import_number, name="nofo_import_number"),
+    path("<int:pk>/import/coach", views.nofo_import_coach, name="nofo_import_coach"),
     path("<int:pk>", views.NofosDetailView.as_view(), name="nofo_view"),
     path("<int:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
     path(

@@ -15,6 +15,7 @@ from .nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
     suggest_nofo_title,
+    suggest_nofo_opportunity_number,
 )
 
 
@@ -81,8 +82,9 @@ def overwrite_nofo(nofo, sections):
     return _build_nofo(nofo, sections)
 
 
-def create_nofo(title, sections):
+def create_nofo(title, sections, nofo_number="NOFO #999"):
     nofo = Nofo(title=title)
+    nofo.number = nofo_number
     nofo.save()
     return _build_nofo(nofo, sections)
 
@@ -174,9 +176,11 @@ def nofo_import(request, pk=None):
             return redirect("nofos:nofo_index")
 
         else:
-            nofo_title = suggest_nofo_title(soup)
-            nofo = create_nofo(nofo_title, sections)
+            nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
+            nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+            nofo = create_nofo(nofo_title, sections, nofo_number=nofo_number)
             nofo = add_headings_to_nofo(nofo)
+
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
     if pk:
@@ -209,6 +213,9 @@ def nofo_import_title(request, pk):
                 ),
             )
 
+            if nofo.number.startswith("NOFO #"):
+                return redirect("nofos:nofo_import_number", pk=nofo.id)
+
             return redirect("nofos:nofo_import_coach", pk=nofo.id)
 
     else:
@@ -218,6 +225,28 @@ def nofo_import_title(request, pk):
         request,
         "nofos/nofo_import_title.html",
         {"form": form},
+    )
+
+
+def nofo_import_number(request, pk):
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        form = NofoNumberForm(request.POST)
+
+        if form.is_valid():
+            nofo.number = form.cleaned_data["number"]
+            nofo.save()
+
+            return redirect("nofos:nofo_import_coach", pk=nofo.id)
+
+    else:
+        form = NofoNumberForm(instance=nofo)
+
+    return render(
+        request,
+        "nofos/nofo_import_number.html",
+        {"nofo": nofo, "form": form},
     )
 
 

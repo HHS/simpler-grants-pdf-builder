@@ -19,7 +19,7 @@ class Nofo(models.Model):
         "Opportunity number",
         max_length=200,
         blank=True,
-        help_text="The official number for this NOFO. It will be public.",
+        help_text="The official opportunity number for this NOFO. It will be public.",
     )
 
     COACH_CHOICES = [
