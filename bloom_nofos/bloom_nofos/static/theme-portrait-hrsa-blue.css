@@ -22,10 +22,11 @@
 
 .nofo--title-page--header {
   padding: 20mm;
+  padding-bottom: 15mm;
 }
 
 .nofo--title-page--title {
-  padding: 0 20mm 20mm 20mm;
+  padding: 0 20mm 10mm 20mm;
 }
 
 .nofo--title-page--footer {
@@ -34,6 +35,10 @@
 
 .nofo--title-page--header .nofo--title-page--header--logo {
   float: left;
+}
+
+.nofo--title-page--title h1 {
+  color: var(--color--dark-blue);
 }
 
 .nofo--title-page--header .nofo--title-page--header--intro,
@@ -48,7 +53,7 @@
 }
 
 .nofo--title-page--footer .nofo--title-page--footer--image {
-  height: 500px;
+  height: 520px;
   width: 85%;
   overflow: hidden;
 }

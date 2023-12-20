@@ -16,10 +16,14 @@
 /* USA classes */
 
 body[class^='landscape'] .grid-container {
-  max-width: 74rem;
+  max-width: 76rem;
 }
 
 /* Cover page */
+
+.nofo--title-page {
+  overflow: hidden;
+}
 
 .nofo--title-page--header--intro {
   display: none;
@@ -30,7 +34,7 @@ body[class^='landscape'] .grid-container {
 }
 
 .nofo--title-page--title {
-  padding: 0 10mm 10mm 10mm;
+  padding: 0 20mm 10mm 10mm;
 }
 
 .nofo--title-page--header,
@@ -43,6 +47,10 @@ body[class^='landscape'] .grid-container {
 .nofo--title-page--title,
 .nofo--title-page--title h1 {
   color: white;
+}
+
+.nofo--title-page--title h1 {
+  font-family: "Source Sans Pro Web",Helvetica,Roboto,Arial,sans-serif;
 }
 
 .nofo--title-page--header--logo--subheading {
@@ -110,6 +118,7 @@ body[class^='landscape'] .grid-container {
 
 @media print {
   .nofo--title-page {
+    overflow: visible;
     min-height: calc(100vh + 35mm);
   }
 }
