@@ -1,0 +1,56 @@
+@page {
+  /* portrait letter size */
+  size: 216mm 279mm;
+}
+
+/* Cover page */
+.nofo--title-page--header--logo--subheading,
+.nofo--title-page--title--subheading,
+.nofo--title-page--footer--subheading {
+  display: none;
+}
+
+.nofo--title-page--header {
+  padding: 20mm;
+}
+
+.nofo--title-page--title {
+  padding: 0 20mm 20mm 20mm;
+}
+
+.nofo--title-page--footer {
+  padding-left: 20mm;
+}
+
+.nofo--title-page--header .nofo--title-page--header--logo {
+  float: left;
+}
+
+.nofo--title-page--header .nofo--title-page--header--intro,
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  float: right;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo {
+  position: absolute;
+  bottom: 10mm;
+  left: 10mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  height: 500px;
+  width: 85%;
+  overflow: hidden;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image img {
+  height: 100%;
+  border-radius: 80px 0 0 0;
+  object-fit: cover;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo img {
+  width: 100px;
+  filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
+}
+

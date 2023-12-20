@@ -11,8 +11,6 @@
 - Refac: short section names for breadcrumbs means we can loop
 - Add version number
 - Add a button to print the PDF
-- Add a theme to the NOFO
-  - use to swap CSS file
 - Images
   - for cover page
   - inline in documents
@@ -28,6 +26,7 @@
   - add to model
   - migrate
   - add an edit page
+  - use to swap CSS file
 - Add new coaches
 - Suggest opportunity number when importing a NOFO
   - If number found, skip page

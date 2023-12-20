@@ -1,0 +1,82 @@
+@page {
+  /* horizontal letter size */
+  size: 279mm 216mm;
+}
+
+/* Cover page */
+.nofo--title-page--header--intro {
+  display: none;
+}
+
+.nofo--title-page--header {
+  padding: 10mm;
+}
+
+.nofo--title-page--title {
+  padding: 0 10mm 10mm 10mm;
+}
+
+.nofo--title-page--header,
+.nofo--title-page--title {
+  width: 65%;
+  background-color: var(--color--vibrant-blue);
+}
+
+.nofo--title-page--header--logo--subheading,
+.nofo--title-page--title,
+.nofo--title-page--title h1 {
+  color: white;
+}
+
+.nofo--title-page--title .nofo--title-page--title--subheading {
+  margin-top: 20px;
+  font-size: 150%;
+}
+
+.nofo--title-page--footer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 5mm 0 5mm 10mm;
+  background: var(--color--white);
+  margin-right: 0;
+  width: 100%;
+  margin-bottom: -1mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  bottom: 0;
+  margin-right: 200px;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo img {
+  width: 80px;
+  height: 80px;
+  filter: none;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  height: 216mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image img {
+  height: 100%;
+  object-fit: cover;
+  border-radius: 80px 0 0 0;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--subheading span {
+  display: block;
+  padding-bottom: 10px;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--subheading span:last-of-type {
+  font-weight: 700;
+}

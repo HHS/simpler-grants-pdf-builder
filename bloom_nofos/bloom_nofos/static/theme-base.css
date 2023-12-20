@@ -12,6 +12,7 @@
   --color--med-grey: #475260;
   --color--dark-blue: #274A64;
   --color--med-blue: #336A90;
+  --color--vibrant-blue: #015CA8;
   --color--light-blue: #BDD9ED;
   --color--med-brown: #C0B0A2;
 }
@@ -39,12 +40,11 @@ h2 {
 }
 
 @page {
+  margin: 20mm 20mm 16mm 20mm;
+
   /* 
   https://printcss.net/articles/running-headers-and-footers
   */
-  size: letter;
-  margin: 20mm 20mm 16mm 20mm;
-
   @top-center {
     content: element(breadcrumbs);
   }
@@ -258,53 +258,20 @@ ul:last-child, ol:last-child {
   color: var(--color--med-blue);
 }
 
+/* Cover page */
+
 .nofo--title-page {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.nofo--title-page--header,
-.nofo--title-page--title {
-    padding-left: 20mm;
-}
-
-.nofo--title-page--header,
-.nofo--title-page--title,
-.nofo--title-page--footer {
-    padding-right: 20mm;
-}
-
 .nofo--title-page--header--logo img {
   width: 150px;
 }
 
-.nofo--title-page--header {
-  padding: 20mm;
-}
-
-.nofo--title-page--title {
-  padding-bottom: 20mm;
-}
-
 .nofo--title-page--footer {
   position: relative;
-}
-
-
-.nofo--title-page--header .nofo--title-page--header--logo {
-  float: left;
-}
-
-.nofo--title-page--header .nofo--title-page--header--intro,
-.nofo--title-page--footer .nofo--title-page--footer--image {
-  float: right;
-}
-
-.nofo--title-page--footer .nofo--title-page--footer--logo {
-  position: absolute;
-  bottom: 10mm;
-  left: 10mm;
 }
 
 .nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
@@ -313,22 +280,7 @@ ul:last-child, ol:last-child {
   font-weight: 700;
 }
 
-.nofo--title-page--footer--image {
-  height: 500px;
-  width: 85%;
-  overflow: hidden;
-}
-
-.nofo--title-page--footer--image img {
-  height: 100%;
-  border-radius: 80px 0 0 0;
-  object-fit: cover;
-}
-
-.nofo--title-page--footer--logo img {
-  width: 100px;
-  filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
-}
+/* Section title page */
 
 .section--title-page {
   background-color: var(--color--dark-blue);
