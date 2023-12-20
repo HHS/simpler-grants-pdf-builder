@@ -3,7 +3,24 @@
   size: 279mm 216mm;
 }
 
+@page cover {
+  background-color: var(--color--vibrant-blue);
+  margin: 0;
+}
+
+@page title {
+  background-color: var(--color--dark-blue);
+  margin: 0;
+}
+
+/* USA classes */
+
+body[class^='landscape'] .grid-container {
+  max-width: 74rem;
+}
+
 /* Cover page */
+
 .nofo--title-page--header--intro {
   display: none;
 }
@@ -26,6 +43,11 @@
 .nofo--title-page--title,
 .nofo--title-page--title h1 {
   color: white;
+}
+
+.nofo--title-page--header--logo--subheading {
+  margin-top: -10px;
+  font-weight: 700;
 }
 
 .nofo--title-page--title .nofo--title-page--title--subheading {
@@ -73,10 +95,21 @@
 }
 
 .nofo--title-page--footer .nofo--title-page--footer--subheading span {
+  font-size: 120%;
   display: block;
   padding-bottom: 10px;
 }
 
+.nofo--title-page--footer .nofo--title-page--footer--subheading span:first-of-type {
+  margin-top: 15px;
+}
+
 .nofo--title-page--footer .nofo--title-page--footer--subheading span:last-of-type {
   font-weight: 700;
+}
+
+@media print {
+  .nofo--title-page {
+    min-height: calc(100vh + 35mm);
+  }
 }

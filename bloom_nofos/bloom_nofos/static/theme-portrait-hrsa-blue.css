@@ -3,7 +3,17 @@
   size: 216mm 279mm;
 }
 
+@page cover {
+  margin: 0;
+}
+
+@page title {
+  background-color: var(--color--dark-blue);
+  margin: 0;
+}
+
 /* Cover page */
+
 .nofo--title-page--header--logo--subheading,
 .nofo--title-page--title--subheading,
 .nofo--title-page--footer--subheading {
@@ -53,4 +63,3 @@
   width: 100px;
   filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
 }
-

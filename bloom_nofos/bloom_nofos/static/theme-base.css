@@ -65,15 +65,6 @@ h2 {
   }
 }
 
-@page cover {
-  margin: 0;
-}
-
-@page title {
-  background-color: var(--color--dark-blue);
-  margin: 0;
-}
-
 /* Regular CSS */
 
 * {
@@ -90,8 +81,9 @@ body {
 }
 
 h1 {
-  font-size: 3rem !important;
-  font-family: Helvetica,Roboto,Arial,sans-serif !important;
+  font-size: 3rem;
+  font-weight: 400;
+  font-family: "Source Sans Pro Web",Helvetica,Roboto,Arial,sans-serif;
   color: var(--color--dark-blue);
 }
 
@@ -365,6 +357,8 @@ ul:last-child, ol:last-child {
 
   .grid-container {
     padding: 0;
+    margin: 0;
+    max-width: none;
   }
 
   .nofo--title-page,
