@@ -22,6 +22,22 @@ def add_caption_to_table(table):
         table.insert(0, caption)
 
 
+def add_class_to_table(table):
+    def _get_table_class(num_cols):
+        if num_cols <= 2:
+            return "table--small"
+        elif num_cols <= 4:
+            return "table--medium"
+
+        return "table--large"
+
+    row = table.find("tr")
+    cols = row.find_all("th") + row.find_all("td")
+    # maybe count rows also??
+
+    return _get_table_class(len(cols))
+
+
 def add_headings_to_nofo(nofo):
     new_ids = []
 

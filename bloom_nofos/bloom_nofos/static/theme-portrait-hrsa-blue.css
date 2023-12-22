@@ -68,3 +68,9 @@
   width: 100px;
   filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg) brightness(89%) contrast(103%);
 }
+
+/* Section styling */
+
+.section--content {
+  width: 70%;
+}

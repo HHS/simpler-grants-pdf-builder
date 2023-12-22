@@ -116,6 +116,23 @@ body[class^='landscape'] .grid-container {
   font-weight: 700;
 }
 
+/* Section styling */
+
+.section--content {
+  columns: 2;
+  orphans: 2;
+}
+
+.section--content table.table--medium,
+.section--content table.table--large {
+    column-span: all;
+}
+
+.section--content table.table--large {
+  break-before: column;
+  break-after: column;
+}
+
 @media print {
   .nofo--title-page {
     overflow: visible;

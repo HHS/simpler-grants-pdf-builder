@@ -19,9 +19,11 @@
 - Icons
 - Table of contents
 - Warning page
+- Switch logos per theme
 
 # DONE
 
+- Tables on 2 column layout
 - Add a theme to the NOFO
   - add to model
   - migrate

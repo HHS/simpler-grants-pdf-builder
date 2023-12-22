@@ -338,10 +338,6 @@ ul:last-child, ol:last-child {
   list-style-type: none;
 }
 
-.section--content {
-  width: 70%;
-}
-
 /* Media queries */
 @media print {
   .running-header,

@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from .nofo import (
     add_caption_to_table,
+    add_class_to_table,
     add_headings_to_nofo,
     create_nofo,
     overwrite_nofo,
@@ -114,6 +115,50 @@ class HTMLTableTests(TestCase):
 
         # the caption tag has a span inside of it
         self.assertIsNotNone(caption.find("span"))
+
+
+class HTMLTableClassTests(TestCase):
+    def _generate_cols(self, num_cols, cell="td"):
+        cols = ""
+        for i in range(num_cols):
+            cols += "<{0}>Col {1}</{0}>".format(cell, i + 1)
+
+        return cols
+
+    def test_table_class_sm(self):
+        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(2))
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
+
+    def test_table_class_md(self):
+        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(4))
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
+
+    def test_table_class_lg(self):
+        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(5))
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+    def test_table_class_lg_with_th(self):
+        table_html = "<table><tr>{}</tr></table>".format(
+            self._generate_cols(10, cell="th")
+        )
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+    def test_table_class_lg_with_th_2_rows(self):
+        # generate a table with 2 rows
+        table_html = "<table><tr>{}</tr><tr>{}</tr></table>".format(
+            self._generate_cols(10, cell="th"), self._generate_cols(10)
+        )
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
 
 class HTMLSuggestTitleTests(TestCase):
