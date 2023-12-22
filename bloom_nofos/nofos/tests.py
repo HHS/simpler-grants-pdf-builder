@@ -16,6 +16,7 @@ from .nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
     suggest_nofo_opportunity_number,
+    suggest_nofo_tagline,
     suggest_nofo_title,
 )
 from .utils import match_view_url
@@ -243,6 +244,38 @@ class HTMLSuggestNumberTests(TestCase):
             ),
             default_number,
         )
+
+
+class HTMLSuggestTagline(TestCase):
+    def test_heading_with_valid_previous_sibling(self):
+        html_content = "<p>Valid tagline</p><h2>Summary</h2>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = suggest_nofo_tagline(soup)
+        self.assertEqual(result, "Valid tagline")
+
+    def test_heading_with_invalid_previous_sibling(self):
+        html_content = "<p>Invalid: contains a colon</p><h2>Summary</h2>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = suggest_nofo_tagline(soup)
+        self.assertEqual(result, "")
+
+    def test_no_summary_heading(self):
+        html_content = "<p>Some text</p><h2>Other Heading</h2>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = suggest_nofo_tagline(soup)
+        self.assertEqual(result, "")
+
+    def test_heading_with_non_paragraph_previous_sibling(self):
+        html_content = "<div>Not a paragraph</div><h2>Summary</h2>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = suggest_nofo_tagline(soup)
+        self.assertEqual(result, "")
+
+    def test_tagline_not_followed_by_a_heading(self):
+        html_content = "<p>Not followed by a heading</p><p>Summary</p>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = suggest_nofo_tagline(soup)
+        self.assertEqual(result, "")
 
 
 class HTMLSectionTests(TestCase):

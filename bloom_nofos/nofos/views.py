@@ -11,6 +11,7 @@ from .forms import (
     NofoCoachForm,
     NofoNameForm,
     NofoNumberForm,
+    NofoTaglineForm,
     NofoThemeForm,
     SubsectionForm,
 )
@@ -21,8 +22,9 @@ from .nofo import (
     overwrite_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
-    suggest_nofo_title,
     suggest_nofo_opportunity_number,
+    suggest_nofo_tagline,
+    suggest_nofo_title,
 )
 
 
@@ -109,6 +111,8 @@ def nofo_import(request, pk=None):
             nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
             nofo = create_nofo(nofo_title, sections, nofo_number=nofo_number)
             nofo = add_headings_to_nofo(nofo)
+            nofo.tagline = suggest_nofo_tagline(soup)
+            nofo.save()
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
@@ -179,6 +183,11 @@ class NofoEditCoachView(BaseNofoEditView):
 class NofoEditNumberView(BaseNofoEditView):
     form_class = NofoNumberForm
     template_name = "nofos/nofo_edit_number.html"
+
+
+class NofoEditTaglineView(BaseNofoEditView):
+    form_class = NofoTaglineForm
+    template_name = "nofos/nofo_edit_tagline.html"
 
 
 class NofoEditThemeView(BaseNofoEditView):

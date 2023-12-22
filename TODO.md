@@ -15,16 +15,17 @@
   - for cover page
   - inline in documents
 - Callout boxes
+  - Put them after the summary
 - Endnotes
 - Icons
 - Table of contents
 - Warning page
 - Switch logos per theme
-- Guess the tagline
 - Guess the theme
 
 # DONE
 
+- Suggest the tagline
 - Guess subsections that are callout boxes
 - Tables on 2 column layout
 - Add a theme to the NOFO

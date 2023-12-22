@@ -22,6 +22,12 @@ class Nofo(models.Model):
         help_text="The official opportunity number for this NOFO. It will be public.",
     )
 
+    tagline = models.TextField(
+        "NOFO tagline",
+        blank=True,
+        help_text="A short sentence that outlines the high-level goal of this NOFO.",
+    )
+
     THEME_CHOICES = [
         ("landscape-cdc-blue", "CDC (Blue)"),
         ("portrait-hrsa-blue", "HRSA (Blue)"),

@@ -247,6 +247,27 @@ def suggest_nofo_opportunity_number(soup):
     return suggestion or opportunity_number
 
 
+def suggest_nofo_tagline(soup):
+    def _find_heading_by_text(soup, text):
+        # Iterate through different heading levels
+        for i in range(1, 7):
+            heading = soup.find(f"h{i}", string=text)
+            if heading:
+                return heading
+
+        return None
+
+    summary_heading = _find_heading_by_text(soup, text="Summary")
+    if summary_heading:
+        previous_element = summary_heading.previous_sibling
+        previous_text = previous_element.get_text().strip()
+
+        if previous_element.name == "p" and ":" not in previous_text:
+            return previous_text
+
+    return ""
+
+
 def suggest_nofo_title(soup):
     nofo_title = "NOFO: {}".format(
         datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
