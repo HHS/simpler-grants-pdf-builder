@@ -104,6 +104,12 @@ class Subsection(models.Model):
         choices=TAG_CHOICES,
     )
 
+    callout_box = models.BooleanField(
+        "Callout box",
+        default=False,
+        help_text="Make this subsection a callout box.",
+    )
+
     body = MartorField("Content of subsection", blank=True)
 
     def __str__(self):

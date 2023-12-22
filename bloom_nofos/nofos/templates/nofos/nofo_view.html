@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables %}
+{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables callout_box_contents %}
 
 {% block css %}
   {% with "theme-"|add:nofo.theme|add:'.css' as filename %}
@@ -125,10 +125,19 @@
       <!-- SECTION CONTENT -->
       <div class="section--content">
         {% for subsection in section.subsections.all %}
-          {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-            {% include "includes/heading.html" with tag=tag content=content id=id only %}
-          {% endwith %}
-          {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables }}
+          {% if subsection.callout_box %}
+            <div class="callout-box">
+              <div class="callout-box--title">{{ subsection.name }}</div>
+              <div class="callout-box--contents">
+                {{ subsection.body|safe_markdown|callout_box_contents }}
+              </div>
+            </div>
+          {% else %}
+            {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+              {% include "includes/heading.html" with tag=tag content=content id=id only %}
+            {% endwith %}
+            {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables }}
+          {% endif %}
         {% endfor %}
       </div>
     </section>

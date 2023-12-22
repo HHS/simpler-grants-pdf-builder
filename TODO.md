@@ -20,12 +20,12 @@
 - Table of contents
 - Warning page
 - Switch logos per theme
-- Pick the tagline
-- Pick the theme
-- Pick out "Key Facts"
+- Guess the tagline
+- Guess the theme
 
 # DONE
 
+- Guess subsections that are callout boxes
 - Tables on 2 column layout
 - Add a theme to the NOFO
   - add to model

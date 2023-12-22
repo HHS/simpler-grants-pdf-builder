@@ -347,6 +347,24 @@ ol:last-child {
   list-style-type: none;
 }
 
+/* Section contents */
+
+.callout-box {
+  background-color: var(--color--vibrant-blue);
+  border-radius: 10px;
+  padding: 20px 15px;
+  margin: 15px 0;
+  color: var(--color--white);
+}
+
+.callout-box--title {
+  font-size: 130%;
+}
+
+.callout-box--contents strong {
+  display: block;
+}
+
 /* Media queries */
 @media print {
   .running-header,

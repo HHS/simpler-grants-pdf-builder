@@ -57,6 +57,7 @@ class SubsectionInline(admin.StackedInline):
 # Admin classes
 class SubsectionAdmin(admin.ModelAdmin):
     model = Subsection
+    list_display = ["name", "section"]
 
 
 class SectionAdmin(admin.ModelAdmin):

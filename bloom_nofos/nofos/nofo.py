@@ -4,6 +4,7 @@ import datetime
 
 from markdownify import markdownify as md  # convert HTML to markdown
 from slugify import slugify
+from bs4 import Tag
 
 
 from .models import Nofo, Section, Subsection
@@ -73,6 +74,14 @@ def add_headings_to_nofo(nofo):
     return nofo
 
 
+def _get_first_sentence(body, lower=False):
+    if body and len(body) and isinstance(body[0], Tag):
+        first_sentence = body[0].get_text().strip()
+        return first_sentence.lower() if lower else first_sentence
+
+    return ""
+
+
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(
@@ -90,11 +99,24 @@ def _build_nofo(nofo, sections):
             if html_body:
                 md_body = md("".join(html_body))
 
+            first_sentence_lowercase = _get_first_sentence(
+                subsection.get("body", []), lower=True
+            )
+            name_lowercase = subsection.get("name", "Subsection X").lower()
+            is_callout_box = name_lowercase.startswith(
+                "key dates"
+            ) or first_sentence_lowercase.startswith("the key facts")
+            if is_callout_box:
+                # rename the callout box if "key" isn't in the title
+                if "key" not in name_lowercase:
+                    subsection["name"] = _get_first_sentence(subsection.get("body", []))
+
             model_subsection = Subsection(
                 name=subsection.get("name", "Subsection X"),
                 order=subsection.get("order", ""),
                 tag=subsection.get("tag", "h6"),
                 html_id=subsection.get("html_id"),
+                callout_box=is_callout_box,
                 body=md_body,  # body can be empty
                 section=model_section,
             )
