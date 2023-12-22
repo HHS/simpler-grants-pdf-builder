@@ -43,6 +43,7 @@ class NofoThemeForm(BaseNofoRequiredFieldForm):
         model = Nofo
         fields = ["theme"]
 
+
 class SubsectionForm(forms.ModelForm):
     body = MartorFormField(required=False)
 

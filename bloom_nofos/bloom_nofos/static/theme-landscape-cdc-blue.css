@@ -120,6 +120,7 @@ body[class^='landscape'] .grid-container {
 
 .section--content {
   columns: 2;
+  column-gap: 8mm;
   orphans: 2;
 }
 

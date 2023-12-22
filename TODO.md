@@ -20,6 +20,9 @@
 - Table of contents
 - Warning page
 - Switch logos per theme
+- Pick the tagline
+- Pick the theme
+- Pick out "Key Facts"
 
 # DONE
 

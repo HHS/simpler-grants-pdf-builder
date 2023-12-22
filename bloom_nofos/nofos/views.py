@@ -7,7 +7,13 @@ from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 
-from .forms import NofoCoachForm, NofoNameForm, NofoNumberForm, NofoThemeForm, SubsectionForm
+from .forms import (
+    NofoCoachForm,
+    NofoNameForm,
+    NofoNumberForm,
+    NofoThemeForm,
+    SubsectionForm,
+)
 from .models import Nofo, Subsection
 from .nofo import (
     add_headings_to_nofo,
