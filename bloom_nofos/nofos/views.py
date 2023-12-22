@@ -24,6 +24,7 @@ from .nofo import (
     get_subsections_from_sections,
     suggest_nofo_opportunity_number,
     suggest_nofo_tagline,
+    suggest_nofo_theme,
     suggest_nofo_title,
 )
 
@@ -108,10 +109,11 @@ def nofo_import(request, pk=None):
 
         else:
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
-            nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
-            nofo = create_nofo(nofo_title, sections, nofo_number=nofo_number)
+            nofo = create_nofo(nofo_title, sections)
             nofo = add_headings_to_nofo(nofo)
-            nofo.tagline = suggest_nofo_tagline(soup)
+            nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+            nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
+            nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
             nofo.save()
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)

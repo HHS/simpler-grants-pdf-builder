@@ -125,9 +125,9 @@ def _build_nofo(nofo, sections):
     return nofo
 
 
-def create_nofo(title, sections, nofo_number="NOFO #999"):
+def create_nofo(title, sections):
     nofo = Nofo(title=title)
-    nofo.number = nofo_number
+    nofo.number = "NOFO #999"
     nofo.save()
     return _build_nofo(nofo, sections)
 
@@ -266,6 +266,13 @@ def suggest_nofo_tagline(soup):
             return previous_text
 
     return ""
+
+
+def suggest_nofo_theme(nofo_number):
+    if "cdc-" in nofo_number.lower():
+        return "landscape-cdc-blue"
+
+    return "portrait-hrsa-blue"
 
 
 def suggest_nofo_title(soup):

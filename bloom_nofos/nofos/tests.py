@@ -17,6 +17,7 @@ from .nofo import (
     get_subsections_from_sections,
     suggest_nofo_opportunity_number,
     suggest_nofo_tagline,
+    suggest_nofo_theme,
     suggest_nofo_title,
 )
 from .utils import match_view_url
@@ -232,8 +233,7 @@ class HTMLSuggestNumberTests(TestCase):
             suggest_nofo_opportunity_number(self.soup), self.nofo_opportunity_number
         )
 
-    @freeze_time("1917-04-17")
-    def test_suggest_nofo_title_returns_default_title_for_bad_html(self):
+    def test_suggest_nofo_number_returns_default_number_for_bad_html(self):
         default_number = "NOFO #1"
         self.assertEqual(
             suggest_nofo_opportunity_number(
@@ -276,6 +276,28 @@ class HTMLSuggestTagline(TestCase):
         soup = BeautifulSoup(html_content, "html.parser")
         result = suggest_nofo_tagline(soup)
         self.assertEqual(result, "")
+
+
+class HTMLSuggestThemeTests(TestCase):
+    def test_suggest_nofo_number_returns_hrsa_theme(self):
+        nofo_number = "HRSA-24-019"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_returns_cdc_theme(self):
+        nofo_number = "CDC-RFA-DP-24-0139"
+        nofo_theme = "landscape-cdc-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):
+        nofo_number = "abc-def-ghi"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_empty_returns_hrsa_theme(self):
+        nofo_number = ""
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
 
 class HTMLSectionTests(TestCase):
@@ -535,14 +557,6 @@ class CreateNOFOTests(TestCase):
         self.assertEqual(nofo.theme, "portrait-hrsa-blue")
         self.assertEqual(len(nofo.sections.all()), 1)
         self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
-
-    def test_create_nofo_success_with_number(self):
-        """
-        Test creating a nofo object successfully with a custom nofo number
-        """
-        nofo = create_nofo("Test Nofo", self.sections, "HRSA-123")
-        self.assertEqual(nofo.title, "Test Nofo")
-        self.assertEqual(nofo.number, "HRSA-123")
 
     def test_create_nofo_success_duplicate_nofos(self):
         """
