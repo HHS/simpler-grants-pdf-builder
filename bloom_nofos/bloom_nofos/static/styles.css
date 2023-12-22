@@ -10,6 +10,7 @@ body {
 body > main {
   flex-grow: 1;
 }
+
 body > footer {
   margin-top: auto;
 }

@@ -6,37 +6,37 @@
 /* CSS vars */
 :root {
   --color--black: #000000;
-  --color--white: #FFFFFF;
-  --color--table-grey: #EDF1F3;
-  --color--light-grey: #DDE2E8;
+  --color--white: #ffffff;
+  --color--table-grey: #edf1f3;
+  --color--light-grey: #dde2e8;
   --color--med-grey: #475260;
-  --color--dark-blue: #274A64;
-  --color--med-blue: #336A90;
-  --color--vibrant-blue: #015CA8;
-  --color--light-blue: #BDD9ED;
-  --color--med-brown: #C0B0A2;
+  --color--dark-blue: #274a64;
+  --color--med-blue: #336a90;
+  --color--vibrant-blue: #015ca8;
+  --color--light-blue: #bdd9ed;
+  --color--med-brown: #c0b0a2;
 }
 
 /* Assign named pages */
 
 div.title-page {
-  page: title
+  page: title;
 }
 
 section.title-page {
-  page: cover
+  page: cover;
 }
 
 /* Assign page breaks */
 
 div.titlepage {
-  page-break-before: always
+  page-break-before: always;
 }
 
 /* Set @page rules */
 
-h2 { 
-  string-set: sectiontitle content(); 
+h2 {
+  string-set: sectiontitle content();
 }
 
 @page {
@@ -53,7 +53,8 @@ h2 {
     border-top: 2px solid var(--color--light-grey);
     content: string(sectiontitle);
     padding-bottom: 4mm;
-    font-family: Merriweather Web,Georgia,Cambria,Times New Roman,Times,serif;
+    font-family: Merriweather Web, Georgia, Cambria, Times New Roman, Times,
+      serif;
     font-weight: 700;
     color: var(--color--dark-blue);
   }
@@ -80,7 +81,11 @@ body {
   background-color: transparent;
 }
 
-h2, h3, h4, h5, h6 {
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 1rem 0;
 }
 
@@ -88,7 +93,7 @@ h1,
 h2,
 h3,
 h5 {
-  font-family: Merriweather Web,Georgia,Cambria,Times New Roman,Times,serif;
+  font-family: Merriweather Web, Georgia, Cambria, Times New Roman, Times, serif;
 }
 
 h1 {
@@ -125,13 +130,13 @@ h6 {
   font-size: 12px;
   color: var(--color--med-blue);
   text-transform: uppercase;
-  margin-top: 1.10rem;
+  margin-top: 1.1rem;
 }
 
 p,
 li {
-  font-size: 1.10rem;
-  margin: .75rem 0;
+  font-size: 1.1rem;
+  margin: 0.75rem 0;
 }
 
 a {
@@ -144,7 +149,8 @@ hr {
 }
 
 table {
-  font-family: Source Sans Pro Web,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
   font-size: 1.06rem;
   line-height: 1.5;
   border-collapse: collapse;
@@ -157,7 +163,7 @@ table {
 table caption {
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: .75rem;
+  margin-bottom: 0.75rem;
   text-align: left;
 }
 
@@ -166,7 +172,7 @@ table td {
   background-color: var(--color--table-grey);
   border: 2px solid var(--color--white);
   font-weight: 400;
-  padding: .5rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 table thead th,
@@ -181,14 +187,16 @@ table thead th {
   line-height: 1.3;
 }
 
-ul, ol {
+ul,
+ol {
   margin-bottom: 1em;
   margin-top: 1em;
   line-height: 1.5;
   padding-left: 3ch;
 }
 
-ul:last-child, ol:last-child {
+ul:last-child,
+ol:last-child {
   margin-bottom: 0;
 }
 
@@ -221,7 +229,7 @@ ul:last-child, ol:last-child {
 }
 
 .header-nav li a:before {
-  content: counter(n) "."
+  content: counter(n) ".";
 }
 
 .header-nav li:last-of-type {
@@ -285,7 +293,8 @@ ul:last-child, ol:last-child {
 }
 
 .section--title-page h2 {
-  font-family: Source Sans Pro Web,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
   font-size: 300%;
   font-weight: 700;
 }

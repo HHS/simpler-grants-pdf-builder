@@ -15,7 +15,7 @@
 
 /* USA classes */
 
-body[class^='landscape'] .grid-container {
+body[class^="landscape"] .grid-container {
   max-width: 76rem;
 }
 
@@ -50,7 +50,7 @@ body[class^='landscape'] .grid-container {
 }
 
 .nofo--title-page--title h1 {
-  font-family: "Source Sans Pro Web",Helvetica,Roboto,Arial,sans-serif;
+  font-family: "Source Sans Pro Web", Helvetica, Roboto, Arial, sans-serif;
 }
 
 .nofo--title-page--header--logo--subheading {
@@ -108,11 +108,15 @@ body[class^='landscape'] .grid-container {
   padding-bottom: 10px;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--subheading span:first-of-type {
+.nofo--title-page--footer
+  .nofo--title-page--footer--subheading
+  span:first-of-type {
   margin-top: 15px;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--subheading span:last-of-type {
+.nofo--title-page--footer
+  .nofo--title-page--footer--subheading
+  span:last-of-type {
   font-weight: 700;
 }
 
@@ -126,7 +130,7 @@ body[class^='landscape'] .grid-container {
 
 .section--content table.table--medium,
 .section--content table.table--large {
-    column-span: all;
+  column-span: all;
 }
 
 .section--content table.table--large {
