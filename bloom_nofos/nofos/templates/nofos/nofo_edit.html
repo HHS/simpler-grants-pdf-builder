@@ -26,9 +26,21 @@
         Other actions
       </h2>
       <div class="usa-summary-box__text">
-        <ul class="usa-list">
-          <li><a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">Re-import this NOFO</a>: upload an updated HTML file</li>
-          <li><a href="{% url 'nofos:nofo_delete' nofo.id %}">Delete this NOFO</a>: remove this NOFO completely</li>
+        <ul class="usa-list usa-list--unstyled">
+          <li>
+            <p>
+            <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+              Re-import NOFO
+            </a>— upload an updated HTML file
+            </p>
+          </li>
+          <li>
+            <p>
+            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
+              Delete NOFO
+            </a>— remove this NOFO completely
+            </p>
+          </li>
         </ul>
       </div>
     </div>

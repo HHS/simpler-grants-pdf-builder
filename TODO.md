@@ -18,13 +18,13 @@
   - Put them after the summary
 - Endnotes
 - Icons
-- Table of contents
 - Warning page
 - Switch logos per theme
-- Guess the theme
+- Table of contents
 
 # DONE
 
+- Guess the theme
 - Suggest the tagline
 - Guess subsections that are callout boxes
 - Tables on 2 column layout

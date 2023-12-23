@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    NOFO Web Flow
+    NOFO Builder — Generate tagged PDFs for Notices of Financial Opportunity
 {% endblock %}
 
 {% block content %}
-  <h1 class="font-heading-xl margin-y-0">Create NOFOs online</h1>
+  <h1 class="font-heading-xl margin-y-0">Generate NOFOs from Word Documents</h1>
   <p class="usa-intro">
-    Simplify the process of creating a Notice of Financial Opportunity (NOFO).
+    Simplify the process of publishing Notices of Financial Opportunity (NOFOs).
   </p>
   <p class="usa-intro">
     Import your NOFOs and turn them into accessible PDF files. 
@@ -20,5 +20,12 @@
     {% endif %}
   </a>
   
-  <p>Note that if you edit a NOFO at the same time as someone else, you may overwrite each others’ changes.</p>
+  <p>At a glance:</p>
+  <ol class="usa-list">
+    <li>Export your completed NOFO document as an HTML file</li>
+    <li>Import the HTML file into the NOFO builder</li>
+    <li>Edit the NOFO to make small changes or correct metadata (author, date, number, tagline, etc.)</li>
+    <li>Select the right theme: default or light</li>
+    <li>Print your NOFO as a PDF file</li>
+  </ol>
 {% endblock %}
