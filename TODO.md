@@ -21,6 +21,7 @@
 - Warning page
 - Switch logos per theme
 - Table of contents
+- Guess publication date
 
 # DONE
 

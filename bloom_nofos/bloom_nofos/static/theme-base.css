@@ -278,6 +278,17 @@ ol:last-child {
   font-weight: 700;
 }
 
+/* Table of contents */
+
+.placeholder--toc {
+  border: var(--color--med-grey) 2px dashed;
+  background-color: var(--color--table-grey);
+  color: var(--color--med-grey);
+  padding: 100px;
+  margin: 10px 0;
+  text-align: center;
+}
+
 /* Section title page */
 
 .section--title-page {
@@ -385,5 +396,9 @@ ol:last-child {
   .nofo--title-page,
   .section--title-page {
     min-height: calc(100vh + 36mm);
+  }
+
+  .placeholder--toc {
+    display: none;
   }
 }
