@@ -99,17 +99,10 @@ def _build_nofo(nofo, sections):
             if html_body:
                 md_body = md("".join(html_body))
 
-            first_sentence_lowercase = _get_first_sentence(
-                subsection.get("body", []), lower=True
-            )
             name_lowercase = subsection.get("name", "Subsection X").lower()
             is_callout_box = name_lowercase.startswith(
                 "key dates"
-            ) or first_sentence_lowercase.startswith("the key facts")
-            if is_callout_box:
-                # rename the callout box if "key" isn't in the title
-                if "key" not in name_lowercase:
-                    subsection["name"] = _get_first_sentence(subsection.get("body", []))
+            ) or name_lowercase.startswith("the key facts")
 
             model_subsection = Subsection(
                 name=subsection.get("name", "Subsection X"),

@@ -81,7 +81,7 @@ Important: make sure to run poetry commands from the `./bloom_nofos` directory.
 poetry run python manage.py {runserver, makemigrations, migrate, etc}
 ```
 
-## A note on the CSS
+## A note on the CSS/HTML
 
 This app uses a static version of the [US Web Design System (USWDS)](https://designsystem.digital.gov) styles, generated on November 8th, 2023.
 
@@ -91,6 +91,10 @@ I've made a couple of tweaks so that they work in this app.
 
 - Update font paths from "../fonts" to "/static/fonts"
 - Update icon paths from "../img/usa-icons" to "/static/img/usa-icons"
+
+### Adjustments to HTML
+
+- "The Key Facts" changed to an h3 in the markup
 
 ## Environment variables
 
