@@ -21,10 +21,21 @@
 - Warning page
 - Switch logos per theme
 - Table of contents
+  - Include icons
 - Guess publication date
+- Fix the font sizes
+  - Cover page portrait (HRSA)
+  - Cover page landscape (CDC)
+  - Table of contents (HRSA)
+  - Table of contents (CDC)
+  - Section title pages (HRSA)
+  - Section title pages (CDC)
+  - Content pages (HRSA)
+  - Content pages (CDC)
 
 # DONE
 
+- Table of contents
 - Guess the theme
 - Suggest the tagline
 - Guess subsections that are callout boxes

@@ -281,23 +281,34 @@ ol:last-child {
 
 /* Table of contents */
 
-.toc ol {
+.toc > ol {
   margin-left: 0;
 }
 
-.toc ol > li > a {
+.toc ol ol {
+  margin-left: 20px;
+}
+
+.toc a {
   display: inline-block;
   position: relative;
-  width: 80%;
+  width: 100%;
   text-decoration: none;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
 }
 
 .toc a:after {
   position: absolute;
   right: 0;
   content: target-counter(attr(href, url), page);
+}
+
+.toc .toc--section-name > a {
+  font-weight: 600;
+}
+
+.toc hr {
+  margin: 10px 0;
 }
 
 /* Section title page */

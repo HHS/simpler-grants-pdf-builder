@@ -69,14 +69,31 @@
       </div>
     </div>
   </section>
+
   <section class="toc">
     <h2>Contents</h2>
+    {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
       {% for section in nofo.sections.all %}
-        <li><a href="#{{ section.html_id }}">{{ section.name }}</a></li>
+        <li class="toc--section-name">
+          <a href="#{{ section.html_id }}">{{ section.name }}</a>
+
+          <ol class="usa-list usa-list--unstyled">
+            {% for subsection in section.subsections.all %}
+              {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+                {% if tag == 'h3' %}
+                  <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </ol>
+        </li>
+        <hr />
       {% endfor %}
     </ol>
+    {% endspaceless %}
   </section>
+
   {% for section in nofo.sections.all %}
     <section id="{{ section.html_id }}" class="section section--{{ forloop.counter }} section--{{ section.html_id }}">
       <!-- SECTION TITLE PAGE -->

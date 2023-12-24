@@ -120,6 +120,16 @@ body[class^="landscape"] .grid-container {
   font-weight: 700;
 }
 
+/* Table of contents */
+
+.toc > ol {
+  column-gap: 40mm;
+}
+
+.toc li {
+  break-inside: avoid;
+}
+
 /* Section styling */
 
 .section--content {
