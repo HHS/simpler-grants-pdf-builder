@@ -70,9 +70,12 @@
     </div>
   </section>
   <section class="toc">
-    <div class="placeholder--toc font-mono-lg">
-      <div>Placeholder: Table of contents</div>
-    </div>
+    <h2>Contents</h2>
+    <ol class="usa-list usa-list--unstyled">
+      {% for section in nofo.sections.all %}
+        <li><a href="#{{ section.html_id }}">{{ section.name }}</a></li>
+      {% endfor %}
+    </ol>
   </section>
   {% for section in nofo.sections.all %}
     <section id="{{ section.html_id }}" class="section section--{{ forloop.counter }} section--{{ section.html_id }}">
