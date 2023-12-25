@@ -399,6 +399,13 @@ ol:last-child {
   display: block;
 }
 
+/* Outlines for the view page */
+.nofo--title-page,
+.toc,
+section.section {
+  outline: 1px solid var(--color--light-grey);
+}
+
 /* Media queries */
 @media print {
   .running-header,
@@ -419,5 +426,12 @@ ol:last-child {
   .nofo--title-page,
   .section--title-page {
     min-height: calc(100vh + 36mm);
+  }
+
+  /* Remove outlines */
+  .nofo--title-page,
+  .toc,
+  section.section {
+    outline: none;
   }
 }
