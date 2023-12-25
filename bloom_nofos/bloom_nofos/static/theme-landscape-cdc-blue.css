@@ -117,12 +117,29 @@ body[class^="landscape"] .grid-container {
 
 /* Table of contents */
 
+.toc h2 {
+  font-family: "Open Sans";
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--color--med-blue);
+  margin-bottom: 24px;
+}
+
 .toc > ol {
+  columns: 2;
   column-gap: 40mm;
+}
+
+.toc > ol > li {
+  border-bottom: 1px solid var(--color--light-grey);
 }
 
 .toc li {
   break-inside: avoid;
+}
+
+.toc a {
+  color: var(--color--black);
 }
 
 /* Section styling */

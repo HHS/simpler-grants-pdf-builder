@@ -291,9 +291,13 @@ ol:last-child {
   margin-left: 0;
 }
 
+.toc > ol > li {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
 .toc ol.usa-list ol.usa-list {
   margin-left: 20px;
-  margin-bottom: 20px;
 }
 
 .toc ol li {
@@ -316,10 +320,6 @@ ol:last-child {
 
 .toc .toc--section-name > a {
   font-weight: 600;
-}
-
-.toc hr {
-  margin: 10px 0;
 }
 
 /* Section title page */
