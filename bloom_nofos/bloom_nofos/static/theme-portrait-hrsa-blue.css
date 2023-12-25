@@ -22,7 +22,6 @@
 }
 
 @page title {
-  background-color: var(--color--dark-blue);
   margin: 0;
 }
 
@@ -106,6 +105,35 @@
   font-weight: 800;
   font-size: 28px;
   margin-bottom: 24px;
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  background-color: var(--color--pale-blue);
+  color: var(--color--black);
+}
+
+.header-nav li a {
+  border-top: 4px solid var(--color--med-blue);
+  color: var(--color--black);
+}
+
+.section--title-page h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--color--black);
+}
+
+.section--title-page--toc,
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+.section--title-page--toc p {
+  font-size: 18px;
 }
 
 /* Section styling */

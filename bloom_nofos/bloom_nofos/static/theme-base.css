@@ -335,13 +335,6 @@ ol:last-child {
   padding: 150px 20mm 0 20mm;
 }
 
-.section--title-page h2 {
-  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
-    sans-serif;
-  font-size: 300%;
-  font-weight: 700;
-}
-
 .section--title-page a {
   color: var(--color--white);
   text-decoration: none;
@@ -355,9 +348,8 @@ ol:last-child {
   padding: 0mm 20mm;
 }
 
-.section--title-page--toc p,
 .section--title-page--header-nav p {
-  font-size: 115%;
+  font-size: 14px;
   font-weight: 700;
 }
 

@@ -10,12 +10,13 @@
 
 @page title {
   background-color: var(--color--vibrant-blue);
-  margin-bottom: 20mm;
+  margin: 0 0 20mm 0;
 
   @bottom-left {
     border-top: 1px solid var(--color--white);
     content: string(sectiontitle);
     padding-bottom: 4mm;
+    margin-left: 20mm;
     font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
       Roboto, Arial, serif;
     font-weight: 400;
@@ -28,6 +29,7 @@
     padding-bottom: 4mm;
     font-weight: 400;
     color: var(--color--white);
+    margin-right: 20mm;
   }
 }
 
@@ -170,6 +172,22 @@ body[class^="landscape"] .grid-container {
   background-color: var(--color--dark-blue);
 }
 
+.section--title-page--header-nav p {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section--title-page h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.section--title-page--toc p {
+  font-size: 18px;
+}
+
 /* Section styling */
 
 .section--content {
@@ -192,5 +210,9 @@ body[class^="landscape"] .grid-container {
   .nofo--title-page {
     overflow: visible;
     min-height: calc(100vh + 35mm);
+  }
+
+  .section--title-page {
+    min-height: 100vh;
   }
 }

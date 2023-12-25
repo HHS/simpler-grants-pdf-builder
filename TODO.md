@@ -24,10 +24,6 @@
   - Include icons
 - Guess publication date
 - Fix the font sizes
-  - Table of contents (HRSA)
-  - Table of contents (CDC)
-  - Section title pages (HRSA)
-  - Section title pages (CDC)
   - Content pages (HRSA)
   - Content pages (CDC)
 
@@ -36,6 +32,10 @@
 - Fix the font sizes
   - Cover page portrait (HRSA)
   - Cover page landscape (CDC)
+  - Table of contents (HRSA)
+  - Table of contents (CDC)
+  - Section title pages (CDC)
+  - Section title pages (HRSA)
 - Table of contents
 - Guess the theme
 - Suggest the tagline
