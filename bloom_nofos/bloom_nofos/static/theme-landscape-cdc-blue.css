@@ -53,10 +53,6 @@ body[class^="landscape"] .grid-container {
   font-family: "Source Sans Pro Web", Helvetica, Roboto, Arial, sans-serif;
 }
 
-.nofo--title-page--header--logo--subheading {
-  margin-top: -10px;
-}
-
 .nofo--title-page--title .nofo--title-page--title--subheading {
   margin-top: 20px;
   font-size: 16.5px;

@@ -14,6 +14,7 @@
   --color--med-blue: #336a90;
   --color--vibrant-blue: #015ca8;
   --color--light-blue: #bdd9ed;
+  --color--pale-blue: #e7eef9;
   --color--med-brown: #c0b0a2;
 }
 
@@ -267,17 +268,25 @@ ol:last-child {
   justify-content: space-between;
 }
 
+.nofo--title-page .nofo--title-page--header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 .nofo--title-page--header--logo img {
   width: 150px;
+}
+
+.nofo--title-page--header--logo--subheading p {
+  margin: 0;
 }
 
 .nofo--title-page--footer {
   position: relative;
 }
 
-.nofo--title-page--header .nofo--title-page--header--intro span:first-of-type {
-  font-size: 120%;
-  color: var(--color--med-blue);
+.nofo--title-page--header .nofo--title-page--header--intro span:last-of-type {
   font-weight: 700;
 }
 

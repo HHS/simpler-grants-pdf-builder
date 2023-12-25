@@ -1,3 +1,17 @@
+/* Add Helvetica condensed font */
+
+@font-face {
+  font-family: "Helvetica Condensed";
+  src: url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff2")
+      format("woff2"),
+    url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff")
+      format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Page rules */
+
 @page {
   /* portrait letter size */
   size: 216mm 279mm;
@@ -14,8 +28,6 @@
 
 /* Cover page */
 
-.nofo--title-page--header--logo--subheading,
-.nofo--title-page--title--subheading,
 .nofo--title-page--footer--subheading {
   display: none;
 }
@@ -23,6 +35,7 @@
 .nofo--title-page--header {
   padding: 20mm;
   padding-bottom: 15mm;
+  background-color: var(--color--pale-blue);
 }
 
 .nofo--title-page--title {
@@ -33,15 +46,31 @@
   padding-left: 20mm;
 }
 
-.nofo--title-page--header .nofo--title-page--header--logo {
-  float: left;
+.nofo--title-page--header--logo--subheading {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.nofo--title-page--header--intro {
+  font-size: 14px;
+}
+
+.nofo--title-page--header--intro span:first-of-type {
+  display: inline-block;
+  margin-bottom: 5px;
 }
 
 .nofo--title-page--title h1 {
-  color: var(--color--dark-blue);
+  font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
+  letter-spacing: -0.5px;
 }
 
-.nofo--title-page--header .nofo--title-page--header--intro,
+.nofo--title-page--title .nofo--title-page--title--subheading {
+  font-size: 19px;
+  font-weight: 700;
+}
+
 .nofo--title-page--footer .nofo--title-page--footer--image {
   float: right;
 }
