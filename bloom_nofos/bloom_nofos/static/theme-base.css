@@ -20,12 +20,12 @@
 
 /* Assign named pages */
 
-div.title-page {
-  page: title;
-}
-
 section.title-page {
   page: cover;
+}
+
+div.section--title-page {
+  page: title;
 }
 
 /* Assign page breaks */
@@ -325,7 +325,6 @@ ol:last-child {
 /* Section title page */
 
 .section--title-page {
-  background-color: var(--color--dark-blue);
   color: var(--color--white);
   display: flex;
   flex-direction: column;
@@ -354,7 +353,6 @@ ol:last-child {
 
 .section--title-page--header-nav {
   padding: 0mm 20mm;
-  background-color: var(--color--med-blue);
 }
 
 .section--title-page--toc p,
