@@ -99,6 +99,15 @@
     brightness(89%) contrast(103%);
 }
 
+/* Table of contents */
+
+.toc h2 {
+  font-family: "Open Sans";
+  font-weight: 800;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
 /* Section styling */
 
 .section--content {

@@ -147,11 +147,6 @@ a {
   color: var(--color--med-blue);
 }
 
-hr {
-  border: none;
-  border-top: 1px solid var(--color--light-grey);
-}
-
 table {
   font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
     sans-serif;
@@ -296,8 +291,13 @@ ol:last-child {
   margin-left: 0;
 }
 
-.toc ol ol {
+.toc ol.usa-list ol.usa-list {
   margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.toc ol li {
+  margin-top: 8px;
 }
 
 .toc a {
