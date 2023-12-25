@@ -25,7 +25,6 @@
 - Guess publication date
 - Fix the font sizes
   - Cover page portrait (HRSA)
-  - Cover page landscape (CDC)
   - Table of contents (HRSA)
   - Table of contents (CDC)
   - Section title pages (HRSA)
@@ -35,6 +34,8 @@
 
 # DONE
 
+- Fix the font sizes
+  - Cover page landscape (CDC)
 - Table of contents
 - Guess the theme
 - Suggest the tagline

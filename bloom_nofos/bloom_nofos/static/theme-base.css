@@ -76,6 +76,7 @@ h2 {
 
 html {
   font-size: 14px;
+  line-height: 1.25;
 }
 
 body {
@@ -98,8 +99,9 @@ h5 {
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 38px;
   font-weight: 400;
+  line-height: 1.2;
 }
 
 h2 {

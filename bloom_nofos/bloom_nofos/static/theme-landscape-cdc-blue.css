@@ -55,12 +55,11 @@ body[class^="landscape"] .grid-container {
 
 .nofo--title-page--header--logo--subheading {
   margin-top: -10px;
-  font-weight: 700;
 }
 
 .nofo--title-page--title .nofo--title-page--title--subheading {
   margin-top: 20px;
-  font-size: 150%;
+  font-size: 16.5px;
 }
 
 .nofo--title-page--footer {
@@ -103,7 +102,7 @@ body[class^="landscape"] .grid-container {
 }
 
 .nofo--title-page--footer .nofo--title-page--footer--subheading span {
-  font-size: 120%;
+  font-size: 16.5px;
   display: block;
   padding-bottom: 10px;
 }
