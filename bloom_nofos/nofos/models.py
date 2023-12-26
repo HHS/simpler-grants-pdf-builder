@@ -31,6 +31,7 @@ class Nofo(models.Model):
     THEME_CHOICES = [
         ("landscape-cdc-blue", "CDC (Blue)"),
         ("portrait-hrsa-blue", "HRSA (Blue)"),
+        ("portrait-hrsa-white", "HRSA (White)"),
     ]
 
     theme = models.CharField(

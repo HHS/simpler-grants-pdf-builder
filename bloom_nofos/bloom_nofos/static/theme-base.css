@@ -8,6 +8,7 @@
   --color--black: #000000;
   --color--white: #ffffff;
   --color--table-grey: #edf1f3;
+  --color--table-blue: #ceddf240;
   --color--light-grey: #dde2e8;
   --color--med-grey: #475260;
   --color--dark-blue: #274a64;
@@ -108,7 +109,6 @@ table {
   line-height: 1.5;
   border-collapse: collapse;
   border-spacing: 0;
-  color: var(--color--black);
   margin: 1.25rem 0;
   text-align: left;
 }
@@ -122,16 +122,12 @@ table caption {
 
 table th,
 table td {
-  background-color: var(--color--table-grey);
-  border: 2px solid var(--color--white);
   font-weight: 400;
   padding: 0.5rem 1rem;
 }
 
-table thead th,
-table thead td {
-  background-color: transparent;
-  color: #1b1b1b;
+table td a {
+  color: var(--color--vibrant-blue);
 }
 
 table thead th {
@@ -338,11 +334,9 @@ ol:last-child {
 /* Section contents */
 
 .callout-box {
-  background-color: var(--color--vibrant-blue);
   border-radius: 10px;
   padding: 20px 15px;
   margin: 15px 0;
-  color: var(--color--white);
 }
 
 .callout-box--title {

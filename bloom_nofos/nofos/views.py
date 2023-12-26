@@ -38,6 +38,15 @@ class NofosDetailView(DetailView):
     model = Nofo
     template_name = "nofos/nofo_view.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        theme_parts = self.object.theme.split("-")
+        theme_parts.pop()
+        context["nofo_theme_base"] = "-".join(theme_parts)
+
+        return context
+
 
 class NofosEditView(DetailView):
     model = Nofo

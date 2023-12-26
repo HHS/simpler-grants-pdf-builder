@@ -1,0 +1,170 @@
+/* Add Helvetica condensed font */
+
+@font-face {
+  font-family: "Helvetica Condensed";
+  src: url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff2")
+      format("woff2"),
+    url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff")
+      format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Page rules */
+
+@page {
+  /* portrait letter size */
+  size: 216mm 279mm;
+
+  @bottom-left {
+    font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+      sans-serif;
+    font-weight: 700;
+    color: var(--color--dark-blue);
+  }
+
+  @bottom-right {
+    font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+      sans-serif;
+    font-weight: 700;
+    color: var(--color--dark-blue);
+  }
+}
+
+@page cover {
+  margin: 0;
+}
+
+@page title {
+  margin: 0;
+}
+
+/* Headings */
+
+h1 {
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1.2;
+  font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+h3 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h4 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 1.15rem;
+  text-transform: uppercase;
+}
+
+h6 {
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-top: 1.1rem;
+}
+
+/* Cover page */
+
+.nofo--title-page--footer--subheading {
+  display: none;
+}
+
+.nofo--title-page--header {
+  padding: 20mm;
+  padding-bottom: 15mm;
+}
+
+.nofo--title-page--title {
+  padding: 0 20mm 10mm 20mm;
+}
+
+.nofo--title-page--footer {
+  padding-left: 20mm;
+}
+
+.nofo--title-page--header--logo--subheading {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.nofo--title-page--header--intro {
+  font-size: 14px;
+}
+
+.nofo--title-page--header--intro span:first-of-type {
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.nofo--title-page--title .nofo--title-page--title--subheading {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  float: right;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo {
+  position: absolute;
+  bottom: 10mm;
+  left: 10mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  height: 520px;
+  width: 85%;
+  overflow: hidden;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image img {
+  height: 100%;
+  border-radius: 80px 0 0 0;
+  object-fit: cover;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo img {
+  width: 100px;
+}
+
+/* Table of contents */
+
+.toc h2 {
+  font-family: "Open Sans";
+  font-weight: 800;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+/* Section title page */
+
+.section--title-page--toc p {
+  font-size: 18px;
+}
+
+/* Section styling */
+
+.section--content {
+  width: 70%;
+}

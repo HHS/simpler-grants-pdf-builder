@@ -2,6 +2,10 @@
 {% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables callout_box_contents %}
 
 {% block css %}
+  {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
+    <link href="{% static filename_base %}" type="text/css" media="all" rel="stylesheet" />
+  {% endwith %}
+
   {% with "theme-"|add:nofo.theme|add:'.css' as filename %}
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet" />
   {% endwith %}

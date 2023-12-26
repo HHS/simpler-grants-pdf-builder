@@ -1,0 +1,73 @@
+/* Headings */
+
+h3 {
+  color: var(--color--black);
+}
+
+h4 {
+  color: var(--color--dark-blue);
+}
+
+/* Cover page */
+
+.nofo--title-page--header {
+  background-color: var(--color--pale-blue);
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo img {
+  filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg)
+    brightness(89%) contrast(103%);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--black);
+}
+
+.toc ol li a {
+  color: var(--color--black);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  background-color: var(--color--pale-blue);
+  color: var(--color--black);
+}
+
+.header-nav li a {
+  border-top: 4px solid var(--color--med-blue);
+  color: var(--color--black);
+}
+
+.section--title-page--name,
+.section--title-page--toc {
+  color: var(--color--black);
+}
+
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+/* Section contents */
+
+.callout-box {
+  background-color: var(--color--pale-blue);
+  color: var(--color--black);
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 2px;
+  margin-left: -2px;
+}
+
+table caption {
+  margin-left: 2px;
+}
+
+table th,
+table td {
+  border: 2px solid var(--color--pale-blue);
+}
