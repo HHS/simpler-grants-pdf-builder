@@ -39,6 +39,13 @@
   margin: 0;
 }
 
+/* Running header */
+
+.header-nav.header-nav--running-header li a {
+  border-top: 4px solid var(--color--light-grey);
+  color: var(--color--med-grey);
+}
+
 /* Headings */
 
 h1 {
@@ -166,5 +173,5 @@ h6 {
 /* Section styling */
 
 .section--content {
-  width: 70%;
+  width: 80%;
 }

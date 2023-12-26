@@ -24,11 +24,19 @@
   - Include icons
 - Guess publication date
 - Fix the font sizes
-  - Content pages (HRSA)
   - Content pages (CDC)
+- Theme variants
+  - CDC white
+  - ACF white
+  - ACL white
+- Themes
+  - ACF
+  - ACL
 
 # DONE
 
+- Theme variants
+  - HRSA white
 - Fix the font sizes
   - Cover page portrait (HRSA)
   - Cover page landscape (CDC)
@@ -36,11 +44,15 @@
   - Table of contents (CDC)
   - Section title pages (CDC)
   - Section title pages (HRSA)
+  - Content pages (HRSA)
 - Table of contents
 - Guess the theme
 - Suggest the tagline
 - Guess subsections that are callout boxes
 - Tables on 2 column layout
+- Themes
+  - HRSA
+  - CDC
 - Add a theme to the NOFO
   - add to model
   - migrate

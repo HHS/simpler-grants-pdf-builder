@@ -1,5 +1,9 @@
 /* Page rules */
 
+@page cover {
+  background-color: var(--color--med-blue);
+}
+
 @page title {
   background-color: var(--color--med-blue);
 }
