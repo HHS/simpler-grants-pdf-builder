@@ -1,12 +1,13 @@
+/* Page rules */
+
 /* Headings */
 
-h2 {
-  color: var(--color--black);
-  font-weight: 800;
+h1 {
+  color: var(--color--dark-blue);
 }
 
 h3 {
-  color: var(--color--black);
+  color: var(--color--dark-blue);
 }
 
 h4 {
@@ -15,16 +16,25 @@ h4 {
 
 /* Cover page */
 
-.nofo--title-page--header {
-  background-color: var(--color--pale-blue);
+.nofo--title-page--header--logo--subheading,
+.nofo--title-page--title {
+  color: var(--color--dark-blue);
 }
 
 .nofo--title-page--footer .nofo--title-page--footer--logo img {
-  filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg)
-    brightness(89%) contrast(103%);
+  filter: invert(22%) sepia(51%) saturate(3181%) hue-rotate(191deg)
+    brightness(98%) contrast(99%);
+}
+
+.nofo--title-page--footer {
+  background: var(--color--pale-blue);
 }
 
 /* Table of contents */
+
+.toc h2 {
+  color: var(--color--dark-blue);
+}
 
 .toc ol li a {
   color: var(--color--black);
@@ -42,11 +52,11 @@ h4 {
   color: var(--color--black);
 }
 
-.section--title-page--name,
-.section--title-page--toc {
-  color: var(--color--black);
+.section--title-page--name {
+  color: var(--color--dark-blue);
 }
 
+.section--title-page--toc,
 .section--title-page--toc a {
   color: var(--color--black);
 }

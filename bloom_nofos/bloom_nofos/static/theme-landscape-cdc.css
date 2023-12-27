@@ -1,0 +1,244 @@
+/* Page rules */
+
+@page {
+  /* horizontal letter size */
+  size: 279mm 216mm;
+
+  @bottom-left {
+    border-top: 1px solid var(--color--light-grey);
+    content: string(sectiontitle);
+    padding-bottom: 4mm;
+  }
+
+  @bottom-right {
+    border-top: 1px solid var(--color--light-grey);
+    content: counter(page);
+    padding-bottom: 4mm;
+  }
+}
+
+@page cover {
+  margin: 0;
+}
+
+@page title {
+  margin: 0 0 20mm 0;
+
+  @bottom-left {
+    content: string(sectiontitle);
+    padding-bottom: 4mm;
+    margin-left: 20mm;
+    font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+      Roboto, Arial, serif;
+    font-weight: 400;
+  }
+
+  @bottom-right {
+    content: counter(page);
+    padding-bottom: 4mm;
+    font-weight: 400;
+    margin-right: 20mm;
+  }
+}
+
+/* USA classes */
+
+body[class^="landscape"] .grid-container {
+  max-width: 76rem;
+}
+
+/* Headings */
+
+h1 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 38px;
+}
+
+h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+h3 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h4 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 1.15rem;
+  text-transform: uppercase;
+}
+
+h6 {
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-top: 1.1rem;
+}
+
+/* Cover page */
+
+.nofo--title-page {
+  overflow: hidden;
+}
+
+.nofo--title-page--header--intro {
+  display: none;
+}
+
+.nofo--title-page--header {
+  padding: 10mm;
+}
+
+.nofo--title-page--title {
+  padding: 0 20mm 10mm 10mm;
+}
+
+.nofo--title-page--header,
+.nofo--title-page--title {
+  width: 65%;
+}
+
+.nofo--title-page--title .nofo--title-page--title--subheading {
+  margin-top: 20px;
+  font-size: 16.5px;
+}
+
+.nofo--title-page--footer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 5mm 0 5mm 10mm;
+  margin-right: 0;
+  width: 100%;
+  margin-bottom: -1mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  bottom: 0;
+  margin-right: 200px;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--logo img {
+  width: 80px;
+  height: 80px;
+  filter: none;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  height: 216mm;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--image img {
+  height: 100%;
+  object-fit: cover;
+  border-radius: 80px 0 0 0;
+}
+
+.nofo--title-page--footer .nofo--title-page--footer--subheading span {
+  font-size: 16.5px;
+  display: block;
+  padding-bottom: 10px;
+}
+
+.nofo--title-page--footer
+  .nofo--title-page--footer--subheading
+  span:first-of-type {
+  margin-top: 15px;
+}
+
+.nofo--title-page--footer
+  .nofo--title-page--footer--subheading
+  span:last-of-type {
+  font-weight: 700;
+}
+
+/* Table of contents */
+
+.toc h2 {
+  font-family: "Open Sans";
+  font-weight: 700;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+.toc > ol {
+  columns: 2;
+  column-gap: 40mm;
+}
+
+.toc > ol > li {
+  border-bottom: 1px solid var(--color--light-grey);
+}
+
+.toc li {
+  break-inside: avoid;
+}
+
+/* Section title page */
+
+.section--title-page--header-nav p {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section--title-page h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.section--title-page--toc p {
+  font-size: 18px;
+}
+
+/* Section styling */
+
+.section--content {
+  columns: 2;
+  column-gap: 8mm;
+  orphans: 2;
+}
+
+.section--content table.table--medium,
+.section--content table.table--large {
+  column-span: all;
+}
+
+.section--content table.table--large {
+  break-before: column;
+  break-after: column;
+}
+
+@media print {
+  .nofo--title-page {
+    overflow: visible;
+    min-height: calc(100vh + 35mm);
+  }
+
+  .section--title-page {
+    min-height: 100vh;
+  }
+}

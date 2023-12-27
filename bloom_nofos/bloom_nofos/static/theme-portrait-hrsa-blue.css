@@ -10,6 +10,10 @@
 
 /* Headings */
 
+h2 {
+  color: var(--color--med-blue);
+}
+
 h3 {
   color: var(--color--dark-blue);
 }
@@ -36,10 +40,6 @@ h4 {
 }
 
 /* Table of contents */
-
-.toc h2 {
-  color: var(--color--med-blue);
-}
 
 .toc ol li a {
   color: var(--color--black);
@@ -70,7 +70,10 @@ h4 {
   color: var(--color--white);
 }
 
-table th,
+table th {
+  padding-left: 0;
+}
+
 table td {
   background-color: var(--color--table-blue);
   border: 2px solid var(--color--white);

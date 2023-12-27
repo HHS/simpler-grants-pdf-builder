@@ -19,24 +19,23 @@
 - Endnotes
 - Icons
 - Warning page
-- Switch logos per theme
 - Table of contents
   - Include icons
 - Guess publication date
-- Fix the font sizes
-  - Content pages (CDC)
+- Guess the agency (?)
 - Theme variants
-  - CDC white
   - ACF white
   - ACL white
 - Themes
   - ACF
   - ACL
+- Switch logos per theme
 
 # DONE
 
 - Theme variants
   - HRSA white
+  - CDC white
 - Fix the font sizes
   - Cover page portrait (HRSA)
   - Cover page landscape (CDC)
@@ -45,6 +44,7 @@
   - Section title pages (CDC)
   - Section title pages (HRSA)
   - Content pages (HRSA)
+  - Content pages (CDC)
 - Table of contents
 - Guess the theme
 - Suggest the tagline
