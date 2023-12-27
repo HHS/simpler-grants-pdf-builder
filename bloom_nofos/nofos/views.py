@@ -29,6 +29,23 @@ from .nofo import (
 )
 
 
+OPDIVS = {
+    "cdc": {
+        "name": "Centers for Disease Control and Prevention",
+        "filename": "cdc-logo.svg",
+    },
+    "hrsa": {
+        "name": "The Health Resources & Services Administration",
+        "filename": "hrsa-logo.svg",
+    },
+    "acf": {
+        "name": "The Administration for Children and Families",
+        "filename": "acf-logo.svg",
+    },
+    "acl": {"name": "Administration for Community Living", "filename": "acl-logo.svg"},
+}
+
+
 class NofosListView(ListView):
     model = Nofo
     template_name = "nofos/nofo_index.html"
@@ -44,6 +61,9 @@ class NofosDetailView(DetailView):
         theme_parts = self.object.theme.split("-")
         theme_parts.pop()
         context["nofo_theme_base"] = "-".join(theme_parts)
+
+        # get the name of the opdiv (eg, "cdc", "hrsa", etc)
+        context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
 
         return context
 

@@ -16,23 +16,23 @@
   - inline in documents
 - Callout boxes
   - Put them after the summary
-- Endnotes
-- Icons
-- Warning page
-- Table of contents
-  - Include icons
 - Guess publication date
-- Guess the agency (?)
+- Guess the opdiv (?)
 - Theme variants
   - ACF white
   - ACL white
 - Themes
   - ACF
   - ACL
-- Switch logos per theme
+- Icons
+- Table of contents
+  - Include icons
+- Warning page
+- Endnotes
 
 # DONE
 
+- Switch logos per theme
 - Theme variants
   - HRSA white
   - CDC white
