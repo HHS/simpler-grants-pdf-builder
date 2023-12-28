@@ -333,6 +333,10 @@ ol:last-child {
   display: block;
 }
 
+/* Footnotes
+https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
+*/
+
 /* Outlines for the view page */
 .nofo--title-page,
 .toc,

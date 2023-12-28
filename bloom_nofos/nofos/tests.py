@@ -6,10 +6,10 @@ from django.test import TestCase
 
 
 from .nofo import (
-    _get_first_sentence,
     add_caption_to_table,
     add_class_to_table,
     add_headings_to_nofo,
+    add_newline_to_ref_numbers,
     create_nofo,
     overwrite_nofo,
     convert_table_first_row_to_header_row,
@@ -21,41 +21,6 @@ from .nofo import (
     suggest_nofo_title,
 )
 from .utils import match_view_url
-
-
-class TestGetFirstSentence(TestCase):
-    def test_with_non_empty_body(self):
-        # Case with non-empty body
-        body = [BeautifulSoup("<p>No Support!</p>", "html.parser").p]
-        result = _get_first_sentence(body)
-        self.assertEqual(result, "No Support!")
-
-    def test_with_non_empty_body_lowercase(self):
-        # Case with non-empty body
-        body = [BeautifulSoup("<p>No support!</p>", "html.parser").p]
-        result = _get_first_sentence(body, lower=True)
-        self.assertEqual(result, "no support!")
-
-    def test_with_empty_body(self):
-        # Case with empty body
-        body = []
-        result = _get_first_sentence(body)
-        self.assertEqual(result, "")
-
-    def test_with_non_tag_body(self):
-        # Case where the first item in body is not a Tag
-        body = ["Not a tag"]
-        result = _get_first_sentence(body)
-        self.assertEqual(result, "")
-
-    def test_with_multiple_elements_body(self):
-        # Case where body has multiple elements
-        body = [
-            BeautifulSoup("<p>No</p>", "html.parser").p,
-            BeautifulSoup("<p>Support</p>", "html.parser").p,
-        ]
-        result = _get_first_sentence(body)
-        self.assertEqual(result, "No")
 
 
 class MatchUrlTests(TestCase):
@@ -197,6 +162,20 @@ class HTMLTableClassTests(TestCase):
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+
+class AddNewLineToRefsTest(TestCase):
+    def test_ref_0(self):
+        self.assertEqual(add_newline_to_ref_numbers("ref0)"), "ref0)\n")
+
+    def test_ref_1(self):
+        self.assertEqual(add_newline_to_ref_numbers("ref1)"), "ref1)\n")
+
+    def test_ref_5(self):
+        self.assertEqual(add_newline_to_ref_numbers("ref5)"), "ref5)\n")
+
+    def test_ref_10(self):
+        self.assertEqual(add_newline_to_ref_numbers("ref10)"), "ref10)\n")
 
 
 class HTMLSuggestTitleTests(TestCase):
