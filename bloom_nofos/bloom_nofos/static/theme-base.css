@@ -36,6 +36,11 @@ section.toc {
   page-break-before: always;
 }
 
+/* put endnotes on its own page */
+#contacts-support--endnotes {
+  page-break-before: always;
+}
+
 /* Set @page rules */
 
 h2 {

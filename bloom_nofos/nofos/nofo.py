@@ -118,6 +118,36 @@ def format_endnotes(md_body):
     return "\n".join(endnotes)
 
 
+def is_footnote_ref(a_tag):
+    text = a_tag.get_text().strip()
+    return (
+        len(text) >= 3  # at least 3 characters
+        and text.startswith("[")
+        and text.endswith("]")
+        and text[1:-1].isdigit()
+    )
+
+
+def format_footnote_ref(a_tag):
+    # number: 10
+    # href: #ref10
+    # id: ref10_inline
+    footnote_text = a_tag.get_text().strip()
+    footnote_number = footnote_text[1:-1]
+    footnote_href = a_tag.get("href").strip()
+
+    a_tag.string = footnote_text
+
+    # these are the endnotes references
+    if footnote_href.startswith("#ftnt_"):
+        a_tag["id"] = "ftnt{}".format(footnote_number)
+
+    # these are in the body of the document
+    else:
+        a_tag["id"] = "ftnt_ref{}".format(footnote_number)
+        a_tag["href"] = "#ftnt{}".format(footnote_number)
+
+
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(

@@ -9,7 +9,6 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Add version number
 - Add a button to print the PDF
 - Images
   - for cover page
@@ -24,14 +23,15 @@
 - Themes
   - ACF
   - ACL
+- Add version number
 - Icons
 - Table of contents
   - Include icons
 - Warning page
-- Endnotes
 
 # DONE
 
+- Endnotes
 - Switch logos per theme
 - Theme variants
   - HRSA white
