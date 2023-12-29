@@ -27,11 +27,11 @@
 - Icons
 - Table of contents
   - Include icons
-- Warning page
-- Remove the extra blank page after the cover page
+- Before you start page
 
 # DONE
 
+- Remove the extra blank page after the cover page
 - Add floating view link to edit page
 - Fix: duplicate ids for section pages and h2s
 - Endnotes

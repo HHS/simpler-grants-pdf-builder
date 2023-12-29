@@ -368,7 +368,7 @@ section.section {
 
   .nofo--cover-page,
   .section--title-page {
-    min-height: calc(100vh + 36mm);
+    min-height: calc(100vh + 36mm - 0.01px);
   }
 
   /* Remove outlines */
