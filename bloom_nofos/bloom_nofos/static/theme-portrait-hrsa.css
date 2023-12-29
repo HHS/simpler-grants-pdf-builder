@@ -93,65 +93,65 @@ h6 {
 
 /* Cover page */
 
-.nofo--title-page--footer--subheading {
+.nofo--cover-page--footer--subheading {
   display: none;
 }
 
-.nofo--title-page--header {
+.nofo--cover-page--header {
   padding: 20mm;
   padding-bottom: 15mm;
 }
 
-.nofo--title-page--title {
+.nofo--cover-page--title {
   padding: 0 20mm 10mm 20mm;
 }
 
-.nofo--title-page--footer {
+.nofo--cover-page--footer {
   padding-left: 20mm;
 }
 
-.nofo--title-page--header--logo--subheading {
+.nofo--cover-page--header--logo--subheading {
   font-weight: 700;
   font-size: 14px;
 }
 
-.nofo--title-page--header--intro {
+.nofo--cover-page--header--intro {
   font-size: 14px;
 }
 
-.nofo--title-page--header--intro span:first-of-type {
+.nofo--cover-page--header--intro span:first-of-type {
   display: inline-block;
   margin-bottom: 5px;
 }
 
-.nofo--title-page--title .nofo--title-page--title--subheading {
+.nofo--cover-page--title .nofo--cover-page--title--subheading {
   font-size: 19px;
   font-weight: 700;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--image {
+.nofo--cover-page--footer .nofo--cover-page--footer--image {
   float: right;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--logo {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo {
   position: absolute;
   bottom: 10mm;
   left: 10mm;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--image {
+.nofo--cover-page--footer .nofo--cover-page--footer--image {
   height: 520px;
   width: 85%;
   overflow: hidden;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--image img {
+.nofo--cover-page--footer .nofo--cover-page--footer--image img {
   height: 100%;
   border-radius: 80px 0 0 0;
   object-fit: cover;
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--logo img {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   width: 100px;
 }
 

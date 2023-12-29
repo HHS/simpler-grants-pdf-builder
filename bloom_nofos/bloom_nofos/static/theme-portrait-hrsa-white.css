@@ -15,11 +15,11 @@ h4 {
 
 /* Cover page */
 
-.nofo--title-page--header {
+.nofo--cover-page--header {
   background-color: var(--color--pale-blue);
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--logo img {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   filter: invert(23%) sepia(77%) saturate(2406%) hue-rotate(180deg)
     brightness(89%) contrast(103%);
 }

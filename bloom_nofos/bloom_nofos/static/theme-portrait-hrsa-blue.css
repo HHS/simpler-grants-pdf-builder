@@ -11,7 +11,7 @@
 /* Headings */
 
 h2 {
-  color: var(--color--med-blue);
+  color: var(--color--white);
 }
 
 h3 {
@@ -24,22 +24,26 @@ h4 {
 
 /* Cover page */
 
-.nofo--title-page--header {
+.nofo--cover-page--header {
   background-color: var(--color--white);
 }
 
-.nofo--title-page--title,
-.nofo--title-page--footer {
+.nofo--cover-page--title,
+.nofo--cover-page--footer {
   color: var(--color--white);
   background-color: var(--color--med-blue);
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--logo img {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   filter: invert(99%) sepia(16%) saturate(0%) hue-rotate(71deg) brightness(106%)
     contrast(101%);
 }
 
 /* Table of contents */
+
+.toc h2 {
+  color: var(--color--med-blue);
+}
 
 .toc ol li a {
   color: var(--color--black);

@@ -34,22 +34,22 @@ h4 {
 
 /* Cover page */
 
-.nofo--title-page--header,
-.nofo--title-page--title {
+.nofo--cover-page--header,
+.nofo--cover-page--title {
   background-color: var(--color--vibrant-blue);
 }
 
-.nofo--title-page--header--logo--subheading,
-.nofo--title-page--title {
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--title {
   color: var(--color--white);
 }
 
-.nofo--title-page--footer .nofo--title-page--footer--logo img {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   filter: invert(22%) sepia(51%) saturate(3181%) hue-rotate(191deg)
     brightness(98%) contrast(99%);
 }
 
-.nofo--title-page--footer {
+.nofo--cover-page--footer {
   background: var(--color--white);
 }
 

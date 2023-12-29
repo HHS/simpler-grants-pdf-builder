@@ -198,31 +198,31 @@ ol:last-child {
 
 /* Cover page */
 
-.nofo--title-page {
+.nofo--cover-page {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.nofo--title-page .nofo--title-page--header {
+.nofo--cover-page .nofo--cover-page--header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 }
 
-.nofo--title-page--header--logo img {
+.nofo--cover-page--header--logo img {
   width: 150px;
 }
 
-.nofo--title-page--header--logo--subheading p {
+.nofo--cover-page--header--logo--subheading p {
   margin: 0;
 }
 
-.nofo--title-page--footer {
+.nofo--cover-page--footer {
   position: relative;
 }
 
-.nofo--title-page--header .nofo--title-page--header--intro span:last-of-type {
+.nofo--cover-page--header .nofo--cover-page--header--intro span:last-of-type {
   font-weight: 700;
 }
 
@@ -343,7 +343,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 */
 
 /* Outlines for the view page */
-.nofo--title-page,
+.nofo--cover-page,
 .toc,
 section.section {
   outline: 1px solid var(--color--light-grey);
@@ -366,13 +366,13 @@ section.section {
     max-width: none !important;
   }
 
-  .nofo--title-page,
+  .nofo--cover-page,
   .section--title-page {
     min-height: calc(100vh + 36mm);
   }
 
   /* Remove outlines */
-  .nofo--title-page,
+  .nofo--cover-page,
   .toc,
   section.section {
     outline: none;
