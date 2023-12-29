@@ -98,19 +98,19 @@
   </section>
 
   {% for section in nofo.sections.all %}
-    <section id="{{ section.html_id }}" class="section section--{{ forloop.counter }} section--{{ section.html_id }}">
+    <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} section--{{ section.html_id }}">
       <!-- SECTION TITLE PAGE -->
       <div class="title-page section--title-page">
         <div class="header-nav section--title-page--header-nav">
           <p>Jump to a step</p>
           <ol>
-            <li><a href="#{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
-            <li><a href="#{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
-            <li><a href="#{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
-            <li><a href="#{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
-            <li><a href="#{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
-            <li><a href="#{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
-            <li><a href="#{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+            <li><a href="#section--{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
+            <li><a href="#section--{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
+            <li><a href="#section--{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
+            <li><a href="#section--{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
+            <li><a href="#section--{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
+            <li><a href="#section--{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
+            <li><a href="#section--{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
           </ol>
         </div>
         <div class="section--title-page--name">
@@ -140,13 +140,13 @@
       <!-- after first section title page -->
       <div class="header-nav header-nav--running-header">
         <ol>
-          <li><a href="#{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
-          <li><a href="#{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
-          <li><a href="#{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
-          <li><a href="#{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
-          <li><a href="#{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
-          <li><a href="#{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
-          <li><a href="#{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+          <li><a href="#section--{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
+          <li><a href="#section--{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
+          <li><a href="#section--{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
+          <li><a href="#section--{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
+          <li><a href="#section--{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
+          <li><a href="#section--{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
+          <li><a href="#section--{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
         </ol>
       </div>
 

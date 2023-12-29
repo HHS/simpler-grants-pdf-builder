@@ -31,6 +31,7 @@
 
 # DONE
 
+- Fix: duplicate ids for section pages and h2s
 - Endnotes
 - Switch logos per theme
 - Theme variants
