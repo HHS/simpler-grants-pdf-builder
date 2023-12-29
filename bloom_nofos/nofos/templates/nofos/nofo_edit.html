@@ -5,15 +5,31 @@
   Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
+{% block js_footer %}
+<script>
+  const els = document.querySelectorAll("caption")
+  console.log('els', els)
+  const observer = new IntersectionObserver( 
+    ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
+    { threshold: [1] }
+  );
+
+  els.forEach(el => observer.observe(el));
+</script>
+{% endblock %}
+
 {% block body_class %}nofo_edit{% endblock %}
 
 {% block content %}
-  {% with nofo|nofo_name as nofo_name_str %}
-  {% with "Edit  “"|add:nofo_name_str|add:"”" as title %}
-    {% url 'nofos:nofo_index' as back_href %}
-    {% include "includes/page_heading.html" with title=title back_text="All NOFOs" back_href=back_href only %}
-  {% endwith %}
-  {% endwith %}
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+  </div>
+  <div class="nofo_edit--header">
+    {% with nofo|nofo_name as nofo_name_str %}
+      <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
+    {% endwith %}
+    <span class="nofo_edit--header--view font-sans-md"><a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a></span>
+  </div>
 
   <p>Make small edits to your NOFO here.</p>
   <div
@@ -49,6 +65,7 @@
   <table class="usa-table usa-table--borderless width-full">
     <caption>
       <h2 class="margin-bottom-0">NOFO metadata</h2>
+      <span><a href="#back-to-top">Top ↑</a></span>
     </caption>
     <thead class="usa-sr-only">
       <tr>
@@ -91,6 +108,7 @@
   <table class="usa-table usa-table--borderless width-full">
     <caption>
       <h2 class="margin-bottom-0">{% if nofo.coach %}Assigned coach{% else %}Assign a coach{% endif %}</h2>
+      <span><a href="#back-to-top">Top ↑</a></span>
     </caption>
     <thead class="usa-sr-only">
       <tr>
@@ -112,6 +130,7 @@
     <table class="usa-table usa-table--borderless width-full">
       <caption>
         <h2 class="margin-bottom-0">{{ section.name }}</h2>
+        <span><a href="#back-to-top">Top ↑</a></span>
       </caption>
       <thead class="usa-sr-only">
         <tr>

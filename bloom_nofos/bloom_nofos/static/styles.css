@@ -1,6 +1,10 @@
 @charset "UTF-8";
 /* Custom CSS */
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Make sure footer sits on the bottom */
 body {
   display: flex;
@@ -30,18 +34,50 @@ body > footer {
   text-decoration: none;
 }
 
+/* Edit page */
+
+/* header widget for NOFO */
+
+.nofo_edit--header {
+  position: relative;
+}
+
+.nofo_edit--header--view {
+  position: absolute;
+  right: 0;
+  top: 12px;
+}
+
+.nofo_edit caption {
+  position: sticky;
+  top: -1px;
+  margin: 0;
+  background: white;
+}
+
+.nofo_edit caption h2 {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.nofo_edit caption span {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  font-weight: 400;
+  visibility: hidden;
+}
+
+.nofo_edit caption.is-pinned span {
+  visibility: visible;
+}
+
 .nofo_edit .nofo-edit-table--subsection--body {
   word-break: break-word;
 }
 
 .nofo_edit .nofo-edit-table--subsection--body pre {
   white-space: pre-wrap;
-}
-
-.nofo_edit caption {
-  top: 0px;
-  position: sticky;
-  background: white;
 }
 
 .main-martor {
