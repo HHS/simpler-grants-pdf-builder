@@ -8,7 +8,6 @@
 {% block js_footer %}
 <script>
   const els = document.querySelectorAll("caption")
-  console.log('els', els)
   const observer = new IntersectionObserver( 
     ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
     { threshold: [1] }
@@ -126,7 +125,7 @@
     </tbody>
   </table>
 
-  {% for section in nofo.sections.all %}
+  {% for section in nofo.sections.all|dictsort:"order" %}
     <table class="usa-table usa-table--borderless width-full">
       <caption>
         <h2 class="margin-bottom-0">{{ section.name }}</h2>
@@ -140,7 +139,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for subsection in section.subsections.all %}
+        {% for subsection in section.subsections.all|dictsort:"order" %}
           <tr>
             <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
             <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|get_value_or_none:"content" }}</td>

@@ -78,12 +78,12 @@
     <h2>Contents</h2>
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
-      {% for section in nofo.sections.all %}
+      {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
           <a href="#{{ section.html_id }}">{{ section.name }}</a>
 
           <ol class="usa-list usa-list--unstyled">
-            {% for subsection in section.subsections.all %}
+            {% for subsection in section.subsections.all|dictsort:"order" %}
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                 {% if tag == 'h3' %}
                   <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
@@ -114,7 +114,7 @@
     <p>Applications are due by 11:59pm Eastern Time on [Month Day, Year].</p>
   </section>
 
-  {% for section in nofo.sections.all %}
+  {% for section in nofo.sections.all|dictsort:"order" %}
     <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} section--{{ section.html_id }}">
       <!-- SECTION TITLE PAGE -->
       <div class="title-page section--title-page">
@@ -142,7 +142,7 @@
         <div class="section--title-page--toc">
           <p>In this step</p>
           <ul>
-            {% for subsection in section.subsections.all %}
+            {% for subsection in section.subsections.all|dictsort:"order" %}
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                 {% if tag == 'h3' %}
                   <li><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
@@ -169,7 +169,7 @@
 
       <!-- SECTION CONTENT -->
       <div class="section--content">
-        {% for subsection in section.subsections.all %}
+        {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
             <div class="callout-box">
               <div class="callout-box--title">{{ subsection.name }}</div>
