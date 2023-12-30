@@ -32,7 +32,8 @@ div.section--title-page {
 /* Assign page breaks */
 
 div.title-page,
-section.toc {
+section.toc,
+section.before-you-begin {
   page-break-before: always;
 }
 
@@ -342,11 +343,14 @@ ol:last-child {
 https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 */
 
-/* Outlines for the view page */
-.nofo--cover-page,
-.toc,
-section.section {
-  outline: 1px solid var(--color--light-grey);
+@media screen {
+  /* Outlines for the view page */
+  section.nofo--cover-page,
+  section.toc,
+  section.before-you-begin,
+  section.section {
+    outline: 1px solid var(--color--light-grey);
+  }
 }
 
 /* Media queries */
@@ -369,12 +373,5 @@ section.section {
   .nofo--cover-page,
   .section--title-page {
     min-height: calc(100vh + 36mm - 0.01px);
-  }
-
-  /* Remove outlines */
-  .nofo--cover-page,
-  .toc,
-  section.section {
-    outline: none;
   }
 }

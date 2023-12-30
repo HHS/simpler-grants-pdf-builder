@@ -63,6 +63,12 @@ h4 {
   color: var(--color--black);
 }
 
+/* Before you begin */
+
+.before-you-begin h2 {
+  color: var(--color--med-blue);
+}
+
 /* Section title page */
 
 .section--title-page {

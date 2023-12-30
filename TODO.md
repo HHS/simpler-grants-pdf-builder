@@ -23,14 +23,14 @@
 - Themes
   - ACF
   - ACL
-- Add version number
 - Icons
 - Table of contents
   - Include icons
-- Before you start page
 
 # DONE
 
+- Add version number
+- Before you start page
 - Remove the extra blank page after the cover page
 - Add floating view link to edit page
 - Fix: duplicate ids for section pages and h2s
