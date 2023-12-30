@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-{% load static %}
+{% load static djversion_tags %}
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+
+    {% project_version as VERSION %}
+    <meta name="version" content="{{ VERSION }}" >
+
     <title>{% block title %}It’s NOFOs, baby{% endblock %}</title>
 
     <!-- Get Open Sans from Google Fonts -->

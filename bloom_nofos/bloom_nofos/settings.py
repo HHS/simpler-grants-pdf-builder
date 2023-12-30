@@ -32,6 +32,10 @@ env = environ.Env()
 env_path = os.path.join(BASE_DIR, "bloom_nofos", env_file)
 environ.Env.read_env(env_path)
 
+# Project version
+
+DJVERSION_VERSION = "0.0.1"
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 if DEBUG:
@@ -90,6 +94,7 @@ INSTALLED_APPS = [
     "nofos.apps.NofosConfig",
     "users.apps.UsersConfig",
     "easyaudit",
+    "djversion",
 ]
 
 MIDDLEWARE = [
@@ -120,6 +125,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "djversion.context_processors.version",
             ],
         },
     },

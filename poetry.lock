@@ -266,6 +266,20 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-appconf"
+version = "1.0.6"
+description = "A helper class for handling configuration defaults of packaged apps gracefully."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django-appconf-1.0.6.tar.gz", hash = "sha256:cfe87ea827c4ee04b9a70fab90b86d704cb02f2981f89da8423cb0fabf88efbf"},
+    {file = "django_appconf-1.0.6-py3-none-any.whl", hash = "sha256:c3ae442fba1ff7ec830412c5184b17169a7a1e71cf0864a4c3f93cf4c98a1993"},
+]
+
+[package.dependencies]
+django = "*"
+
+[[package]]
 name = "django-easy-audit"
 version = "1.3.5"
 description = "Yet another Django audit log app, hopefully the simplest one."
@@ -295,6 +309,26 @@ files = [
 develop = ["coverage[toml] (>=5.0a4)", "furo (>=2021.8.17b43,<2021.9.dev0)", "pytest (>=4.6.11)", "sphinx (>=3.5.0)", "sphinx-notfound-page"]
 docs = ["furo (>=2021.8.17b43,<2021.9.dev0)", "sphinx (>=3.5.0)", "sphinx-notfound-page"]
 testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)"]
+
+[[package]]
+name = "django-project-version"
+version = "0.18.1"
+description = "Django reusable app to show your project version"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-project-version-0.18.1.zip", hash = "sha256:37d15c38a6f35fb17d79e13adb3c6355fff7259547aed61e7684fbe51b2af7b6"},
+    {file = "django_project_version-0.18.1-py3-none-any.whl", hash = "sha256:7c2d9ee2291bf2bcdf3a8cbada419db2e68443dc8b38170e2f6ff9883c2728f0"},
+]
+
+[package.dependencies]
+django = ">=3.2,<4.3"
+django-appconf = ">=1.0.3"
+
+[package.extras]
+git = ["gitpython (>=3.0.2)"]
+rest = ["djangorestframework (>=3.10.3)"]
+test = ["attrs (==23.1.0)", "autoflake (==2.2.0)", "bandit (==1.7.5)", "black (==23.7.0)", "check-manifest (==0.49)", "check-wheel-contents (==0.4.0)", "coverage (==6.5.0)", "coveralls (==3.3.1)", "curlylint (==0.13.1)", "darglint (==1.8.1)", "dennis (==1.1.0)", "django-stubs (==4.2.3)", "djangorestframework-stubs (==3.14.2)", "dlint (==0.14.1)", "dodgy (==0.2.1)", "dotenv-linter (==0.4.0)", "flake8 (==6.0.0)", "flake8-annotations-complexity (==0.0.8)", "flake8-annotations-coverage (==0.0.6)", "flake8-blind-except (==0.2.1)", "flake8-boolean-trap (==1.0.0)", "flake8-broken-line (==1.0.0)", "flake8-bugbear (==23.7.10)", "flake8-builtins (==2.1.0)", "flake8-coding (==1.3.2)", "flake8-cognitive-complexity (==0.1.0)", "flake8-comprehensions (==3.14.0)", "flake8-datetimez (==20.10.0)", "flake8-debugger (==4.1.2)", "flake8-django (==1.3)", "flake8-docstrings (==1.7.0)", "flake8-eradicate (==1.5.0)", "flake8-executable (==2.1.3)", "flake8-expression-complexity (==0.0.11)", "flake8-fixme (==1.1.1)", "flake8-functions (==0.0.8)", "flake8-gettext (==0.0.0.1)", "flake8-logging-format (==0.9.0)", "flake8-mutable (==1.2.0)", "flake8-no-implicit-concat (==0.3.4)", "flake8-no-pep420 (==2.7.0)", "flake8-pie (==0.16.0)", "flake8-print (==5.0.0)", "flake8-raise (==0.0.5)", "flake8-return (==1.2.0)", "flake8-self (==0.2.2)", "flake8-simplify (==0.20.0)", "flake8-spellcheck (==0.28.0)", "flake8-super (==0.1.3)", "flake8-tidy-imports (==4.10.0)", "flake8-todos (==0.3.0)", "flake8-typing-imports (==1.14.0)", "flake8-use-fstring (==1.4)", "flake8-use-pathlib (==0.3.0)", "flake8-variables-names (==0.0.6)", "flynt (==1.0.0)", "importlib-metadata (==6.8.0)", "interrogate (==1.5.0)", "isort (==5.12.0)", "mypy (==1.4.1)", "pep8-naming (==0.13.3)", "perflint (==0.7.3)", "pip-outdated (==0.6.0)", "polint (==0.4)", "pre-commit (==3.3.3)", "pre-commit-hooks (==4.4.0)", "pygments (==2.15.1)", "pylint (==2.17.4)", "pylint-django (==2.5.3)", "pymarkdownlnt (==0.9.11)", "pyroma (==4.2)", "pytest (==7.4.0)", "pytest-cov (==4.1.0)", "pytest-django (==4.5.2)", "pytest-extra-durations (==0.1.3)", "pytest-instafail (==0.5.0)", "pytest-sugar (==0.9.7)", "pytest-timer[termcolor] (==0.0.11)", "readme-renderer (==40.0)", "removestar (==1.3.1)", "rstcheck (==6.1.2)", "seed-isort-config (==2.2.0)", "tabulate (==0.9.0)", "tox (==4.6.4)", "tox-gh-actions (==3.1.3)", "tryceratops (==2.3.2)", "twine (==4.0.2)", "wheel (==0.40.0)", "yesqa (==1.5.0)"]
 
 [[package]]
 name = "freezegun"
@@ -686,4 +720,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "233f2e9be366dcc2bb02ba8e9d6db525b17edc319e646ad6cb1bad78d752083c"
+content-hash = "e6033109366cd1dc3f9ed1a600f328bfc3da9af0a1105726051b6b8adc0914fa"
