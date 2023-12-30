@@ -6,7 +6,11 @@
 
 
 {% block content %}
-	<h1>404 dawg, sorry</h1>
+	<h1 class="font-heading-xl margin-y-0">404 dawg, sorry</h1>
 	<p>No fos here or anything else.</p>
-	<p>Homepage: link</p>
+	<p>Maybe go look at:</p>
+	<ul class="usa-list">
+		<li><a href="{% url 'index' %}">homepage</a></li>
+		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
+	</ul>
 {% endblock %}
