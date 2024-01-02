@@ -29,6 +29,8 @@
 
 # DONE
 
+- Add favicon
+- Fix: subsections showing up out of order in prod
 - Add version number
 - Before you start page
 - Remove the extra blank page after the cover page

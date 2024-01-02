@@ -17,11 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path, re_path
-
+from django.views.generic.base import RedirectView
 
 from . import views
 
 handler404 = views.page_not_found
+
+
+favicon_view = RedirectView.as_view(url="/static/favicon/favicon.ico", permanent=True)
 
 app_name = "bloom_nofos"
 urlpatterns = [
@@ -30,6 +33,7 @@ urlpatterns = [
         lambda x: HttpResponse("User-Agent: *\nDisallow: /", content_type="text/plain"),
         name="robots_file",
     ),
+    re_path(r"^favicon\.ico$", favicon_view),
     path("martor/", include("martor.urls")),
     path("nofos/", include("nofos.urls")),
     path("", include("users.urls")),
