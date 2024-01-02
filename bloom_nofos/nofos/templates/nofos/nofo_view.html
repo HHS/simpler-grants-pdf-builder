@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables add_footnote_ids callout_box_contents %}
+{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section %}
 
 {% block css %}
   {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
@@ -131,6 +131,10 @@
           </ol>
         </div>
         <div class="section--title-page--name">
+          <div class="section--title-page--icon">
+            {{ section.name|get_icon_for_section:nofo.theme }}
+            <img src="{% static 'img/figma-icons/blue/1-review.svg' %}" alt="" />
+          </div>
           <h2 id="{{ section.html_id }}">
             {% with section.name|nofo_section_name_separator as section_name %}
               <span>Step {% if section_name.number %}{{ section_name.number }}{% else %}{{ forloop.counter }}{% endif %}:</span>

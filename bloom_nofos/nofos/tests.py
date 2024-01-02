@@ -10,6 +10,7 @@ from .nofo import (
     add_class_to_table,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
+    get_icon_for_section,
     is_footnote_ref,
     format_footnote_ref,
     create_nofo,
@@ -242,6 +243,44 @@ class FormatFootnoteRefTest(TestCase):
         format_footnote_ref(tag)
         self.assertEqual(tag.get("href"), "#ftnt_ref999")
         self.assertEqual(tag.get("id"), "ftnt1")
+
+
+class GetIconForSectionTests(TestCase):
+    def test_default_parameters(self):
+        """Test the function with default parameters."""
+        self.assertEqual(get_icon_for_section(), "img/figma-icons/blue/1-review.svg")
+
+    def test_different_section(self):
+        """Test the function with a different section."""
+        self.assertEqual(
+            get_icon_for_section("write"), "img/figma-icons/blue/3-write.svg"
+        )
+
+    def test_white_theme(self):
+        """Test the function with the white theme."""
+        self.assertEqual(
+            get_icon_for_section(theme="white"), "img/figma-icons/white/1-review.svg"
+        )
+
+    def test_no_matching_section(self):
+        """Test the function with a non-existent section."""
+        self.assertEqual(
+            get_icon_for_section("non-existent section"),
+            "img/figma-icons/blue/1-review.svg",
+        )
+
+    def test_partial_match(self):
+        """Test the function with a partial match."""
+        self.assertEqual(
+            get_icon_for_section("review"), "img/figma-icons/blue/1-review.svg"
+        )
+
+    def test_case_insensitivity(self):
+        """Test the function with case-insensitive input."""
+        self.assertEqual(
+            get_icon_for_section("ReViEw ThE OpPoRtUnItY"),
+            "img/figma-icons/blue/1-review.svg",
+        )
 
 
 class HTMLSuggestTitleTests(TestCase):

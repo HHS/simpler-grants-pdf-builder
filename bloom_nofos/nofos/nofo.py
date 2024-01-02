@@ -148,6 +148,27 @@ def format_footnote_ref(a_tag):
         a_tag["href"] = "#ftnt{}".format(footnote_number)
 
 
+def get_icon_for_section(section_name="review the opportunity", theme="blue"):
+    icon_tuples = [
+        ("review the opportunity", "1-review.svg"),
+        ("ready", "2-get-ready.svg"),
+        ("write", "3-write.svg"),
+        ("learn about review", "4-learn.svg"),
+        ("submit", "5-submit.svg"),
+        ("learn what happens", "6-next.svg"),
+        ("contacts", "7-contact.svg"),
+    ]
+    theme = "white" if "white" in theme else "blue"
+    section_name = section_name.lower()
+
+    for search_term, filename in icon_tuples:
+        if search_term in section_name:
+            return "img/figma-icons/{}/{}".format(theme, filename)
+
+    # return by default if section name doesn't match
+    return "img/figma-icons/blue/1-review.svg"
+
+
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(
