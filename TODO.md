@@ -29,6 +29,7 @@
 
 # DONE
 
+- Fix: add new domain to settings
 - Add favicon
 - Fix: subsections showing up out of order in prod
 - Add version number
