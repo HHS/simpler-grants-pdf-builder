@@ -28,6 +28,7 @@
 
 # DONE
 
+- View page looks more like rendered NOFO
 - Icons
   - Include on the section title pages
 - Fix: add new domain to settings

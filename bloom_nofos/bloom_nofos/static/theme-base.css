@@ -356,6 +356,21 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   section.section {
     outline: 1px solid var(--color--light-grey);
   }
+
+  .section--title-page {
+    border-bottom: 1px solid var(--color--light-grey);
+  }
+
+  /* Padding for the view page */
+  section.toc,
+  section.before-you-begin,
+  div.section--content {
+    padding: 20mm;
+  }
+
+  .grid-container {
+    padding-bottom: 20mm;
+  }
 }
 
 /* Media queries */
