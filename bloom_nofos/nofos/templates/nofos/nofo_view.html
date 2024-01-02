@@ -132,8 +132,7 @@
         </div>
         <div class="section--title-page--name">
           <div class="section--title-page--icon">
-            {{ section.name|get_icon_for_section:nofo.theme }}
-            <img src="{% static 'img/figma-icons/blue/1-review.svg' %}" alt="" />
+            <img src="{% static section.name|get_icon_for_section %}" alt="" />
           </div>
           <h2 id="{{ section.html_id }}">
             {% with section.name|nofo_section_name_separator as section_name %}

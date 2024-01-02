@@ -9,35 +9,6 @@ from slugify import slugify
 from .models import Nofo, Section, Subsection
 
 
-def add_caption_to_table(table):
-    caption = None
-
-    for s in table.previous_siblings:
-        if s.name and len(s.text):
-            caption = s.extract()  # remove element from the tree
-            break
-
-    if caption:
-        caption.name = "caption"  # reassign tag to <caption>
-        table.insert(0, caption)
-
-
-def add_class_to_table(table):
-    def _get_table_class(num_cols):
-        if num_cols <= 2:
-            return "table--small"
-        elif num_cols <= 4:
-            return "table--medium"
-
-        return "table--large"
-
-    row = table.find("tr")
-    cols = row.find_all("th") + row.find_all("td")
-    # maybe count rows also??
-
-    return _get_table_class(len(cols))
-
-
 def add_headings_to_nofo(nofo):
     new_ids = []
 
@@ -118,57 +89,6 @@ def format_endnotes(md_body):
     return "\n".join(endnotes)
 
 
-def is_footnote_ref(a_tag):
-    text = a_tag.get_text().strip()
-    return (
-        len(text) >= 3  # at least 3 characters
-        and text.startswith("[")
-        and text.endswith("]")
-        and text[1:-1].isdigit()
-    )
-
-
-def format_footnote_ref(a_tag):
-    # number: 10
-    # href: #ref10
-    # id: ref10_inline
-    footnote_text = a_tag.get_text().strip()
-    footnote_number = footnote_text[1:-1]
-    footnote_href = a_tag.get("href").strip()
-
-    a_tag.string = footnote_text
-
-    # these are the endnotes references
-    if footnote_href.startswith("#ftnt_"):
-        a_tag["id"] = "ftnt{}".format(footnote_number)
-
-    # these are in the body of the document
-    else:
-        a_tag["id"] = "ftnt_ref{}".format(footnote_number)
-        a_tag["href"] = "#ftnt{}".format(footnote_number)
-
-
-def get_icon_for_section(section_name="review the opportunity", theme="blue"):
-    icon_tuples = [
-        ("review the opportunity", "1-review.svg"),
-        ("ready", "2-get-ready.svg"),
-        ("write", "3-write.svg"),
-        ("learn about review", "4-learn.svg"),
-        ("submit", "5-submit.svg"),
-        ("learn what happens", "6-next.svg"),
-        ("contacts", "7-contact.svg"),
-    ]
-    theme = "white" if "white" in theme else "blue"
-    section_name = section_name.lower()
-
-    for search_term, filename in icon_tuples:
-        if search_term in section_name:
-            return "img/figma-icons/{}/{}".format(theme, filename)
-
-    # return by default if section name doesn't match
-    return "img/figma-icons/blue/1-review.svg"
-
-
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(
@@ -222,6 +142,9 @@ def overwrite_nofo(nofo, sections):
 
 
 def convert_table_first_row_to_header_row(table):
+    # Converts the first row of cells in the given table
+    # to header cells by changing the <td> tags to <th>.
+    # Assumes the first row is a header row.
     first_row = table.find("tr")
     if first_row:
         first_row_cells = first_row.find_all("td")

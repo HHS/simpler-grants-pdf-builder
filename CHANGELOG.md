@@ -8,6 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added icons to the section title pages
 - Add favicon
 
 ## [0.0.2] - 2023-12-30

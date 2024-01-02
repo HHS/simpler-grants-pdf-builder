@@ -24,11 +24,12 @@
   - ACF
   - ACL
 - Icons
-- Table of contents
-  - Include icons
+  - Include on the table of contents
 
 # DONE
 
+- Icons
+  - Include on the section title pages
 - Fix: add new domain to settings
 - Add favicon
 - Fix: subsections showing up out of order in prod

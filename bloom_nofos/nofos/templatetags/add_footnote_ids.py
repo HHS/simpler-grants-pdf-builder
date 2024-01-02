@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 from bs4 import BeautifulSoup
 
-from ..nofo import is_footnote_ref, format_footnote_ref
+from .utils import is_footnote_ref, format_footnote_ref
 
 
 register = template.Library()

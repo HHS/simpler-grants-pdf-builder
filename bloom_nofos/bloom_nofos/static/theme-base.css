@@ -326,7 +326,6 @@ ol:last-child {
 .section--title-page--icon img {
   width: 65px;
   border-radius: 50%;
-  border: 3px solid var(--color--white);
 }
 
 /* Section contents */

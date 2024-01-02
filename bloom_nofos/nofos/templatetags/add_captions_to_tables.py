@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 from bs4 import BeautifulSoup
 
-from ..nofo import add_caption_to_table
+from .utils import add_caption_to_table
 
 register = template.Library()
 

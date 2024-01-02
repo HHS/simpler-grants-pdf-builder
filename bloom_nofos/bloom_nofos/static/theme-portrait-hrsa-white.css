@@ -53,6 +53,11 @@ h4 {
   color: var(--color--black);
 }
 
+.section--title-page--icon img {
+  filter: invert(46%) sepia(7%) saturate(4068%) hue-rotate(162deg)
+    brightness(78%) contrast(87%);
+}
+
 /* Section contents */
 
 .callout-box {
