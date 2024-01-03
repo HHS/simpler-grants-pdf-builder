@@ -80,17 +80,20 @@
     <ol class="usa-list usa-list--unstyled">
       {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
-          <a href="#{{ section.html_id }}">{{ section.name }}</a>
+          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="" />
+          <div class="toc--section-name--wrapper">
+            <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
-          <ol class="usa-list usa-list--unstyled">
-            {% for subsection in section.subsections.all|dictsort:"order" %}
-              {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-                {% if tag == 'h3' %}
-                  <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
-                {% endif %}
-              {% endwith %}
-            {% endfor %}
-          </ol>
+            <ol class="usa-list usa-list--unstyled">
+              {% for subsection in section.subsections.all|dictsort:"order" %}
+                {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+                  {% if tag == 'h3' %}
+                    <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+            </ol>
+          </div>
         </li>
       {% endfor %}
     </ol>

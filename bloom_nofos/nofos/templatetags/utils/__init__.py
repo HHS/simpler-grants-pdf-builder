@@ -46,7 +46,7 @@ def add_class_to_table(table):
 # Icons
 
 
-def get_icon_for_section(section_name="review the opportunity"):
+def get_icon_for_section(section_name="review the opportunity", theme=""):
     """
     Returns the icon filename for the given section name and theme.
 
@@ -56,6 +56,7 @@ def get_icon_for_section(section_name="review the opportunity"):
 
     section_name: The name of the section to get the icon for.
     """
+    no_border = "/no-border" if "blue" in theme else ""
     icon_tuples = [
         ("review the opportunity", "1-review.svg"),
         ("ready", "2-get-ready.svg"),
@@ -69,10 +70,10 @@ def get_icon_for_section(section_name="review the opportunity"):
 
     for search_term, filename in icon_tuples:
         if search_term in section_name:
-            return "img/figma-icons/{}".format(filename)
+            return "img/figma-icons{}/{}".format(no_border, filename)
 
     # return 'review' by default if section name doesn't match
-    return "img/figma-icons/1-review.svg"
+    return "img/figma-icons{}/1-review.svg".format(no_border)
 
 
 # Footnotes

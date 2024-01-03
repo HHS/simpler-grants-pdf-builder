@@ -13,7 +13,7 @@
   --color--med-grey: #475260;
   --color--dark-blue: #274a64;
   --color--med-blue: #336a90;
-  --color--vibrant-blue: #015ca8;
+  --color--vibrant-blue: #005eaa;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e7eef9;
   --color--med-brown: #c0b0a2;
@@ -238,10 +238,6 @@ ol:last-child {
   margin-bottom: 10px;
 }
 
-.toc ol.usa-list ol.usa-list {
-  margin-left: 20px;
-}
-
 .toc ol li {
   margin-top: 8px;
 }
@@ -260,8 +256,24 @@ ol:last-child {
   content: target-counter(attr(href, url), page);
 }
 
-.toc .toc--section-name > a {
+.toc .toc--section-name .toc--section-name--a {
   font-weight: 600;
+}
+
+.toc .toc--section-name {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.toc .toc--section-name--wrapper {
+  margin-top: 3px;
+}
+
+.toc .toc--section-name .toc--section-name--img {
+  width: 30px;
+  border-radius: 50%;
 }
 
 /* Section title page */

@@ -24,13 +24,14 @@
   - ACF
   - ACL
 - Icons
-  - Include on the table of contents
+  - Include on the "before you start" page
 
 # DONE
 
 - View page looks more like rendered NOFO
 - Icons
   - Include on the section title pages
+  - Include on the table of contents pages
 - Fix: add new domain to settings
 - Add favicon
 - Fix: subsections showing up out of order in prod
