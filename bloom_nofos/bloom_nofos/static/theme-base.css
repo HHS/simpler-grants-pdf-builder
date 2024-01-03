@@ -59,6 +59,68 @@ h2 {
   }
 }
 
+/* Add Public Sans */
+
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 300;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-Light.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 400;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-Regular.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 700;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-Bold.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 900;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-Black.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: italic;
+  font-weight: 300;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-LightItalic.woff2)
+    format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: italic;
+  font-weight: 400;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-Italic.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: italic;
+  font-weight: 700;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-BoldItalic.woff2)
+    format("woff2");
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: italic;
+  font-weight: 900;
+  font-display: fallback;
+  src: url(/static/fonts/public-sans/PublicSans-BlackItalic.woff2)
+    format("woff2");
+}
+
 /* Regular CSS */
 
 * {
@@ -81,6 +143,11 @@ h4,
 h5,
 h6 {
   margin: 1rem 0;
+}
+
+hr {
+  border: none;
+  border-bottom: 1px solid var(--color--light-grey);
 }
 
 p,
@@ -148,8 +215,8 @@ ol:last-child {
 
 .header-nav ol {
   counter-reset: n;
-  width: calc(100% + 5mm);
-  margin: 0;
+  width: calc(100% + 10mm);
+  margin: 0 0 0 -5mm;
   display: flex;
   justify-content: space-between;
   list-style-type: none; /* use CSS counters for the list numbers */
@@ -158,7 +225,6 @@ ol:last-child {
 
 .header-nav li {
   counter-increment: n; /* Increment the value of counter by 1 for each list item */
-  margin: 0 0 0 -5mm;
 }
 
 .header-nav li a {
@@ -264,7 +330,6 @@ ol:last-child {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 10px;
 }
 
 .toc .toc--section-name--wrapper {

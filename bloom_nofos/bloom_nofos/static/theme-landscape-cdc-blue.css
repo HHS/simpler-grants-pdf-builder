@@ -1,5 +1,15 @@
 /* Page rules */
 
+@page {
+  @bottom-left {
+    color: var(--color--dark-blue);
+  }
+
+  @bottom-right {
+    color: var(--color--dark-blue);
+  }
+}
+
 @page cover {
   background-color: var(--color--vibrant-blue);
 }

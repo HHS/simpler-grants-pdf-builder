@@ -25,9 +25,11 @@
   - ACL
 - Icons
   - Include on the "before you start" page
+- Add tagline to NOFO
 
 # DONE
 
+- Add Public Sans
 - View page looks more like rendered NOFO
 - Icons
   - Include on the section title pages
