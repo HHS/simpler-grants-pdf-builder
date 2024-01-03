@@ -3,18 +3,6 @@
 @page {
   /* horizontal letter size */
   size: 279mm 216mm;
-
-  @bottom-left {
-    border-top: 1px solid var(--color--light-grey);
-    content: string(sectiontitle);
-    padding-bottom: 4mm;
-  }
-
-  @bottom-right {
-    border-top: 1px solid var(--color--light-grey);
-    content: counter(page);
-    padding-bottom: 4mm;
-  }
 }
 
 @page cover {
