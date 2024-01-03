@@ -194,15 +194,6 @@ h6 {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
-.toc--section-name--wrapper {
-  width: 100%;
-  margin-left: 10px;
-}
-
-.toc--section-name--wrapper ol {
-  margin-left: 0;
-}
-
 /* Section title page */
 
 .section--title-page--header-nav p {
@@ -222,6 +213,16 @@ h6 {
 }
 
 /* Section styling */
+
+.header-nav--running-header ol {
+  padding-bottom: 2mm;
+  border-bottom: 1px solid var(--color--light-grey);
+}
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--vibrant-blue);
+  color: var(--color--vibrant-blue);
+}
 
 .section--content {
   columns: 2;

@@ -10,7 +10,7 @@
   --color--table-grey: #edf1f3;
   --color--table-blue: #ceddf240;
   --color--light-grey: #dde2e8;
-  --color--med-grey: #475260;
+  --color--med-grey: #5c5c5c;
   --color--dark-blue: #274a64;
   --color--med-blue: #336a90;
   --color--vibrant-blue: #005eaa;
@@ -225,6 +225,7 @@ ol:last-child {
 
 .header-nav li {
   counter-increment: n; /* Increment the value of counter by 1 for each list item */
+  margin: 0;
 }
 
 .header-nav li a {
@@ -295,7 +296,7 @@ ol:last-child {
 
 /* Table of contents */
 
-.toc > ol {
+.toc ol {
   margin-left: 0;
 }
 
@@ -334,6 +335,8 @@ ol:last-child {
 
 .toc .toc--section-name--wrapper {
   margin-top: 3px;
+  width: 100%;
+  margin-left: 10px;
 }
 
 .toc .toc--section-name .toc--section-name--img {
