@@ -51,4 +51,5 @@ urlpatterns = [
         views.nofo_subsection_edit,
         name="subsection_edit",
     ),
+    path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
 ]

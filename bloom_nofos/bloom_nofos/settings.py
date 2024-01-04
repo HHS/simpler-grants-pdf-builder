@@ -413,4 +413,5 @@ if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
 
 # Document IPs for our PDF generating app
-VIEW_DOCUMENT_IPS = env.get_value("VIEW_DOCUMENT_IPS", default="")
+DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
+DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")

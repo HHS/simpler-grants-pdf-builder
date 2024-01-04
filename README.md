@@ -119,7 +119,7 @@ To deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.produ
 
   - default `""`: no effect unless Django is running in production.
 
-- `VIEW_DOCUMENT_IPS`: Allows specific IPs access to the 'view' page for a NOFO draft, so that we can generate a PDF based on the HTML.
+- `DOCRAPTOR_IPS`: Allows specific IPs access to the 'view' page for a NOFO draft, so that we can generate a PDF based on the HTML.
 
   - default `""`: this means zero IPs are safelisted
 

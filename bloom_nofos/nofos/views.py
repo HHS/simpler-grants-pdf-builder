@@ -1,9 +1,12 @@
+from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, DeleteView, UpdateView
+from django.views.generic import ListView, DetailView, DeleteView, UpdateView, View
 
+import io
+import docraptor
 from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 
@@ -252,3 +255,49 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         "nofos/subsection_edit.html",
         {"subsection": subsection, "nofo": nofo, "form": form},
     )
+
+
+class PrintNofoAsPDFView(View):
+    def get(self, request, pk):
+        nofo = get_object_or_404(Nofo, pk=pk)
+
+        # the absolute uri is points to the /edit page, so remove that from the path
+        nofo_url = request.build_absolute_uri(nofo.get_absolute_url()).replace(
+            "/edit", ""
+        )
+
+        nofo_filename = "{}.pdf".format(nofo.number.lower())
+
+        # TODO remove
+        nofo_url = "https://nofo.rodeo/nofos/10"
+
+        doc_api = docraptor.DocApi()
+        doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
+        doc_api.api_client.configuration.debug = True
+
+        try:
+            response = doc_api.create_doc(
+                {
+                    "test": True,  # test documents are free but watermarked
+                    "document_url": nofo_url,
+                    "document_type": "pdf",
+                    "javascript": False,
+                    "prince_options": {
+                        "media": "print",  # use print styles instead of screen styles
+                        "profile": "PDF/UA-1",
+                    },
+                },
+            )
+
+            pdf_file = io.BytesIO(response)
+
+            # Build response
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+                nofo_filename
+            )
+
+            return response
+        except docraptor.rest.ApiException as error:
+            print(error.status)
+            print(error.reason)

@@ -26,7 +26,7 @@ class NofosLoginRequiredMiddleware:
         if (
             resolve(request.path).app_name == self.APP_NAME
         ):  # match app_name defined in myapp.urls.py
-            safe_ips = settings.VIEW_DOCUMENT_IPS.split(",")
+            safe_ips = settings.DOCRAPTOR_IPS.split(",")
             incoming_ip = request.headers.get("x-forwarded-for")
 
             if (

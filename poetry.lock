@@ -331,6 +331,22 @@ rest = ["djangorestframework (>=3.10.3)"]
 test = ["attrs (==23.1.0)", "autoflake (==2.2.0)", "bandit (==1.7.5)", "black (==23.7.0)", "check-manifest (==0.49)", "check-wheel-contents (==0.4.0)", "coverage (==6.5.0)", "coveralls (==3.3.1)", "curlylint (==0.13.1)", "darglint (==1.8.1)", "dennis (==1.1.0)", "django-stubs (==4.2.3)", "djangorestframework-stubs (==3.14.2)", "dlint (==0.14.1)", "dodgy (==0.2.1)", "dotenv-linter (==0.4.0)", "flake8 (==6.0.0)", "flake8-annotations-complexity (==0.0.8)", "flake8-annotations-coverage (==0.0.6)", "flake8-blind-except (==0.2.1)", "flake8-boolean-trap (==1.0.0)", "flake8-broken-line (==1.0.0)", "flake8-bugbear (==23.7.10)", "flake8-builtins (==2.1.0)", "flake8-coding (==1.3.2)", "flake8-cognitive-complexity (==0.1.0)", "flake8-comprehensions (==3.14.0)", "flake8-datetimez (==20.10.0)", "flake8-debugger (==4.1.2)", "flake8-django (==1.3)", "flake8-docstrings (==1.7.0)", "flake8-eradicate (==1.5.0)", "flake8-executable (==2.1.3)", "flake8-expression-complexity (==0.0.11)", "flake8-fixme (==1.1.1)", "flake8-functions (==0.0.8)", "flake8-gettext (==0.0.0.1)", "flake8-logging-format (==0.9.0)", "flake8-mutable (==1.2.0)", "flake8-no-implicit-concat (==0.3.4)", "flake8-no-pep420 (==2.7.0)", "flake8-pie (==0.16.0)", "flake8-print (==5.0.0)", "flake8-raise (==0.0.5)", "flake8-return (==1.2.0)", "flake8-self (==0.2.2)", "flake8-simplify (==0.20.0)", "flake8-spellcheck (==0.28.0)", "flake8-super (==0.1.3)", "flake8-tidy-imports (==4.10.0)", "flake8-todos (==0.3.0)", "flake8-typing-imports (==1.14.0)", "flake8-use-fstring (==1.4)", "flake8-use-pathlib (==0.3.0)", "flake8-variables-names (==0.0.6)", "flynt (==1.0.0)", "importlib-metadata (==6.8.0)", "interrogate (==1.5.0)", "isort (==5.12.0)", "mypy (==1.4.1)", "pep8-naming (==0.13.3)", "perflint (==0.7.3)", "pip-outdated (==0.6.0)", "polint (==0.4)", "pre-commit (==3.3.3)", "pre-commit-hooks (==4.4.0)", "pygments (==2.15.1)", "pylint (==2.17.4)", "pylint-django (==2.5.3)", "pymarkdownlnt (==0.9.11)", "pyroma (==4.2)", "pytest (==7.4.0)", "pytest-cov (==4.1.0)", "pytest-django (==4.5.2)", "pytest-extra-durations (==0.1.3)", "pytest-instafail (==0.5.0)", "pytest-sugar (==0.9.7)", "pytest-timer[termcolor] (==0.0.11)", "readme-renderer (==40.0)", "removestar (==1.3.1)", "rstcheck (==6.1.2)", "seed-isort-config (==2.2.0)", "tabulate (==0.9.0)", "tox (==4.6.4)", "tox-gh-actions (==3.1.3)", "tryceratops (==2.3.2)", "twine (==4.0.2)", "wheel (==0.40.0)", "yesqa (==1.5.0)"]
 
 [[package]]
+name = "docraptor"
+version = "3.1.0"
+description = "DocRaptor"
+optional = false
+python-versions = "*"
+files = [
+    {file = "docraptor-3.1.0-py3-none-any.whl", hash = "sha256:044cef59c44546c15106668973168c540eefb5344532bb782540beaa6828901b"},
+    {file = "docraptor-3.1.0.tar.gz", hash = "sha256:ba6f0e8c6f1cb7eaf5c7987be4d51d09a35f95f21222d709300ddefc8dc6fa3c"},
+]
+
+[package.dependencies]
+python-dateutil = "*"
+six = ">=1.10"
+urllib3 = ">=1.25.3"
+
+[[package]]
 name = "freezegun"
 version = "1.3.1"
 description = "Let your Python tests travel through time"
@@ -720,4 +736,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e6033109366cd1dc3f9ed1a600f328bfc3da9af0a1105726051b6b8adc0914fa"
+content-hash = "24f1ae90f7b26f3f94a50c19da08f85228189b3822c6b091c4b44358415c9c56"
