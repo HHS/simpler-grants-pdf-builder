@@ -9,22 +9,24 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Images
+- Handle images
   - for cover page
   - inline in documents
 - Callout boxes
   - Put them after the summary
+  - Create the Questions callout box
 - Guess publication date
 - Guess the opdiv (?)
 - Theme variants
   - ACF white
-  - ACL white
+  - HRSA variant
 - Themes
   - ACF
   - ACL
 - Icons
   - Include on the "before you start" page
 - Add tagline to NOFO
+- Maybe: include preceding paragraph in front of tables potentially
 
 # DONE
 
