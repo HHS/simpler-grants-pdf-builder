@@ -21,7 +21,7 @@
   <header class="usa-header usa-header--basic">
     <div class="usa-nav-container">
       <div class="usa-navbar">
-        <div class="usa-logo">
+        <div class="usa-logo" style="margin-top: 1rem;">
           <em class="usa-logo__text">
             <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a>
           </em>
@@ -31,6 +31,15 @@
         <ul class="usa-nav__primary usa-accordion">
           <li class="usa-nav__primary-item">
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
+          </li>
+          <li class="usa-nav__primary-item">
+            <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
+              {% csrf_token %}
+              <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
+              <button type="submit" class="usa-button" {% if request.scheme == 'http' %}disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"{% else %}style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"{% endif %}>
+                Print NOFO
+              </button>
+            </form>
           </li>
         </ul>
       </nav>

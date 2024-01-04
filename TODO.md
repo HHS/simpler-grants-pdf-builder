@@ -9,7 +9,6 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Add a button to print the PDF
 - Images
   - for cover page
   - inline in documents
@@ -29,6 +28,7 @@
 
 # DONE
 
+- Add a button to print the PDF
 - Add Public Sans
 - View page looks more like rendered NOFO
 - Icons

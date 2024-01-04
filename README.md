@@ -6,11 +6,9 @@
 
 ## About
 
-The NOFO Builder is a Word-2-PDF pipeline that injests HTML files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants.
+The NOFO Builder is a Word-2-PDF pipeline that injests HTML files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
 
-The NOFO Builder is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
-
-The NOFO BUilder is a Django app that can be run as a Python process or as a Docker container.
+The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
 ## What is a NOFO?
 
@@ -22,18 +20,17 @@ NOFOs are typically very long, very plain documents without much in the way of f
 
 ## Workflow
 
-NOFOs are written by HHS’ Operating Divisions (OpDivs), and peer-edited by Bloom editing coaches, before proceeding through internal reviews. The writing and editing happens in specific Word documents that provide a starting point in terms of NOFO structure (‘content guides’). Content guides use tagged headings, lists, and tables, to structure the NOFO.
+NOFOs are written by HHS’ Operating Divisions (OpDivs), and peer-edited by Bloom editing coaches, before proceeding through internal reviews. The writing and editing happens using ‘content guides:’ template-like Word documents that provide a starting point for new NOFOs. Content guides use tagged headings, lists, and tables, and structure the flow of content for a NOFO.
 
 Once a NOFO is reviewed and approved, our anticipated workflow is:
 
 1. NOFO is approved to be published
 2. A Bloom coach exports the Word document as an HTML file
 3. The Bloom coach logs into the NOFO builder
-4. The Bloom coach uploads the HTML file to create a Markdown representation of the NOFO
-   - optional: The Bloom coach can make edits to their uploaded NOFO
-5. The NOFO is rendered in HTML
-6. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
-7. Done!
+4. The Bloom coach uploads the HTML file to create an HTML representation of the NOFO
+   - optional: The Bloom coach can view and make edits to the uploaded NOFO
+5. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
+6. Done!
 
 ## Getting started
 
@@ -118,6 +115,10 @@ To deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.produ
 - `DJANGO_ALLOWED_HOSTS`: Django will not run correctly on the server unless the domain is specified ahead of time. This env var can contain 1 domain or a comma-separated list of domains
 
   - default `""`: no effect unless Django is running in production.
+
+- `DOCRAPTOR_API_KEY`: Our API key for printing documents using DocRaptor.
+
+  - default `"YOUR_API_KEY_HERE"`: this key works for printing test documents (with a watermark)
 
 - `DOCRAPTOR_IPS`: Allows specific IPs access to the 'view' page for a NOFO draft, so that we can generate a PDF based on the HTML.
 

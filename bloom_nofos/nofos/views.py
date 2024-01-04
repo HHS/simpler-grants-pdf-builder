@@ -258,7 +258,7 @@ def nofo_subsection_edit(request, pk, subsection_pk):
 
 
 class PrintNofoAsPDFView(View):
-    def get(self, request, pk):
+    def post(self, request, pk):
         nofo = get_object_or_404(Nofo, pk=pk)
 
         # the absolute uri is points to the /edit page, so remove that from the path
@@ -266,10 +266,15 @@ class PrintNofoAsPDFView(View):
             "/edit", ""
         )
 
-        nofo_filename = "{}.pdf".format(nofo.number.lower())
+        if "localhost" in nofo_url:
+            return HttpResponse(
+                "Server error printing NOFO. Can't print a NOFO on localhost.",
+                status=500,
+            )
 
-        # TODO remove
-        nofo_url = "https://nofo.rodeo/nofos/10"
+        nofo_filename = "{}.pdf".format(
+            nofo.number or nofo.short_name or nofo.title
+        ).lower()
 
         doc_api = docraptor.DocApi()
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
@@ -299,5 +304,10 @@ class PrintNofoAsPDFView(View):
 
             return response
         except docraptor.rest.ApiException as error:
+            print("docraptor.rest.ApiException")
             print(error.status)
             print(error.reason)
+            return HttpResponse(
+                "Server error printing NOFO. Check logs for error messages.",
+                status=500,
+            )
