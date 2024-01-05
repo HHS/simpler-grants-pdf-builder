@@ -21,13 +21,11 @@
   - ACF white
   - HRSA variant
 - Themes
-  - ACF
   - ACL
 - Icons
   - Include on the "before you start" page
 - Add tagline to NOFO
 - Maybe: include preceding paragraph in front of tables potentially
-- Fix: Cover page header size should be fixed for portrait
 
 # DONE
 
@@ -67,6 +65,7 @@
 - Themes
   - HRSA
   - CDC
+  - ACF
 - Add a theme to the NOFO
   - add to model
   - migrate

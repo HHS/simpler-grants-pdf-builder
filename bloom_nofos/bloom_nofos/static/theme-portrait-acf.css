@@ -98,6 +98,11 @@ h6 {
   padding-left: 20mm;
 }
 
+.nofo--cover-page--header--logo,
+.nofo--cover-page--header--logo img {
+  width: 250px;
+}
+
 .nofo--cover-page--header--logo--subheading {
   font-weight: 700;
   font-size: 14px;

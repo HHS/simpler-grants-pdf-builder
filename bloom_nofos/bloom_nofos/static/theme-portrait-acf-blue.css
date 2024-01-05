@@ -28,10 +28,6 @@ h4 {
   background-color: var(--color--white);
 }
 
-.nofo--cover-page--header--logo img {
-  width: 300px;
-}
-
 .nofo--cover-page--title,
 .nofo--cover-page--footer {
   color: var(--color--white);

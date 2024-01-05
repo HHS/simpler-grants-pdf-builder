@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
+The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
+
+## [0.0.6] - 2023-01-06
+
+### Added
+
+- Added a new theme: Administration for Chindren and Families (ACF)
+
+### Fixed
+
+- New ACF logo svg file
 
 ## [0.0.5] - 2023-01-04
 
