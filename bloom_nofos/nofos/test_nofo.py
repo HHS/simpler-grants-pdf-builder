@@ -184,14 +184,24 @@ class HTMLSuggestTagline(TestCase):
 
 
 class HTMLSuggestThemeTests(TestCase):
-    def test_suggest_nofo_number_returns_hrsa_theme(self):
+    def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
         nofo_theme = "portrait-hrsa-blue"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
-    def test_suggest_nofo_number_returns_cdc_theme(self):
+    def test_suggest_nofo_number_cdc_returns_cdc_theme(self):
         nofo_number = "CDC-RFA-DP-24-0139"
         nofo_theme = "landscape-cdc-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_acf_returns_acf_theme(self):
+        nofo_number = "HHS-2024-ACF-ANA-NB-0050"
+        nofo_theme = "portrait-acf-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_acl_returns_hrsa_theme(self):
+        nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
+        nofo_theme = "portrait-hrsa-blue"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
     def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):

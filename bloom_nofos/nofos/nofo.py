@@ -278,6 +278,9 @@ def suggest_nofo_theme(nofo_number):
     if "cdc-" in nofo_number.lower():
         return "landscape-cdc-blue"
 
+    if "acf-" in nofo_number.lower():
+        return "portrait-acf-blue"
+
     return "portrait-hrsa-blue"
 
 

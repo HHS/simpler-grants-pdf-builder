@@ -1,0 +1,114 @@
+/* Page rules */
+
+@page cover {
+  background-color: var(--color--dark-blue);
+}
+
+@page title {
+  background-color: var(--color--dark-blue);
+}
+
+/* Headings */
+
+h2 {
+  color: var(--color--white);
+}
+
+h3 {
+  color: var(--color--med-blue);
+}
+
+h4 {
+  color: var(--color--dark-blue);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header {
+  background-color: var(--color--white);
+}
+
+.nofo--cover-page--header--logo img {
+  width: 300px;
+}
+
+.nofo--cover-page--title,
+.nofo--cover-page--footer {
+  color: var(--color--white);
+  background-color: var(--color--dark-blue);
+}
+
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
+  filter: invert(99%) sepia(16%) saturate(0%) hue-rotate(71deg) brightness(106%)
+    contrast(101%);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--dark-blue);
+}
+
+.toc ol li a {
+  color: var(--color--black);
+}
+
+.toc .toc--section-name .toc--section-name--img {
+  background: var(--color--dark-blue);
+}
+
+/* Before you begin */
+
+.before-you-begin h2 {
+  color: var(--color--dark-blue);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  background-color: var(--color--med-blue);
+  color: var(--color--white);
+}
+
+.header-nav li a {
+  border-top: 4px solid var(--color--white);
+  color: var(--color--white);
+}
+
+.section--title-page--name,
+.section--title-page--toc {
+  color: var(--color--white);
+  background-color: var(--color--dark-blue);
+}
+
+.section--title-page--icon img {
+  filter: invert(99%) sepia(99%) saturate(17%) hue-rotate(212deg)
+    brightness(105%) contrast(100%);
+}
+
+/* Section contents */
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--med-blue);
+  color: var(--color--med-blue);
+}
+
+.callout-box {
+  background-color: var(--color--dark-blue);
+  color: var(--color--white);
+}
+
+table th {
+  padding-left: 0;
+}
+
+table td {
+  background-color: var(--color--table-blue);
+  border: 2px solid var(--color--white);
+}
+
+table td a {
+  color: var(--color--vibrant-blue);
+}

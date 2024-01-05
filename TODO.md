@@ -27,6 +27,7 @@
   - Include on the "before you start" page
 - Add tagline to NOFO
 - Maybe: include preceding paragraph in front of tables potentially
+- Fix: Cover page header size should be fixed for portrait
 
 # DONE
 
