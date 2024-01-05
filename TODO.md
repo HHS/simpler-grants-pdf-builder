@@ -15,7 +15,6 @@
 - Callout boxes
   - Put them after the summary
   - Create the Questions callout box
-- Guess publication date
 - Guess the opdiv (?)
 - Theme variants
   - ACF white
@@ -26,9 +25,11 @@
   - Include on the "before you start" page
 - Add tagline to NOFO
 - Maybe: include preceding paragraph in front of tables potentially
+- Heading level 7 omg
 
 # DONE
 
+- Guess application deadline
 - Add a button to print the PDF
 - Add Public Sans
 - View page looks more like rendered NOFO

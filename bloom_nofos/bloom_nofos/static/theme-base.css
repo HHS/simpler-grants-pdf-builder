@@ -302,6 +302,11 @@ ol:last-child {
   position: relative;
 }
 
+.nofo--cover-page--header--intro {
+  text-align: right;
+  font-size: 14px;
+}
+
 .nofo--cover-page--header .nofo--cover-page--header--intro span:last-of-type {
   font-weight: 700;
 }

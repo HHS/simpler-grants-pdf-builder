@@ -38,6 +38,12 @@ class NofoNumberForm(BaseNofoRequiredFieldForm):
         fields = ["number"]
 
 
+class NofoApplicationDeadlineForm(BaseNofoRequiredFieldForm):
+    class Meta:
+        model = Nofo
+        fields = ["application_deadline"]
+
+
 class NofoTaglineForm(BaseNofoRequiredFieldForm):
     class Meta:
         model = Nofo

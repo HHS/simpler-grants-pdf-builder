@@ -60,7 +60,7 @@
       <div class="nofo--cover-page--header--intro">
         <span>Notice of Funding Opportunity</span>
         <br />
-        <span>Application due April 5, 2024</span>
+        <span>Application due {{ nofo.application_deadline }}</span>
       </div>
     </div>
     <div class="nofo--cover-page--title">
@@ -75,7 +75,7 @@
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span>Notice of Funding Opportunity</span>
-        <span>Application due April 5, 2024</span>
+        <span>Application due {{ nofo.application_deadline }}</span>
       </div>
       <div class="nofo--cover-page--footer--image">
         <img alt="Two doctors conversing" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic.jpg" />
@@ -122,8 +122,8 @@
     <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
     <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
 
-    <h3>Apply by [Month] [Day], [Year]</h3>
-    <p>Applications are due by 11:59pm Eastern Time on [Month Day, Year].</p>
+    <h3>Apply by {{ nofo.application_deadline }}</h3>
+    <p>Applications are due by 11:59pm Eastern Time on {{ nofo.application_deadline }}.</p>
   </section>
 
   {% for section in nofo.sections.all|dictsort:"order" %}

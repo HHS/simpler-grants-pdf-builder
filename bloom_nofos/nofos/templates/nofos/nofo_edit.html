@@ -92,6 +92,11 @@
         <td><a href="{% url 'nofos:nofo_edit_number' nofo.id %}">Edit<span class="usa-sr-only"> number</span></a></td>
       <tr>
       <tr>
+        <th scope="row">Application deadline</th>
+        <td>{{ nofo.application_deadline|get_value_or_none:"application deadline" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_application_deadline' nofo.id %}">Edit<span class="usa-sr-only"> application deadline</span></a></td>
+      <tr>
+      <tr>
         <th scope="row">Tagline</th>
         <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>

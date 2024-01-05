@@ -22,6 +22,13 @@ class Nofo(models.Model):
         help_text="The official opportunity number for this NOFO. It will be public.",
     )
 
+    application_deadline = models.CharField(
+        "Application deadline",
+        max_length=200,
+        blank=True,
+        help_text="The date that applications for this NOFO must be submitted.",
+    )
+
     tagline = models.TextField(
         "NOFO tagline",
         blank=True,

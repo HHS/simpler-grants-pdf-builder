@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 
 from .forms import (
+    NofoApplicationDeadlineForm,
     NofoCoachForm,
     NofoNameForm,
     NofoNumberForm,
@@ -25,6 +26,7 @@ from .nofo import (
     overwrite_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
+    suggest_nofo_application_deadline,
     suggest_nofo_opportunity_number,
     suggest_nofo_tagline,
     suggest_nofo_theme,
@@ -145,6 +147,9 @@ def nofo_import(request, pk=None):
             nofo = add_headings_to_nofo(nofo)
             nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
             nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
+            nofo.application_deadline = suggest_nofo_application_deadline(
+                soup
+            )  # guess the NOFO application deadline
             nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
             nofo.save()
 
@@ -217,6 +222,11 @@ class NofoEditCoachView(BaseNofoEditView):
 class NofoEditNumberView(BaseNofoEditView):
     form_class = NofoNumberForm
     template_name = "nofos/nofo_edit_number.html"
+
+
+class NofoEditApplicationDeadlineView(BaseNofoEditView):
+    form_class = NofoApplicationDeadlineForm
+    template_name = "nofos/nofo_edit_application_deadline.html"
 
 
 class NofoEditTaglineView(BaseNofoEditView):

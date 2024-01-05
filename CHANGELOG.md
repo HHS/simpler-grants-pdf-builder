@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Added a new theme: Administration for Chindren and Families (ACF)
+- Guess the application deadline from the content
 
 ### Fixed
 

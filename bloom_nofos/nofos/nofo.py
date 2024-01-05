@@ -248,9 +248,16 @@ def suggest_nofo_opportunity_number(soup):
     except Nofo.DoesNotExist:
         pass
 
-    opportunity_number = "NOFO #{}".format(nofo_number)
+    opportunity_number_default = "NOFO #{}".format(nofo_number)
     suggestion = _suggest_by_startswith_string(soup, "Opportunity Number:")
-    return suggestion or opportunity_number
+    return suggestion or opportunity_number_default
+
+
+def suggest_nofo_application_deadline(soup):
+    nofo_application_deadline_default = "Monday, January 1, 2024"
+
+    suggestion = _suggest_by_startswith_string(soup, "Application Deadline:")
+    return suggestion or nofo_application_deadline_default
 
 
 def suggest_nofo_tagline(soup):
@@ -285,9 +292,9 @@ def suggest_nofo_theme(nofo_number):
 
 
 def suggest_nofo_title(soup):
-    nofo_title = "NOFO: {}".format(
+    nofo_title_default = "NOFO: {}".format(
         datetime.datetime.now().replace(microsecond=0).isoformat().replace("T", " ")
     )
 
     suggestion = _suggest_by_startswith_string(soup, "Opportunity Name:")
-    return suggestion or nofo_title
+    return suggestion or nofo_title_default
