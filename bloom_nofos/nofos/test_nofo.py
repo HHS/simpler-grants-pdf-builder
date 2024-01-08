@@ -126,6 +126,30 @@ class HTMLSuggestTitleTests(TestCase):
             default_name,
         )
 
+    def test_suggest_nofo_title_returns_default_title_for_p_span(self):
+        name = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span>Opportunity Name: Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+    def test_suggest_nofo_title_returns_default_title_for_p_span_span(self):
+        name = "Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c24">Opportunity Name: </span><span class="c1">Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
 
 class HTMLSuggestNumberTests(TestCase):
     def setUp(self):
@@ -148,6 +172,30 @@ class HTMLSuggestNumberTests(TestCase):
                 )
             ),
             default_number,
+        )
+
+    def test_suggest_nofo_number_returns_default_title_for_p_span(self):
+        name = "HRSA-24-019"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c3">Opportunity Number: HRSA-24-019</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+    def test_suggest_nofo_number_returns_default_title_for_p_span_span(self):
+        name = "CDC-RFA-DP-24-0139"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c180">Opportunity Number: </span><span class="c7">CDC-RFA-DP-24-0139</span><span class="c53 c7 c192">&nbsp;</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
         )
 
 

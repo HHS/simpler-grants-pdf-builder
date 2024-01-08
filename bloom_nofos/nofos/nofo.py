@@ -183,7 +183,7 @@ def get_subsections_from_sections(sections):
 
     def demote_tag(tag):
         if tag.name == "h6":
-            return tag
+            return "h6"
 
         newTags = {
             "h2": "h3",
@@ -235,6 +235,14 @@ def _suggest_by_startswith_string(soup, startswith_string):
     suggestion = ""
     regex = re.compile("^{}".format(startswith_string), re.IGNORECASE)
     element = soup.find(string=regex)
+
+    # look for the paragraph
+    if element and element.name != "p":
+        for parent in element.parents:
+            if parent.name == "p":
+                element = parent
+                break
+
     if element:
         suggestion = regex.sub("", element.text)
 
