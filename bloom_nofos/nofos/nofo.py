@@ -182,15 +182,7 @@ def get_subsections_from_sections(sections):
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
 
     def demote_tag(tag):
-        if tag.name == "h6":
-            return "h6"
-
-        newTags = {
-            "h2": "h3",
-            "h3": "h4",
-            "h4": "h5",
-            "h5": "h6",
-        }
+        newTags = {"h2": "h3", "h3": "h4", "h4": "h5", "h5": "h6", "h6": "h7"}
 
         return newTags[tag.name]
 

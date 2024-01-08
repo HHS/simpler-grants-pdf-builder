@@ -34,7 +34,7 @@ environ.Env.read_env(env_path)
 
 # Project version
 
-DJVERSION_VERSION = "0.0.6"
+DJVERSION_VERSION = "0.0.7"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
@@ -335,6 +335,7 @@ ALLOWED_HTML_TAGS = [
     "h4",
     "h5",
     "h6",
+    "h7",
     "hr",
     "i",
     "iframe",
@@ -369,6 +370,7 @@ ALLOWED_HTML_TAGS = [
 # https://github.com/decal/werdlists/blob/master/html-words/html-attributes-list.txt
 ALLOWED_HTML_ATTRIBUTES = [
     "alt",
+    "aria-level",
     "class",
     "color",
     "colspan",
@@ -379,6 +381,7 @@ ALLOWED_HTML_ATTRIBUTES = [
     "name",
     "reversed",
     "rowspan",
+    "role",
     "scope",
     "src",
     "style",

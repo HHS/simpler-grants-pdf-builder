@@ -24,11 +24,13 @@
 - Icons
   - Include on the "before you start" page
 - Add tagline to NOFO
+- Single cell tables are callout boxes
 - Maybe: include preceding paragraph in front of tables potentially
-- Heading level 7 omg
 
 # DONE
 
+- Heading level 7 omg
+- Fix: NOFO title and number if nested in spans
 - Guess application deadline
 - Add a button to print the PDF
 - Add Public Sans

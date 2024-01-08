@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.7] - 2023-01-08
+
+### Fixed
+
+- Handle h6s, make them into h7s (ps once rendered)
+- Find NOFO name and number if nested in spans
+
 ## [0.0.6] - 2023-01-06
 
 ### Added

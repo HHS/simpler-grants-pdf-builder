@@ -410,6 +410,15 @@ class HTMLSubsectionTests(TestCase):
             str(subsection_two.get("body")[0]), "<p>Section 1 body continued</p>"
         )
 
+    def test_get_subsections_from_soup_section_heading_h6(self):
+        soup = BeautifulSoup(
+            '<h1>Section 1</h1><h6 id="subsection-1">Subsection 1</h6><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(get_sections_from_soup(soup))
+        subsection = sections[0].get("subsections")[0]
+        self.assertEqual(subsection.get("tag"), "h7")
+
 
 class HTMLNofoFileTests(TestCase):
     def setUp(self):
