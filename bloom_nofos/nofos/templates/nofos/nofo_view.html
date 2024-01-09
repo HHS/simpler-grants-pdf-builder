@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon %}
+{% load static martortags nofo_section_name_separator add_captions_to_tables add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon clear_empty_lis %}
 
 {% block css %}
   {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
@@ -196,7 +196,7 @@
             {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
               {% include "includes/heading.html" with tag=tag content=content id=id only %}
             {% endwith %}
-            {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables|replace_unicode_with_icon|add_footnote_ids }}
+            {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables|replace_unicode_with_icon|add_footnote_ids|clear_empty_lis }}
           {% endif %}
         {% endfor %}
       </div>

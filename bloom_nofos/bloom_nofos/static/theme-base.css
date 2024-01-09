@@ -207,12 +207,19 @@ table thead th {
   text-align: left;
 }
 
+table td ul,
+table td ol {
+  padding-left: 15px;
+  margin-left: 0;
+}
+
 ul,
 ol {
   margin-bottom: 1em;
   margin-top: 1em;
   line-height: 1.5;
-  padding-left: 3ch;
+  padding-left: 30px;
+  margin-left: 0;
 }
 
 ul:last-child,

@@ -6,15 +6,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [0.0.8] - 2023-01-09
 
-### Fixed
-
-- Swap unicode square for empty checkbox svg in "Application Checklist" table
-- Swap unicode arrows for svg up/down arrows in table lists
-
 ### Changed
 
 - Watermark the image we're using so we don't publish it accidentally
 - Add classes to tables based on row count as well as column count
+
+### Fixed
+
+- Swap unicode square for empty checkbox svg in "Application Checklist" table
+- Swap unicode arrows for svg up/down arrows in table lists
+- Remove empty list items from the DOM
 
 ## [0.0.7] - 2023-01-08
 
