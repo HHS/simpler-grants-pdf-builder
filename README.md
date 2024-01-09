@@ -93,6 +93,7 @@ I've made a couple of tweaks so that they work in this app.
 
 - "The Key Facts" changed to an h3 in the markup
 - Remove semicolons that come after links in paragraphs including multiple links (for more info: https://github.com/agusmakmun/django-markdown-editor/issues/229)
+- Add lists to table cells containing "↑" or "↓"
 
 ## Environment variables
 

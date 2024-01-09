@@ -218,6 +218,10 @@ h6 {
   orphans: 2;
 }
 
+.section--content table td {
+  vertical-align: baseline;
+}
+
 .section--content table.table--medium,
 .section--content table.table--large {
   column-span: all;

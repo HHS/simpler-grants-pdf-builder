@@ -220,6 +220,21 @@ ol:last-child {
   margin-bottom: 0;
 }
 
+li.usa-list__usa-icon__arrow-upward,
+li.usa-list__usa-icon__arrow-downward {
+  list-style: none;
+  position: relative;
+}
+
+li.usa-list__usa-icon__arrow-upward img,
+li.usa-list__usa-icon__arrow-downward img {
+  position: absolute;
+  left: -25px;
+  height: 20px;
+  width: 20px;
+  top: 1px;
+}
+
 .header-nav {
   width: 100%;
   height: 20mm;

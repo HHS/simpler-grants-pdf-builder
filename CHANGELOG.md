@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [0.0.8] - 2023-01-09
 
+### Fixed
+
+- Swap unicode arrows for svg up/down arrows in table lists
+
 ### Changed
 
 - Watermark the image we're using so we don't publish it accidentally
