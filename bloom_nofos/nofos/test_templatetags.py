@@ -5,7 +5,9 @@ from django.test import TestCase
 from .templatetags.utils import (
     add_caption_to_table,
     add_class_to_table,
+    find_elements_with_character,
     get_icon_for_section,
+    get_parent_td,
     is_footnote_ref,
     format_footnote_ref,
 )
@@ -109,6 +111,31 @@ class HTMLTableClassTests(TestCase):
         self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
 
 
+class TestFindElementsWithChar(TestCase):
+    def test_single_element_with_char(self):
+        html = "<div><span>~Test</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        container = []
+        find_elements_with_character(soup, container, "~")
+        self.assertEqual(len(container), 1)
+        self.assertEqual(container[0].name, "span")
+
+    def test_nested_elements_with_char(self):
+        html = "<div><p>~Test</p><span><em>~Another test</em></span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        container = []
+        find_elements_with_character(soup, container, "~")
+        self.assertEqual(len(container), 2)
+        self.assertEqual({el.name for el in container}, {"p", "em"})
+
+    def test_no_element_with_char(self):
+        html = "<div><p>Test</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        container = []
+        find_elements_with_character(soup, container, "~")
+        self.assertEqual(len(container), 0)
+
+
 class GetIconForSectionTests(TestCase):
     def test_default_parameters(self):
         """Test the function with default parameters."""
@@ -135,6 +162,32 @@ class GetIconForSectionTests(TestCase):
             get_icon_for_section("ReViEw ThE OpPoRtUnItY"),
             "img/figma-icons/1-review.svg",
         )
+
+
+class TestGetParentTd(TestCase):
+    def test_span_directly_inside_td(self):
+        html = "<table><tr><td><span>Test</span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        span = soup.find("span")
+        self.assertTrue(get_parent_td(span).name == "td")
+
+    def test_span_nested_inside_td(self):
+        html = "<table><tr><td><div><span>Test</span></div></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        span = soup.find("span")
+        self.assertTrue(get_parent_td(span).name == "td")
+
+    def test_td_is_parent_td(self):
+        html = "<table><tr><td>Test</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        td = soup.find("td")
+        self.assertTrue(get_parent_td(td).name == "td")
+
+    def test_span_not_inside_td(self):
+        html = "<div><span>Test</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        span = soup.find("span")
+        self.assertFalse(get_parent_td(span))
 
 
 class IsFootnoteRefTest(TestCase):

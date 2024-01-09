@@ -28,9 +28,9 @@
 - Maybe: include preceding paragraph in front of tables potentially
 - Broken on CDC
   - Eligibility jump to is weird
-  - Checklist icon in tables
   - Newlines before arrows in tables
   - Drop empty bullets
+  - Lists in tables have way too much left padding
 
 # DONE
 
@@ -40,6 +40,7 @@
   - Lists inside of table cells
   - Too-long tables
   - Up/down arrow in list items in tables
+  - Checklist icon in tables
 - Fix: NOFO title and number if nested in spans
 - Guess application deadline
 - Add a button to print the PDF

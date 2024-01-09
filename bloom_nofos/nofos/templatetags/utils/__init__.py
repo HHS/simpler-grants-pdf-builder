@@ -1,3 +1,5 @@
+from bs4 import NavigableString
+
 # HTML tables
 
 
@@ -43,6 +45,38 @@ def add_class_to_table(table):
     cols = rows[0].find_all("th") + rows[0].find_all("td")
 
     return _get_table_class(len(cols), len(rows))
+
+
+def find_elements_with_character(element, container, character="~"):
+    # Recursively searches the element and its children for any strings containing the given character.
+    # Any elements containing the character are added to the given container.
+    # Parameters:
+    #   element: The element to search through
+    #   container: The list to add any found elements to
+    #   character: The character to search for in strings
+    if isinstance(element, NavigableString):
+        if character in element:
+            container.append(element.parent)
+    else:
+        for child in element.children:
+            find_elements_with_character(child, container, character)
+
+
+def get_parent_td(element):
+    """
+    Gets the parent <td> element for a given element, which may include itself.
+
+    Traverses up the element's parents looking for a <td> tag.
+    Returns the first parent <td> found, or False if none exists.
+    """
+    if element.name == "td":
+        return element
+
+    for parent in element.parents:
+        if parent.name == "td":
+            return parent
+
+    return False
 
 
 # Icons

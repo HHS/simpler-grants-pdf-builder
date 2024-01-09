@@ -231,14 +231,16 @@ img.usa-icon--check_box_outline_blank {
   box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
 }
 
-li.usa-list__usa-icon__arrow-upward,
-li.usa-list__usa-icon__arrow-downward {
+td.usa-icon--list__td ul,
+td.usa-icon--list__td ol {
   list-style: none;
+}
+
+.usa-icon--list__element {
   position: relative;
 }
 
-li.usa-list__usa-icon__arrow-upward img,
-li.usa-list__usa-icon__arrow-downward img {
+img.usa-icon--list {
   position: absolute;
   left: -25px;
   height: 20px;
