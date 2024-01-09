@@ -26,10 +26,16 @@
 - Add tagline to NOFO
 - Single cell tables are callout boxes
 - Maybe: include preceding paragraph in front of tables potentially
+- Broken on CDC
+  - Eligibility jump to is weird
+  - Checklist icon in tables
+  - Too-long tables
 
 # DONE
 
-- Heading level 7 omg
+- Broken on CDC
+  - Heading level 7 omg
+  - Lists inside of table cells
 - Fix: NOFO title and number if nested in spans
 - Guess application deadline
 - Add a button to print the PDF

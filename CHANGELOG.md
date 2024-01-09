@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Handle h6s, make them into h7s (ps once rendered)
 - Find NOFO name and number if nested in spans
+- Handle lists in table cells
 
 ## [0.0.6] - 2023-01-06
 

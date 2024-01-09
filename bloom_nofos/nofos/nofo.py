@@ -1,31 +1,28 @@
 import re
 import datetime
 
-
-# from markdownify import markdownify as md  # convert HTML to markdown
+from markdownify import MarkdownConverter
 from slugify import slugify
 
 
 from .models import Nofo, Section, Subsection
 
 
-from markdownify import MarkdownConverter
-
-
-class TDConverter(MarkdownConverter):
+class ListInATableConverter(MarkdownConverter):
     """
-    Leave TDs as they are
+    Leave ULs and OLs TDs as HTML
     """
 
-    def convert_td(self, el, text, convert_as_inline):
-        print("converting TD!")
-        return super().convert_td(el, text, convert_as_inline)
-
-    def convert_ul(self, el, text, convert_as_inline):
-        print("converting a list")
+    def convert_ol(self, el, text, convert_as_inline):
         for parent in el.parents:
             if parent.name == "td":
-                print("LIST IN A TD!!!")
+                return str(el)
+
+        return super().convert_ol(el, text, convert_as_inline)
+
+    def convert_ul(self, el, text, convert_as_inline):
+        for parent in el.parents:
+            if parent.name == "td":
                 return str(el)
 
         return super().convert_ul(el, text, convert_as_inline)
@@ -33,7 +30,7 @@ class TDConverter(MarkdownConverter):
 
 # Create shorthand method for conversion
 def md(html, **options):
-    return TDConverter(**options).convert(html)
+    return ListInATableConverter(**options).convert(html)
 
 
 def add_headings_to_nofo(nofo):
