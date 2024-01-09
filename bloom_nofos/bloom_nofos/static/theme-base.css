@@ -220,6 +220,17 @@ ol:last-child {
   margin-bottom: 0;
 }
 
+img.usa-icon--check_box_outline_blank {
+  height: 17px;
+  width: 17px;
+  margin-bottom: -3px;
+  background: var(--color--white);
+  margin-right: 5px;
+  -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  -moz-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+}
+
 li.usa-list__usa-icon__arrow-upward,
 li.usa-list__usa-icon__arrow-downward {
   list-style: none;
