@@ -47,47 +47,66 @@ class AddCaptionToTableTests(TestCase):
 
 
 class HTMLTableClassTests(TestCase):
-    def _generate_cols(self, num_cols, cell="td"):
-        cols = ""
-        for i in range(num_cols):
-            cols += "<{0}>Col {1}</{0}>".format(cell, i + 1)
+    def _generate_table(self, num_cols, num_rows=1, cell="td"):
+        rows = ""
+        for j in range(num_rows):
+            cols = ""
+            for i in range(num_cols):
+                cols += "<{0}>Col {1}</{0}>".format(cell, i + 1)
+            rows += "<tr>{}</tr>".format(cols)
 
-        return cols
+        return "<table>{}</table>".format(rows)
 
     def test_table_class_sm(self):
-        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(2))
+        table_html = self._generate_table(num_cols=2)
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
     def test_table_class_md(self):
-        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(4))
+        table_html = self._generate_table(num_cols=4)
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
 
     def test_table_class_lg(self):
-        table_html = "<table><tr>{}</tr></table>".format(self._generate_cols(5))
+        table_html = self._generate_table(num_cols=5)
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
     def test_table_class_lg_with_th(self):
-        table_html = "<table><tr>{}</tr></table>".format(
-            self._generate_cols(10, cell="th")
-        )
+        table_html = self._generate_table(num_cols=10, cell="th")
+
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
     def test_table_class_lg_with_th_2_rows(self):
         # generate a table with 2 rows
-        table_html = "<table><tr>{}</tr><tr>{}</tr></table>".format(
-            self._generate_cols(10, cell="th"), self._generate_cols(10)
-        )
+        table_html = self._generate_table(num_cols=10, num_rows=2, cell="th")
+
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+    def test_table_class_md_rows(self):
+        table_html = self._generate_table(num_cols=2, num_rows=6)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
+
+    def test_table_class_lg_rows(self):
+        table_html = self._generate_table(num_cols=2, num_rows=7)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+    def test_table_class_md_md(self):
+        table_html = self._generate_table(num_cols=4, num_rows=6)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
 
 
 class GetIconForSectionTests(TestCase):

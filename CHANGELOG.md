@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.8] - 2023-01-09
+
+### Changed
+
+- Watermark the image we're using so we don't publish it accidentally
+- Add classes to tables based on row count as well as column count
+
 ## [0.0.7] - 2023-01-08
 
 ### Fixed
@@ -12,11 +19,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Find NOFO name and number if nested in spans
 - Handle lists in table cells
 
-## [0.0.6] - 2023-01-06
+## [0.0.6] - 2023-01-05
 
 ### Added
 
-- Added a new theme: Administration for Chindren and Families (ACF)
+- Added a new theme: Administration for Children and Families (ACF)
 - Guess the application deadline from the content
 
 ### Fixed

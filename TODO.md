@@ -29,13 +29,15 @@
 - Broken on CDC
   - Eligibility jump to is weird
   - Checklist icon in tables
-  - Too-long tables
+  - Newlines before arrows in tables
 
 # DONE
 
+- Watermark the image
 - Broken on CDC
   - Heading level 7 omg
   - Lists inside of table cells
+  - Too-long tables
 - Fix: NOFO title and number if nested in spans
 - Guess application deadline
 - Add a button to print the PDF

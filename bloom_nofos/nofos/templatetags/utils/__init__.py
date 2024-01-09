@@ -22,25 +22,27 @@ def add_caption_to_table(table):
 
 def add_class_to_table(table):
     """
-    Adds a size class to a BeautifulSoup table based on column count.
+    Adds a size class to a BeautifulSoup table based on column and row count.
 
-    Counts the columns in the first row and adds a class like "table--small",
-    "table--medium", or "table--large" depending on the column count.
+    Counts the columns in the first row and the number of rows:
+     - "table--small": 2 columns or less, 4 rows or less
+     - "table--medium": 3-4 columns or5-6 rows
+     - "table--large": 5 columns or more, 7 rows or more
     """
 
-    def _get_table_class(num_cols):
-        if num_cols <= 2:
-            return "table--small"
-        elif num_cols <= 4:
+    def _get_table_class(num_cols, num_rows):
+        if num_cols >= 5 or num_rows >= 7:
+            return "table--large"
+
+        elif num_cols >= 3 or num_rows >= 5:
             return "table--medium"
 
-        return "table--large"
+        return "table--small"
 
-    row = table.find("tr")
-    cols = row.find_all("th") + row.find_all("td")
-    # maybe count rows also??
+    rows = table.find_all("tr")
+    cols = rows[0].find_all("th") + rows[0].find_all("td")
 
-    return _get_table_class(len(cols))
+    return _get_table_class(len(cols), len(rows))
 
 
 # Icons
