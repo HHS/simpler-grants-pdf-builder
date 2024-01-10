@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 from django.urls import reverse
 from martor.models import MartorField
 
@@ -112,14 +113,23 @@ class Section(models.Model):
         unique_together = ("nofo", "order")
 
     def __str__(self):
-        return self.name
+        nofo_id = "999"
+        try:
+            nofo_id = self.nofo.id
+        except Nofo.DoesNotExist:
+            pass
+
+        return "({}) {}".format(nofo_id, self.name)
 
 
 class Subsection(models.Model):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
-    name = models.TextField("Subsection name")
+    name = models.TextField(
+        "Subsection name", blank=True
+    )  # Name can be blank if callout_box is true
+
     html_id = models.CharField(
         max_length=200,
         blank=True,
@@ -137,10 +147,10 @@ class Subsection(models.Model):
         ("h6", "Heading 6"),
         ("h7", "Heading 7"),
     ]
+
     tag = models.CharField(
-        max_length=2,
-        choices=TAG_CHOICES,
-    )
+        max_length=2, choices=TAG_CHOICES, blank=True
+    )  # Tag can be blank if callout_box is true
 
     callout_box = models.BooleanField(
         "Callout box",
@@ -151,4 +161,17 @@ class Subsection(models.Model):
     body = MartorField("Content of subsection", blank=True)
 
     def __str__(self):
-        return self.name
+        return self.name or "(Unnamed subsection)"
+
+    def clean(self):
+        # Enforce 'name' when 'callout_box' is False
+        if not self.callout_box and not self.name:
+            raise ValidationError("Name is required when 'callout_box' is False.")
+
+        # Enforce 'tag' when 'callout_box' is False
+        if not self.callout_box and not self.tag:
+            raise ValidationError("Tag is required when 'callout_box' is False.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Call the clean method for validation
+        super().save(*args, **kwargs)

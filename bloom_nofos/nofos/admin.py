@@ -48,21 +48,23 @@ class SectionLinkInline(admin.TabularInline):
     show_change_link = True
 
 
-class SubsectionInline(admin.StackedInline):
+class SubsectionLinkInline(admin.StackedInline):
     form = SubsectionModelForm
     model = Subsection
     extra = 1
+    show_change_link = True
 
 
 # Admin classes
 class SubsectionAdmin(admin.ModelAdmin):
     model = Subsection
-    list_display = ["name", "section"]
+    list_display = ["id", "name", "callout_box", "section"]
 
 
 class SectionAdmin(admin.ModelAdmin):
-    inlines = [SubsectionInline]
+    inlines = [SubsectionLinkInline]
     model = Section
+    list_display = ["id", "name"]
 
 
 class NofoAdmin(admin.ModelAdmin):
