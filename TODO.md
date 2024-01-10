@@ -22,7 +22,6 @@
   - ACL
 - Icons
   - Include on the "before you start" page
-- Add tagline to NOFO
 - Single cell tables are callout boxes
 - Maybe: include preceding paragraph in front of tables potentially
 - Broken on CDC
@@ -31,6 +30,8 @@
 
 # DONE
 
+- Add tagline to NOFO
+- Add subagency to NOFO
 - Consolidate form generation macro
 - Guess the opdiv, agency, subagency
 - Watermark the image

@@ -54,7 +54,13 @@
       <div class="nofo--cover-page--header--logo">
         <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/{{ nofo_opdiv.filename }}" />
         <div class="nofo--cover-page--header--logo--subheading">
-          <p>HRSA Health workforce</p>
+          <p>
+            {% if nofo.subagency %}
+              {{ nofo.subagency }}
+            {% else %}
+              {{ nofo.agency }}
+            {% endif %}
+          </p>
         </div>
       </div>
       <div class="nofo--cover-page--header--intro">
@@ -196,7 +202,19 @@
             {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
               {% include "includes/heading.html" with tag=tag content=content id=id only %}
             {% endwith %}
-            {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables|replace_unicode_with_icon|add_footnote_ids|clear_empty_lis }}
+            {% if section.order == 1 and subsection.order == 1 %}
+              <!-- for the very first section, add the nofo agency and tagline -->
+              <p class="nofo--agency">
+                {% if nofo.subagency %}
+                  {{ nofo.subagency }}
+                {% else %}
+                  {{ nofo.agency }}
+                {% endif %}
+              </p>
+              <p class="nofo--tagline">{{ nofo.tagline }}
+            {% else %}
+              {{ subsection.body|safe_markdown|add_classes_to_tables|add_captions_to_tables|replace_unicode_with_icon|add_footnote_ids|clear_empty_lis }}
+            {% endif %}
           {% endif %}
         {% endfor %}
       </div>
