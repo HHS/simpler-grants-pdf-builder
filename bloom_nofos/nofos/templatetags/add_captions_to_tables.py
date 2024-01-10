@@ -15,4 +15,4 @@ def add_captions_to_tables(html_string):
         if not is_callout_box_table_markdown(table):
             add_caption_to_table(table)
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))

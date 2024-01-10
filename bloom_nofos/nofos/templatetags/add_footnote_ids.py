@@ -19,4 +19,4 @@ def add_footnote_ids(html_string):
             if not a.get("href").startswith("#ftnt_"):
                 a.wrap(soup.new_tag("sup"))
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))

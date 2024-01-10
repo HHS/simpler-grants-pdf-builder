@@ -26,10 +26,10 @@
   - Add icons
   - Move after ToC
   - Add to ToC
-- Whitespace makes it into the link somehow
 
 # DONE
 
+- Fix: extra whitespace in links
 - Callout boxes
   - Put them after the summary
   - Create the Questions callout box

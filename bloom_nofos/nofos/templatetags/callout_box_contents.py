@@ -17,4 +17,4 @@ def callout_box_contents(html_string):
             strong_tag.string, paragraph.string = split_text[0] + ":", split_text[1]
             paragraph.insert(0, strong_tag)
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))

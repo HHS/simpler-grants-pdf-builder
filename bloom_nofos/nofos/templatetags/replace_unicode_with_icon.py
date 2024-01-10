@@ -56,4 +56,4 @@ def replace_unicode_with_icon(html_string):
                     if td_classname not in parent_td.get("class", []):
                         parent_td["class"] = parent_td.get("class", []) + [td_classname]
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))

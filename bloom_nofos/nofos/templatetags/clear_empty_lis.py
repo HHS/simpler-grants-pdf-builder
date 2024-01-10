@@ -13,4 +13,4 @@ def clear_empty_lis(html_string):
         if not len(li.get_text().strip()):
             li.decompose()
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))

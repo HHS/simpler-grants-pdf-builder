@@ -15,4 +15,4 @@ def add_classes_to_tables(html_string):
         table_class = add_class_to_table(table)
         table["class"] = table_class
 
-    return mark_safe(soup.prettify())
+    return mark_safe(str(soup))
