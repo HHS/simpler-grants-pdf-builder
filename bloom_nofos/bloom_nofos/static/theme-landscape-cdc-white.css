@@ -75,6 +75,11 @@ h3 {
   color: var(--color--black);
 }
 
+.callout-box--questions .callout-box--contents img {
+  filter: invert(15%) sepia(18%) saturate(7135%) hue-rotate(185deg)
+    brightness(97%) contrast(105%);
+}
+
 table {
   border-collapse: separate;
   border-spacing: 2px;

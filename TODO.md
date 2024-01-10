@@ -12,24 +12,28 @@
 - Handle images
   - for cover page
   - inline in documents
-- Callout boxes
-  - Put them after the summary
-  - Create the Questions callout box
 - Theme variants
   - ACF white
   - HRSA variant
+  - Big cover pic for CDC
 - Themes
   - ACL
-- Icons
-  - Include on the "before you start" page
-- Single cell tables are callout boxes
 - Maybe: include preceding paragraph in front of tables potentially
 - Broken on CDC
   - Eligibility jump to is weird
 - Table says required are "bolded" which is lost during conversion
+- Before you begin
+  - Add icons
+  - Move after ToC
+  - Add to ToC
+- Whitespace makes it into the link somehow
 
 # DONE
 
+- Callout boxes
+  - Put them after the summary
+  - Create the Questions callout box
+- Single cell tables are callout boxes
 - Add tagline to NOFO
 - Add subagency to NOFO
 - Consolidate form generation macro

@@ -105,6 +105,15 @@ h4 {
   color: var(--color--white);
 }
 
+.callout-box--contents a {
+  color: var(--color--white);
+}
+
+.callout-box--questions .callout-box--contents img {
+  filter: invert(99%) sepia(99%) saturate(2%) hue-rotate(222deg)
+    brightness(104%) contrast(100%);
+}
+
 table th {
   color: var(--color--white);
   background-color: var(--color--vibrant-blue);

@@ -492,10 +492,6 @@ img.usa-icon--list {
   margin-bottom: 0.75rem;
 }
 
-.callout-box--contents a {
-  color: var(--color--white);
-}
-
 .callout-box--contents strong {
   display: block;
 }
@@ -506,6 +502,27 @@ img.usa-icon--list {
 
 .callout-box--contents p:last-of-type {
   margin-bottom: 0;
+}
+
+.callout-box--questions {
+  padding: 15px;
+}
+
+.callout-box--questions .callout-box--contents {
+  display: flex;
+  flex-direction: row;
+  font-size: 15px;
+  align-items: center;
+}
+
+.callout-box--questions .callout-box--contents img {
+  width: 30px;
+  margin-right: 10px;
+}
+
+.callout-box--questions .callout-box--contents p {
+  font-size: 16px;
+  font-weight: 700;
 }
 
 /* Footnotes
