@@ -134,9 +134,9 @@ def _build_nofo(nofo, sections):
                 md_body = format_endnotes(md_body)
 
             model_subsection = Subsection(
-                name=subsection.get("name", "Subsection X"),
+                name=subsection.get("name", ""),
                 order=subsection.get("order", ""),
-                tag=subsection.get("tag", "h6"),
+                tag=subsection.get("tag", ""),
                 html_id=subsection.get("html_id"),
                 callout_box=subsection.get("is_callout_box", False),
                 body=md_body,  # body can be empty
@@ -217,6 +217,46 @@ def get_subsections_from_sections(sections):
 
         return newTags[tag.name]
 
+    def is_callout_box_table(table):
+        # NOTE: after this goes through the markdown parser, it has 2 rows, but for now it is just 1
+        rows = table.find_all("tr")
+        cols = rows[0].find_all("th") + rows[0].find_all("td")
+        tds = table.find_all("td")
+
+        return (
+            len(cols) == 1  # 1 column
+            and len(rows) == 1  # 1 row
+            and len(tds) == 1  # 1 cell
+        )
+
+    def extract_first_header(td):
+        for tag_name in heading_tags:
+            header_element = td.find(tag_name)
+            if header_element:
+                # remove from the dom
+                return header_element.extract()
+        return False
+
+    def get_subsection_dict(heading_tag, order, is_callout_box=False, body=None):
+        if heading_tag:
+            return {
+                "name": heading_tag.text,
+                "order": order,
+                "tag": demote_tag(heading_tag),
+                "html_id": heading_tag.get("id", ""),
+                "is_callout_box": is_callout_box,
+                "body": body or [],
+            }
+
+        return {
+            "name": "",
+            "order": order,
+            "tag": "",
+            "html_id": "",
+            "is_callout_box": True,  # has to be True if there is no heading tag
+            "body": body or [],
+        }
+
     # h1s are gone since last method
     subsection = None
     for section in sections:
@@ -226,24 +266,32 @@ def get_subsections_from_sections(sections):
         body = section.pop("body", None)
 
         body_descendents = [
-            tag for tag in body if tag.parent.name in ["body", "[document]", "td"]
+            tag for tag in body if tag.parent.name in ["body", "[document]"]
         ]
 
         for tag in body_descendents:
-            if tag.name in heading_tags:
+            if tag.name == "table" and is_callout_box_table(tag):
+                # pass in the first heading we find in the 1 table cell, else False
+                td = tag.find("td")
+                # make the td a div so that it can live on its own
+                td.name = "div"
+                subsection = get_subsection_dict(
+                    heading_tag=extract_first_header(td),
+                    order=len(section["subsections"]) + 1,
+                    is_callout_box=True,
+                    body=td,
+                )
+                section["subsections"].append(subsection)
+
+            elif tag.name in heading_tags:
                 # create new subsection
-                subsection = {
-                    "name": tag.text,
-                    "order": len(section["subsections"]) + 1,
-                    "tag": demote_tag(tag),
-                    "html_id": tag.get("id", ""),
-                    "is_callout_box": is_in_table(tag),
-                    "body": [],
-                }
+                subsection = get_subsection_dict(
+                    heading_tag=tag, order=len(section["subsections"]) + 1
+                )
 
                 section["subsections"].append(subsection)
 
-            # if not a heading, add to existing subsection
+            # if not a heading or callout_box table add to existing subsection
             else:
                 # convert first row of header cells into th elements
                 if tag.name == "table":

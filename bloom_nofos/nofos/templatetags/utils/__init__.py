@@ -41,7 +41,7 @@ def add_class_to_table(table):
 
         return "table--small"
 
-    if is_callout_box_table(table):
+    if is_callout_box_table_markdown(table):
         return "table--callout-box"
 
     rows = table.find_all("tr")
@@ -82,7 +82,7 @@ def get_parent_td(element):
     return False
 
 
-def is_callout_box_table(table):
+def is_callout_box_table_markdown(table):
     rows = table.find_all("tr")
     cols = rows[0].find_all("th") + rows[0].find_all("td")
     tds = table.find_all("td")
