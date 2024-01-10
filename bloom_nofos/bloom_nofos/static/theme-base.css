@@ -487,16 +487,25 @@ img.usa-icon--list {
   margin: 20px 0;
 }
 
-.callout-box p:last-of-type {
-  margin-bottom: 0;
-}
-
 .callout-box--title {
   font-size: 130%;
+  margin-bottom: 0.75rem;
+}
+
+.callout-box--contents a {
+  color: var(--color--white);
 }
 
 .callout-box--contents strong {
   display: block;
+}
+
+.callout-box--contents p:first-of-type {
+  margin-top: 0;
+}
+
+.callout-box--contents p:last-of-type {
+  margin-bottom: 0;
 }
 
 /* Footnotes

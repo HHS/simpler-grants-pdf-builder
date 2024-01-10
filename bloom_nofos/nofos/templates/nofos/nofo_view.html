@@ -193,7 +193,9 @@
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
             <div class="callout-box">
-              <div class="callout-box--title">{{ subsection.name }}</div>
+              {% if subsection.name %}
+                <div class="callout-box--title">{{ subsection.name }}</div>
+              {% endif %}
               <div class="callout-box--contents">
                 {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
               </div>
