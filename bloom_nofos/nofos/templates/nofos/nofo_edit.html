@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name get_value_or_none %}
+{% load martortags nofo_name get_value_or_none add_classes_to_tables %}
 
 {% block title %}
   Edit “{{ nofo|nofo_name }}”
@@ -162,7 +162,7 @@
         {% for subsection in section.subsections.all|dictsort:"order" %}
           <tr>
             <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
-            <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|get_value_or_none:"content" }}</td>
+            <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}</td>
             <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
           <tr>
         {% endfor %}

@@ -104,6 +104,10 @@ fieldset legend {
   margin-bottom: -0.5rem;
 }
 
+.table--callout-box {
+  display: none;
+}
+
 .usa-footer__not-actually-a-link {
   color: #565c65;
   font-weight: 400;

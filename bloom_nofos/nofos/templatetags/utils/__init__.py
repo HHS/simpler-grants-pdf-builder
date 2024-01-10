@@ -41,6 +41,9 @@ def add_class_to_table(table):
 
         return "table--small"
 
+    if is_callout_box_table(table):
+        return "table--callout-box"
+
     rows = table.find_all("tr")
     cols = rows[0].find_all("th") + rows[0].find_all("td")
 
@@ -77,6 +80,20 @@ def get_parent_td(element):
             return parent
 
     return False
+
+
+def is_callout_box_table(table):
+    rows = table.find_all("tr")
+    cols = rows[0].find_all("th") + rows[0].find_all("td")
+    tds = table.find_all("td")
+
+    return (
+        len(cols) == 1  # 1 column
+        and len(rows) == 2  # 2 rows (thead and tbody generated automatically)
+        and len(tds) == 1  # 1 cell
+        and tds[0]
+        and tds[0].get_text().strip() == ""  # the cell is empty
+    )
 
 
 # Icons

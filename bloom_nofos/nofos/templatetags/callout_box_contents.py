@@ -11,10 +11,7 @@ def callout_box_contents(html_string):
     soup = BeautifulSoup(html_string, "html.parser")
     for paragraph in soup.find_all("p"):
         text = paragraph.get_text()
-        if ":" not in text:
-            paragraph.extract()
-
-        else:
+        if ":" in text:
             split_text = text.split(":")
             strong_tag = soup.new_tag("strong")
             strong_tag.string, paragraph.string = split_text[0] + ":", split_text[1]

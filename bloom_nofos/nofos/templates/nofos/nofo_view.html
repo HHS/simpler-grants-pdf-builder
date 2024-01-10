@@ -195,7 +195,7 @@
             <div class="callout-box">
               <div class="callout-box--title">{{ subsection.name }}</div>
               <div class="callout-box--contents">
-                {{ subsection.body|safe_markdown|callout_box_contents }}
+                {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
               </div>
             </div>
           {% else %}

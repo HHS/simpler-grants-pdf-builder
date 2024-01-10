@@ -133,17 +133,12 @@ def _build_nofo(nofo, sections):
             if subsection.get("name") == "Endnotes":
                 md_body = format_endnotes(md_body)
 
-            name_lowercase = subsection.get("name", "Subsection X").lower()
-            is_callout_box = name_lowercase.startswith(
-                "key dates"
-            ) or name_lowercase.startswith("the key facts")
-
             model_subsection = Subsection(
                 name=subsection.get("name", "Subsection X"),
                 order=subsection.get("order", ""),
                 tag=subsection.get("tag", "h6"),
                 html_id=subsection.get("html_id"),
-                callout_box=is_callout_box,
+                callout_box=subsection.get("is_callout_box", False),
                 body=md_body,  # body can be empty
                 section=model_section,
             )
@@ -202,6 +197,18 @@ def get_sections_from_soup(soup):
     return sections
 
 
+def is_in_table(tag):
+    """
+    Checks if the given tag is inside a table element.
+
+    Iterates through the tag's parent elements, returning True if any parent is a table element.
+    """
+    for parent in tag.parents:
+        if parent.name == "table":
+            return True
+    return False
+
+
 def get_subsections_from_sections(sections):
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
 
@@ -219,7 +226,7 @@ def get_subsections_from_sections(sections):
         body = section.pop("body", None)
 
         body_descendents = [
-            tag for tag in body if tag.parent.name in ["body", "[document]"]
+            tag for tag in body if tag.parent.name in ["body", "[document]", "td"]
         ]
 
         for tag in body_descendents:
@@ -230,6 +237,7 @@ def get_subsections_from_sections(sections):
                     "order": len(section["subsections"]) + 1,
                     "tag": demote_tag(tag),
                     "html_id": tag.get("id", ""),
+                    "is_callout_box": is_in_table(tag),
                     "body": [],
                 }
 
