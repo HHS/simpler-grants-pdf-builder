@@ -15,7 +15,6 @@
 - Callout boxes
   - Put them after the summary
   - Create the Questions callout box
-- Guess the opdiv (?)
 - Theme variants
   - ACF white
   - HRSA variant
@@ -28,9 +27,11 @@
 - Maybe: include preceding paragraph in front of tables potentially
 - Broken on CDC
   - Eligibility jump to is weird
+- Table says required are "bolded" which is lost during conversion
 
 # DONE
 
+- Guess the opdiv, agency, subagency
 - Watermark the image
 - Broken on CDC
   - Heading level 7 omg

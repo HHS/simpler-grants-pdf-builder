@@ -22,6 +22,27 @@ class Nofo(models.Model):
         help_text="The official opportunity number for this NOFO. It will be public.",
     )
 
+    opdiv = models.CharField(
+        "Operating Division",
+        max_length=511,
+        blank=True,
+        help_text="The HHS operating division (eg, HRSA, CDC)",
+    )
+
+    agency = models.CharField(
+        "Agency",
+        max_length=511,
+        blank=True,
+        help_text="The agency within the operating division (eg, Bureau of Health Workforce)",
+    )
+
+    subagency = models.CharField(
+        "Subagency",
+        max_length=511,
+        blank=True,
+        help_text="The subagency within the agency (eg, Division of Medicine and Dentistry)",
+    )
+
     application_deadline = models.CharField(
         "Application deadline",
         max_length=200,

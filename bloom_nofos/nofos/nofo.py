@@ -284,27 +284,6 @@ def suggest_nofo_application_deadline(soup):
     return suggestion or nofo_application_deadline_default
 
 
-def suggest_nofo_tagline(soup):
-    def _find_heading_by_text(soup, text):
-        # Iterate through different heading levels
-        for i in range(1, 7):
-            heading = soup.find(f"h{i}", string=text)
-            if heading:
-                return heading
-
-        return None
-
-    summary_heading = _find_heading_by_text(soup, text="Summary")
-    if summary_heading:
-        previous_element = summary_heading.previous_sibling
-        previous_text = previous_element.get_text().strip()
-
-        if previous_element.name == "p" and ":" not in previous_text:
-            return previous_text
-
-    return ""
-
-
 def suggest_nofo_theme(nofo_number):
     if "cdc-" in nofo_number.lower():
         return "landscape-cdc-blue"
@@ -322,3 +301,23 @@ def suggest_nofo_title(soup):
 
     suggestion = _suggest_by_startswith_string(soup, "Opportunity Name:")
     return suggestion or nofo_title_default
+
+
+def suggest_nofo_opdiv(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Opdiv:")
+    return suggestion or ""
+
+
+def suggest_nofo_agency(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Agency:")
+    return suggestion or ""
+
+
+def suggest_nofo_subagency(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Subagency:")
+    return suggestion or ""
+
+
+def suggest_nofo_tagline(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Tagline:")
+    return suggestion or ""

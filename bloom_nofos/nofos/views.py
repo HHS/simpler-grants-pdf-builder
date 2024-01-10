@@ -11,10 +11,13 @@ from bs4 import BeautifulSoup
 from markdown2 import Markdown  # convert markdown to HTML
 
 from .forms import (
+    NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachForm,
+    NofoOpDivForm,
     NofoNameForm,
     NofoNumberForm,
+    NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeForm,
     SubsectionForm,
@@ -26,8 +29,11 @@ from .nofo import (
     overwrite_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
+    suggest_nofo_agency,
     suggest_nofo_application_deadline,
+    suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
+    suggest_nofo_subagency,
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
@@ -146,6 +152,9 @@ def nofo_import(request, pk=None):
             nofo = create_nofo(nofo_title, sections)
             nofo = add_headings_to_nofo(nofo)
             nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+            nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
+            nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
+            nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
             nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
             nofo.application_deadline = suggest_nofo_application_deadline(
                 soup
@@ -232,6 +241,21 @@ class NofoEditApplicationDeadlineView(BaseNofoEditView):
 class NofoEditTaglineView(BaseNofoEditView):
     form_class = NofoTaglineForm
     template_name = "nofos/nofo_edit_tagline.html"
+
+
+class NofoEditOpDivView(BaseNofoEditView):
+    form_class = NofoOpDivForm
+    template_name = "nofos/nofo_edit_opdiv.html"
+
+
+class NofoEditAgencyView(BaseNofoEditView):
+    form_class = NofoAgencyForm
+    template_name = "nofos/nofo_edit_agency.html"
+
+
+class NofoEditSubagencyView(BaseNofoEditView):
+    form_class = NofoSubagencyForm
+    template_name = "nofos/nofo_edit_subagency.html"
 
 
 class NofoEditThemeView(BaseNofoEditView):

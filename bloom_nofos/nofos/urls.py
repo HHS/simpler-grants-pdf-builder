@@ -47,6 +47,21 @@ urlpatterns = [
         name="nofo_edit_tagline",
     ),
     path(
+        "<int:pk>/edit/opdiv",
+        views.NofoEditOpDivView.as_view(),
+        name="nofo_edit_opdiv",
+    ),
+    path(
+        "<int:pk>/edit/agency",
+        views.NofoEditAgencyView.as_view(),
+        name="nofo_edit_agency",
+    ),
+    path(
+        "<int:pk>/edit/subagency",
+        views.NofoEditSubagencyView.as_view(),
+        name="nofo_edit_subagency",
+    ),
+    path(
         "<int:pk>/edit/theme",
         views.NofoEditThemeView.as_view(),
         name="nofo_edit_theme",

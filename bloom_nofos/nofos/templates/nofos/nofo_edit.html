@@ -97,6 +97,21 @@
         <td><a href="{% url 'nofos:nofo_edit_application_deadline' nofo.id %}">Edit<span class="usa-sr-only"> application deadline</span></a></td>
       <tr>
       <tr>
+        <th scope="row">OpDiv</th>
+        <td>{{ nofo.opdiv|get_value_or_none:"OpDiv" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_opdiv' nofo.id %}">Edit<span class="usa-sr-only"> OpDiv</span></a></td>
+      <tr>
+      <tr>
+        <th scope="row">Agency</th>
+        <td>{{ nofo.agency|get_value_or_none:"agency" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_agency' nofo.id %}">Edit<span class="usa-sr-only"> Agency</span></a></td>
+      <tr>
+      <tr>
+        <th scope="row">Subagency</th>
+        <td>{{ nofo.subagency|get_value_or_none:"subagency" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_subagency' nofo.id %}">Edit<span class="usa-sr-only"> Subagency</span></a></td>
+      <tr>
+      <tr>
         <th scope="row">Tagline</th>
         <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>

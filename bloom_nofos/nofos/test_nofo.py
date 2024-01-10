@@ -13,7 +13,10 @@ from .nofo import (
     convert_table_first_row_to_header_row,
     get_sections_from_soup,
     get_subsections_from_sections,
+    suggest_nofo_agency,
+    suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
+    suggest_nofo_subagency,
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
@@ -102,165 +105,6 @@ class AddNewLineToRefsTest(TestCase):
 
     def test_ref_10(self):
         self.assertEqual(add_newline_to_ref_numbers("ref10)"), "ref10)\n")
-
-
-class HTMLSuggestTitleTests(TestCase):
-    def setUp(self):
-        self.nofo_title = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
-        self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
-
-    def test_suggest_nofo_title_returns_correct_title(self):
-        self.assertEqual(suggest_nofo_title(self.soup), self.nofo_title)
-
-    @freeze_time("1917-04-17")
-    def test_suggest_nofo_title_returns_default_title_for_bad_html(self):
-        default_name = "NOFO: 1917-04-17 00:00:00"
-        self.assertEqual(
-            suggest_nofo_title(
-                BeautifulSoup(
-                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
-                    "html.parser",
-                )
-            ),
-            default_name,
-        )
-
-    def test_suggest_nofo_title_returns_default_title_for_p_span(self):
-        name = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
-        self.assertEqual(
-            suggest_nofo_title(
-                BeautifulSoup(
-                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span>Opportunity Name: Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program</span></p></body></html>',
-                    "html.parser",
-                )
-            ),
-            name,
-        )
-
-    def test_suggest_nofo_title_returns_default_title_for_p_span_span(self):
-        name = "Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program"
-        self.assertEqual(
-            suggest_nofo_title(
-                BeautifulSoup(
-                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c24">Opportunity Name: </span><span class="c1">Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program</span></p></body></html>',
-                    "html.parser",
-                )
-            ),
-            name,
-        )
-
-
-class HTMLSuggestNumberTests(TestCase):
-    def setUp(self):
-        self.nofo_opportunity_number = "HRSA-24-019"
-        self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
-
-    def test_suggest_nofo_title_returns_correct_title(self):
-        self.assertEqual(
-            suggest_nofo_opportunity_number(self.soup), self.nofo_opportunity_number
-        )
-
-    def test_suggest_nofo_number_returns_default_number_for_bad_html(self):
-        default_number = "NOFO #1"
-        self.assertEqual(
-            suggest_nofo_opportunity_number(
-                BeautifulSoup(
-                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
-                    "html.parser",
-                )
-            ),
-            default_number,
-        )
-
-    def test_suggest_nofo_number_returns_default_title_for_p_span(self):
-        name = "HRSA-24-019"
-        self.assertEqual(
-            suggest_nofo_opportunity_number(
-                BeautifulSoup(
-                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c3">Opportunity Number: HRSA-24-019</span></p></body></html>',
-                    "html.parser",
-                )
-            ),
-            name,
-        )
-
-    def test_suggest_nofo_number_returns_default_title_for_p_span_span(self):
-        name = "CDC-RFA-DP-24-0139"
-        self.assertEqual(
-            suggest_nofo_opportunity_number(
-                BeautifulSoup(
-                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c180">Opportunity Number: </span><span class="c7">CDC-RFA-DP-24-0139</span><span class="c53 c7 c192">&nbsp;</span></p></body></html>',
-                    "html.parser",
-                )
-            ),
-            name,
-        )
-
-
-class HTMLSuggestTagline(TestCase):
-    def test_heading_with_valid_previous_sibling(self):
-        html_content = "<p>Valid tagline</p><h2>Summary</h2>"
-        soup = BeautifulSoup(html_content, "html.parser")
-        result = suggest_nofo_tagline(soup)
-        self.assertEqual(result, "Valid tagline")
-
-    def test_heading_with_invalid_previous_sibling(self):
-        html_content = "<p>Invalid: contains a colon</p><h2>Summary</h2>"
-        soup = BeautifulSoup(html_content, "html.parser")
-        result = suggest_nofo_tagline(soup)
-        self.assertEqual(result, "")
-
-    def test_no_summary_heading(self):
-        html_content = "<p>Some text</p><h2>Other Heading</h2>"
-        soup = BeautifulSoup(html_content, "html.parser")
-        result = suggest_nofo_tagline(soup)
-        self.assertEqual(result, "")
-
-    def test_heading_with_non_paragraph_previous_sibling(self):
-        html_content = "<div>Not a paragraph</div><h2>Summary</h2>"
-        soup = BeautifulSoup(html_content, "html.parser")
-        result = suggest_nofo_tagline(soup)
-        self.assertEqual(result, "")
-
-    def test_tagline_not_followed_by_a_heading(self):
-        html_content = "<p>Not followed by a heading</p><p>Summary</p>"
-        soup = BeautifulSoup(html_content, "html.parser")
-        result = suggest_nofo_tagline(soup)
-        self.assertEqual(result, "")
-
-
-class HTMLSuggestThemeTests(TestCase):
-    def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
-        nofo_number = "HRSA-24-019"
-        nofo_theme = "portrait-hrsa-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
-
-    def test_suggest_nofo_number_cdc_returns_cdc_theme(self):
-        nofo_number = "CDC-RFA-DP-24-0139"
-        nofo_theme = "landscape-cdc-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
-
-    def test_suggest_nofo_number_acf_returns_acf_theme(self):
-        nofo_number = "HHS-2024-ACF-ANA-NB-0050"
-        nofo_theme = "portrait-acf-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
-
-    def test_suggest_nofo_number_acl_returns_hrsa_theme(self):
-        nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
-        nofo_theme = "portrait-hrsa-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
-
-    def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):
-        nofo_number = "abc-def-ghi"
-        nofo_theme = "portrait-hrsa-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
-
-    def test_suggest_nofo_number_empty_returns_hrsa_theme(self):
-        nofo_number = ""
-        nofo_theme = "portrait-hrsa-blue"
-        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
 
 class HTMLSectionTests(TestCase):
@@ -704,3 +548,256 @@ class AddHeadingsTests(TestCase):
             "Section 1 body with [custom link](#section-1--subsection-1)",
             subsection_1.body,
         )
+
+
+#########################################################
+#################### SUGGEST X TESTS ####################
+#########################################################
+
+
+class HTMLSuggestTitleTests(TestCase):
+    def setUp(self):
+        self.nofo_title = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_suggest_nofo_title_returns_correct_title(self):
+        self.assertEqual(suggest_nofo_title(self.soup), self.nofo_title)
+
+    @freeze_time("1917-04-17")
+    def test_suggest_nofo_title_returns_default_title_for_bad_html(self):
+        default_name = "NOFO: 1917-04-17 00:00:00"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
+                    "html.parser",
+                )
+            ),
+            default_name,
+        )
+
+    def test_suggest_nofo_title_returns_default_title_for_p_span(self):
+        name = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span>Opportunity Name: Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+    def test_suggest_nofo_title_returns_default_title_for_p_span_span(self):
+        name = "Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program"
+        self.assertEqual(
+            suggest_nofo_title(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c24">Opportunity Name: </span><span class="c1">Improving Adolescent Health and Well-Being Through School-Based Surveillance and the What Works in Schools Program</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+
+class HTMLSuggestNumberTests(TestCase):
+    def setUp(self):
+        self.nofo_opportunity_number = "HRSA-24-019"
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_suggest_nofo_title_returns_correct_title(self):
+        self.assertEqual(
+            suggest_nofo_opportunity_number(self.soup), self.nofo_opportunity_number
+        )
+
+    def test_suggest_nofo_number_returns_default_number_for_bad_html(self):
+        default_number = "NOFO #1"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    "<html><title>THESES</title><body><h1>THESES</h1></body></html>",
+                    "html.parser",
+                )
+            ),
+            default_number,
+        )
+
+    def test_suggest_nofo_number_returns_default_title_for_p_span(self):
+        name = "HRSA-24-019"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c3">Opportunity Number: HRSA-24-019</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+    def test_suggest_nofo_number_returns_default_title_for_p_span_span(self):
+        name = "CDC-RFA-DP-24-0139"
+        self.assertEqual(
+            suggest_nofo_opportunity_number(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c180">Opportunity Number: </span><span class="c7">CDC-RFA-DP-24-0139</span><span class="c53 c7 c192">&nbsp;</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            name,
+        )
+
+
+class HTMLSuggestThemeTests(TestCase):
+    def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
+        nofo_number = "HRSA-24-019"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_cdc_returns_cdc_theme(self):
+        nofo_number = "CDC-RFA-DP-24-0139"
+        nofo_theme = "landscape-cdc-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_acf_returns_acf_theme(self):
+        nofo_number = "HHS-2024-ACF-ANA-NB-0050"
+        nofo_theme = "portrait-acf-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_acl_returns_hrsa_theme(self):
+        nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):
+        nofo_number = "abc-def-ghi"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_empty_returns_hrsa_theme(self):
+        nofo_number = ""
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+
+class SuggestNofoOpDivTests(TestCase):
+    def test_opdiv_present_in_paragraph(self):
+        html = "<div><p>Opdiv: Center for Awesome NOFOs</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_present_not_in_paragraph(self):
+        html = "<div><span>Opdiv: Center for Awesome NOFOs</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_not_present(self):
+        html = "<div><p>Center for Awesome NOFOs</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_present_but_no_parent_paragraph(self):
+        html = "<div>Opdiv: Center for Awesome NOFOs</div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_present_weird_casing(self):
+        html = "<div><p><span>OPdiV: </span><span>Center for </span><span>Awesome NOFOs</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_present_broken_up_by_spans(self):
+        html = "<div><p><span>Opdiv: </span><span>Center for </span><span>Awesome NOFOs</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+
+class SuggestNofoAgencyTests(TestCase):
+    def test_agency_present_in_paragraph(self):
+        html = "<div><p>Agency: Agency for Weird Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "Agency for Weird Tables")
+
+    def test_agency_present_not_in_paragraph(self):
+        html = "<div><span>Agency: Agency for Weird Tables</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "Agency for Weird Tables")
+
+    def test_agency_not_present(self):
+        html = "<div><p>Agency for Weird Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "")
+
+    def test_agency_present_but_no_parent_paragraph(self):
+        html = "<div>Agency: Agency for Weird Tables</div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "Agency for Weird Tables")
+
+    def test_agency_present_broken_up_by_spans(self):
+        html = "<div><p><span>Agency: </span><span>Agency for </span><span>Weird Tables</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "Agency for Weird Tables")
+
+
+class SuggestNofoSubagencyTests(TestCase):
+    def test_subagency_present_in_paragraph(self):
+        html = "<div><p>Subagency: Subagency for Multiple Header Rows</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subagency(soup), "Subagency for Multiple Header Rows"
+        )
+
+    def test_subagency_present_not_in_paragraph(self):
+        html = "<div><span>Subagency: Subagency for Multiple Header Rows</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subagency(soup), "Subagency for Multiple Header Rows"
+        )
+
+    def test_subagency_not_present(self):
+        html = "<div><p>Subagency for Multiple Header Rows</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subagency(soup), "")
+
+    def test_subagency_present_but_no_parent_paragraph(self):
+        html = "<div>Subagency: Subagency for Multiple Header Rows</div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subagency(soup), "Subagency for Multiple Header Rows"
+        )
+
+    def test_subagency_present_broken_up_by_spans(self):
+        html = "<div><p><span>Subagency: </span><span>Subagency for </span><span>Multiple Header Rows</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subagency(soup), "Subagency for Multiple Header Rows"
+        )
+
+
+class SuggestNofoTaglineTests(TestCase):
+    def test_tagline_present_in_paragraph(self):
+        html = "<div><p>Tagline: The best NOFO ever</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+    def test_tagline_present_not_in_paragraph(self):
+        html = "<div><span>Tagline: The best NOFO ever</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+    def test_tagline_not_present(self):
+        html = "<div><p>The best NOFO ever</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_present_but_no_parent_paragraph(self):
+        html = "<div>Tagline: The best NOFO ever</div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+    def test_tagline_present_broken_up_by_spans(self):
+        html = "<div><p><span>Tagline: </span><span>The best </span><span>NOFO ever</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
