@@ -270,6 +270,7 @@ def get_subsections_from_sections(sections):
         ]
 
         for tag in body_descendents:
+            # NOTE: that unless a new section is triggered, a callout box will just absorb stuff behind it.
             if tag.name == "table" and is_callout_box_table(tag):
                 # pass in the first heading we find in the 1 table cell, else False
                 td = tag.find("td")
@@ -293,12 +294,23 @@ def get_subsections_from_sections(sections):
 
             # if not a heading or callout_box table add to existing subsection
             else:
-                # convert first row of header cells into th elements
-                if tag.name == "table":
-                    convert_table_first_row_to_header_row(tag)
+                # skip empty elements
+                if len(tag.get_text().strip()):
+                    # convert first row of header cells into th elements
+                    if tag.name == "table":
+                        convert_table_first_row_to_header_row(tag)
 
-                if subsection:
-                    subsection["body"].append(tag)
+                    if subsection:
+                        if subsection.get("is_callout_box", False):
+                            raise Exception(
+                                "Extra content after callout box with no home, please check the HTML. Name: {}, previous name: {}, tag: {}".format(
+                                    subsection.get("name"),
+                                    section["subsections"][-2].get("name"),
+                                    tag,
+                                )
+                            )
+
+                        subsection["body"].append(tag)
 
     return sections
 
