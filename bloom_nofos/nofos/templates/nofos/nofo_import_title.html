@@ -11,9 +11,7 @@
   <form id="nofo-name--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.title hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" only %}
-
-    {% include "includes/text_input_macro.html" with field=form.short_name hint2="eg: “(HRSA) PA Rural Training Program”" only %}
+    {% include "includes/form_macro.html" with hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" hint2for="title" %}
 
     <button class="usa-button margin-top-3" type="submit">Save NOFO name</button>
   </form>

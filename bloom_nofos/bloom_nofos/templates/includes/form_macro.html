@@ -1,0 +1,20 @@
+{% load input_type %}
+
+{% for field in form %}
+  {% if field|input_type == 'TextInput' or field|input_type == 'Textarea' or field|input_type == 'PasswordInput' or field|input_type == 'EmailInput' %}
+    {% with id=field.name label=field.label value=field.value hint=field.help_text hint2=hint2 hint2for=hint2for error=field.errors.0 input_type=field|input_type %}
+      {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error input_type=input_type only %}
+    {% endwith %}
+  {% elif field|input_type == 'Select' %}
+    {% with id=field.name label=field.label hint=field.help_text value=field.value choices=field.field.choices error=field.errors.0 %}
+      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+    {% endwith %}
+  {% else %}
+    <p>Field name: {{ field.name }}</p>
+    <p>Input type: {{ field|input_type }}</p>
+    <div class="fieldWrapper">
+      {{ field.errors }}
+      {{ field.label_tag }} {{ field }}
+    </div>
+  {% endif %}
+{% endfor %}

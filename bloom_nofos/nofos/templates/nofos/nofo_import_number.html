@@ -17,7 +17,7 @@
   <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.number hint2="eg: “HRSA-24-019”" only %}
+    {% include "includes/form_macro.html" with hint2="eg: “HRSA-24-019”" %}
 
     <ul class="usa-button-group margin-top-3">
       <li class="usa-button-group__item">

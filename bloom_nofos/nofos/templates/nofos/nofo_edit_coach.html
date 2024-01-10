@@ -18,9 +18,7 @@
   <form id="nofo-coach--form" method="post">
     {% csrf_token %}
 
-    {% with id="coach" label=form.coach.label hint=form.coach.help_text value=form.coach.value choices=form.coach.field.choices error=form.errors.coach.0 %}
-      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
-    {% endwith %}
+    {% include "includes/form_macro.html" %}
 
     <button class="usa-button margin-top-3" type="submit">Save coach</button>
   </form>

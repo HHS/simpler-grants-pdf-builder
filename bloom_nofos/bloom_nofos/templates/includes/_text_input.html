@@ -5,9 +5,12 @@
 </div>
 {% endif %}
 {% if hint2 %}
-<div class="usa-hint" id="{{ id }}--hint-2">
-  {{ hint2 }}
-</div>
+  {% if hint2for and hint2for != id %}
+  {% else %}
+    <div class="usa-hint" id="{{ id }}--hint-2">
+      {{ hint2 }}
+    </div>
+  {% endif %}
 {% endif %}
 {% if error %}
 <div class="usa-error-message" id="{{ id }}--error">

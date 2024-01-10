@@ -16,7 +16,7 @@
   <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.application_deadline hint2="eg: “Monday, January 1, 2024”" only %}
+    {% include "includes/form_macro.html" with hint2="eg: “Monday, January 1, 2024”" %}
 
     <button class="usa-button margin-top-3" type="submit">Save application deadline</button>
   </form>

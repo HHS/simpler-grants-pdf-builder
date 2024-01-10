@@ -16,9 +16,7 @@
   <form id="nofo-theme--form" method="post">
     {% csrf_token %}
 
-    {% with id="theme" label=form.theme.label hint=form.theme.help_text value=form.theme.value choices=form.theme.field.choices error=form.errors.theme.0 %}
-      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
-    {% endwith %}
+    {% include "includes/form_macro.html" %}
 
     <button class="usa-button margin-top-3" type="submit">Save theme</button>
   </form>

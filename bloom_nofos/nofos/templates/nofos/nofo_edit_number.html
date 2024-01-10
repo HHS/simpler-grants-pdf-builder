@@ -16,7 +16,7 @@
   <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.number hint2="eg: “HRSA-24-019”" only %}
+    {% include "includes/form_macro.html" with hint2="eg: “HRSA-24-019”" %}
 
     <button class="usa-button margin-top-3" type="submit">Save number</button>
   </form>

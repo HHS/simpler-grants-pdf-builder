@@ -13,9 +13,7 @@
   <form method="post" action="">
     {% csrf_token %}
 
-    {% for field in form %}
-      {% include "includes/text_input_macro.html" with field=field only %}
-    {% endfor %}
+    {% include "includes/form_macro.html" %}
 
     <button class="usa-button margin-top-3" type="submit">Change name</button>
   </form>

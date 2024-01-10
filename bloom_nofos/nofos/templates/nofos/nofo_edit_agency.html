@@ -16,7 +16,7 @@
   <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.agency only %}
+    {% include "includes/form_macro.html" %}
 
     <button class="usa-button margin-top-3" type="submit">Save Agency</button>
   </form>

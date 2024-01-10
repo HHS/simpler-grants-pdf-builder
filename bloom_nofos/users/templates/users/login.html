@@ -30,9 +30,7 @@
 
       {% csrf_token %}
 
-      {% include "includes/text_input_macro.html" with field=form.username only %}
-
-      {% include "includes/text_input_macro.html" with field=form.password only %}
+      {% include "includes/form_macro.html" %}
 
     </fieldset>
     <input type="hidden" name="next" value="{{ next }}">

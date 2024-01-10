@@ -1,4 +1,0 @@
-{% load input_type %}
-{% with id=field.name label=field.label value=field.value hint=field.help_text hint2=hint2 error=field.errors.0 input_type=field|input_type %}
-  {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 value=value error=error input_type=input_type only %}
-{% endwith %}

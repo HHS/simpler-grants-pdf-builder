@@ -31,6 +31,7 @@
 
 # DONE
 
+- Consolidate form generation macro
 - Guess the opdiv, agency, subagency
 - Watermark the image
 - Broken on CDC

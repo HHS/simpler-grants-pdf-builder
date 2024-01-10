@@ -16,7 +16,7 @@
   <form id="nofo-number--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/text_input_macro.html" with field=form.tagline hint2="eg: “Improve rural access to physician assistant support for mental and behavioral health needs.”" only %}
+    {% include "includes/form_macro.html" with hint2="eg: “Improve rural access to physician assistant support for mental and behavioral health needs.”" %}
 
     <button class="usa-button margin-top-3" type="submit">Save tagline</button>
   </form>
