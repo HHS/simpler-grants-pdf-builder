@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.9] - 2023-01-10
+
+### Added
+
+- Guess the opdiv, agency, subagency
+- Add tagline and subagency to NOFO
+  - No body text under the "Basic information" subsection is displayed
+- Single cell tables become callout boxes
+  - Add questions callout box with icon
+
+### Changed
+
+- Move callout boxes after the summary
+- Checklist table CSS makes it look like sublists are single cells
+
+### Fixed
+
+- Fixed extra spaces that were showing up in links
+
 ## [0.0.8] - 2023-01-09
 
 ### Changed

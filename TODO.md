@@ -19,8 +19,6 @@
 - Themes
   - ACL
 - Maybe: include preceding paragraph in front of tables potentially
-- Broken on CDC
-  - Eligibility jump to is weird
 - Table says required are "bolded" which is lost during conversion
 - Before you begin
   - Add icons
@@ -29,6 +27,7 @@
 
 # DONE
 
+- Fix: Application table single cell layout for sublists
 - Fix: extra whitespace in links
 - Callout boxes
   - Put them after the summary
