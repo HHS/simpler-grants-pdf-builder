@@ -20,16 +20,17 @@
   - ACL
 - Maybe: include preceding paragraph in front of tables potentially
 - Table says required are "bolded" which is lost during conversion
+- Fix: Internal links are broken (eg, Questions callout box)
+- Fix: duplicate ids for headers being generated
+- Fix: editing borking for subsection
+- Add HRs at the top of tables, maybe
+
+# DONE
+
 - Before you begin
   - Add icons
   - Move after ToC
   - Add to ToC
-- Fix: Internal links are broken (eg, Questions callout box)
-- Fix: duplicate ids for headers being generated
-- Fix: editing borking for subsection
-
-# DONE
-
 - Fix: Application table single cell layout for sublists
 - Fix: extra whitespace in links
 - Callout boxes

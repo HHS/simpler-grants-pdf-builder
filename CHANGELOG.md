@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.10] - 2023-01-11
+
+### Added
+
+- Added icon to Before you begin page
+  - Before you begin page is in the table of contents
+
+### Changed
+
+- Smallen the font-size partout
+  - Tables are even smaller
+- New image for the cover page
+
+### Fixed
+
+- CSS for the application table makes it look like a sublist
+
 ## [0.0.9] - 2023-01-10
 
 ### Added
