@@ -8,7 +8,7 @@
   --color--black: #000000;
   --color--white: #ffffff;
   --color--table-grey: #edf1f3;
-  --color--table-blue: #ceddf240;
+  --color--table-blue: #f2f6fc;
   --color--light-grey: #dde2e8;
   --color--med-grey: #5c5c5c;
   --color--dark-blue: #264a64;
@@ -238,12 +238,12 @@ img.usa-icon--check_box_outline_blank {
   box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
 }
 
-td.usa-icon--list__td ul,
-td.usa-icon--list__td ol {
+td.usa-icon__td ul,
+td.usa-icon__td ol {
   list-style: none;
 }
 
-.usa-icon--list__element {
+.usa-icon__list-element {
   position: relative;
 }
 

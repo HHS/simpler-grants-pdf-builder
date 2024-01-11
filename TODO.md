@@ -24,11 +24,11 @@
   - Add icons
   - Move after ToC
   - Add to ToC
-- Fix: Application table single cell layout for sublists
 - Fix: Internal links are broken (eg, Questions callout box)
 
 # DONE
 
+- Fix: Application table single cell layout for sublists
 - Fix: extra whitespace in links
 - Callout boxes
   - Put them after the summary

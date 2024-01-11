@@ -128,3 +128,72 @@ table td {
 table td a {
   color: var(--color--vibrant-blue);
 }
+
+/* Application checklist table */
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  th:first-of-type,
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td:first-of-type {
+  border-left: none;
+}
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  th:last-of-type,
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td:last-of-type {
+  border-right: none;
+}
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--sublist {
+  padding-left: 28px;
+}
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--sublist,
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
+}
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--before-sublist,
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom-color: white;
+}
+
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td:first-of-type:not(.usa-icon__td),
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td:first-of-type:not(.usa-icon__td)
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
+}
