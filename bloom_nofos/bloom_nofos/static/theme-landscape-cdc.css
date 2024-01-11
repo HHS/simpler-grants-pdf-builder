@@ -223,7 +223,7 @@ h6 {
 
 .section--content {
   columns: 2;
-  column-gap: 8mm;
+  column-gap: 12mm;
   orphans: 2;
 }
 
@@ -239,6 +239,10 @@ h6 {
 .section--content table.table--large {
   break-before: page;
   /* break-after: page; */
+}
+
+.section--content table.table--small {
+  break-inside: avoid-column;
 }
 
 @media print {

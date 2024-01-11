@@ -122,30 +122,9 @@ table th {
 
 table td {
   background-color: var(--color--table-blue);
-  border-left: 2px solid var(--color--white);
-  border-right: 2px solid var(--color--white);
-}
-
-table tr th:first-of-type,
-table tr td:first-of-type {
-  border-left: none;
-}
-
-table tr th:last-of-type,
-table tr td:last-of-type {
-  border-right: none;
+  border: 2px solid var(--color--white);
 }
 
 table td a {
   color: var(--color--vibrant-blue);
-}
-
-table td.usa-icon--list__td:not(.usa-icon--list__td--sublist),
-table td.usa-icon--list__td:not(.usa-icon--list__td--sublist) ~ td {
-  border: 2px solid var(--color--white);
-}
-
-table td.usa-icon--list__td--before-sublist,
-table td.usa-icon--list__td--before-sublist ~ td {
-  border-bottom: 2px solid var(--color--white);
 }

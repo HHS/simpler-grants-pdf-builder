@@ -17,7 +17,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Move callout boxes after the summary
-- Checklist table CSS makes it look like sublists are single cells
 
 ### Fixed
 

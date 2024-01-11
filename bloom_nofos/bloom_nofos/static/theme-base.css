@@ -485,6 +485,7 @@ img.usa-icon--list {
   border-radius: 10px;
   padding: 20px;
   margin: 20px 0;
+  break-inside: avoid-column;
 }
 
 .callout-box--title {
