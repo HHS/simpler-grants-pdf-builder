@@ -25,6 +25,8 @@
   - Move after ToC
   - Add to ToC
 - Fix: Internal links are broken (eg, Questions callout box)
+- Fix: duplicate ids for headers being generated
+- Fix: editing borking for subsection
 
 # DONE
 
