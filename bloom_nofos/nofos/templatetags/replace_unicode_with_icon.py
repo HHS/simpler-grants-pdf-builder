@@ -20,6 +20,39 @@ ICONS = [
 ]
 
 
+# TODO add some tests
+def has_link_in_above_rows(td):
+    # Find the parent row of the cell
+    parent_row = td.find_parent("tr")
+
+    # Iterate over previous siblings (rows above the current one)
+    for sibling in parent_row.find_previous_siblings("tr"):
+        first_cell = sibling.find(["td", "th"])
+        if first_cell and first_cell.find("a"):
+            return True
+
+    return False
+
+
+def has_link_in_next_row(td):
+    # Find the parent row of the cell
+    parent_row = td.find_parent("tr")
+
+    # Iterate over previous siblings (rows above the current one)
+    next_row = parent_row.find_next_sibling("tr")
+    if next_row:
+        first_cell = next_row.find(["td", "th"])
+        if first_cell and first_cell.find("a"):
+            return True
+
+    return False
+
+
+def add_class_if_not_exists(element, classname):
+    if classname not in element.get("class", []):
+        element["class"] = element.get("class", []) + [classname]
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -44,16 +77,29 @@ def replace_unicode_with_icon(html_string):
             root_elements.extend(elements_with_char)
 
             for root_element in root_elements:
-                root_element["class"] = root_element.get("class", []) + [
-                    "usa-icon--list__element"
-                ]
+                add_class_if_not_exists(
+                    element=root_element,
+                    classname="usa-icon--list__element",
+                )
                 root_element.string = root_element.text.replace(icon, "")
                 root_element.insert(0, BeautifulSoup(svg_html, "html.parser"))
 
                 parent_td = get_parent_td(root_element)
                 if parent_td:
-                    td_classname = "usa-icon--list__td"
-                    if td_classname not in parent_td.get("class", []):
-                        parent_td["class"] = parent_td.get("class", []) + [td_classname]
+                    add_class_if_not_exists(
+                        element=parent_td, classname="usa-icon--list__td"
+                    )
+
+                    # add classname for cells which don't have rows with a link above them
+                    if has_link_in_above_rows(parent_td):
+                        add_class_if_not_exists(
+                            element=parent_td, classname="usa-icon--list__td--sublist"
+                        )
+
+                    if has_link_in_next_row(parent_td):
+                        add_class_if_not_exists(
+                            element=parent_td,
+                            classname="usa-icon--list__td--before-sublist",
+                        )
 
     return mark_safe(str(soup))
