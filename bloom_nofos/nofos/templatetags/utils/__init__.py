@@ -111,6 +111,7 @@ def get_icon_for_section(section_name="review the opportunity", theme=""):
     """
     no_border = "/no-border" if "blue" in theme else ""
     icon_tuples = [
+        ("before you begin", "0-before.svg"),
         ("review the opportunity", "1-review.svg"),
         ("ready", "2-get-ready.svg"),
         ("write", "3-write.svg"),

@@ -84,7 +84,7 @@
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
       <div class="nofo--cover-page--footer--image">
-        <img alt="Two doctors conversing" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic.jpg" />
+        <img alt="" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic-3.png" />
       </div>
     </div>
   </section>
@@ -93,6 +93,15 @@
     <h2>Contents</h2>
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
+
+      <li class="toc--section-name toc--before-you-begin">
+        <div class="toc--section-name--wrapper">
+          <ol class="usa-list usa-list--unstyled">
+            <li class="toc--subsection-name"><a href="#section--before-you-begin">Before you begin</a></li>
+          </ol>
+        </div>
+      </li>
+
       {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
           <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="" />
@@ -116,20 +125,24 @@
   </section>
 
   <section id="section--before-you-begin" class="before-you-begin">
+
+    <div class="section--before-you-begin--icon">
+      <img src="{% static 'before you begin'|get_icon_for_section:nofo.theme %}" alt="" />
+    </div>
     <h2>Before you begin</h2>
-    <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">Sam.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registration is active and up-to-date.</p>
-    <h3>Sam.gov Registration</h3>
-    <p><strong>This can take several weeks.</strong></p>
-    <p>You must have an active account with Sam.gov. This includes having a Unique Entity Identifier (UEI).</p>
-    <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
+    <div class="before-you-begin--content">
+      <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">Sam.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registration is active and up-to-date.</p>
+      <p class="section--before-you-begin--psuedo-header">Sam.gov Registration (this can take several WEEKS)</p>
+      <p>You must have an active account with Sam.gov. This includes having a Unique Entity Identifier (UEI).</p>
+      <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
 
-    <h3>Grants.gov Registration</h3>
-    <p><strong>This can take several days.</strong></p>
-    <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
-    <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
+      <p class="section--before-you-begin--psuedo-header">Grants.gov Registration (this can take several DAYS)</p>
+      <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
+      <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
 
-    <h3>Apply by {{ nofo.application_deadline }}</h3>
-    <p>Applications are due by 11:59pm Eastern Time on {{ nofo.application_deadline }}.</p>
+      <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline }}</p>
+      <p>Applications are due by 11:59pm Eastern Time on {{ nofo.application_deadline }}.</p>
+    </div>
   </section>
 
   {% for section in nofo.sections.all|dictsort:"order" %}

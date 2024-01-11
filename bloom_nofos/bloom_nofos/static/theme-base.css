@@ -164,7 +164,6 @@ hr {
 
 p,
 li {
-  font-size: 1.1rem;
   margin: 0.75rem 0;
 }
 
@@ -196,7 +195,7 @@ table caption {
 
 table th,
 table td {
-  font-size: 1rem;
+  font-size: 12.5px;
   font-weight: 400;
   padding: 0.5rem 1rem;
 }
@@ -407,6 +406,21 @@ img.usa-icon--list {
   border-radius: 50%;
 }
 
+.toc--before-you-begin {
+  padding-left: 30px;
+}
+
+/* Before you begin page */
+
+.before-you-begin--content {
+  width: 80%;
+}
+
+.section--before-you-begin--psuedo-header {
+  font-size: 18px;
+  font-weight: 600;
+}
+
 /* Section title page */
 
 .section--title-page {
@@ -466,8 +480,10 @@ img.usa-icon--list {
   list-style-type: none;
 }
 
+.section--before-you-begin--icon,
 .section--title-page--icon img {
   width: 65px;
+  height: 65px;
   border-radius: 50%;
 }
 

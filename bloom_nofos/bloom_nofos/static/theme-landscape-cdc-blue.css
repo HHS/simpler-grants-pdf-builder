@@ -79,8 +79,16 @@ h4 {
 
 /* Before you begin */
 
+.section--before-you-begin--icon {
+  background: var(--color--vibrant-blue);
+}
+
 .before-you-begin h2 {
-  color: var(--color--med-blue);
+  color: var(--color--vibrant-blue);
+}
+
+.section--before-you-begin--psuedo-header {
+  color: var(--color--vibrant-blue);
 }
 
 /* Section title page */
