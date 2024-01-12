@@ -100,7 +100,7 @@ h6 {
 
 .nofo--cover-page--header--logo--subheading {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 11pt;
 }
 
 .nofo--cover-page--header--intro span:first-of-type {
@@ -109,7 +109,7 @@ h6 {
 }
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  font-size: 19px;
+  font-size: 16pt;
   font-weight: 700;
 }
 
@@ -144,15 +144,10 @@ h6 {
 .toc h2 {
   font-family: "Open Sans";
   font-weight: 800;
-  font-size: 28px;
   margin-bottom: 24px;
 }
 
 /* Section title page */
-
-.section--title-page--toc p {
-  font-size: 18px;
-}
 
 /* Section contents */
 

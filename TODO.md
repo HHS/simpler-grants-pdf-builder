@@ -24,6 +24,7 @@
 - Fix: duplicate ids for headers being generated
 - Fix: editing borking for subsection
 - Add HRs at the top of tables, maybe
+- Nested lists are broken
 
 # DONE
 

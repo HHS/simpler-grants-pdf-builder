@@ -160,7 +160,7 @@ li {
 }
 
 p[role="heading"] {
-  font-size: 15px;
+  font-size: 12pt;
   font-weight: 700;
 }
 
@@ -169,7 +169,6 @@ a {
 }
 
 table {
-  font-size: 1.06rem;
   line-height: 1.5;
   border-collapse: collapse;
   border-spacing: 0;
@@ -178,7 +177,6 @@ table {
 }
 
 table caption {
-  font-size: 1rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
   text-align: left;
@@ -333,7 +331,7 @@ h6 {
 }
 
 .header-nav li a {
-  font-size: 12px;
+  font-size: 9pt;
   display: inline-block;
   width: 85px;
   border-top: 4px solid var(--color--white);
@@ -396,7 +394,7 @@ h6 {
 
 .nofo--cover-page--header--intro {
   text-align: right;
-  font-size: 14px;
+  font-size: 11pt;
 }
 
 .nofo--cover-page--header .nofo--cover-page--header--intro span:last-of-type {
@@ -404,6 +402,13 @@ h6 {
 }
 
 /* Table of contents */
+
+.toc h2 {
+  font-family: "Open Sans";
+  font-weight: 700;
+  font-size: 32pt;
+  margin-bottom: 24px;
+}
 
 .toc ol {
   margin-left: 0;
@@ -423,13 +428,17 @@ h6 {
   position: relative;
   width: 100%;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 13pt;
 }
 
 .toc a:after {
   position: absolute;
   right: 0;
   content: target-counter(attr(href, url), page);
+}
+
+.toc .toc--subsection-name a {
+  font-size: 11pt;
 }
 
 .toc .toc--section-name .toc--section-name--a {
@@ -495,12 +504,16 @@ h6 {
 }
 
 .section--title-page--header-nav p {
-  font-size: 14px;
+  font-size: 10pt;
   font-weight: 700;
 }
 
 .section--title-page--header-nav a[aria-current] {
   font-weight: 700;
+}
+
+.section--title-page--toc p {
+  font-size: 13pt;
 }
 
 .section--title-page--toc a {
@@ -598,7 +611,7 @@ h6 {
 }
 
 .callout-box--questions .callout-box--contents p {
-  font-size: 16px;
+  font-size: 12pt;
   font-weight: 700;
 }
 
