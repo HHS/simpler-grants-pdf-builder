@@ -29,6 +29,14 @@
   }
 }
 
+/* Regular CSS */
+
+html {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
 /* USA classes */
 
 body[class^="landscape"] .grid-container {
@@ -40,43 +48,31 @@ body[class^="landscape"] .grid-container {
 h1 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  font-weight: 400;
-  font-size: 38px;
 }
 
 h2 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  font-size: 38px;
-  font-weight: 700;
 }
 
 h3 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  font-size: 28px;
-  font-weight: 700;
 }
 
 h4 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  font-size: 19px;
-  font-weight: 700;
 }
 
 h5 {
-  font-family: "Public Sans Web", Helvetica Neue, Helvetica, Roboto, Arial,
-    sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  margin-top: 1.15rem;
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
 }
 
 h6 {
-  font-size: 14px;
-  text-transform: uppercase;
-  margin-top: 1.1rem;
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
 }
 
 /* Cover page */
@@ -91,6 +87,7 @@ h6 {
 
 .nofo--cover-page--header {
   padding: 10mm;
+  padding-bottom: 5mm;
 }
 
 .nofo--cover-page--title {
@@ -102,9 +99,13 @@ h6 {
   width: 65%;
 }
 
+.nofo--cover-page--header--logo img {
+  width: 100px;
+}
+
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
   margin-top: 20px;
-  font-size: 16.5px;
+  font-size: 13pt;
 }
 
 .nofo--cover-page--footer {
@@ -136,7 +137,7 @@ h6 {
   right: 0;
   bottom: 0;
   width: 40%;
-  height: 216mm;
+  height: 217mm;
 }
 
 .nofo--cover-page--footer .nofo--cover-page--footer--image img {
@@ -145,8 +146,12 @@ h6 {
   border-radius: 80px 0 0 0;
 }
 
+.nofo--cover-page--footer--subheading {
+  text-align: right;
+}
+
 .nofo--cover-page--footer .nofo--cover-page--footer--subheading span {
-  font-size: 16.5px;
+  font-size: 11pt;
   display: block;
   padding-bottom: 10px;
 }
@@ -174,12 +179,20 @@ h6 {
 
 .toc > ol {
   columns: 2;
-  column-gap: 20mm;
+  column-gap: 15mm;
 }
 
 .toc > ol > li {
   break-inside: avoid;
   border-bottom: 1px solid var(--color--light-grey);
+}
+
+.toc a {
+  font-size: 13pt;
+}
+
+.toc .toc--subsection-name a {
+  font-size: 11pt;
 }
 
 /* Section title page */
@@ -197,17 +210,16 @@ h6 {
 }
 
 .section--title-page--toc p {
-  font-size: 18px;
+  font-size: 13pt;
 }
 
-/* Section styling */
+/* Section contents */
 
 .nofo--agency {
   font-weight: 600;
 }
 
 .nofo--tagline {
-  font-size: 16px;
   font-weight: 600;
 }
 
@@ -223,7 +235,7 @@ h6 {
 
 .section--content {
   columns: 2;
-  column-gap: 12mm;
+  column-gap: 15mm;
   orphans: 2;
 }
 
@@ -245,10 +257,17 @@ h6 {
   break-inside: avoid-column;
 }
 
+#step-5-submit-your-application--application-checklist
+  + table
+  tr
+  td.usa-icon__td--sublist {
+  padding-left: 28px;
+}
+
 @media print {
   .nofo--cover-page {
-    overflow: visible;
-    min-height: calc(100vh + 35mm);
+    overflow: hidden;
+    height: 215mm;
   }
 
   .section--title-page {

@@ -10,6 +10,10 @@ h3 {
   color: var(--color--dark-blue);
 }
 
+h5 {
+  color: var(--color--dark-blue);
+}
+
 /* Cover page */
 
 .nofo--cover-page--header--logo--subheading,
@@ -38,7 +42,16 @@ h3 {
 
 /* Before you begin */
 
+.section--before-you-begin--icon {
+  filter: invert(25%) sepia(12%) saturate(2247%) hue-rotate(163deg)
+    brightness(94%) contrast(91%);
+}
+
 .before-you-begin h2 {
+  color: var(--color--dark-blue);
+}
+
+.section--before-you-begin--psuedo-header {
   color: var(--color--dark-blue);
 }
 
@@ -70,14 +83,18 @@ h3 {
 
 /* Section contents */
 
+.nofo--tagline {
+  color: var(--color--dark-blue);
+}
+
 .callout-box {
   background-color: var(--color--pale-blue);
   color: var(--color--black);
 }
 
 .callout-box--questions .callout-box--contents img {
-  filter: invert(15%) sepia(18%) saturate(7135%) hue-rotate(185deg)
-    brightness(97%) contrast(105%);
+  filter: invert(0%) sepia(4%) saturate(842%) hue-rotate(232deg) brightness(88%)
+    contrast(103%);
 }
 
 table {

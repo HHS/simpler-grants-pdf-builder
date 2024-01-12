@@ -28,6 +28,15 @@
   }
 }
 
+/* Regular CSS */
+
+img.usa-icon--check_box_outline_blank {
+  background: var(--color--white);
+  -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  -moz-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+}
+
 /* Headings */
 
 h1 {
@@ -40,6 +49,10 @@ h3 {
 
 h4 {
   color: var(--color--dark-blue);
+}
+
+h5 {
+  color: var(--color--vibrant-blue);
 }
 
 /* Cover page */
@@ -108,6 +121,10 @@ h4 {
 
 /* Section contents */
 
+.nofo--tagline {
+  color: var(--color--vibrant-blue);
+}
+
 .callout-box {
   background-color: var(--color--vibrant-blue);
   color: var(--color--white);
@@ -159,13 +176,6 @@ table td a {
   tr
   td:last-of-type {
   border-right: none;
-}
-
-#step-5-submit-your-application--application-checklist
-  + table
-  tr
-  td.usa-icon__td--sublist {
-  padding-left: 28px;
 }
 
 #step-5-submit-your-application--application-checklist

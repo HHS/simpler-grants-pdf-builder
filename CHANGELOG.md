@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.11] - 2023-01-12
+
+### Changed
+
+- Use `pt` sizing for all font-sizes, which means a bunch of things shifted around
+
 ## [0.0.10] - 2023-01-11
 
 ### Added

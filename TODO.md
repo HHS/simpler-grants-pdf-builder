@@ -27,6 +27,7 @@
 
 # DONE
 
+- Convert all the font sizes to pt
 - Before you begin
   - Add icons
   - Move after ToC
