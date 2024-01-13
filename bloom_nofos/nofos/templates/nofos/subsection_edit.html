@@ -24,19 +24,32 @@
 
   <form class="form" method="post">
     {% csrf_token %}
-    <div class="form-group">
-      {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text hint2="Heading level: "|add:subsection.tag error=form.name.errors.0 input_type=form.name|input_type %}
-        {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error input_type=input_type only %}
-      {% endwith %}
-    </div>
-    <div class="form-group">
-      <div class="border-2px border-base-lighter margin-top-4 radius-md">
-        <label class="usa-label usa-sr-only" for="{{ form.body.id_for_label }}">Subsection content</label>
-        {{ form.body }}
+    <fieldset>
+
+      {% if form.non_field_errors %}
+        <legend class="legend--bootstrap">
+          <div class="usa-error-message">
+            Error: {{ form.non_field_errors.0 }}
+          </div>
+        </legend>
+      {% endif %}
+
+      <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
+
+      <div class="form-group">
+        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text hint2="Heading level: "|add:subsection.tag error=form.name.errors.0 input_type=form.name|input_type %}
+          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error input_type=input_type only %}
+        {% endwith %}
       </div>
-    </div>
+      <div class="form-group">
+        <div class="border-2px border-base-lighter margin-top-4 radius-md">
+          <label class="usa-label usa-sr-only" for="{{ form.body.id_for_label }}">Subsection content</label>
+          {{ form.body }}
+        </div>
+      </div>
+    </fieldset>
     <div class="form-group">
-      <button class="usa-button margin-top-3" type="submit">Save</button>
+      <button class="usa-button margin-top-3" type="submit">Save subsection</button>
     </div>
   </form>
 {% endblock %}

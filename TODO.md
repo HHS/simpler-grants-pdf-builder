@@ -22,12 +22,12 @@
 - Table says required are "bolded" which is lost during conversion
 - Fix: Internal links are broken (eg, Questions callout box)
 - Fix: duplicate ids for headers being generated
-- Fix: editing borking for subsection
 - Fix: Nested lists are broken
 - Add HRs at the top of tables, maybe
 
 # DONE
 
+- Fix: editing borking for subsection
 - Convert all the font sizes to pt
 - Before you begin
   - Add icons

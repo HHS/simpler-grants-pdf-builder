@@ -18,6 +18,8 @@
   {% endif %}
 
   <form method="post" action="{% url 'users:login' %}">
+    {% csrf_token %}
+
     <fieldset>
       
       {% if form.non_field_errors %}
@@ -27,8 +29,6 @@
           </div>
         </legend>
       {% endif %}
-
-      {% csrf_token %}
 
       {% include "includes/form_macro.html" %}
 

@@ -100,7 +100,7 @@ fieldset {
   border: none;
 }
 
-fieldset legend {
+fieldset legend:not(.legend--bootstrap) {
   margin-bottom: -0.5rem;
 }
 
@@ -115,4 +115,8 @@ fieldset legend {
 
 .usa-footer__not-actually-a-link:hover {
   text-decoration: none;
+}
+
+.usa-error-message {
+  font-size: 1rem;
 }

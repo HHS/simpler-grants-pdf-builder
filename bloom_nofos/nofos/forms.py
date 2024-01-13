@@ -48,7 +48,7 @@ class SubsectionForm(forms.ModelForm):
 
     class Meta:
         model = Subsection
-        fields = ["name", "body"]
+        fields = ["name", "tag", "body"]
         widgets = {
             "name": forms.TextInput(),
         }
