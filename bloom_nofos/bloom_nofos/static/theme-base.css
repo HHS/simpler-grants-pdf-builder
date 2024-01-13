@@ -452,7 +452,7 @@ h6 {
 }
 
 .toc .toc--section-name--wrapper {
-  margin-top: 3px;
+  margin-top: 2px;
   width: 100%;
   margin-left: 10px;
 }
@@ -519,13 +519,14 @@ h6 {
 .section--title-page--toc a {
   display: inline-block;
   position: relative;
-  width: 50%;
+  width: 33%;
 }
 
 .section--title-page--toc a:after {
   position: absolute;
   right: 0;
-  content: "page " target-counter(attr(href, url), page);
+  content: target-counter(attr(href, url), page);
+  text-decoration: underline;
 }
 
 .section--title-page ul,

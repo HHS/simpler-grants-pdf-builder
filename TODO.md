@@ -23,8 +23,8 @@
 - Fix: Internal links are broken (eg, Questions callout box)
 - Fix: duplicate ids for headers being generated
 - Fix: editing borking for subsection
+- Fix: Nested lists are broken
 - Add HRs at the top of tables, maybe
-- Nested lists are broken
 
 # DONE
 
