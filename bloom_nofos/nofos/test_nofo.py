@@ -1,18 +1,15 @@
 from bs4 import BeautifulSoup
-from freezegun import freeze_time
-
-
 from django.test import TestCase
-
+from freezegun import freeze_time
 
 from .nofo import (
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
-    create_nofo,
-    overwrite_nofo,
     convert_table_first_row_to_header_row,
+    create_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
+    overwrite_nofo,
     suggest_nofo_agency,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,

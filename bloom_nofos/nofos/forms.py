@@ -1,6 +1,7 @@
 from django import forms
-from .models import Nofo, Subsection
 from martor.fields import MartorFormField
+
+from .models import Nofo, Subsection
 
 
 def create_nofo_form_class(field_arr, not_required_field_labels=None):

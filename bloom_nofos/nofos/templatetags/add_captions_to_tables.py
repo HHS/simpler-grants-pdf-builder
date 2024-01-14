@@ -1,7 +1,6 @@
+from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
-
-from bs4 import BeautifulSoup
 
 from .utils import add_caption_to_table, is_callout_box_table_markdown
 

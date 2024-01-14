@@ -1,22 +1,22 @@
-from django.conf import settings
-from django.contrib import messages
-from django.http import HttpResponseBadRequest, HttpResponse
-from django.shortcuts import redirect, render, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, DeleteView, UpdateView, View
-
 import io
+
 import docraptor
 from bs4 import BeautifulSoup
+from django.conf import settings
+from django.contrib import messages
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
 from markdown2 import Markdown  # convert markdown to HTML
 
 from .forms import (
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachForm,
-    NofoOpDivForm,
     NofoNameForm,
     NofoNumberForm,
+    NofoOpDivForm,
     NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeForm,
@@ -26,9 +26,9 @@ from .models import Nofo, Subsection
 from .nofo import (
     add_headings_to_nofo,
     create_nofo,
-    overwrite_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
+    overwrite_nofo,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_opdiv,
@@ -38,7 +38,6 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
 )
-
 
 OPDIVS = {
     "cdc": {

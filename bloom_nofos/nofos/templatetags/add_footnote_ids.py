@@ -1,10 +1,8 @@
+from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
-from bs4 import BeautifulSoup
-
-from .utils import is_footnote_ref, format_footnote_ref
-
+from .utils import format_footnote_ref, is_footnote_ref
 
 register = template.Library()
 

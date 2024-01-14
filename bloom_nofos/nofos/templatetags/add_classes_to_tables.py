@@ -1,7 +1,6 @@
+from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
-
-from bs4 import BeautifulSoup
 
 from .utils import add_class_to_table
 

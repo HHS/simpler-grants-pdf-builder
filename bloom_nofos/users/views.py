@@ -1,7 +1,7 @@
 from django.contrib import messages
-from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.forms import SetPasswordForm
-from django.shortcuts import render, redirect
+from django.contrib.auth.views import PasswordChangeView
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView

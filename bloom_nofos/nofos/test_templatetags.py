@@ -1,15 +1,14 @@
 from bs4 import BeautifulSoup
-
 from django.test import TestCase
 
 from .templatetags.utils import (
     add_caption_to_table,
     add_class_to_table,
     find_elements_with_character,
+    format_footnote_ref,
     get_icon_for_section,
     get_parent_td,
     is_footnote_ref,
-    format_footnote_ref,
 )
 
 

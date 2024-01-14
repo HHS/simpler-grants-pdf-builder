@@ -1,8 +1,6 @@
+from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
-
-
-from bs4 import BeautifulSoup
 
 from .utils import find_elements_with_character, get_parent_td
 

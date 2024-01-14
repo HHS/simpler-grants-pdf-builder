@@ -1,9 +1,8 @@
-import re
 import datetime
+import re
 
 from markdownify import MarkdownConverter
 from slugify import slugify
-
 
 from .models import Nofo, Section, Subsection
 
