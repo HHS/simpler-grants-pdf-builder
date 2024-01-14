@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: HTML validation
 - Fix: Internal links are broken (eg, Questions callout box)
 - Fix: editing borking for subsection
 - Convert all the font sizes to pt

@@ -3,11 +3,11 @@
 
 {% block css %}
   {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
-    <link href="{% static filename_base %}" type="text/css" media="all" rel="stylesheet" />
+    <link href="{% static filename_base %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
   {% with "theme-"|add:nofo.theme|add:'.css' as filename %}
-    <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet" />
+    <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 {% endblock %}
 
@@ -52,7 +52,7 @@
   <section id="section--cover-page" class="nofo--cover-page">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
-        <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/{{ nofo_opdiv.filename }}" />
+        <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/{{ nofo_opdiv.filename }}">
         <div class="nofo--cover-page--header--logo--subheading">
           <p>
             {% if nofo.subagency %}
@@ -65,7 +65,7 @@
       </div>
       <div class="nofo--cover-page--header--intro">
         <span>Notice of Funding Opportunity</span>
-        <br />
+        <br >
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
     </div>
@@ -77,14 +77,14 @@
     </div>
     <div class="nofo--cover-page--footer clearfix">
       <div class="nofo--cover-page--footer--logo">
-        <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg" />
+        <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg">
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span>Notice of Funding Opportunity</span>
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
       <div class="nofo--cover-page--footer--image">
-        <img alt="" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic-3.png" />
+        <img alt="" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/title-pic-3.png">
       </div>
     </div>
   </section>
@@ -104,7 +104,7 @@
 
       {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
-          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="" />
+          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="">
           <div class="toc--section-name--wrapper">
             <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
@@ -127,7 +127,7 @@
   <section id="section--before-you-begin" class="before-you-begin">
 
     <div class="section--before-you-begin--icon">
-      <img src="{% static 'before you begin'|get_icon_for_section:nofo.theme %}" alt="" />
+      <img src="{% static 'before you begin'|get_icon_for_section:nofo.theme %}" alt="">
     </div>
     <h2>Before you begin</h2>
     <div class="before-you-begin--content">
@@ -163,12 +163,12 @@
         </div>
         <div class="section--title-page--name">
           <div class="section--title-page--icon">
-            <img src="{% static section.name|get_icon_for_section %}" alt="" />
+            <img src="{% static section.name|get_icon_for_section %}" alt="">
           </div>
           <h2 id="{{ section.html_id }}">
             {% with section.name|nofo_section_name_separator as section_name %}
               <span>Step {% if section_name.number %}{{ section_name.number }}{% else %}{{ forloop.counter }}{% endif %}:</span>
-              <br />
+              <br >
               <span>{{ section_name.name }}</span>
             {% endwith %}
           </h2>
@@ -211,7 +211,7 @@
               {% endif %}
               <div class="callout-box--contents">
                 {% if 'uestions?' in subsection.body %}
-                  <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section %}" alt="" />
+                  <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section %}" alt="">
                 {% endif %}
                 {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
               </div>
