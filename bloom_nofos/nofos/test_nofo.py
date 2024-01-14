@@ -522,8 +522,8 @@ class AddHeadingsTests(TestCase):
         # check section heading has new html_id
         self.assertEqual(section.html_id, "section-1")
         # check subsection headings have new html_id
-        self.assertEqual(subsection_1.html_id, "section-1--subsection-1")
-        self.assertEqual(subsection_2.html_id, "section-1--subsection-2")
+        self.assertEqual(subsection_1.html_id, "1--section-1--subsection-1")
+        self.assertEqual(subsection_2.html_id, "2--section-1--subsection-2")
 
     def test_add_headings_success_replace_link(self):
         nofo = create_nofo("Test Nofo 2", self.sections_with_link)
@@ -560,17 +560,17 @@ class AddHeadingsTests(TestCase):
         # check section heading has new html_id
         self.assertEqual(section.html_id, "section-1")
         # check subsection1 heading has new html_id
-        self.assertEqual(subsection_1.html_id, "section-1--subsection-1")
+        self.assertEqual(subsection_1.html_id, "1--section-1--subsection-1")
         # check the body of subsection 1 link is updated to new id
         self.assertIn(
-            "Section 1 body with [custom link](#section-1--subsection-1)",
+            "Section 1 body with [custom link](#1--section-1--subsection-1)",
             subsection_1.body,
         )
         # check subsection 2 heading has new html_id
-        self.assertEqual(subsection_2.html_id, "section-1--subsection-2")
+        self.assertEqual(subsection_2.html_id, "2--section-1--subsection-2")
         # check the body of subsection link is updated to new id
         self.assertIn(
-            "Section 2 body with 2 [custom](#section-1--subsection-1) [links](#section-1--subsection-2).",
+            "Section 2 body with 2 [custom](#1--section-1--subsection-1) [links](#2--section-1--subsection-2).",
             subsection_2.body,
         )
 

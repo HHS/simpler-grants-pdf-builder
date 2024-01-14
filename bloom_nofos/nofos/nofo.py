@@ -35,10 +35,12 @@ def md(html, **options):
 
 def add_headings_to_nofo(nofo):
     new_ids = []
+    # add counter because subheading titles can repeat, resulting in duplicate IDs
+    counter = 1
 
     # add ids to all section headings
     for section in nofo.sections.all():
-        section_id = slugify(section.name)
+        section_id = "{}".format(slugify(section.name))
 
         if section.html_id:
             new_ids.append({"old_id": section.html_id, "new_id": section_id})
@@ -48,13 +50,16 @@ def add_headings_to_nofo(nofo):
 
         # add ids to all subsection headings
         for subsection in section.subsections.all():
-            subsection_id = "{}--{}".format(section_id, slugify(subsection.name))
+            subsection_id = "{}--{}--{}".format(
+                counter, section_id, slugify(subsection.name)
+            )
 
             if subsection.html_id:
                 new_ids.append({"old_id": subsection.html_id, "new_id": subsection_id})
 
             subsection.html_id = subsection_id
             subsection.save()
+            counter += 1
 
     # replace all old ids with new ids
     for section in nofo.sections.all():
