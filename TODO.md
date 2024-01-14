@@ -25,6 +25,7 @@
 
 # DONE
 
+- Add new coach
 - Fix: duplicate ids for headers being generated
 - Fix: HTML validation
 - Fix: Internal links are broken (eg, Questions callout box)

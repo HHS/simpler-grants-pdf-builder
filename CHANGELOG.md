@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.12] - 2023-01-13
+
+### Added
+
+- Add new coach: Julie
+
+### Fixed
+
+- Fix: duplicate ids for headers being generated
+- Fix: Run NOFO output through HTML validation
+- Fix: Internal links broke (eg, Questions callout box)
+- Fix: Subsection editing borken
+
 ## [0.0.11] - 2023-01-12
 
 ### Changed

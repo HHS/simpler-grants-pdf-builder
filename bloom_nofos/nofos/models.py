@@ -76,6 +76,7 @@ class Nofo(models.Model):
     COACH_CHOICES = [
         ("emily", "Emily"),
         ("hannah", "Hannah"),
+        ("julie", "Julie"),
         ("july", "July"),
         ("laura", "Laura"),
         ("moira", "Moira"),
