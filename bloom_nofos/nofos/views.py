@@ -137,6 +137,7 @@ def nofo_import(request, pk=None):
         sections = get_subsections_from_sections(sections)
 
         if pk:
+            # open question: should reimporting do any of the stuff below?
             nofo = overwrite_nofo(nofo, sections)
             messages.add_message(
                 request,

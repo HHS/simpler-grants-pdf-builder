@@ -482,7 +482,16 @@ class AddHeadingsTests(TestCase):
                         "body": [
                             '<p>Section 1 body with <a href="#custom-link">custom link</a>.</p>'
                         ],
-                    }
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h4",
+                        "html_id": "h.haapch",
+                        "body": [
+                            '<p>Section 2 body with 2 <a href="#custom-link">custom</a> <a href="#h.haapch">links</a></a>.</p>'
+                        ],
+                    },
                 ],
             }
         ]
@@ -522,14 +531,22 @@ class AddHeadingsTests(TestCase):
 
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
 
-        # check section heading has no id
+        # check section 1 heading has no id
         self.assertEqual(section.html_id, "")
-        # check subsection heading has html_id
+        # check subsection 1 heading has html_id
         self.assertEqual(subsection_1.html_id, "custom-link")
-        # check the body of subsection includes link
+        # check the body of subsection 1 includes link
         self.assertIn(
             "Section 1 body with [custom link](#custom-link)", subsection_1.body
+        )
+        # check subsection 2 heading has html_id
+        self.assertEqual(subsection_2.html_id, "h.haapch")
+        # check the body of subsection 2 includes links
+        self.assertIn(
+            "Section 2 body with 2 [custom](#custom-link) [links](#h.haapch).",
+            subsection_2.body,
         )
 
         ################
@@ -538,15 +555,23 @@ class AddHeadingsTests(TestCase):
         nofo = add_headings_to_nofo(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
 
         # check section heading has new html_id
         self.assertEqual(section.html_id, "section-1")
-        # check subsection heading has new html_id
+        # check subsection1 heading has new html_id
         self.assertEqual(subsection_1.html_id, "section-1--subsection-1")
-        # check the body of subsection link is updated to new id
+        # check the body of subsection 1 link is updated to new id
         self.assertIn(
             "Section 1 body with [custom link](#section-1--subsection-1)",
             subsection_1.body,
+        )
+        # check subsection 2 heading has new html_id
+        self.assertEqual(subsection_2.html_id, "section-1--subsection-2")
+        # check the body of subsection link is updated to new id
+        self.assertIn(
+            "Section 2 body with 2 [custom](#section-1--subsection-1) [links](#section-1--subsection-2).",
+            subsection_2.body,
         )
 
 

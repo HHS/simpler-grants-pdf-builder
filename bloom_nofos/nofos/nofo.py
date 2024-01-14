@@ -59,9 +59,8 @@ def add_headings_to_nofo(nofo):
     # replace all old ids with new ids
     for section in nofo.sections.all():
         for subsection in section.subsections.all():
-            body = subsection.body
             for ids in new_ids:
-                subsection.body = body.replace(ids["old_id"], ids["new_id"])
+                subsection.body = subsection.body.replace(ids["old_id"], ids["new_id"])
 
             subsection.save()
 
