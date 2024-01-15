@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.13] - 2023-01-13
+
+### Added
+
+- Solve for nested lists during HTML import
+
+### Changed
+
+- Shrink vertical margins of list items
+- Larger left-padding for lists
+  - Shrink vertical margins of lists themselves to match list items
+
 ## [0.0.12] - 2023-01-13
 
 ### Added

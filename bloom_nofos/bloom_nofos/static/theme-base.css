@@ -154,9 +154,12 @@ hr {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
-p,
-li {
+p {
   margin: 0.75rem 0;
+}
+
+li {
+  margin: 0.25rem 0;
 }
 
 p[role="heading"] {
@@ -222,16 +225,26 @@ table td ol li:first-of-type {
 
 ul,
 ol {
-  margin-bottom: 1em;
-  margin-top: 1em;
+  margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
   line-height: 1.5;
-  padding-left: 20px;
+  padding-left: 40px;
   margin-left: 0;
+}
+
+p + ul,
+p + ol {
+  margin-top: -0.5rem;
 }
 
 ul:last-child,
 ol:last-child {
   margin-bottom: 0;
+}
+
+ul ul:last-child,
+ol ol:last-child {
+  margin-bottom: 0.5rem;
 }
 
 img.usa-icon--check_box_outline_blank {
