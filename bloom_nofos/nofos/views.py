@@ -37,6 +37,7 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    join_nested_lists,
 )
 
 OPDIVS = {
@@ -117,11 +118,13 @@ def nofo_import(request, pk=None):
             return redirect(view_path, **kwargs)
 
         soup = None
+        # TODO: remove this
         if uploaded_file.content_type == "text/markdown":
             my_file_html = Markdown().convert(uploaded_file.read())
             soup = BeautifulSoup(my_file_html, "html.parser")
         else:
             soup = BeautifulSoup(uploaded_file.read(), "html.parser")
+            join_nested_lists(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

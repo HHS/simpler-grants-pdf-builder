@@ -65,12 +65,12 @@ CSRF_COOKIE_SECURE = is_prod
 CSRF_COOKIE_HTTPONLY = is_prod
 SECURE_BROWSER_XSS_FILTER = is_prod
 
-## X-Frame-Options
+# X-Frame-Options
 X_FRAME_OPTIONS = "DENY"
 # X-Content-Type-Options
 SECURE_CONTENT_TYPE_NOSNIFF = is_prod
 
-# Setting SECURE_SSL_REDIRECT on heroku was causing infinite redirects without this
+# Setting SECURE_SSL_REDIRECT on Google Cloud Run was causing infinite redirects without this
 if is_prod:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

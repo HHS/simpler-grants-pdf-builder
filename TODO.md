@@ -20,11 +20,12 @@
   - ACL
 - Maybe: include preceding paragraph in front of tables potentially
 - Table says required are "bolded" which is lost during conversion
-- Fix: Nested lists are broken
 - Add HRs at the top of tables, maybe
 
 # DONE
 
+- Support for nested lists
+  - Nested lists are not marked up by Google Docs
 - Add new coach
 - Fix: duplicate ids for headers being generated
 - Fix: HTML validation

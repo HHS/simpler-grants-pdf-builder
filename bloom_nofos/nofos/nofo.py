@@ -3,6 +3,8 @@ import re
 
 from markdownify import MarkdownConverter
 from slugify import slugify
+from bs4 import Tag
+
 
 from .models import Nofo, Section, Subsection
 
@@ -392,3 +394,45 @@ def suggest_nofo_subagency(soup):
 def suggest_nofo_tagline(soup):
     suggestion = _suggest_by_startswith_string(soup, "Tagline:")
     return suggestion or ""
+
+
+def join_nested_lists(soup):
+    def _get_list_classname(tag):
+        for classname in tag.get("class"):
+            if classname.startswith("lst-"):
+                return classname
+        return None
+
+    def _get_previous_element(tag):
+        for ps in tag.previous_siblings:
+            if isinstance(ps, Tag):
+                return ps
+        return None
+
+    def _join_lists(ul, previous_ul):
+        if _get_list_classname(ul) == _get_list_classname(previous_ul):
+            # if classes match, join these lists
+            previous_ul.extend(ul.find_all("li"))
+            ul.decompose()
+            return
+
+        # okay: classes do not match
+        # get the last li in the previous list
+        last_tag_in_previous_list = previous_ul.find_all("li", recursive=False)[-1]
+
+        # see if there is a ul in there
+        nested_ul = last_tag_in_previous_list.find("ul")
+        if nested_ul:
+            return _join_lists(ul, nested_ul)
+
+        # if there is not, append to the last li
+        last_tag_in_previous_list.append(ul)
+        return
+
+    for ul in soup.find_all("ul"):
+        # check previous sibling
+        previous_element = _get_previous_element(ul)
+        if previous_element and previous_element.name == "ul":
+            _join_lists(ul, previous_element)
+
+    return soup

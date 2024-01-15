@@ -17,6 +17,7 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    join_nested_lists,
 )
 from .utils import match_view_url
 
@@ -823,3 +824,374 @@ class SuggestNofoTaglineTests(TestCase):
         html = "<div><p><span>Tagline: </span><span>The best </span><span>NOFO ever</span></p></div>"
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+
+###########################################################
+################### NESTED LIST TESTS #####################
+###########################################################
+
+
+class NestedListTests(TestCase):
+    def setUp(self):
+        self.html_single_list = """
+            <h4 class="c1"><span class="c35">Funding strategy</span></h4>
+            <p class="c9"><span class="c4">Funding may differ based on demonstration of need such as burden data, reach of proposed activities, and availability of funds.</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 1:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 35 organizations for Component 1.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 2:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 5 organizations for Component 2.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 3:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 50 states, 7 U.S. territories, and 2 tribal nations for Component 3. We will fund only one Component 3 application per state, territory, or tribal nation. </span></li>
+            </ul>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_nested_list = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0 start">
+                <li class="c91 c80 li-bullet-0"><span class="c4">Align with a district or school scope and sequence</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Be culturally responsive, inclusive, developmentally appropriate, and focused on meeting the needs of students who have been marginalized, including students from racial and ethnic minority groups, students who identify as LGBTQ+, and students with intellectual and developmental disabilities</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Incorporate sexual and mental health content</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Prioritize skills to identify and access health services</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Assess student performance</span></li>
+            </ul>
+        """
+
+        self.html_nested_list_followed_by_li = """
+            <h6 class="c27" id="h.26in1rg"><span class="c77 c54">Strategy 1B – Health services (HS)</span></h6>
+            <p class="c9"><span class="c4">You will assess district and school capacity and implement a plan to increase access to school- and community-based services through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS1. Each year, assess district and school capacity, infrastructure, and partnerships. The assessment reviews the ability to implement activities that increase student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS2. Build partnerships with health care providers. The goal is to support student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS3. Provide annual professional development to help staff support student access to health services, specifically sexual, behavioral, and mental health services. Each year, you must provide professional development to both: </span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS4. Implement or enhance school-based activities that increase access to services. The goal is to increase student access to youth-friendly and inclusive school- and community-based sexual, behavioral, and mental health services. Activities must include at least one of the following:</span></li>
+            </ul>
+        """
+
+        self.html_2_nested_lists = """
+            <h6 class="c27" id="h.26in1rg"><span class="c77 c54">Strategy 1B – Health services (HS)</span></h6>
+            <p class="c9"><span class="c4">You will assess district and school capacity and implement a plan to increase access to school- and community-based services through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS1. Each year, assess district and school capacity, infrastructure, and partnerships. The assessment reviews the ability to implement activities that increase student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS2. Build partnerships with health care providers. The goal is to support student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS3. Provide annual professional development to help staff support student access to health services, specifically sexual, behavioral, and mental health services. Each year, you must provide professional development to both: </span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS4. Implement or enhance school-based activities that increase access to services. The goal is to increase student access to youth-friendly and inclusive school- and community-based sexual, behavioral, and mental health services. Activities must include at least one of the following:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">Create a referral system to link students to sexual, behavioral, and mental health services.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Provide school-based sexual, behavioral, and mental health services to students. For example, STI screening, making condoms available, school-based counseling, and mental health supports.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Provide school-based health center services that support sexual, behavioral, and mental health services for students.</span></li>
+            </ul>
+        """
+
+        self.html_2_nested_lists_followed_by_li = """
+            <h6 class="c27" id="h.26in1rg"><span class="c77 c54">Strategy 1B – Health services (HS)</span></h6>
+            <p class="c9"><span class="c4">You will assess district and school capacity and implement a plan to increase access to school- and community-based services through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS1. Each year, assess district and school capacity, infrastructure, and partnerships. The assessment reviews the ability to implement activities that increase student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS2. Build partnerships with health care providers. The goal is to support student access to youth-friendly and inclusive sexual, behavioral, and mental health services.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS3. Provide annual professional development to help staff support student access to health services, specifically sexual, behavioral, and mental health services. Each year, you must provide professional development to both: </span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HS4. Implement or enhance school-based activities that increase access to services. The goal is to increase student access to youth-friendly and inclusive school- and community-based sexual, behavioral, and mental health services. Activities must include at least one of the following:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">Create a referral system to link students to sexual, behavioral, and mental health services.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Provide school-based sexual, behavioral, and mental health services to students. For example, STI screening, making condoms available, school-based counseling, and mental health supports.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Provide school-based health center services that support sexual, behavioral, and mental health services for students.</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">Last bullet by itself</span></li>
+            </ul>
+        """
+
+        self.html_double_nested_list = """
+            <h6 class="c27"><span class="c77 c54">Strategy 1C – Safe and supportive environments (SSE)</span></h6>
+            <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">Establish dedicated time within the school schedule for students to connect with teachers and peers. The goal is to hold structured discussions that promote social-emotional well-being and strengthen relationships. These might include advisory programs or periods and morning meetings.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Implement schoolwide positive behavioral interventions and support for student and teacher well-being. This includes:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_13-1 start">
+                <li class="c91 c143 li-bullet-0"><span class="c4">Setting positive behavioral expectations for students</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Teaching academic and social behaviors that students need to meet school expectations</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Defining behaviors that negatively affect school environments </span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Using positive disciplinary practices to respond to negative behaviors</span></li>
+            </ul>
+        """
+
+        self.html_double_nested_list_followed_by_li = """
+            <h6 class="c27"><span class="c77 c54">Strategy 1C – Safe and supportive environments (SSE)</span></h6>
+            <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">Establish dedicated time within the school schedule for students to connect with teachers and peers. The goal is to hold structured discussions that promote social-emotional well-being and strengthen relationships. These might include advisory programs or periods and morning meetings.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">Implement schoolwide positive behavioral interventions and support for student and teacher well-being. This includes:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_13-1 start">
+                <li class="c91 c143 li-bullet-0"><span class="c4">Setting positive behavioral expectations for students</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Teaching academic and social behaviors that students need to meet school expectations</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Defining behaviors that negatively affect school environments </span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Using positive disciplinary practices to respond to negative behaviors</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE5. Implement positive youth development approaches. Specifically, provide school-based mentoring, service learning, or other positive youth development programs or connect students to community-based programs.</span></li>
+            </ul>
+        """
+
+        self.html_2_lists_to_join = """
+            <h4 class="c1"><span class="c35">Funding strategy</span></h4>
+            <p class="c9"><span class="c4">Funding may differ based on demonstration of need such as burden data, reach of proposed activities, and availability of funds.</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 1:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 35 organizations for Component 1.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 2:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 5 organizations for Component 2.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 3:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 50 states, 7 U.S. territories, and 2 tribal nations for Component 3. We will fund only one Component 3 application per state, territory, or tribal nation. </span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 4:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 35 organizations for Component 1.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 5:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 5 organizations for Component 2.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c77 c58 c96">Component 6:</span><span class="c4">&nbsp;If funding allows, we intend to fund up to 50 states, 7 U.S. territories, and 2 tribal nations for Component 3. We will fund only one Component 3 application per state, territory, or tribal nation. </span></li>
+            </ul>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_nested_lists_to_join = """
+            <h6 class="c27"><span class="c77 c54">Strategy 1C – Safe and supportive environments (SSE)</span></h6>
+            <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">1. Establish dedicated time within the school schedule for students to connect with teachers and peers. The goal is to hold structured discussions that promote social-emotional well-being and strengthen relationships. These might include advisory programs or periods and morning meetings.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">2. Implement schoolwide positive behavioral interventions and support for student and teacher well-being. This includes:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c143 li-bullet-0"><span class="c4">3. Setting positive behavioral expectations for students</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">4. Teaching academic and social behaviors that students need to meet school expectations</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">5. Defining behaviors that negatively affect school environments </span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">6. Using positive disciplinary practices to respond to negative behaviors</span></li>
+            </ul>
+        """
+
+        self.html_2_nested_lists_to_join_after_double_nested_list = """
+            <h6 class="c27"><span class="c77 c54">Strategy 1C – Safe and supportive environments (SSE)</span></h6>
+            <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c91 c80 li-bullet-0"><span class="c4">1. Establish dedicated time within the school schedule for students to connect with teachers and peers. The goal is to hold structured discussions that promote social-emotional well-being and strengthen relationships. These might include advisory programs or periods and morning meetings.</span></li>
+                <li class="c91 c80 li-bullet-0"><span class="c4">2. Implement schoolwide positive behavioral interventions and support for student and teacher well-being. This includes:</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_13-1 start">
+                <li class="c91 c143 li-bullet-0"><span class="c4">Setting positive behavioral expectations for students</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Teaching academic and social behaviors that students need to meet school expectations</span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Defining behaviors that negatively affect school environments </span></li>
+                <li class="c91 c143 li-bullet-0"><span class="c4">Using positive disciplinary practices to respond to negative behaviors</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_7-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">3. Implement positive youth development approaches. Specifically, provide school-based mentoring, service learning, or other positive youth development programs or connect students to community-based programs.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">4. Implement positive youth development approaches. Specifically, provide school-based mentoring, service learning, or other positive youth development programs or connect students to community-based programs.</span></li>
+            </ul>
+        """
+
+    def test_single_list_nothing_happens(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_single_list, "html.parser"))
+        self.assertEqual(len(soup.select("ul")), 1)
+
+        # last li of first list DOES NOT HAVE a nested ul
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 0)
+
+    def test_nested_list_becomes_nested(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_nested_list, "html.parser"))
+        # two uls
+        self.assertEqual(len(soup.select("ul")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # last li of first list HAS a nested ul
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+
+    def test_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_nested_list_followed_by_li, "html.parser")
+        )
+
+        # two uls
+        self.assertEqual(len(soup.select("ul")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 4 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 4)
+
+    def test_2_nested_lists_become_nested(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_2_nested_lists, "html.parser"))
+        # three uls
+        self.assertEqual(len(soup.select("ul")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ul > li > ul")), 2)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 4 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 4)
+
+        # last li of first list HAS a nested ul
+        last_li = first_ul.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+
+    def test_2_nested_lists_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_nested_lists_followed_by_li, "html.parser")
+        )
+        # three uls
+        self.assertEqual(len(soup.select("ul")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ul > li > ul")), 2)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 5 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 5)
+
+        # last li of first list DOES NOT HAVE a nested ul
+        last_li = first_ul.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 0)
+
+    def test_double_nested_list_becomes_nested(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_double_nested_list, "html.parser")
+        )
+        # three uls
+        self.assertEqual(len(soup.select("ul")), 3)
+        # two single nested lists
+        self.assertEqual(len(soup.select("ul > li > ul")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ul > li > ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 3 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 3)
+
+        # last li of first list HAS 2 uls
+        last_li = first_ul.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 2)
+
+    def test_double_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_double_nested_list_followed_by_li, "html.parser")
+        )
+        # three uls
+        self.assertEqual(len(soup.select("ul")), 3)
+        # two single nested lists
+        self.assertEqual(len(soup.select("ul > li > ul")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ul > li > ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 4 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 4)
+
+        # last li of first list DOES NOT HAVE uls
+        last_li = first_ul.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 0)
+
+    def test_join_2_lists_with_same_classname(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_lists_to_join, "html.parser")
+        )
+        # two uls
+        self.assertEqual(len(soup.select("ul")), 1)
+        # one nested list
+        self.assertEqual(len(soup.select("ul > li > ul")), 0)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # first ul has 6 li children
+        first_ul = soup.find("ul")
+        self.assertEqual(len(first_ul.find_all("li", recursive=False)), 6)
+
+    def test_join_2_nested_lists_with_same_classname(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_nested_lists_to_join, "html.parser")
+        )
+        # two uls
+        self.assertEqual(len(soup.select("ul")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # last li of first list HAS a nested ul
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+        # nested ul has 5 lis
+        self.assertEqual(len(last_li.find("ul").find_all("li")), 6)
+
+    def test_join_2_nested_lists_with_same_classname_after_a_double_nested_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(
+                self.html_2_nested_lists_to_join_after_double_nested_list, "html.parser"
+            )
+        )
+        # three uls
+        self.assertEqual(len(soup.select("ul")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ul > li > ul")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ul > li > ul > li > ul")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ul + ul")), 0)
+
+        # last li of first list HAS a nested ul
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 2)
+        # nested ul has 5 lis
+        self.assertEqual(len(last_li.find("ul").find_all("li", recursive=False)), 4)
