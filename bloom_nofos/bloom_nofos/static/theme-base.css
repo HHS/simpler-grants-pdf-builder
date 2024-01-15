@@ -193,7 +193,7 @@ table caption {
 
 table th,
 table td {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
 }
 
 table td a {
@@ -214,7 +214,7 @@ table td > *:first-child {
 
 table td ul,
 table td ol {
-  padding-left: 15px;
+  padding-left: 17px;
   margin-left: 0;
 }
 
