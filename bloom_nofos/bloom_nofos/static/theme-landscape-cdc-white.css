@@ -97,20 +97,44 @@ h5 {
     contrast(103%);
 }
 
-table {
-  border-collapse: separate;
-  border-spacing: 2px;
-  margin-left: -2px;
-}
-
-table caption {
-  margin-left: 2px;
-}
-
 table th {
-  padding-left: 0;
+  color: var(--color--white);
+  background-color: var(--color--vibrant-blue);
+  border: 2px solid var(--color--vibrant-blue);
 }
 
 table td {
   border: 2px solid var(--color--pale-blue);
+}
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table td {
+  border: none;
+}
+
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--pale-blue) 2px solid;
+  border-right: var(--color--pale-blue) 2px solid;
+}
+
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--pale-blue) 2px solid;
+  border-right: var(--color--pale-blue) 2px solid;
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom: 2px solid var(--color--pale-blue);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: 2px solid var(--color--pale-blue);
 }

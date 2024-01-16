@@ -226,10 +226,7 @@ h6 {
   break-inside: avoid-column;
 }
 
-#step-5-submit-your-application--application-checklist
-  + table
-  tr
-  td.usa-icon__td--sublist {
+table tr td.usa-icon__td--sublist {
   padding-left: 28px;
 }
 
