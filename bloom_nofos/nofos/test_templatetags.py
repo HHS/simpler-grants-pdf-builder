@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup
 from django.test import TestCase
 
@@ -18,6 +20,12 @@ class AddCaptionToTableTests(TestCase):
         self.html_filename = "nofos/fixtures/html/table.html"
         self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
 
+    def _contains_table(self, tag):
+        if tag.name != "p":
+            return False
+        text = "".join(tag.stripped_strings)
+        return re.search(r"^table:", text, re.IGNORECASE)
+
     def test_table_before_add_caption_to_table(self):
         table = self.soup.find("table")
 
@@ -25,7 +33,7 @@ class AddCaptionToTableTests(TestCase):
         self.assertIsNone(table.find("caption"))
 
         # there is a paragraph tag with the caption
-        paragraph = self.soup.find("p", string=self.caption_text)
+        paragraph = self.soup.find_all(self._contains_table)[0]
         self.assertIsNotNone(paragraph)
 
         # the paragraph tag has a span inside of it
@@ -36,15 +44,41 @@ class AddCaptionToTableTests(TestCase):
         add_caption_to_table(table)
 
         # no paragraph tag with the caption
-        paragraph = self.soup.find("p", string=self.caption_text)
-        self.assertIsNone(paragraph)
+        paragraph = self.soup.find_all(self._contains_table)
+        self.assertEqual(len(paragraph), 0)
 
         # table DOES have a caption
         caption = table.find("caption", string=self.caption_text)
         self.assertIsNotNone(caption)
 
-        # the caption tag has a span inside of it
-        self.assertIsNotNone(caption.find("span"))
+        # the caption tag does not have a span inside of it
+        self.assertIsNone(caption.find("span"))
+
+        # assert the table has the classname "table--with-caption"
+        self.assertIn("table--with-caption", table["class"])
+
+    def test_add_caption_to_table(self):
+        html = "<p>Table: Example Caption</p><table><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        add_caption_to_table(table)
+        self.assertIsNotNone(table.caption)
+        self.assertEqual(table.caption.string.strip(), "Example Caption")
+        self.assertIn("table--with-caption", table.get("class", []))
+
+    def test_no_caption_if_no_preceding_paragraph(self):
+        html = "<table><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        add_caption_to_table(table)
+        self.assertIsNone(table.caption)
+
+    def test_no_caption_if_paragraph_does_not_start_with_keyword(self):
+        html = "<p>Not a caption</p><table><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        add_caption_to_table(table)
+        self.assertIsNone(table.caption)
 
 
 class HTMLTableClassTests(TestCase):

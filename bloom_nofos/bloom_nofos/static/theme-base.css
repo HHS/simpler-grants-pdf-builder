@@ -172,17 +172,18 @@ a {
 }
 
 table {
-  line-height: 1.5;
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 1.25rem 0;
+  margin: 20px 0 40px;
   text-align: left;
 }
 
 table caption {
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  padding-top: 10px;
+  margin-bottom: 10px;
   text-align: left;
+  border-top: 2px solid var(--color--light-grey);
 }
 
 table th,

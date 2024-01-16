@@ -5,21 +5,35 @@ from bs4 import NavigableString
 
 def add_caption_to_table(table):
     """
-    Adds a caption to a table from the text in previous siblings.
+    Adds a caption to a BeautifulSoup table element.
 
-    Looks for the first previous sibling element with a name and text,
-    extracts it to use as the caption, and inserts it into the table.
+    Searches previous sibling elements for a paragraph starting with "table: ",
+    extracts it and inserts it as a <caption> element inside the table.
+    If a caption is added, it also adds a class to the table.
+
+    Args:
+        table: A BeautifulSoup table element
     """
     caption = None
+    # we want to look for paragraphs that start with "table: "
+    caption_text = "table: "
+
+    def _add_class_if_not_exists_to_tag(element, classname, tag_name=None):
+        if classname not in element.get("class", []):
+            if tag_name and element.name == tag_name:
+                element["class"] = element.get("class", []) + [classname]
 
     for s in table.previous_siblings:
         if s.name and len(s.text):
-            caption = s.extract()  # remove element from the tree
+            if s.text.lower().startswith(caption_text):
+                s.string = s.text[len(caption_text) :]
+                caption = s.extract()  # remove element from the tree
             break
 
     if caption:
         caption.name = "caption"  # reassign tag to <caption>
         table.insert(0, caption)
+        _add_class_if_not_exists_to_tag(table, "table--with-caption", "table")
 
 
 def add_class_to_table(table):
