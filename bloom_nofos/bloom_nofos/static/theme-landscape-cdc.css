@@ -206,6 +206,7 @@ h6 {
   columns: 2;
   column-gap: 15mm;
   orphans: 2;
+  column-fill: auto;
 }
 
 .section--content table td {
@@ -217,10 +218,10 @@ h6 {
   column-span: all;
 }
 
-.section--content table.table--large {
+/* .section--content table.table--large {
   break-before: page;
-  /* break-after: page; */
-}
+  /* break-after: page;
+} */
 
 .section--content table.table--small {
   break-inside: avoid-column;
@@ -239,4 +240,16 @@ table tr td.usa-icon__td--sublist {
   .section--title-page {
     min-height: 100vh;
   }
+}
+
+/* Stop doing columns for section 4 */
+
+.section--step-4-learn-about-review-and-award .section--content {
+  columns: 1;
+}
+
+.section--step-4-learn-about-review-and-award .section--content p,
+.section--step-4-learn-about-review-and-award .section--content ul,
+.section--step-4-learn-about-review-and-award .section--content table caption {
+  width: 75%;
 }
