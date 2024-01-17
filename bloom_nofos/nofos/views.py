@@ -28,6 +28,7 @@ from .nofo import (
     create_nofo,
     get_sections_from_soup,
     get_subsections_from_sections,
+    join_nested_lists,
     overwrite_nofo,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
@@ -37,7 +38,6 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
-    join_nested_lists,
 )
 
 OPDIVS = {

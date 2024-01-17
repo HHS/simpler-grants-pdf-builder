@@ -1,8 +1,8 @@
+import re
+
 from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
-
-import re
 
 from .utils import _add_class_if_not_exists_to_tag
 

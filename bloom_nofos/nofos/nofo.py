@@ -1,10 +1,9 @@
 import datetime
 import re
 
+from bs4 import Tag
 from markdownify import MarkdownConverter
 from slugify import slugify
-from bs4 import Tag
-
 
 from .models import Nofo, Section, Subsection
 
