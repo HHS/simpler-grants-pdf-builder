@@ -102,7 +102,7 @@ class HTMLTableClassTests(TestCase):
         table_html = self._generate_table(num_cols=4)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
     def test_table_class_lg(self):
         table_html = self._generate_table(num_cols=5)
@@ -129,19 +129,19 @@ class HTMLTableClassTests(TestCase):
         table_html = self._generate_table(num_cols=2, num_rows=6)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
     def test_table_class_lg_rows(self):
         table_html = self._generate_table(num_cols=2, num_rows=7)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
     def test_table_class_md_md(self):
         table_html = self._generate_table(num_cols=4, num_rows=6)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--medium")
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
 
 class TestFindElementsWithChar(TestCase):

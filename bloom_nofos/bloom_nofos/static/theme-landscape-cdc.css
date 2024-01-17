@@ -206,22 +206,16 @@ h6 {
   columns: 2;
   column-gap: 15mm;
   orphans: 2;
-  column-fill: auto;
+  /* column-fill: auto; */
 }
 
 .section--content table td {
   vertical-align: baseline;
 }
 
-.section--content table.table--medium,
 .section--content table.table--large {
   column-span: all;
 }
-
-/* .section--content table.table--large {
-  break-before: page;
-  /* break-after: page;
-} */
 
 .section--content table.table--small {
   break-inside: avoid-column;
@@ -251,5 +245,5 @@ table tr td.usa-icon__td--sublist {
 .section--step-4-learn-about-review-and-award .section--content p,
 .section--step-4-learn-about-review-and-award .section--content ul,
 .section--step-4-learn-about-review-and-award .section--content table caption {
-  width: 75%;
+  width: 80%;
 }
