@@ -3,6 +3,17 @@ from bs4 import NavigableString
 # HTML tables
 
 
+def _add_class_if_not_exists_to_tag(element, classname, tag_name):
+    """
+    Adds the given class to the element if it does not already exist.
+    Checks if the classname exists in the element's "class" attribute
+    and adds it if missing. Also checks if tag_name matches the element's name.
+    """
+    if classname not in element.get("class", []):
+        if tag_name and element.name == tag_name:
+            element["class"] = element.get("class", []) + [classname]
+
+
 def add_caption_to_table(table):
     """
     Adds a caption to a BeautifulSoup table element.
@@ -17,11 +28,6 @@ def add_caption_to_table(table):
     caption = None
     # we want to look for paragraphs that start with "table: "
     caption_text = "table: "
-
-    def _add_class_if_not_exists_to_tag(element, classname, tag_name=None):
-        if classname not in element.get("class", []):
-            if tag_name and element.name == tag_name:
-                element["class"] = element.get("class", []) + [classname]
 
     for s in table.previous_siblings:
         if s.name and len(s.text):

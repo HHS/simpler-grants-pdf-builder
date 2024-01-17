@@ -2,7 +2,11 @@ from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
-from .utils import find_elements_with_character, get_parent_td
+from .utils import (
+    _add_class_if_not_exists_to_tag,
+    find_elements_with_character,
+    get_parent_td,
+)
 
 register = template.Library()
 
@@ -46,12 +50,6 @@ def has_link_in_next_row(td):
     return False
 
 
-def add_class_if_not_exists_to_tag(element, classname, tag_name=None):
-    if classname not in element.get("class", []):
-        if tag_name and element.name == tag_name:
-            element["class"] = element.get("class", []) + [classname]
-
-
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -76,7 +74,7 @@ def replace_unicode_with_icon(html_string):
             root_elements.extend(elements_with_char)
 
             for root_element in root_elements:
-                add_class_if_not_exists_to_tag(
+                _add_class_if_not_exists_to_tag(
                     element=root_element,
                     classname="usa-icon__list-element",
                     tag_name="span",
@@ -86,20 +84,20 @@ def replace_unicode_with_icon(html_string):
 
                 parent_td = get_parent_td(root_element)
                 if parent_td:
-                    add_class_if_not_exists_to_tag(
+                    _add_class_if_not_exists_to_tag(
                         element=parent_td, classname="usa-icon__td", tag_name="td"
                     )
 
                     # add classname for cells which don't have rows with a link above them
                     if has_link_in_above_rows(parent_td):
-                        add_class_if_not_exists_to_tag(
+                        _add_class_if_not_exists_to_tag(
                             element=parent_td,
                             classname="usa-icon__td--sublist",
                             tag_name="td",
                         )
 
                     if has_link_in_next_row(parent_td):
-                        add_class_if_not_exists_to_tag(
+                        _add_class_if_not_exists_to_tag(
                             element=parent_td,
                             classname="usa-icon__td--before-sublist",
                             tag_name="td",

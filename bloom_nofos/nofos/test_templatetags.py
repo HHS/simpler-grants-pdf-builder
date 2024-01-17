@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from django.test import TestCase
 
 from .templatetags.utils import (
+    _add_class_if_not_exists_to_tag,
     add_caption_to_table,
     add_class_to_table,
     find_elements_with_character,
@@ -12,6 +13,32 @@ from .templatetags.utils import (
     get_parent_td,
     is_footnote_ref,
 )
+
+
+class TestAddClassIfNotExists(TestCase):
+    def test_add_class_to_element_without_class(self):
+        html = "<div></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        div = soup.find("div")
+        _add_class_if_not_exists_to_tag(div, "new-class", "div")
+        self.assertIn("new-class", div["class"])
+
+    def test_do_not_add_class_if_already_exists(self):
+        html = "<div class='existing-class'></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        div = soup.find("div")
+        _add_class_if_not_exists_to_tag(div, "existing-class", "div")
+        self.assertEqual(len(div["class"]), 1)
+
+    def test_add_class_only_if_tag_name_matches(self):
+        html = "<div></div><span></span>"
+        soup = BeautifulSoup(html, "html.parser")
+        div = soup.find("div")
+        span = soup.find("span")
+        _add_class_if_not_exists_to_tag(div, "new-class", "span")
+        self.assertNotIn("new-class", div.get("class", []))
+        _add_class_if_not_exists_to_tag(span, "new-class", "span")
+        self.assertIn("new-class", span["class"])
 
 
 class AddCaptionToTableTests(TestCase):
