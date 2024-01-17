@@ -11,6 +11,7 @@
 - Refac: short section names for breadcrumbs means we can loop
 - Handle images
   - for cover page
+  - pick a new image per nofo
   - inline in documents
 - Theme variants
   - ACF white
@@ -20,16 +21,15 @@
   - ACL
 - Maybe: include preceding paragraph in front of tables potentially
 - Table says required are "bolded" which is lost during conversion
-- Let’s do that caption thing + add HR
-- Double the space under tables
-- Half the space under headings
-- Update the readme
-- Big cover
-- Image per nofo
+- Update the README
+- Big cover page design
 - Metadata
 
 # DONE
 
+- Let’s do that caption thing + add HR
+- Double the space under tables
+- Half the space under headings
 - Don’t look at rows anymore for table sizing
 - Application table for CDC white
 - Single column for section 4 landscape

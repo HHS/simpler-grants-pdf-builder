@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.14] - 2023-01-16
+
+### Added
+
+- Solve for nested lists during HTML import
+
+### Changed
+
+- Section 4 is now 1 column since it was too challenging
+- Tables are now only large based on columns, not rows
+- Table captions only if preceding text starts with "Table: "
+  - Also add a horizontal bar above tables with captions
+- Reduce spacing under headings
+- Increase spacing under tables
+
+### Fixed
+
+- Fix: Application table styling for CDC 'light' theme
+  - Also general table headings in 'light' theme
+
 ## [0.0.13] - 2023-01-15
 
 ### Added

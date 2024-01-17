@@ -155,14 +155,15 @@ hr {
 }
 
 p {
-  margin: 0.75rem 0;
+  margin: 4px 0;
 }
 
 li {
-  margin: 0.25rem 0;
+  margin: 4px 0;
 }
 
 p[role="heading"] {
+  margin: 10px 0 6px;
   font-size: 12pt;
   font-weight: 700;
 }
@@ -226,16 +227,11 @@ table td ol li:first-of-type {
 
 ul,
 ol {
-  margin-bottom: 0.25rem;
-  margin-top: 0.25rem;
+  margin-bottom: 4px;
+  margin-top: 4px;
   line-height: 1.5;
   padding-left: 40px;
   margin-left: 0;
-}
-
-p + ul,
-p + ol {
-  margin-top: -0.5rem;
 }
 
 ul:last-child,
@@ -280,7 +276,7 @@ h3,
 h4,
 h5,
 h6 {
-  margin: 1.5rem 0 0.5rem;
+  margin-bottom: 8px;
 }
 
 h1 {
@@ -293,29 +289,31 @@ h1 {
 h2 {
   font-size: 32pt;
   font-weight: 700;
+  margin-top: 20px;
 }
 
 h3 {
   font-size: 24pt;
   font-weight: 700;
-  margin-top: 3rem;
+  margin-top: 30px;
 }
 
 h4 {
   font-size: 16pt;
   font-weight: 600;
+  margin-top: 20px;
 }
 
 h5 {
   font-size: 14pt;
   font-weight: 600;
-  margin-top: 1.15rem;
+  margin-top: 15px;
 }
 
 h6 {
   font-size: 13pt;
   font-weight: 600;
-  margin-top: 1.1rem;
+  margin-top: 12px;
 }
 
 /* Running header */
@@ -487,6 +485,7 @@ h6 {
 }
 
 .section--before-you-begin--psuedo-header {
+  margin-top: 15px;
   font-size: 13pt;
   font-weight: 600;
 }
