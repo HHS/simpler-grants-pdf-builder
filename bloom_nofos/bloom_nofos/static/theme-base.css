@@ -177,14 +177,19 @@ table {
   border-spacing: 0;
   margin: 20px 0 40px;
   text-align: left;
+  display: block;
+}
+
+table.table--large {
+  border-top: 2px solid var(--color--light-grey);
+  padding-top: 20px;
 }
 
 table caption {
   font-weight: 700;
-  padding-top: 10px;
+  margin-top: -10px;
   margin-bottom: 10px;
   text-align: left;
-  border-top: 2px solid var(--color--light-grey);
 }
 
 table th,
