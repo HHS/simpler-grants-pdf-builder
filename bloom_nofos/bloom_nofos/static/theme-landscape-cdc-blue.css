@@ -63,7 +63,8 @@ h5 {
 }
 
 .nofo--cover-page--header--logo--subheading,
-.nofo--cover-page--title {
+.nofo--cover-page--title,
+.nofo--cover-page--header--intro {
   color: var(--color--white);
 }
 
@@ -74,6 +75,12 @@ h5 {
 
 .nofo--cover-page--footer {
   background: var(--color--white);
+}
+
+/* Cover page: hero image */
+
+.nofo--cover-page--hero .nofo--cover-page--title {
+  background-color: var(--color--dark-blue);
 }
 
 /* Table of contents */

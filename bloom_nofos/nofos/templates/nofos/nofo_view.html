@@ -49,7 +49,7 @@
 
 {% block content %}
   <!-- COVER PAGE -->
-  <section id="section--cover-page" class="nofo--cover-page">
+  <section id="section--cover-page" class="nofo--cover-page nofo--cover-page--hero">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
         <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/{{ nofo_opdiv.filename }}">
@@ -69,10 +69,19 @@
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
     </div>
+    <div class="nofo--cover-page--hero-image">
+      <!-- TODO: this should be dynamic, decided in the view -->
+      <img alt="" src="{% static 'img/cover-img/cdc-rfa-dp-24-0139/cover.jpg' %}">
+    </div>
     <div class="nofo--cover-page--title">
-      <h1>{{ nofo.title }}</h1>
-      <div class="nofo--cover-page--title--subheading">
-        <span>Opportunity number: {{ nofo.number }}</span>
+      <div class="nofo--cover-page--title--block">
+        <h1>{{ nofo.title }}</h1>
+        <div class="nofo--cover-page--title--subheading">
+          <span>Opportunity number: {{ nofo.number }}</span>
+        </div>
+      </div>
+      <div class="nofo--cover-page--title--logo">
+        <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg">
       </div>
     </div>
     <div class="nofo--cover-page--footer clearfix">
