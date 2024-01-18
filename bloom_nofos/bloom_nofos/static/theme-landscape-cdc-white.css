@@ -90,7 +90,7 @@ h5 {
   color: var(--color--black);
 }
 
-.header-nav li a {
+.section--title-page--header-nav li a {
   border-top: 4px solid var(--color--med-blue);
   color: var(--color--black);
 }

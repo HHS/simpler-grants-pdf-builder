@@ -351,7 +351,6 @@ h6 {
   font-size: 9pt;
   display: inline-block;
   width: 85px;
-  border-top: 4px solid var(--color--white);
   text-decoration: none;
 }
 
