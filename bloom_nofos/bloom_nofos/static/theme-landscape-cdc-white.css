@@ -6,14 +6,6 @@ h1 {
   color: var(--color--dark-blue);
 }
 
-h3 {
-  color: var(--color--dark-blue);
-}
-
-h5 {
-  color: var(--color--dark-blue);
-}
-
 /* Cover page */
 
 .nofo--cover-page--header--logo--subheading,

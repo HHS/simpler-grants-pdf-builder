@@ -58,6 +58,7 @@ h2 {
 h3 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
 }
 
 h4 {
@@ -68,6 +69,7 @@ h4 {
 h5 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
 }
 
 h6 {
