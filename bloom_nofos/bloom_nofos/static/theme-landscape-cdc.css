@@ -168,57 +168,12 @@ h6 {
 .nofo--cover-page--medium .nofo--cover-page--title {
   width: 65%;
 }
-.nofo--cover-page--medium .nofo--cover-page--title--logo,
-.nofo--cover-page--medium .nofo--cover-page--hero-image {
-  display: none;
-}
 
 /* Cover page: hero image */
-
-.nofo--cover-page--hero .nofo--cover-page--title {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 5mm 20mm 10mm 20mm;
-}
 
 .nofo--cover-page--hero .nofo--cover-page--hero-image {
   height: 120mm;
   overflow: hidden;
-}
-
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--block {
-  width: 75%;
-}
-
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--block
-  h1 {
-  font-size: 24pt;
-  margin-bottom: 10px;
-}
-
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--logo {
-  display: flex;
-  align-items: flex-end;
-  justify-items: flex-end;
-}
-
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--logo
-  img {
-  width: 120px;
-  height: 120px;
-}
-
-.nofo--cover-page--hero .nofo--cover-page--footer {
-  display: none;
 }
 
 /* Table of contents */
