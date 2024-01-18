@@ -639,7 +639,9 @@ h6 {
 
 .callout-box--title {
   font-size: 13pt;
-  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--color-black);
+  margin: 0 0 10px 0;
 }
 
 .callout-box--contents {

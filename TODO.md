@@ -29,6 +29,7 @@
 
 # DONE
 
+- Fix: callout box headings are h5s
 - Cover photo src set in view based on nofo number, else default
 - Big cover page design
   - Blue large cover CDC
@@ -46,7 +47,7 @@
 - Fix: duplicate ids for headers being generated
 - Fix: HTML validation
 - Fix: Internal links are broken (eg, Questions callout box)
-- Fix: editing borking for subsection
+- Fix: editing borked for subsection
 - Convert all the font sizes to pt
 - Before you begin
   - Add icons
