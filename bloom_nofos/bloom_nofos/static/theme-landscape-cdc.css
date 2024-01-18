@@ -188,6 +188,12 @@ h6 {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
+/* Before you begin page */
+
+.before-you-begin--content {
+  width: 50%;
+}
+
 /* Section title page */
 
 /* Section contents */

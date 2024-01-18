@@ -185,7 +185,7 @@ table.table--large {
   padding-top: 20px;
 }
 
-table caption {
+table.table--large caption {
   font-weight: 700;
   margin-top: -10px;
   margin-bottom: 10px;
