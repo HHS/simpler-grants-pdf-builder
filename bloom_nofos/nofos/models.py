@@ -73,6 +73,19 @@ class Nofo(models.Model):
         help_text="The theme sets the orientation and colour pallete for this NOFO.",
     )
 
+    COVER_CHOICES = [
+        ("nofo--cover-page--hero", "Hero (large) image"),
+        ("nofo--cover-page--medium", "Medium image"),
+    ]
+
+    cover = models.CharField(
+        max_length=32,
+        choices=COVER_CHOICES,
+        blank=False,
+        default="nofo--cover-page--medium",
+        help_text="The cover style for the NOFO (eg, large image, medium image, no image).",
+    )
+
     COACH_CHOICES = [
         ("emily", "Emily"),
         ("hannah", "Hannah"),

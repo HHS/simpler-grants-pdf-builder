@@ -14,6 +14,7 @@ from .forms import (
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachForm,
+    NofoCoverForm,
     NofoNameForm,
     NofoNumberForm,
     NofoOpDivForm,
@@ -264,6 +265,11 @@ class NofoEditSubagencyView(BaseNofoEditView):
 class NofoEditThemeView(BaseNofoEditView):
     form_class = NofoThemeForm
     template_name = "nofos/nofo_edit_theme.html"
+
+
+class NofoEditCoverView(BaseNofoEditView):
+    form_class = NofoCoverForm
+    template_name = "nofos/nofo_edit_cover.html"
 
 
 def nofo_subsection_edit(request, pk, subsection_pk):

@@ -116,10 +116,31 @@
         <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
       <tr>
+    </tbody>
+  </table>
+
+  <table class="usa-table usa-table--borderless width-full">
+    <caption>
+      <h2 class="margin-bottom-0">NOFO theme options</h2>
+      <span><a href="#back-to-top">Top ↑</a></span>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
       <tr>
         <th scope="row">Theme</th>
         <td>{{ nofo.get_theme_display|get_value_or_none:"theme" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_theme' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+      <tr>
+      <tr>
+        <th scope="row">Cover style</th>
+        <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
       <tr>
     </tbody>
   </table>

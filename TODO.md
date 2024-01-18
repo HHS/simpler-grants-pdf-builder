@@ -24,16 +24,16 @@
 - Update the README
 - Big cover page design
   - Dynamic in the view look for filepath based on nofo number, else default
-  - White large cover CDC
   - Blue large cover HRSA
   - White large cover HRSA
-  - Add field to NOFO
 - Metadata
 
 # DONE
 
 - Big cover page design
   - Blue large cover CDC
+  - White large cover CDC
+  - Add field to NOFO
 - Let’s do that caption thing + add HR
 - Double the space under tables
 - Half the space under headings

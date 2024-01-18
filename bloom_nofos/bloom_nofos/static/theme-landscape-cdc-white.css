@@ -30,6 +30,16 @@ h5 {
   background: var(--color--pale-blue);
 }
 
+/* Cover page: hero image */
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo
+  img {
+  filter: invert(14%) sepia(76%) saturate(1676%) hue-rotate(185deg)
+    brightness(93%) contrast(102%);
+}
+
 /* Table of contents */
 
 .toc h2 {
