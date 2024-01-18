@@ -23,13 +23,13 @@
 - Table says required are "bolded" which is lost during conversion
 - Update the README
 - Big cover page design
-  - Dynamic in the view look for filepath based on nofo number, else default
   - Blue large cover HRSA
   - White large cover HRSA
-- Metadata
+- PDF metadata as tags
 
 # DONE
 
+- Cover photo src set in view based on nofo number, else default
 - Big cover page design
   - Blue large cover CDC
   - White large cover CDC

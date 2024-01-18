@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [0.0.15] - 2023-01-17
+
+### Added
+
+- Added hero image cover style
+  - Added new field to nofo: 'cover'
+  - Built white and blue themes for CDC
+  - HRSA theme needs review
+
+### Changed
+
+- Choose cover image based on directory path matching nofo number
+
+### Fixed
+
+- Reduce list left padding
+
 ## [0.0.14] - 2023-01-16
 
 ### Added
