@@ -250,8 +250,12 @@ table tr td.usa-icon__td--sublist {
   columns: 1;
 }
 
+.section--step-4-learn-about-review-and-award .section--content h3,
+.section--step-4-learn-about-review-and-award .section--content h4,
+.section--step-4-learn-about-review-and-award .section--content h5,
+.section--step-4-learn-about-review-and-award .section--content h6,
 .section--step-4-learn-about-review-and-award .section--content p,
 .section--step-4-learn-about-review-and-award .section--content ul,
 .section--step-4-learn-about-review-and-award .section--content table caption {
-  width: 80%;
+  width: 50%;
 }
