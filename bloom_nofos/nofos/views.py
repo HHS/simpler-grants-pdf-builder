@@ -1,4 +1,5 @@
 import io
+import os
 
 import docraptor
 from bs4 import BeautifulSoup
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
 from markdown2 import Markdown  # convert markdown to HTML
@@ -70,12 +72,23 @@ class NofosDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # add theme information to the context
         theme_parts = self.object.theme.split("-")
         theme_parts.pop()
         context["nofo_theme_base"] = "-".join(theme_parts)
 
         # get the name of the opdiv (eg, "cdc", "hrsa", etc)
         context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
+
+        # add cover image filepath to the context
+        cover_img = "img/cover-img/{}/cover.jpg".format(self.object.number.lower())
+        print(cover_img)
+        print(os.path.join(settings.STATIC_ROOT, cover_img))
+        if not os.path.exists(os.path.join(settings.STATIC_ROOT, cover_img)):
+            # if the path doesn't exist, set a default path
+            cover_img = "img/cover.jpg"
+
+        context["nofo_cover_img"] = cover_img
 
         return context
 
