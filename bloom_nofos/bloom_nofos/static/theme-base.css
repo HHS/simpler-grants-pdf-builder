@@ -155,18 +155,11 @@ hr {
 }
 
 p {
-  margin: 4px 0;
+  margin: 5px 0;
 }
 
 li {
-  margin: 4px 0;
-}
-
-p[role="heading"] {
-  margin: 10px 0 6px;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--color--vibrant-blue);
+  margin: 5px 0;
 }
 
 a {
@@ -176,7 +169,7 @@ a {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 20px 0 40px;
+  margin: 20px 0 30px;
   text-align: left;
   display: block;
 }
@@ -236,7 +229,7 @@ ol {
   margin-bottom: 4px;
   margin-top: 4px;
   line-height: 1.5;
-  padding-left: 35px;
+  padding-left: 30px;
   margin-left: 0;
 }
 
@@ -282,7 +275,7 @@ h3,
 h4,
 h5,
 h6 {
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 h1 {
@@ -299,19 +292,19 @@ h2 {
 }
 
 h3 {
-  font-size: 24pt;
+  font-size: 17.61pt;
   font-weight: 700;
   margin-top: 30px;
 }
 
 h4 {
-  font-size: 16pt;
+  font-size: 15.65pt;
   font-weight: 600;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 h5 {
-  font-size: 14pt;
+  font-size: 13.91pt;
   font-weight: 600;
   margin-top: 15px;
 }
@@ -320,6 +313,14 @@ h6 {
   font-size: 13pt;
   font-weight: 600;
   margin-top: 12px;
+}
+
+/* this functions as an h7 */
+p[role="heading"] {
+  margin: 10px 0 5px;
+  font-size: 11.5pt;
+  font-weight: 600;
+  color: var(--color--vibrant-blue);
 }
 
 /* Running header */
