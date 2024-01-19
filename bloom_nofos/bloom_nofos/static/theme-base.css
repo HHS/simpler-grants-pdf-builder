@@ -165,7 +165,8 @@ li {
 p[role="heading"] {
   margin: 10px 0 6px;
   font-size: 12pt;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--color--vibrant-blue);
 }
 
 a {
@@ -564,6 +565,10 @@ h6 {
 
 .section--title-page--toc {
   padding: 12mm 20mm;
+}
+
+.section--title-page--toc > p {
+  font-weight: 600;
 }
 
 .section--title-page--header-nav {

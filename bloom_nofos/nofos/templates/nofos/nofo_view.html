@@ -112,7 +112,7 @@
 
       {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
-          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="">
+          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'blue' %}" alt="">
           <div class="toc--section-name--wrapper">
             <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
@@ -135,7 +135,7 @@
   <section id="section--before-you-begin" class="before-you-begin">
 
     <div class="section--before-you-begin--icon">
-      <img src="{% static 'before you begin'|get_icon_for_section:nofo.theme %}" alt="">
+      <img src="{% static 'before you begin'|get_icon_for_section:'blue' %}" alt="">
     </div>
     <h2>Before you begin</h2>
     <div class="before-you-begin--content">

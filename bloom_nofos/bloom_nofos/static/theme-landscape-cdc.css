@@ -190,10 +190,40 @@ h6 {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--vibrant-blue);
+}
+
+.toc--section-name--a {
+  color: var(--color--vibrant-blue);
+}
+
+.toc ol ol li a {
+  color: var(--color--black);
+}
+
+.toc .toc--section-name .toc--section-name--img {
+  background: var(--color--vibrant-blue);
+}
+
 /* Before you begin page */
 
 .before-you-begin--content {
   width: 50%;
+}
+
+.section--before-you-begin--icon {
+  background: var(--color--vibrant-blue);
+}
+
+.before-you-begin h2 {
+  color: var(--color--vibrant-blue);
+}
+
+.section--before-you-begin--psuedo-header {
+  color: var(--color--vibrant-blue);
 }
 
 /* Section title page */
