@@ -664,18 +664,21 @@ h6 {
   margin-bottom: 0;
 }
 
-.callout-box--questions {
+.callout-box--icon {
   padding: 15px;
 }
 
-.callout-box--questions .callout-box--contents {
+.callout-box--icon .callout-box--contents {
   display: flex;
   flex-direction: row;
-  font-size: 12pt;
   align-items: center;
 }
 
-.callout-box--questions .callout-box--contents img {
+.callout-box--keyboard .callout-box--contents {
+  align-items: flex-start;
+}
+
+.callout-box--icon .callout-box--contents img {
   width: 30px;
   margin-right: 10px;
 }

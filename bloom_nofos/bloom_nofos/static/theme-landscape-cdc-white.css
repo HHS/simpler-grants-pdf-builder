@@ -112,7 +112,7 @@ h1 {
   color: var(--color--black);
 }
 
-.callout-box--questions .callout-box--contents img {
+.callout-box--icon .callout-box--contents img {
   filter: invert(0%) sepia(4%) saturate(842%) hue-rotate(232deg) brightness(88%)
     contrast(103%);
 }

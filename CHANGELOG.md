@@ -10,8 +10,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Even in the white theme, the "hero" cover page uses blue background and white text
 - Use 50% width for section 4 (other than tables)
+  - Same with "Before you begin" page
 - Tables with 3 cols are "large", and have grey top bar
   - Before it was only for tables with captions
+- Clean up header nav colours
+- Standardize heading colours
 
 ## [0.0.15] - 2023-01-17
 
