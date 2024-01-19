@@ -11,6 +11,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Callout box for the in-PDF nav instructions
   - Add PDF svg icon
 - Alternate callout-box style
+- Icons are revamped
+  - Now all svgs are in the colour they will end up being displayed as
 
 ### Changed
 

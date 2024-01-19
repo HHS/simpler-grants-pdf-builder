@@ -21,11 +21,11 @@
   - Blue large cover HRSA
   - White large cover HRSA
 - PDF metadata as tags
-- Icons, re-do them please
 - Add a way to change settings from the Django admin
 
 # DONE
 
+- Icons: re-do them
 - Fix: header breadcrumbs can be out of order if order is not explicit
 - Change body heading sizes to match typescale
 - Fix: Show arrows on bolded li elements in table cells

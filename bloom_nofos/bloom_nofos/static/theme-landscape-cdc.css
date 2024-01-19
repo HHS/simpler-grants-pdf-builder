@@ -204,18 +204,10 @@ h6 {
   color: var(--color--black);
 }
 
-.toc .toc--section-name .toc--section-name--img {
-  background: var(--color--vibrant-blue);
-}
-
 /* Before you begin page */
 
 .before-you-begin--content {
   width: 50%;
-}
-
-.section--before-you-begin--icon {
-  background: var(--color--vibrant-blue);
 }
 
 .before-you-begin h2 {

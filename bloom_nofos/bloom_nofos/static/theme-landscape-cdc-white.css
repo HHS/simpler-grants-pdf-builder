@@ -75,11 +75,6 @@ h1 {
   color: var(--color--black);
 }
 
-.section--title-page--icon img {
-  filter: invert(18%) sepia(96%) saturate(2155%) hue-rotate(191deg)
-    brightness(103%) contrast(101%);
-}
-
 /* Section contents */
 
 .nofo--tagline {
@@ -94,11 +89,6 @@ h1 {
 .callout-box--icon {
   background-color: var(--color-white);
   border: 2px solid var(--color--dark-blue);
-}
-
-.callout-box--icon .callout-box--contents img {
-  filter: invert(15%) sepia(15%) saturate(7248%) hue-rotate(184deg)
-    brightness(103%) contrast(102%);
 }
 
 table th {

@@ -125,7 +125,10 @@ def is_callout_box_table_markdown(table):
 # Icons
 
 
-def get_icon_for_section(section_name="review the opportunity", theme=""):
+# TODO: update tests
+def get_icon_for_section(
+    section_name="review the opportunity", icon_style="med-blue-border"
+):
     """
     Returns the icon filename for the given section name and theme.
 
@@ -135,9 +138,8 @@ def get_icon_for_section(section_name="review the opportunity", theme=""):
 
     section_name: The name of the section to get the icon for.
     """
-    no_border = "/no-border" if "blue" in theme else ""
     icon_tuples = [
-        ("adobe", "00-adobe.svg"),
+        ("adobe", "00-adobe-pdf.svg"),
         ("before you begin", "0-before.svg"),
         ("review the opportunity", "1-review.svg"),
         ("ready", "2-get-ready.svg"),
@@ -151,10 +153,10 @@ def get_icon_for_section(section_name="review the opportunity", theme=""):
 
     for search_term, filename in icon_tuples:
         if search_term in section_name:
-            return "img/figma-icons{}/{}".format(no_border, filename)
+            return "img/figma-icons/{}/{}".format(icon_style, filename)
 
     # return 'review' by default if section name doesn't match
-    return "img/figma-icons{}/1-review.svg".format(no_border)
+    return "img/figma-icons/{}/1-review.svg".format(icon_style)
 
 
 # Footnotes
