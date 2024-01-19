@@ -142,6 +142,10 @@ h1 {
   color: var(--color--white);
 }
 
+.callout-box--icon {
+  background-color: var(--color--dark-blue);
+}
+
 .callout-box--icon .callout-box--contents img {
   filter: invert(99%) sepia(99%) saturate(2%) hue-rotate(222deg)
     brightness(104%) contrast(100%);
