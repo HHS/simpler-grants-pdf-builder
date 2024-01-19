@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change body heading sizes to match typescale
 - CDC white theme uses vibrant blue everywhere in place of dark blue
 - Even in the white theme, the "hero" cover page uses blue background and white text
 - Use 50% width for section 4 (other than tables)
@@ -25,7 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- Show arrows on bolded li elements in table cells
+- Show arrow svgs on bolded li elements in table cells
 
 ## [0.0.15] - 2023-01-17
 

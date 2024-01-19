@@ -21,12 +21,12 @@
   - Blue large cover HRSA
   - White large cover HRSA
 - PDF metadata as tags
-- Fix: change body heading sizes
 - Icons, re-do them please
 - Add a way to change settings from the Django admin
 
 # DONE
 
+- Change body heading sizes to match typescale
 - Fix: Show arrows on bolded li elements in table cells
 - Fix: Use vibrant blue instead of dark for white CDC theme
 - New callout box style + new PDF icon
