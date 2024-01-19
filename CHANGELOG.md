@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- New combined CDC and HHS logo
+  - Dropped the footer logo
 - Callout box for the in-PDF nav instructions
   - Add PDF svg icon
 - Alternate callout-box style
