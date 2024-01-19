@@ -125,7 +125,6 @@ def is_callout_box_table_markdown(table):
 # Icons
 
 
-# TODO: update tests
 def get_icon_for_section(
     section_name="review the opportunity", icon_style="med-blue-border"
 ):
