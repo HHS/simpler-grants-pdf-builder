@@ -52,7 +52,7 @@ def add_class_to_table(table):
     """
 
     def _get_table_class(num_cols):
-        if num_cols >= 4:
+        if num_cols >= 3:
             return "table--large"
 
         return "table--small"

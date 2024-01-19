@@ -33,7 +33,6 @@
 - Cover photo src set in view based on nofo number, else default
 - Big cover page design
   - Blue large cover CDC
-  - White large cover CDC
   - Add field to NOFO
 - Let’s do that caption thing + add HR
 - Double the space under tables

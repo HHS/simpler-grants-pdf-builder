@@ -6,14 +6,6 @@ h1 {
   color: var(--color--dark-blue);
 }
 
-h3 {
-  color: var(--color--dark-blue);
-}
-
-h5 {
-  color: var(--color--dark-blue);
-}
-
 /* Cover page */
 
 .nofo--cover-page--header--logo--subheading,
@@ -31,13 +23,31 @@ h5 {
 }
 
 /* Cover page: hero image */
+/* Note that there is no "white" version of the hero cover page */
+
+.nofo--cover-page--hero .nofo--cover-page--header {
+  background-color: var(--color--vibrant-blue);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--hero .nofo--cover-page--header--intro,
+.nofo--cover-page--hero .nofo--cover-page--title h1,
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  color: var(--color--white);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--title {
+  background-color: var(--color--dark-blue);
+}
 
 .nofo--cover-page--hero
   .nofo--cover-page--title
   .nofo--cover-page--title--logo
   img {
-  filter: invert(14%) sepia(76%) saturate(1676%) hue-rotate(185deg)
-    brightness(93%) contrast(102%);
+  filter: invert(100%) sepia(1%) saturate(0%) hue-rotate(90deg) brightness(105%)
+    contrast(101%);
 }
 
 /* Table of contents */
@@ -72,7 +82,7 @@ h5 {
   color: var(--color--black);
 }
 
-.header-nav li a {
+.section--title-page--header-nav li a {
   border-top: 4px solid var(--color--med-blue);
   color: var(--color--black);
 }
