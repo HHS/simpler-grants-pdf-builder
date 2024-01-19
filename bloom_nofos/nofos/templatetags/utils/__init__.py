@@ -14,6 +14,16 @@ def _add_class_if_not_exists_to_tag(element, classname, tag_name):
             element["class"] = element.get("class", []) + [classname]
 
 
+def _add_class_if_not_exists_to_tags(element, classname, tag_names):
+    """
+    Adds the given class to the element if it does not already exist.
+    Checks if the classname exists in the element's "class" attribute
+    and adds it if missing. Also checks if tag_name matches the element's name.
+    """
+    for tag_name in tag_names.split("|"):
+        _add_class_if_not_exists_to_tag(element, classname, tag_name)
+
+
 def add_caption_to_table(table):
     """
     Adds a caption to a BeautifulSoup table element.

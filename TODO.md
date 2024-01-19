@@ -27,6 +27,7 @@
 
 # DONE
 
+- Fix: Show arrows on bolded li elements in table cells
 - Fix: Use vibrant blue instead of dark for white CDC theme
 - New callout box style + new PDF icon
 - Fix: callout box headings are h5s
