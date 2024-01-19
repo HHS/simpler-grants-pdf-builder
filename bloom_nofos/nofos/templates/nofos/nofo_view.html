@@ -213,13 +213,15 @@
       <div class="section--content">
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
-            <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--questions{% endif %}">
+            <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Alt + Backspace' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}">
               {% if subsection.name %}
                 <h5 class="callout-box--title">{{ subsection.name }}</h5>
               {% endif %}
               <div class="callout-box--contents">
                 {% if 'uestions?' in subsection.body %}
                   <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section %}" alt="">
+                {% elif 'Alt + Backspace' in subsection.body  %}
+                  <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section %}" alt="">
                 {% endif %}
                 {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
               </div>
