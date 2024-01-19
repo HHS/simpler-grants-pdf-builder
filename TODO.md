@@ -22,12 +22,12 @@
   - White large cover HRSA
 - PDF metadata as tags
 - Fix: change body heading sizes
-- Fix: Use vibrant blue instead of dark for white CDC theme
 - Icons, re-do them please
 - Add a way to change settings from the Django admin
 
 # DONE
 
+- Fix: Use vibrant blue instead of dark for white CDC theme
 - New callout box style + new PDF icon
 - Fix: callout box headings are h5s
 - Cover photo src set in view based on nofo number, else default

@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- CDC white theme uses vibrant blue everywhere in place of dark blue
 - Even in the white theme, the "hero" cover page uses blue background and white text
 - Use 50% width for section 4 (other than tables)
   - Same with "Before you begin" page

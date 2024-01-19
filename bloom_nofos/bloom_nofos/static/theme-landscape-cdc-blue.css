@@ -81,18 +81,6 @@ h1 {
 
 /* Table of contents */
 
-.toc h2 {
-  color: var(--color--vibrant-blue);
-}
-
-.toc ol li a {
-  color: var(--color--black);
-}
-
-.toc .toc--section-name .toc--section-name--img {
-  background: var(--color--vibrant-blue);
-}
-
 /* Before you begin */
 
 .section--before-you-begin--icon {
