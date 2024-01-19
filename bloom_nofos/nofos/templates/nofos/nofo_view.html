@@ -11,9 +11,7 @@
   {% endwith %}
 {% endblock %}
 
-{% block title %}
- View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
-{% endblock %}
+{% block title %}{{ nofo.title }}{% endblock %}
 
 {% block body_class %}{{ nofo.theme }}{% endblock %}
 

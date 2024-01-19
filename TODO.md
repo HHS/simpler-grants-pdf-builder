@@ -22,9 +22,12 @@
   - White large cover HRSA
 - PDF metadata as tags
 - Add a way to change settings from the Django admin
+- Fix: HHS logo
+- Fix: CDC logo TM symbol
 
 # DONE
 
+- Fix: use Nofo's real title
 - Icons: re-do them
 - Fix: header breadcrumbs can be out of order if order is not explicit
 - Change body heading sizes to match typescale
