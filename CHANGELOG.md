@@ -23,6 +23,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Clean up header nav colours
 - Standardize heading colours
 
+### Fixed
+
+- Show arrows on bolded li elements in table cells
+
 ## [0.0.15] - 2023-01-17
 
 ### Added
