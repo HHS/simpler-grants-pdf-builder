@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: header breadcrumbs can be out of order if order is not explicit
 - Change body heading sizes to match typescale
 - Fix: Show arrows on bolded li elements in table cells
 - Fix: Use vibrant blue instead of dark for white CDC theme
