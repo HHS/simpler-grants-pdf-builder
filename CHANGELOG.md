@@ -6,6 +6,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Callout box for the in-PDF nav instructions
+  - Add PDF svg icon
+- Alternate callout-box style
+
 ### Changed
 
 - Even in the white theme, the "hero" cover page uses blue background and white text

@@ -9,26 +9,26 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Handle images
-  - for cover page
-  - pick a new image per nofo
-  - inline in documents
+- Handle imagesinline in documents
 - Theme variants
   - ACF white
   - HRSA variant
-  - Big cover pic for CDC
 - Themes
   - ACL
 - Maybe: include preceding paragraph in front of tables potentially
-- Table says required are "bolded" which is lost during conversion
 - Update the README
 - Big cover page design
   - Blue large cover HRSA
   - White large cover HRSA
 - PDF metadata as tags
+- Fix: change body heading sizes
+- Fix: Use vibrant blue instead of dark for white CDC theme
+- Icons, re-do them please
+- Add a way to change settings from the Django admin
 
 # DONE
 
+- New callout box style + new PDF icon
 - Fix: callout box headings are h5s
 - Cover photo src set in view based on nofo number, else default
 - Big cover page design
