@@ -88,7 +88,7 @@ h6 {
 }
 
 .nofo--cover-page--header {
-  padding: 10mm 20mm 5mm 20mm;
+  padding: 5mm 20mm 5mm 20mm;
 }
 
 .nofo--cover-page--title {
@@ -96,13 +96,19 @@ h6 {
 }
 
 .nofo--cover-page--header--logo img {
-  width: 100px;
+  width: 300px;
 }
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
   margin-top: 20px;
   font-size: 13pt;
   font-weight: 600;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo {
+  display: none;
 }
 
 .nofo--cover-page--footer {
