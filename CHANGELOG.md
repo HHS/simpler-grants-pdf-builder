@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## Unreleased
+
+### Changed
+
+- Even in the white theme, the "hero" cover page uses blue background and white text
+- Use 50% width for section 4 (other than tables)
+- Tables with 3 cols are "large", and have grey top bar
+  - Before it was only for tables with captions
+
 ## [0.0.15] - 2023-01-17
 
 ### Added
@@ -20,6 +29,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Reduce list left padding
+- Callout box headings are h5s
 
 ## [0.0.14] - 2023-01-16
 

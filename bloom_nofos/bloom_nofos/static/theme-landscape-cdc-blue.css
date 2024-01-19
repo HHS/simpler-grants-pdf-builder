@@ -43,18 +43,6 @@ h1 {
   color: var(--color--white);
 }
 
-h3 {
-  color: var(--color--vibrant-blue);
-}
-
-h4 {
-  color: var(--color--dark-blue);
-}
-
-h5 {
-  color: var(--color--vibrant-blue);
-}
-
 /* Cover page */
 
 .nofo--cover-page--header,
@@ -120,6 +108,11 @@ h5 {
 }
 
 /* Section title page */
+
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--white);
+  color: var(--color--white);
+}
 
 .section--title-page {
   background-color: var(--color--vibrant-blue);

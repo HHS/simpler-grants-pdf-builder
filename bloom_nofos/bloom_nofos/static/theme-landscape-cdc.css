@@ -58,6 +58,7 @@ h2 {
 h3 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
 }
 
 h4 {
@@ -68,6 +69,7 @@ h4 {
 h5 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
 }
 
 h6 {
@@ -188,9 +190,20 @@ h6 {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
+/* Before you begin page */
+
+.before-you-begin--content {
+  width: 50%;
+}
+
 /* Section title page */
 
 /* Section contents */
+
+.header-nav li a {
+  border-top: 4px solid var(--color--light-grey);
+  color: var(--color--med-grey);
+}
 
 .nofo--agency {
   font-weight: 600;
@@ -250,8 +263,12 @@ table tr td.usa-icon__td--sublist {
   columns: 1;
 }
 
+.section--step-4-learn-about-review-and-award .section--content h3,
+.section--step-4-learn-about-review-and-award .section--content h4,
+.section--step-4-learn-about-review-and-award .section--content h5,
+.section--step-4-learn-about-review-and-award .section--content h6,
 .section--step-4-learn-about-review-and-award .section--content p,
 .section--step-4-learn-about-review-and-award .section--content ul,
 .section--step-4-learn-about-review-and-award .section--content table caption {
-  width: 80%;
+  width: 50%;
 }
