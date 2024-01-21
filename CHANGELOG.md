@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Fixed the border above tables, reduced spacing underneath
 - Use NOFO title for PDF title
 - Change body heading sizes to match typescale
 - CDC white theme uses vibrant blue everywhere in place of dark blue

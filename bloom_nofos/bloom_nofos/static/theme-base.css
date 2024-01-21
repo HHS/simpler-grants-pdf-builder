@@ -171,19 +171,18 @@ a {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 20px 0 30px;
+  margin: 15px 0 20px;
   text-align: left;
   display: block;
 }
 
 table.table--large {
   border-top: 2px solid var(--color--light-grey);
-  padding-top: 20px;
+  padding-top: 0px;
 }
 
 table.table--large caption {
   font-weight: 700;
-  margin-top: -10px;
   margin-bottom: 10px;
   text-align: left;
 }
