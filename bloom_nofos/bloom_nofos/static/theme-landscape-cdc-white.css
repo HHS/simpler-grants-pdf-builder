@@ -94,15 +94,17 @@ h1 {
 table th {
   color: var(--color--white);
   background-color: var(--color--vibrant-blue);
+  border-top: 2px solid var(--color--pale-blue);
+  border-bottom: 2px solid var(--color--pale-blue);
   border-left: 2px solid var(--color--pale-blue);
 }
 
 table th:first-of-type {
-  border-left: 2px solid var(--color--vibrant-blue);
+  border-left: 2px solid var(--color--pale-blue);
 }
 
 table th:last-of-type {
-  border-right: 2px solid var(--color--vibrant-blue);
+  border-right: 2px solid var(--color--pale-blue);
 }
 
 table td {

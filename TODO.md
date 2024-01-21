@@ -25,6 +25,7 @@
 
 # DONE
 
+- Fix: spacing above table horizontal line
 - New combined CDC and HHS logo
 - Fix: use Nofo's real title
 - Icons: re-do them
