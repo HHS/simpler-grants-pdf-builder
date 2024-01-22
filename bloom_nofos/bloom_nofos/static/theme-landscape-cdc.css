@@ -228,6 +228,10 @@ h6 {
 
 /* Section contents */
 
+.heading--break-page {
+  page-break-before: always;
+}
+
 .header-nav li a {
   border-top: 4px solid var(--color--light-grey);
   color: var(--color--med-grey);
