@@ -227,7 +227,7 @@ table td ol li:first-of-type {
 
 ul,
 ol {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   margin-top: 4px;
   line-height: 1.5;
   padding-left: 30px;
@@ -293,19 +293,19 @@ h2 {
 }
 
 h3 {
-  font-size: 17.61pt;
+  font-size: 22pt;
   font-weight: 700;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 h4 {
-  font-size: 15.65pt;
+  font-size: 17.5pt;
   font-weight: 600;
   margin-top: 15px;
 }
 
 h5 {
-  font-size: 13.91pt;
+  font-size: 14.5pt;
   font-weight: 600;
   margin-top: 15px;
 }
@@ -506,6 +506,7 @@ p[role="heading"] {
   position: absolute;
   right: 0;
   content: target-counter(attr(href, url), page);
+  text-decoration: underline;
 }
 
 .toc .toc--subsection-name a {
