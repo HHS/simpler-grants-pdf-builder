@@ -33,6 +33,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Underline page numbers in table of contents
 - Increase space after lists
 - Reduce footer padding: move it on top to separate footer from page content
+- Prefer filling in column over balancing them
 
 ### Fixed
 
