@@ -301,12 +301,14 @@ h3 {
   font-size: 22pt;
   font-weight: 700;
   margin-top: 20px;
+  line-height: 1.4;
 }
 
 h4 {
   font-size: 17.5pt;
   font-weight: 600;
   margin-top: 15px;
+  line-height: 1.4;
 }
 
 h5 {
@@ -319,6 +321,20 @@ h6 {
   font-size: 13pt;
   font-weight: 600;
   margin-top: 12px;
+}
+
+/* Headings which follow headings have less top spacing */
+
+h3 + h4 {
+  margin-top: 12px;
+}
+
+h4 + h5 {
+  margin-top: 8px;
+}
+
+h5 + h6 {
+  margin-top: 8px;
 }
 
 /* this functions as an h7 */
