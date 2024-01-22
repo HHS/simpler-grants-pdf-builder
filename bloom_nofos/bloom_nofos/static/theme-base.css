@@ -183,6 +183,7 @@ table {
 table.table--large {
   border-top: 2px solid var(--color--light-grey);
   padding-top: 0px;
+  width: 100%;
 }
 
 table.table--large caption {
