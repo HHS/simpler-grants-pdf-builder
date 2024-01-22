@@ -36,6 +36,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Show arrow svgs on bolded li elements in table cells
+- Contacts and support section is not a step
 
 ## [0.0.15] - 2023-01-17
 

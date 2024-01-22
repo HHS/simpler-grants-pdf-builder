@@ -25,6 +25,7 @@
 
 # DONE
 
+- Fix: Contact section is not a step
 - Fix: spacing above table horizontal line
 - New combined CDC and HHS logo
 - Fix: use Nofo's real title
