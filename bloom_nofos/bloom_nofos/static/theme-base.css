@@ -633,11 +633,6 @@ p[role="heading"] {
   margin-top: 0;
 }
 
-.nofo--agency {
-  font-size: 13pt;
-  font-weight: 700;
-}
-
 .nofo--tagline {
   font-size: 14pt;
   border-top: 1px solid var(--color--light-grey);
