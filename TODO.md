@@ -25,6 +25,7 @@
 
 # DONE
 
+- Fix: Headings have less top spacing if they follow another heading
 - Fix: Contact section is not a step
 - Fix: spacing above table horizontal line
 - New combined CDC and HHS logo
