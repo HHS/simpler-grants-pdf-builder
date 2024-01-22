@@ -494,6 +494,25 @@ class AddHeadingsTests(TestCase):
             }
         ]
 
+        self.sections_with_really_long_subsection_title = [
+            {
+                "name": "Program description",
+                "order": 1,
+                "html_id": "",
+                "subsections": [
+                    {
+                        "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors and chronic health conditions among adults in the United States and territories.",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "custom-link",
+                        "body": [
+                            '<p>Section 1 body with <a href="#custom-link">custom link</a>.</p>'
+                        ],
+                    }
+                ],
+            }
+        ]
+
     def test_add_headings_success(self):
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
@@ -570,6 +589,44 @@ class AddHeadingsTests(TestCase):
         self.assertIn(
             "Section 2 body with 2 [custom](#1--section-1--subsection-1) [links](#2--section-1--subsection-2).",
             subsection_2.body,
+        )
+
+    def test_add_headings_with_really_long_title_replace_link(self):
+        nofo = create_nofo(
+            "Test Nofo 2", self.sections_with_really_long_subsection_title
+        )
+        self.assertEqual(nofo.title, "Test Nofo 2")
+
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+
+        # check section 1 heading has no id
+        self.assertEqual(section.html_id, "")
+        # check subsection 1 heading has html_id
+        self.assertEqual(subsection_1.html_id, "custom-link")
+        # check the body of subsection 1 includes link
+        self.assertIn(
+            "Section 1 body with [custom link](#custom-link)", subsection_1.body
+        )
+
+        ################
+        # ADD HEADINGS
+        ################
+        nofo = add_headings_to_nofo(nofo)
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+
+        # check section heading has new html_id
+        self.assertEqual(section.html_id, "program-description")
+        # check subsection1 heading has new html_id
+        self.assertEqual(
+            subsection_1.html_id,
+            "1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories",
+        )
+        # check the body of subsection 1 link is updated to new id
+        self.assertIn(
+            "Section 1 body with [custom link](#1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories)",
+            subsection_1.body,
         )
 
 
