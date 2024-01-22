@@ -29,6 +29,7 @@ from .models import Nofo, Subsection
 from .nofo import (
     add_headings_to_nofo,
     create_nofo,
+    decompose_empty_tags,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -139,6 +140,7 @@ def nofo_import(request, pk=None):
         else:
             soup = BeautifulSoup(uploaded_file.read(), "html.parser")
             join_nested_lists(soup)
+            decompose_empty_tags(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

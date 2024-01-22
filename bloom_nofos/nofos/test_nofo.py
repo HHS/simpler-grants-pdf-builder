@@ -7,6 +7,7 @@ from .nofo import (
     add_newline_to_ref_numbers,
     convert_table_first_row_to_header_row,
     create_nofo,
+    decompose_empty_tags,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -881,6 +882,66 @@ class SuggestNofoTaglineTests(TestCase):
         html = "<div><p><span>Tagline: </span><span>The best </span><span>NOFO ever</span></p></div>"
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+
+class TestDecomposeEmptyTags(TestCase):
+    def test_remove_empty_tags(self):
+        html = "<body><div></div><p>  </p><span>Text</span><br></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(len(soup.find_all("div")), 0)
+        self.assertEqual(len(soup.find_all("p")), 0)
+        self.assertEqual(len(soup.find_all("span")), 1)
+
+    def test_keep_non_empty_tags(self):
+        html = "<body><div>Content</div><p>Text</p></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(len(soup.find_all("div")), 1)
+        self.assertEqual(len(soup.find_all("p")), 1)
+
+    def test_keep_br_and_hr_tags(self):
+        html = "<body><br><hr></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(len(soup.find_all("br")), 1)
+        self.assertEqual(len(soup.find_all("hr")), 1)
+
+    def test_remove_empty_nested_tags(self):
+        html = "<body><div><p></p></div><span>Hello</span></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(len(soup.find_all("div")), 0)
+        self.assertEqual(len(soup.find_all("span")), 1)
+
+    def test_remove_empty_nested_tags(self):
+        html = "<body><div><p><a href='#'></a></p></div><div><span>Hello</span></div></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        # first div is removed because everything is empty
+        self.assertEqual(len(soup.find_all("div")), 1)
+        self.assertEqual(len(soup.find_all("a")), 0)
+
+    def test_keep_empty_nested_tags_if_parent_tag_is_not_empty(self):
+        html = "<body><div><p><a href='#'></a></p><span>Hello</span></div><div><span>Hello</span></div></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        # first div is kept because span in first div is not empty
+        self.assertEqual(len(soup.find_all("div")), 2)
+        # empty anchor tag is kept
+        self.assertEqual(len(soup.find_all("a")), 1)
+
+    def test_remove_empty_list_items(self):
+        html = "<body><div><p>Hello</p><ul><li></li><li>Item</li></ul></div></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(len(soup.find_all("li")), 1)  # Only one li should remain
+
+    def test_handle_completely_empty_body(self):
+        html = "<body>   </body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        self.assertEqual(soup.body.contents, [" "])  # Body should be empty
 
 
 ###########################################################
