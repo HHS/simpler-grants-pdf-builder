@@ -249,13 +249,10 @@
               {% include "includes/heading.html" with tag=tag content=content id=id only %}
             {% endwith %}
             {% if section.order == 1 and subsection.order == 1 %}
-              <!-- for the very first section, add the nofo agency and tagline -->
-              <p class="nofo--agency">
-                {% if nofo.subagency %}
-                  {{ nofo.subagency }}
-                {% else %}
-                  {{ nofo.agency }}
-                {% endif %}
+              <!-- for the very first section, add the nofo agency, subagency, and tagline -->
+              <p><strong>{{ nofo.opdiv }}</strong></p>
+              <p>
+                {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
               </p>
               <p class="nofo--tagline">{{ nofo.tagline }}
             {% else %}
