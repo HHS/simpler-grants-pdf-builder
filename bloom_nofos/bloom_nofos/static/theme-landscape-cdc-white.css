@@ -62,8 +62,12 @@ h1 {
 }
 
 .section--title-page--header-nav li a {
-  border-top: 4px solid var(--color--vibrant-blue);
+  border-top: 4px solid var(--color--light-grey);
   color: var(--color--black);
+}
+
+.section--title-page--header-nav li a[aria-current] {
+  border-top: 4px solid var(--color--vibrant-blue);
 }
 
 .section--title-page--name {
