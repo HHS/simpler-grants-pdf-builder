@@ -396,6 +396,23 @@ def suggest_nofo_tagline(soup):
 
 
 def join_nested_lists(soup):
+    """
+    This function mutates the soup!
+
+    Joins nested unordered lists (UL tags) in the provided BeautifulSoup soup.
+
+    Iterates through all UL tags in the soup. For each UL tag, checks if the previous sibling is also a UL tag.
+    If so, calls _join_lists() to join the two lists by:
+
+    1. If the two UL tags have the same "class" attribute, extends the previous UL with the current UL's LI tags, then decomposes the current UL.
+
+    2. If the classes differ, finds the last LI tag in the previous UL. If that LI contains a nested UL, recursively calls _join_lists on that nested UL and the current UL. Otherwise, appends the current UL to the previous LI.
+
+    This mutates the original soup to remove nested ULs and join ULs with the same class.
+
+    Returns the mutated soup.
+    """
+
     def _get_list_classname(tag):
         for classname in tag.get("class"):
             if classname.startswith("lst-"):
@@ -435,3 +452,24 @@ def join_nested_lists(soup):
             _join_lists(ul, previous_element)
 
     return soup
+
+
+def decompose_empty_tags(soup):
+    """
+    This function mutates the soup!
+
+    Removes empty HTML tags from the BeautifulSoup `soup`.
+
+    Iterates over all body descendants and `li` tags, removing any that have no textual content.
+    Intended to clean up HTML extracted from PDFs or other sources that may contain many meaningless tags.
+    """
+    body_descendents = soup.select("body > *")
+
+    for tag in body_descendents:
+        if not tag.get_text().strip() and tag.name not in ["br", "hr"]:
+            tag.decompose()
+
+    lis = soup.find_all("li")
+    for li in lis:
+        if not li.get_text().strip():
+            li.decompose()
