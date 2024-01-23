@@ -10,12 +10,9 @@
   font-style: normal;
 }
 
-/* Page rules */
+/* Set @page rules */
 
 @page {
-  /* portrait letter size */
-  size: 216mm 279mm;
-
   @bottom-left {
     font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
       sans-serif;
@@ -31,13 +28,7 @@
   }
 }
 
-@page cover {
-  margin: 0;
-}
-
-@page title {
-  margin: 0;
-}
+/* Regular CSS */
 
 /* Running header */
 
@@ -45,6 +36,8 @@
   border-top: 4px solid var(--color--light-grey);
   color: var(--color--med-grey);
 }
+
+/* Headings */
 
 /* Headings */
 
@@ -81,63 +74,9 @@ h6 {
 
 /* Cover page */
 
-.nofo--cover-page--footer--subheading {
-  display: none;
-}
+/* Cover page: medium image */
 
-.nofo--cover-page--header {
-  padding: 20mm;
-  padding-bottom: 15mm;
-}
-
-.nofo--cover-page--title {
-  padding: 0 20mm 10mm 20mm;
-}
-
-.nofo--cover-page--footer {
-  padding-left: 20mm;
-}
-
-.nofo--cover-page--header--logo--subheading {
-  font-weight: 700;
-  font-size: 11pt;
-}
-
-.nofo--cover-page--header--intro span:first-of-type {
-  display: inline-block;
-  margin-bottom: 5px;
-}
-
-.nofo--cover-page--title .nofo--cover-page--title--subheading {
-  font-size: 16pt;
-  font-weight: 700;
-}
-
-.nofo--cover-page--footer .nofo--cover-page--footer--image {
-  float: right;
-}
-
-.nofo--cover-page--footer .nofo--cover-page--footer--logo {
-  position: absolute;
-  bottom: 10mm;
-  left: 10mm;
-}
-
-.nofo--cover-page--footer .nofo--cover-page--footer--image {
-  height: 520px;
-  width: 85%;
-  overflow: hidden;
-}
-
-.nofo--cover-page--footer .nofo--cover-page--footer--image img {
-  height: 100%;
-  border-radius: 80px 0 0 0;
-  object-fit: cover;
-}
-
-.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
-  width: 100px;
-}
+/* Cover page: hero image */
 
 /* Table of contents */
 
@@ -147,10 +86,10 @@ h6 {
   margin-bottom: 24px;
 }
 
+/* Before you begin page */
+
 /* Section title page */
 
 /* Section contents */
 
-.section--content {
-  width: 80%;
-}
+/* Media queries */
