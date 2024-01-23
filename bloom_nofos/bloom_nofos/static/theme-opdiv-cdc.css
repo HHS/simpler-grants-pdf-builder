@@ -1,0 +1,59 @@
+/* Set @page rules */
+
+/* Regular CSS */
+
+html {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Headings */
+
+h1 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+h3 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
+}
+
+h4 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+h5 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
+}
+
+h6 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+/* Cover page */
+
+/* Cover page: medium image */
+
+/* Cover page: hero image */
+
+/* Table of contents */
+
+/* Before you begin page */
+
+/* Section title page */
+
+/* Section contents */
+
+/* Media queries */

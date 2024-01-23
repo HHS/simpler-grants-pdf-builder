@@ -46,18 +46,25 @@ from .nofo import (
 
 OPDIVS = {
     "cdc": {
+        "key": "cdc",
         "name": "Centers for Disease Control and Prevention",
         "filename": "cdc-logo.svg",
     },
     "hrsa": {
+        "key": "hrsa",
         "name": "The Health Resources & Services Administration",
         "filename": "hrsa-logo.svg",
     },
     "acf": {
+        "key": "acf",
         "name": "The Administration for Children and Families",
         "filename": "acf-logo.svg",
     },
-    "acl": {"name": "Administration for Community Living", "filename": "acl-logo.svg"},
+    "acl": {
+        "key": "acl",
+        "name": "Administration for Community Living",
+        "filename": "acl-logo.svg",
+    },
 }
 
 
@@ -74,12 +81,17 @@ class NofosDetailView(DetailView):
         context = super().get_context_data(**kwargs)
 
         # add theme information to the context
+        # theme is formatted like "landscape-cdc-blue"
         theme_parts = self.object.theme.split("-")
-        theme_parts.pop()
-        context["nofo_theme_base"] = "-".join(theme_parts)
 
+        context["nofo_theme_base"] = "-".join(theme_parts[1:])
+        # get rid of colour
+        theme_parts.pop()
         # get the name of the opdiv (eg, "cdc", "hrsa", etc)
         context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
+        # get the orientation (eg, "landscape" or "portrait")
+        context["nofo_theme_orientation"] = theme_parts.pop()
+        print("context", context)
 
         # add cover image filepath to the context
         cover_img = "img/cover-img/{}/cover.jpg".format(self.object.number.lower())

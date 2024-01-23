@@ -2,18 +2,22 @@
 {% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_evaluation_tags add_captions_to_tables %}
 
 {% block css %}
-  {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
-    <link href="{% static filename_base %}" type="text/css" media="all" rel="stylesheet">
+  {% with "theme-orientation-"|add:nofo_theme_orientation|add:'.css' as filename_orientation %}
+    <link href="{% static filename_orientation %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
-  {% with "theme-"|add:nofo.theme|add:'.css' as filename %}
+  {% with "theme-opdiv-"|add:nofo_opdiv.key|add:'.css' as filename_opdiv %}
+    <link href="{% static filename_opdiv %}" type="text/css" media="all" rel="stylesheet">
+  {% endwith %}
+
+  {% with "theme-opdiv-"|add:nofo_theme_base|add:'.css' as filename %}
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 {% endblock %}
 
 {% block title %}{{ nofo.title }}{% endblock %}
 
-{% block body_class %}{{ nofo.theme }}{% endblock %}
+{% block body_class %}{{ nofo.theme }} {{ nofo_theme_orientation }} {{ nofo_opdiv }} {{ nofo_theme_base }}{% endblock %}
 
 {% block header %}
   <header class="usa-header usa-header--basic">

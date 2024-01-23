@@ -28,15 +28,6 @@
     margin-right: 20mm;
   }
 }
-
-/* Regular CSS */
-
-html {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-  line-height: 1.5;
-}
-
 /* USA classes */
 
 body[class^="landscape"] .grid-container {
@@ -44,38 +35,6 @@ body[class^="landscape"] .grid-container {
 }
 
 /* Headings */
-
-h1 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-}
-
-h2 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-}
-
-h3 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-  color: var(--color--vibrant-blue);
-}
-
-h4 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-}
-
-h5 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-  color: var(--color--vibrant-blue);
-}
-
-h6 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-}
 
 /* Cover page */
 

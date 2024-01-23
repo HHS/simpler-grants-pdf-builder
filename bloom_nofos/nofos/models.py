@@ -58,8 +58,9 @@ class Nofo(models.Model):
     )
 
     THEME_CHOICES = [
-        ("landscape-cdc-blue", "CDC (Blue)"),
-        ("landscape-cdc-white", "CDC (White)"),
+        ("landscape-cdc-blue", "CDC Landscape (Blue)"),
+        ("landscape-cdc-white", "CDC Landscape (White)"),
+        ("portrait-cdc-blue", "CDC Portrait (Blue)"),
         ("portrait-hrsa-blue", "HRSA (Blue)"),
         ("portrait-hrsa-white", "HRSA (White)"),
         ("portrait-acf-blue", "ACF (Blue)"),
