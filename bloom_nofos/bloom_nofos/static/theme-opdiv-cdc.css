@@ -44,11 +44,31 @@ h6 {
 
 /* Cover page */
 
+.nofo--cover-page--header--logo img {
+  width: 300px;
+}
+
+.nofo--cover-page--title .nofo--cover-page--title--logo {
+  display: none !important;
+}
+
 /* Cover page: medium image */
 
 /* Cover page: hero image */
 
 /* Table of contents */
+
+.toc h2 {
+  color: var(--color--vibrant-blue);
+}
+
+.toc--section-name--a {
+  color: var(--color--vibrant-blue);
+}
+
+.toc ol ol li a {
+  color: var(--color--black);
+}
 
 /* Before you begin page */
 

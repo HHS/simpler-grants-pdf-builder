@@ -203,6 +203,10 @@ table td {
   padding: 0.4rem 0.8rem;
 }
 
+table td {
+  vertical-align: baseline;
+}
+
 table td a {
   color: var(--color--vibrant-blue);
 }
@@ -360,6 +364,7 @@ p[role="heading"] {
   counter-reset: n;
   width: calc(100% + 10mm);
   margin: 0 0 0 -5mm;
+  padding-left: 0;
   display: flex;
   justify-content: space-between;
   list-style-type: none; /* use CSS counters for the list numbers */
@@ -619,7 +624,6 @@ p[role="heading"] {
 .section--title-page--toc a {
   display: inline-block;
   position: relative;
-  width: 33%;
 }
 
 .section--title-page--toc a:after {
