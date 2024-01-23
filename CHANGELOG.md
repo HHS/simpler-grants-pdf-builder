@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [1.0.0] - 2023-01-22
+
+- First NOFO published!
+
+### Fixed
+
+- Strip empty HTML tags so that NOFOs don't blow up on import
+
 ## [0.0.16] - 2023-01-19
 
 ### Added
