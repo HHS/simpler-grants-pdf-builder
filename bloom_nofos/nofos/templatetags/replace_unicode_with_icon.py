@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 from .utils import (
     _add_class_if_not_exists_to_tag,
+    _add_class_if_not_exists_to_tags,
     find_elements_with_character,
     get_parent_td,
 )
@@ -74,10 +75,11 @@ def replace_unicode_with_icon(html_string):
             root_elements.extend(elements_with_char)
 
             for root_element in root_elements:
-                _add_class_if_not_exists_to_tag(
+                # the "bold if required" lis in the logic model tables need this
+                _add_class_if_not_exists_to_tags(
                     element=root_element,
                     classname="usa-icon__list-element",
-                    tag_name="span",
+                    tag_names="span|strong",
                 )
                 root_element.string = root_element.text.replace(icon, "")
                 root_element.insert(0, BeautifulSoup(svg_html, "html.parser"))

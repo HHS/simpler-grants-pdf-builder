@@ -11,7 +11,7 @@ def callout_box_contents(html_string):
     for paragraph in soup.find_all("p"):
         text = paragraph.get_text()
         if ":" in text:
-            split_text = text.split(":")
+            split_text = text.split(":", 1)
             strong_tag = soup.new_tag("strong")
             strong_tag.string, paragraph.string = split_text[0] + ":", split_text[1]
             paragraph.insert(0, strong_tag)

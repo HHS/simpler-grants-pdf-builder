@@ -61,12 +61,18 @@ h2 {
   @bottom-left {
     border-top: 1px solid var(--color--light-grey);
     content: string(sectiontitle);
+    font-size: 9pt;
+    margin-top: 3mm;
+    padding-top: 3mm;
     padding-bottom: 4mm;
   }
 
   @bottom-right {
     border-top: 1px solid var(--color--light-grey);
     content: counter(page);
+    font-size: 9pt;
+    margin-top: 3mm;
+    padding-top: 3mm;
     padding-bottom: 4mm;
   }
 }
@@ -155,17 +161,11 @@ hr {
 }
 
 p {
-  margin: 4px 0;
+  margin: 5px 0;
 }
 
 li {
-  margin: 4px 0;
-}
-
-p[role="heading"] {
-  margin: 10px 0 6px;
-  font-size: 12pt;
-  font-weight: 700;
+  margin: 5px 0;
 }
 
 a {
@@ -175,19 +175,19 @@ a {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 20px 0 40px;
+  margin: 15px 0 20px;
   text-align: left;
   display: block;
 }
 
 table.table--large {
   border-top: 2px solid var(--color--light-grey);
-  padding-top: 20px;
+  padding-top: 0px;
+  width: 100%;
 }
 
 table.table--large caption {
   font-weight: 700;
-  margin-top: -10px;
   margin-bottom: 10px;
   text-align: left;
 }
@@ -232,10 +232,10 @@ table td ol li:first-of-type {
 
 ul,
 ol {
-  margin-bottom: 4px;
+  margin-bottom: 12px;
   margin-top: 4px;
   line-height: 1.5;
-  padding-left: 35px;
+  padding-left: 30px;
   margin-left: 0;
 }
 
@@ -281,7 +281,7 @@ h3,
 h4,
 h5,
 h6 {
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 h1 {
@@ -298,19 +298,21 @@ h2 {
 }
 
 h3 {
-  font-size: 24pt;
+  font-size: 22pt;
   font-weight: 700;
-  margin-top: 30px;
+  margin-top: 20px;
+  line-height: 1.4;
 }
 
 h4 {
-  font-size: 16pt;
+  font-size: 17.5pt;
   font-weight: 600;
-  margin-top: 20px;
+  margin-top: 15px;
+  line-height: 1.4;
 }
 
 h5 {
-  font-size: 14pt;
+  font-size: 14.5pt;
   font-weight: 600;
   margin-top: 15px;
 }
@@ -319,6 +321,28 @@ h6 {
   font-size: 13pt;
   font-weight: 600;
   margin-top: 12px;
+}
+
+/* Headings which follow headings have less top spacing */
+
+h3 + h4 {
+  margin-top: 12px;
+}
+
+h4 + h5 {
+  margin-top: 8px;
+}
+
+h5 + h6 {
+  margin-top: 8px;
+}
+
+/* this functions as an h7 */
+p[role="heading"] {
+  margin: 10px 0 5px;
+  font-size: 11.5pt;
+  font-weight: 600;
+  color: var(--color--vibrant-blue);
 }
 
 /* Running header */
@@ -352,10 +376,12 @@ h6 {
   display: inline-block;
   width: 85px;
   text-decoration: none;
+  padding-top: 5px;
 }
 
 .header-nav li a:before {
   content: counter(n) ".";
+  padding-right: 2px;
 }
 
 .header-nav li:last-of-type {
@@ -501,6 +527,7 @@ h6 {
   position: absolute;
   right: 0;
   content: target-counter(attr(href, url), page);
+  text-decoration: underline;
 }
 
 .toc .toc--subsection-name a {
@@ -566,6 +593,10 @@ h6 {
   padding: 12mm 20mm;
 }
 
+.section--title-page--toc > p {
+  font-weight: 600;
+}
+
 .section--title-page--header-nav {
   padding: 0mm 20mm;
 }
@@ -573,6 +604,7 @@ h6 {
 .section--title-page--header-nav p {
   font-size: 10pt;
   font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .section--title-page--header-nav a[aria-current] {
@@ -581,6 +613,7 @@ h6 {
 
 .section--title-page--toc p {
   font-size: 13pt;
+  padding-bottom: 10px;
 }
 
 .section--title-page--toc a {
@@ -608,7 +641,7 @@ h6 {
   list-style-type: none;
 }
 
-.section--before-you-begin--icon,
+.section--before-you-begin--icon img,
 .section--title-page--icon img {
   width: 65px;
   height: 65px;
@@ -619,11 +652,6 @@ h6 {
 
 .section--content h3:first-of-type {
   margin-top: 0;
-}
-
-.nofo--agency {
-  font-size: 13pt;
-  font-weight: 700;
 }
 
 .nofo--tagline {
@@ -664,18 +692,21 @@ h6 {
   margin-bottom: 0;
 }
 
-.callout-box--questions {
+.callout-box--icon {
   padding: 15px;
 }
 
-.callout-box--questions .callout-box--contents {
+.callout-box--icon .callout-box--contents {
   display: flex;
   flex-direction: row;
-  font-size: 12pt;
   align-items: center;
 }
 
-.callout-box--questions .callout-box--contents img {
+.callout-box--keyboard .callout-box--contents {
+  align-items: flex-start;
+}
+
+.callout-box--icon .callout-box--contents img {
   width: 30px;
   margin-right: 10px;
 }

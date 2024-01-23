@@ -11,9 +11,7 @@
   {% endwith %}
 {% endblock %}
 
-{% block title %}
- View: {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
-{% endblock %}
+{% block title %}{{ nofo.title }}{% endblock %}
 
 {% block body_class %}{{ nofo.theme }}{% endblock %}
 
@@ -112,7 +110,11 @@
 
       {% for section in nofo.sections.all|dictsort:"order" %}
         <li class="toc--section-name">
-          <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:nofo.theme %}" alt="">
+          {% if 'white' in nofo.theme %}
+            <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
+          {% else %}
+            <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'white-icon' %}" alt="">
+          {% endif %}
           <div class="toc--section-name--wrapper">
             <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
@@ -135,7 +137,7 @@
   <section id="section--before-you-begin" class="before-you-begin">
 
     <div class="section--before-you-begin--icon">
-      <img src="{% static 'before you begin'|get_icon_for_section:nofo.theme %}" alt="">
+      <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
     </div>
     <h2>Before you begin</h2>
     <div class="before-you-begin--content">
@@ -160,23 +162,31 @@
         <div class="header-nav section--title-page--header-nav">
           <p>Jump to a step</p>
           <ol>
-            <li><a href="#section--{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
-            <li><a href="#section--{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
-            <li><a href="#section--{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
-            <li><a href="#section--{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
-            <li><a href="#section--{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
-            <li><a href="#section--{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
-            <li><a href="#section--{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+            {% with nofo.sections.all|dictsort:"order" as nav_sections %}
+              <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
+              <li><a href="#section--{{ nav_sections.1.html_id }}" {% if nav_sections.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
+              <li><a href="#section--{{ nav_sections.2.html_id }}" {% if nav_sections.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
+              <li><a href="#section--{{ nav_sections.3.html_id }}" {% if nav_sections.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
+              <li><a href="#section--{{ nav_sections.4.html_id }}" {% if nav_sections.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
+              <li><a href="#section--{{ nav_sections.5.html_id }}" {% if nav_sections.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
+              <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+            {% endwith %}
           </ol>
         </div>
         <div class="section--title-page--name">
           <div class="section--title-page--icon">
-            <img src="{% static section.name|get_icon_for_section %}" alt="">
+            {% if 'white' in nofo.theme %}
+              <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
+            {% else %}
+              <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'white-border' %}" alt="">
+            {% endif %}
           </div>
           <h2 id="{{ section.html_id }}">
             {% with section.name|nofo_section_name_separator as section_name %}
-              <span>Step {% if section_name.number %}{{ section_name.number }}{% else %}{{ forloop.counter }}{% endif %}:</span>
-              <br >
+              {% if section_name.number %}
+                <span>Step {{ section_name.number }}:</span>
+                <br >
+              {% endif %}
               <span>{{ section_name.name }}</span>
             {% endwith %}
           </h2>
@@ -199,13 +209,15 @@
       <!-- after first section title page -->
       <div class="header-nav header-nav--running-header">
         <ol>
-          <li><a href="#section--{{ nofo.sections.all.0.html_id }}" {% if nofo.sections.all.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
-          <li><a href="#section--{{ nofo.sections.all.1.html_id }}" {% if nofo.sections.all.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
-          <li><a href="#section--{{ nofo.sections.all.2.html_id }}" {% if nofo.sections.all.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
-          <li><a href="#section--{{ nofo.sections.all.3.html_id }}" {% if nofo.sections.all.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
-          <li><a href="#section--{{ nofo.sections.all.4.html_id }}" {% if nofo.sections.all.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
-          <li><a href="#section--{{ nofo.sections.all.5.html_id }}" {% if nofo.sections.all.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
-          <li><a href="#section--{{ nofo.sections.all.6.html_id }}" {% if nofo.sections.all.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+          {% with nofo.sections.all|dictsort:"order" as nav_sections %}
+              <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
+              <li><a href="#section--{{ nav_sections.1.html_id }}" {% if nav_sections.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
+              <li><a href="#section--{{ nav_sections.2.html_id }}" {% if nav_sections.2.html_id == section.html_id %}aria-current="step"{% endif %}>Prepare</a></li>
+              <li><a href="#section--{{ nav_sections.3.html_id }}" {% if nav_sections.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
+              <li><a href="#section--{{ nav_sections.4.html_id }}" {% if nav_sections.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
+              <li><a href="#section--{{ nav_sections.5.html_id }}" {% if nav_sections.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
+              <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+            {% endwith %}
         </ol>
       </div>
 
@@ -213,13 +225,23 @@
       <div class="section--content">
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
-            <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--questions{% endif %}">
+            <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Alt + Backspace' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}">
               {% if subsection.name %}
                 <h5 class="callout-box--title">{{ subsection.name }}</h5>
               {% endif %}
               <div class="callout-box--contents">
                 {% if 'uestions?' in subsection.body %}
-                  <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section %}" alt="">
+                  {% if 'white' in nofo.theme %}
+                    <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'dark-blue-border' %}" alt="">
+                  {% else %}
+                    <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'white-border' %}" alt="">
+                  {% endif %}
+                {% elif 'Alt + Backspace' in subsection.body  %}
+                  {% if 'white' in nofo.theme %}
+                    <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'dark-blue-border' %}" alt="">
+                  {% else %}
+                    <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'white-border' %}" alt="">
+                  {% endif %}
                 {% endif %}
                 {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
               </div>
@@ -229,13 +251,10 @@
               {% include "includes/heading.html" with tag=tag content=content id=id only %}
             {% endwith %}
             {% if section.order == 1 and subsection.order == 1 %}
-              <!-- for the very first section, add the nofo agency and tagline -->
-              <p class="nofo--agency">
-                {% if nofo.subagency %}
-                  {{ nofo.subagency }}
-                {% else %}
-                  {{ nofo.agency }}
-                {% endif %}
+              <!-- for the very first section, add the nofo agency, subagency, and tagline -->
+              <p><strong>{{ nofo.opdiv }}</strong></p>
+              <p>
+                {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
               </p>
               <p class="nofo--tagline">{{ nofo.tagline }}
             {% else %}
