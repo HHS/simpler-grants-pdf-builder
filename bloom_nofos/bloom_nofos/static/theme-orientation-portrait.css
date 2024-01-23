@@ -140,6 +140,22 @@ section.nofo--cover-page.nofo--cover-page--hero {
   position: relative;
 }
 
+.section--absolute--right-col {
+  position: absolute;
+  top: 0;
+  right: -58mm;
+  width: 50mm;
+}
+
+.section--absolute--right-col .callout-box--contents {
+  font-size: 10pt;
+}
+
+.section--absolute--right-col .callout-box--questions .callout-box--contents p {
+  font-size: 10pt;
+  font-weight: 600;
+}
+
 table.table--large {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }

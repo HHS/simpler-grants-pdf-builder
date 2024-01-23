@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_evaluation_tags add_captions_to_tables %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_evaluation_tags add_captions_to_tables is_floating_callout_box %}
 
 {% block css %}
   {% with "theme-orientation-"|add:nofo_theme_orientation|add:'.css' as filename_orientation %}
@@ -227,29 +227,25 @@
 
       <!-- SECTION CONTENT -->
       <div class="section--content">
-        {% for subsection in section.subsections.all|dictsort:"order" %}
-          {% if subsection.callout_box %}
-            <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Alt + Backspace' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}">
-              {% if subsection.name %}
-                <h5 class="callout-box--title">{{ subsection.name }}</h5>
+        {% if nofo_theme_orientation == 'portrait' %}
+          <div class="section--absolute--right-col">
+            {% for subsection in section.subsections.all|dictsort:"order" %}
+              {% if subsection.callout_box and subsection|is_floating_callout_box %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
               {% endif %}
-              <div class="callout-box--contents">
-                {% if 'uestions?' in subsection.body %}
-                  {% if 'white' in nofo.theme %}
-                    <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'dark-blue-border' %}" alt="">
-                  {% else %}
-                    <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'white-border' %}" alt="">
-                  {% endif %}
-                {% elif 'Alt + Backspace' in subsection.body  %}
-                  {% if 'white' in nofo.theme %}
-                    <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'dark-blue-border' %}" alt="">
-                  {% else %}
-                    <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'white-border' %}" alt="">
-                  {% endif %}
-                {% endif %}
-                {{ subsection.body|safe_markdown|callout_box_contents|add_classes_to_tables }}
-              </div>
-            </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% for subsection in section.subsections.all|dictsort:"order" %}
+
+          {% if subsection.callout_box %}
+            {% if nofo_theme_orientation == 'portrait' %}
+              {% if not subsection|is_floating_callout_box %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
+              {% endif %}
+            {% else %}
+              {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
+            {% endif %}
           {% else %}
             {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
               {% include "includes/heading.html" with tag=tag content=content id=id only %}

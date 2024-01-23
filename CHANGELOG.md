@@ -4,9 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## Unreleased
+
+### Added
+
+- CDC portrait theme
+- Right column for callout boxes in portrait
+
+### Changed
+
+- Bumped heading levels to be closer to the USWDS
+  - changed heading colours
+- Added page breaks for h3s
+- Add colspan: all to headings after the 'purpose' heading
+
+### Fixed
+
+- Don't add empty 'class' attribute to headings
+
 ## [1.0.0] - 2023-01-22
 
-- First NOFO published!
+- First NOFO published! (not true in the end)
 
 ### Fixed
 
