@@ -11,7 +11,7 @@ class Nofo(models.Model):
         help_text="This will be publicly visible when the NOFO is published.",
     )
     short_name = models.CharField(
-        max_length=200,
+        max_length=511,
         blank=True,
         help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
     )
@@ -118,7 +118,7 @@ class Section(models.Model):
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
     name = models.TextField("Section name")
     html_id = models.CharField(
-        max_length=200,
+        max_length=511,
         blank=True,
     )
     order = models.IntegerField(null=True)
@@ -145,7 +145,7 @@ class Subsection(models.Model):
     )  # Name can be blank if callout_box is true
 
     html_id = models.CharField(
-        max_length=200,
+        max_length=511,
         blank=True,
     )
     order = models.IntegerField(null=True)

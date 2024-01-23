@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon clear_empty_lis add_classes_to_evaluation_tags add_captions_to_tables %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_evaluation_tags add_captions_to_tables %}
 
 {% block css %}
   {% with "theme-"|add:nofo_theme_base|add:'.css' as filename_base %}
@@ -258,7 +258,7 @@
               </p>
               <p class="nofo--tagline">{{ nofo.tagline }}
             {% else %}
-              {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|clear_empty_lis|add_classes_to_evaluation_tags|add_captions_to_tables }}
+              {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_evaluation_tags|add_captions_to_tables }}
             {% endif %}
           {% endif %}
         {% endfor %}
