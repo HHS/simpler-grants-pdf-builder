@@ -52,28 +52,7 @@ h1 {
 
 /* Table of contents */
 
-.toc h2 {
-  color: var(--color--dark-blue);
-}
-
-.toc ol li a {
-  color: var(--color--black);
-}
-
 /* Before you begin */
-
-.section--before-you-begin--icon {
-  filter: invert(25%) sepia(12%) saturate(2247%) hue-rotate(163deg)
-    brightness(94%) contrast(91%);
-}
-
-.before-you-begin h2 {
-  color: var(--color--dark-blue);
-}
-
-.section--before-you-begin--psuedo-header {
-  color: var(--color--dark-blue);
-}
 
 /* Section title page */
 
@@ -83,12 +62,16 @@ h1 {
 }
 
 .section--title-page--header-nav li a {
-  border-top: 4px solid var(--color--med-blue);
+  border-top: 4px solid var(--color--light-grey);
   color: var(--color--black);
 }
 
+.section--title-page--header-nav li a[aria-current] {
+  border-top: 4px solid var(--color--vibrant-blue);
+}
+
 .section--title-page--name {
-  color: var(--color--dark-blue);
+  color: var(--color--vibrant-blue);
 }
 
 .section--title-page--toc,
@@ -96,15 +79,10 @@ h1 {
   color: var(--color--black);
 }
 
-.section--title-page--icon img {
-  filter: invert(23%) sepia(70%) saturate(357%) hue-rotate(162deg)
-    brightness(97%) contrast(96%);
-}
-
 /* Section contents */
 
 .nofo--tagline {
-  color: var(--color--dark-blue);
+  color: var(--color--vibrant-blue);
 }
 
 .callout-box {
@@ -112,23 +90,25 @@ h1 {
   color: var(--color--black);
 }
 
-.callout-box--questions .callout-box--contents img {
-  filter: invert(0%) sepia(4%) saturate(842%) hue-rotate(232deg) brightness(88%)
-    contrast(103%);
+.callout-box--icon {
+  background-color: var(--color-white);
+  border: 2px solid var(--color--dark-blue);
 }
 
 table th {
   color: var(--color--white);
   background-color: var(--color--vibrant-blue);
+  border-top: 2px solid var(--color--pale-blue);
+  border-bottom: 2px solid var(--color--pale-blue);
   border-left: 2px solid var(--color--pale-blue);
 }
 
 table th:first-of-type {
-  border-left: 2px solid var(--color--vibrant-blue);
+  border-left: 2px solid var(--color--pale-blue);
 }
 
 table th:last-of-type {
-  border-right: 2px solid var(--color--vibrant-blue);
+  border-right: 2px solid var(--color--pale-blue);
 }
 
 table td {

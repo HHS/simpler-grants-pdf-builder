@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from .templatetags.utils import (
     _add_class_if_not_exists_to_tag,
+    _add_class_if_not_exists_to_tags,
     add_caption_to_table,
     add_class_to_table,
     find_elements_with_character,
@@ -31,14 +32,37 @@ class TestAddClassIfNotExists(TestCase):
         self.assertEqual(len(div["class"]), 1)
 
     def test_add_class_only_if_tag_name_matches(self):
-        html = "<div></div><span></span>"
+        html = "<div>123</div><span>456</span>"
         soup = BeautifulSoup(html, "html.parser")
         div = soup.find("div")
         span = soup.find("span")
         _add_class_if_not_exists_to_tag(div, "new-class", "span")
         self.assertNotIn("new-class", div.get("class", []))
         _add_class_if_not_exists_to_tag(span, "new-class", "span")
-        self.assertIn("new-class", span["class"])
+        self.assertIn("new-class", span.get("class", []))
+
+    def test_add_class_to_tags(self):
+        html = "<div>123</div><span>456</span>"
+        soup = BeautifulSoup(html, "html.parser")
+        div = soup.find("div")
+        span = soup.find("span")
+        _add_class_if_not_exists_to_tags(div, "new-class", "span|div")
+        self.assertIn("new-class", div.get("class", []))
+        _add_class_if_not_exists_to_tags(span, "new-class", "span|div")
+        self.assertIn("new-class", span.get("class", []))
+
+    def test_add_class_to_tags_only_if_tag_name_matches(self):
+        html = "<div>123</div><span>456</span><strong>789</strong>"
+        soup = BeautifulSoup(html, "html.parser")
+        div = soup.find("div")
+        span = soup.find("span")
+        strong = soup.find("strong")
+        _add_class_if_not_exists_to_tags(div, "new-class", "span|div")
+        self.assertIn("new-class", div.get("class", []))
+        _add_class_if_not_exists_to_tags(span, "new-class", "span|div")
+        self.assertIn("new-class", span.get("class", []))
+        _add_class_if_not_exists_to_tags(strong, "new-class", "span|div")
+        self.assertNotIn("new-class", strong.get("class", []))
 
 
 class AddCaptionToTableTests(TestCase):
@@ -205,28 +229,42 @@ class TestFindElementsWithChar(TestCase):
 class GetIconForSectionTests(TestCase):
     def test_default_parameters(self):
         """Test the function with default parameters."""
-        self.assertEqual(get_icon_for_section(), "img/figma-icons/1-review.svg")
+        self.assertEqual(
+            get_icon_for_section(), "img/figma-icons/med-blue-border/1-review.svg"
+        )
 
-    def test_different_section(self):
+    def test_different_theme(self):
         """Test the function with a different section."""
-        self.assertEqual(get_icon_for_section("write"), "img/figma-icons/3-write.svg")
+        self.assertEqual(
+            get_icon_for_section("write"), "img/figma-icons/med-blue-border/3-write.svg"
+        )
 
     def test_no_matching_section(self):
         """Test the function with a non-existent section."""
         self.assertEqual(
             get_icon_for_section("non-existent section"),
-            "img/figma-icons/1-review.svg",
+            "img/figma-icons/med-blue-border/1-review.svg",
         )
 
     def test_partial_match(self):
         """Test the function with a partial match."""
-        self.assertEqual(get_icon_for_section("review"), "img/figma-icons/1-review.svg")
+        self.assertEqual(
+            get_icon_for_section("review"),
+            "img/figma-icons/med-blue-border/1-review.svg",
+        )
 
     def test_case_insensitivity(self):
         """Test the function with case-insensitive input."""
         self.assertEqual(
             get_icon_for_section("ReViEw ThE OpPoRtUnItY"),
-            "img/figma-icons/1-review.svg",
+            "img/figma-icons/med-blue-border/1-review.svg",
+        )
+
+    def test_different_icon_style(self):
+        """Test the function with case-insensitive input."""
+        self.assertEqual(
+            get_icon_for_section("before you begin", "white-icon"),
+            "img/figma-icons/white-icon/0-before.svg",
         )
 
 
