@@ -37,7 +37,6 @@
 }
 
 .nofo--cover-page--header--logo--subheading {
-  font-weight: 700;
   font-size: 11pt;
 }
 
@@ -81,20 +80,78 @@
 
 /* Cover page: hero image */
 
+section.nofo--cover-page.nofo--cover-page--hero {
+  justify-content: flex-start;
+}
+
+.nofo--cover-page--hero .nofo--cover-page--header {
+  padding: 10mm 20mm 5mm 20mm;
+}
+
+.nofo--cover-page--hero .nofo--cover-page--title {
+  padding: 5mm 20mm 10mm 20mm;
+}
+
+.nofo--cover-page--hero .nofo--cover-page--hero-image {
+  height: 158mm;
+  overflow: hidden;
+}
+
+.nofo--cover-page--hero .nofo--cover-page--hero-image img {
+  max-height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--block {
+  width: 90%;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--block
+  h1 {
+  margin-bottom: 20px;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  font-size: 13pt;
+  font-weight: 700;
+}
+
 /* Table of contents */
 
 /* Before you begin page */
 
 /* Section title page */
 
+.section--title-page--toc a {
+  width: 50%;
+}
+
 /* Section contents */
 
 .section--content {
   width: 80%;
+  position: relative;
 }
 
 table.table--large {
-  width: 130%; /* large tables should try to be full-width */
+  width: calc(216mm - 40mm); /* large tables should be full-width */
+}
+
+body.portrait.cdc
+  .section--step-4-learn-about-review-and-award
+  .section--content
+  p
+  + table {
+  width: calc(
+    216mm - 40mm
+  ); /* large tables in section 4 should be full-width */
 }
 
 /* Media queries */
