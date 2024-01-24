@@ -48,6 +48,10 @@ body > footer {
   top: 12px;
 }
 
+.nofo_edit .usa-summary-box__text p:last-of-type {
+  margin-bottom: 0;
+}
+
 .nofo_edit caption {
   position: sticky;
   top: -1px;
@@ -92,6 +96,19 @@ body > footer {
 .nofo_edit main table tbody tr:first-of-type td:last-of-type {
   width: 5%;
   text-align: right;
+}
+
+.nofo_edit.nofo_status--published
+  table.table--hide-edit-if-published
+  thead
+  tr
+  th:last-of-type,
+.nofo_edit.nofo_status--published
+  table.table--hide-edit-if-published
+  tbody
+  tr
+  td:last-of-type {
+  display: none;
 }
 
 fieldset {
