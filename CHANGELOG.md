@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - CDC portrait theme
 - Right column for callout boxes in portrait
+- Split text for apply-by date on cover page
 
 ### Changed
 
