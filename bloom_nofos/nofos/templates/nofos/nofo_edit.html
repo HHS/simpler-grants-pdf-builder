@@ -147,7 +147,7 @@
 
   <table class="usa-table usa-table--borderless width-full">
     <caption>
-      <h2 class="margin-bottom-0">{% if nofo.coach %}Assigned coach{% else %}Assign a coach{% endif %}</h2>
+      <h2 class="margin-bottom-0">NOFO management options</h2>
       <span><a href="#back-to-top">Top ↑</a></span>
     </caption>
     <thead class="usa-sr-only">
@@ -158,6 +158,11 @@
       </tr>
     </thead>
     <tbody>
+      <tr>
+        <th scope="row">NOFO status</th>
+        <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a></td>
+      <tr>
       <tr>
         <th scope="row">Name of coach</th>
         <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>

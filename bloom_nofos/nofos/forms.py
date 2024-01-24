@@ -42,6 +42,7 @@ NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
 NofoCoverForm = create_nofo_form_class(["cover"])
+NofoStatusForm = create_nofo_form_class(["status"])
 
 
 # this one needs a custom field and a custom widget so don't use the factory function
