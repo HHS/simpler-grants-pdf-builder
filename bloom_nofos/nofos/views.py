@@ -7,10 +7,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
-from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
-from markdown2 import Markdown  # convert markdown to HTML
 
 from .forms import (
     NofoAgencyForm,
@@ -239,7 +237,7 @@ class NofoImportTitleView(BaseNofoEditView):
         if nofo.number.startswith("NOFO #"):
             return redirect("nofos:nofo_import_number", pk=nofo.id)
 
-        return redirect("nofos:nofo_import_coach", pk=nofo.id)
+        return redirect("nofos:nofo_index")
 
 
 class NofoImportNumberView(BaseNofoEditView):
@@ -247,12 +245,7 @@ class NofoImportNumberView(BaseNofoEditView):
     template_name = "nofos/nofo_import_number.html"
 
     def get_success_url(self):
-        return reverse_lazy("nofos:nofo_import_coach", kwargs={"pk": self.object.id})
-
-
-class NofoImportCoachView(BaseNofoEditView):
-    form_class = NofoCoachForm
-    template_name = "nofos/nofo_import_coach.html"
+        return reverse_lazy("nofos:nofo_index")
 
 
 class NofoEditTitleView(BaseNofoEditView):
