@@ -17,7 +17,7 @@
 </script>
 {% endblock %}
 
-{% block body_class %}nofo_edit{% endblock %}
+{% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
   <div class="back-link font-body-md margin-bottom-105">
@@ -31,6 +31,7 @@
   </div>
 
   <p>Make small edits to your NOFO here.</p>
+  {% if nofo.status != 'published' %}
   <div
     class="usa-summary-box"
     role="region"
@@ -62,8 +63,25 @@
       </div>
     </div>
   </div>
+  {% else %}
+  <div
+    class="usa-summary-box"
+    role="region"
+    aria-labelledby="summary-box-key-information"
+  >
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO status is ‘published’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>Published NOFO’s can’t be edited, re-imported, or deleted.</p>
+      <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
+    </div>
+  </div>
+</div>
+  {% endif %}
 
-  <table class="usa-table usa-table--borderless width-full">
+  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
     <caption>
       <h2 class="margin-bottom-0">NOFO metadata</h2>
       <span><a href="#back-to-top">Top ↑</a></span>
@@ -174,7 +192,7 @@
   </table>
 
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <table class="usa-table usa-table--borderless width-full">
+    <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
       <caption>
         <h2 class="margin-bottom-0">{{ section.name }}</h2>
         <span><a href="#back-to-top">Top ↑</a></span>
