@@ -5,7 +5,12 @@ register = template.Library()
 
 @register.filter()
 def add_classes_to_headings(content):
-    heading_text = ["Application checklist", "Reporting"]
-    if content in heading_text:
+    page_break_headers = ["Application checklist", "Reporting"]
+    if content in page_break_headers:
         return "heading--break-page"
+
+    col_span_headers = ["Purpose"]
+    if content in col_span_headers:
+        return "heading--column-span"
+
     return ""
