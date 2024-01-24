@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Add blue and white variants
 - Right column for callout boxes in portrait
 - Split text for apply-by date on cover page
+- Add "status" key to NOFOs
+  - Status is now shown on NOFO index rather than coach
 
 ### Changed
 
@@ -19,10 +21,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - changed heading colours
 - Added page breaks for h3s
 - Add colspan: all to headings after the 'purpose' heading
+- Remove "coach" from import flow, since we aren't using it
 
 ### Fixed
 
 - Don't add empty 'class' attribute to headings
+- Don't accept markdown files in the import anymore
 
 ## [1.0.0] - 2023-01-22
 
