@@ -68,7 +68,7 @@ class SectionAdmin(admin.ModelAdmin):
 class NofoAdmin(admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
-    list_display = ["title", "number", "coach", "created"]
+    list_display = ["title", "number", "status", "coach", "created"]
 
 
 admin.site.register(Subsection, SubsectionAdmin)
