@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO status
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO status" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>A NOFO’s status changes what editing options are available.</p>
+  <ul class="usa-list">
+    <li><strong>Draft:</strong> the default status. Draft NOFOs can be edited, re-imported, or deleted.</li>
+    <li><strong>Active:</strong> NOFOs that are being actively worked on. Active NOFOs can be edited or re-imported but <em>can’t be</em> deleted.</li>
+    <li><strong>Published:</strong> NOFOs that have been shipped. Published NOFOs <em>can’t be</em> edited, re-imported, or deleted.</li>
+  </ul>
+
+  <form id="nofo-status--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Save status</button>
+  </form>
+{% endblock %}

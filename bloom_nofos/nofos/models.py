@@ -105,6 +105,20 @@ class Nofo(models.Model):
         help_text="The coach has the primary responsibility for editing this NOFO.",
     )
 
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("published", "Published"),
+    ]
+
+    status = models.CharField(
+        max_length=32,
+        choices=STATUS_CHOICES,
+        blank=False,
+        default="draft",
+        help_text="The status of this NOFO in the NOFO builder.",
+    )
+
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
