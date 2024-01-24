@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
-## Unreleased
+## [1.1.0] - 2023-01-24
 
 ### Added
 
 - CDC portrait theme
+  - Add blue and white variants
 - Right column for callout boxes in portrait
 - Split text for apply-by date on cover page
 
