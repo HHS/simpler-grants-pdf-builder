@@ -33,7 +33,8 @@ div.section--title-page {
 
 div.title-page,
 section.toc,
-section.before-you-begin {
+section.before-you-begin,
+.section--content h3:not(:first-of-type) {
   page-break-before: always;
 }
 
@@ -302,27 +303,27 @@ h2 {
 }
 
 h3 {
-  font-size: 22pt;
+  font-size: 28pt;
   font-weight: 700;
   margin-top: 20px;
   line-height: 1.4;
 }
 
 h4 {
-  font-size: 17.5pt;
+  font-size: 22pt;
   font-weight: 600;
   margin-top: 15px;
   line-height: 1.4;
 }
 
 h5 {
-  font-size: 14.5pt;
+  font-size: 16.5pt;
   font-weight: 600;
   margin-top: 15px;
 }
 
 h6 {
-  font-size: 13pt;
+  font-size: 15pt;
   font-weight: 600;
   margin-top: 12px;
 }
@@ -344,9 +345,8 @@ h5 + h6 {
 /* this functions as an h7 */
 p[role="heading"] {
   margin: 10px 0 5px;
-  font-size: 11.5pt;
+  font-size: 13pt;
   font-weight: 600;
-  color: var(--color--vibrant-blue);
 }
 
 /* Running header */
