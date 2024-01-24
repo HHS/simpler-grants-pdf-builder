@@ -58,6 +58,10 @@ h6 {
 
 /* Cover page: hero image */
 
+section.nofo--cover-page.nofo--cover-page--hero {
+  background-color: var(--color--dark-blue);
+}
+
 /* Table of contents */
 
 .toc h2 {

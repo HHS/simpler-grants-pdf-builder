@@ -25,8 +25,10 @@
 
 # DONE
 
+- Split text for apply-by date on cover page
 - Themes
-  - CDC: portrait
+  - CDC: portrait (blue)
+  - CDC: portrait (white)
 - Fix: Page breaks for h3s
 - Fix: Strip empty HTML tags so that NOFOs don't blow up on import
 - Fix: Headings have less top spacing if they follow another heading
