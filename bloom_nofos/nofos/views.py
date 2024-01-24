@@ -116,6 +116,16 @@ class NofosDeleteView(DeleteView):
     model = Nofo
     success_url = reverse_lazy("nofos:nofo_index")
 
+    def dispatch(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        if nofo.status != "draft":
+            # Only draft NOFOs can be deleted
+            return HttpResponse(
+                "Server error deleting NOFO.",
+                status=500,
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         nofo = self.get_object()
         messages.error(
