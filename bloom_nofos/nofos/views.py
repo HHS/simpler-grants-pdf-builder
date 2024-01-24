@@ -146,21 +146,15 @@ def nofo_import(request, pk=None):
             messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
             return redirect(view_path, **kwargs)
 
-        if uploaded_file.content_type not in ["text/html", "text/markdown"]:
+        if uploaded_file.content_type not in ["text/html"]:
             messages.add_message(
-                request, messages.ERROR, "Yikes! Please import an HTML or Markdown file"
+                request, messages.ERROR, "Yikes! Please import an HTML file"
             )
             return redirect(view_path, **kwargs)
 
-        soup = None
-        # TODO: remove this
-        if uploaded_file.content_type == "text/markdown":
-            my_file_html = Markdown().convert(uploaded_file.read())
-            soup = BeautifulSoup(my_file_html, "html.parser")
-        else:
-            soup = BeautifulSoup(uploaded_file.read(), "html.parser")
-            join_nested_lists(soup)
-            decompose_empty_tags(soup)
+        soup = BeautifulSoup(uploaded_file.read(), "html.parser")
+        join_nested_lists(soup)
+        decompose_empty_tags(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)
