@@ -49,6 +49,7 @@
             </a>— upload an updated HTML file
             </p>
           </li>
+          {% if nofo.status == 'draft' %}
           <li>
             <p>
             <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
@@ -56,6 +57,7 @@
             </a>— remove this NOFO completely
             </p>
           </li>
+          {% endif %}
         </ul>
       </div>
     </div>
