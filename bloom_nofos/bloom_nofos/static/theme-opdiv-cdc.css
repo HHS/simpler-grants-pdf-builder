@@ -23,23 +23,25 @@ h2 {
 h3 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  color: var(--color--vibrant-blue);
+  color: var(--color--dark-blue);
 }
 
 h4 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
 }
 
 h5 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  color: var(--color--vibrant-blue);
+  color: var(--color--black);
 }
 
 h6 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
+  color: var(--color--black);
 }
 
 /* Cover page */
@@ -75,5 +77,11 @@ h6 {
 /* Section title page */
 
 /* Section contents */
+
+.landscape .section--content .heading--column-span,
+.landscape .section--content .heading--column-span ~ h4,
+.landscape .section--content .heading--column-span ~ h5 {
+  column-span: all;
+}
 
 /* Media queries */
