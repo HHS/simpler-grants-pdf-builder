@@ -7,7 +7,7 @@
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
-	{% include "includes/page_heading.html" with title="All NOFOs" only %}
+	<h1 class="font-heading-xl margin-y-0">All{% if nofo_status %} {{ nofo_status }}{% endif %} NOFOs</h1>
 
 	{% if nofo_list %}
 		<table class="usa-table usa-table--borderless width-full">
@@ -36,9 +36,9 @@
 			</tbody>
 		</table>
 	{% else %}
-		<p>No Fos are available.</p>
+		<p>No Fos are available{% if nofo_status %} that are “{{ nofo_status }}”{% endif %}.</p>
 	{% endif %}
-	<h2 class="font-heading-md">Import a new NOFO</h2>
+	<h2 class="font-heading-md margin-top-6">Import a new NOFO</h2>
 	<p>Export your NOFO document as HTML from Google Docs and then upload it here.</p>
 	<p>
 		<a class="usa-button" href="{% url 'nofos:nofo_import' %}">

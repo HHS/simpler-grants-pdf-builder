@@ -1,7 +1,6 @@
 # TODO
 
 - add updated to NOFOs
-- add status to NOFOs
 - Write ADRs
   - Why Python
 - Maybe: add Google login
@@ -25,6 +24,7 @@
 
 # DONE
 
+- Add status to NOFOs
 - Split text for apply-by date on cover page
 - Themes
   - CDC: portrait (blue)
