@@ -71,6 +71,20 @@ class NofosListView(ListView):
     model = Nofo
     template_name = "nofos/nofo_index.html"
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Retrieve the 'status' query parameter
+        self.status = self.request.GET.get("status")  # Store the status
+        if self.status:
+            # Filter the queryset based on the status
+            queryset = queryset.filter(status=self.status)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo_status"] = self.status  # Add the status to the context
+        return context
+
 
 class NofosDetailView(DetailView):
     model = Nofo
