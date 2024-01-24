@@ -61,6 +61,7 @@ class Nofo(models.Model):
         ("landscape-cdc-blue", "CDC Landscape (Blue)"),
         ("landscape-cdc-white", "CDC Landscape (White)"),
         ("portrait-cdc-blue", "CDC Portrait (Blue)"),
+        ("portrait-cdc-white", "CDC Portrait (White)"),
         ("portrait-hrsa-blue", "HRSA (Blue)"),
         ("portrait-hrsa-white", "HRSA (White)"),
         ("portrait-acf-blue", "ACF (Blue)"),
