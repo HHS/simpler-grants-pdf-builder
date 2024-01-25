@@ -142,10 +142,7 @@ body[class^="landscape"] .grid-container {
 
 .toc > ol > li {
   break-inside: avoid;
-  border-bottom: 1px solid var(--color--light-grey);
 }
-
-/* Table of contents */
 
 /* Before you begin page */
 

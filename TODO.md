@@ -8,7 +8,6 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Handle imagesinline in documents
 - Theme variants
   - ACF white
   - HRSA variant
@@ -21,9 +20,13 @@
   - White large cover HRSA
 - PDF metadata as tags
 - Add a way to change settings from the Django admin
+- Fix: Links in table cells
+- Fix: Links in callout boxes
+- Handle images inline in documents
 
 # DONE
 
+- Fix: remove Google tracking information from URLs
 - Add status to NOFOs
 - Split text for apply-by date on cover page
 - Themes
