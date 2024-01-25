@@ -33,6 +33,7 @@ from .nofo import (
     get_subsections_from_sections,
     join_nested_lists,
     overwrite_nofo,
+    remove_google_tracking_info_from_links,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_opdiv,
@@ -167,6 +168,7 @@ def nofo_import(request, pk=None):
         soup = BeautifulSoup(uploaded_file.read(), "html.parser")
         join_nested_lists(soup)
         decompose_empty_tags(soup)
+        remove_google_tracking_info_from_links(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

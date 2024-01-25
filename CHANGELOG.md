@@ -23,11 +23,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added page breaks for h3s
 - Add colspan: all to headings after the 'purpose' heading
 - Remove "coach" from import flow, since we aren't using it
+- Add 10px margin for p tags that follow p tags
 
 ### Fixed
 
-- Don't add empty 'class' attribute to headings
 - Don't accept markdown files in the import anymore
+- Fix: Don't add empty 'class' attribute to headings
+- Fix: remove Google tracking information from URLs
 
 ## [1.0.0] - 2023-01-22
 
