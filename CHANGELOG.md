@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Split text for apply-by date on cover page
 - Add "status" key to NOFOs
   - Status is now shown on NOFO index rather than coach
+- paragraph elements containing "page-break-before" function as manual page breaks
 
 ### Changed
 
