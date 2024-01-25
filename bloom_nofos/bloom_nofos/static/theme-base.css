@@ -176,6 +176,10 @@ p {
   margin: 5px 0;
 }
 
+p + p {
+  margin-top: 10px;
+}
+
 li {
   margin: 5px 0;
 }

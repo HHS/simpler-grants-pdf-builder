@@ -1,5 +1,6 @@
 import datetime
 import re
+from urllib.parse import urlparse, parse_qs
 
 from bs4 import Tag
 from markdownify import MarkdownConverter
@@ -452,6 +453,32 @@ def join_nested_lists(soup):
             _join_lists(ul, previous_element)
 
     return soup
+
+
+def remove_google_tracking_info_from_links(soup):
+    """
+    This function mutates the soup!
+
+    It looks through all the link elements and whenever it finds one with
+    Google tracking information, it returns the original URL.
+
+    For example:
+    - Before: https://www.google.com/url?q=https://www.cdc.gov/grants/additional-requirements/ar-25.html&sa=D&source=editors&ust=1706211338137807&usg=AOvVaw3QRecqJEvdFcL93eoqk6HD
+    - After: https://www.cdc.gov/grants/additional-requirements/ar-25.html
+
+    URLs that don't start with "https://www.google.com/url?" aren't modified
+    """
+
+    def _get_original_url(modified_url):
+        parsed_url = urlparse(modified_url)
+        query_params = parse_qs(parsed_url.query)
+        original_url = query_params.get("q", [None])[0]
+        return original_url
+
+    for a in soup.find_all("a"):
+        href = a.get("href", "")
+        if href.startswith("https://www.google.com/url?"):
+            a["href"] = _get_original_url(href)
 
 
 def decompose_empty_tags(soup):
