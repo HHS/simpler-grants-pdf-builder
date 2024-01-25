@@ -376,7 +376,7 @@ class PrintNofoAsPDFView(View):
         try:
             response = doc_api.create_doc(
                 {
-                    "test": True,  # test documents are free but watermarked
+                    "test": False,  # test documents are free but watermarked
                     "document_url": nofo_url,
                     "document_type": "pdf",
                     "javascript": False,

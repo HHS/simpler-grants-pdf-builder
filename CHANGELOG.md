@@ -24,6 +24,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add colspan: all to headings after the 'purpose' heading
 - Remove "coach" from import flow, since we aren't using it
 - Add 10px margin for p tags that follow p tags
+- A bunch of last minute changes to heading sizes for the 0139
+- Turned off "test" mode for printing
 
 ### Fixed
 
