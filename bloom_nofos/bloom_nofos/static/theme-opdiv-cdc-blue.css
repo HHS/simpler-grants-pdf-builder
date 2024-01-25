@@ -91,10 +91,6 @@ h1 {
   color: var(--color--vibrant-blue);
 }
 
-.section--before-you-begin--psuedo-header {
-  color: var(--color--vibrant-blue);
-}
-
 /* Section title page */
 
 .section--title-page--header-nav li a {

@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_to_newline %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box %}
 
 {% block css %}
   {% with "theme-orientation-"|add:nofo_theme_orientation|add:'.css' as filename_orientation %}
@@ -68,7 +68,7 @@
       <div class="nofo--cover-page--header--intro">
         <span>Notice of Funding Opportunity</span>
         <br >
-        <span>Application due {{ nofo.application_deadline|split_char_to_newline:"-" }}</span>
+        <span>Application due {{ nofo.application_deadline }}</span>
       </div>
     </div>
     <div class="nofo--cover-page--hero-image">
