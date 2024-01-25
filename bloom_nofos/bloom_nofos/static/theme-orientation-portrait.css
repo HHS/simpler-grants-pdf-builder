@@ -85,11 +85,11 @@ section.nofo--cover-page.nofo--cover-page--hero {
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header {
-  padding: 10mm 20mm 5mm 20mm;
+  padding: 10mm 12mm 5mm 12mm;
 }
 
 .nofo--cover-page--hero .nofo--cover-page--title {
-  padding: 5mm 20mm 10mm 20mm;
+  padding: 12mm 12mm 10mm 12mm;
 }
 
 .nofo--cover-page--hero .nofo--cover-page--hero-image {
@@ -113,6 +113,7 @@ section.nofo--cover-page.nofo--cover-page--hero {
   .nofo--cover-page--title
   .nofo--cover-page--title--block
   h1 {
+  font-weight: 600;
   margin-bottom: 20px;
 }
 
@@ -120,7 +121,7 @@ section.nofo--cover-page.nofo--cover-page--hero {
   .nofo--cover-page--title
   .nofo--cover-page--title--subheading {
   font-size: 13pt;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* Table of contents */
