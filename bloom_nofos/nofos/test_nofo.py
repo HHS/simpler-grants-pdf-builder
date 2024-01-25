@@ -12,6 +12,7 @@ from .nofo import (
     get_subsections_from_sections,
     join_nested_lists,
     overwrite_nofo,
+    remove_google_tracking_info_from_links,
     suggest_nofo_agency,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -942,6 +943,50 @@ class TestDecomposeEmptyTags(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         decompose_empty_tags(soup)
         self.assertEqual(soup.body.contents, [" "])  # Body should be empty
+
+
+class TestRemoveGoogleTrackingInfoFromLinks(TestCase):
+    def test_remove_tracking_from_google_links(self):
+        html = '<a href="https://www.google.com/url?q=https://www.cdc.gov/link&sa=D&source=editors&ust=1234567890&usg=AOvVaw0"></a>'
+        soup = BeautifulSoup(html, "html.parser")
+        remove_google_tracking_info_from_links(soup)
+        self.assertEqual(soup.find("a")["href"], "https://www.cdc.gov/link")
+
+    def test_ignore_non_google_links(self):
+        html = '<a href="https://www.example.com"></a>'
+        soup = BeautifulSoup(html, "html.parser")
+        remove_google_tracking_info_from_links(soup)
+        self.assertEqual(soup.find("a")["href"], "https://www.example.com")
+
+    def test_handle_multiple_links(self):
+        html = """
+        <a href="https://www.google.com/url?q=https://www.cdc.gov/link1&sa=D"></a>
+        <a href="https://www.google.com/url?q=https://www.cdc.gov/link2&sa=D"></a>
+        <a href="https://www.example.com/link3"></a>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        remove_google_tracking_info_from_links(soup)
+        self.assertEqual(soup.find_all("a")[0]["href"], "https://www.cdc.gov/link1")
+        self.assertEqual(soup.find_all("a")[1]["href"], "https://www.cdc.gov/link2")
+        self.assertEqual(soup.find_all("a")[2]["href"], "https://www.example.com/link3")
+
+    def test_remove_tracking_from_google_links_with_hashtag_in_url(self):
+        html = '<a href="https://www.google.com/url?q=https://www.cdc.gov/grants/already-have-grant/Reporting.html%23:~:text%3DCDC%2520requires%2520recipient%2520to%2520submit,Progress%2520Reports&sa=D&source=editors&ust=1706211338264361&usg=AOvVaw0n3u21sko3WVBKQUeWKGyP"></a>'
+        soup = BeautifulSoup(html, "html.parser")
+        remove_google_tracking_info_from_links(soup)
+        self.assertEqual(
+            soup.find("a")["href"],
+            "https://www.cdc.gov/grants/already-have-grant/Reporting.html#:~:text=CDC%20requires%20recipient%20to%20submit,Progress%20Reports",
+        )
+
+    def test_remove_tracking_from_google_links_with_equals_sign_in_url(self):
+        html = '<a href="https://www.google.com/url?q=https://cdc.zoomgov.com/j/1609422163?pwd%3DQVFuNzZLWTRMTXMrT2hURkFnb21LUT09&sa=D&source=editors&ust=1706211338171041&usg=AOvVaw1zbYZH1Hv5HZQJbFp5VXbT"></a>'
+        soup = BeautifulSoup(html, "html.parser")
+        remove_google_tracking_info_from_links(soup)
+        self.assertEqual(
+            soup.find("a")["href"],
+            "https://cdc.zoomgov.com/j/1609422163?pwd=QVFuNzZLWTRMTXMrT2hURkFnb21LUT09",
+        )
 
 
 ###########################################################
