@@ -52,7 +52,12 @@ section.before-you-begin,
   page-break-before: always;
 }
 
-.page-break-before--spacer {
+.page-break-after,
+.page-break-after--heading {
+  page-break-after: always;
+}
+
+.page-break--spacer {
   visibility: hidden;
   height: 0;
   margin: 0;
