@@ -191,6 +191,12 @@ class Subsection(models.Model):
         help_text="Make this subsection a callout box.",
     )
 
+    is_page_break = models.BooleanField(
+        "Has page break?",
+        default=False,
+        help_text="If selected, this heading will start on the top of a new page.",
+    )
+
     body = MartorField("Content of subsection", blank=True)
 
     def __str__(self):
