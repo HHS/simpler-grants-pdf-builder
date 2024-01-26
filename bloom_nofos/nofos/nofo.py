@@ -413,6 +413,17 @@ def suggest_nofo_tagline(soup):
     suggestion = _suggest_by_startswith_string(soup, "Tagline:")
     return suggestion or ""
 
+def suggest_nofo_author(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Author:")
+    return suggestion or ""
+
+def suggest_nofo_subject(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Subject:")
+    return suggestion or ""
+
+def suggest_nofo_keywords(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Keywords:")
+    return suggestion or ""
 
 def join_nested_lists(soup):
     """
