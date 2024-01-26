@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove %}
 
 {% block css %}
   {% with "theme-orientation-"|add:nofo_theme_orientation|add:'.css' as filename_orientation %}
@@ -153,8 +153,8 @@
       <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
       <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
 
-      <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline }}</p>
-      <p>Applications are due by 11:59pm Eastern Time on {{ nofo.application_deadline }}.</p>
+      <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline|split_char_and_remove:"-" }}</p>
+      <p>Applications are due by 11:59pm Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
     </div>
   </section>
 
