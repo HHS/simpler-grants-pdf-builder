@@ -205,13 +205,12 @@ a {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 15px 0 20px;
+  margin: 10px 0 20px;
   text-align: left;
   display: block;
 }
 
 table.table--large {
-  border-top: 2px solid var(--color--light-grey);
   padding-top: 0px;
   width: 100%;
 }

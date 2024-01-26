@@ -30,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Turned off "test" mode for printing
 - Move callout boxes in right margin until after "Basic information"
   - Change h5 callout box titles to h4
+- Remove grey top bar from tables in portrait
 
 ### Fixed
 
