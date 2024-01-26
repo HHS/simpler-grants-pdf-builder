@@ -138,6 +138,21 @@
         <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
       <tr>
+      <tr>
+        <th scope="row">Author</th>
+        <td>{{ nofo.author|get_value_or_none:"author" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_author' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+      <tr>
+      <tr>
+        <th scope="row">Subject</th>
+        <td>{{ nofo.subject|get_value_or_none:"subject" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_subject' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+      <tr>
+      <tr>
+        <th scope="row">Keywords</th>
+        <td>{{ nofo.keywords|get_value_or_none:"keywords" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_keywords' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+      <tr>
     </tbody>
   </table>
 

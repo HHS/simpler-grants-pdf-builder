@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO Subject
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO Subject" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <form id="nofo-number--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" with hint2="eg: “Improve rural access to physician assistant support for mental and behavioral health needs.”" %}
+
+    <button class="usa-button margin-top-3" type="submit">Save subject</button>
+  </form>
+{% endblock %}
