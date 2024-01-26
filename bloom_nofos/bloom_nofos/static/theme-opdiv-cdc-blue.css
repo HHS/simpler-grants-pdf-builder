@@ -112,6 +112,17 @@ h1 {
   color: var(--color--vibrant-blue);
 }
 
+.nofo--author {
+  color: var(--color--vibrant-blue);
+}
+
+.nofo--subject {
+  color: var(--color--vibrant-blue);
+}
+.nofo--keywords {
+  color: var(--color--vibrant-blue);
+}
+
 .callout-box {
   background-color: var(--color--vibrant-blue);
   color: var(--color--white);

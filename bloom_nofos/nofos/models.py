@@ -57,6 +57,24 @@ class Nofo(models.Model):
         help_text="A short sentence that outlines the high-level goal of this NOFO.",
     )
 
+    author = models.TextField(
+        "NOFO author",
+        blank=True,
+        help_text="Who wrote this NOFO.",
+    )
+
+    subject = models.TextField(
+        "NOFO subject",
+        blank=True,
+        help_text="What this NOFO about.",
+    )
+
+    keywords = models.TextField(
+        "NOFO keywords",
+        blank=True,
+        help_text="keywords for the NOFO.",
+    )
+
     THEME_CHOICES = [
         ("landscape-cdc-blue", "CDC Landscape (Blue)"),
         ("landscape-cdc-white", "CDC Landscape (White)"),

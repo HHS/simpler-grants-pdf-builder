@@ -257,6 +257,9 @@
                 {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
               </p>
               <p class="nofo--tagline">{{ nofo.tagline }}
+              <p class="nofo--author">{{ nofo.author }}
+              <p class="nofo--subject">{{ nofo.subject }}
+              <p class="nofo--keywords">{{ nofo.keywords }}
             {% else %}
               {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables }}
             {% endif %}

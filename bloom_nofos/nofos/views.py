@@ -21,6 +21,9 @@ from .forms import (
     NofoSubagencyForm,
     NofoStatusForm,
     NofoTaglineForm,
+    NofoAuthorForm,
+    NofoSubjectForm,
+    NofoKeywordsForm,
     NofoThemeForm,
     SubsectionForm,
 )
@@ -40,6 +43,9 @@ from .nofo import (
     suggest_nofo_opportunity_number,
     suggest_nofo_subagency,
     suggest_nofo_tagline,
+    suggest_nofo_author,
+    suggest_nofo_subject,
+    suggest_nofo_keywords,
     suggest_nofo_theme,
     suggest_nofo_title,
 )
@@ -207,6 +213,9 @@ def nofo_import(request, pk=None):
             nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
             nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
             nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
+            nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
+            nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
+            nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
             nofo.application_deadline = suggest_nofo_application_deadline(
                 soup
             )  # guess the NOFO application deadline
@@ -288,6 +297,18 @@ class NofoEditTaglineView(BaseNofoEditView):
     form_class = NofoTaglineForm
     template_name = "nofos/nofo_edit_tagline.html"
 
+class NofoEditAuthorView(BaseNofoEditView):
+    form_class = NofoAuthorForm
+    template_name = "nofos/nofo_edit_author.html"
+  
+class NofoEditSubjectView(BaseNofoEditView):
+    form_class = NofoSubjectForm
+    template_name = "nofos/nofo_edit_subject.html"
+  
+class NofoEditKeywordsView(BaseNofoEditView):
+    form_class = NofoKeywordsForm
+    template_name = "nofos/nofo_edit_keywords.html"
+  
 
 class NofoEditOpDivView(BaseNofoEditView):
     form_class = NofoOpDivForm
