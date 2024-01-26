@@ -26,6 +26,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add 10px margin for p tags that follow p tags
 - A bunch of last minute changes to heading sizes for the 0139
 - Turned off "test" mode for printing
+- Move callout boxes in right margin until after "Basic information"
+  - Change h5 callout box titles to h4
 
 ### Fixed
 
