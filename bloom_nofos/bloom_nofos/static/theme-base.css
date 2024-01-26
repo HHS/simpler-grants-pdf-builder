@@ -433,8 +433,8 @@ p[role="heading"] {
 
 .header-nav--running-header li a[aria-current] {
   font-weight: 700;
-  border-top: 4px solid var(--color--med-blue);
-  color: var(--color--med-blue);
+  border-top: 4px solid var(--color--vibrant-blue);
+  color: var(--color--vibrant-blue);
 }
 
 /* Cover page */
@@ -538,6 +538,9 @@ p[role="heading"] {
 .toc > ol > li {
   padding-bottom: 10px;
   margin-bottom: 10px;
+}
+
+.toc > ol > li:not(:last-of-type) {
   border-bottom: 1px solid var(--color--light-grey);
 }
 
