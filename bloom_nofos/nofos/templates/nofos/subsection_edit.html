@@ -42,6 +42,24 @@
         {% endwith %}
       </div>
       <div class="form-group">
+        <fieldset class="usa-fieldset">
+          <legend class="usa-legend legend--bootstrap">Page break</legend>
+          <div class="usa-checkbox">
+            <input
+              class="usa-checkbox__input"
+              id="is_page_break"
+              type="checkbox"
+              name="is_page_break"
+              {% if form.is_page_break.value %}
+              checked="checked"
+              {% endif %}
+            />
+            <label class="usa-checkbox__label" for="is_page_break"
+              >{{ form.is_page_break.label }}</label
+            >
+          </div>
+      </div>
+      <div class="form-group">
         <div class="border-2px border-base-lighter margin-top-4 radius-md">
           <label class="usa-label usa-sr-only" for="{{ form.body.id_for_label }}">Subsection content</label>
           {{ form.body }}

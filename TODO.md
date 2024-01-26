@@ -26,6 +26,8 @@
 
 # DONE
 
+- Add page break checkbox to subsection headings
+- Add checkbox svgs to app
 - Fix: remove Google tracking information from URLs
 - Add status to NOFOs
 - Split text for apply-by date on cover page
