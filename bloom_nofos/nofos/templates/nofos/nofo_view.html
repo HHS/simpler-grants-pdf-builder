@@ -245,7 +245,7 @@
           <div class="section--absolute--right-col">
             {% for subsection in section.subsections.all|dictsort:"order" %}
               {% if subsection.callout_box and subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
               {% endif %}
             {% endfor %}
           </div>
@@ -256,7 +256,7 @@
           {% if subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% if not subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
               {% endif %}
             {% else %}
               {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
