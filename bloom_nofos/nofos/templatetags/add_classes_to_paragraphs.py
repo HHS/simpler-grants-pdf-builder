@@ -20,8 +20,9 @@ def add_classes_to_paragraphs(html_string):
 
     # Look for paragraphs that contain the string "page-break-before"
     for p in soup.find_all("p", string="page-break-before"):
-        _add_class_if_not_exists_to_tag(
-            p, "page-break-before page-break-before--spacer", "p"
-        )
+        _add_class_if_not_exists_to_tag(p, "page-break-before page-break--spacer", "p")
+
+    for p in soup.find_all("p", string="page-break-after"):
+        _add_class_if_not_exists_to_tag(p, "page-break-after page-break--spacer", "p")
 
     return mark_safe(str(soup))
