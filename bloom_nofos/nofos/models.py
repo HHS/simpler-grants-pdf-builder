@@ -127,6 +127,9 @@ class Nofo(models.Model):
     def get_absolute_url(self):
         return reverse("nofos:nofo_edit", args=(self.id,))
 
+    def get_first_subsection(self):
+        return self.sections.first().subsections.first()
+
 
 # TODO default lambda
 # order = models.IntegerField(default=lambda: Section.objects.latest("order") + 1)

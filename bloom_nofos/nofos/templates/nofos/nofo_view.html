@@ -139,7 +139,6 @@
   </section>
 
   <section id="section--before-you-begin" class="before-you-begin">
-
     <div class="section--before-you-begin--icon">
       <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
     </div>
@@ -227,6 +226,21 @@
 
       <!-- SECTION CONTENT -->
       <div class="section--content">
+        <!-- for the very first subsection, add the nofo agency, subagency, and tagline -->
+        {% if section.order == 1 %}
+          {% with first_subsection=nofo.get_first_subsection %}
+            {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
+              {% include "includes/heading.html" with tag=tag content=content id=id only %}
+            {% endwith %}
+              <p><strong>{{ nofo.opdiv }}</strong></p>
+              <p>
+                {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
+              </p>
+              <p class="nofo--tagline">{{ nofo.tagline }}</p>
+          {% endwith %}
+        {% endif %}
+
+        <!-- if in portrait mode, add callout boxes in right margin -->
         {% if nofo_theme_orientation == 'portrait' %}
           <div class="section--absolute--right-col">
             {% for subsection in section.subsections.all|dictsort:"order" %}
@@ -236,8 +250,9 @@
             {% endfor %}
           </div>
         {% endif %}
-        {% for subsection in section.subsections.all|dictsort:"order" %}
 
+        <!-- loop through remaining subsections as usual -->
+        {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% if not subsection|is_floating_callout_box %}
@@ -247,18 +262,11 @@
               {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
             {% endif %}
           {% else %}
-            {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-              {% include "includes/heading.html" with tag=tag content=content id=id only %}
-            {% endwith %}
-            {% if section.order == 1 and subsection.order == 1 %}
-              <!-- for the very first section, add the nofo agency, subagency, and tagline -->
-              <p><strong>{{ nofo.opdiv }}</strong></p>
-              <p>
-                {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
-              </p>
-              <p class="nofo--tagline">{{ nofo.tagline }}
-            {% else %}
-              {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables }}
+            {% if subsection.name != 'Basic information' %}
+              {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+                {% include "includes/heading.html" with tag=tag content=content id=id only %}
+              {% endwith %}
+                {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables }}
             {% endif %}
           {% endif %}
         {% endfor %}
