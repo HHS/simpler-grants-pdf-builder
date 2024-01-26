@@ -197,6 +197,8 @@ body[class^="landscape"] .grid-container {
 }
 
 .section--content table.table--large {
+  margin-top: 15px;
+  border-top: 2px solid var(--color--light-grey);
   column-span: all;
 }
 
