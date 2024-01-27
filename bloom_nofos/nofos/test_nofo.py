@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
+from unittest.mock import patch
 
 from .nofo import (
+    DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
     convert_table_first_row_to_header_row,
@@ -13,6 +15,7 @@ from .nofo import (
     join_nested_lists,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
+    replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -696,7 +699,7 @@ class HTMLSuggestNumberTests(TestCase):
         )
 
     def test_suggest_nofo_number_returns_default_number_for_bad_html(self):
-        default_number = "NOFO #1"
+        default_number = "NOFO #999"
         self.assertEqual(
             suggest_nofo_opportunity_number(
                 BeautifulSoup(
@@ -987,6 +990,35 @@ class TestRemoveGoogleTrackingInfoFromLinks(TestCase):
             soup.find("a")["href"],
             "https://cdc.zoomgov.com/j/1609422163?pwd=QVFuNzZLWTRMTXMrT2hURkFnb21LUT09",
         )
+
+
+class TestReplaceSrcForInlineImages(TestCase):
+    @patch("nofos.nofo.suggest_nofo_opportunity_number")
+    def test_replace_src_when_nofo_number_is_not_default(self, mock_suggest_nofo):
+        mock_suggest_nofo.return_value = "hrsa-24-017"
+        html = '<img src="images/image1.png">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        replace_src_for_inline_images(soup)
+        self.assertEqual(soup.find("img")["src"], "/static/img/hrsa-24-017/image1.png")
+
+    @patch("nofos.nofo.suggest_nofo_opportunity_number")
+    def test_do_not_replace_src_when_nofo_number_is_default(self, mock_suggest_nofo):
+        mock_suggest_nofo.return_value = DEFAULT_NOFO_OPPORTUNITY_NUMBER
+        html = '<img src="images/image1.png">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        replace_src_for_inline_images(soup)
+        self.assertEqual(soup.find("img")["src"], "images/image1.png")
+
+    @patch("nofos.nofo.suggest_nofo_opportunity_number")
+    def test_ignore_img_without_src(self, mock_suggest_nofo):
+        mock_suggest_nofo.return_value = "hrsa-24-017"
+        html = "<img alt='no src, deal with it'>"
+        soup = BeautifulSoup(html, "html.parser")
+
+        replace_src_for_inline_images(soup)
+        self.assertIsNone(soup.find("img").get("src"))
 
 
 ###########################################################

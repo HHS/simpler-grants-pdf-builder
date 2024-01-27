@@ -22,10 +22,10 @@
 - Add a way to change settings from the Django admin
 - Fix: Links in table cells
 - Fix: Links in callout boxes
-- Handle images inline in documents
 
 # DONE
 
+- Handle images inline in documents
 - Add page break checkbox to subsection headings
 - Add checkbox svgs to app
 - Fix: remove Google tracking information from URLs
