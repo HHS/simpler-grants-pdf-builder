@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Paragraph elements containing "page-break-before" function as manual page breaks
   - also: paragraph elements containing "page-break-after" function as manual page breaks
 - Add page break checkbox to subsection headings
+- Handle inline images
 
 ### Changed
 
