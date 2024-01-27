@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - also: paragraph elements containing "page-break-after" function as manual page breaks
 - Add page break checkbox to subsection headings
 - Handle inline images
+- Add a way to change settings from the Django admin
 
 ### Changed
 

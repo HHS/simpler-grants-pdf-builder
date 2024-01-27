@@ -19,12 +19,12 @@
   - Blue large cover HRSA
   - White large cover HRSA
 - PDF metadata as tags
-- Add a way to change settings from the Django admin
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 
 # DONE
 
+- Add a way to change settings from the Django admin
 - Handle images inline in documents
 - Add page break checkbox to subsection headings
 - Add checkbox svgs to app
