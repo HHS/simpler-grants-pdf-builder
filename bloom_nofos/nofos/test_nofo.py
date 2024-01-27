@@ -1,7 +1,8 @@
+from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
-from unittest.mock import patch
 
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
