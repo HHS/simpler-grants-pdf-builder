@@ -299,23 +299,21 @@ def get_subsections_from_sections(sections):
 
             # if not a heading or callout_box table add to existing subsection
             else:
-                # skip empty elements
-                if len(tag.get_text().strip()):
-                    # convert first row of header cells into th elements
-                    if tag.name == "table":
-                        convert_table_first_row_to_header_row(tag)
+                # convert first row of header cells into th elements
+                if tag.name == "table":
+                    convert_table_first_row_to_header_row(tag)
 
-                    if subsection:
-                        if subsection.get("is_callout_box", False):
-                            raise Exception(
-                                "Extra content after callout box with no home, please check the HTML. Name: {}, previous name: {}, tag: {}".format(
-                                    subsection.get("name"),
-                                    section["subsections"][-2].get("name"),
-                                    tag,
-                                )
+                if subsection:
+                    if subsection.get("is_callout_box", False):
+                        raise Exception(
+                            "Extra content after callout box with no home, please check the HTML. Name: {}, previous name: {}, tag: {}".format(
+                                subsection.get("name"),
+                                section["subsections"][-2].get("name"),
+                                tag,
                             )
+                        )
 
-                        subsection["body"].append(tag)
+                    subsection["body"].append(tag)
 
     return sections
 
@@ -489,12 +487,16 @@ def decompose_empty_tags(soup):
 
     Iterates over all body descendants and `li` tags, removing any that have no textual content.
     Intended to clean up HTML extracted from PDFs or other sources that may contain many meaningless tags.
+
+    It will, however, keep in place: brs, hrs, and tags that contain imgs.
     """
     body_descendents = soup.select("body > *")
 
     for tag in body_descendents:
         if not tag.get_text().strip() and tag.name not in ["br", "hr"]:
-            tag.decompose()
+            # images have no content but should not be stripped out
+            if len(tag.find_all("img")) == 0:
+                tag.decompose()
 
     lis = soup.find_all("li")
     for li in lis:

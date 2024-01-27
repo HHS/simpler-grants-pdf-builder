@@ -105,12 +105,9 @@ class NofosDetailView(DetailView):
         context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
         # get the orientation (eg, "landscape" or "portrait")
         context["nofo_theme_orientation"] = theme_parts.pop()
-        print("context", context)
 
         # add cover image filepath to the context
         cover_img = "img/cover-img/{}/cover.jpg".format(self.object.number.lower())
-        print(cover_img)
-        print(os.path.join(settings.STATIC_ROOT, cover_img))
         if not os.path.exists(os.path.join(settings.STATIC_ROOT, cover_img)):
             # if the path doesn't exist, set a default path
             cover_img = "img/cover.jpg"
@@ -166,6 +163,8 @@ def nofo_import(request, pk=None):
             return redirect(view_path, **kwargs)
 
         soup = BeautifulSoup(uploaded_file.read(), "html.parser")
+
+        # mutate the HTML
         join_nested_lists(soup)
         decompose_empty_tags(soup)
         remove_google_tracking_info_from_links(soup)
