@@ -1,13 +1,12 @@
 import datetime
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from bs4 import Tag
 from markdownify import MarkdownConverter
 from slugify import slugify
 
 from .models import Nofo, Section, Subsection
-
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 

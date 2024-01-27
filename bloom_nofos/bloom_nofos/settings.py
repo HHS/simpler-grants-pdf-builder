@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "constance",
     "nofos.apps.NofosConfig",
     "users.apps.UsersConfig",
     "easyaudit",
@@ -402,3 +403,15 @@ if is_prod:
 # Document IPs for our PDF generating app
 DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
 DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
+DOCRAPTOR_TEST_MODE = True
+
+# Add a field for constance
+CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
+
+CONSTANCE_CONFIG = {
+    "DOCRAPTOR_TEST_MODE": (
+        True,
+        "Whether to print PDFs with watermarks. If True, documents will be watermarked.",
+        bool,
+    ),
+}

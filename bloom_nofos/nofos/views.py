@@ -3,6 +3,7 @@ import os
 
 import docraptor
 from bs4 import BeautifulSoup
+from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -18,8 +19,8 @@ from .forms import (
     NofoNameForm,
     NofoNumberForm,
     NofoOpDivForm,
-    NofoSubagencyForm,
     NofoStatusForm,
+    NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeForm,
     SubsectionForm,
@@ -106,6 +107,8 @@ class NofosDetailView(DetailView):
         context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
         # get the orientation (eg, "landscape" or "portrait")
         context["nofo_theme_orientation"] = theme_parts.pop()
+
+        context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
         # add cover image filepath to the context
         cover_img = "img/cover-img/{}/cover.jpg".format(self.object.number.lower())
@@ -378,7 +381,7 @@ class PrintNofoAsPDFView(View):
         try:
             response = doc_api.create_doc(
                 {
-                    "test": False,  # test documents are free but watermarked
+                    "test": config.DOCRAPTOR_TEST_MODE,  # test documents are free but watermarked
                     "document_url": nofo_url,
                     "document_type": "pdf",
                     "javascript": False,

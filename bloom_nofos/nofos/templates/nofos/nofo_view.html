@@ -34,6 +34,9 @@
           <li class="usa-nav__primary-item">
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
           </li>
+          <li>
+            Docraptor test mode: {{ DOCRAPTOR_TEST_MODE }}
+          </li>
           <li class="usa-nav__primary-item">
             <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
               {% csrf_token %}
