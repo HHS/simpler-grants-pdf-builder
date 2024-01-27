@@ -34,6 +34,7 @@ from .nofo import (
     join_nested_lists,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
+    replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_opdiv,
@@ -168,6 +169,7 @@ def nofo_import(request, pk=None):
         join_nested_lists(soup)
         decompose_empty_tags(soup)
         remove_google_tracking_info_from_links(soup)
+        replace_src_for_inline_images(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

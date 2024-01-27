@@ -9,6 +9,9 @@ from slugify import slugify
 from .models import Nofo, Section, Subsection
 
 
+DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
+
+
 class ListInATableConverter(MarkdownConverter):
     """
     Leave ULs and OLs TDs as HTML
@@ -337,13 +340,7 @@ def _suggest_by_startswith_string(soup, startswith_string):
 
 
 def suggest_nofo_opportunity_number(soup):
-    nofo_number = 1
-    try:
-        nofo_number = Nofo.objects.latest("id").id + 1
-    except Nofo.DoesNotExist:
-        pass
-
-    opportunity_number_default = "NOFO #{}".format(nofo_number)
+    opportunity_number_default = DEFAULT_NOFO_OPPORTUNITY_NUMBER
     suggestion = _suggest_by_startswith_string(soup, "Opportunity Number:")
     return suggestion or opportunity_number_default
 
@@ -479,6 +476,7 @@ def remove_google_tracking_info_from_links(soup):
             a["href"] = _get_original_url(href)
 
 
+# TODO new tests
 def decompose_empty_tags(soup):
     """
     This function mutates the soup!
@@ -502,3 +500,21 @@ def decompose_empty_tags(soup):
     for li in lis:
         if not li.get_text().strip():
             li.decompose()
+
+
+# TODO test this
+# previously: images/image1.png
+# after: /static/img/hrsa-24-017/image1.png
+def replace_src_for_inline_images(soup):
+    nofo_number = suggest_nofo_opportunity_number(soup)
+
+    if nofo_number and nofo_number != DEFAULT_NOFO_OPPORTUNITY_NUMBER:
+        for img in soup.find_all("img"):
+            if img.get("src"):
+                img_src = img["src"]
+                img_filename = img_src.split(
+                    "/"
+                ).pop()  # get the last part of the filename
+                img["src"] = "/static/img/{}/{}".format(
+                    nofo_number.lower(), img_filename
+                )
