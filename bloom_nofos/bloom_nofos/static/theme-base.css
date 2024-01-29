@@ -689,6 +689,10 @@ p[role="heading"] {
 
 /* Section contents */
 
+.section--content {
+  orphans: 2;
+}
+
 .section--content h3:first-of-type {
   margin-top: 0;
 }
