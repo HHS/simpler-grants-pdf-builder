@@ -73,6 +73,9 @@ def add_class_to_table(table):
     rows = table.find_all("tr")
     cols = rows[0].find_all("th") + rows[0].find_all("td")
 
+    if table.find("th", string="Recommended For"):
+        return "table--large"
+
     return _get_table_class(len(cols))
 
 

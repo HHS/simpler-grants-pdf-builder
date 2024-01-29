@@ -200,6 +200,12 @@ class HTMLTableClassTests(TestCase):
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
+    def test_table_class_lg_recommended_for_header(self):
+        table_html = "<table><thead><tr><th>Recommended For</th></tr></thead><tbody><tr><td>Cell content></tr></tbody></table>"
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
 
 class TestFindElementsWithChar(TestCase):
     def test_single_element_with_char(self):
