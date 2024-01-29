@@ -134,7 +134,7 @@ class NofosDeleteView(DeleteView):
         nofo = self.get_object()
         if nofo.status != "draft":
             # Only draft NOFOs can be deleted
-            raise HttpResponseBadRequest("Server error deleting NOFO.")
+            return HttpResponseBadRequest("Server error deleting NOFO.")
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -189,7 +189,7 @@ def nofo_import(request, pk=None):
         if pk:
             if nofo.status == "published":
                 # Published NOFOs can’t be reimported
-                raise HttpResponseBadRequest("Server error re-importing NOFO.")
+                return HttpResponseBadRequest("Server error re-importing NOFO.")
 
             # open question: should reimporting do any of the stuff below?
             nofo = overwrite_nofo(nofo, sections)
@@ -329,11 +329,11 @@ def nofo_subsection_edit(request, pk, subsection_pk):
     form = None
 
     if pk != nofo.id:
-        raise HttpResponseBadRequest("Oops, bad NOFO id")
+        return HttpResponseBadRequest("Oops, bad NOFO id")
 
     if nofo.status == "published":
         # Only draft NOFOs can be deleted
-        raise HttpResponseBadRequest("Server error editing NOFO content.")
+        return HttpResponseBadRequest("Server error editing NOFO content.")
 
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
@@ -366,7 +366,7 @@ class PrintNofoAsPDFView(View):
         )
 
         if "localhost" in nofo_url:
-            raise HttpResponseBadRequest(
+            return HttpResponseBadRequest(
                 "Server error printing NOFO. Can't print a NOFO on localhost."
             )
 
@@ -405,6 +405,6 @@ class PrintNofoAsPDFView(View):
             print("docraptor.rest.ApiException")
             print(error.status)
             print(error.reason)
-            raise HttpResponseBadRequest(
+            return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
