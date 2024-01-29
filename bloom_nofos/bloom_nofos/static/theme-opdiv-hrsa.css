@@ -17,14 +17,14 @@
     font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
       sans-serif;
     font-weight: 700;
-    color: var(--color--dark-blue);
+    color: var(--color--med-red);
   }
 
   @bottom-right {
     font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
       sans-serif;
     font-weight: 700;
-    color: var(--color--dark-blue);
+    color: var(--color--med-red);
   }
 }
 
@@ -37,7 +37,14 @@
   color: var(--color--med-grey);
 }
 
-/* Headings */
+.header-nav.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--med-red);
+  color: var(--color--med-red);
+}
+
+.section--title-page--header-nav a[aria-current] {
+  border-top: 4px solid var(--color--hrsa-blue);
+}
 
 /* Headings */
 
