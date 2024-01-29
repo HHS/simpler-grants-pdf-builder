@@ -89,6 +89,19 @@ h4 {
   color: var(--color--white);
 }
 
+.callout-box--contents a {
+  color: var(--color--white);
+}
+
+.callout-box {
+  background-color: var(--color--med-blue);
+  color: var(--color--white);
+}
+
+.callout-box--icon {
+  background-color: var(--color--dark-blue);
+}
+
 table th {
   padding-left: 0;
 }
