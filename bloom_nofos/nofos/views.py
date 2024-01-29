@@ -381,15 +381,22 @@ class PrintNofoAsPDFView(View):
             "/edit", ""
         )
 
+       #Remove: Commented out to test PDFs on localhost 
+       # if "localhost" in nofo_url:
+       #     return HttpResponseBadRequest(
+       #         "Server error printing NOFO. Can't print a NOFO on localhost."
+       #    )
         
-        if "localhost" in nofo_url:
-            raise HttpResponseBadRequest(
-                "Server error printing NOFO. Can't print a NOFO on localhost."
-            )
-
-       # 'document_content': '<html><body>Hello World!</body></html>',
-
-
+        #Build Metadata
+        author = """<head><meta name="author" content='{}'/>""".format(nofo.author)
+        #print(author)
+        subject = """<meta name="subject" content='{}'/>""".format(nofo.subject)
+        #print(subject)
+        keywords = """<meta name="keywords" content='{}'/></head>""".format(nofo.keywords)
+        #print(keywords)
+        metadata_content = author + subject + keywords
+        #print(metadata_content)
+             
         nofo_filename = "{}.pdf".format(
             nofo.number or nofo.short_name or nofo.title
         ).lower()
@@ -401,9 +408,9 @@ class PrintNofoAsPDFView(View):
         try:
             response = doc_api.create_doc(
                 {
-                    "test": False,  # test documents are free but watermarked
+                    "test": True,  # test documents are free but watermarked
                     #"document_url": nofo_url,
-                    'document_content': '<html><body>Hello World!</body></html>',
+                    "document_content": metadata_content,
                     "document_type": "pdf",
                     "javascript": False,
                     "prince_options": {
@@ -426,6 +433,6 @@ class PrintNofoAsPDFView(View):
             print("docraptor.rest.ApiException")
             print(error.status)
             print(error.reason)
-            raise HttpResponseBadRequest(
+            return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
