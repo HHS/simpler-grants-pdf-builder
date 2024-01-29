@@ -697,6 +697,10 @@ p[role="heading"] {
   margin-top: 0;
 }
 
+.section--content .section--content--intro {
+  margin-top: 15px;
+}
+
 .section--content--intro p.nofo--tagline {
   font-size: 14pt;
   border-top: 1px solid var(--color--light-grey);
