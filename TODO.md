@@ -25,6 +25,7 @@
 # DONE
 
 - Add a way to change settings from the Django admin
+  - Add a link to toggle this
 - Handle images inline in documents
 - Add page break checkbox to subsection headings
 - Add checkbox svgs to app

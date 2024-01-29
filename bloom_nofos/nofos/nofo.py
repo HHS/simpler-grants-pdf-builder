@@ -514,6 +514,6 @@ def replace_src_for_inline_images(soup):
                 img_filename = img_src.split(
                     "/"
                 ).pop()  # get the last part of the filename
-                img["src"] = "/static/img/{}/{}".format(
+                img["src"] = "/static/img/inline/{}/{}".format(
                     nofo_number.lower(), img_filename
                 )
