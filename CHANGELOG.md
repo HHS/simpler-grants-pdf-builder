@@ -6,8 +6,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Changed
+
+- Add new HRSA blue colour and swap it in as main theme colour
+- Add new HRSA red colour for accent colour
+
 ### Fixed
 
+- Remove tagline when not needed
+- Adjust tables with new HRSA colour
 - Callout box alternative colours for HRSA
 
 ## [1.1.0] - 2023-01-24

@@ -14,9 +14,11 @@
   --color--dark-blue: #00345e;
   --color--med-blue: #336a90;
   --color--vibrant-blue: #005eaa;
+  --color--hrsa-blue: #006699;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e8f0f3;
   --color--med-brown: #c0b0a2;
+  --color--med-red: #940200;
 }
 
 /* Assign named pages */
@@ -243,7 +245,7 @@ table td a {
 
 table thead th {
   background-clip: padding-box;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
   text-align: left;
 }

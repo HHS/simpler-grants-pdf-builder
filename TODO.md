@@ -24,11 +24,11 @@
 - PDF metadata as tags
 - Fix: Links in table cells
 - Fix: Links in callout boxes
-- Fix: Basic information for HRSA
-- Fix: Hide tagline if none exists
 
 # DONE
 
+- Fix: Basic information for HRSA
+- Fix: Hide tagline if none exists
 - Fix: Callout box colours for HRSA
 - Add a way to change settings from the Django admin
   - Add a link to toggle this

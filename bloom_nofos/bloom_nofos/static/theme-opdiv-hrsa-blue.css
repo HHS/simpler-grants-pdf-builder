@@ -1,11 +1,11 @@
 /* Page rules */
 
 @page cover {
-  background-color: var(--color--med-blue);
+  background-color: var(--color--hrsa-blue);
 }
 
 @page title {
-  background-color: var(--color--med-blue);
+  background-color: var(--color--hrsa-blue);
 }
 
 /* Headings */
@@ -31,7 +31,7 @@ h4 {
 .nofo--cover-page--title,
 .nofo--cover-page--footer {
   color: var(--color--white);
-  background-color: var(--color--med-blue);
+  background-color: var(--color--hrsa-blue);
 }
 
 .nofo--cover-page--footer .nofo--cover-page--footer--logo img {
@@ -74,7 +74,7 @@ h4 {
 .section--title-page--name,
 .section--title-page--toc {
   color: var(--color--white);
-  background-color: var(--color--med-blue);
+  background-color: var(--color--hrsa-blue);
 }
 
 .section--title-page--icon img {
@@ -85,16 +85,11 @@ h4 {
 /* Section contents */
 
 .callout-box {
-  background-color: var(--color--med-blue);
+  background-color: var(--color--hrsa-blue);
   color: var(--color--white);
 }
 
 .callout-box--contents a {
-  color: var(--color--white);
-}
-
-.callout-box {
-  background-color: var(--color--med-blue);
   color: var(--color--white);
 }
 
@@ -103,7 +98,9 @@ h4 {
 }
 
 table th {
-  padding-left: 0;
+  color: var(--color--white);
+  background-color: var(--color--hrsa-blue);
+  border: 2px solid var(--color--white);
 }
 
 table td {
