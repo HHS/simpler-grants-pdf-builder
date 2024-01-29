@@ -192,7 +192,7 @@ def get_sections_from_soup(soup):
                 # add an empty array at a new index
                 sections.append(
                     {
-                        "name": tag.text,
+                        "name": tag.text.strip(),
                         "order": section_num + 1,
                         "html_id": tag.get("id", ""),
                         "body": [],
@@ -247,7 +247,7 @@ def get_subsections_from_sections(sections):
     def get_subsection_dict(heading_tag, order, is_callout_box=False, body=None):
         if heading_tag:
             return {
-                "name": heading_tag.text,
+                "name": heading_tag.text.strip(),
                 "order": order,
                 "tag": demote_tag(heading_tag),
                 "html_id": heading_tag.get("id", ""),
