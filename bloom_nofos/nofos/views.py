@@ -341,7 +341,7 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         if form.is_valid():
             subsection.name = form.cleaned_data["name"]
             subsection.body = form.cleaned_data["body"]
-            subsection.is_page_break = form.cleaned_data["is_page_break"]
+            subsection.has_page_break = form.cleaned_data["has_page_break"]
             subsection.save()
 
             return redirect("nofos:nofo_edit", pk=nofo.id)
