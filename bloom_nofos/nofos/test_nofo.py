@@ -147,6 +147,14 @@ class HTMLSectionTests(TestCase):
         sections = get_sections_from_soup(soup)
         self.assertEqual(sections[0].get("body"), [])
 
+    def test_get_sections_from_soup_with_whitespace(self):
+        soup = BeautifulSoup(
+            '<h1 id="section-1"><span class="c21">Section 1 </span></h1><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_sections_from_soup(soup)
+        self.assertEqual(sections[0].get("name"), "Section 1")
+
 
 class HTMLSubsectionTests(TestCase):
     def test_get_subsections_from_soup(self):
@@ -266,6 +274,24 @@ class HTMLSubsectionTests(TestCase):
         sections = get_subsections_from_sections(get_sections_from_soup(soup))
         subsection = sections[0].get("subsections")[0]
         self.assertEqual(subsection.get("tag"), "h7")
+
+    def test_get_subsections_from_soup_with_whitespace(self):
+        soup = BeautifulSoup(
+            "<h1><span>Section 1 </span></h1><h2><span>Subsection 1 </span> </h2><p>Section 1 body</p>",
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(get_sections_from_soup(soup))
+        # 1 section
+        self.assertEqual(len(sections), 1)
+
+        # assert section values
+        section = sections[0]
+        self.assertEqual(section.get("name"), "Section 1")
+
+        # 1 subsection
+        self.assertEqual(len(section.get("subsections")), 1)
+        subsection = section.get("subsections")[0]
+        self.assertEqual(subsection.get("name"), "Subsection 1")
 
 
 class HTMLNofoFileTests(TestCase):
@@ -1001,7 +1027,9 @@ class TestReplaceSrcForInlineImages(TestCase):
         soup = BeautifulSoup(html, "html.parser")
 
         replace_src_for_inline_images(soup)
-        self.assertEqual(soup.find("img")["src"], "/static/img/hrsa-24-017/image1.png")
+        self.assertEqual(
+            soup.find("img")["src"], "/static/img/inline/hrsa-24-017/image1.png"
+        )
 
     @patch("nofos.nofo.suggest_nofo_opportunity_number")
     def test_do_not_replace_src_when_nofo_number_is_default(self, mock_suggest_nofo):
