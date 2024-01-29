@@ -143,6 +143,12 @@ class Section(models.Model):
     )
     order = models.IntegerField(null=True)
 
+    has_section_page = models.BooleanField(
+        "Has section page?",
+        default=True,
+        help_text="If true, this section will have its own page and icon in the ToC.",
+    )
+
     class Meta:
         unique_together = ("nofo", "order")
 

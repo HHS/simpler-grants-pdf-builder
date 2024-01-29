@@ -126,6 +126,7 @@ def _build_nofo(nofo, sections):
             name=section.get("name", "Section X"),
             order=section.get("order", ""),
             html_id=section.get("html_id"),
+            has_section_page=section.get("has_section_page"),
             nofo=nofo,
         )
         model_section.save()
@@ -190,11 +191,20 @@ def get_sections_from_soup(soup):
         if section_num >= 0:
             if len(sections) == section_num:
                 # add an empty array at a new index
+                section_name = tag.text.strip()
+
+                # TODO: test this
+                has_section_page = not any(
+                    word.lower() in section_name.lower()
+                    for word in ["Appendix", "Glossary", "Endnotes"]
+                )
+
                 sections.append(
                     {
-                        "name": tag.text.strip(),
+                        "name": section_name,
                         "order": section_num + 1,
                         "html_id": tag.get("id", ""),
+                        "has_section_page": has_section_page,
                         "body": [],
                     }
                 )
