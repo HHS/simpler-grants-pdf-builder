@@ -381,10 +381,14 @@ class PrintNofoAsPDFView(View):
             "/edit", ""
         )
 
+        
         if "localhost" in nofo_url:
             raise HttpResponseBadRequest(
                 "Server error printing NOFO. Can't print a NOFO on localhost."
             )
+
+       # 'document_content': '<html><body>Hello World!</body></html>',
+
 
         nofo_filename = "{}.pdf".format(
             nofo.number or nofo.short_name or nofo.title
@@ -398,7 +402,8 @@ class PrintNofoAsPDFView(View):
             response = doc_api.create_doc(
                 {
                     "test": False,  # test documents are free but watermarked
-                    "document_url": nofo_url,
+                    #"document_url": nofo_url,
+                    'document_content': '<html><body>Hello World!</body></html>',
                     "document_type": "pdf",
                     "javascript": False,
                     "prince_options": {

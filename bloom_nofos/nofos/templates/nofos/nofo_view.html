@@ -38,9 +38,13 @@
             <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
               {% csrf_token %}
               <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
-              <button type="submit" class="usa-button" {% if request.scheme == 'http' %}disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"{% else %}style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"{% endif %}>
+              <!-- Remove: Allows for local printing-->
+              <button type="submit" class="usa-button" style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;">
                 Print NOFO
-              </button>
+              </button>  
+              <!--<button type="submit" class="usa-button" {% if request.scheme == 'http' %}disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"{% else %}style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"{% endif %}>
+                Print NOFO
+              </button>-->
             </form>
           </li>
         </ul>
