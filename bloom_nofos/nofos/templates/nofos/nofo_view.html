@@ -271,8 +271,8 @@
             {% endif %}
           {% else %}
             {% if subsection.name != 'Basic information' %}
-              {% with tag=subsection.tag content=subsection.name id=subsection.html_id is_page_break=subsection.is_page_break %}
-                {% include "includes/heading.html" with tag=tag content=content id=id is_page_break=is_page_break only %}
+              {% with tag=subsection.tag content=subsection.name id=subsection.html_id has_page_break=subsection.has_page_break %}
+                {% include "includes/heading.html" with tag=tag content=content id=id has_page_break=has_page_break only %}
               {% endwith %}
                 {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables }}
             {% endif %}
