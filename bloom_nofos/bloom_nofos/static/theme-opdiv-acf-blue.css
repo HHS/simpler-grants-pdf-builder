@@ -34,11 +34,6 @@ h4 {
   background-color: var(--color--dark-blue);
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
-  filter: invert(99%) sepia(16%) saturate(0%) hue-rotate(71deg) brightness(106%)
-    contrast(101%);
-}
-
 /* Table of contents */
 
 .toc h2 {
@@ -75,11 +70,6 @@ h4 {
 .section--title-page--toc {
   color: var(--color--white);
   background-color: var(--color--dark-blue);
-}
-
-.section--title-page--icon img {
-  filter: invert(99%) sepia(99%) saturate(17%) hue-rotate(212deg)
-    brightness(105%) contrast(100%);
 }
 
 /* Section contents */

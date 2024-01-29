@@ -72,11 +72,6 @@ h4 {
   background-color: var(--color--hrsa-blue);
 }
 
-.section--title-page--icon img {
-  filter: invert(99%) sepia(99%) saturate(17%) hue-rotate(212deg)
-    brightness(105%) contrast(100%);
-}
-
 /* Section contents */
 
 .section--absolute--right-col .callout-box--questions .callout-box--contents p {

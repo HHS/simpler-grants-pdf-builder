@@ -56,11 +56,6 @@ h1 {
   color: var(--color--white);
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
-  filter: invert(22%) sepia(51%) saturate(3181%) hue-rotate(191deg)
-    brightness(98%) contrast(99%);
-}
-
 .nofo--cover-page--footer {
   background: var(--color--white);
 }
@@ -69,14 +64,6 @@ h1 {
 
 .nofo--cover-page--hero .nofo--cover-page--title {
   background-color: var(--color--dark-blue);
-}
-
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--logo
-  img {
-  filter: invert(100%) sepia(1%) saturate(0%) hue-rotate(90deg) brightness(105%)
-    contrast(101%);
 }
 
 /* Table of contents */
