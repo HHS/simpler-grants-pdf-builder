@@ -190,7 +190,8 @@ p + p {
 }
 
 .section--before-you-begin--psuedo-header + p,
-p[role="heading"] + p {
+p[role="heading"] + p,
+.section--content--intro p + p {
   margin-top: 5px;
 }
 

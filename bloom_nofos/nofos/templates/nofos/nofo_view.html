@@ -239,11 +239,12 @@
             {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
               {% include "includes/heading.html" with tag=tag content=content id=id only %}
             {% endwith %}
+              <div class="section--content--intro">
               <p><strong>{{ nofo.opdiv }}</strong></p>
-              <p>
-                {{ nofo.agency }}{% if nofo.subagency %}, {{ nofo.subagency }}{% endif %}
-              </p>
-              <p class="nofo--tagline">{{ nofo.tagline }}</p>
+              <p>{{ nofo.agency }}</p>
+              {% if nofo.subagency %}<p>{{ nofo.subagency }}</p>{% endif %}
+              {% if  nofo.tagline %}<p class="nofo--tagline">{{ nofo.tagline }}</p>{% endif %}
+            </div>
           {% endwith %}
         {% endif %}
 
