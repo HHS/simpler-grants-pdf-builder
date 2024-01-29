@@ -34,11 +34,6 @@ h4 {
   background-color: var(--color--hrsa-blue);
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
-  filter: invert(99%) sepia(16%) saturate(0%) hue-rotate(71deg) brightness(106%)
-    contrast(101%);
-}
-
 /* Table of contents */
 
 .toc h2 {
@@ -83,6 +78,10 @@ h4 {
 }
 
 /* Section contents */
+
+.section--absolute--right-col .callout-box--questions .callout-box--contents p {
+  font-weight: 400;
+}
 
 .callout-box {
   background-color: var(--color--hrsa-blue);

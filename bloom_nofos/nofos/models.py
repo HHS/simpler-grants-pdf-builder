@@ -78,6 +78,7 @@ class Nofo(models.Model):
     COVER_CHOICES = [
         ("nofo--cover-page--hero", "Hero (large) image"),
         ("nofo--cover-page--medium", "Medium image"),
+        ("nofo--cover-page--text", "No image, large text"),
     ]
 
     cover = models.CharField(
