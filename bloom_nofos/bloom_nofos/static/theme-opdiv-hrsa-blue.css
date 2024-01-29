@@ -19,7 +19,7 @@ h3 {
 }
 
 h4 {
-  color: var(--color--med-blue);
+  color: var(--color--hrsa-blue);
 }
 
 /* Cover page */
@@ -37,7 +37,11 @@ h4 {
 /* Table of contents */
 
 .toc h2 {
-  color: var(--color--med-blue);
+  color: var(--color--dark-blue);
+}
+
+.toc ol li a.toc--section-name--a {
+  color: var(--color--hrsa-blue);
 }
 
 .toc ol li a {
@@ -45,7 +49,7 @@ h4 {
 }
 
 .toc .toc--section-name .toc--section-name--img {
-  background: var(--color--med-blue);
+  background: var(--color--hrsa-blue);
 }
 
 /* Before you begin */
@@ -93,7 +97,7 @@ h4 {
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--hrsa-blue);
+  background-color: var(--color--dark-blue);
   border: 2px solid var(--color--white);
 }
 
