@@ -10,7 +10,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Added "add_section_page" attribute to sections
   - Sections without section pages are not in the ToC and don't have custom section title pages
+  - Add "no section page" sections to ToC
 - Add Endnotes to the imported HTML
+  - Decided to manually fix the weird endnotes
 
 ### Changed
 

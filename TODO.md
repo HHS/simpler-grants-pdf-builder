@@ -26,11 +26,11 @@
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 - Fix: that 'Disappear' header thing
-- Fix: Why is that one endnote disappearing?
-- Fix: Add Appendix and Endnotes to ToC
 
 # DONE
 
+- Fix: Why is that one endnote disappearing?
+- Add Appendix and Endnotes to ToC
 - Add "has section page" attribute to sections
 - Add Endnotes header to the imported HTML
 - Fix: Basic information for HRSA
