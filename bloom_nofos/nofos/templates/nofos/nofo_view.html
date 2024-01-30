@@ -130,15 +130,17 @@
             <div class="toc--section-name--wrapper">
               <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
-              <ol class="usa-list usa-list--unstyled">
-                {% for subsection in section.subsections.all|dictsort:"order" %}
-                  {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
-                    {% if tag == 'h3' %}
-                      <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
-                    {% endif %}
-                  {% endwith %}
-                {% endfor %}
-              </ol>
+              {% if section.name != "Contacts & Support" %}
+                <ol class="usa-list usa-list--unstyled">
+                  {% for subsection in section.subsections.all|dictsort:"order" %}
+                    {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
+                      {% if tag == 'h3' %}
+                        <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
+                      {% endif %}
+                    {% endwith %}
+                  {% endfor %}
+                </ol>
+              {% endif %}
             </div>
           </li>
         {% else %}
