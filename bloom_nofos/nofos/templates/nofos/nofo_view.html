@@ -159,7 +159,11 @@
 
   <section id="section--before-you-begin" class="before-you-begin">
     <div class="section--before-you-begin--icon">
-      <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
+      {% if nofo_opdiv.key == 'hrsa' %}
+        <img src="{% static 'before you begin'|get_icon_for_section:'dark-blue-border' %}" alt="">
+      {% else %}
+        <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
+      {% endif %}
     </div>
     <h2>Before you begin</h2>
     <div class="before-you-begin--content">
