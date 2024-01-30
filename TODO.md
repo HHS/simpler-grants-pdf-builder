@@ -25,11 +25,12 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
-- Fix: that 'Disappear' header thing
 - Fix: link back to the edited subsection
 
 # DONE
 
+- Fix: Icon on before you begin page for HRSA theme
+- Fix: That 'Disappear' header thing
 - Fix: Why is that one endnote disappearing?
 - Add Appendix and Endnotes to ToC
 - Add "has section page" attribute to sections

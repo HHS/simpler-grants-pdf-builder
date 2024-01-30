@@ -18,9 +18,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add new HRSA blue colour and swap it in as main theme colour
 - Add new HRSA red colour for accent colour
+- Top breaking pages on h3s
+  - Allow H3s to be manually page broken
 
 ### Fixed
 
+- Use Helvetica Condensed for the header and footer of HRSA theme
+- Use the right icon colour for HRSA theme Before you Begin page
 - Remove tagline when not needed
 - Adjust tables with new HRSA colour
 - Callout box alternative colours for HRSA
