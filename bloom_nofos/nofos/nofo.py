@@ -511,10 +511,19 @@ def decompose_empty_tags(soup):
             li.decompose()
 
 
-# TODO test this
-# previously: images/image1.png
-# after: /static/img/hrsa-24-017/image1.png
 def replace_src_for_inline_images(soup):
+    """
+    This function mutates the soup!
+
+    Replaces the src attribute for inline images in the soup to use static image paths based on the NOFO number.
+
+    Iterates over all img tags in the soup. If an img has a src attribute, it extracts the filename, and replaces the src with a path prefixed by the NOFO number from suggest_nofo_opportunity_number().
+
+    For example with NOFO number "HRSA-24-017":
+
+    - Before: images/image1.png
+    - After: /static/img/inline/hrsa-24-017/image1.png
+    """
     nofo_number = suggest_nofo_opportunity_number(soup)
 
     if nofo_number and nofo_number != DEFAULT_NOFO_OPPORTUNITY_NUMBER:
@@ -527,3 +536,21 @@ def replace_src_for_inline_images(soup):
                 img["src"] = "/static/img/inline/{}/{}".format(
                     nofo_number.lower(), img_filename
                 )
+
+
+def add_endnotes_header_if_exists(soup):
+    """
+    This function mutates the soup!
+
+    Adds a header for endnotes if final <hr> tag has no style attribute.
+
+    Checks if the last <hr> tags in the soup has no style attribute.
+    If so, takes the last <hr> tag, converts it to a <h1> tag with the text
+    "Endnotes" to add a header before the endnotes.
+    """
+    hrs = soup.find_all("hr")
+    if len(hrs):
+        hr = hrs.pop()
+        if not hr.get("style"):
+            hr.name = "h1"
+            hr.string = "Endnotes"

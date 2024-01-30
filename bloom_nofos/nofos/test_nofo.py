@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
     convert_table_first_row_to_header_row,
@@ -369,6 +370,7 @@ def _get_sections_dict():
             "name": "Section 1",
             "order": 1,
             "html_id": "",
+            "has_section_page": True,
             "subsections": [
                 {
                     "name": "Subsection 1",
@@ -444,6 +446,7 @@ class OverwriteNOFOTests(TestCase):
                 "name": "New Section 100",
                 "order": 1,
                 "html_id": "",
+                "has_section_page": True,
                 "subsections": [
                     {
                         "name": "New Subsection 100",
@@ -503,6 +506,7 @@ class AddHeadingsTests(TestCase):
                 "name": "Section 1",
                 "order": 1,
                 "html_id": "",
+                "has_section_page": True,
                 "subsections": [
                     {
                         "name": "Subsection 1",
@@ -531,6 +535,7 @@ class AddHeadingsTests(TestCase):
                 "name": "Program description",
                 "order": 1,
                 "html_id": "",
+                "has_section_page": True,
                 "subsections": [
                     {
                         "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors and chronic health conditions among adults in the United States and territories.",
@@ -1048,6 +1053,36 @@ class TestReplaceSrcForInlineImages(TestCase):
 
         replace_src_for_inline_images(soup)
         self.assertIsNone(soup.find("img").get("src"))
+
+
+class TestAddEndnotesHeaderIfExists(TestCase):
+    def test_basic_with_hr_without_style(self):
+        html_content = "<div><hr></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(str(soup), "<div><h1>Endnotes</h1></div>")
+
+    def test_no_hr_tags_present(self):
+        html_content = "<div><p>Some text</p></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(str(soup), "<div><p>Some text</p></div>")
+
+    def test_multiple_hr_tags_with_styles(self):
+        html_content = """<div><hr style="color: red;"/><hr style="border: 1px solid blue;"/><hr style="font-size: 14px;"/></div>"""
+
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            """<div><hr style="color: red;"/><hr style="border: 1px solid blue;"/><hr style="font-size: 14px;"/></div>""",
+        )
+
+    def test_multiple_hr_tags_without_style(self):
+        html_content = "<div><hr/><hr/></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(str(soup), "<div><hr/><h1>Endnotes</h1></div>")
 
 
 ###########################################################

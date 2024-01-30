@@ -27,6 +27,7 @@ from .forms import (
 )
 from .models import Nofo, Subsection
 from .nofo import (
+    add_endnotes_header_if_exists,
     add_headings_to_nofo,
     create_nofo,
     decompose_empty_tags,
@@ -173,6 +174,7 @@ def nofo_import(request, pk=None):
         decompose_empty_tags(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
+        add_endnotes_header_if_exists(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

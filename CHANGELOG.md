@@ -6,6 +6,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Added "add_section_page" attribute to sections
+  - Sections without section pages are not in the ToC and don't have custom section title pages
+- Add Endnotes to the imported HTML
+
 ### Changed
 
 - Add new HRSA blue colour and swap it in as main theme colour

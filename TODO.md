@@ -24,9 +24,12 @@
 - PDF metadata as tags
 - Fix: Links in table cells
 - Fix: Links in callout boxes
+- Fix: <hr style="page-break-before:always;display:none;">
 
 # DONE
 
+- Add "has section page" attribute to sections
+- Add Endnotes header to the imported HTML
 - Fix: Basic information for HRSA
 - Fix: Hide tagline if none exists
 - Fix: Callout box colours for HRSA
