@@ -197,6 +197,10 @@ p[role="heading"] + p,
   margin-top: 5px;
 }
 
+.section--endnotes p {
+  font-size: 9pt;
+}
+
 li {
   margin: 5px 0;
 }
@@ -335,6 +339,7 @@ h2 {
 
 .section--content h2 {
   line-height: 1.2;
+  margin-bottom: 10px;
 }
 
 h3 {
@@ -699,6 +704,10 @@ p[role="heading"] {
 
 .section--content h3:first-of-type {
   margin-top: 0;
+}
+
+.section--content h2 ~ h3:first-of-type {
+  margin-top: 20px;
 }
 
 .section--content .section--content--intro {
