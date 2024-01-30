@@ -334,7 +334,6 @@ h2 {
 
 .section--content h2 {
   line-height: 1.2;
-  margin-bottom: 10px;
 }
 
 h3 {
@@ -771,6 +770,13 @@ p[role="heading"] {
 .callout-box--questions .callout-box--contents p {
   font-size: 12pt;
   font-weight: 700;
+}
+
+.section--endnotes h3 {
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--color--black);
+  margin-bottom: 10px;
 }
 
 /* Footnotes

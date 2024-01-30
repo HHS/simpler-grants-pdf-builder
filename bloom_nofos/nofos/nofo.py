@@ -557,5 +557,5 @@ def add_endnotes_header_if_exists(soup):
 
             # create another new tag
             subsection_header = soup.new_tag("h2")
-            subsection_header.string = "Disappear"
+            subsection_header.string = "Select the endnote number to jump to the related section in the document."
             hr.insert_after(subsection_header)
