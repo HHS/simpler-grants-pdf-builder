@@ -25,6 +25,9 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
+- Fix: that 'Disappear' header thing
+- Fix: Why is that one endnote disappearing?
+- Fix: Add Appendix and Endnotes to ToC
 
 # DONE
 

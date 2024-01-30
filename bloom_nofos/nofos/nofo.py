@@ -554,3 +554,8 @@ def add_endnotes_header_if_exists(soup):
         if not hr.get("style"):
             hr.name = "h1"
             hr.string = "Endnotes"
+
+            # create another new tag
+            subsection_header = soup.new_tag("h2")
+            subsection_header.string = "Disappear"
+            hr.insert_after(subsection_header)
