@@ -20,6 +20,8 @@
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" only %}
+
   <div class="back-link font-body-md margin-bottom-105">
     <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
   </div>
@@ -194,7 +196,7 @@
   {% for section in nofo.sections.all|dictsort:"order" %}
     <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
       <caption>
-        <h2 class="margin-bottom-0">{{ section.name }}</h2>
+        <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
         <span><a href="#back-to-top">Top ↑</a></span>
       </caption>
       <thead class="usa-sr-only">
@@ -207,7 +209,7 @@
       <tbody>
         {% for subsection in section.subsections.all|dictsort:"order" %}
           <tr>
-            <th scope="row" class="nofo-edit-table--subsection--name">{{ subsection.name }}</th>
+            <th scope="row" class="nofo-edit-table--subsection--name" id="{{ subsection.html_id }}">{{ subsection.name }}</th>
             <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}</td>
             <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
           <tr>

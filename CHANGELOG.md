@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
-## Unreleased
+## [1.2.0] - 2023-01-30
 
 ### Added
 
@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Add "no section page" sections to ToC
 - Add Endnotes to the imported HTML
   - Decided to manually fix the weird endnotes
+- Add success alert that links back to the edited subsection
 
 ### Changed
 

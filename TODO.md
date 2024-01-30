@@ -25,10 +25,10 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
-- Fix: link back to the edited subsection
 
 # DONE
 
+- Fix: link back to the edited subsection
 - Fix: Icon on before you begin page for HRSA theme
 - Fix: That 'Disappear' header thing
 - Fix: Why is that one endnote disappearing?

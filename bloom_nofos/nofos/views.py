@@ -346,6 +346,14 @@ def nofo_subsection_edit(request, pk, subsection_pk):
             subsection.has_page_break = form.cleaned_data["has_page_break"]
             subsection.save()
 
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                "Updated subsection: “<a href='#{}'>{}</a>”".format(
+                    subsection.html_id, subsection.name or subsection.id
+                ),
+            )
+
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
     else:
