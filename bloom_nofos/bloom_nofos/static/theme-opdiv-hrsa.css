@@ -32,6 +32,10 @@
 
 /* Running header */
 
+.header-nav {
+  font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial;
+}
+
 .header-nav.header-nav--running-header li a {
   border-top: 4px solid var(--color--light-grey);
   color: var(--color--med-grey);
