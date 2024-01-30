@@ -333,6 +333,10 @@ h2 {
   margin-top: 20px;
 }
 
+.section--content h2 {
+  line-height: 1.2;
+}
+
 h3 {
   font-size: 28pt;
   font-weight: 700;
