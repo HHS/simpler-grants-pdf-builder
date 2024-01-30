@@ -1060,7 +1060,10 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         html_content = "<div><hr></div>"
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
-        self.assertEqual(str(soup), "<div><h1>Endnotes</h1><h2>Disappear</h2></div>")
+        self.assertEqual(
+            str(soup),
+            "<div><h1>Endnotes</h1><h2>Select the endnote number to jump to the related section in the document.</h2></div>",
+        )
 
     def test_no_hr_tags_present(self):
         html_content = "<div><p>Some text</p></div>"
@@ -1083,7 +1086,8 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
-            str(soup), "<div><hr/><h1>Endnotes</h1><h2>Disappear</h2></div>"
+            str(soup),
+            "<div><hr/><h1>Endnotes</h1><h2>Select the endnote number to jump to the related section in the document.</h2></div>",
         )
 
 
