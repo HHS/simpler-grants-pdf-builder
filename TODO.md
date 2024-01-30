@@ -26,6 +26,7 @@
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 - Fix: that 'Disappear' header thing
+- Fix: link back to the edited subsection
 
 # DONE
 
