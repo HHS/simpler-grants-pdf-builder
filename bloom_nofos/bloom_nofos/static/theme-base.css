@@ -35,13 +35,8 @@ div.section--title-page {
 
 div.title-page,
 section.toc,
-section.before-you-begin,
-.section--content h3:not(:first-of-type) {
+section.before-you-begin {
   page-break-before: always;
-}
-
-.section--contacts-and-support .section--content h3:not(:first-of-type) {
-  page-break-before: avoid;
 }
 
 /* put endnotes on its own page */
