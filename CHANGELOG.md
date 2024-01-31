@@ -6,9 +6,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Add CMS theme (portrait + white)
+
 ### Changed
 
-- Use Agency and subagency on title page and basic information
+- Standardize Opdiv + Agency + Subagency rules for cover page and basic info
 
 ### Fixed
 

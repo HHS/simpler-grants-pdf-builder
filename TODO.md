@@ -52,6 +52,7 @@
 - Themes
   - CDC: portrait (blue)
   - CDC: portrait (white)
+  - CMS: portrait (white)
 - Fix: Page breaks for h3s
 - Fix: Strip empty HTML tags so that NOFOs don't blow up on import
 - Fix: Headings have less top spacing if they follow another heading

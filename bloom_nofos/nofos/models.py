@@ -58,13 +58,14 @@ class Nofo(models.Model):
     )
 
     THEME_CHOICES = [
-        ("landscape-cdc-blue", "CDC Landscape (Blue)"),
-        ("landscape-cdc-white", "CDC Landscape (White)"),
-        ("portrait-cdc-blue", "CDC Portrait (Blue)"),
-        ("portrait-cdc-white", "CDC Portrait (White)"),
-        ("portrait-hrsa-blue", "HRSA (Blue)"),
-        ("portrait-hrsa-white", "HRSA (White)"),
+        ("landscape-cdc-blue", "CDC Landscape (Default)"),
+        ("landscape-cdc-white", "CDC Landscape (Light)"),
+        ("portrait-cdc-blue", "CDC Portrait (Default)"),
+        ("portrait-cdc-white", "CDC Portrait (Light)"),
+        ("portrait-hrsa-blue", "HRSA (Default)"),
+        ("portrait-hrsa-white", "HRSA (Light)"),
         ("portrait-acf-blue", "ACF (Blue)"),
+        ("portrait-cms-white", "CMS (Light)"),
     ]
 
     theme = models.CharField(
