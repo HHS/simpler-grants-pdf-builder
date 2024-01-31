@@ -53,6 +53,11 @@ OPDIVS = {
         "name": "Centers for Disease Control and Prevention",
         "filename": "cdc-logo.svg",
     },
+    "cms": {
+        "key": "cms",
+        "name": "Centers for Medicare and Medicaid Services",
+        "filename": "cms-logo.svg",
+    },
     "hrsa": {
         "key": "hrsa",
         "name": "The Health Resources & Services Administration",
