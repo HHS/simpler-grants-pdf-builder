@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## Unreleased
+
+### Changed
+
+- Use Agency and subagency on title page and basic information
+
+### Fixed
+
+- Say "SAM.gov" on Before you Begin page (not "Sam.gov")
+
 ## [1.2.0] - 2023-01-30
 
 ### Added
