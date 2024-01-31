@@ -25,9 +25,12 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
+- Sam.gov should be uppercased
+- Change appendix A to appendix
 
 # DONE
 
+- Show agency + subagency on cover + first page
 - Fix: link back to the edited subsection
 - Fix: Icon on before you begin page for HRSA theme
 - Fix: That 'Disappear' header thing
