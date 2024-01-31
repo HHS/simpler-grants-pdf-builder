@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Say "SAM.gov" on Before you Begin page (not "Sam.gov")
+- Remove col-span rules (CDC landscape) that no one asked for
 
 ## [1.2.0] - 2023-01-30
 

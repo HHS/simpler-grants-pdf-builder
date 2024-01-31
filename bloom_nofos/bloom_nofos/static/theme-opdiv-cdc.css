@@ -82,10 +82,4 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 /* Section contents */
 
-.landscape .section--content .heading--column-span,
-.landscape .section--content .heading--column-span ~ h4,
-.landscape .section--content .heading--column-span ~ h5 {
-  column-span: all;
-}
-
 /* Media queries */

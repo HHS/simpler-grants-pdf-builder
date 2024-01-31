@@ -25,11 +25,11 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
-- Sam.gov should be uppercased
-- Change appendix A to appendix
 
 # DONE
 
+- Remove col-span rules (CDC landscape) that no one asked for
+- Sam.gov should be uppercased (SAM.gov)
 - Show agency + subagency on cover + first page
 - Fix: link back to the edited subsection
 - Fix: Icon on before you begin page for HRSA theme
