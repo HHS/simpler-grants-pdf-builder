@@ -30,6 +30,10 @@
 
 /* Regular CSS */
 
+a {
+  color: var(--color--hrsa-blue);
+}
+
 /* Running header */
 
 .header-nav {

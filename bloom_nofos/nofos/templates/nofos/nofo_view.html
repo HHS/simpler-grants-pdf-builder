@@ -90,12 +90,12 @@
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
-        <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg">
+        <img alt="Heath and Human Services logo" src="{% static nofo_hhs_img %}">
       </div>
     </div>
     <div class="nofo--cover-page--footer clearfix">
       <div class="nofo--cover-page--footer--logo">
-        <img alt="Heath and Human Services logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/hhs-logo.svg">
+        <img alt="Heath and Human Services logo" src="{% static nofo_hhs_img %}">
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span>Notice of Funding Opportunity</span>
@@ -162,6 +162,8 @@
     <div class="section--before-you-begin--icon">
       {% if nofo_opdiv.key == 'hrsa' %}
         <img src="{% static 'before you begin'|get_icon_for_section:'dark-blue-border' %}" alt="">
+      {% elif nofo_opdiv.key == 'cms' %}
+        <img src="{% static 'before you begin'|get_icon_for_section:'cms-blue-border' %}" alt="">
       {% else %}
         <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
       {% endif %}
@@ -203,10 +205,12 @@
           </div>
           <div class="section--title-page--name">
             <div class="section--title-page--icon">
-              {% if 'white' in nofo.theme %}
-                <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
+              {% if nofo_opdiv.key == 'cms' %}
+                <img src="{% static section.name|get_icon_for_section:'cms-blue-border' %}" alt="">
+              {% elif 'white' in nofo.theme %}
+                <img src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
               {% else %}
-                <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'white-border' %}" alt="">
+                <img src="{% static section.name|get_icon_for_section:'white-border' %}" alt="">
               {% endif %}
             </div>
             <h2 id="{{ section.html_id }}">
@@ -275,7 +279,7 @@
           <div class="section--absolute--right-col">
             {% for subsection in section.subsections.all|dictsort:"order" %}
               {% if subsection.callout_box and subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv break_colons=True only %}
               {% endif %}
             {% endfor %}
           </div>
@@ -286,10 +290,10 @@
           {% if subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% if not subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv break_colons=False only %}
               {% endif %}
             {% else %}
-              {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
+              {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv only %}
             {% endif %}
           {% else %}
             {% if subsection.name != 'Basic information' %}

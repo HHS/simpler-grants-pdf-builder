@@ -25,6 +25,7 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
+- TODO: fix the icon colour stuff it's awful
 
 # DONE
 

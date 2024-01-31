@@ -1,8 +1,76 @@
 /* Set @page rules */
 
+@page {
+  @bottom-left {
+    font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica,
+      Roboto, Arial, sans-serif;
+    font-weight: 700;
+    color: var(--color--black);
+  }
+
+  @bottom-right {
+    font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica,
+      Roboto, Arial, sans-serif;
+    font-weight: 700;
+    color: var(--color--black);
+  }
+}
+
 /* Regular CSS */
 
+html {
+  font-family: "Public Sans Web", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+a {
+  color: var(--color--cms-blue);
+}
+
 /* Headings */
+
+h1 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+}
+
+h3 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+  color: var(--color--cms-blue);
+}
+
+h4 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+  color: var(--color--black);
+}
+
+h5 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+  color: var(--color--black);
+}
+
+h6 {
+  font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
+    Arial, sans-serif;
+  color: var(--color--black);
+}
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--cms-blue);
+  color: var(--color--black);
+}
 
 /* Cover page */
 
@@ -14,10 +82,31 @@
 
 /* Table of contents */
 
+.toc .toc--subsection-name a {
+  color: var(--color--black);
+}
+
 /* Before you begin page */
+
+section.before-you-begin h2 {
+  color: var(--color--cms-blue);
+}
 
 /* Section title page */
 
 /* Section contents */
+
+.callout-box {
+  background-color: var(--color--pale-blue);
+}
+
+.callout-box--icon {
+  background-color: var(--color--white);
+  border: 2px solid var(--color--cms-blue);
+}
+
+.section--absolute--right-col .callout-box--questions .callout-box--contents p {
+  font-weight: 400;
+}
 
 /* Media queries */
