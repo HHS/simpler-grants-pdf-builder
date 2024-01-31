@@ -28,9 +28,9 @@
 
 # DONE
 
+- Standardize Opdiv + Agency + Subagency rules for cover page and basic info
 - Remove col-span rules (CDC landscape) that no one asked for
 - Sam.gov should be uppercased (SAM.gov)
-- Show agency + subagency on cover + first page
 - Fix: link back to the edited subsection
 - Fix: Icon on before you begin page for HRSA theme
 - Fix: That 'Disappear' header thing
