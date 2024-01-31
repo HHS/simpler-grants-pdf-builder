@@ -15,6 +15,7 @@
   --color--med-blue: #336a90;
   --color--vibrant-blue: #005eaa;
   --color--hrsa-blue: #006699;
+  --color--cms-blue: #004a86;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e8f0f3;
   --color--med-brown: #c0b0a2;
@@ -198,10 +199,6 @@ p[role="heading"] + p,
 
 li {
   margin: 5px 0;
-}
-
-a {
-  color: var(--color--vibrant-blue);
 }
 
 table {
@@ -443,8 +440,6 @@ p[role="heading"] {
 
 .header-nav--running-header li a[aria-current] {
   font-weight: 700;
-  border-top: 4px solid var(--color--vibrant-blue);
-  color: var(--color--vibrant-blue);
 }
 
 /* Cover page */
@@ -535,7 +530,6 @@ p[role="heading"] {
 /* Table of contents */
 
 .toc h2 {
-  font-family: "Open Sans";
   font-weight: 700;
   font-size: 32pt;
   margin-top: 0;

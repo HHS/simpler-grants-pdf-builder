@@ -4,9 +4,27 @@
 
 /* Headings */
 
+h1,
+h2 {
+  color: var(--color--cms-blue);
+}
+
 /* Cover page */
 
+.nofo--cover-page--header--logo--subheading {
+  color: var(--color--cms-blue);
+}
+
+.nofo--cover-page--title .nofo--cover-page--title--subheading {
+  color: var(--color--cms-blue);
+}
+
 /* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--white);
+  color: var(--color--black);
+}
 
 /* Cover page: medium image */
 
@@ -18,6 +36,35 @@
 
 /* Section title page */
 
+.section--title-page--header-nav {
+  background-color: var(--color--pale-blue);
+  color: var(--color--cms-blue);
+}
+
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--cms-blue);
+}
+
+.section--title-page--toc,
+.section--title-page a {
+  color: var(--color--cms-blue);
+}
+
 /* Section contents */
+
+table th {
+  color: var(--color--white);
+  background-color: var(--color--cms-blue);
+  border: 2px solid var(--color--white);
+}
+
+table td {
+  background-color: var(--color--table-blue);
+  border: 2px solid var(--color--white);
+}
+
+table td a {
+  color: var(--color--cms-blue);
+}
 
 /* Media queries */
