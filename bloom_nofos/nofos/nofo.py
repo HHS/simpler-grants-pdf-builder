@@ -191,7 +191,7 @@ def get_sections_from_soup(soup):
         if section_num >= 0:
             if len(sections) == section_num:
                 # add an empty array at a new index
-                section_name = tag.text.strip()
+                section_name = tag.text.strip().replace("\xa0", " ")
 
                 # TODO: test this
                 has_section_page = not any(
@@ -257,7 +257,7 @@ def get_subsections_from_sections(sections):
     def get_subsection_dict(heading_tag, order, is_callout_box=False, body=None):
         if heading_tag:
             return {
-                "name": heading_tag.text.strip(),
+                "name": heading_tag.text.strip().replace("\xa0", " "),
                 "order": order,
                 "tag": demote_tag(heading_tag),
                 "html_id": heading_tag.get("id", ""),
