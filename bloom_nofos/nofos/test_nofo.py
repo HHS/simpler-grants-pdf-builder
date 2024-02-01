@@ -156,6 +156,17 @@ class HTMLSectionTests(TestCase):
         sections = get_sections_from_soup(soup)
         self.assertEqual(sections[0].get("name"), "Section 1")
 
+    def test_get_sections_from_soup_with_nonbreaking_space(self):
+        # contains nonbreaking space before the "1" character
+        soup = BeautifulSoup(
+            '<h1 id="section-1"><span class="c21">Step[a][b][c][d] 1: Review the Opportunity</span></h1><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_sections_from_soup(soup)
+        self.assertEqual(
+            sections[0].get("name"), "Step[a][b][c][d] 1: Review the Opportunity"
+        )
+
 
 class HTMLSubsectionTests(TestCase):
     def test_get_subsections_from_soup(self):
@@ -279,6 +290,25 @@ class HTMLSubsectionTests(TestCase):
     def test_get_subsections_from_soup_with_whitespace(self):
         soup = BeautifulSoup(
             "<h1><span>Section 1 </span></h1><h2><span>Subsection 1 </span> </h2><p>Section 1 body</p>",
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(get_sections_from_soup(soup))
+        # 1 section
+        self.assertEqual(len(sections), 1)
+
+        # assert section values
+        section = sections[0]
+        self.assertEqual(section.get("name"), "Section 1")
+
+        # 1 subsection
+        self.assertEqual(len(section.get("subsections")), 1)
+        subsection = section.get("subsections")[0]
+        self.assertEqual(subsection.get("name"), "Subsection 1")
+
+    def test_get_subsections_from_soup_with_nonbreaking_space(self):
+        # nonbreaking space before "1" in the h1 and the h2
+        soup = BeautifulSoup(
+            "<h1><span>Section 1</span></h1><h2><span>Subsection 1</span> </h2><p>Section 1 body</p>",
             "html.parser",
         )
         sections = get_subsections_from_sections(get_sections_from_soup(soup))
