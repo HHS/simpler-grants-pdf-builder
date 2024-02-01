@@ -26,7 +26,7 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
 )
-from .utils import match_view_url
+from .utils import match_view_url, clean_string
 
 
 class MatchUrlTests(TestCase):
@@ -47,6 +47,41 @@ class MatchUrlTests(TestCase):
         self.assertFalse(match_view_url("/nofos/abc"))
         self.assertFalse(match_view_url("/nofos/123/456"))
         self.assertFalse(match_view_url("/nofos/1/2"))
+
+
+class CleanStringTests(TestCase):
+    def test_trim_leading_and_trailing_spaces(self):
+        self.assertEqual(clean_string("  test string  "), "test string")
+
+    def test_replace_newlines(self):
+        self.assertEqual(clean_string("test\nstring"), "test string")
+
+    def test_replace_carriage_returns(self):
+        self.assertEqual(clean_string("test\rstring"), "test string")
+
+    def test_replace_tabs(self):
+        self.assertEqual(clean_string("test\tstring"), "test string")
+
+    def test_replace_multiple_spaces(self):
+        self.assertEqual(clean_string("test  string"), "test string")
+
+    def test_replace_mixed_whitespace(self):
+        self.assertEqual(clean_string("test \t\n\r string"), "test string")
+
+    def test_replace_leading_weird_space(self):
+        self.assertEqual(clean_string(" test \t\n\r string"), "test string")
+
+    def test_replace_trailing_weird_space(self):
+        self.assertEqual(clean_string("test \t\n\r string "), "test string")
+
+    def test_no_whitespace_change(self):
+        self.assertEqual(clean_string("test string"), "test string")
+
+    def test_empty_string(self):
+        self.assertEqual(clean_string(""), "")
+
+    def test_only_whitespace(self):
+        self.assertEqual(clean_string(" \t\r\n "), "")
 
 
 class TableConvertFirstRowToHeaderRowTests(TestCase):
@@ -166,6 +201,15 @@ class HTMLSectionTests(TestCase):
         self.assertEqual(
             sections[0].get("name"), "Step[a][b][c][d] 1: Review the Opportunity"
         )
+
+    def test_get_sections_from_soup_with_multiple_spaces(self):
+        # contains nonbreaking space before the "1" character
+        soup = BeautifulSoup(
+            '<h1 id="section-1"><span class="c21">Step    \n1: Review the Opportunity</span></h1><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_sections_from_soup(soup)
+        self.assertEqual(sections[0].get("name"), "Step 1: Review the Opportunity")
 
 
 class HTMLSubsectionTests(TestCase):
@@ -309,6 +353,25 @@ class HTMLSubsectionTests(TestCase):
         # nonbreaking space before "1" in the h1 and the h2
         soup = BeautifulSoup(
             "<h1><span>Section 1</span></h1><h2><span>Subsection 1</span> </h2><p>Section 1 body</p>",
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(get_sections_from_soup(soup))
+        # 1 section
+        self.assertEqual(len(sections), 1)
+
+        # assert section values
+        section = sections[0]
+        self.assertEqual(section.get("name"), "Section 1")
+
+        # 1 subsection
+        self.assertEqual(len(section.get("subsections")), 1)
+        subsection = section.get("subsections")[0]
+        self.assertEqual(subsection.get("name"), "Subsection 1")
+
+    def test_get_subsections_from_soup_with_carriage_returns(self):
+        # nonbreaking space before "1" in the h1 and the h2
+        soup = BeautifulSoup(
+            "<h1><span>Section\r\n1</span></h1><h2><span>Subsection\t1</span> </h2><p>Section 1 body</p>",
             "html.parser",
         )
         sections = get_subsections_from_sections(get_sections_from_soup(soup))

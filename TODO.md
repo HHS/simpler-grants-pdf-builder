@@ -28,7 +28,7 @@
 
 # DONE
 
-- Fix: Strip non-breaking spaces out of headers
+- Fix: Strip weird whitespace out of headers
 - TODO: fix the afwul logic around importing icons
 - Fix: push down the Before you being icon to line up with other icons
 - Standardize Opdiv + Agency + Subagency rules for cover page and basic info

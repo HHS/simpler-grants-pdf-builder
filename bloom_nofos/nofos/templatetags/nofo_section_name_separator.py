@@ -13,5 +13,6 @@ def nofo_section_name_separator(section_name):
         return {"name": section_name, "number": None}
 
     section_step, section_title, *_ = section_name.split(":")
+
     section_number = section_step.split(" ")[1]
     return {"name": section_title, "number": section_number}
