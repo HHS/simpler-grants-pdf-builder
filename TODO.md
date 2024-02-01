@@ -29,6 +29,7 @@
 
 # DONE
 
+- Fix: push down the Before you being icon to line up with other icons
 - Standardize Opdiv + Agency + Subagency rules for cover page and basic info
 - Remove col-span rules (CDC landscape) that no one asked for
 - Sam.gov should be uppercased (SAM.gov)

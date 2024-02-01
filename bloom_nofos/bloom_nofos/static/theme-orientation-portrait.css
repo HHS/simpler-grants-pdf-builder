@@ -188,6 +188,10 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 /* Before you begin page */
 
+section.before-you-begin {
+  padding-top: 150px;
+}
+
 /* Section title page */
 
 .section--title-page .section--title-page--header-nav > ol,
