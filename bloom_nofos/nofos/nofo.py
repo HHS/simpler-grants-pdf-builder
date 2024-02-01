@@ -1,6 +1,7 @@
 import datetime
 import re
 from urllib.parse import parse_qs, urlparse
+from django.db import transaction
 
 from bs4 import Tag
 from markdownify import MarkdownConverter
@@ -37,6 +38,7 @@ def md(html, **options):
     return ListInATableConverter(**options).convert(html)
 
 
+@transaction.atomic
 def add_headings_to_nofo(nofo):
     new_ids = []
     # add counter because subheading titles can repeat, resulting in duplicate IDs
@@ -46,10 +48,14 @@ def add_headings_to_nofo(nofo):
     for section in nofo.sections.all():
         section_id = "{}".format(slugify(section.name))
 
-        if section.html_id:
+        if section.html_id and len(section.html_id):
             new_ids.append({"old_id": section.html_id, "new_id": section_id})
 
         section.html_id = section_id
+
+        if not section.html_id or len(section.html_id) == 0:
+            raise ValueError("html_id blank for section: {}".format(section.name))
+
         section.save()
 
         # add ids to all subsection headings
@@ -126,7 +132,7 @@ def _build_nofo(nofo, sections):
         model_section = Section(
             name=section.get("name", "Section X"),
             order=section.get("order", ""),
-            html_id=section.get("html_id"),
+            html_id=section.get("html_id", None),
             has_section_page=section.get("has_section_page"),
             nofo=nofo,
         )

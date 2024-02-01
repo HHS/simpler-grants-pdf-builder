@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Small fixes to wording of "Before you begin" page
   - Push down icon on "Before you begin" page to match other icons
 - Strip weird whitespace from NOFO headers on import
+- Creating HTML ids for sections and subsections is now atomic
+  - This should stop empty HTML ids making it through
 
 ## [1.3.0] - 2023-01-31
 
