@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## Unreleased
+
+### Fixed
+
+- Small fixes to wording of "Before you begin" page
+
 ## [1.3.0] - 2023-01-31
 
 ### Added
