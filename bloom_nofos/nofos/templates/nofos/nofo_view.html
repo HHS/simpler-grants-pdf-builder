@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents get_icon_for_section replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents static_icon replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove %}
 
 {% block css %}
   {% with "theme-orientation-"|add:nofo_theme_orientation|add:'.css' as filename_orientation %}
@@ -123,11 +123,7 @@
       {% for section in nofo.sections.all|dictsort:"order" %}
         {% if section.has_section_page %}
           <li class="toc--section-name">
-            {% if 'white' in nofo.theme %}
-              <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
-            {% else %}
-              <img class="toc--section-name--img" src="{% static section.name|get_icon_for_section:'white-icon' %}" alt="">
-            {% endif %}
+            <img class="toc--section-name--img" src="{% static_icon section.name nofo.theme 'toc' %}" alt="">
             <div class="toc--section-name--wrapper">
               <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
@@ -160,13 +156,7 @@
 
   <section id="section--before-you-begin" class="before-you-begin">
     <div class="section--before-you-begin--icon">
-      {% if nofo_opdiv.key == 'hrsa' %}
-        <img src="{% static 'before you begin'|get_icon_for_section:'dark-blue-border' %}" alt="">
-      {% elif nofo_opdiv.key == 'cms' %}
-        <img src="{% static 'before you begin'|get_icon_for_section:'cms-blue-border' %}" alt="">
-      {% else %}
-        <img src="{% static 'before you begin'|get_icon_for_section:'med-blue-border' %}" alt="">
-      {% endif %}
+      <img src="{% static_icon 'before you begin' nofo.theme 'before_you_begin' %}" alt="">
     </div>
     <h2>Before you begin</h2>
     <div class="before-you-begin--content">
@@ -205,13 +195,7 @@
           </div>
           <div class="section--title-page--name">
             <div class="section--title-page--icon">
-              {% if nofo_opdiv.key == 'cms' %}
-                <img src="{% static section.name|get_icon_for_section:'cms-blue-border' %}" alt="">
-              {% elif 'white' in nofo.theme %}
-                <img src="{% static section.name|get_icon_for_section:'med-blue-border' %}" alt="">
-              {% else %}
-                <img src="{% static section.name|get_icon_for_section:'white-border' %}" alt="">
-              {% endif %}
+              <img src="{% static_icon section.name nofo.theme %}" alt="">
             </div>
             <h2 id="{{ section.html_id }}">
               {% with section.name|nofo_section_name_separator as section_name %}

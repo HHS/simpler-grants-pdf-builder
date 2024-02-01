@@ -25,10 +25,10 @@
 - Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
-- TODO: fix the icon colour stuff it's awful
 
 # DONE
 
+- TODO: fix the afwul logic around importing icons
 - Fix: push down the Before you being icon to line up with other icons
 - Standardize Opdiv + Agency + Subagency rules for cover page and basic info
 - Remove col-span rules (CDC landscape) that no one asked for
