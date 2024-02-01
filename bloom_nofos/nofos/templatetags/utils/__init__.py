@@ -128,8 +128,49 @@ def is_callout_box_table_markdown(table):
 # Icons
 
 
-def get_icon_for_section(
-    section_name="review the opportunity", icon_style="med-blue-border"
+def _get_icon_path_from_theme(theme, section):
+    """
+    Returns the path to the given theme's icons.
+
+    Note that icon style is determined by the opdiv, the colour, and the nofo section.
+    """
+    # Note: split out this logic if it starts getting too complicated
+
+    colour = theme.split("-")[-1]
+    opdiv = theme.split("-")[-2]
+
+    if section == "toc":
+        if colour == "white":
+            return "img/figma-icons/med-blue-border"
+        else:
+            return "img/figma-icons/white-icon"
+
+    if section == "before_you_begin":
+        if opdiv == "hrsa":
+            return "img/figma-icons/dark-blue-border"
+        elif opdiv == "cms":
+            return "img/figma-icons/cms-blue-border"
+        else:
+            return "img/figma-icons/med-blue-border"
+
+    if section == "callout_box":
+        if colour == "white":
+            return "img/figma-icons/dark-blue-border"
+
+    if section == "section_cover":
+        if theme == "portrait-cms-white":
+            return "img/figma-icons/cms-blue-border"
+
+        elif "cdc-white" in theme:
+            return "img/figma-icons/med-blue-border"
+
+    return "img/figma-icons/white-border"
+
+
+def get_icon_from_theme(
+    icon_name="review the opportunity",
+    theme="portrait-cdc-blue",
+    section="section_cover",
 ):
     """
     Returns the icon filename for the given section name and theme.
@@ -137,6 +178,8 @@ def get_icon_for_section(
     Looks up the icon filename from the predefined list of section name ->
     icon filename mappings. If no match is found, returns the default
     "review" icon.
+
+    Uses the theme to return the path to the icon.
 
     section_name: The name of the section to get the icon for.
     """
@@ -151,14 +194,16 @@ def get_icon_for_section(
         ("learn what happens", "6-next.svg"),
         ("contacts", "7-contact.svg"),
     ]
-    section_name = section_name.lower()
+    icon_name = icon_name.lower()
+
+    icon_path = _get_icon_path_from_theme(theme, section)
 
     for search_term, filename in icon_tuples:
-        if search_term in section_name:
-            return "img/figma-icons/{}/{}".format(icon_style, filename)
+        if search_term in icon_name:
+            return "{}/{}".format(icon_path, filename)
 
     # return 'review' by default if section name doesn't match
-    return "img/figma-icons/{}/1-review.svg".format(icon_style)
+    return "{}/1-review.svg".format(icon_path)
 
 
 # Footnotes

@@ -1,4 +1,4 @@
-{% load static martortags callout_box_contents add_classes_to_tables get_icon_for_section is_floating_callout_box %}
+{% load static martortags callout_box_contents add_classes_to_tables static_icon is_floating_callout_box %}
 
 <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}">
   {% if subsection.name %}
@@ -6,21 +6,9 @@
   {% endif %}
   <div class="callout-box--contents">
     {% if 'uestions?' in subsection.body %}
-      {% if nofo_opdiv.key == 'cms' %}
-        <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'cms-blue-border' %}" alt="">
-      {% elif 'white' in nofo.theme %}
-        <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'dark-blue-border' %}" alt="">
-      {% else %}
-        <img class="toc--section-name--img" src="{% static 'contacts'|get_icon_for_section:'white-border' %}" alt="">
-      {% endif %}
+      <img class="toc--section-name--img" src="{% static_icon 'contacts' nofo.theme 'callout_box' %}" alt="">
     {% elif 'Adobe Reader' in subsection.body %}
-      {% if nofo_opdiv.key == 'cms' %}
-        <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'cms-blue-border' %}" alt="">
-      {% elif 'white' in nofo.theme %}
-        <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'dark-blue-border' %}" alt="">
-      {% else %}
-        <img class="toc--section-name--img" src="{% static 'adobe'|get_icon_for_section:'white-border' %}" alt="">
-      {% endif %}
+      <img class="toc--section-name--img" src="{% static_icon 'adobe' nofo.theme 'callout_box' %}" alt="">
     {% endif %}
     {% if break_colons %}
       {{ subsection.body|safe_markdown|callout_box_contents }}

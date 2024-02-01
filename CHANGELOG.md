@@ -6,6 +6,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Changed
+
+- Refactor the templatetag for returning icons
+  - Moved the logic out of the template and into the templatetag function
+
 ### Fixed
 
 - Small fixes to wording of "Before you begin" page
