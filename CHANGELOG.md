@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Added images for next 3 NOFO covers
+
 ### Changed
 
 - Refactor the templatetag for returning icons
