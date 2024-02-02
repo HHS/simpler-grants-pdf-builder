@@ -27,6 +27,7 @@
 
 # DONE
 
+- Fix: reimporting re-calculates heading ids
 - Fix: Links in table cells with icons
 - Fix: Strip weird whitespace out of headers
 - TODO: fix the afwul logic around importing icons
