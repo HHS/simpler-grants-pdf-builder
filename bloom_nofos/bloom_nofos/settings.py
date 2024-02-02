@@ -38,7 +38,7 @@ environ.Env.read_env(env_path)
 DJVERSION_VERSION = "1.3.1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
+DEBUG = True  # cast_to_boolean(env.get_value("DEBUG", default=True))
 if DEBUG:
     print("=====")
     print("Using env vars from: {}".format(env_file))

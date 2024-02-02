@@ -661,7 +661,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        nofo = add_headings_to_nofo(nofo)
+        add_headings_to_nofo(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -699,7 +699,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        nofo = add_headings_to_nofo(nofo)
+        add_headings_to_nofo(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -742,7 +742,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        nofo = add_headings_to_nofo(nofo)
+        add_headings_to_nofo(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
 

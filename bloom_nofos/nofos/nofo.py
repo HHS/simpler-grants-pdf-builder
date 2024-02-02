@@ -79,8 +79,6 @@ def add_headings_to_nofo(nofo):
 
             subsection.save()
 
-    return nofo
-
 
 def add_newline_to_ref_numbers(text):
     """

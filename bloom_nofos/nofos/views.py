@@ -206,7 +206,7 @@ def nofo_import(request, pk=None):
 
             # open question: should reimporting do any of the stuff below?
             nofo = overwrite_nofo(nofo, sections)
-            nofo = add_headings_to_nofo(nofo)
+            add_headings_to_nofo(nofo)
             messages.add_message(
                 request,
                 messages.SUCCESS,
@@ -219,7 +219,7 @@ def nofo_import(request, pk=None):
         else:
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
             nofo = create_nofo(nofo_title, sections)
-            nofo = add_headings_to_nofo(nofo)
+            add_headings_to_nofo(nofo)
             nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
             nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
             nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
