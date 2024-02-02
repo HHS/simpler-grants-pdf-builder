@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -51,6 +51,24 @@ def has_link_in_next_row(td):
     return False
 
 
+def replace_unicode_with_svg(root_element, icon, svg_html):
+    found = False
+    # Iterate over all elements to find the icon and remove it
+    for content in root_element.contents:
+        if isinstance(content, NavigableString) and icon in content:
+            parts = content.split(icon, 1)  # Split the text at the icon
+            new_content = parts[0] + (parts[1] if len(parts) > 1 else "")
+            content.replace_with(NavigableString(new_content))
+            found = True
+            break  # Assuming only one icon per element
+
+    if found:
+        # Create the SVG soup
+        svg_soup = BeautifulSoup(svg_html, "html.parser")
+        # Insert the SVG as the first element in the table cell
+        root_element.insert(0, svg_soup)
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -81,8 +99,8 @@ def replace_unicode_with_icon(html_string):
                     classname="usa-icon__list-element",
                     tag_names="span|strong",
                 )
-                root_element.string = root_element.text.replace(icon, "")
-                root_element.insert(0, BeautifulSoup(svg_html, "html.parser"))
+
+                replace_unicode_with_svg(root_element, icon, svg_html)
 
                 parent_td = get_parent_td(root_element)
                 if parent_td:

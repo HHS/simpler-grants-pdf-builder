@@ -22,12 +22,12 @@
   - Blue HRSA
   - White HRSA
 - PDF metadata as tags
-- Fix: Links in table cells
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 
 # DONE
 
+- Fix: Links in table cells with icons
 - Fix: Strip weird whitespace out of headers
 - TODO: fix the afwul logic around importing icons
 - Fix: push down the Before you being icon to line up with other icons
