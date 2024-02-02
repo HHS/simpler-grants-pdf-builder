@@ -206,6 +206,7 @@ def nofo_import(request, pk=None):
 
             # open question: should reimporting do any of the stuff below?
             nofo = overwrite_nofo(nofo, sections)
+            nofo = add_headings_to_nofo(nofo)
             messages.add_message(
                 request,
                 messages.SUCCESS,

@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Links in table cells with icons
+- Reimporting a NOFO re-calculates heading IDs
 
 ## [1.3.1] - 2023-02-01
 
