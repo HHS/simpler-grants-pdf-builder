@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+
 import os
 from pathlib import Path
 
@@ -34,7 +35,7 @@ environ.Env.read_env(env_path)
 
 # Project version
 
-DJVERSION_VERSION = "1.3.0"
+DJVERSION_VERSION = "1.3.1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
