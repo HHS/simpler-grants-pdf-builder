@@ -87,7 +87,8 @@ class NofosListView(ListView):
         if self.status:
             # Filter the queryset based on the status
             queryset = queryset.filter(status=self.status)
-        return queryset
+
+        return queryset.order_by("-created")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

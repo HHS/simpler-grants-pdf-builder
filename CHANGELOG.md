@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Changed
+
+- Return nofos by most recently created
+
 ### Fixed
 
 - Links in table cells with icons
