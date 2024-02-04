@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Return nofos by most recently created
+- Change "page-break-after|before" paragraphs into hrs like Google does
 
 ### Fixed
 
