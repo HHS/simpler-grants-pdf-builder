@@ -10,6 +10,7 @@ from .nofo import (
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
     convert_table_first_row_to_header_row,
+    clean_table_cells,
     create_nofo,
     decompose_empty_tags,
     get_sections_from_soup,
@@ -47,6 +48,56 @@ class MatchUrlTests(TestCase):
         self.assertFalse(match_view_url("/nofos/abc"))
         self.assertFalse(match_view_url("/nofos/123/456"))
         self.assertFalse(match_view_url("/nofos/1/2"))
+
+
+class TestsCleanTableCells(TestCase):
+    def test_remove_span_keep_content(self):
+        html = "<table><tr><td><span>Content</span> and more <span>content</span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup.td), "<td>Content and more content</td>")
+
+    def test_replace_non_breaking_space(self):
+        html = "<table><tr><td>Content\xa0here</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertIn("Content here", soup.td.text)
+
+    def test_table_with_one_cell(self):
+        html = "<table><tr><td>Only one cell</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertIn("Only one cell", soup.td.text)
+
+    def test_table_with_span_and_nbsp(self):
+        html = "<table><tr><td><span>Some</span>\xa0content and<span> more content</span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(soup.td.text, "Some content and more content")
+
+    def test_table_with_span_and_nbsp_and_link(self):
+        html = "<table><tr><td><span>Some</span>\xa0content and<span> <a href='https://groundhog-day.com'>a link</a></span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(
+            str(soup.td),
+            '<td>Some content and <a href="https://groundhog-day.com">a link</a></td>',
+        )
+
+    def test_table_with_span_and_nbsp_and_a_list(self):
+        html = "<table><tr><td><span>Some</span>\xa0content and<span> <ul><li>a list item 1</li><li>a list item 2</li></ul></span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(
+            str(soup.td),
+            "<td>Some content and <ul><li>a list item 1</li><li>a list item 2</li></ul></td>",
+        )
+
+    def test_multiple_spans_in_cell(self):
+        html = "<table><tr><td><span>First</span><span>Second</span></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(soup.td.text, "FirstSecond")
 
 
 class CleanStringTests(TestCase):

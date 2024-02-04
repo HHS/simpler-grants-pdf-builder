@@ -29,6 +29,7 @@ from .models import Nofo, Subsection
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
+    clean_table_cells,
     create_nofo,
     decompose_empty_tags,
     get_sections_from_soup,
@@ -184,6 +185,7 @@ def nofo_import(request, pk=None):
         # mutate the HTML
         join_nested_lists(soup)
         decompose_empty_tags(soup)
+        clean_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup)
