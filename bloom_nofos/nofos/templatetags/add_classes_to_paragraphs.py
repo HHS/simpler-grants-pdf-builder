@@ -19,10 +19,15 @@ def add_classes_to_paragraphs(html_string):
         p["aria-level"] = "7"
 
     # Look for paragraphs that contain the string "page-break-before"
-    for p in soup.find_all("p", string="page-break-before"):
-        _add_class_if_not_exists_to_tag(p, "page-break-before page-break--spacer", "p")
+    # also: make them hrs
+    for hr in soup.find_all("p", string="page-break-before"):
+        hr.name = "hr"
+        hr.string = ""
+        _add_class_if_not_exists_to_tag(hr, "page-break-before page-break--hr", "hr")
 
-    for p in soup.find_all("p", string="page-break-after"):
-        _add_class_if_not_exists_to_tag(p, "page-break-after page-break--spacer", "p")
+    for hr in soup.find_all("p", string="page-break-after"):
+        hr.name = "hr"
+        hr.string = ""
+        _add_class_if_not_exists_to_tag(hr, "page-break-after page-break--hr", "hr")
 
     return mark_safe(str(soup))

@@ -55,9 +55,9 @@ section.before-you-begin {
   page-break-after: always;
 }
 
-.page-break--spacer {
+.page-break--hr {
   visibility: hidden;
-  height: 0;
+  border: 0;
   margin: 0;
 }
 
