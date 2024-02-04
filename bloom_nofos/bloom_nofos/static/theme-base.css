@@ -492,6 +492,12 @@ p[role="heading"] {
   width: 75%;
 }
 
+.nofo--cover-page--hero .nofo--cover-page--hero-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nofo--cover-page--hero .nofo--cover-page--title {
   display: flex;
   flex-direction: row;

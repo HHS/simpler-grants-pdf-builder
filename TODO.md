@@ -25,10 +25,10 @@
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 - Fix: Add column break rules
-- Fix: Center images
 
 # DONE
 
+- Fix: Center cover images
 - Fix: Strip messy spans and NBSPs in tables on import
 - Fix: reimporting re-calculates heading ids
 - Fix: Links in table cells with icons
