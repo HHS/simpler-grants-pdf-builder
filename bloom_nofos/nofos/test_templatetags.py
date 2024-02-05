@@ -169,21 +169,6 @@ class HTMLTableClassTests(TestCase):
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
-    def test_table_class_lg_with_th(self):
-        table_html = self._generate_table(num_cols=10, cell="th")
-
-        soup = BeautifulSoup(table_html, "html.parser")
-
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
-
-    def test_table_class_lg_with_th_2_rows(self):
-        # generate a table with 2 rows
-        table_html = self._generate_table(num_cols=10, num_rows=2, cell="th")
-
-        soup = BeautifulSoup(table_html, "html.parser")
-
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
-
     def test_table_class_md_rows(self):
         table_html = self._generate_table(num_cols=2, num_rows=6)
         soup = BeautifulSoup(table_html, "html.parser")

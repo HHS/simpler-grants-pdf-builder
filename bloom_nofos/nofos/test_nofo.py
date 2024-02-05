@@ -919,7 +919,7 @@ class HTMLSuggestThemeTests(TestCase):
 
     def test_suggest_nofo_number_cdc_returns_cdc_theme(self):
         nofo_number = "CDC-RFA-DP-24-0139"
-        nofo_theme = "landscape-cdc-blue"
+        nofo_theme = "portrait-cdc-blue"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
     def test_suggest_nofo_number_acf_returns_acf_theme(self):

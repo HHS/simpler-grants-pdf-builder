@@ -67,6 +67,17 @@ def add_class_to_table(table):
 
         return "table--small"
 
+    def _get_total_word_count(table):
+        word_count = 0
+
+        for cell in table.find_all("td"):
+            cell_text = cell.get_text()
+            # Split the text into words based on whitespace and count them
+            words = cell_text.split()
+            word_count += len(words)
+
+        return word_count
+
     if is_callout_box_table_markdown(table):
         return "table--callout-box"
 
@@ -74,6 +85,14 @@ def add_class_to_table(table):
     cols = rows[0].find_all("th") + rows[0].find_all("td")
 
     if table.find("th", string="Recommended For"):
+        return "table--large"
+
+    word_count = _get_total_word_count(table)
+
+    if word_count == 0:
+        return "table--small"
+
+    elif word_count > 120:
         return "table--large"
 
     return _get_table_class(len(cols))
@@ -128,7 +147,7 @@ def is_callout_box_table_markdown(table):
 # Icons
 
 
-def _get_icon_path_from_theme(theme, section, nofo_number):
+def _get_icon_path_from_theme(theme, section, nofo_number=""):
     """
     Returns the path to the given theme's icons.
 

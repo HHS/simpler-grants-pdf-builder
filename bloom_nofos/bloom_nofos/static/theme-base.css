@@ -228,6 +228,10 @@ table.table--large caption {
   text-align: left;
 }
 
+table.table--criteria th:first-of-type {
+  width: 65%;
+}
+
 table th,
 table td,
 table caption {
