@@ -11,8 +11,8 @@ from .utils import (
 
 register = template.Library()
 
-uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--list usa-icon--arrow_upward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend 123">'
-uswds_arrow_downward_icon = '<img class="usa-icon usa-icon--list usa-icon--arrow_downward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_downward.svg" alt="Report downward trend">'
+uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--arrow_upward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend 123">'
+uswds_arrow_downward_icon = '<img class="usa-icon usa-icon--arrow_downward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_downward.svg" alt="Report downward trend">'
 uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/check_box_outline_blank.svg" alt="Checkbox">'
 
 
@@ -97,7 +97,7 @@ def replace_unicode_with_icon(html_string):
                 _add_class_if_not_exists_to_tags(
                     element=root_element,
                     classname="usa-icon__list-element",
-                    tag_names="span|strong",
+                    tag_names="span|strong|li",
                 )
 
                 replace_unicode_with_svg(root_element, icon, svg_html)

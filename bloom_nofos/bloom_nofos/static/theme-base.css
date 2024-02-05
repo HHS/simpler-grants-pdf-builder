@@ -261,7 +261,7 @@ table td > *:first-child {
 
 table td ul,
 table td ol {
-  padding-left: 17px;
+  padding-left: 20px;
   margin-left: 0;
 }
 
@@ -301,11 +301,16 @@ td.usa-icon__td ol {
   list-style: none;
 }
 
+td.usa-icon__td p + ul,
+td.usa-icon__td p + ol {
+  padding-left: 25px;
+}
+
 .usa-icon__list-element {
   position: relative;
 }
 
-img.usa-icon--list {
+.usa-icon__list-element .usa-icon {
   position: absolute;
   left: -25px;
   height: 20px;
