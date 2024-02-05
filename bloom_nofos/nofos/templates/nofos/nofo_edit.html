@@ -85,7 +85,7 @@
 
   <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
     <caption>
-      <h2 class="margin-bottom-0">NOFO metadata</h2>
+      <h2 class="margin-bottom-0">NOFO data</h2>
       <span><a href="#back-to-top">Top ↑</a></span>
     </caption>
     <thead class="usa-sr-only">
@@ -138,20 +138,36 @@
         <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
         <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
       <tr>
+    </tbody>
+  </table>
+
+  <table class="usa-table usa-table--borderless width-full">
+    <caption>
+      <h2 class="margin-bottom-0">NOFO metadata</h2>
+      <span><a href="#back-to-top">Top ↑</a></span>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
       <tr>
         <th scope="row">Author</th>
         <td>{{ nofo.author|get_value_or_none:"author" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_author' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
       <tr>
       <tr>
         <th scope="row">Subject</th>
         <td>{{ nofo.subject|get_value_or_none:"subject" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_subject' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
       <tr>
       <tr>
         <th scope="row">Keywords</th>
         <td>{{ nofo.keywords|get_value_or_none:"keywords" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_keywords' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
       <tr>
     </tbody>
   </table>

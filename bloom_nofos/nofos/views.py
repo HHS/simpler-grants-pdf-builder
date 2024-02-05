@@ -22,9 +22,7 @@ from .forms import (
     NofoStatusForm,
     NofoSubagencyForm,
     NofoTaglineForm,
-    NofoAuthorForm,
-    NofoSubjectForm,
-    NofoKeywordsForm,
+    NofoMetadataForm,
     NofoThemeForm,
     SubsectionForm,
 )
@@ -325,18 +323,11 @@ class NofoEditTaglineView(BaseNofoEditView):
     form_class = NofoTaglineForm
     template_name = "nofos/nofo_edit_tagline.html"
 
-class NofoEditAuthorView(BaseNofoEditView):
-    form_class = NofoAuthorForm
-    template_name = "nofos/nofo_edit_author.html"
-  
-class NofoEditSubjectView(BaseNofoEditView):
-    form_class = NofoSubjectForm
-    template_name = "nofos/nofo_edit_subject.html"
-  
-class NofoEditKeywordsView(BaseNofoEditView):
-    form_class = NofoKeywordsForm
-    template_name = "nofos/nofo_edit_keywords.html"
-  
+
+class NofoEditMetadataView(BaseNofoEditView):
+    form_class = NofoMetadataForm
+    template_name = "nofos/nofo_edit_metadata.html"
+
 
 class NofoEditOpDivView(BaseNofoEditView):
     form_class = NofoOpDivForm

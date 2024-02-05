@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
+## [1.5.0] - 2023-02-05
+
+### Added
+
+- Find for metadata tags in the imported doc, add to meta tags
+
 ## [1.4.0] - 2023-02-05
 
 ### Added

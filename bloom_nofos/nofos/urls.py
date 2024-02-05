@@ -42,19 +42,9 @@ urlpatterns = [
         name="nofo_edit_tagline",
     ),
     path(
-        "<int:pk>/edit/author",
-        views.NofoEditAuthorView.as_view(),
-        name="nofo_edit_author",
-    ),
-    path(
-        "<int:pk>/edit/subject",
-        views.NofoEditSubjectView.as_view(),
-        name="nofo_edit_subject",
-    ),
-    path(
-        "<int:pk>/edit/keywords",
-        views.NofoEditKeywordsView.as_view(),
-        name="nofo_edit_keywords",
+        "<int:pk>/edit/metadata",
+        views.NofoEditMetadataView.as_view(),
+        name="nofo_edit_metadata",
     ),
     path(
         "<int:pk>/edit/opdiv",
