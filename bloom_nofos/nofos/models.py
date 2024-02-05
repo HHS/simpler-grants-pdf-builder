@@ -60,19 +60,19 @@ class Nofo(models.Model):
     author = models.TextField(
         "NOFO author",
         blank=True,
-        help_text="Who wrote this NOFO.",
+        help_text="The author of this NOFO.",
     )
 
     subject = models.TextField(
         "NOFO subject",
         blank=True,
-        help_text="What this NOFO about.",
+        help_text="The subject of this NOFO.",
     )
 
     keywords = models.TextField(
         "NOFO keywords",
         blank=True,
-        help_text="keywords for the NOFO.",
+        help_text="Keywords for this NOFO.",
     )
 
     THEME_CHOICES = [

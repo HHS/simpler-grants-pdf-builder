@@ -40,12 +40,20 @@ NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoSubagencyForm = create_nofo_form_class(["subagency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoTaglineForm = create_nofo_form_class(["tagline"])
-NofoAuthorForm = create_nofo_form_class(["author"])
-NofoSubjectForm = create_nofo_form_class(["subject"])
-NofoKeywordsForm = create_nofo_form_class(["keywords"])
 NofoThemeForm = create_nofo_form_class(["theme"])
 NofoCoverForm = create_nofo_form_class(["cover"])
 NofoStatusForm = create_nofo_form_class(["status"])
+
+
+# this one needs a custom field and a custom widget so don't use the factory function
+class NofoMetadataForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["author", "subject", "keywords"]
+        widgets = {
+            "author": forms.TextInput(),
+            "subject": forms.TextInput(),
+        }
 
 
 # this one needs a custom field and a custom widget so don't use the factory function

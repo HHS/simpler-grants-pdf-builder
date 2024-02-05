@@ -735,30 +735,6 @@ p[role="heading"] {
   margin: 15px 0 25px 0;
 }
 
-.nofo--author {
-  font-size: 14pt;
-  border-top: 1px solid var(--color--light-grey);
-  border-bottom: 1px solid var(--color--light-grey);
-  padding: 15px 0;
-  margin: 15px 0 25px 0;
-}
-
-.nofo--subject {
-  font-size: 14pt;
-  border-top: 1px solid var(--color--light-grey);
-  border-bottom: 1px solid var(--color--light-grey);
-  padding: 15px 0;
-  margin: 15px 0 25px 0;
-}
-
-.nofo--keywords {
-  font-size: 14pt;
-  border-top: 1px solid var(--color--light-grey);
-  border-bottom: 1px solid var(--color--light-grey);
-  padding: 15px 0;
-  margin: 15px 0 25px 0;
-}
-
 .callout-box {
   border-radius: 10px;
   padding: 20px;

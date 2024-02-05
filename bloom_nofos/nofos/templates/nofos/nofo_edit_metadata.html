@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO Subject
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO Metadata" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>These values appear <a href="https://commonlook.com/the-relevance-of-metadata-in-accessible-pdfs/" target="_blank">in the NOFO’s metadata fields</a>, not in the text of the NOFO itself.</p>
+  <p>To see them, select “View Source” for this NOFO and <a href="https://docraptor.com/documentation/article/1068015-metadata" target="_blank">look for them in the <code>&lt;head&gt;</code> element</a>.</p>
+
+  <form id="nofo-number--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Save metadata</button>
+  </form>
+{% endblock %}

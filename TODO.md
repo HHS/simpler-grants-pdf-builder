@@ -21,11 +21,11 @@
 - Text-only cover page design
   - Blue HRSA
   - White HRSA
-- PDF metadata as tags
 - Fix: Add column break rules for headings
 
 # DONE
 
+- PDF metadata as tags
 - Remove HHS logo from CDC cover pages
 - Fix: Add column break rules using p tags
 - Fix: Save content changes to callout boxes in the UI editor
