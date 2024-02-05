@@ -32,6 +32,15 @@ class ListInATableConverter(MarkdownConverter):
 
         return super().convert_ul(el, text, convert_as_inline)
 
+    def convert_p(self, el, text, convert_as_inline):
+        # if we are in a table cell, and that table cell contains a list return the string
+        if el.parent.name == "td":
+            for child in el.parent:
+                if child.name == "ul" or child.name == "ol":
+                    return str(el)
+
+        return super().convert_p(el, text, convert_as_inline)
+
 
 # Create shorthand method for conversion
 def md(html, **options):
