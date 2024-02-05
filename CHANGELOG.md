@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Links in table cells with icons
+- Links in callout boxes are preserved
 - Reimporting a NOFO re-calculates heading IDs
 - Strip messy spans and NBSPs in tables on import
 - Center cover images
