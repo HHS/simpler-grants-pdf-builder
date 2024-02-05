@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Added a "column-break-before|after" templatetag for landscape
+
 ### Changed
 
 - Return nofos by most recently created

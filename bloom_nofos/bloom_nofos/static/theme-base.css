@@ -55,6 +55,14 @@ section.before-you-begin {
   page-break-after: always;
 }
 
+.column-break-before {
+  break-before: column;
+}
+
+.column-break-after {
+  break-after: column;
+}
+
 .page-break--hr {
   visibility: hidden;
   border: 0;
