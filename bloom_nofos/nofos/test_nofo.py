@@ -26,6 +26,9 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    suggest_nofo_author,
+    suggest_nofo_subject,
+    suggest_nofo_keywords,
 )
 from .utils import match_view_url, clean_string
 
@@ -1062,6 +1065,72 @@ class SuggestNofoTaglineTests(TestCase):
         html = "<div><p><span>Tagline: </span><span>The best </span><span>NOFO ever</span></p></div>"
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
+
+
+class SuggestNofoAuthorTests(TestCase):
+    def test_author_present_in_paragraph(self):
+        html = "<div><p>Metadata Author: Paul Craig</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_author(soup), "Paul Craig")
+
+    def test_author_not_present(self):
+        html = "<div><p>Author: Paul Craig</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_author(soup), "")
+
+    def test_author_present_but_lowercased(self):
+        html = "<div><p>metadata author: Paul Craig</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_author(soup), "Paul Craig")
+
+
+class SuggestNofoSubjectTests(TestCase):
+    def test_subject_present_in_paragraph(self):
+        html = "<div><p>Metadata Subject: This NOFO is about helping people</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subject(soup), "This NOFO is about helping people"
+        )
+
+    def test_subject_not_present(self):
+        html = "<div><p>Subject: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subject(soup), "")
+
+    def test_subject_present_but_lowercased(self):
+        html = "<div><p>metadata subject: This NOFO is about helping people</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_subject(soup), "This NOFO is about helping people"
+        )
+
+
+class SuggestNofoKeywordsTests(TestCase):
+    def test_keywords_present_in_paragraph(self):
+        html = "<div><p>Metadata Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
+
+    def test_keywords_not_present(self):
+        html = "<div><p>Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_keywords(soup), "")
+
+    def test_keywords_present_but_lowercased(self):
+        html = "<div><p>metadata keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
+
+    def test_keywords_present_broken_up_by_spans(self):
+        html = "<div><p><span>Metadata keywords: </span><span>Medicine, CDC, </span><span>Awesome,</span> Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
 
 
 class TestDecomposeEmptyTags(TestCase):
