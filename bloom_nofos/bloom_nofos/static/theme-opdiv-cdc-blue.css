@@ -68,7 +68,9 @@ h1 {
 
 /* Table of contents */
 
-.toc .toc--section-name .toc--section-name--img {
+.toc
+  .toc--section-name
+  .toc--section-name--img:not([class*="med-blue-border"]) {
   background: var(--color--vibrant-blue);
 }
 
