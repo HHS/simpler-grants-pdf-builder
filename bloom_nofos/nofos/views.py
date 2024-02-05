@@ -52,27 +52,27 @@ OPDIVS = {
     "cdc": {
         "key": "cdc",
         "name": "Centers for Disease Control and Prevention",
-        "filename": "cdc-logo.svg",
+        "filename": "",
     },
     "cms": {
         "key": "cms",
         "name": "Centers for Medicare and Medicaid Services",
-        "filename": "cms-logo.svg",
+        "filename": "img/cms-logo.svg",
     },
     "hrsa": {
         "key": "hrsa",
         "name": "The Health Resources & Services Administration",
-        "filename": "hrsa-logo.svg",
+        "filename": "img/hrsa-logo.svg",
     },
     "acf": {
         "key": "acf",
         "name": "The Administration for Children and Families",
-        "filename": "acf-logo.svg",
+        "filename": "img/acf-logo.svg",
     },
     "acl": {
         "key": "acl",
         "name": "Administration for Community Living",
-        "filename": "acl-logo.svg",
+        "filename": "img/acl-logo.svg",
     },
 }
 
@@ -106,15 +106,15 @@ class NofosDetailView(DetailView):
 
         # add theme information to the context
         # theme is formatted like "landscape-cdc-blue"
-        theme_parts = self.object.theme.split("-")
+        orientation, opdiv, colour = self.object.theme.split("-")
 
-        context["nofo_theme_base"] = "-".join(theme_parts[1:])
-        # get rid of colour
-        theme_parts.pop()
+        context["nofo_theme_base"] = "{}-{}".format(opdiv, colour)
+
         # get the name of the opdiv (eg, "cdc", "hrsa", etc)
-        context["nofo_opdiv"] = OPDIVS[theme_parts.pop()]
+        nofo_opdiv = OPDIVS[opdiv]
+        context["nofo_opdiv"] = nofo_opdiv
         # get the orientation (eg, "landscape" or "portrait")
-        context["nofo_theme_orientation"] = theme_parts.pop()
+        context["nofo_theme_orientation"] = orientation
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
@@ -125,6 +125,13 @@ class NofosDetailView(DetailView):
             cover_img = "img/cover.jpg"
 
         context["nofo_cover_img"] = cover_img
+
+        # if no filename, build path
+        if not nofo_opdiv["filename"]:
+            print("colour", colour)
+            nofo_opdiv["filename"] = "img/logos/{0}/{1}/{0}-logo.svg".format(
+                opdiv, colour
+            )
 
         # Add HHS logo
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"

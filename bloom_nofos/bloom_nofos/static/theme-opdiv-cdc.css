@@ -61,7 +61,9 @@ h6 {
   width: 300px;
 }
 
-.nofo--cover-page--title .nofo--cover-page--title--logo {
+/* HHS logo is already in the header logo for CDC */
+.nofo--cover-page--title .nofo--cover-page--title--logo,
+.nofo--cover-page--footer .nofo--cover-page--footer--logo {
   display: none !important;
 }
 
