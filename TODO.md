@@ -22,10 +22,12 @@
   - Blue HRSA
   - White HRSA
 - PDF metadata as tags
-- Fix: Add column break rules
+- Fix: Add column break rules for headings
 
 # DONE
 
+- Remove HHS logo from CDC cover pages
+- Fix: Add column break rules using p tags
 - Fix: Save content changes to callout boxes in the UI editor
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">

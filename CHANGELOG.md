@@ -4,16 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
 
-## Unreleased
+## [1.4.0] - 2023-02-05
 
 ### Added
 
+- Add 'white' and 'blue' variant of CDC logo
 - Cover image for 0016
 - Allow for checklists in tables (wow amazing)
 - Added a "column-break-before|after" templatetag for landscape
 
 ### Changed
 
+- Remove HHS logo from CDC medium image cover page
+  - Stretch image across the page, so it is left aligned.
 - HTML in imported tables now leaves p tags if the cell has ul/ol elements
 - Return nofos by most recently created
 - Change "page-break-after|before" paragraphs into hrs like Google does
@@ -21,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Use right colours for the CDC portrait medium image cover
 - Links in table cells with icons
 - Links in callout boxes are preserved
 - Reimporting a NOFO re-calculates heading IDs
