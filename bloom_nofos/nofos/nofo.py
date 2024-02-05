@@ -368,7 +368,7 @@ def suggest_nofo_application_deadline(soup):
 
 def suggest_nofo_theme(nofo_number):
     if "cdc-" in nofo_number.lower():
-        return "landscape-cdc-blue"
+        return "portrait-cdc-blue"
 
     if "acf-" in nofo_number.lower():
         return "portrait-acf-blue"

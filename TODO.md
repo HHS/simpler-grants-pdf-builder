@@ -22,11 +22,11 @@
   - Blue HRSA
   - White HRSA
 - PDF metadata as tags
-- Fix: Links in callout boxes
 - Fix: Add column break rules
 
 # DONE
 
+- Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 - Fix: Center cover images
 - Fix: Strip messy spans and NBSPs in tables on import
