@@ -35,6 +35,7 @@
       {% endif %}
 
       <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
+      <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
 
       <div class="form-group">
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text hint2="Heading level: "|add:subsection.tag error=form.name.errors.0 input_type=form.name|input_type %}

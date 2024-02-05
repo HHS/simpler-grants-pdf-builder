@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Reimporting a NOFO re-calculates heading IDs
 - Strip messy spans and NBSPs in tables on import
 - Center cover images
+- Allow saving content for callout boxes in the UI editor
 
 ## [1.3.1] - 2023-02-01
 

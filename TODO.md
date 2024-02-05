@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: Save content changes to callout boxes in the UI editor
 - Fix: Links in callout boxes
 - Fix: <hr style="page-break-before:always;display:none;">
 - Fix: Center cover images
