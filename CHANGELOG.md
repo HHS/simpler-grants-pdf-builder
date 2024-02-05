@@ -8,10 +8,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Cover image for 0016
+- Allow for checklists in tables (wow amazing)
 - Added a "column-break-before|after" templatetag for landscape
 
 ### Changed
 
+- HTML in imported tables now leaves p tags if the cell has ul/ol elements
 - Return nofos by most recently created
 - Change "page-break-after|before" paragraphs into hrs like Google does
 - Add nofo.number to icon picking logic
