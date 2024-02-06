@@ -21,6 +21,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Pale blue background on cover page footer in landscape mode
   - Still on cover page header in portrait mode
 
+### Fixed
+
+- Add HTML ids and classes to callout box headers
+- Un-indent application checklist table cells with links in them
+
 ## [1.5.0] - 2023-02-05
 
 ### Added
