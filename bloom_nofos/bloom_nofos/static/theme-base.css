@@ -699,6 +699,7 @@ p[role="heading"] {
 
 .section--content {
   orphans: 2;
+  widows: 2;
 }
 
 .section--content h3:first-of-type {

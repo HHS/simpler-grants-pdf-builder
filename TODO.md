@@ -26,6 +26,8 @@
 
 # DONE
 
+- Remove single column layout for Step 4
+  - But make sure "criteria" tables are col-span: all
 - Fix: small tables with captions don't need col-span: all
 - Add visual indicators to page breaks and column breaks
   - Only apply page/column break rules for "@media screen"
