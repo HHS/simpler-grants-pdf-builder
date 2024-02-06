@@ -2,7 +2,7 @@
 
 <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}">
   {% if subsection.name %}
-    <h4 class="callout-box--title">{{ subsection.name }}</h4>
+    <h4 class="callout-box--title{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}" {% if subsection.html_id %}id="{{ subsection.html_id }}"{% endif %}>{{ subsection.name }}</h4>
   {% endif %}
   <div class="callout-box--contents">
     {% if 'uestions?' in subsection.body %}

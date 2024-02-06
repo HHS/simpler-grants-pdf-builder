@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: Add HTML ids and classes to callout box headers
 - Fix: Un-indent application tables with links in them
 - Fix: all tables with captions have a grey top line
 - Fix: preserve p tags in imported table cells with more than 1 child
