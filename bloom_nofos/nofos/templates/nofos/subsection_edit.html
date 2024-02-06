@@ -44,20 +44,58 @@
       </div>
       <div class="form-group">
         <fieldset class="usa-fieldset">
-          <legend class="usa-legend legend--bootstrap">Page break</legend>
-          <div class="usa-checkbox">
+          <legend class="usa-legend legend--bootstrap">Page break or column break</legend>
+          {% if form.html_class.value %}
+            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' %}
+              <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
+                <span aria-hidden="true">⚠️</span> Warning! This heading’s class is ‘{{ form.html_class.value }}’. If you select a value, the existing class will be overwritten.
+              </div>
+            {% endif %}
+          {% endif %}
+          <div class="usa-radio">
             <input
-              class="usa-checkbox__input"
-              id="has_page_break"
-              type="checkbox"
-              name="has_page_break"
-              {% if form.has_page_break.value %}
-              checked="checked"
+            class="usa-radio__input"
+              id="page-break-before"
+              type="radio"
+              name="html_class"
+              value="page-break-before"
+              {% if form.html_class.value and "page-break-before" in form.html_class.value %}
+                checked="checked"
               {% endif %}
             />
-            <label class="usa-checkbox__label" for="has_page_break"
-              >{{ form.has_page_break.label }}</label
-            >
+            <label class="usa-radio__label" for="page-break-before">
+              Has page break
+            </label>
+          </div>
+          <div class="usa-radio">
+            <input
+            class="usa-radio__input"
+              id="column-break-before"
+              type="radio"
+              name="html_class"
+              value="column-break-before"
+              {% if form.html_class.value and "column-break-before" in form.html_class.value %}
+                checked="checked"
+              {% endif %}
+            />
+            <label class="usa-radio__label" for="column-break-before">
+              Has column break
+            </label>
+          </div>
+          <div class="usa-radio">
+            <input
+            class="usa-radio__input"
+              id="none"
+              type="radio"
+              name="html_class"
+              value="none"
+              {% if not form.html_class.value %}
+                checked="checked"
+              {% endif %}
+            />
+            <label class="usa-radio__label" for="none">
+              None
+            </label>
           </div>
       </div>
       <div class="form-group">
