@@ -9,7 +9,7 @@
   {% with nofo|nofo_name as nofo_name_str %}
   {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
     {% url 'nofos:nofo_edit' nofo.id as back_href %}
-    {% include "includes/page_heading.html" with title="NOFO Subagency" back_text=back_text back_href=back_href only %}
+    {% include "includes/page_heading.html" with title="NOFO Subagency 2" back_text=back_text back_href=back_href only %}
   {% endwith %}
   {% endwith %}
 
@@ -18,6 +18,6 @@
 
     {% include "includes/form_macro.html" %}
 
-    <button class="usa-button margin-top-3" type="submit">Save Subagency</button>
+    <button class="usa-button margin-top-3" type="submit">Save Subagency 2</button>
   </form>
 {% endblock %}

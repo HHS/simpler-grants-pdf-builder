@@ -62,6 +62,11 @@ urlpatterns = [
         name="nofo_edit_subagency",
     ),
     path(
+        "<int:pk>/edit/subagency2",
+        views.NofoEditSubagency2View.as_view(),
+        name="nofo_edit_subagency2",
+    ),
+    path(
         "<int:pk>/edit/theme",
         views.NofoEditThemeView.as_view(),
         name="nofo_edit_theme",
