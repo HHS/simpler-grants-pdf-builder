@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add HTML ids and classes to callout box headers
 - Un-indent application checklist table cells with links in them
+- Small tables with captions don't need col-span: all
 
 ## [1.5.0] - 2023-02-05
 

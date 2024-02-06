@@ -185,11 +185,14 @@ body[class^="landscape"] .grid-container {
   vertical-align: baseline;
 }
 
+.section--content table.table--large {
+  column-span: all;
+}
+
 .section--content table.table--large,
 .section--content table.table--with-caption {
   margin-top: 15px;
   border-top: 2px solid var(--color--light-grey);
-  column-span: all;
 }
 
 .section--content table.table--small {
