@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Empty tables are 100% still and have 25px height rows
 - Pale blue background on cover page footer in landscape mode
   - Still on cover page header in portrait mode
+- Tables which are 4 columns or over will now always be large, even if they are empty
 
 ### Fixed
 

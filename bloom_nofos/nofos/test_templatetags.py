@@ -135,12 +135,15 @@ class AddCaptionToTableTests(TestCase):
 
 
 class HTMLTableClassTests(TestCase):
-    def _generate_table(self, num_cols, num_rows=1, cell="td"):
+    def _generate_table(self, num_cols, num_rows=1, cell="td", table_empty=False):
         rows = ""
         for j in range(num_rows):
             cols = ""
             for i in range(num_cols):
-                cols += "<{0}>Col {1}</{0}>".format(cell, i + 1)
+                if table_empty:
+                    cols += "<{0}></{0}>".format(cell, i + 1)
+                else:
+                    cols += "<{0}>Col {1}</{0}>".format(cell, i + 1)
             rows += "<tr>{}</tr>".format(cols)
 
         return "<table>{}</table>".format(rows)
@@ -151,17 +154,41 @@ class HTMLTableClassTests(TestCase):
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
+    def test_table_class_2_cols_empty(self):
+        table_html = self._generate_table(num_cols=2, table_empty=True)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(
+            add_class_to_table(soup.find("table")), "table--small table--empty"
+        )
+
     def test_table_class_3_cols(self):
         table_html = self._generate_table(num_cols=3)
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
+    def test_table_class_3_cols_empty(self):
+        table_html = self._generate_table(num_cols=3, table_empty=True)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(
+            add_class_to_table(soup.find("table")), "table--small table--empty"
+        )
+
     def test_table_class_4_cols(self):
         table_html = self._generate_table(num_cols=4)
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+    def test_table_class_4_cols_empty(self):
+        table_html = self._generate_table(num_cols=4, table_empty=True)
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(
+            add_class_to_table(soup.find("table")), "table--large table--empty"
+        )
 
     def test_table_class_5_cols(self):
         table_html = self._generate_table(num_cols=5)

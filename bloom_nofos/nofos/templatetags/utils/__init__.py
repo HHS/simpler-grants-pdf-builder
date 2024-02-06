@@ -90,6 +90,9 @@ def add_class_to_table(table):
     word_count = _get_total_word_count(table)
 
     if word_count == 0:
+        if len(cols) > 3:
+            return "table--large table--empty"
+
         return "table--small table--empty"
 
     elif word_count > 120:
