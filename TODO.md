@@ -13,6 +13,7 @@
   - HRSA variant
 - Themes
   - ACL
+  - IHS
 - Maybe: include preceding paragraph in front of tables potentially
 - Update the README
 - Big cover page design
@@ -21,9 +22,11 @@
 - Text-only cover page design
   - Blue HRSA
   - White HRSA
+- Fix: Indented application checklist for portrait tables also
 
 # DONE
 
+- Fix: Un-indent application tables with links in them
 - Fix: all tables with captions have a grey top line
 - Fix: preserve p tags in imported table cells with more than 1 child
 - Fix: CDC landscape medium image

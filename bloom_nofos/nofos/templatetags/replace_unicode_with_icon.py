@@ -123,4 +123,11 @@ def replace_unicode_with_icon(html_string):
                             tag_name="td",
                         )
 
+                    if parent_td.find("a"):
+                        _add_class_if_not_exists_to_tag(
+                            element=parent_td,
+                            classname="usa-icon__td--link",
+                            tag_name="td",
+                        )
+
     return mark_safe(str(soup))
