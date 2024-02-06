@@ -24,6 +24,7 @@
 
 # DONE
 
+- Fix: all tables with captions have a grey top line
 - Fix: preserve p tags in imported table cells with more than 1 child
 - Fix: CDC landscape medium image
 - Add classnames to subsection headers arbitrarily
