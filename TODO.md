@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: small tables with captions don't need col-span: all
 - Add visual indicators to page breaks and column breaks
   - Only apply page/column break rules for "@media screen"
 - Fix: Add HTML ids and classes to callout box headers
