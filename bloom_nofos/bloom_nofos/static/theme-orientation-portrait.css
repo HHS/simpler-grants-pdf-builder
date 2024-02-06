@@ -59,14 +59,12 @@
   overflow: hidden;
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--image img {
-  height: 100%;
-  border-radius: 80px 0 0 0;
-  object-fit: cover;
-}
-
 .nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   width: 100px;
+}
+
+.cdc .nofo--cover-page--footer .nofo--cover-page--footer--image {
+  width: 100%;
 }
 
 /* Cover page: text */

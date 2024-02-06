@@ -494,6 +494,12 @@ p[role="heading"] {
   font-weight: 700;
 }
 
+.nofo--cover-page--footer .nofo--cover-page--footer--image img {
+  height: 100%;
+  border-radius: 80px 0 0 0;
+  object-fit: cover;
+}
+
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--title--logo,

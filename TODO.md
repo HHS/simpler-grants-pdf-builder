@@ -24,6 +24,7 @@
 
 # DONE
 
+- Fix: CDC landscape medium image
 - Add classnames to subsection headers arbitrarily
   - In the UI, we allow page-breaks, column-breaks, or None
 - Add Subagency 2, but not to the NOFO display

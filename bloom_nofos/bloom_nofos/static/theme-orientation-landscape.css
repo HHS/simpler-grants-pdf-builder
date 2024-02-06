@@ -91,16 +91,6 @@ body[class^="landscape"] .grid-container {
   height: 217mm;
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--image img {
-  height: 100%;
-  object-fit: cover;
-  border-radius: 80px 0 0 0;
-}
-
-.nofo--cover-page--footer--subheading {
-  text-align: right;
-}
-
 .nofo--cover-page--footer .nofo--cover-page--footer--subheading span {
   font-size: 11pt;
   display: block;
