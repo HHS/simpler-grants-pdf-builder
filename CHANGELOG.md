@@ -22,6 +22,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Find for metadata tags in the imported doc, add to meta tags
 
+### Fixed
+
+- CDC landscape medium image is normal again
+
 ## [1.4.0] - 2023-02-05
 
 ### Added
