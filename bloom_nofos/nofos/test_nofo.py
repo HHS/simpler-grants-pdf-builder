@@ -23,6 +23,7 @@ from .nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_subagency,
+    suggest_nofo_subagency2,
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
@@ -1038,6 +1039,28 @@ class SuggestNofoSubagencyTests(TestCase):
         self.assertEqual(
             suggest_nofo_subagency(soup), "Subagency for Multiple Header Rows"
         )
+
+
+class SuggestNofoSubagency2Tests(TestCase):
+    def test_subagency2_present_in_paragraph(self):
+        html = "<div><p>Subagency2: Subagency for Complex Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subagency2(soup), "Subagency for Complex Tables")
+
+    def test_subagency2_present_not_in_paragraph(self):
+        html = "<div><span>Subagency2: Subagency for Complex Tables</span></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subagency2(soup), "Subagency for Complex Tables")
+
+    def test_subagency2_not_present(self):
+        html = "<div><p>Subagency: Subagency for Complex Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subagency2(soup), "")
+
+    def test_subagency2_present_broken_up_by_spans(self):
+        html = "<div><p><span>Subagency2: </span><span>Subagency for </span><span>Complex Tables</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subagency2(soup), "Subagency for Complex Tables")
 
 
 class SuggestNofoTaglineTests(TestCase):

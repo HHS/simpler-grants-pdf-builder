@@ -21,6 +21,7 @@ from .forms import (
     NofoOpDivForm,
     NofoStatusForm,
     NofoSubagencyForm,
+    NofoSubagency2Form,
     NofoTaglineForm,
     NofoMetadataForm,
     NofoThemeForm,
@@ -44,6 +45,7 @@ from .nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_subagency,
+    suggest_nofo_subagency2,
     suggest_nofo_tagline,
     suggest_nofo_author,
     suggest_nofo_subject,
@@ -342,6 +344,11 @@ class NofoEditAgencyView(BaseNofoEditView):
 class NofoEditSubagencyView(BaseNofoEditView):
     form_class = NofoSubagencyForm
     template_name = "nofos/nofo_edit_subagency.html"
+
+
+class NofoEditSubagency2View(BaseNofoEditView):
+    form_class = NofoSubagency2Form
+    template_name = "nofos/nofo_edit_subagency2.html"
 
 
 class NofoEditThemeView(BaseNofoEditView):

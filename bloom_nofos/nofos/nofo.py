@@ -409,6 +409,11 @@ def suggest_nofo_subagency(soup):
     return suggestion or ""
 
 
+def suggest_nofo_subagency2(soup):
+    suggestion = _suggest_by_startswith_string(soup, "Subagency2:")
+    return suggestion or ""
+
+
 def suggest_nofo_tagline(soup):
     suggestion = _suggest_by_startswith_string(soup, "Tagline:")
     return suggestion or ""

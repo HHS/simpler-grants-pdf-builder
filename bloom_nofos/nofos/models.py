@@ -44,6 +44,13 @@ class Nofo(models.Model):
         help_text="The subagency within the agency (eg, Division of Medicine and Dentistry)",
     )
 
+    subagency2 = models.CharField(
+        "Subagency 2",
+        max_length=511,
+        blank=True,
+        help_text="Another subagency within the agency (eg, Division of Medicine and Dentistry) collaborating on this NOFO",
+    )
+
     application_deadline = models.CharField(
         "Application deadline",
         max_length=200,

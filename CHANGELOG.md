@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## Unreleased
 
+### Added
+
+- Added Subagency2 to import and edit screens
+
 ### Changed
 
 - Smaller vertical padding on header in portrait cover page
