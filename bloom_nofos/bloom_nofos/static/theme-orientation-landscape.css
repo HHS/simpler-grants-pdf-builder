@@ -196,7 +196,7 @@ body[class^="landscape"] .grid-container {
   break-inside: avoid-column;
 }
 
-table tr td.usa-icon__td--sublist {
+table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
   padding-left: 28px;
 }
 
