@@ -26,6 +26,8 @@
 
 # DONE
 
+- Add visual indicators to page breaks and column breaks
+  - Only apply page/column break rules for "@media screen"
 - Fix: Add HTML ids and classes to callout box headers
 - Fix: Un-indent application tables with links in them
 - Fix: all tables with captions have a grey top line

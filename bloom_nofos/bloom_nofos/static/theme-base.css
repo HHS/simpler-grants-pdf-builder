@@ -45,30 +45,6 @@ section.before-you-begin {
   page-break-before: always;
 }
 
-.page-break-before,
-.page-break-before--heading {
-  page-break-before: always;
-}
-
-.page-break-after,
-.page-break-after--heading {
-  page-break-after: always;
-}
-
-.column-break-before {
-  break-before: column;
-}
-
-.column-break-after {
-  break-after: column;
-}
-
-.page-break--hr {
-  visibility: hidden;
-  border: 0;
-  margin: 0;
-}
-
 /* Set @page rules */
 
 h2 {
@@ -814,7 +790,33 @@ p[role="heading"] {
 https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 */
 
+/* Media queries */
+
 @media screen {
+  .page-break--hr.page-break-before,
+  .page-break--hr.column-break-before {
+    border-bottom: none;
+  }
+
+  /* Page break rules */
+  .page-break-before,
+  .page-break-before--heading {
+    border-top: 2px dashed var(--color--med-grey);
+  }
+
+  .page-break-after,
+  .page-break-after--heading {
+    border-bottom: 2px dashed var(--color--med-grey);
+  }
+
+  .column-break-before {
+    border-top: 1px dotted var(--color--med-grey);
+  }
+
+  .column-break-after {
+    border-bottom: 1px dotted var(--color--med-grey);
+  }
+
   /* Outlines for the view page */
   section.nofo--cover-page,
   section.toc,
@@ -841,6 +843,31 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
 /* Media queries */
 @media print {
+  /* Page break rules */
+  .page-break-before,
+  .page-break-before--heading {
+    page-break-before: always;
+  }
+
+  .page-break-after,
+  .page-break-after--heading {
+    page-break-after: always;
+  }
+
+  .column-break-before {
+    break-before: column;
+  }
+
+  .column-break-after {
+    break-after: column;
+  }
+
+  .page-break--hr {
+    visibility: hidden;
+    border: 0;
+    margin: 0;
+  }
+
   .running-header,
   .header-nav--running-header {
     display: block;
