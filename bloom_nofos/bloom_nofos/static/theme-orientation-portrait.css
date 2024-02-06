@@ -24,7 +24,7 @@
 }
 
 .nofo--cover-page--header {
-  padding: 15mm 20mm;
+  padding: 10mm 20mm;
 }
 
 .nofo--cover-page--title {
@@ -54,7 +54,7 @@
 }
 
 .nofo--cover-page--footer .nofo--cover-page--footer--image {
-  height: 520px;
+  height: 560px;
   width: 85%;
   overflow: hidden;
 }
