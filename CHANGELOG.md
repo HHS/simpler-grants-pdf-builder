@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Darker table borders
 - Smaller vertical padding on header in portrait cover page
+- Tables with captions all have bolded captions and a line on top
+- Empty tables are 100% still and have 25px height rows
 
 ## [1.5.0] - 2023-02-05
 

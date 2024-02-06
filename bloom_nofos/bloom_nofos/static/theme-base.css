@@ -222,7 +222,11 @@ table.table--large {
   width: 100%;
 }
 
-table.table--large caption {
+table.table--small {
+  width: 100%;
+}
+
+table.table--with-caption caption {
   font-weight: 700;
   margin-bottom: 10px;
   text-align: left;
@@ -245,6 +249,10 @@ table td {
 
 table td {
   vertical-align: baseline;
+}
+
+table.table--empty td {
+  height: 25px;
 }
 
 table td a {
