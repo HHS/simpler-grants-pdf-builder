@@ -24,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Preserve p tags in imported table cells with more than 1 child
 - CDC landscape medium image is normal again
 
 ## [1.4.0] - 2023-02-05
