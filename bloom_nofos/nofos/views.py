@@ -239,6 +239,7 @@ def nofo_import(request, pk=None):
             nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
             nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
             nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
+            nofo.subagency2 = suggest_nofo_subagency2(soup)  # guess NOFO Subagency 2
             nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
             nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
             nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject

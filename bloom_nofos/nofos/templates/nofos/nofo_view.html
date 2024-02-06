@@ -81,7 +81,7 @@
               <p>{{ nofo.subagency }}</p>
             {% endif %}
           {% else %}
-            <p>{% if nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
+            <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
           {% endif %}
         </div>
       </div>
@@ -265,6 +265,7 @@
               <p><strong>{{ nofo.opdiv }}</strong></p>
               <p>{{ nofo.agency }}</p>
               {% if nofo.subagency %}<p>{{ nofo.subagency }}</p>{% endif %}
+              {% if nofo.subagency2 %}<p>{{ nofo.subagency2 }}</p>{% endif %}
               {% if  nofo.tagline %}<p class="nofo--tagline">{{ nofo.tagline }}</p>{% endif %}
             </div>
           {% endwith %}

@@ -8,7 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
-- Added Subagency2 to import and edit screens
+- Added Subagency2
 - Add classnames to subsection headers arbitrarily
   - In the UI, we allow page-breaks, column-breaks, or None
 
