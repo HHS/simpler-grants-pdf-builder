@@ -106,23 +106,23 @@
 table th {
   color: var(--color--white);
   background-color: var(--color--vibrant-blue);
-  border-top: 2px solid var(--color--pale-blue);
-  border-bottom: 2px solid var(--color--pale-blue);
-  border-left: 2px solid var(--color--pale-blue);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
 }
 
 table th:first-of-type {
-  border-left: 2px solid var(--color--pale-blue);
+  border-left: 2px solid var(--color--light-grey);
 }
 
 table th:last-of-type {
-  border-right: 2px solid var(--color--pale-blue);
+  border-right: 2px solid var(--color--light-grey);
 }
 
 table td {
-  border-left: 2px solid var(--color--pale-blue);
-  border-right: 2px solid var(--color--pale-blue);
-  border-bottom: 2px solid var(--color--pale-blue);
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 /* Application checklist table */
@@ -132,13 +132,13 @@ table td {
 }
 
 .section--step-5-submit-your-application table tr td:first-of-type {
-  border-left: var(--color--pale-blue) 2px solid;
-  border-right: var(--color--pale-blue) 2px solid;
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
 }
 
 .section--step-5-submit-your-application table tr td:last-of-type {
-  border-left: var(--color--pale-blue) 2px solid;
-  border-right: var(--color--pale-blue) 2px solid;
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
 }
 
 .section--step-5-submit-your-application
@@ -150,9 +150,9 @@ table td {
   tr
   td.usa-icon__td--before-sublist
   ~ td {
-  border-bottom: 2px solid var(--color--pale-blue);
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 .section--step-5-submit-your-application table tr:last-of-type td {
-  border-bottom: 2px solid var(--color--pale-blue);
+  border-bottom: 2px solid var(--color--light-grey);
 }
