@@ -161,6 +161,11 @@ body[class^="landscape"] .grid-container {
   color: var(--color--med-grey);
 }
 
+.section--content {
+  columns: 2;
+  column-gap: 15mm;
+}
+
 .nofo--tagline {
   font-weight: 600;
 }
@@ -173,12 +178,6 @@ body[class^="landscape"] .grid-container {
 .header-nav--running-header li a[aria-current] {
   border-top: 4px solid var(--color--vibrant-blue);
   color: var(--color--vibrant-blue);
-}
-
-.section--content {
-  columns: 2;
-  column-gap: 15mm;
-  column-fill: auto;
 }
 
 .section--content table td {
@@ -216,16 +215,20 @@ table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
 
 /* Stop doing columns for section 4 */
 
-.section--step-4-learn-about-review-and-award .section--content {
-  columns: 1;
+.section--step-4-learn-about-review-and-award [id*="criteria"] ~ table {
+  column-span: all;
 }
 
-.section--step-4-learn-about-review-and-award .section--content h3,
-.section--step-4-learn-about-review-and-award .section--content h4,
-.section--step-4-learn-about-review-and-award .section--content h5,
-.section--step-4-learn-about-review-and-award .section--content h6,
-.section--step-4-learn-about-review-and-award .section--content p,
-.section--step-4-learn-about-review-and-award .section--content ul,
-.section--step-4-learn-about-review-and-award .section--content table caption {
-  width: 50%;
+/* Media queries */
+
+@media screen {
+  .section--content {
+    column-fill: balance;
+  }
+}
+
+@media print {
+  .section--content {
+    column-fill: auto;
+  }
 }
