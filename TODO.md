@@ -21,10 +21,11 @@
 - Text-only cover page design
   - Blue HRSA
   - White HRSA
-- Fix: Add column break rules for headings
 
 # DONE
 
+- Add classnames to subsection headers arbitrarily
+  - In the UI, we allow page-breaks, column-breaks, or None
 - Add Subagency 2, but not to the NOFO display
 - Fix: smaller padding on heading in portrait cover
 - PDF metadata as tags

@@ -197,9 +197,17 @@ class Subsection(models.Model):
     )  # Name can be blank if callout_box is true
 
     html_id = models.CharField(
+        "HTML id attribute",
         max_length=511,
         blank=True,
     )
+
+    html_class = models.CharField(
+        "HTML class attribute",
+        max_length=1023,
+        blank=True,
+    )
+
     order = models.IntegerField(null=True)
 
     class Meta:
@@ -222,12 +230,6 @@ class Subsection(models.Model):
         "Callout box",
         default=False,
         help_text="Make this subsection a callout box.",
-    )
-
-    has_page_break = models.BooleanField(
-        "Has page break?",
-        default=False,
-        help_text="If selected, this heading will start on the top of a new page.",
     )
 
     body = MartorField("Content of subsection", blank=True)

@@ -384,7 +384,11 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         if form.is_valid():
             subsection.name = form.cleaned_data["name"]
             subsection.body = form.cleaned_data["body"]
-            subsection.has_page_break = form.cleaned_data["has_page_break"]
+
+            html_class = form.cleaned_data["html_class"]
+            if html_class:
+                subsection.html_class = html_class if html_class != "none" else ""
+
             subsection.save()
 
             messages.add_message(
