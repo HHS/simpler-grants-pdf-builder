@@ -25,6 +25,7 @@
 
 # DONE
 
+- Fix: smaller padding on heading in portrait cover
 - PDF metadata as tags
 - Remove HHS logo from CDC cover pages
 - Fix: Add column break rules using p tags
