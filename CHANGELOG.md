@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Darker table borders
 - Smaller vertical padding on header in portrait cover page
 
 ## [1.5.0] - 2023-02-05
