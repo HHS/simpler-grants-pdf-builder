@@ -288,6 +288,18 @@ table.table--with-caption caption {
   width: 65%;
 }
 
+.section--step-4-learn-about-review-and-award [id*="criteria"] ~ h6,
+.section--step-4-learn-about-review-and-award [id*="criteria"] ~ p {
+  break-before: avoid-column;
+  break-inside: avoid-column;
+}
+
+.section--step-4-learn-about-review-and-award [id*="risk-review"] ~ h6,
+.section--step-4-learn-about-review-and-award [id*="risk-review"] ~ p {
+  break-before: auto;
+  break-inside: auto;
+}
+
 table th,
 table td,
 table caption {
