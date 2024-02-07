@@ -778,7 +778,8 @@ p[role="heading"] {
   font-weight: 700;
 }
 
-.section--endnotes h3 {
+.section--endnotes h3,
+.section--references h3 {
   font-size: 11pt;
   font-weight: 600;
   color: var(--color--black);

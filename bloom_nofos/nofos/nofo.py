@@ -206,10 +206,9 @@ def get_sections_from_soup(soup):
                 # add an empty array at a new index
                 section_name = clean_string(tag.text)
 
-                # TODO: test this
                 has_section_page = not any(
                     word.lower() in section_name.lower()
-                    for word in ["Appendix", "Glossary", "Endnotes"]
+                    for word in ["Appendix", "Glossary", "Endnotes", "References"]
                 )
 
                 sections.append(

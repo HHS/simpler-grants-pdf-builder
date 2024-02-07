@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - New theme: CDC Landscape DOP with a dark teal colour
 - Cover images for CDC-RFA-CE-24-0068, CDC-RFA-CE-24-0120
+- Add "References" to section titles that don't need section page
 
 ### Changed
 

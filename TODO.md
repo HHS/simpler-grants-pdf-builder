@@ -26,6 +26,7 @@
 
 # DONE
 
+- Add "References" to section titles that don't need section page
 - Fix: Single asterisks in table cells now escaped automatically
 - Remove single column layout for Step 4
   - But make sure "criteria" tables are col-span: all
