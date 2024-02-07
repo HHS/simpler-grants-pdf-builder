@@ -9,10 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - New theme: CDC Landscape DOP with a dark teal colour
-- Image for CDC-RFA-CE-24-0068
+- Cover image for CDC-RFA-CE-24-0068
 
 ### Changed
 
+- 65% first-column width for all tables after "Criteria" in Step 4
 - Keep "Table: " in table captions
 - Remove grey top border over tables in landscape mode
 

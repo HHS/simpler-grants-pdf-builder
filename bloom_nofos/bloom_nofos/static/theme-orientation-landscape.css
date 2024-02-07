@@ -213,7 +213,7 @@ table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
   }
 }
 
-/* Stop doing columns for section 4 */
+/* Full column spans for Criteria tables in section 4 */
 
 .section--step-4-learn-about-review-and-award [id*="criteria"] ~ table {
   column-span: all;

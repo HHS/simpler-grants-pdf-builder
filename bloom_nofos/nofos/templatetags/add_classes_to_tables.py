@@ -14,8 +14,4 @@ def add_classes_to_tables(html_string):
         table_class = add_class_to_table(table)
         table["class"] = table_class
 
-        if table.find_all("th", string="Criteria"):
-            # add "table--criteria" to the classname
-            table["class"] += " table--criteria"
-
     return mark_safe(str(soup))

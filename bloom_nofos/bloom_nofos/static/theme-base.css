@@ -203,7 +203,10 @@ table.table--with-caption caption {
   text-align: left;
 }
 
-table.table--criteria th:first-of-type {
+.section--step-4-learn-about-review-and-award
+  [id*="criteria"]
+  ~ table
+  th:first-of-type {
   width: 65%;
 }
 
