@@ -42,6 +42,10 @@ body > footer {
   position: relative;
 }
 
+.nofo_edit--header h1 {
+  width: 85%;
+}
+
 .nofo_edit--header--view {
   position: absolute;
   right: 0;
