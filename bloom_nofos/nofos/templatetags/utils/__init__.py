@@ -157,7 +157,6 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
     Note that icon style is determined by the opdiv, the colour, and the nofo section.
     """
     # Note: split out this logic if it starts getting too complicated
-
     colour = theme.split("-")[-1]
     opdiv = theme.split("-")[-2]
 
@@ -173,6 +172,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/white-icon"
 
     if section == "before_you_begin":
+        if "dop" in theme:
+            return "img/figma-icons/dop-teal-border"
         if opdiv == "hrsa":
             return "img/figma-icons/dark-blue-border"
         elif opdiv == "cms":
@@ -181,10 +182,14 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/med-blue-border"
 
     if section == "callout_box":
+        if "dop" in theme:
+            return "img/figma-icons/dop-teal-border"
         if colour == "white":
             return "img/figma-icons/dark-blue-border"
 
     if section == "section_cover":
+        if "dop" in theme:
+            return "img/figma-icons/dop-teal-border"
         if theme == "portrait-cms-white":
             return "img/figma-icons/cms-blue-border"
 

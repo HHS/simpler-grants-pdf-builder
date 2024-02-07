@@ -135,6 +135,7 @@ class NofosDetailView(DetailView):
 
         # if no filename, build path
         if not nofo_opdiv["filename"]:
+            colour = colour if colour != "dop" else "white"
             nofo_opdiv["filename"] = "img/logos/{0}/{1}/{0}-logo.svg".format(
                 opdiv, colour
             )
