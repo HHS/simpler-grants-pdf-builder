@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Keep "Table: " in table captions
 - Remove grey top border over tables in landscape mode
 
 ### Fixed
