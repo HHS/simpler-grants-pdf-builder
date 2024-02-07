@@ -207,7 +207,7 @@
           </div>
           <div class="section--title-page--name">
             <div class="section--title-page--icon">
-              <img src="{% static_icon section.name nofo.theme %}" alt="">
+              <img src="{% static_icon section.name nofo.theme 'section_cover' %}" alt="">
             </div>
             <h2 id="{{ section.html_id }}">
               {% with section.name|nofo_section_name_separator as section_name %}

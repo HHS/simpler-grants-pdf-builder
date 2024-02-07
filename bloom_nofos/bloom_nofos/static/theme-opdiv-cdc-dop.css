@@ -1,6 +1,30 @@
+/* CSS vars */
+
+:root {
+  --color--dop-teal: #004c52;
+  --color--dop-blue: #1a3b66;
+  --color--dop-yellow: #dba826;
+  --color--dop-seafoam: #51a3a1;
+}
+
 /* Page rules */
 
+/* Regular CSS */
+
+a,
+table td a {
+  color: var(--color--dop-blue);
+}
+
 /* Headings */
+
+h3 {
+  color: var(--color--dop-blue);
+}
+
+h4 {
+  color: var(--color--dop-teal);
+}
 
 /* Cover page */
 
@@ -17,25 +41,25 @@
 .nofo--cover-page--header--intro,
 .nofo--cover-page--title h1,
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--vibrant-blue);
+  color: var(--color--dop-teal);
 }
 
 /* Cover page: medium image */
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--header,
 .landscape .nofo--cover-page--medium .nofo--cover-page--footer {
-  background-color: var(--color--pale-blue);
+  background-color: var(--color--dop-seafoam);
 }
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
-  color: var(--color--vibrant-blue);
+  color: var(--color--black);
 }
 
 /* Cover page: hero image */
 /* Note that there is no "white" version of the hero cover page */
 
 .nofo--cover-page--hero .nofo--cover-page--header {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--dop-teal);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
@@ -53,7 +77,27 @@
 
 /* Table of contents */
 
+.toc h2 {
+  color: var(--color--dop-teal);
+}
+
+.toc--section-name--a {
+  color: var(--color--dop-teal);
+}
+
+.toc .toc--section-name .toc--section-name--img {
+  background-color: var(--color--dop-teal);
+}
+
 /* Before you begin */
+
+.before-you-begin h2 {
+  color: var(--color--dop-teal);
+}
+
+.section--before-you-begin--psuedo-header {
+  color: var(--color--dop-teal);
+}
 
 /* Section title page */
 
@@ -68,11 +112,11 @@
 }
 
 .section--title-page--header-nav li a[aria-current] {
-  border-top: 4px solid var(--color--vibrant-blue);
+  border-top: 4px solid var(--color--dop-yellow);
 }
 
 .section--title-page--name {
-  color: var(--color--vibrant-blue);
+  color: var(--color--dop-teal);
 }
 
 .section--title-page--toc,
@@ -82,23 +126,28 @@
 
 /* Section contents */
 
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--dop-yellow);
+  color: var(--color--dop-yellow);
+}
+
 .nofo--tagline {
-  color: var(--color--vibrant-blue);
+  color: var(--color--dop-teal);
 }
 
 .callout-box {
-  background-color: var(--color--pale-blue);
+  background-color: var(--color--dop-yellow);
   color: var(--color--black);
 }
 
 .callout-box--icon {
   background-color: var(--color-white);
-  border: 2px solid var(--color--dark-blue);
+  border: 2px solid var(--color--dop-teal);
 }
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--dop-teal);
   border-top: 2px solid var(--color--light-grey);
   border-bottom: 2px solid var(--color--light-grey);
   border-left: 2px solid var(--color--light-grey);
