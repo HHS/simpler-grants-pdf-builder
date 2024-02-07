@@ -20,6 +20,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Remove blue line from the cover page for Hero image landscape CDC
+
 ## [1.6.0] - 2023-02-06
 
 ### Added
