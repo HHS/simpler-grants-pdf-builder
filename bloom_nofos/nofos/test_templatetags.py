@@ -69,7 +69,7 @@ class TestAddClassIfNotExists(TestCase):
 
 class AddCaptionToTableTests(TestCase):
     def setUp(self):
-        self.caption_text = "Physician Assistant Training Chart"
+        self.caption_text = "Table: Physician Assistant Training Chart"
         self.html_filename = "nofos/fixtures/html/table.html"
         self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
 
@@ -116,7 +116,7 @@ class AddCaptionToTableTests(TestCase):
         table = soup.find("table")
         add_caption_to_table(table)
         self.assertIsNotNone(table.caption)
-        self.assertEqual(table.caption.string.strip(), "Example Caption")
+        self.assertEqual(table.caption.string.strip(), "Table: Example Caption")
         self.assertIn("table--with-caption", table.get("class", []))
 
     def test_no_caption_if_no_preceding_paragraph(self):

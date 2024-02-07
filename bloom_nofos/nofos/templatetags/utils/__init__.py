@@ -42,7 +42,7 @@ def add_caption_to_table(table):
     for s in table.previous_siblings:
         if s.name and len(s.text):
             if s.text.lower().startswith(caption_text):
-                s.string = s.text[len(caption_text) :]
+                s.string = s.text  # strip spans
                 caption = s.extract()  # remove element from the tree
             break
 
