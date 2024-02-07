@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Tables which are 4 columns or over will now always be large, even if they are empty
 - Remove single column layout for Step 4
   - But make sure "criteria" tables are col-span: all
+- In landscape mode, small tables without captions are 100% width
 
 ### Fixed
 
