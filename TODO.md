@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: Single asterisks in table cells now escaped automatically
 - Remove single column layout for Step 4
   - But make sure "criteria" tables are col-span: all
 - Fix: small tables with captions don't need col-span: all

@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.6.0] - 2023-02-06
+
+### Added
+
 - Added Subagency2
 - Add classnames to subsection headers arbitrarily
   - In the UI, we allow page-breaks, column-breaks, or None
@@ -32,6 +40,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add HTML ids and classes to callout box headers
 - Un-indent application checklist table cells with links in them
 - Small tables with captions don't need col-span: all
+- Single asterisks in table cells now escaped automatically
 
 ## [1.5.0] - 2023-02-05
 

@@ -13,6 +13,7 @@ from .nofo import (
     clean_table_cells,
     create_nofo,
     decompose_empty_tags,
+    escape_asterisks_in_table_cells,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -1324,6 +1325,49 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         self.assertEqual(
             str(soup),
             "<div><hr/><h1>Endnotes</h1><h2>Select the endnote number to jump to the related section in the document.</h2></div>",
+        )
+
+
+class TestEscapeAsterisksInTableCells(TestCase):
+    def test_asterisk_escaped_in_table_cells(self):
+        html = "<table><tr><td>Test* Text</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"Test\* Text", soup.td.text)
+
+    def test_already_escaped_asterisk_not_doubly_escaped(self):
+        html = "<table><tr><td>Test\\* Text</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"Test\* Text", soup.td.text)
+        self.assertNotIn(r"Test\\* Text", soup.td.text)
+
+    def test_multiple_asterisks_escaped(self):
+        html = "<table><tr><td>*Test* Text*</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"\*Test\* Text\*", soup.td.text)
+
+    def test_no_asterisks_unmodified(self):
+        html = "<table><tr><td>No asterisks here</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        original_text = soup.td.text
+        escape_asterisks_in_table_cells(soup)
+        self.assertEqual(original_text, soup.td.text)
+
+    def test_asterisk_in_nested_tags_preserved(self):
+        html = "<table><tr><td>Before <span>Test* Text</span> After</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"Test\* Text", soup.span.text)
+
+    def test_asterisk_outside_of_table_not_modified(self):
+        html = "<div><p>Test*</p><table><tr><td>Test* Text</td></tr></table></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(
+            str(soup),
+            "<div><p>Test*</p><table><tr><td>Test\\* Text</td></tr></table></div>",
         )
 
 

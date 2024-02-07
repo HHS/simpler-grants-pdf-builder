@@ -630,3 +630,22 @@ def add_endnotes_header_if_exists(soup):
             subsection_header = soup.new_tag("h2")
             subsection_header.string = "Select the endnote number to jump to the related section in the document."
             hr.insert_after(subsection_header)
+
+
+def escape_asterisks_in_table_cells(soup):
+    """
+    This function mutates the soup!
+
+    Replaces "*" with "\*" in table cells, unless the asterisk is already preceded by a backslash.
+
+    This is to solve the problem where "required" elements in tables end up becoming <em> elements by accident.
+    """
+
+    # Match asterisks not preceded by a backslash
+    pattern = re.compile(r"(?<!\\)\*")
+
+    for cell in soup.find_all("td"):
+        for content in cell.find_all(text=True):
+            # Use the regex pattern to replace '*' with '\*' only if '*' is not already preceded by '\'
+            escaped_content = pattern.sub(r"\\*", content)
+            content.replace_with(escaped_content)
