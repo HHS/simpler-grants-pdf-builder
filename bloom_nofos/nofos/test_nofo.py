@@ -214,6 +214,7 @@ class HTMLSectionTests(TestCase):
         self.assertEqual(section.get("html_id"), "")
         self.assertEqual(section.get("order"), 1)
         self.assertEqual(str(section.get("body")[0]), "<p>Section 1 body</p>")
+        self.assertEqual(section.get("has_section_page"), True)
 
     def test_get_sections_from_soup_length_zero(self):
         soup = BeautifulSoup("<p>Section 1 body</p>", "html.parser")
@@ -266,6 +267,19 @@ class HTMLSectionTests(TestCase):
         )
         sections = get_sections_from_soup(soup)
         self.assertEqual(sections[0].get("name"), "Step 1: Review the Opportunity")
+
+    def test_get_sections_from_soup_with_no_section_page(self):
+
+        for no_section_page_title in ["Appendix", "Glossary", "Endnotes", "References"]:
+            soup = BeautifulSoup(
+                '<h1 id="section-1">{}</span></h1><p>Section 1 body</p>'.format(
+                    no_section_page_title
+                ),
+                "html.parser",
+            )
+            sections = get_sections_from_soup(soup)
+            self.assertEqual(sections[0].get("name"), no_section_page_title)
+            self.assertEqual(sections[0].get("has_section_page"), False)
 
 
 class HTMLSubsectionTests(TestCase):
