@@ -26,6 +26,7 @@
 
 # DONE
 
+- Fix: remove blue line from the cover page for Hero image landscape CDC
 - Add "References" to section titles that don't need section page
 - Fix: Single asterisks in table cells now escaped automatically
 - Remove single column layout for Step 4
