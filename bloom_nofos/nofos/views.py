@@ -34,6 +34,7 @@ from .nofo import (
     clean_table_cells,
     create_nofo,
     decompose_empty_tags,
+    escape_asterisks_in_table_cells,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -198,6 +199,7 @@ def nofo_import(request, pk=None):
         join_nested_lists(soup)
         decompose_empty_tags(soup)
         clean_table_cells(soup)
+        escape_asterisks_in_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup)

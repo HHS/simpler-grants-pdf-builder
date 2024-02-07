@@ -35,7 +35,7 @@ environ.Env.read_env(env_path)
 
 # Project version
 
-DJVERSION_VERSION = "1.5.0"
+DJVERSION_VERSION = "1.6.0"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # cast_to_boolean(env.get_value("DEBUG", default=True))
