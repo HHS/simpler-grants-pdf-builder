@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Remove grey top border over tables in landscape mode
+
 ### Fixed
 
 ## [1.6.0] - 2023-02-06
