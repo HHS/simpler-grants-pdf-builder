@@ -190,17 +190,12 @@ body[class^="landscape"] .grid-container {
 
 .section--content table.table--large,
 .section--content table.table--with-caption {
-  margin-top: 15px;
-  border-top: 2px solid var(--color--light-grey);
+  margin-top: 10px;
 }
 
 .section--content table.table--small {
-  break-inside: avoid-column;
-}
-
-.section--content table.table--small:not(.table--with-caption) {
-  display: table;
   width: 100%;
+  break-inside: avoid-column;
 }
 
 table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
