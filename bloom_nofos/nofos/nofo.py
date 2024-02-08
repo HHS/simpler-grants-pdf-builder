@@ -524,7 +524,7 @@ def find_broken_links(nofo):
 
     Identifies and returns a list of broken links within a given Nofo.
 
-    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h."
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h." or "#id."
     This means that someone created an internal link to a header, and then later the header was deleted or otherwise
     modified so the original link doesn't point anywhere.
 
@@ -547,9 +547,12 @@ def find_broken_links(nofo):
                       ]
     """
 
-    # Define a function that checks if an 'href' attribute starts with '#h.'
+    # Define a function that checks if an 'href' attribute starts with '#h.' or '#id.'
     def _href_starts_with_h(tag):
-        return tag.name == "a" and tag.get("href", "").startswith("#h.")
+        return tag.name == "a" and (
+            tag.get("href", "").startswith("#h.")
+            or tag.get("href", "").startswith("#id.")
+        )
 
     broken_links = []
 

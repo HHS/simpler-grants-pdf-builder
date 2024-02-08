@@ -843,7 +843,7 @@ class TestFindBrokenLinks(TestCase):
         # Subsection with a broken link
         Subsection.objects.create(
             section=section,
-            name="Subsection with Broken Link",
+            name="Subsection with Broken H Link",
             tag="h3",
             body="This is a test [broken link](#h.broken-link) in markdown.",
             order=1,
@@ -858,17 +858,32 @@ class TestFindBrokenLinks(TestCase):
             order=2,
         )
 
+        # Subsection without a broken link
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with Broken ID Link",
+            tag="h3",
+            body="This is a second [broken link](#id.broken-link) in markdown.",
+            order=3,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 1)
+        self.assertEqual(len(broken_links), 2)
         self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
+        self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
 
     def test_find_broken_links_ignores_valid_links(self):
         nofo = Nofo.objects.get(title="Test Nofo")
         broken_links = find_broken_links(nofo)
         valid_links = [
-            link for link in broken_links if not link["link_href"].startswith("#h.")
+            link
+            for link in broken_links
+            if not (
+                link["link_href"].startswith("#h.")
+                or link["link_href"].startswith("#id.")
+            )
         ]
         self.assertEqual(len(valid_links), 0)
 
