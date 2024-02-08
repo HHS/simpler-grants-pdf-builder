@@ -46,7 +46,7 @@
         <fieldset class="usa-fieldset">
           <legend class="usa-legend legend--bootstrap">Page break or column break</legend>
           {% if form.html_class.value %}
-            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' %}
+            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
                 <span aria-hidden="true">⚠️</span> Warning! This heading’s class is ‘{{ form.html_class.value }}’. If you select a value, the existing class will be overwritten.
               </div>
@@ -80,6 +80,21 @@
             />
             <label class="usa-radio__label" for="column-break-before">
               Has column break
+            </label>
+          </div>
+          <div class="usa-radio">
+            <input
+            class="usa-radio__input"
+              id="avoid-break--heading"
+              type="radio"
+              name="html_class"
+              value="avoid-break--heading"
+              {% if form.html_class.value and "avoid-break--heading" in form.html_class.value %}
+                checked="checked"
+              {% endif %}
+            />
+            <label class="usa-radio__label" for="avoid-break--heading">
+              Avoid column break
             </label>
           </div>
           <div class="usa-radio">
