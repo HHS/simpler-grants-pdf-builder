@@ -34,6 +34,7 @@ from .nofo import (
     add_headings_to_nofo,
     clean_table_cells,
     create_nofo,
+    combine_consecutive_links,
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
     find_broken_links,
@@ -207,6 +208,7 @@ def nofo_import(request, pk=None):
         join_nested_lists(soup)
         decompose_empty_tags(soup)
         clean_table_cells(soup)
+        combine_consecutive_links(soup)
         escape_asterisks_in_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
