@@ -57,13 +57,13 @@ h1 {
 }
 
 .nofo--cover-page--footer {
-  background: var(--color--vibrant-blue);
+  background: var(--color--white);
 }
 
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
-  color: var(--color--white);
+  color: var(--color--vibrant-blue);
 }
 
 /* Cover page: hero image */

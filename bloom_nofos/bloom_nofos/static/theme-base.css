@@ -288,6 +288,7 @@ table.table--with-caption caption {
   width: 65%;
 }
 
+.avoid-break,
 .section--step-4-learn-about-review-and-award [id*="criteria"] ~ h6,
 .section--step-4-learn-about-review-and-award [id*="criteria"] ~ p {
   break-before: avoid-column;
