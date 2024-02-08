@@ -937,12 +937,14 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   /* Page break rules */
   .page-break-before,
   .page-break-before--heading {
-    page-break-before: always;
+    break-before: page !important;
+    page-break-before: always !important;
   }
 
   .page-break-after,
   .page-break-after--heading {
-    page-break-after: always;
+    break-after: page !important;
+    page-break-after: always !important;
   }
 
   .column-break-before {
