@@ -10,6 +10,7 @@ from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
+    combine_consecutive_links,
     convert_table_first_row_to_header_row,
     clean_table_cells,
     create_nofo,
@@ -1183,6 +1184,62 @@ class SuggestNofoSubjectTests(TestCase):
         self.assertEqual(
             suggest_nofo_subject(soup), "This NOFO is about helping people"
         )
+
+
+###########################################################
+#################### MUTATE HTML TESTS ####################
+###########################################################
+
+
+class CombineLinksTestCase(TestCase):
+
+    def test_consecutive_links_merged(self):
+        html = '<p>See <a href="#link">link</a><a href="#link">.</a></p>'
+        expected_html = '<p>See <a href="#link">link.</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_span_wrapped_links_unwrapped_and_merged(self):
+        html = '<p>Check <span><a href="#link">this link</a></span><span><a href="#link">.</a></span></p>'
+        expected_html = '<p>Check <a href="#link">this link.</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_non_consecutive_links_not_merged(self):
+        html = '<p><a href="#link1">Link1</a> and <a href="#link2">Link2</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_different_href_links_not_merged(self):
+        html = '<p>See <a href="#link1">link one</a><a href="#link2">link two</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_links_with_text_between_not_merged(self):
+        html = (
+            '<p>See <a href="#link">link</a> and <a href="#link">another link</a>.</p>'
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_links_with_whitespace_between_not_merged(self):
+        html = '<p>See <a href="#link">link +</a> <a href="#link">another link</a>.</p>'
+        expected_html = '<p>See <a href="#link">link + another link</a>.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_links_with_one_span_one_no_span_are_merged(self):
+        html = '<p>See <a href="#link">this link </a><span><a href="#link">is combined</a></span>.</p>'
+        expected_html = '<p>See <a href="#link">this link is combined</a>.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), expected_html)
 
 
 class SuggestNofoKeywordsTests(TestCase):

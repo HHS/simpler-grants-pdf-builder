@@ -4,7 +4,7 @@ import markdown
 from urllib.parse import parse_qs, urlparse
 from django.db import transaction
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 from markdownify import MarkdownConverter
 from slugify import slugify
 
@@ -520,6 +520,8 @@ def remove_google_tracking_info_from_links(soup):
 
 def find_broken_links(nofo):
     """
+    This function mutates the soup!
+
     Identifies and returns a list of broken links within a given Nofo.
 
     A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h."
@@ -568,6 +570,72 @@ def find_broken_links(nofo):
                 )
 
     return broken_links
+
+
+def combine_consecutive_links(soup):
+    """
+    This function mutates the soup!
+
+    Modifies the BeautifulSoup object by combining consecutive <a> tags with the same href into a single <a> tag
+    and ensures there's no whitespace between an <a> tag and following punctuation.
+
+    This function performs three main tasks:
+    1. It unwraps <span> tags that contain only an <a> tag, removing unnecessary <span> wrappers.
+    2. It merges consecutive <a> tags that share the same href attribute, optionally inserting a space between merged text if
+       the original tags were separated by whitespace. This helps maintain natural spacing in the text.
+    3. After merging <a> tags, the function also removes any whitespace between the end of an <a> tag and the following
+       punctuation (.,;!?), if present. This is crucial for ensuring correct grammar and readability in the resulting HTML.
+
+    Args:
+        soup (BeautifulSoup): A BeautifulSoup object containing the HTML to be processed.
+    """
+
+    # First, unwrap <span> tags that only contain <a> tags
+    for span in soup.find_all("span"):
+        if len(span.contents) == 1 and span.a:
+            span.unwrap()
+
+    # Now, merge consecutive <a> tags with the same href
+    links = soup.find_all("a")
+    for link in links:
+        next_sibling = link.next_sibling
+
+        # Determine if there's whitespace between this and the next <a> tag
+        whitespace_between = False
+        if isinstance(next_sibling, NavigableString) and next_sibling.strip() == "":
+            whitespace_between = True
+            if next_sibling.next_sibling and next_sibling.next_sibling.name == "a":
+                next_sibling = next_sibling.next_sibling
+
+        if (
+            next_sibling
+            and next_sibling.name == "a"
+            and link["href"] == next_sibling["href"]
+        ):
+            # If there's whitespace, add a space before merging texts
+            separator = " " if whitespace_between else ""
+            link.string = link.get_text() + separator + next_sibling.get_text()
+            # Remove the next link
+            next_sibling.extract()
+
+    # Remove spaces between the end a link and punctuation
+    punctuation = {".", ",", ";", "!", "?"}
+    for link in soup.find_all("a"):
+        # Check if the link has a next sibling and it's a NavigableString containing only whitespace
+        if (
+            link.next_sibling
+            and isinstance(link.next_sibling, NavigableString)
+            and link.next_sibling.strip() == ""
+        ):
+            # Now check if there's another sibling after the whitespace and it's a punctuation mark
+            next_to_whitespace = link.next_sibling.next_sibling
+            if (
+                next_to_whitespace
+                and next_to_whitespace.string
+                and next_to_whitespace.string[0] in punctuation
+            ):
+                # Remove the whitespace by replacing it with an empty string
+                link.next_sibling.replace_with("")
 
 
 def decompose_empty_tags(soup):
