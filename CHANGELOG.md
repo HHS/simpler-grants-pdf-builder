@@ -8,15 +8,26 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.8.0] - 2023-02-08
+
+### Added
+
 - Added an "avoid column break" value to subsections
+- Added a little alert box on the edit nofo page to list broken links
+  - A broken link has an href that starts with "#h." or "#id."
 
 ### Changed
 
 - Removed Yes/No column CSS
+- Combine <a> tags on import if they are consecutive and have the same href
 
 ### Fixed
 
-- Fix: Add white line to the cover page for medium image landscape theme CDC
+- Add white line to the cover page for medium image landscape theme CDC
 - Adding page breaks to headings overrides other CSS rules we might have
 
 ## [1.7.0] - 2023-02-07
