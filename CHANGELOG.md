@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Fix: Add white line to the cover page for medium image landscape theme CDC
+
 ## [1.7.0] - 2023-02-07
 
 ### Added
