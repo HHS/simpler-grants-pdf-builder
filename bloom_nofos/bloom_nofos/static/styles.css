@@ -26,6 +26,11 @@ body > footer {
   }
 }
 
+details > summary > span:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .usa-nav__primary .usa-nav__primary-item a[aria-current] {
   text-decoration: underline;
 }
@@ -54,6 +59,10 @@ body > footer {
 
 .nofo_edit .usa-summary-box__text p:last-of-type {
   margin-bottom: 0;
+}
+
+.nofo_edit .usa-site-alert--emergency a {
+  color: var(--color--white);
 }
 
 .nofo_edit caption {
