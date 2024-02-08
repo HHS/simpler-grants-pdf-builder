@@ -445,33 +445,17 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "markdown"
-version = "3.3.7"
+version = "3.3"
 description = "Python implementation of Markdown."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "Markdown-3.3.7-py3-none-any.whl", hash = "sha256:f5da449a6e1c989a4cea2631aa8ee67caa5a2ef855d551c88f9e309f4634c621"},
-    {file = "Markdown-3.3.7.tar.gz", hash = "sha256:cbb516f16218e643d8e0a95b309f77eb118cb138d39a4f27851e6a63581db874"},
+    {file = "Markdown-3.3-py3-none-any.whl", hash = "sha256:fbb1ba54ca41e8991dc5a561d9c6f752f5e4546f8750e56413ea50f2385761d3"},
+    {file = "Markdown-3.3.tar.gz", hash = "sha256:4f4172a4e989b97f96860fa434b89895069c576e2b537c4b4eed265266a7affc"},
 ]
 
 [package.extras]
 testing = ["coverage", "pyyaml"]
-
-[[package]]
-name = "markdown2"
-version = "2.4.10"
-description = "A fast and complete Python implementation of Markdown"
-optional = false
-python-versions = ">=3.5, <4"
-files = [
-    {file = "markdown2-2.4.10-py2.py3-none-any.whl", hash = "sha256:e6105800483783831f5dc54f827aa5b44eb137ecef5a70293d8ecfbb4109ecc6"},
-    {file = "markdown2-2.4.10.tar.gz", hash = "sha256:cdba126d90dc3aef6f4070ac342f974d63f415678959329cc7909f96cc235d72"},
-]
-
-[package.extras]
-all = ["pygments (>=2.7.3)", "wavedrom"]
-code-syntax-highlighting = ["pygments (>=2.7.3)"]
-wavedrom = ["wavedrom"]
 
 [[package]]
 name = "markdownify"
@@ -769,4 +753,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "05e1e2c5dadb4379cfd7a1a20b54736b1e35e072cdc213a6a727c8eb6d704bf1"
+content-hash = "ac191e46693447c2c6abc638d5cb81d55c9da649277d06ae83af908cfd6aa9c2"

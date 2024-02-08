@@ -1,9 +1,10 @@
 import datetime
 import re
+import markdown
 from urllib.parse import parse_qs, urlparse
 from django.db import transaction
 
-from bs4 import Tag
+from bs4 import BeautifulSoup, Tag
 from markdownify import MarkdownConverter
 from slugify import slugify
 
@@ -517,7 +518,58 @@ def remove_google_tracking_info_from_links(soup):
             a["href"] = _get_original_url(href)
 
 
-# TODO new tests
+def find_broken_links(nofo):
+    """
+    Identifies and returns a list of broken links within a given Nofo.
+
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h."
+    This means that someone created an internal link to a header, and then later the header was deleted or otherwise
+    modified so the original link doesn't point anywhere.
+
+    Args:
+        nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
+                     to be in markdown format.
+
+    Returns:
+        list of dict: A list of dictionaries, where each dictionary contains information about a broken link,
+                      including the section and subsection it was found in, the text of the link, and the `href`
+                      attribute of the link. The structure is as follows:
+                      [
+                          {
+                              "section": <Section object>,
+                              "subsection": <Subsection object>,
+                              "link_text": "text of the link",
+                              "link_href": "href of the link"
+                          },
+                          ...
+                      ]
+    """
+
+    # Define a function that checks if an 'href' attribute starts with '#h.'
+    def _href_starts_with_h(tag):
+        return tag.name == "a" and tag.get("href", "").startswith("#h.")
+
+    broken_links = []
+
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+            soup = BeautifulSoup(
+                markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
+            )
+
+            for link in soup.find_all(_href_starts_with_h):
+                broken_links.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "link_text": link.get_text(),
+                        "link_href": link["href"],
+                    }
+                )
+
+    return broken_links
+
+
 def decompose_empty_tags(soup):
     """
     This function mutates the soup!

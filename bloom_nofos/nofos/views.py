@@ -2,6 +2,7 @@ import io
 import os
 
 import docraptor
+import markdown
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -35,6 +36,7 @@ from .nofo import (
     create_nofo,
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
+    find_broken_links,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -152,6 +154,11 @@ class NofosDetailView(DetailView):
 class NofosEditView(DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["broken_links"] = find_broken_links(self.object)
+        return context
 
 
 class NofosDeleteView(DeleteView):

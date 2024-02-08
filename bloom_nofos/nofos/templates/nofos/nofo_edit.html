@@ -71,16 +71,43 @@
     role="region"
     aria-labelledby="summary-box-key-information"
   >
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO status is ‘published’.
-    </h2>
-    <div class="usa-summary-box__text">
-      <p>Published NOFO’s can’t be edited, re-imported, or deleted.</p>
-      <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
+    <div class="usa-summary-box__body">
+      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+        NOFO status is ‘published’.
+      </h2>
+      <div class="usa-summary-box__text">
+        <p>Published NOFO’s can’t be edited, re-imported, or deleted.</p>
+        <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
+      </div>
     </div>
   </div>
-</div>
+  {% endif %}
+
+  {% if broken_links|length %}
+    <section
+    class="usa-site-alert usa-site-alert--emergency"
+    aria-label="Site alert"
+    >
+      <div class="usa-alert">
+        <div class="usa-alert__body">
+          <h3 class="usa-alert__heading">Warning: some links are no bueno</h3>
+          <div>
+            <details>
+              <summary>
+                <span>There are {{ broken_links|length }} broken links</span>
+              </summary>
+              <div>
+                {% for broken_link in broken_links %}
+                  <ul>
+                    <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
+                  </ul>
+                {% endfor %}
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
   {% endif %}
 
   <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">

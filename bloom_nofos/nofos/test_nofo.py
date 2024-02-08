@@ -3,6 +3,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
+from .models import Nofo, Section, Subsection
 
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
@@ -14,6 +15,7 @@ from .nofo import (
     create_nofo,
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
+    find_broken_links,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -828,6 +830,46 @@ class AddHeadingsTests(TestCase):
             "Section 1 body with [custom link](#1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories)",
             subsection_1.body,
         )
+
+
+class TestFindBrokenLinks(TestCase):
+
+    def setUp(self):
+        # Set up a Nofo instance and related Sections and Subsections
+        nofo = Nofo.objects.create(title="Test Nofo")
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+
+        # Subsection with a broken link
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with Broken Link",
+            tag="h3",
+            body="This is a test [broken link](#h.broken-link) in markdown.",
+            order=1,
+        )
+
+        # Subsection without a broken link
+        Subsection.objects.create(
+            section=section,
+            name="Subsection without Broken Link",
+            tag="h3",
+            body="This is a test with a [valid link](https://example.com).",
+            order=2,
+        )
+
+    def test_find_broken_links_identifies_broken_links(self):
+        nofo = Nofo.objects.get(title="Test Nofo")
+        broken_links = find_broken_links(nofo)
+        self.assertEqual(len(broken_links), 1)
+        self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
+
+    def test_find_broken_links_ignores_valid_links(self):
+        nofo = Nofo.objects.get(title="Test Nofo")
+        broken_links = find_broken_links(nofo)
+        valid_links = [
+            link for link in broken_links if not link["link_href"].startswith("#h.")
+        ]
+        self.assertEqual(len(valid_links), 0)
 
 
 #########################################################
