@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added an "avoid column break" value to subsections
+
 ### Changed
 
 - Removed Yes/No column CSS
@@ -15,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Fix: Add white line to the cover page for medium image landscape theme CDC
+- Adding page breaks to headings overrides other CSS rules we might have
 
 ## [1.7.0] - 2023-02-07
 
