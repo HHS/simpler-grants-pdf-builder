@@ -106,6 +106,10 @@ details > summary > span:hover {
   width: 15%;
 }
 
+.nofo_edit table th.nofo-edit-table--subsection--name {
+  scroll-margin-top: 50px;
+}
+
 .nofo_edit main table tbody tr:first-of-type td:last-of-type {
   width: 5%;
   text-align: right;

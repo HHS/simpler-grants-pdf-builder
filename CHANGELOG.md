@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Add scroll-margin-top to header cells on NOFO edit page
+
 ## [1.8.0] - 2023-02-08
 
 ### Added
