@@ -319,10 +319,6 @@ table.table--empty td {
   height: 25px;
 }
 
-table th.th--yes-no {
-  width: 17%;
-}
-
 table td a {
   color: var(--color--vibrant-blue);
 }

@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Removed Yes/No column CSS
+
 ### Fixed
 
 ## [1.7.0] - 2023-02-07
