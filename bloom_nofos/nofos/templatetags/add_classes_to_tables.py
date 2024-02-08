@@ -14,8 +14,4 @@ def add_classes_to_tables(html_string):
         table_class = add_class_to_table(table)
         table["class"] = table_class
 
-    for th in soup.find_all("th"):
-        if th.get_text() == "Yes/No":
-            _add_class_if_not_exists_to_tag(th, "th--yes-no", "th")
-
     return mark_safe(str(soup))
