@@ -287,6 +287,18 @@ class GetIconPathFromThemeTests(TestCase):
         path = _get_icon_path_from_theme("theme-cdc-blue", "section_cover")
         self.assertEqual(path, "img/figma-icons/white-border")
 
+    def test_before_you_begin_section_dop_theme(self):
+        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
+        self.assertEqual(path, "img/figma-icons/dop-teal-border")
+
+    def test_callout_box_section_dop_theme(self):
+        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
+        self.assertEqual(path, "img/figma-icons/dop-teal-border")
+
+    def test_section_cover_section_dop_theme(self):
+        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
+        self.assertEqual(path, "img/figma-icons/dop-teal-border")
+
     def test_default_case(self):
         path = _get_icon_path_from_theme("any-theme-any-colour", "any-section")
         self.assertEqual(path, "img/figma-icons/white-border")

@@ -72,7 +72,7 @@ OPDIVS = {
     "hrsa": {
         "key": "hrsa",
         "name": "The Health Resources & Services Administration",
-        "filename": "img/hrsa-logo.svg",
+        "filename": "",
     },
     "acf": {
         "key": "acf",
@@ -138,7 +138,8 @@ class NofosDetailView(DetailView):
 
         # if no filename, build path
         if not nofo_opdiv["filename"]:
-            nofo_opdiv["filename"] = get_logo(opdiv, colour)
+            cover = self.object.cover
+            nofo_opdiv["filename"] = get_logo(opdiv, colour, cover)
 
         # Add HHS logo
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"
