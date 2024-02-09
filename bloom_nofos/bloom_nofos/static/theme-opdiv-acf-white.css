@@ -47,10 +47,6 @@ h5 {
   background-color: var(--color--white);
 }
 
-.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p {
-  font-weight: 700;
-}
-
 /* Table of contents */
 
 .toc h2 {
