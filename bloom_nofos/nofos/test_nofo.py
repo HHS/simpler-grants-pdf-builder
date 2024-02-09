@@ -863,6 +863,26 @@ class TestGetLogo(TestCase):
         # Assuming a fallback to default logo
         self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
 
+    def test_hrsa_blue_logo(self):
+        """Test for HRSA with blue colour"""
+        logo_path = get_logo("hrsa", "blue")
+        self.assertEqual(logo_path, "img/logos/hrsa/blue/hrsa-logo.svg")
+
+    def test_hrsa_white_logo(self):
+        """Test for HRSA with blue colour"""
+        logo_path = get_logo("hrsa", "blue")
+        self.assertEqual(logo_path, "img/logos/hrsa/blue/hrsa-logo.svg")
+
+    def test_hrsa_with_text_cover(self):
+        """Test for HRSA with text cover"""
+        logo_path = get_logo("hrsa", "blue", "nofo--cover-page--text")
+        self.assertEqual(logo_path, "img/logos/hrsa/white/hrsa-logo.svg")
+
+    def test_hrsa_no_color_provided(self):
+        """Test for HRSA with blue colour"""
+        logo_path = get_logo("hrsa", "blue")
+        self.assertEqual(logo_path, "img/logos/hrsa/blue/hrsa-logo.svg")
+
     def test_no_opdiv_no_colour(self):
         """Test for CDC with no opdiv or colour provided"""
         logo_path = get_logo()
@@ -879,10 +899,15 @@ class TestGetLogo(TestCase):
         with self.assertRaises(ValueError):
             get_logo("cdc", "")
 
-    def test_both_empty_raises_error(self):
-        """Verify that both empty opdiv and colour raise ValueError"""
+    def test_empty_cover_raises_error(self):
+        """Test for CDC, blue colour, empty cover"""
         with self.assertRaises(ValueError):
-            get_logo("", "")
+            get_logo("cdc", "blue", "")
+
+    def test_all_empty_raises_error(self):
+        """Verify that both empty opdiv, colour, cover raise ValueError"""
+        with self.assertRaises(ValueError):
+            get_logo("", "", "")
 
 
 class TestFindBrokenLinks(TestCase):
