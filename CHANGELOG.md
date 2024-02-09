@@ -8,11 +8,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Create get_logo function so that logic for returning logos is contained
+  - Get it to work for HRSA and ACF
+- Added ACF white theme
+- Added "big text cover" versions for ACF in both colours
+
 ### Changed
 
 ### Fixed
 
 - Add scroll-margin-top to header cells on NOFO edit page
+- Mostly fixed the neglected ACF theme
 
 ## [1.8.0] - 2023-02-08
 

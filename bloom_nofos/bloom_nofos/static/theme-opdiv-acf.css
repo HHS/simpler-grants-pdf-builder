@@ -81,7 +81,7 @@ h6 {
 
 .nofo--cover-page--header--logo,
 .nofo--cover-page--header--logo img {
-  width: 250px;
+  width: 450px;
 }
 
 .nofo--cover-page--header--logo--subheading {
@@ -111,6 +111,16 @@ h6 {
 
 .nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   width: 100px;
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p {
+  font-weight: 400;
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--intro {
+  width: 120%;
 }
 
 /* Before you begin page */
