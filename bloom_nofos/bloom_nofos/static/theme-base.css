@@ -7,6 +7,7 @@
 :root {
   --color--black: #000000;
   --color--white: #ffffff;
+  --color--light-black: #172c3c;
   --color--table-grey: #edf1f3;
   --color--table-blue: #f2f6fc;
   --color--light-grey: #dde2e8;
@@ -16,6 +17,7 @@
   --color--vibrant-blue: #005eaa;
   --color--hrsa-blue: #006699;
   --color--cms-blue: #004a86;
+  --color--acf-blue: #264a64;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e8f0f3;
   --color--med-brown: #c0b0a2;
@@ -868,7 +870,6 @@ p[role="heading"] {
 
 .callout-box--questions .callout-box--contents p {
   font-size: 12pt;
-  font-weight: 700;
 }
 
 .section--endnotes h3,
