@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add scroll-margin-top to header cells on NOFO edit page
 - Mostly fixed the neglected ACF theme
+- Fix the landscape medium image cover for CDC
 
 ## [1.8.0] - 2023-02-08
 
