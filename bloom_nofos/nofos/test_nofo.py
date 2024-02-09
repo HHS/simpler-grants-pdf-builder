@@ -17,6 +17,7 @@ from .nofo import (
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
     find_broken_links,
+    get_logo,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -831,6 +832,57 @@ class AddHeadingsTests(TestCase):
             "Section 1 body with [custom link](#1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories)",
             subsection_1.body,
         )
+
+
+class TestGetLogo(TestCase):
+
+    def test_cdc_blue_logo(self):
+        """Test for CDC with blue colour"""
+        logo_path = get_logo("cdc", "blue")
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_dop_logo_replacement(self):
+        """Test for CDC with 'dop' colour, which should be replaced with 'white'"""
+        logo_path = get_logo("cdc", "dop")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
+
+    def test_cdc_any_colour_logo(self):
+        """Test for CDC with any other colour"""
+        logo_path = get_logo("cdc", "green")
+        self.assertEqual(logo_path, "img/logos/cdc/green/cdc-logo.svg")
+
+    def test_non_cdc_default_logo(self):
+        """Test for non-CDC opdiv should return the default CDC blue logo"""
+        logo_path = get_logo("other", "blue")
+        # Assuming a fallback to default logo
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_no_colour_provided(self):
+        """Test for CDC with no colour provided"""
+        logo_path = get_logo("cdc")
+        # Assuming a fallback to default logo
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_no_opdiv_no_colour(self):
+        """Test for CDC with no opdiv or colour provided"""
+        logo_path = get_logo()
+        # Assuming a fallback to default logo
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_empty_opdiv_raises_error(self):
+        """Verify that an empty opdiv raises ValueError"""
+        with self.assertRaises(ValueError):
+            get_logo("", "blue")
+
+    def test_empty_colour_raises_error(self):
+        """Verify that an empty colour raises ValueError"""
+        with self.assertRaises(ValueError):
+            get_logo("cdc", "")
+
+    def test_both_empty_raises_error(self):
+        """Verify that both empty opdiv and colour raise ValueError"""
+        with self.assertRaises(ValueError):
+            get_logo("", "")
 
 
 class TestFindBrokenLinks(TestCase):

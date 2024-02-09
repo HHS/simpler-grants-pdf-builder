@@ -60,6 +60,10 @@ h1 {
   background: var(--color--white);
 }
 
+.portrait .nofo--cover-page--footer {
+  background: var(--color--vibrant-blue);
+}
+
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
