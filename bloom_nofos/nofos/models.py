@@ -90,7 +90,8 @@ class Nofo(models.Model):
         ("portrait-cdc-white", "CDC Portrait (Light)"),
         ("portrait-hrsa-blue", "HRSA (Default)"),
         ("portrait-hrsa-white", "HRSA (Light)"),
-        ("portrait-acf-blue", "ACF (Blue)"),
+        ("portrait-acf-blue", "ACF (Default)"),
+        ("portrait-acf-white", "ACF (Light)"),
         ("portrait-cms-white", "CMS (Light)"),
     ]
 
