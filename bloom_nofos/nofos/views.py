@@ -2,7 +2,6 @@ import io
 import os
 
 import docraptor
-import markdown
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -38,6 +37,7 @@ from .nofo import (
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
     find_broken_links,
+    get_logo,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -138,10 +138,7 @@ class NofosDetailView(DetailView):
 
         # if no filename, build path
         if not nofo_opdiv["filename"]:
-            colour = colour if colour != "dop" else "white"
-            nofo_opdiv["filename"] = "img/logos/{0}/{1}/{0}-logo.svg".format(
-                opdiv, colour
-            )
+            nofo_opdiv["filename"] = get_logo(opdiv, colour)
 
         # Add HHS logo
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"

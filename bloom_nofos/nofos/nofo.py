@@ -433,6 +433,17 @@ def suggest_nofo_keywords(soup):
     return suggestion or ""
 
 
+def get_logo(opdiv="cdc", colour="blue"):
+    if not colour or not opdiv:
+        raise ValueError("opdiv and colour cannot be empty")
+
+    if opdiv == "cdc":
+        colour = colour if colour != "dop" else "white"
+        return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
+
+    return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
+
+
 def join_nested_lists(soup):
     """
     This function mutates the soup!

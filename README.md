@@ -6,7 +6,7 @@
 
 ## About
 
-The NOFO Builder is a Word-2-PDF pipeline that injests HTML files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
+The NOFO Builder is a Word-2-PDF pipeline that ingests HTML files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
 
 The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
