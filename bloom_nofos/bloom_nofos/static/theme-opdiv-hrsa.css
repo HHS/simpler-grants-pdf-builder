@@ -95,6 +95,11 @@ h6 {
 
 /* Cover page: text */
 
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--hrsa-blue);
+  color: var(--color--white);
+}
+
 /* Table of contents */
 
 .toc h2 {
