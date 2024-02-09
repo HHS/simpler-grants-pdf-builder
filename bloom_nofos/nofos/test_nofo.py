@@ -880,8 +880,28 @@ class TestGetLogo(TestCase):
 
     def test_hrsa_no_color_provided(self):
         """Test for HRSA with blue colour"""
-        logo_path = get_logo("hrsa", "blue")
+        logo_path = get_logo("hrsa")
         self.assertEqual(logo_path, "img/logos/hrsa/blue/hrsa-logo.svg")
+
+    def test_acf_white_logo(self):
+        """Test for ACF with white colour"""
+        logo_path = get_logo("acf", "blue")
+        self.assertEqual(logo_path, "img/logos/acf/blue/acf-logo.svg")
+
+    def test_acf_blue_with_text_cover(self):
+        """Test for ACF blue with text cover"""
+        logo_path = get_logo("acf", "blue", "nofo--cover-page--text")
+        self.assertEqual(logo_path, "img/logos/acf/white/acf-logo.svg")
+
+    def test_acf_white_with_text_cover(self):
+        """Test for ACF blue with text cover"""
+        logo_path = get_logo("acf", "white", "nofo--cover-page--text")
+        self.assertEqual(logo_path, "img/logos/acf/blue/acf-logo.svg")
+
+    def test_acf_no_color_provided(self):
+        """Test for ACF with blue colour"""
+        logo_path = get_logo("acf")
+        self.assertEqual(logo_path, "img/logos/acf/blue/acf-logo.svg")
 
     def test_no_opdiv_no_colour(self):
         """Test for CDC with no opdiv or colour provided"""

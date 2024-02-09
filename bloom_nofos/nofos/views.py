@@ -77,7 +77,7 @@ OPDIVS = {
     "acf": {
         "key": "acf",
         "name": "The Administration for Children and Families",
-        "filename": "img/acf-logo.svg",
+        "filename": "",
     },
     "acl": {
         "key": "acl",

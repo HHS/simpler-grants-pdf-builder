@@ -66,8 +66,6 @@ section.nofo--cover-page.nofo--cover-page--text {
 .nofo--cover-page--text .nofo--cover-page--header {
   height: 110mm;
   padding-bottom: 10mm;
-  background-color: var(--color--hrsa-blue);
-  color: var(--color--white);
 }
 
 .nofo--cover-page--text .nofo--cover-page--header--intro {

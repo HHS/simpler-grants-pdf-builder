@@ -437,6 +437,12 @@ def get_logo(opdiv="cdc", colour="blue", cover="nofo--cover-page--medium"):
     if not colour or not opdiv or not cover:
         raise ValueError("opdiv, colour, and/or cover cannot be empty")
 
+    if opdiv == "acf":
+        if cover == "nofo--cover-page--text" and colour == "blue":
+            return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)
+
+        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
+
     if opdiv == "hrsa":
         if cover == "nofo--cover-page--text":
             return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)

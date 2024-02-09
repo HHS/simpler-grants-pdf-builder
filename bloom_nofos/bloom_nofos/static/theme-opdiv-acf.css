@@ -16,6 +16,14 @@
   }
 }
 
+/* Regular CSS */
+
+html {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
 /* Running header */
 
 .header-nav.header-nav--running-header li a {
@@ -24,6 +32,38 @@
 }
 
 /* Headings */
+
+h1 {
+  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    serif;
+}
+
+h2 {
+  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    serif;
+}
+
+h3 {
+  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    serif;
+}
+
+h4 {
+  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
+  color: var(--color--vibrant-blue);
+}
+
+h5 {
+  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    serif;
+  font-size: 14pt;
+}
+
+h6 {
+  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    serif;
+}
 
 /* Cover page */
 
