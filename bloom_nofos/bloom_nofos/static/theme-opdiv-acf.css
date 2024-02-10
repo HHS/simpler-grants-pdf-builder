@@ -18,12 +18,6 @@
 
 /* Regular CSS */
 
-html {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
-  line-height: 1.5;
-}
-
 /* Running header */
 
 .header-nav.header-nav--running-header li a {
@@ -96,7 +90,6 @@ h6 {
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
   font-size: 16pt;
-  font-weight: 700;
 }
 
 .nofo--cover-page--footer .nofo--cover-page--footer--image {
@@ -128,5 +121,9 @@ h6 {
 /* Section title page */
 
 /* Section contents */
+
+.section--content--intro p.nofo--tagline {
+  color: var(--color--acf-blue);
+}
 
 /* Media queries */

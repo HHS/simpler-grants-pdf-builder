@@ -19,13 +19,19 @@
 - Big cover page design
   - Blue large cover HRSA
   - White large cover HRSA
-- Text-only cover page design
-  - Blue HRSA
-  - White HRSA
 - Fix: Indented application checklist for portrait tables also
 
 # DONE
 
+- Themes
+  - CDC: portrait (blue)
+  - CDC: portrait (white)
+  - CMS: portrait (white)
+  - ACF: portrait (white)
+- Text-only cover page design
+  - Blue ACF
+  - White ACF
+- DOP theme again!!
 - Show broken links to NOFO editors
 - Add "avoid column break" class to subsection headings
 - Fix: Add white line to the cover page for medium image landscape theme CDC
@@ -80,10 +86,6 @@
 - Fix: remove Google tracking information from URLs
 - Add status to NOFOs
 - Split text for apply-by date on cover page
-- Themes
-  - CDC: portrait (blue)
-  - CDC: portrait (white)
-  - CMS: portrait (white)
 - Fix: Page breaks for h3s
 - Fix: Strip empty HTML tags so that NOFOs don't blow up on import
 - Fix: Headings have less top spacing if they follow another heading
