@@ -577,6 +577,18 @@ p[role="heading"] {
   object-fit: cover;
 }
 
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p {
+  white-space: pre;
+}
+
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  font-weight: 400;
+}
+
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--title--logo,

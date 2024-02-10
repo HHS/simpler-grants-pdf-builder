@@ -15,11 +15,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Kind of new theme: CDC Portrait DOP with a dark teal colour
+  - apparently they hate landscape wow huge surprise 😬
+- Changes to big-text covers
+  - Don't break line for (sub)agency
+  - Unbold the Opportunity number
+  - More top padding
+- Blue tagline for ACF
+
 ### Fixed
 
 - Add scroll-margin-top to header cells on NOFO edit page
 - Mostly fixed the neglected ACF theme
 - Fix the landscape medium image cover for CDC
+- Hide sub-bullets for 'Contacts and Support'
 
 ## [1.8.0] - 2023-02-08
 

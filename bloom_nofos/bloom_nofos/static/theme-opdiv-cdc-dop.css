@@ -9,14 +9,48 @@
 
 /* Page rules */
 
+@page {
+  @bottom-left {
+    color: var(--color--dop-teal);
+  }
+
+  @bottom-right {
+    color: var(--color--dop-teal);
+  }
+}
+
+@page cover {
+  background-color: var(--color--dop-teal);
+}
+
+@page title {
+  background-color: var(--color--dop-teal);
+
+  @bottom-left {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+
+  @bottom-right {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+}
+
 /* Regular CSS */
 
-a,
-table td a {
-  color: var(--color--dop-blue);
+img.usa-icon--check_box_outline_blank {
+  background: var(--color--white);
+  -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  -moz-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
 }
 
 /* Headings */
+
+h1 {
+  color: var(--color--white);
+}
 
 h3 {
   color: var(--color--dop-blue);
@@ -28,51 +62,35 @@ h4 {
 
 /* Cover page */
 
+.nofo--cover-page--header,
 .nofo--cover-page--title {
-  padding-top: 5mm;
-}
-
-.nofo--cover-page--title,
-.nofo--cover-page--footer {
-  background-color: var(--color--white);
+  background-color: var(--color--dop-teal);
 }
 
 .nofo--cover-page--header--logo--subheading,
-.nofo--cover-page--header--intro,
-.nofo--cover-page--title h1,
-.nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--dop-teal);
+.nofo--cover-page--title,
+.nofo--cover-page--header--intro {
+  color: var(--color--white);
+}
+
+.nofo--cover-page--footer {
+  background: var(--color--white);
+}
+
+.portrait .nofo--cover-page--footer {
+  background-color: var(--color--dop-teal);
 }
 
 /* Cover page: medium image */
 
-.portrait .nofo--cover-page--medium .nofo--cover-page--header,
-.landscape .nofo--cover-page--medium .nofo--cover-page--footer {
-  background-color: var(--color--dop-yellow);
-}
-
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
-  color: var(--color--black);
-}
-
-/* Cover page: hero image */
-/* Note that there is no "white" version of the hero cover page */
-
-.nofo--cover-page--hero .nofo--cover-page--header {
-  background-color: var(--color--dop-teal);
-}
-
-.nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
-.nofo--cover-page--hero .nofo--cover-page--header--intro,
-.nofo--cover-page--hero .nofo--cover-page--title h1,
-.nofo--cover-page--hero
-  .nofo--cover-page--title
-  .nofo--cover-page--title--subheading {
   color: var(--color--white);
 }
 
+/* Cover page: hero image */
+
 .nofo--cover-page--hero .nofo--cover-page--title {
-  background-color: var(--color--dark-blue);
+  background-color: var(--color--dop-teal);
 }
 
 /* Table of contents */
@@ -81,12 +99,14 @@ h4 {
   color: var(--color--dop-teal);
 }
 
-.toc--section-name--a {
+.toc .toc--section-name .toc--section-name--a {
   color: var(--color--dop-teal);
 }
 
-.toc .toc--section-name .toc--section-name--img {
-  background-color: var(--color--dop-teal);
+.toc
+  .toc--section-name
+  .toc--section-name--img:not([class*="med-blue-border"]) {
+  background: var(--color--dop-teal);
 }
 
 /* Before you begin */
@@ -95,40 +115,31 @@ h4 {
   color: var(--color--dop-teal);
 }
 
-.section--before-you-begin--psuedo-header {
-  color: var(--color--dop-teal);
-}
-
 /* Section title page */
 
-.section--title-page--header-nav {
-  background-color: var(--color--pale-blue);
-  color: var(--color--black);
-}
-
 .section--title-page--header-nav li a {
-  border-top: 4px solid var(--color--light-grey);
-  color: var(--color--black);
+  border-top: 4px solid var(--color--white);
+  color: var(--color--white);
 }
 
 .section--title-page--header-nav li a[aria-current] {
   border-top: 4px solid var(--color--dop-yellow);
+  color: var(--color--dop-yellow);
 }
 
-.section--title-page--name {
-  color: var(--color--dop-teal);
+.section--title-page {
+  background-color: var(--color--dop-teal);
 }
 
-.section--title-page--toc,
-.section--title-page--toc a {
-  color: var(--color--black);
+.section--title-page--header-nav {
+  background-color: var(--color--dop-blue);
 }
 
 /* Section contents */
 
 .header-nav--running-header li a[aria-current] {
   border-top: 4px solid var(--color--dop-yellow);
-  color: var(--color--black);
+  color: var(--color--dop-yellow);
 }
 
 .nofo--tagline {
@@ -140,8 +151,12 @@ h4 {
   color: var(--color--black);
 }
 
+.callout-box--contents a {
+  color: var(--color--black);
+}
+
 .callout-box--icon {
-  background-color: var(--color-white);
+  background-color: var(--color--white);
   border: 2px solid var(--color--dop-teal);
 }
 

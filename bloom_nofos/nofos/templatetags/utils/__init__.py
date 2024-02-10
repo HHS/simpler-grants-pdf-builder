@@ -195,8 +195,6 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/dark-blue-border"
 
     if section == "section_cover":
-        if "dop" in theme:
-            return "img/figma-icons/dop-teal-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if theme == "portrait-cms-white":
