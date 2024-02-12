@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.9.0] - 2023-02-07
+
+### Added
+
 - Create get_logo function so that logic for returning logos is contained
   - Get it to work for HRSA and ACF
 - Added ACF white theme
@@ -20,7 +28,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Kind of new theme: CDC Portrait DOP with a dark teal colour
-  - apparently they hate landscape wow huge surprise 😬
 - Changes to big-text covers
   - Don't break line for (sub)agency
   - Unbold the Opportunity number
