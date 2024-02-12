@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Unbold the Opportunity number
   - More top padding
 - Blue tagline for ACF
+- Application checklist for ACF
 
 ### Fixed
 
@@ -30,6 +31,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Mostly fixed the neglected ACF theme
 - Fix the landscape medium image cover for CDC
 - Hide sub-bullets for 'Contacts and Support'
+- Nudge header nav for section headers down a bit
 
 ## [1.8.0] - 2023-02-08
 

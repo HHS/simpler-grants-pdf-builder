@@ -762,6 +762,7 @@ p[role="heading"] {
   font-size: 10pt;
   font-weight: 700;
   margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .section--title-page--header-nav a[aria-current] {
