@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added ACF white theme
 - Added "big text cover" versions for ACF in both colours
 - Cover for CDC-RFA-TU24-0137
+- New form to add spaces in the order of a section
 
 ### Changed
 
@@ -25,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Blue tagline for ACF
 - Application checklist for ACF
 - Preserve "start" attribute in ols on import
+- Changed name of the Django Admin area
 
 ### Fixed
 

@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path, re_path
@@ -25,6 +26,10 @@ handler404 = views.page_not_found
 
 
 favicon_view = RedirectView.as_view(url="/static/favicon/favicon.ico", permanent=True)
+
+admin.site.site_header = "NOFO Builder admin area"  # default: "Django Administration"
+admin.site.index_title = "Dashboard"  # default: "Site administration"
+admin.site.site_title = "NOFO Builder admin area"  # default: "Django site admin"
 
 app_name = "bloom_nofos"
 urlpatterns = [
