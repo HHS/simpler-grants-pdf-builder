@@ -14,7 +14,6 @@ def wrap_text_before_colon_in_strong(p, soup):
 
     # Iterate over contents, moving elements before the colon to the strong tag
     for content in p.contents[:]:
-
         if found_colon:
             span_tag.append(content.extract())
 

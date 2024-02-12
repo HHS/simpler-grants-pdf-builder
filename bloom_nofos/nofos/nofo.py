@@ -1,10 +1,10 @@
 import datetime
 import re
-import markdown
 from urllib.parse import parse_qs, urlparse
-from django.db import transaction
 
+import markdown
 from bs4 import BeautifulSoup, NavigableString, Tag
+from django.db import transaction
 from markdownify import MarkdownConverter
 from slugify import slugify
 

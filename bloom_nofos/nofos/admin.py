@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from martor.widgets import AdminMartorWidget
 
 from .models import Nofo, Section, Subsection
+from .views import insert_order_space_view
 
 # Remove Groups from admin
 admin.site.unregister(Group)
@@ -13,7 +14,7 @@ admin.site.unregister(Group)
 class SubsectionModelForm(forms.ModelForm):
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "order", "body"]
+        fields = ["name", "tag", "order", "callout_box", "body"]
         widgets = {
             "name": forms.TextInput(),
             "body": AdminMartorWidget,
@@ -63,6 +64,20 @@ class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionLinkInline]
     model = Section
     list_display = ["id", "name"]
+    change_form_template = "admin/section_change_form.html"
+
+    def get_urls(self):
+        from django.urls import path
+
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<int:section_id>/insert-order-space/",
+                self.admin_site.admin_view(insert_order_space_view),
+                name="insert_order_space",
+            ),
+        ]
+        return custom_urls + urls
 
 
 class NofoAdmin(admin.ModelAdmin):
