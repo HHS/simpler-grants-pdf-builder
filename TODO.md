@@ -21,10 +21,11 @@
   - White large cover HRSA
 - Fix: Indented application checklist for portrait tables also
 - Fix: Import docs with subsection changes
-- Fix: Generate ID automatically when creating a new section
+- Add nofo number to CSS, and add a little CSS box
 
 # DONE
 
+- Fix: Generate ID automatically when creating a new section
 - Remove header constraint when creating new subsections
   - Fix: Section screen admin show subsections in order
 - Reorder subsections, sort of

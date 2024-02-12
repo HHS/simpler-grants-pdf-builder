@@ -2,6 +2,7 @@ from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
 from martor.models import MartorField
+from .utils import create_subsection_html_id
 
 
 class Nofo(models.Model):
@@ -240,5 +241,9 @@ class Subsection(models.Model):
             raise ValidationError("Tag is required when 'name' is present.")
 
     def save(self, *args, **kwargs):
+        if self.name and not self.html_id:
+            counter = self.pk or self.order
+            self.html_id = create_subsection_html_id(counter, self)
+
         self.full_clean()  # Call the clean method for validation
         super().save(*args, **kwargs)
