@@ -20,9 +20,13 @@
   - Blue large cover HRSA
   - White large cover HRSA
 - Fix: Indented application checklist for portrait tables also
+- Fix: Section screen admin show subsections in order
+- Fix: Import docs with subsection changes
+- Fix: Generate ID automatically when creating a new section
 
 # DONE
 
+- Remove header constraint when creating new subsections
 - Reorder subsections, sort of
 - Allow for ols that don't start at 1
 - Themes
