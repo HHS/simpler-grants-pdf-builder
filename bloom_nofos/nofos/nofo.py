@@ -9,7 +9,7 @@ from markdownify import MarkdownConverter
 from slugify import slugify
 
 from .models import Nofo, Section, Subsection
-from .utils import clean_string
+from .utils import clean_string, create_subsection_html_id
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 
@@ -74,9 +74,7 @@ def add_headings_to_nofo(nofo):
 
         # add ids to all subsection headings
         for subsection in section.subsections.all():
-            subsection_id = "{}--{}--{}".format(
-                counter, section_id, slugify(subsection.name)
-            )
+            subsection_id = create_subsection_html_id(counter, subsection)
 
             if subsection.html_id:
                 new_ids.append({"old_id": subsection.html_id, "new_id": subsection_id})

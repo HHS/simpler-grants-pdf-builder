@@ -1,4 +1,5 @@
 import re
+from slugify import slugify
 
 
 def match_view_url(url):
@@ -20,3 +21,8 @@ def match_view_url(url):
 def clean_string(string):
     """Cleans the given string by removing extra whitespace."""
     return re.sub("\s+", " ", string.strip())
+
+
+def create_subsection_html_id(counter, subsection):
+    section_name = subsection.section.name
+    return "{}--{}--{}".format(counter, slugify(section_name), slugify(subsection.name))

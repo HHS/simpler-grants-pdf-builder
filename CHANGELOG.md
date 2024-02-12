@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added "big text cover" versions for ACF in both colours
 - Cover for CDC-RFA-TU24-0137
 - New form to add spaces in the order of a section
+- Generate ID automatically when generating a new subsection with a name
 
 ### Changed
 
