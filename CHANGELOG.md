@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Get it to work for HRSA and ACF
 - Added ACF white theme
 - Added "big text cover" versions for ACF in both colours
+- Cover for CDC-RFA-TU24-0137
 
 ### Changed
 
