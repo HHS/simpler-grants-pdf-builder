@@ -146,7 +146,12 @@ h2 {
 
 /* Utility classes */
 
-.w-100 {
+div.table--full > table {
+  width: 100%;
+}
+
+.w-100,
+.w-full {
   width: 100%;
 }
 
