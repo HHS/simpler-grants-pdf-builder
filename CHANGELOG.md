@@ -29,6 +29,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Changed name of the Django Admin area
 - No name needed to create new subsections now
 - Show NOFO number in the admin next to the sections, to make navigation easier
+- Less weight "opportunity number" on cover pages
 
 ### Fixed
 
