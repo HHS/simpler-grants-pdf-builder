@@ -32,6 +32,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fix the landscape medium image cover for CDC
 - Hide sub-bullets for 'Contacts and Support'
 - Nudge header nav for section headers down a bit
+- Allow "start" attribute in markdown so lists don't always have to start at 1
 
 ## [1.8.0] - 2023-02-08
 

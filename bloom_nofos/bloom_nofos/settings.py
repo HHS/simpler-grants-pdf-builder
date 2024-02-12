@@ -387,6 +387,7 @@ ALLOWED_HTML_ATTRIBUTES = [
     "scope",
     "src",
     # "style",
+    "start",
     "title",
     "type",
     "width",
