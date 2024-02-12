@@ -230,19 +230,20 @@ def get_sections_from_soup(soup):
     return sections
 
 
-def is_in_table(tag):
-    """
-    Checks if the given tag is inside a table element.
+# def is_in_table(tag):
+#     """
+#     Checks if the given tag is inside a table element.
 
-    Iterates through the tag's parent elements, returning True if any parent is a table element.
-    """
-    for parent in tag.parents:
-        if parent.name == "table":
-            return True
-    return False
+#     Iterates through the tag's parent elements, returning True if any parent is a table element.
+#     """
+#     for parent in tag.parents:
+#         if parent.name == "table":
+#             return True
+#     return False
 
 
 def get_subsections_from_sections(sections):
+    # h1s are gone since get_sections_from_soup
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
 
     def demote_tag(tag):
@@ -270,7 +271,7 @@ def get_subsections_from_sections(sections):
                 return header_element.extract()
         return False
 
-    def get_subsection_dict(heading_tag, order, is_callout_box=False, body=None):
+    def get_subsection_dict(heading_tag, order, is_callout_box, body=None):
         if heading_tag:
             return {
                 "name": clean_string(heading_tag.text),
@@ -286,14 +287,11 @@ def get_subsections_from_sections(sections):
             "order": order,
             "tag": "",
             "html_id": "",
-            "is_callout_box": True,  # has to be True if there is no heading tag
+            "is_callout_box": is_callout_box,  # has to be True if there is no heading tag
             "body": body or [],
         }
 
-    # h1s are gone since last method
-    subsection = None
     for section in sections:
-        subsection = None
         section["subsections"] = []
         # remove 'body' key
         body = section.pop("body", None)
@@ -309,21 +307,23 @@ def get_subsections_from_sections(sections):
                 td = tag.find("td")
                 # make the td a div so that it can live on its own
                 td.name = "div"
-                subsection = get_subsection_dict(
+                callout_box_subsection = get_subsection_dict(
                     heading_tag=extract_first_header(td),
                     order=len(section["subsections"]) + 1,
                     is_callout_box=True,
                     body=td,
                 )
-                section["subsections"].append(subsection)
+                section["subsections"].append(callout_box_subsection)
 
             elif tag.name in heading_tags:
                 # create new subsection
-                subsection = get_subsection_dict(
-                    heading_tag=tag, order=len(section["subsections"]) + 1
+                heading_subsection = get_subsection_dict(
+                    heading_tag=tag,
+                    order=len(section["subsections"]) + 1,
+                    is_callout_box=False,
                 )
 
-                section["subsections"].append(subsection)
+                section["subsections"].append(heading_subsection)
 
             # if not a heading or callout_box table add to existing subsection
             else:
@@ -331,15 +331,18 @@ def get_subsections_from_sections(sections):
                 if tag.name == "table":
                     convert_table_first_row_to_header_row(tag)
 
-                if subsection:
+                if len(section["subsections"]):
+
+                    # get latest subsection
+                    subsection = section["subsections"][-1]
                     if subsection.get("is_callout_box", False):
-                        raise Exception(
-                            "Extra content after callout box with no home, please check the HTML. Name: {}, previous name: {}, tag: {}".format(
-                                subsection.get("name"),
-                                section["subsections"][-2].get("name"),
-                                tag,
-                            )
+                        # never add to a callout box subsection, create new empty subsection
+                        empty_subsection = get_subsection_dict(
+                            heading_tag=None,
+                            order=len(section["subsections"]) + 1,
+                            is_callout_box=False,
                         )
+                        section["subsections"].append(empty_subsection)
 
                     subsection["body"].append(tag)
 
