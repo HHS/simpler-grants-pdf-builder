@@ -37,6 +37,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Hide sub-bullets for 'Contacts and Support'
 - Nudge header nav for section headers down a bit
 - Allow "start" attribute in markdown so lists don't always have to start at 1
+- Show subsections in admin ordered by the "order" property
 
 ## [1.8.0] - 2023-02-08
 

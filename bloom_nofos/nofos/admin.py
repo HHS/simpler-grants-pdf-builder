@@ -52,6 +52,7 @@ class SubsectionLinkInline(admin.StackedInline):
     model = Subsection
     extra = 1
     show_change_link = True
+    ordering = ["order"]
 
 
 # Admin classes
