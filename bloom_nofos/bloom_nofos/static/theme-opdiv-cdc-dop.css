@@ -38,6 +38,20 @@
 }
 
 /* Regular CSS */
+/* TODO: remove */
+
+.portrait-cdc-dop .table--small.table--empty {
+  width: 100%;
+}
+
+.callout-box--icon.callout-box--before-you-begin {
+  background-color: var(--color--dop-yellow);
+  border: none;
+}
+
+.callout-box--icon.callout-box--before-you-begin .callout-box--contents {
+  align-items: flex-start;
+}
 
 img.usa-icon--check_box_outline_blank {
   background: var(--color--white);
