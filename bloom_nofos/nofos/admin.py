@@ -64,8 +64,12 @@ class SubsectionAdmin(admin.ModelAdmin):
 class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionLinkInline]
     model = Section
-    list_display = ["id", "name"]
+    list_display = ["id", "nofo_number", "name"]
     change_form_template = "admin/section_change_form.html"
+
+    @admin.display(ordering="nofo__number")
+    def nofo_number(self, obj):
+        return obj.nofo.number
 
     def get_urls(self):
         from django.urls import path

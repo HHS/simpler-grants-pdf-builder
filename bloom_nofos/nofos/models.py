@@ -181,7 +181,8 @@ class Section(models.Model):
     def __str__(self):
         nofo_id = "999"
         try:
-            nofo_id = self.nofo.id
+            if self.nofo.number:
+                nofo_id = self.nofo.number
         except Nofo.DoesNotExist:
             pass
 
