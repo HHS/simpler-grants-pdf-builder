@@ -160,8 +160,6 @@ class Nofo(models.Model):
         return self.sections.first().subsections.first()
 
 
-# TODO default lambda
-# order = models.IntegerField(default=lambda: Section.objects.latest("order") + 1)
 class Section(models.Model):
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
     name = models.TextField("Section name")
@@ -194,9 +192,7 @@ class Subsection(models.Model):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
-    name = models.TextField(
-        "Subsection name", blank=True
-    )  # Name can be blank if callout_box is true
+    name = models.TextField("Subsection name", blank=True)
 
     html_id = models.CharField(
         "HTML id attribute",
@@ -224,9 +220,7 @@ class Subsection(models.Model):
         ("h7", "Heading 7"),
     ]
 
-    tag = models.CharField(
-        max_length=2, choices=TAG_CHOICES, blank=True
-    )  # Tag can be blank if callout_box is true
+    tag = models.CharField(max_length=2, choices=TAG_CHOICES, blank=True)
 
     callout_box = models.BooleanField(
         "Callout box",
@@ -240,13 +234,9 @@ class Subsection(models.Model):
         return self.name or "(Unnamed subsection)"
 
     def clean(self):
-        # Enforce 'name' when 'callout_box' is False
-        if not self.callout_box and not self.name:
-            raise ValidationError("Name is required when 'callout_box' is False.")
-
-        # Enforce 'tag' when 'callout_box' is False
-        if not self.callout_box and not self.tag:
-            raise ValidationError("Tag is required when 'callout_box' is False.")
+        # Enforce 'tag' when 'name' is False
+        if self.name and not self.tag:
+            raise ValidationError("Tag is required when 'name' is present.")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Call the clean method for validation
