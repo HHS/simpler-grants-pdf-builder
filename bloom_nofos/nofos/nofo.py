@@ -20,6 +20,11 @@ class ListInATableConverter(MarkdownConverter):
     """
 
     def convert_ol(self, el, text, convert_as_inline):
+        # return as HMTL to preserve "start" attribute if anything other than "1"
+        start = el.get("start", "1")
+        if start and start != "1":
+            return str(el)
+
         for parent in el.parents:
             if parent.name == "td":
                 return str(el)
