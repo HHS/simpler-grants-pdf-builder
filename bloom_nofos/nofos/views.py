@@ -6,34 +6,38 @@ from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import transaction
+from django.db.models import F
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
 
 from .forms import (
+    InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachForm,
     NofoCoverForm,
+    NofoMetadataForm,
     NofoNameForm,
     NofoNumberForm,
     NofoOpDivForm,
     NofoStatusForm,
-    NofoSubagencyForm,
     NofoSubagency2Form,
+    NofoSubagencyForm,
     NofoTaglineForm,
-    NofoMetadataForm,
     NofoThemeForm,
     SubsectionForm,
 )
-from .models import Nofo, Subsection
+from .models import Nofo, Section, Subsection
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     clean_table_cells,
-    create_nofo,
     combine_consecutive_links,
+    create_nofo,
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
     find_broken_links,
@@ -46,14 +50,14 @@ from .nofo import (
     replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
+    suggest_nofo_author,
+    suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_subagency,
     suggest_nofo_subagency2,
-    suggest_nofo_tagline,
-    suggest_nofo_author,
     suggest_nofo_subject,
-    suggest_nofo_keywords,
+    suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
 )
@@ -473,3 +477,48 @@ class PrintNofoAsPDFView(View):
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
+
+
+def insert_order_space(section_id, insert_at_order):
+    """
+    Inserts an empty space in the ordering of Subsection instances within a Section.
+    All Subsection instances with an order greater than or equal to `insert_at_order`
+    will have their order incremented by 1, making room for a new instance at `insert_at_order`.
+
+    :param section_id: ID of the Section in which to insert the space.
+    :param insert_at_order: The order number at which to insert the space.
+    """
+    with transaction.atomic():
+        # Fetch the Subsections to be updated, in reverse order
+        subsections_to_update = Subsection.objects.filter(
+            section_id=section_id, order__gte=insert_at_order
+        ).order_by("-order")
+
+        # Increment their order by 1
+        for subsection in subsections_to_update:
+            # Directly incrementing to avoid conflict
+            Subsection.objects.filter(pk=subsection.pk).update(order=F("order") + 1)
+
+
+@staff_member_required
+def insert_order_space_view(request, section_id):
+    section = get_object_or_404(Section, pk=section_id)  # Get the section or return 404
+    initial_data = {"section": section}  # Pre-populate the form with the section
+
+    if request.method == "POST":
+        form = InsertOrderSpaceForm(request.POST, initial=initial_data)
+        if form.is_valid():
+            section = form.cleaned_data["section"]
+            order = form.cleaned_data["order"]
+            insert_order_space(section.id, order)
+            messages.success(
+                request, f'Space inserted at order {order} for section "{section}".'
+            )
+
+            return redirect("admin:nofos_section_change", object_id=section.id)
+    else:
+        form = InsertOrderSpaceForm(initial=initial_data)
+        form.fields["section"].disabled = True  # Make the section field non-editable
+
+    context = {"form": form, "title": "Insert Order Space", "section": section}
+    return render(request, "admin/insert_order_space.html", context)

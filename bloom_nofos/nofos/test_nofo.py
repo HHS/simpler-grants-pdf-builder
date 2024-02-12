@@ -3,16 +3,16 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
-from .models import Nofo, Section, Subsection
 
+from .models import Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
+    clean_table_cells,
     combine_consecutive_links,
     convert_table_first_row_to_header_row,
-    clean_table_cells,
     create_nofo,
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
@@ -25,18 +25,18 @@ from .nofo import (
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
     suggest_nofo_agency,
+    suggest_nofo_author,
+    suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_subagency,
     suggest_nofo_subagency2,
+    suggest_nofo_subject,
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
-    suggest_nofo_author,
-    suggest_nofo_subject,
-    suggest_nofo_keywords,
 )
-from .utils import match_view_url, clean_string
+from .utils import clean_string, match_view_url
 
 
 class MatchUrlTests(TestCase):
@@ -273,7 +273,6 @@ class HTMLSectionTests(TestCase):
         self.assertEqual(sections[0].get("name"), "Step 1: Review the Opportunity")
 
     def test_get_sections_from_soup_with_no_section_page(self):
-
         for no_section_page_title in ["Appendix", "Glossary", "Endnotes", "References"]:
             soup = BeautifulSoup(
                 '<h1 id="section-1">{}</span></h1><p>Section 1 body</p>'.format(
@@ -835,7 +834,6 @@ class AddHeadingsTests(TestCase):
 
 
 class TestGetLogo(TestCase):
-
     def test_cdc_blue_logo(self):
         """Test for CDC with blue colour"""
         logo_path = get_logo("cdc", "blue")
@@ -931,7 +929,6 @@ class TestGetLogo(TestCase):
 
 
 class TestFindBrokenLinks(TestCase):
-
     def setUp(self):
         # Set up a Nofo instance and related Sections and Subsections
         nofo = Nofo.objects.create(title="Test Nofo")
@@ -1304,7 +1301,6 @@ class SuggestNofoSubjectTests(TestCase):
 
 
 class CombineLinksTestCase(TestCase):
-
     def test_consecutive_links_merged(self):
         html = '<p>See <a href="#link">link</a><a href="#link">.</a></p>'
         expected_html = '<p>See <a href="#link">link.</a></p>'

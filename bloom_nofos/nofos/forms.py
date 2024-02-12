@@ -1,7 +1,10 @@
 from django import forms
+from django.db import transaction
+from django.db.models import F, Max
 from martor.fields import MartorFormField
+from martor.widgets import AdminMartorWidget
 
-from .models import Nofo, Subsection
+from .models import Nofo, Section, Subsection
 
 
 def create_nofo_form_class(field_arr, not_required_field_labels=None):
@@ -67,3 +70,30 @@ class SubsectionForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(),
         }
+
+
+class InsertOrderSpaceForm(forms.Form):
+    section = forms.ModelChoiceField(
+        queryset=Section.objects.all(), required=True, label="Section", disabled=False
+    )
+    order = forms.ChoiceField(choices=[], required=True, label="Insert space at order")
+
+    def __init__(self, *args, **kwargs):
+        super(InsertOrderSpaceForm, self).__init__(*args, **kwargs)
+
+        if "initial" in kwargs:
+            self.fields["section"].disabled = True
+
+        section_id = kwargs.get("initial")["section"].id
+        subsection_orders = (
+            Subsection.objects.filter(section_id=section_id)
+            .values_list("order", flat=True)
+            .order_by("order")
+        )
+
+        choices = []
+
+        for order in subsection_orders:
+            choices.append((order, str(order)))
+
+        self.fields["order"].choices = choices

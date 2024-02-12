@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div>
+  <a href="{% url 'admin:nofos_section_change' section.id %}">Back to “{{ section.name }}”</a>
+</div>
+<br />
+<div class="admin-form">
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <div class="submit-row">
+          <input type="submit" value="Insert Space" class="default" />
+        </div>
+    </form>
+</div>
+{% endblock %}
