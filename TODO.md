@@ -23,6 +23,7 @@
 
 # DONE
 
+- Reorder subsections, sort of
 - Allow for ols that don't start at 1
 - Themes
   - CDC: portrait (blue)
