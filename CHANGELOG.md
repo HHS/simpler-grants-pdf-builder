@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Cover for CDC-RFA-TU24-0137
 - New form to add spaces in the order of a section
 - Generate ID automatically when generating a new subsection with a name
+- Really bad last-minute fixes for the CDC DOP NOFOs
 
 ### Changed
 

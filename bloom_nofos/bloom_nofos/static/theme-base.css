@@ -144,12 +144,6 @@ h2 {
     format("woff2");
 }
 
-/* TODO: remove */
-
-.portrait-cdc-dop .table--small.table--empty {
-  width: 100%;
-}
-
 /* Utility classes */
 
 .w-100,
