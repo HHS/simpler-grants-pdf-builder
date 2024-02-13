@@ -1961,3 +1961,386 @@ class NestedListTests(TestCase):
         self.assertEqual(len(last_li.find_all("ul")), 2)
         # nested ul has 5 lis
         self.assertEqual(len(last_li.find("ul").find_all("li", recursive=False)), 4)
+
+
+###########################################################
+#################### CALLOUT BOX TESTS ####################
+###########################################################
+
+
+class HTMLCalloutBoxTests(TestCase):
+
+    def assertSubsectionsMatch(self, subsections, subsections_assertions):
+        for index, _s in enumerate(subsections):
+            self.assertEqual(_s.get("name"), subsections_assertions[index]["name"])
+            self.assertEqual(
+                _s.get("is_callout_box"), subsections_assertions[index]["callout_box"]
+            )
+
+    def get_subsections(self, html_filename):
+        soup = BeautifulSoup(open(html_filename), "html.parser")
+        sections = get_subsections_from_sections(get_sections_from_soup(soup))
+        return sections[0].get("subsections")
+
+    def test_get_html_with_no_callout_boxes(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-1.html"
+        )
+
+        self.assertEqual(len(subsections), 5)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary 2",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose 2",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_1_callout_box(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-2.html"
+        )
+
+        self.assertEqual(len(subsections), 4)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title",
+                "callout_box": True,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_1_untitled_callout_box(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-2b.html"
+        )
+
+        self.assertEqual(len(subsections), 4)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_1_callout_box_followed_by_empty_section(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-3.html"
+        )
+
+        self.assertEqual(len(subsections), 5)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_1_untitled_callout_box_followed_by_empty_section(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-3b.html"
+        )
+
+        self.assertEqual(len(subsections), 5)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_2_callout_boxes_followed_by_heading(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-4.html"
+        )
+
+        self.assertEqual(len(subsections), 5)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title",
+                "callout_box": True,
+            },
+            {
+                "name": "Callout box title 2",
+                "callout_box": True,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_2_untitled_callout_boxes_followed_by_heading(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-4b.html"
+        )
+
+        self.assertEqual(len(subsections), 5)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_2_callout_boxes_followed_by_empty_section_and_heading(self):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-5.html"
+        )
+
+        self.assertEqual(len(subsections), 6)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title",
+                "callout_box": True,
+            },
+            {
+                "name": "Callout box title 2",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_2_untitled_callout_boxes_followed_by_empty_section_and_heading(
+        self,
+    ):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-5b.html"
+        )
+
+        self.assertEqual(len(subsections), 6)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_callout_box_followed_by_empty_section_followed_by_empty_section_twice(
+        self,
+    ):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-6.html"
+        )
+
+        self.assertEqual(len(subsections), 7)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Callout box title 2",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+    def test_get_html_with_untitled_callout_box_followed_by_empty_section_followed_by_empty_section_twice(
+        self,
+    ):
+        subsections = self.get_subsections(
+            "nofos/fixtures/html/callouts/callout-6b.html"
+        )
+
+        self.assertEqual(len(subsections), 7)
+        subsections_assertions = [
+            {
+                "name": "Basic information",
+                "callout_box": False,
+            },
+            {
+                "name": "Summary",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "",
+                "callout_box": True,
+            },
+            {
+                "name": "",
+                "callout_box": False,
+            },
+            {
+                "name": "Purpose",
+                "callout_box": False,
+            },
+        ]
+
+        self.assertSubsectionsMatch(subsections, subsections_assertions)

@@ -20,11 +20,12 @@
   - Blue large cover HRSA
   - White large cover HRSA
 - Fix: Indented application checklist for portrait tables also
-- Fix: Import docs with subsection changes
-- Add nofo number to CSS, and add a little CSS box
+- Add a textarea to add CSS to an individual NOFO
 
 # DONE
 
+- Add nofo number to CSS
+- Fix: Import docs with empty heading subsections
 - Fix: Generate ID automatically when creating a new section
 - Remove header constraint when creating new subsections
   - Fix: Section screen admin show subsections in order
