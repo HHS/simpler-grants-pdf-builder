@@ -192,7 +192,7 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
 
     if section == "callout_box":
         if "dop" in theme:
-            return "img/figma-icons/dop-teal-border"
+            return "img/figma-icons/dop"
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
