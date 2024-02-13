@@ -230,18 +230,6 @@ def get_sections_from_soup(soup):
     return sections
 
 
-# def is_in_table(tag):
-#     """
-#     Checks if the given tag is inside a table element.
-
-#     Iterates through the tag's parent elements, returning True if any parent is a table element.
-#     """
-#     for parent in tag.parents:
-#         if parent.name == "table":
-#             return True
-#     return False
-
-
 def get_subsections_from_sections(sections):
     # h1s are gone since get_sections_from_soup
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
@@ -287,7 +275,7 @@ def get_subsections_from_sections(sections):
             "order": order,
             "tag": "",
             "html_id": "",
-            "is_callout_box": is_callout_box,  # has to be True if there is no heading tag
+            "is_callout_box": is_callout_box,
             "body": body or [],
         }
 
@@ -301,7 +289,6 @@ def get_subsections_from_sections(sections):
         ]
 
         for tag in body_descendents:
-            # NOTE: that unless a new section is triggered, a callout box will just absorb stuff behind it.
             if tag.name == "table" and is_callout_box_table(tag):
                 # pass in the first heading we find in the 1 table cell, else False
                 td = tag.find("td")
