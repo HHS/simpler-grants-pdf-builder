@@ -4,10 +4,6 @@
 
 /* Cover page */
 
-.nofo--cover-page--title {
-  padding-top: 5mm;
-}
-
 .nofo--cover-page--title,
 .nofo--cover-page--footer {
   background-color: var(--color--white);

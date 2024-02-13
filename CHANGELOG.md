@@ -15,6 +15,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Add white band to cover page DOP theme heading
+
 ### Fixed
 
 ## [1.9.0] - 2023-02-07
