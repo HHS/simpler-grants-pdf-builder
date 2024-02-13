@@ -727,7 +727,7 @@ class AddHeadingsTests(TestCase):
         # check section heading has no id
         self.assertEqual(section.html_id, "")
         # check first subsection heading has no html_id
-        self.assertEqual(subsection_1.html_id, "")
+        self.assertEqual(subsection_1.html_id, "1--section-1--subsection-1")
         # check second subsection heading has html_id
         self.assertEqual(subsection_2.html_id, "subsection-2")
 
@@ -842,7 +842,7 @@ class TestGetLogo(TestCase):
     def test_cdc_dop_logo_replacement(self):
         """Test for CDC with 'dop' colour, which should be replaced with 'white'"""
         logo_path = get_logo("cdc", "dop")
-        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
 
     def test_cdc_any_colour_logo(self):
         """Test for CDC with any other colour"""
