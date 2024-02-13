@@ -167,7 +167,9 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
 
     if section == "toc":
         if colour == "white":
-            if "acf" in theme:
+            if "ihs" in theme:
+                return "img/figma-icons/ihs-blue-border"
+            elif "acf" in theme:
                 return "img/figma-icons/acf-black-border"
             else:
                 return "img/figma-icons/med-blue-border"
@@ -177,6 +179,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
     if section == "before_you_begin":
         if "dop" in theme:
             return "img/figma-icons/dop-teal-border"
+        if opdiv == "ihs":
+            return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if opdiv == "hrsa":
@@ -189,12 +193,16 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
     if section == "callout_box":
         if "dop" in theme:
             return "img/figma-icons/dop-teal-border"
+        if opdiv == "ihs":
+            return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if colour == "white":
             return "img/figma-icons/dark-blue-border"
 
     if section == "section_cover":
+        if opdiv == "ihs":
+            return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if theme == "portrait-cms-white":
