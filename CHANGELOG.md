@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add numbers to empty sections in the edit view
 - Add callout box indicator in edit view
 - Callout box indicator to individual subsection edit view
+- IHS theme (white)
+  - Add big text cover page also
 
 ### Changed
 
