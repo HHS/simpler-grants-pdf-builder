@@ -110,6 +110,18 @@ details > summary > span:hover {
   scroll-margin-top: 50px;
 }
 
+.nofo_edit table th.nofo-edit-table--subsection--name div {
+  padding: 5px 0;
+}
+
+.nofo_edit table th.nofo-edit-table--subsection--name .page-break-before {
+  border-top: 2px dashed #5c5c5c;
+}
+
+.nofo_edit table th.nofo-edit-table--subsection--name .column-break-before {
+  border-top: 1px dotted #5c5c5c;
+}
+
 .nofo_edit main table tbody tr:first-of-type td:last-of-type {
   width: 5%;
   text-align: right;
