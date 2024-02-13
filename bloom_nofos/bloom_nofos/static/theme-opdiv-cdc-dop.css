@@ -42,15 +42,6 @@
   width: 100%;
 }
 
-.callout-box--icon.callout-box--before-you-begin {
-  background-color: var(--color--dop-yellow);
-  border: none;
-}
-
-.callout-box--icon.callout-box--before-you-begin .callout-box--contents {
-  align-items: flex-start;
-}
-
 img.usa-icon--check_box_outline_blank {
   background: var(--color--white);
   -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
@@ -174,8 +165,29 @@ h4 {
 }
 
 .callout-box--icon {
+  background-color: var(--color--dop-blue);
+  color: var(--color--white);
+}
+
+.callout-box--icon a {
+  color: var(--color--white);
+}
+
+.callout-box--icon:not(.callout-box--before-you-begin)
+  .callout-box--contents
+  img {
   background-color: var(--color--white);
-  border: 2px solid var(--color--dop-teal);
+  border-radius: 50%;
+}
+
+.callout-box--icon.callout-box--before-you-begin {
+  color: var(--color--black);
+  background-color: var(--color--dop-yellow);
+  border: none;
+}
+
+.callout-box--icon.callout-box--before-you-begin .callout-box--contents {
+  align-items: flex-start;
 }
 
 table th {
