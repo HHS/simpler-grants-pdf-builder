@@ -184,10 +184,6 @@ body[class^="landscape"] .grid-container {
   vertical-align: baseline;
 }
 
-.section--content table.table--large {
-  column-span: all;
-}
-
 .section--content table.table--large,
 .section--content table.table--with-caption {
   margin-top: 10px;
@@ -196,6 +192,11 @@ body[class^="landscape"] .grid-container {
 .section--content table.table--small {
   width: 100%;
   break-inside: avoid-column;
+}
+
+.section--content table.table--large,
+.section--content table.table--col-span {
+  column-span: all;
 }
 
 table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
