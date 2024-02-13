@@ -8,12 +8,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.10.0] - 2023-02-13
+
+### Added
+
 - Allow importing docs here callout boxes are not followed by headings
 - Add numbers to empty sections in the edit view
 - Add callout box indicator in edit view
 - Callout box indicator to individual subsection edit view
-- IHS theme (white)
-  - Add big text cover page also
+- Add IHS theme (white)
+  - With big text cover page
 - Add visual indicator to the NOFO edit page for page/column breaks
 
 ### Changed
@@ -26,7 +34,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Longer width for subsection cover page in-section nav links
 
-## [1.9.0] - 2023-02-07
+## [1.9.0] - 2023-02-12
 
 ### Added
 
