@@ -63,6 +63,16 @@ from .nofo import (
 )
 
 OPDIVS = {
+    "acf": {
+        "key": "acf",
+        "name": "The Administration for Children and Families",
+        "filename": "",
+    },
+    "acl": {
+        "key": "acl",
+        "name": "Administration for Community Living",
+        "filename": "img/acl-logo.svg",
+    },
     "cdc": {
         "key": "cdc",
         "name": "Centers for Disease Control and Prevention",
@@ -78,15 +88,10 @@ OPDIVS = {
         "name": "The Health Resources & Services Administration",
         "filename": "",
     },
-    "acf": {
-        "key": "acf",
-        "name": "The Administration for Children and Families",
-        "filename": "",
-    },
-    "acl": {
-        "key": "acl",
-        "name": "Administration for Community Living",
-        "filename": "img/acl-logo.svg",
+    "ihs": {
+        "key": "ihs",
+        "name": "Indian Health Service",
+        "filename": "img/ihs-logo.svg",
     },
 }
 
@@ -148,7 +153,11 @@ class NofosDetailView(DetailView):
         # Add HHS logo
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"
 
-        if self.object.theme in ["portrait-cms-white", "portrait-acf-white"]:
+        if self.object.theme in [
+            "portrait-cms-white",
+            "portrait-acf-white",
+            "portrait-ihs-white",
+        ]:
             context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"
 
         return context
