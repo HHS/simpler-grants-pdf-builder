@@ -19,6 +19,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Longer width for subsection cover page in-section nav links
+
 ## [1.9.0] - 2023-02-07
 
 ### Added
