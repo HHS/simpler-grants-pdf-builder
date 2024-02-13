@@ -443,7 +443,7 @@ def get_logo(opdiv="cdc", colour="blue", cover="nofo--cover-page--medium"):
         return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
 
     if opdiv == "cdc":
-        colour = colour if colour != "dop" else "blue"
+        colour = colour if colour != "dop" else "white"
         return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
 
     return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
