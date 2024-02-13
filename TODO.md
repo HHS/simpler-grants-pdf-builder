@@ -13,7 +13,6 @@
   - HRSA variant
 - Themes
   - ACL
-  - IHS
 - Maybe: include preceding paragraph in front of tables potentially
 - Update the README
 - Big cover page design
@@ -36,9 +35,11 @@
   - CDC: portrait (white)
   - CMS: portrait (white)
   - ACF: portrait (white)
+  - IHS: portrait (white)
 - Text-only cover page design
   - Blue ACF
   - White ACF
+  - White IHS
 - DOP theme again!!
 - Show broken links to NOFO editors
 - Add "avoid column break" class to subsection headings

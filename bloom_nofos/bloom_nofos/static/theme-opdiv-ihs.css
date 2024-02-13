@@ -66,8 +66,8 @@ h6 {
 /* Running header */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--cms-blue);
-  color: var(--color--cms-blue);
+  border-top: 4px solid var(--color--ihs-blue);
+  color: var(--color--ihs-blue);
 }
 
 /* Cover page */
@@ -77,6 +77,11 @@ h6 {
 }
 
 /* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo img {
+  width: 125px;
+  padding-bottom: 15px;
+}
 
 /* Cover page: medium image */
 
