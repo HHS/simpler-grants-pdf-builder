@@ -14,10 +14,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Callout box indicator to individual subsection edit view
 - IHS theme (white)
   - Add big text cover page also
+- Add visual indicator to the NOFO edit page for page/column breaks
 
 ### Changed
 
 - Add white band to cover page DOP theme heading
+- Allow for colspan header rows with blue backgrounds
+- We can give tables classes and they keep them
 
 ### Fixed
 

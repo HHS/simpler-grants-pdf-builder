@@ -325,6 +325,11 @@ table.table--empty td {
   height: 25px;
 }
 
+table th.header-row-empty[colspan] {
+  height: 30px;
+  background-color: var(--color--table-blue);
+}
+
 table td a {
   color: var(--color--vibrant-blue);
 }
