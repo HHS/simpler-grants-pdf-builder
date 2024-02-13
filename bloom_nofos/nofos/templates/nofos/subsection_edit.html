@@ -14,10 +14,11 @@
 
 {% block content %}
   {% with nofo|nofo_name as nofo_name_str %}
-    {% with "Edit  “"|add:nofo_name_str|add:"”" as back_text %}
-      {% url 'nofos:nofo_edit' nofo.id as back_href %}
-      {% include "includes/page_heading.html" with title="Subsection: "|add:subsection.name back_text=back_text back_href=back_href only %}
-    {% endwith %}
+    <div class="back-link font-body-md margin-bottom-105">
+      <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo_name_str }}”</a>
+    </div>
+    <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+    {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base">Callout box</h2>{% endif %}
   {% endwith %}
   
   <p>Edit page for this subsection.</p>
@@ -38,8 +39,13 @@
       <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
 
       <div class="form-group">
-        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text hint2="Heading level: "|add:subsection.tag error=form.name.errors.0 input_type=form.name|input_type %}
-          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error input_type=input_type only %}
+        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
+          {% if subsection.tag %}
+            {% include "includes/_text_input.html" with id=id label=label hint=hint hint2="Heading level: "|add:subsection.tag value=value error=error input_type=input_type only %}
+          {% else %}
+            {% include "includes/_text_input.html" with id=id label=label hint=hint value=value error=error input_type=input_type only %}
+
+          {% endif %}
         {% endwith %}
       </div>
       <div class="form-group">

@@ -344,7 +344,7 @@ def get_subsections_from_sections(sections):
                         )
                         section["subsections"].append(empty_subsection)
 
-                    subsection["body"].append(tag)
+                    section["subsections"][-1]["body"].append(tag)
 
     return sections
 
