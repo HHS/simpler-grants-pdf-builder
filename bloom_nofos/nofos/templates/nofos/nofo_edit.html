@@ -257,7 +257,7 @@
   </table>
 
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
+    <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
       <caption>
         <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
         <span><a href="#back-to-top">Top ↑</a></span>
@@ -273,8 +273,8 @@
       <tbody>
         {% for subsection in section.subsections.all|dictsort:"order" %}
           <tr>
-            <th scope="row" class="nofo-edit-table--subsection--name" id="{{ subsection.html_id }}">
-              <div {% if subsection.html_class %}class="{{ subsection.html_class }}"{% endif %}>{% if subsection.name %}{{ subsection.name }}{% else %}<span class="text-base">(#{{ subsection.order }})</span>{% endif %}</div>
+            <th scope="row" class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}" id="{{ subsection.html_id }}">
+              {% if subsection.name %}{{ subsection.name }}{% else %}<span class="text-base">(#{{ subsection.order }})</span>{% endif %}
             </th>
             <td class="nofo-edit-table--subsection--callout-box">{% if subsection.callout_box %}<span role="img" aria-label="Callout box" title="Callout box">📦</span>{% endif %}</td>
             <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}</td>

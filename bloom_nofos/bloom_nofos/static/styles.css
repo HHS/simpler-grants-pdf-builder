@@ -102,6 +102,21 @@ details > summary > span:hover {
   margin-bottom: 0;
 }
 
+.nofo_edit main table.table--section {
+  border-collapse: initial;
+  border-spacing: 0 5px;
+}
+
+.nofo_edit main table.table--section th,
+.nofo_edit main table.table--section td {
+  padding: calc(0.5rem - 5px) 1rem 0.5rem 1rem;
+}
+
+.nofo_edit main table.table--section th,
+.nofo_edit main table.table--section td {
+  border-top: none;
+}
+
 .nofo_edit main table tbody tr:first-of-type th {
   width: 15%;
 }
@@ -110,16 +125,18 @@ details > summary > span:hover {
   scroll-margin-top: 50px;
 }
 
-.nofo_edit table th.nofo-edit-table--subsection--name div {
-  padding: 5px 0;
-}
-
-.nofo_edit table th.nofo-edit-table--subsection--name .page-break-before {
+.nofo_edit table th.nofo-edit-table--subsection--name.page-break-before,
+.nofo_edit table th.nofo-edit-table--subsection--name.page-break-before ~ td {
   border-top: 2px dashed #5c5c5c;
 }
 
-.nofo_edit table th.nofo-edit-table--subsection--name .column-break-before {
+.nofo_edit table th.nofo-edit-table--subsection--name.column-break-before,
+.nofo_edit table th.nofo-edit-table--subsection--name.column-break-before ~ td {
   border-top: 1px dotted #5c5c5c;
+}
+
+.nofo_edit table td.nofo-edit-table--subsection--callout-box {
+  padding: 0;
 }
 
 .nofo_edit main table tbody tr:first-of-type td:last-of-type {
