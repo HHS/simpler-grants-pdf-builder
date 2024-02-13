@@ -94,6 +94,7 @@ class Nofo(models.Model):
         ("portrait-acf-blue", "ACF (Default)"),
         ("portrait-acf-white", "ACF (Light)"),
         ("portrait-cms-white", "CMS (Light)"),
+        ("portrait-ihs-white", "IHS (Light)"),
     ]
 
     theme = models.CharField(
