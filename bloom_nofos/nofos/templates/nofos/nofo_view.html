@@ -79,6 +79,8 @@
             <p>{{ nofo.agency }}</p>
             <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
+            {# TODO: remove once DOP is published #}
+            {% if nofo.number == 'CDC-RFA-CE-24-0120' or nofo.number == 'CDC-RFA-CE-24-0068' %}<p>{{ nofo.agency }}</p>{% endif %}
             <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
           {% endif %}
         </div>
