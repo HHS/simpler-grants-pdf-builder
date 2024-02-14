@@ -8,9 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added HTML id to the headers
+  - also a little 'copy' button
+
 ### Changed
 
 ### Fixed
+
+- Fix top white bar for CDC blue theme
 
 ## [1.10.0] - 2023-02-13
 
