@@ -157,6 +157,29 @@ details > summary > span:hover {
   display: none;
 }
 
+.subsection_edit .hint--subsection-id {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  margin-top: 6px;
+  max-width: 30rem;
+  background-color: #e7f6f8;
+  border-radius: 0.25rem;
+  border: 1px #99deea solid;
+  padding: 4px 6px;
+}
+
+.subsection_edit .hint--subsection-id button {
+  font-size: 90%;
+  padding: 8px 12px;
+  margin-right: 0;
+}
+
+.subsection_edit .hint--subsection-id:hover {
+  color: #1b1b1b;
+}
+
 fieldset {
   margin: 0;
   padding: 0;

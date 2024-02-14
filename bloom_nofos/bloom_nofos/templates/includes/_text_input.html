@@ -4,14 +4,6 @@
   {{ hint }}
 </div>
 {% endif %}
-{% if hint2 %}
-  {% if hint2for and hint2for != id %}
-  {% else %}
-    <div class="usa-hint" id="{{ id }}--hint-2">
-      {{ hint2 }}
-    </div>
-  {% endif %}
-{% endif %}
 {% if error %}
 <div class="usa-error-message" id="{{ id }}--error">
   Error: {{ error }}
@@ -33,6 +25,14 @@
     aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
     value="{{ value|default_if_none:'' }}"
     />
+{% endif %}
+{% if hint2 %}
+  {% if hint2for and hint2for != id %}
+  {% else %}
+    <div class="usa-hint margin-top-05" id="{{ id }}--hint-2">
+      {{ hint2 }}
+    </div>
+  {% endif %}
 {% endif %}
 
 
