@@ -148,7 +148,8 @@ class NofosDetailView(DetailView):
         # if no filename, build path
         if not nofo_opdiv["filename"]:
             cover = self.object.cover
-            nofo_opdiv["filename"] = get_logo(opdiv, colour, cover)
+            # TODO: test orientation
+            nofo_opdiv["filename"] = get_logo(opdiv, colour, cover, orientation)
 
         # Add HHS logo
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"

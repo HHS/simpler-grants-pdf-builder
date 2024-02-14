@@ -64,6 +64,17 @@ h1 {
   background: var(--color--vibrant-blue);
 }
 
+/* Cover page: portrait */
+
+.portrait .nofo--cover-page--header {
+  background-color: var(--color--white);
+}
+
+.portrait .nofo--cover-page--header--logo--subheading,
+.portrait .nofo--cover-page--header--intro {
+  color: var(--color--vibrant-blue);
+}
+
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
