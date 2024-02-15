@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added HTML id to the headers
   - also a little 'copy' button
 - Add new NOFO status: "In review"
+  - In review NOFOs can’t be edited
 
 ### Changed
 

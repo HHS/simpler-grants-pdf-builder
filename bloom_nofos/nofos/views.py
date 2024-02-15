@@ -239,8 +239,8 @@ def nofo_import(request, pk=None):
         sections = get_subsections_from_sections(sections)
 
         if pk:
-            if nofo.status == "published":
-                # Published NOFOs can’t be reimported
+            if nofo.status in ["published", "review"]:
+                # In review or Published NOFOs can’t be reimported
                 return HttpResponseBadRequest("Server error re-importing NOFO.")
 
             # open question: should reimporting do any of the stuff below?

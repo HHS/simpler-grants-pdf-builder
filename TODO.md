@@ -20,6 +20,7 @@
   - White large cover HRSA
 - Fix: Indented application checklist for portrait tables also
 - Add a textarea to add CSS to an individual NOFO
+- Add UI to reorder the NOFOs table
 
 # DONE
 

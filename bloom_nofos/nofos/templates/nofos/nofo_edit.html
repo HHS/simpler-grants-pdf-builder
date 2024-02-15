@@ -33,54 +33,69 @@
   </div>
 
   <p>Make small edits to your NOFO here.</p>
-  {% if nofo.status != 'published' %}
-  <div
-    class="usa-summary-box"
-    role="region"
-    aria-labelledby="summary-box-key-information"
-  >
-    <div class="usa-summary-box__body">
-      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-        Other actions
-      </h2>
-      <div class="usa-summary-box__text">
-        <ul class="usa-list usa-list--unstyled">
-          <li>
-            <p>
-            <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
-              Re-import NOFO
-            </a>— upload an updated HTML file
-            </p>
-          </li>
-          {% if nofo.status == 'draft' %}
-          <li>
-            <p>
-            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
-              Delete NOFO
-            </a>— remove this NOFO completely
-            </p>
-          </li>
-          {% endif %}
-        </ul>
+  {% if nofo.status == 'published' %}
+    <div
+      class="usa-summary-box"
+      role="region"
+      aria-labelledby="summary-box-key-information"
+    >
+      <div class="usa-summary-box__body">
+        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+          NOFO status is ‘published’.
+        </h2>
+        <div class="usa-summary-box__text">
+          <p>Published NOFOs can’t be edited, re-imported, or deleted.</p>
+          <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
+        </div>
       </div>
     </div>
-  </div>
+  {% elif nofo.status == 'review' %}
+    <div
+      class="usa-summary-box"
+      role="region"
+      aria-labelledby="summary-box-key-information"
+    >
+      <div class="usa-summary-box__body">
+        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+          NOFO is ‘In review’.
+        </h2>
+        <div class="usa-summary-box__text">
+          <p>NOFOs that are in review can’t be re-imported or deleted, but they can be edited as needed.</p>
+        </div>
+      </div>
+    </div>
   {% else %}
-  <div
-    class="usa-summary-box"
-    role="region"
-    aria-labelledby="summary-box-key-information"
-  >
-    <div class="usa-summary-box__body">
-      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-        NOFO status is ‘published’.
-      </h2>
-      <div class="usa-summary-box__text">
-        <p>Published NOFO’s can’t be edited, re-imported, or deleted.</p>
-        <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
+    <div
+      class="usa-summary-box"
+      role="region"
+      aria-labelledby="summary-box-key-information"
+    >
+      <div class="usa-summary-box__body">
+        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+          Other actions
+        </h2>
+        <div class="usa-summary-box__text">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+              <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+                Re-import NOFO
+              </a>— upload an updated HTML file
+              </p>
+            </li>
+            {% if nofo.status == 'draft' %}
+            <li>
+              <p>
+              <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
+                Delete NOFO
+              </a>— remove this NOFO completely
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
   {% endif %}
 
   {% if broken_links|length %}
