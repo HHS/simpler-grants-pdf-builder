@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Change cover image folder for NOFO whose number changed
 - Hide header column configuration options for portrait NOFOs
+- Change IHS tagline to blue
+- Change small headings to black
 
 ### Fixed
 
