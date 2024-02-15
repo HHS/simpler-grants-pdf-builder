@@ -834,20 +834,59 @@ class AddHeadingsTests(TestCase):
 
 
 class TestGetLogo(TestCase):
-    def test_cdc_blue_logo(self):
+    def test_cdc_blue_logo_portrait(self):
         """Test for CDC with blue colour"""
         logo_path = get_logo("cdc", "blue")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
+
+    def test_cdc_blue_logo_hero(self):
+        """Test for CDC with blue colour with hero title"""
+        logo_path = get_logo("cdc", "blue", cover="nofo--cover-page--hero")
         self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_blue_logo_landscape(self):
+        """Test for CDC with blue colour landscape"""
+        logo_path = get_logo("cdc", "blue", orientation="landscape")
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_blue_logo_hero_landscape(self):
+        """Test for CDC with blue colour with hero title in landscape"""
+        logo_path = get_logo(
+            "cdc", "blue", cover="nofo--cover-page--hero", orientation="landscape"
+        )
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_white_logo_portrait(self):
+        """Test for CDC with white colour"""
+        logo_path = get_logo("white", "blue")
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_white_logo_hero(self):
+        """Test for CDC with white colour with hero title"""
+        logo_path = get_logo("cdc", "white", cover="nofo--cover-page--hero")
+        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+
+    def test_cdc_white_logo_landscape(self):
+        """Test for CDC with white colour landscape"""
+        logo_path = get_logo("cdc", "white", orientation="landscape")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
+
+    def test_cdc_white_logo_hero_landscape(self):
+        """Test for CDC with white colour with hero title in landscape"""
+        logo_path = get_logo(
+            "cdc", "white", cover="nofo--cover-page--hero", orientation="landscape"
+        )
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
 
     def test_cdc_dop_logo_replacement(self):
         """Test for CDC with 'dop' colour, which should be replaced with 'white'"""
         logo_path = get_logo("cdc", "dop")
-        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
 
     def test_cdc_any_colour_logo(self):
         """Test for CDC with any other colour"""
         logo_path = get_logo("cdc", "green")
-        self.assertEqual(logo_path, "img/logos/cdc/green/cdc-logo.svg")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
 
     def test_non_cdc_default_logo(self):
         """Test for non-CDC opdiv should return the default CDC blue logo"""
@@ -859,7 +898,7 @@ class TestGetLogo(TestCase):
         """Test for CDC with no colour provided"""
         logo_path = get_logo("cdc")
         # Assuming a fallback to default logo
-        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
 
     def test_hrsa_blue_logo(self):
         """Test for HRSA with blue colour"""
@@ -905,7 +944,7 @@ class TestGetLogo(TestCase):
         """Test for CDC with no opdiv or colour provided"""
         logo_path = get_logo()
         # Assuming a fallback to default logo
-        self.assertEqual(logo_path, "img/logos/cdc/blue/cdc-logo.svg")
+        self.assertEqual(logo_path, "img/logos/cdc/white/cdc-logo.svg")
 
     def test_empty_opdiv_raises_error(self):
         """Verify that an empty opdiv raises ValueError"""
