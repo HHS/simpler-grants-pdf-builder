@@ -106,36 +106,38 @@
               Has page break
             </label>
           </div>
-          <div class="usa-radio">
-            <input
-            class="usa-radio__input"
-              id="column-break-before"
-              type="radio"
-              name="html_class"
-              value="column-break-before"
-              {% if form.html_class.value and "column-break-before" in form.html_class.value %}
-                checked="checked"
-              {% endif %}
-            />
-            <label class="usa-radio__label" for="column-break-before">
-              Has column break
-            </label>
-          </div>
-          <div class="usa-radio">
-            <input
-            class="usa-radio__input"
-              id="avoid-break--heading"
-              type="radio"
-              name="html_class"
-              value="avoid-break--heading"
-              {% if form.html_class.value and "avoid-break--heading" in form.html_class.value %}
-                checked="checked"
-              {% endif %}
-            />
-            <label class="usa-radio__label" for="avoid-break--heading">
-              Avoid column break
-            </label>
-          </div>
+          {% if 'landscape' in nofo.theme %}
+            <div class="usa-radio">
+              <input
+              class="usa-radio__input"
+                id="column-break-before"
+                type="radio"
+                name="html_class"
+                value="column-break-before"
+                {% if form.html_class.value and "column-break-before" in form.html_class.value %}
+                  checked="checked"
+                {% endif %}
+              />
+              <label class="usa-radio__label" for="column-break-before">
+                Has column break
+              </label>
+            </div>
+            <div class="usa-radio">
+              <input
+              class="usa-radio__input"
+                id="avoid-break--heading"
+                type="radio"
+                name="html_class"
+                value="avoid-break--heading"
+                {% if form.html_class.value and "avoid-break--heading" in form.html_class.value %}
+                  checked="checked"
+                {% endif %}
+              />
+              <label class="usa-radio__label" for="avoid-break--heading">
+                Avoid column break
+              </label>
+            </div>
+          {% endif %}
           <div class="usa-radio">
             <input
             class="usa-radio__input"

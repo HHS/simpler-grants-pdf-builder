@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Change cover image folder for NOFO whose number changed
+- Hide header column configuration options for portrait NOFOs
 
 ### Fixed
 
