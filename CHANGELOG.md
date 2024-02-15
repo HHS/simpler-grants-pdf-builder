@@ -19,6 +19,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Text only cover page: application date does not break line
+- IHS logo smaller than HHS logo
+- IHS smaller headings are Arial Bold
 - Fix top white bar for CDC blue theme
   - Fix top white bar for CDC blue theme (hero)
 
