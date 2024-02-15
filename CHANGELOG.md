@@ -13,9 +13,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change cover image folder for NOFO whose number changed
+
 ### Fixed
 
 - Fix top white bar for CDC blue theme
+  - Fix top white bar for CDC blue theme (hero)
 
 ## [1.10.0] - 2023-02-13
 

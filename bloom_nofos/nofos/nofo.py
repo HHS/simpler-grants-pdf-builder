@@ -446,7 +446,10 @@ def get_logo(
 
     if opdiv == "cdc":
         if orientation == "portrait":
-            colour = "white"
+            if cover == "nofo--cover-page--medium":
+                colour = "white"
+            if cover == "nofo--cover-page--hero":
+                colour = "blue"
         return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
 
     return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
