@@ -66,9 +66,14 @@ section.nofo--cover-page.nofo--cover-page--text {
 .nofo--cover-page--text .nofo--cover-page--header {
   height: 110mm;
   padding-top: 15mm;
+  flex-direction: column-reverse;
 }
 
 .nofo--cover-page--text .nofo--cover-page--header--intro {
+  align-self: flex-end;
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--logo {
   align-self: flex-start;
 }
 
