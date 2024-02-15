@@ -139,6 +139,7 @@ class Nofo(models.Model):
     STATUS_CHOICES = [
         ("draft", "Draft"),
         ("active", "Active"),
+        ("review", "In review"),
         ("published", "Published"),
     ]
 
