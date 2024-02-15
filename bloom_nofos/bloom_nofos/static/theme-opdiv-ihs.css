@@ -51,16 +51,17 @@ h3 {
   font-family: Georgia, serif;
 }
 
-h4 {
-  font-family: Georgia, serif;
-}
-
-h5 {
-  font-family: Georgia, serif;
-}
-
+h4,
+h5,
 h6 {
-  font-family: Georgia, serif;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-weight: 700;
+}
+
+/* this functions as an h7 */
+p[role="heading"] {
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-weight: 700;
 }
 
 /* Running header */
@@ -79,7 +80,7 @@ h6 {
 /* Cover page: text */
 
 .nofo--cover-page--text .nofo--cover-page--header--logo img {
-  width: 125px;
+  width: 100px;
   padding-bottom: 15px;
 }
 

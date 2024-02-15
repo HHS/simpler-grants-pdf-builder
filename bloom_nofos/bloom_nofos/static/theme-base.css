@@ -585,7 +585,8 @@ p[role="heading"] {
 
 /* Cover page: text */
 
-.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p {
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p,
+.nofo--cover-page--text .nofo--cover-page--header--intro span {
   white-space: pre;
 }
 
