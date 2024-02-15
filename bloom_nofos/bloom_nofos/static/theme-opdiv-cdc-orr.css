@@ -1,0 +1,233 @@
+/* CSS vars */
+
+:root {
+  --color--orr-blue: #003057;
+  --color--orr-grey: #333f48;
+  --color--orr-red: #d22730;
+  --color--orr-azure: #00a3e0;
+}
+
+/* Page rules */
+
+@page {
+  @bottom-left {
+    color: var(--color--orr-blue);
+  }
+
+  @bottom-right {
+    color: var(--color--orr-blue);
+  }
+}
+
+@page cover {
+  background-color: var(--color--orr-blue);
+}
+
+@page title {
+  background-color: var(--color--orr-blue);
+
+  @bottom-left {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+
+  @bottom-right {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+}
+
+/* Regular CSS */
+.portrait-cdc-dop .table--small.table--empty {
+  width: 100%;
+}
+
+a {
+  color: var(--color--orr-blue);
+}
+
+img.usa-icon--check_box_outline_blank {
+  background: var(--color--white);
+  -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  -moz-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+  box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
+}
+
+/* Headings */
+
+h1 {
+  color: var(--color--white);
+}
+
+h3 {
+  color: var(--color--dop-grey);
+}
+
+h4 {
+  color: var(--color--orr-blue);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header {
+  background-color: var(--color--orr-grey);
+}
+
+.nofo--cover-page--title {
+  background-color: var(--color--orr-blue);
+}
+
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--intro {
+  color: var(--color--white);
+}
+
+.nofo--cover-page--title {
+  color: var(--color--white);
+}
+
+.nofo--cover-page--footer {
+  background: var(--color--white);
+}
+
+.portrait .nofo--cover-page--footer {
+  background-color: var(--color--orr-blue);
+}
+
+/* Cover page: medium image */
+
+.nofo--cover-page--medium .nofo--cover-page--footer--subheading {
+  color: var(--color--white);
+}
+
+/* Cover page: hero image */
+
+.nofo--cover-page--hero .nofo--cover-page--title {
+  background-color: var(--color--orr-blue);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--orr-blue);
+}
+
+.toc .toc--section-name .toc--section-name--a {
+  color: var(--color--orr-blue);
+}
+
+.toc
+  .toc--section-name
+  .toc--section-name--img:not([class*="med-blue-border"]) {
+  background: var(--color--orr-blue);
+}
+
+/* Before you begin */
+
+.before-you-begin h2 {
+  color: var(--color--orr-blue);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--white);
+  color: var(--color--white);
+}
+
+.section--title-page--header-nav li a[aria-current] {
+  border-top: 4px solid var(--color--white);
+  color: var(--color--white);
+}
+
+.section--title-page {
+  background-color: var(--color--orr-blue);
+}
+
+.section--title-page--header-nav {
+  background-color: var(--color--orr-azure);
+}
+
+/* Section contents */
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--orr-red);
+  color: var(--color--black);
+}
+
+.nofo--tagline {
+  color: var(--color--orr-red);
+}
+
+.callout-box {
+  background-color: var(--color--orr-blue);
+  color: var(--color--white);
+}
+
+.callout-box--contents a {
+  color: var(--color--white);
+}
+
+.callout-box--icon {
+  background-color: var(--color--white);
+  color: var(--color--orr-blue);
+  border: 2px solid var(--color--orr-blue);
+}
+
+.callout-box--icon a {
+  color: var(--color--orr-blue);
+}
+
+table th {
+  color: var(--color--white);
+  background-color: var(--color--orr-blue);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:first-of-type {
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:last-of-type {
+  border-right: 2px solid var(--color--light-grey);
+}
+
+table td {
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table td {
+  border: none;
+}
+
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: 2px solid var(--color--light-grey);
+}

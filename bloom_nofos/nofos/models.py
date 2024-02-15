@@ -87,6 +87,7 @@ class Nofo(models.Model):
         ("landscape-cdc-blue", "CDC Landscape (Default)"),
         ("landscape-cdc-white", "CDC Landscape (Light)"),
         ("portrait-cdc-dop", "CDC Portrait (DOP)"),
+        ("portrait-cdc-orr", "CDC Portrait (ORR)"),
         ("portrait-cdc-blue", "CDC Portrait (Default)"),
         ("portrait-cdc-white", "CDC Portrait (Light)"),
         ("portrait-hrsa-blue", "HRSA (Default)"),
