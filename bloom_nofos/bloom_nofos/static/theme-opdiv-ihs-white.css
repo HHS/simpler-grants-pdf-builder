@@ -4,7 +4,10 @@
 
 /* Headings */
 
-h1,
+h1 {
+  color: var(--color--black);
+}
+
 h2,
 h3 {
   color: var(--color--ihs-blue);
@@ -27,12 +30,13 @@ p[role="heading"] {
   background-color: var(--color--ihs-grey);
 }
 
-.nofo--cover-page--header--logo--subheading {
-  color: var(--color--ihs-blue);
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--intro {
+  color: var(--color--black);
 }
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--ihs-blue);
+  color: var(--color--black);
 }
 
 /* Cover page: text */
