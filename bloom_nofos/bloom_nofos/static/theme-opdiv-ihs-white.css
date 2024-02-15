@@ -10,6 +10,17 @@ h3 {
   color: var(--color--ihs-blue);
 }
 
+h4,
+h5,
+h6 {
+  color: var(--black);
+}
+
+/* this functions as an h7 */
+p[role="heading"] {
+  color: var(--black);
+}
+
 /* Cover page */
 
 .nofo--cover-page.nofo--cover-page--medium .nofo--cover-page--header {
@@ -51,6 +62,10 @@ h3 {
 }
 
 /* Section contents */
+
+.section--content--intro p.nofo--tagline {
+  color: var(--color--ihs-blue);
+}
 
 table th {
   color: var(--color--white);
