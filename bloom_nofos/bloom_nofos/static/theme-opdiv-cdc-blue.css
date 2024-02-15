@@ -66,12 +66,12 @@ h1 {
 
 /* Cover page: portrait */
 
-.portrait .nofo--cover-page--header {
+.portrait .nofo--cover-page--medium .nofo--cover-page--header {
   background-color: var(--color--white);
 }
 
-.portrait .nofo--cover-page--header--logo--subheading,
-.portrait .nofo--cover-page--header--intro {
+.portrait .nofo--cover-page--medium .nofo--cover-page--header--logo--subheading,
+.portrait .nofo--cover-page--medium .nofo--cover-page--header--intro {
   color: var(--color--vibrant-blue);
 }
 
