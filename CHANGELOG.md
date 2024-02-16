@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.11.0] - 2023-02-16
+
+### Added
+
 - Added ACL theme
   - With all-text cover
 - Added HTML id to the headers
