@@ -155,8 +155,9 @@ class NofosDetailView(DetailView):
         context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"
 
         if self.object.theme in [
-            "portrait-cms-white",
             "portrait-acf-white",
+            "portrait-acl-white",
+            "portrait-cms-white",
             "portrait-ihs-white",
         ]:
             context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"

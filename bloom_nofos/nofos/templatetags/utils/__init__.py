@@ -171,6 +171,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
                 return "img/figma-icons/ihs-blue-border"
             elif "acf" in theme:
                 return "img/figma-icons/acf-black-border"
+            elif opdiv == "acl":
+                return "img/figma-icons/acl-blue-border"
             else:
                 return "img/figma-icons/med-blue-border"
         else:
@@ -183,6 +185,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/white-icon"
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
+        if opdiv == "acl":
+            return "img/figma-icons/acl-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if opdiv == "hrsa":
@@ -201,6 +205,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
+        if opdiv == "acl":
+            return "img/figma-icons/black-icon"
         if colour == "white":
             return "img/figma-icons/dark-blue-border"
 
@@ -209,6 +215,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
+        if opdiv == "acl":
+            return "img/figma-icons/acl-blue-border"
         if theme == "portrait-cms-white":
             return "img/figma-icons/cms-blue-border"
 

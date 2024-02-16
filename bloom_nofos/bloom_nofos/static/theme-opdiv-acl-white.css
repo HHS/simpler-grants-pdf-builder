@@ -1,0 +1,167 @@
+/* Page rules */
+
+/* Regular CSS */
+
+a {
+  color: var(--color--acl-blue);
+}
+
+/* Headings */
+
+h2 {
+  color: var(--color--acl-blue);
+}
+
+h3 {
+  color: var(--color--acl-blue);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header {
+  background-color: var(--color--pale-blue);
+}
+
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--intro {
+  color: var(--color--acl-blue);
+}
+
+.nofo--cover-page--title,
+.nofo--cover-page--footer {
+  color: var(--color--acl-blue);
+  background-color: var(--color--white);
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--white);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--acl-blue);
+}
+
+.toc .toc--section-name .toc--section-name--a {
+  color: var(--color--acl-blue);
+}
+
+.toc ol li a {
+  color: var(--color--black);
+}
+
+/* Before you begin */
+
+.before-you-begin h2 {
+  color: var(--color--acl-blue);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  background-color: var(--color--pale-blue);
+  color: var(--color--acl-blue);
+}
+
+.header-nav li a {
+  border-top: 4px solid var(--color--acl-blue);
+  color: var(--color--acl-blue);
+}
+
+.section--title-page--header-nav a[aria-current] {
+  border-top: 4px solid var(--color--acl-yellow);
+  color: var(--color--acl-blue);
+}
+
+.section--title-page--name,
+.section--title-page--toc {
+  color: var(--color--black);
+}
+
+.section--title-page a {
+  color: var(--color--black);
+}
+
+/* Section contents */
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--acl-yellow);
+  color: var(--color--acl-blue);
+}
+
+.callout-box {
+  background-color: var(--color--pale-blue);
+  color: var(--color--black);
+}
+
+.callout-box--contents a {
+  color: var(--color--black);
+}
+
+.callout-box--icon {
+  background-color: var(--color--acl-yellow);
+}
+
+.callout-box--icon .callout-box--contents img {
+  background-color: var(--color--white);
+  border-radius: 50%;
+}
+
+table th {
+  color: var(--color--white);
+  background-color: var(--color--acl-blue);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:first-of-type {
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:last-of-type {
+  border-right: 2px solid var(--color--light-grey);
+}
+
+table td {
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table td {
+  border: none;
+}
+
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: 2px solid var(--color--light-grey);
+}

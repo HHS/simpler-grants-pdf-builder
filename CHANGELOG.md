@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added ACL theme
+  - With all-text cover
 - Added HTML id to the headers
   - also a little 'copy' button
 - Add new NOFO status: "In review"
