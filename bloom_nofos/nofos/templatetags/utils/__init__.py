@@ -180,7 +180,7 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
         if "dop" in theme:
             return "img/figma-icons/dop-teal-border"
         if "orr" in theme:
-            return "img/figma-icons/orr-blue-border"
+            return "img/figma-icons/white-icon"
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
@@ -196,7 +196,7 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
         if "dop" in theme:
             return "img/figma-icons/dop"
         if "orr" in theme:
-            return "img/figma-icons/orr-blue-border"
+            return "img/figma-icons/black-icon"
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
