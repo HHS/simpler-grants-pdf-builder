@@ -16,10 +16,10 @@
 - Fix: Indented application checklist for portrait tables also
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
-- Add optgroup to the theme picker
 
 # DONE
 
+- Use optgroup for opdivs in the theme picker
 - Add nofo number to CSS
 - Fix: Import docs with empty heading subsections
 - Fix: Generate ID automatically when creating a new section
