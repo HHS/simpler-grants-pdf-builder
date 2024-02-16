@@ -16,7 +16,20 @@
   <form id="nofo-theme--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/form_macro.html" %}
+    <label class="usa-label" for="{{ form.theme.name }}">{{ form.theme.label }}</label>
+
+    <div class="usa-hint" id="{{ form.theme.name }}--hint-1">
+      {{ form.theme.help_text }}
+    </div>
+    <select class="usa-select border-2px" name="{{ form.theme.name }}" id="{{ form.theme.name }}" aria-describedby="{{ form.theme.name }}--hint-1">
+      {% for opdiv, choices in theme_categories.items %}
+        <optgroup label="{{ opdiv }}">
+          {% for choice_value, choice_label in choices %}
+           <option value="{{ choice_value }}" {% if  nofo.theme == choice_value %}selected{% endif %}>{{ choice_label }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endfor %}
+    </select>
 
     <button class="usa-button margin-top-3" type="submit">Save theme</button>
   </form>

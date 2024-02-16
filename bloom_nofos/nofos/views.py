@@ -31,7 +31,7 @@ from .forms import (
     NofoThemeForm,
     SubsectionForm,
 )
-from .models import Nofo, Section, Subsection
+from .models import Nofo, Section, Subsection, THEME_CHOICES
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
@@ -379,6 +379,22 @@ class NofoEditSubagency2View(BaseNofoEditView):
 class NofoEditThemeView(BaseNofoEditView):
     form_class = NofoThemeForm
     template_name = "nofos/nofo_edit_theme.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        theme_categories_dict = {}
+        for theme in THEME_CHOICES:
+            opdiv = theme[1].split(" ")[0]
+
+            if not theme_categories_dict.get(opdiv):
+                theme_categories_dict[opdiv] = []
+
+            theme_categories_dict[opdiv].append(theme)
+
+        context["theme_categories"] = theme_categories_dict
+
+        return context
 
 
 class NofoEditCoverView(BaseNofoEditView):

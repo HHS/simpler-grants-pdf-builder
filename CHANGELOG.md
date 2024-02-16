@@ -21,6 +21,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Hide header column configuration options for portrait NOFOs
 - Change IHS tagline to blue
 - Change small headings to black
+- Group the themes together in the theme select widget
 
 ### Fixed
 
