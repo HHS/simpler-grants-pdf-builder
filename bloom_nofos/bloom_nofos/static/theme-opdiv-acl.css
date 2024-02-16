@@ -1,29 +1,31 @@
 /* CSS vars */
 
 :root {
-  --color--acf-blue: #264a64;
-  --color--light-black: #172c3c;
+  --color--acl-blue: #08508f;
+  --color--acl-yellow: #ffa21b;
 }
 
 /* Page rules */
 
 @page {
   @bottom-left {
-    font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-      serif;
+    font-family: Georgia, serif;
     font-weight: 700;
-    color: var(--color--dark-blue);
+    color: var(--color--acl-blue);
   }
 
   @bottom-right {
-    font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-      serif;
+    font-family: Georgia, serif;
     font-weight: 700;
-    color: var(--color--dark-blue);
+    color: var(--color--acl-blue);
   }
 }
 
 /* Regular CSS */
+
+html {
+  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+}
 
 /* Running header */
 
@@ -34,36 +36,23 @@
 
 /* Headings */
 
-h1 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-    serif;
-}
-
-h2 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-    serif;
-}
-
+h1,
+h2,
 h3 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-    serif;
+  font-family: Georgia, serif;
 }
 
-h4 {
-  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
-    sans-serif;
-  color: var(--color--vibrant-blue);
-}
-
-h5 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-    serif;
-  font-size: 14pt;
-}
-
+h4,
+h5,
 h6 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
-    serif;
+  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-weight: 700;
+}
+
+/* this functions as an h7 */
+p[role="heading"] {
+  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-weight: 700;
 }
 
 /* Cover page */
@@ -86,7 +75,6 @@ h6 {
 }
 
 .nofo--cover-page--header--logo--subheading {
-  font-weight: 700;
   font-size: 11pt;
 }
 
@@ -126,7 +114,7 @@ h6 {
 /* Section contents */
 
 .section--content--intro p.nofo--tagline {
-  color: var(--color--acf-blue);
+  font-weight: 300;
 }
 
 /* Media queries */

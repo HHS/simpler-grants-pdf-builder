@@ -91,11 +91,12 @@ class Nofo(models.Model):
         ("portrait-cdc-orr", "CDC Portrait (ORR)"),
         ("portrait-cdc-blue", "CDC Portrait (Default)"),
         ("portrait-cdc-white", "CDC Portrait (Light)"),
-        ("portrait-hrsa-blue", "HRSA (Default)"),
-        ("portrait-hrsa-white", "HRSA (Light)"),
         ("portrait-acf-blue", "ACF (Default)"),
         ("portrait-acf-white", "ACF (Light)"),
+        ("portrait-acl-white", "ACL (Default)"),
         ("portrait-cms-white", "CMS (Light)"),
+        ("portrait-hrsa-blue", "HRSA (Default)"),
+        ("portrait-hrsa-white", "HRSA (Light)"),
         ("portrait-ihs-white", "IHS (Light)"),
     ]
 

@@ -8,11 +8,6 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Theme variants
-  - ACF white
-  - HRSA variant
-- Themes
-  - ACL
 - Maybe: include preceding paragraph in front of tables potentially
 - Update the README
 - Big cover page design
@@ -21,6 +16,7 @@
 - Fix: Indented application checklist for portrait tables also
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
+- Add optgroup to the theme picker
 
 # DONE
 
@@ -36,10 +32,12 @@
   - CDC: portrait (white)
   - CMS: portrait (white)
   - ACF: portrait (white)
+  - ACL: portrait (white)
   - IHS: portrait (white)
 - Text-only cover page design
   - Blue ACF
   - White ACF
+  - White ACL
   - White IHS
 - DOP theme again!!
 - Show broken links to NOFO editors
