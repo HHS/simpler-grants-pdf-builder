@@ -124,20 +124,29 @@ h4 {
 
 /* Before you begin */
 
+.section--before-you-begin--icon img {
+  background-color: var(--color--orr-blue);
+  border-radius: 50%;
+}
+
 .before-you-begin h2 {
   color: var(--color--orr-blue);
 }
 
 /* Section title page */
 
+.section--title-page .section--title-page--header-nav > p {
+  color: var(--color--black);
+}
+
 .section--title-page--header-nav li a {
   border-top: 4px solid var(--color--white);
-  color: var(--color--white);
+  color: var(--color--black);
 }
 
 .section--title-page--header-nav li a[aria-current] {
-  border-top: 4px solid var(--color--white);
-  color: var(--color--white);
+  border-top: 4px solid var(--color--black);
+  color: var(--color--black);
 }
 
 .section--title-page {
@@ -169,51 +178,54 @@ h4 {
 }
 
 .callout-box--icon {
-  background-color: var(--color--white);
-  color: var(--color--orr-blue);
-  border: 2px solid var(--color--orr-blue);
+  background-color: var(--color--orr-azure);
+  color: var(--color--black);
 }
 
 .callout-box--icon a {
   color: var(--color--orr-blue);
 }
 
+.callout-box--icon .callout-box--contents img {
+  background-color: var(--color--white);
+  border-radius: 50%;
+}
+
 table th {
   color: var(--color--white);
   background-color: var(--color--orr-blue);
-  border-top: 2px solid var(--color--light-grey);
-  border-bottom: 2px solid var(--color--light-grey);
-  border-left: 2px solid var(--color--light-grey);
-}
-
-table th:first-of-type {
-  border-left: 2px solid var(--color--light-grey);
-}
-
-table th:last-of-type {
-  border-right: 2px solid var(--color--light-grey);
+  border: 2px solid var(--color--white);
 }
 
 table td {
-  border-left: 2px solid var(--color--light-grey);
-  border-right: 2px solid var(--color--light-grey);
-  border-bottom: 2px solid var(--color--light-grey);
+  background-color: var(--color--table-blue);
+  border: 2px solid var(--color--white);
+}
+
+table td a {
+  color: var(--color--orr-blue);
 }
 
 /* Application checklist table */
 
-.section--step-5-submit-your-application table td {
-  border: none;
-}
-
+.section--step-5-submit-your-application table tr th:first-of-type,
 .section--step-5-submit-your-application table tr td:first-of-type {
-  border-left: var(--color--light-grey) 2px solid;
-  border-right: var(--color--light-grey) 2px solid;
+  border-left: none;
 }
 
+.section--step-5-submit-your-application table tr th:last-of-type,
 .section--step-5-submit-your-application table tr td:last-of-type {
-  border-left: var(--color--light-grey) 2px solid;
-  border-right: var(--color--light-grey) 2px solid;
+  border-right: none;
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
 }
 
 .section--step-5-submit-your-application
@@ -225,9 +237,18 @@ table td {
   tr
   td.usa-icon__td--before-sublist
   ~ td {
-  border-bottom: 2px solid var(--color--light-grey);
+  border-bottom-color: white;
 }
 
-.section--step-5-submit-your-application table tr:last-of-type td {
-  border-bottom: 2px solid var(--color--light-grey);
+.section--step-5-submit-your-application
+  table
+  tr
+  td:first-of-type:not(.usa-icon__td),
+.section--step-5-submit-your-application
+  table
+  tr
+  td:first-of-type:not(.usa-icon__td)
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
 }
