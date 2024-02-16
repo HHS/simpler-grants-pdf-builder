@@ -319,7 +319,6 @@ def get_subsections_from_sections(sections):
                     convert_table_first_row_to_header_row(tag)
 
                 if len(section["subsections"]):
-
                     # get latest subsection
                     subsection = section["subsections"][-1]
                     if subsection.get("is_callout_box", False):

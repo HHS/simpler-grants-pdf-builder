@@ -2008,7 +2008,6 @@ class NestedListTests(TestCase):
 
 
 class HTMLCalloutBoxTests(TestCase):
-
     def assertSubsectionsMatch(self, subsections, subsections_assertions):
         for index, _s in enumerate(subsections):
             self.assertEqual(_s.get("name"), subsections_assertions[index]["name"])

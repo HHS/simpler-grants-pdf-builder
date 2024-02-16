@@ -24,7 +24,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
 RUN /root/.local/bin/poetry config virtualenvs.in-project true
-RUN /root/.local/bin/poetry install
+RUN /root/.local/bin/poetry install --without dev
 
 # copy project
 COPY . .

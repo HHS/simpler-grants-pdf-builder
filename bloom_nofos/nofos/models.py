@@ -2,6 +2,7 @@ from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
 from martor.models import MartorField
+
 from .utils import create_subsection_html_id
 
 
