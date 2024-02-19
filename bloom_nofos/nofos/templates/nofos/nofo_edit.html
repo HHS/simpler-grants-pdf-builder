@@ -29,7 +29,16 @@
     {% with nofo|nofo_name as nofo_name_str %}
       <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
     {% endwith %}
-    <span class="nofo_edit--header--view font-sans-md"><a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a></span>
+    <div class="nofo_edit--header--view font-sans-xs">
+      <a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a>
+      <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
+        {% csrf_token %}
+        <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
+        <button type="submit" class="usa-button font-sans-xs text-normal" {% if request.scheme == 'http' %}disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"{% else %}style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"{% endif %}>
+          Print{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO
+        </button>
+      </form>
+    </div>
   </div>
 
   <p>Make small edits to your NOFO here.</p>

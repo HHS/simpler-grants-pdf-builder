@@ -55,13 +55,21 @@ details > summary > span:hover {
 }
 
 .nofo_edit--header h1 {
-  width: 85%;
+  width: 70%;
 }
 
 .nofo_edit--header--view {
   position: absolute;
   right: 0;
-  top: 12px;
+  top: 0px;
+
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.nofo_edit--header--view > * {
+  display: inline-block;
 }
 
 .nofo_edit .usa-summary-box__text p:last-of-type {
