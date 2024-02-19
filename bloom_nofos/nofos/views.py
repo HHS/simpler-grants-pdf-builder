@@ -178,6 +178,9 @@ class NofosEditView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["broken_links"] = find_broken_links(self.object)
+
+        context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
+
         return context
 
 

@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add 'print' button to NOFO edit view
+
 ### Changed
 
 - Show NOFOs that have not been published as the default view
