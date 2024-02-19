@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Show NOFOs that have not been published as the default view
+
 ### Fixed
 
 ## [1.11.0] - 2023-02-16

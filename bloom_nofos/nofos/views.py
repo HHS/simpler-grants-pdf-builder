@@ -102,11 +102,17 @@ class NofosListView(ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Retrieve the 'status' query parameter
-        self.status = self.request.GET.get("status")  # Store the status
+
+        # default status: return unpublished NOFOs
+        self.status = self.request.GET.get("status", "unpublished")
+
         if self.status:
-            # Filter the queryset based on the status
-            queryset = queryset.filter(status=self.status)
+            if self.status == "unpublished":
+                queryset = queryset.exclude(status="published")
+            elif self.status == "all":
+                pass
+            else:
+                queryset = queryset.filter(status=self.status)
 
         return queryset.order_by("-created")
 
