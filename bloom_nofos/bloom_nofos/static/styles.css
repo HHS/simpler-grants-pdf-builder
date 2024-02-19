@@ -39,6 +39,13 @@ details > summary > span:hover {
   text-decoration: none;
 }
 
+/* List page */
+
+.nofo_index--filter a[aria-current] {
+  font-weight: 700;
+  text-decoration: none;
+}
+
 /* Edit page */
 
 /* header widget for NOFO */

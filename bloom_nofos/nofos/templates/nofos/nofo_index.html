@@ -7,12 +7,26 @@
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
-	<h1 class="font-heading-xl margin-y-0">All{% if nofo_status %} {{ nofo_status }}{% endif %} NOFOs</h1>
+	<h1 class="font-heading-xl margin-y-0">All{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
+
+	<p class="nofo_index--filter">
+		<a href="{% url 'nofos:nofo_index' %}?status=all" {% if nofo_status == 'all' %}aria-current="page"{% endif %}>All NOFOs</a> | 
+		<a href="{% url 'nofos:nofo_index' %}" {% if not nofo_status or nofo_status == 'unpublished' %}aria-current="page"{% endif %}>All unpublished NOFOs</a> | 
+		<a href="{% url 'nofos:nofo_index' %}?status=published" {% if nofo_status == 'published' %}aria-current="page"{% endif %}>All published NOFOs</a>
+	</p>
 
 	{% if nofo_list %}
 		<table class="usa-table usa-table--borderless width-full">
 			<caption>
-				All the NOFOs fit to show.
+				{% if not nofo_status or nofo_status == 'unpublished' %}
+					NOFOs being worked on or in review.
+				{% elif nofo_status == 'published' %}
+					NOFOs that made it across the finish line.
+				{% elif nofo_status == 'all' %}
+					All the NOFOs fit to show.
+				{% else %}
+					List of NOFOs with status: {{ nofo_status }}
+				{% endif %}
 			</caption>
 			<thead>
 				<tr>

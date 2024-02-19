@@ -19,6 +19,7 @@
 
 # DONE
 
+- Filter the NOFOs that appear in the table by published status
 - Use optgroup for opdivs in the theme picker
 - Add nofo number to CSS
 - Fix: Import docs with empty heading subsections
