@@ -17,6 +17,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- "Border" icons rather than "filled" for ORR theme
+- Solid cover background for ORR theme
+
 ## [1.11.0] - 2023-02-16
 
 ### Added
