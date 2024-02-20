@@ -13,12 +13,12 @@
 - Big cover page design
   - Blue large cover HRSA
   - White large cover HRSA
-- Fix: Indented application checklist for portrait tables also
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
 
 # DONE
 
+- Fix: Indented application checklist for portrait tables also
 - Filter the NOFOs that appear in the table by published status
 - Use optgroup for opdivs in the theme picker
 - Add nofo number to CSS
