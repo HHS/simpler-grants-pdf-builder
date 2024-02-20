@@ -178,12 +178,12 @@ h4 {
 }
 
 .callout-box--icon {
-  background-color: var(--color--orr-azure);
-  color: var(--color--black);
+  background-color: var(--color--orr-grey);
+  color: var(--color--white);
 }
 
 .callout-box--icon a {
-  color: var(--color--orr-blue);
+  color: var(--color--orr-white);
 }
 
 .callout-box--icon .callout-box--contents img {
