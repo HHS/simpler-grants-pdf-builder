@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - "Border" icons rather than "filled" for ORR theme
 - Solid cover background for ORR theme
+- Indent application checklists in portrait mode
 
 ## [1.11.0] - 2023-02-16
 

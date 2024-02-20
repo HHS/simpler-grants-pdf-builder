@@ -235,6 +235,10 @@ table.table--large {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }
 
+table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
+  padding-left: 22px;
+}
+
 body.portrait.cdc
   .section--step-4-learn-about-review-and-award
   .section--content
