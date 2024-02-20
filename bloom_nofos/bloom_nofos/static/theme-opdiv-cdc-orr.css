@@ -116,18 +116,7 @@ h4 {
   color: var(--color--orr-blue);
 }
 
-.toc
-  .toc--section-name
-  .toc--section-name--img:not([class*="med-blue-border"]) {
-  background: var(--color--orr-blue);
-}
-
 /* Before you begin */
-
-.section--before-you-begin--icon img {
-  background-color: var(--color--orr-blue);
-  border-radius: 50%;
-}
 
 .before-you-begin h2 {
   color: var(--color--orr-blue);
