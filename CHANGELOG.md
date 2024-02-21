@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- FIXED: martor’s busted markdown link regex
+  - https://github.com/pcraig3/django-markdown-editor/commit/9d78dd0bab9a4bfebcc4841794f6f5d54ad6d91a
 - "Border" icons rather than "filled" for ORR theme
 - Solid cover background for ORR theme
 - Indent application checklists in portrait mode

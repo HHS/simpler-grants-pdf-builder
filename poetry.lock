@@ -485,17 +485,22 @@ version = "1.6.28"
 description = "Django Markdown Editor"
 optional = false
 python-versions = "*"
-files = [
-    {file = "martor-1.6.28.tar.gz", hash = "sha256:93bcc97898c6739c2adadfc4f20640cf27e94dae2e3773d18168b446c3d7e7ed"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 bleach = "*"
-Django = ">=3.2"
+Django = ">=3.2,<=4.2.10"
 importlib_metadata = "<4.9"
 Markdown = "<3.4"
 requests = "*"
 tzdata = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/pcraig3/django-markdown-editor.git"
+reference = "HEAD"
+resolved_reference = "c5b5b6f014ac2128eea53049715c4ab26d78ff1b"
 
 [[package]]
 name = "mypy-extensions"
@@ -703,13 +708,13 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.2.0"
+version = "2.2.1"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "urllib3-2.2.0-py3-none-any.whl", hash = "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"},
-    {file = "urllib3-2.2.0.tar.gz", hash = "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20"},
+    {file = "urllib3-2.2.1-py3-none-any.whl", hash = "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d"},
+    {file = "urllib3-2.2.1.tar.gz", hash = "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"},
 ]
 
 [package.extras]
@@ -761,4 +766,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3b8334083a1c34515ca1c36368ce9822ae85b189cadb2621c97a667505bb7c70"
+content-hash = "6956d63776621268054fc9c6942183494b2c11d6c1afab44804107cc5f217af9"
