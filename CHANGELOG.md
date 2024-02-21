@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Allow for importing tables with colspans or rowspans
+  - (They will just be rendered as HTML rather than markdown)
 - Change the azure callout boxes to grey in ORR theme
 - Show NOFOs that have not been published as the default view
 
