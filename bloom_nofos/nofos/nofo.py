@@ -14,7 +14,7 @@ from .utils import clean_string, create_subsection_html_id
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 
 
-class ListInATableConverter(MarkdownConverter):
+class TablesAndStuffInTablesConverter(MarkdownConverter):
     """
     Leave ULs and OLs TDs as HTML
     """
@@ -46,10 +46,25 @@ class ListInATableConverter(MarkdownConverter):
 
         return super().convert_p(el, text, convert_as_inline)
 
+    def convert_table(self, el, text, convert_as_inline):
+        def _has_colspan_or_rowspan_not_one(tag):
+            # Check for colspan/rowspan attributes not equal to '1'
+            colspan = tag.get("colspan", "1")
+            rowspan = tag.get("rowspan", "1")
+            return colspan != "1" or rowspan != "1"
+
+        cells = el.find_all(["td", "th"])
+        for cell in cells:
+            # return table as HTML if we find colspan/rowspan != 1 for any cell
+            if _has_colspan_or_rowspan_not_one(cell):
+                return str(el) + "\n"
+
+        return super().convert_table(el, text, convert_as_inline)
+
 
 # Create shorthand method for conversion
 def md(html, **options):
-    return ListInATableConverter(**options).convert(html)
+    return TablesAndStuffInTablesConverter(**options).convert(html)
 
 
 @transaction.atomic
