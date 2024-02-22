@@ -251,6 +251,7 @@ def get_icon_from_theme(
         ("review the opportunity", "1-review.svg"),
         ("ready", "2-get-ready.svg"),
         ("write", "3-write.svg"),
+        ("prepare your application", "3-write.svg"),
         ("learn about review", "4-learn.svg"),
         ("submit", "5-submit.svg"),
         ("learn what happens", "6-next.svg"),

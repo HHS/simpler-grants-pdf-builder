@@ -330,6 +330,15 @@ class GetIconFromThemeTests(TestCase):
         icon_path = get_icon_from_theme("write", "custom-theme", "custom_section")
         self.assertEqual(icon_path, "img/figma-icons/custom-path/3-write.svg")
 
+    @patch("nofos.templatetags.utils._get_icon_path_from_theme")
+    def test_correct_path_construction(self, mock_get_icon_path):
+        mock_get_icon_path.return_value = "img/figma-icons/custom-path"
+        # Test correct path construction
+        icon_path = get_icon_from_theme(
+            "prepare your application", "custom-theme", "custom_section"
+        )
+        self.assertEqual(icon_path, "img/figma-icons/custom-path/3-write.svg")
+
 
 class TestGetParentTd(TestCase):
     def test_span_directly_inside_td(self):
