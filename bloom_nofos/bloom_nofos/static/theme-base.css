@@ -916,7 +916,8 @@ p[role="heading"] {
 }
 
 .section--endnotes h3,
-.section--references h3 {
+.section--references h3,
+.appendix--h3 {
   font-size: 11pt;
   font-weight: 600;
   color: var(--color--black);
