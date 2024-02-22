@@ -168,6 +168,12 @@ class NofosDetailView(DetailView):
         ]:
             context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"
 
+        if (
+            self.object.theme == "portrait-hrsa-white"
+            and self.object.cover == "nofo--cover-page--text"
+        ):
+            context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"
+
         return context
 
 

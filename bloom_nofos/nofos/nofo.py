@@ -454,7 +454,9 @@ def get_logo(
 
     if opdiv == "hrsa":
         if cover == "nofo--cover-page--text":
-            return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)
+            # confusing, but if we are on the white theme, we want the blue logo
+            colour = "blue" if colour == "white" else "white"
+            return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
 
         return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
 

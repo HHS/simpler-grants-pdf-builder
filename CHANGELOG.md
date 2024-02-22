@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add 'print' button to NOFO edit view
+- Text only cover page for HRSA light theme
 
 ### Changed
 

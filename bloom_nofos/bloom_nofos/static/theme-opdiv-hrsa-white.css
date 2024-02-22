@@ -1,5 +1,9 @@
 /* Headings */
 
+h1 {
+  color: var(--color--hrsa-blue);
+}
+
 h2 {
   color: var(--color--black);
   font-weight: 800;
@@ -17,6 +21,20 @@ h4 {
 
 .nofo--cover-page--header {
   background-color: var(--color--pale-blue);
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--white);
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--text .nofo--cover-page--header--intro,
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  color: var(--color--hrsa-blue);
 }
 
 /* Table of contents */
