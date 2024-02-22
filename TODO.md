@@ -10,11 +10,9 @@
 - Refac: short section names for breadcrumbs means we can loop
 - Maybe: include preceding paragraph in front of tables potentially
 - Update the README
-- Big cover page design
-  - Blue large cover HRSA
-  - White large cover HRSA
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
+- Fix: bolds on import
 
 # DONE
 
@@ -42,6 +40,7 @@
   - White ACF
   - White ACL
   - White IHS
+  - White HRSA
 - DOP theme again!!
 - Show broken links to NOFO editors
 - Add "avoid column break" class to subsection headings
