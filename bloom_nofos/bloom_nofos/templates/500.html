@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	500 fam, yikes — Server error
+{% endblock %}
+
+
+{% block content %}
+	<h1 class="font-heading-xl margin-y-0">500 fam, yikes</h1>
+  <p>Congrats! You’ve found a totally new and unexpected error.</p>
+  <p>If you don’t know what led to this, let Paul know what happened and he will get to the bottom of it.</p>
+	<p>Maybe go back to:</p>
+	<ul class="usa-list">
+		<li><a href="{% url 'index' %}">homepage</a></li>
+		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
+	</ul>
+{% endblock %}

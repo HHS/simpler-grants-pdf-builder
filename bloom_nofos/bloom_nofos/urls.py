@@ -23,6 +23,7 @@ from django.views.generic.base import RedirectView
 from . import views
 
 handler404 = views.page_not_found
+handler500 = views.server_error
 
 
 favicon_view = RedirectView.as_view(url="/static/favicon/favicon.ico", permanent=True)

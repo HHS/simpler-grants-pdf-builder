@@ -191,8 +191,7 @@ class NofosDeleteView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         nofo = self.get_object()
         if nofo.status != "draft":
-            # Only draft NOFOs can be deleted
-            return HttpResponseBadRequest("Server error deleting NOFO.")
+            return HttpResponseBadRequest("Only draft NOFOs can be deleted.")
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -250,12 +249,16 @@ def nofo_import(request, pk=None):
 
         if pk:
             if nofo.status in ["published", "review"]:
-                # In review or Published NOFOs can’t be reimported
-                return HttpResponseBadRequest("Server error re-importing NOFO.")
+                return HttpResponseBadRequest(
+                    "In review/Published NOFOs can’t be re-imported."
+                )
 
-            # open question: should reimporting do any of the stuff below?
-            nofo = overwrite_nofo(nofo, sections)
-            add_headings_to_nofo(nofo)
+            try:
+                nofo = overwrite_nofo(nofo, sections)
+                add_headings_to_nofo(nofo)
+            except Exception as e:
+                return HttpResponseBadRequest("Error re-importing NOFO: {}".format(e))
+
             messages.add_message(
                 request,
                 messages.SUCCESS,
@@ -267,8 +270,13 @@ def nofo_import(request, pk=None):
 
         else:
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
-            nofo = create_nofo(nofo_title, sections)
-            add_headings_to_nofo(nofo)
+
+            try:
+                nofo = create_nofo(nofo_title, sections)
+                add_headings_to_nofo(nofo)
+            except Exception as e:
+                return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
+
             nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
             nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
             nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
@@ -425,8 +433,7 @@ def nofo_subsection_edit(request, pk, subsection_pk):
         return HttpResponseBadRequest("Oops, bad NOFO id")
 
     if nofo.status == "published":
-        # Only draft NOFOs can be deleted
-        return HttpResponseBadRequest("Server error editing NOFO content.")
+        return HttpResponseBadRequest("Published NOFOs can’t be edited.")
 
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
