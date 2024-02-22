@@ -109,6 +109,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
+    "bloom_nofos.middleware.BadRequestMiddleware",
     "nofos.middleware.NofosLoginRequiredMiddleware",
 ]
 

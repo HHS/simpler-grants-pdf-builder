@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Change the azure callout boxes to grey in ORR theme
 - Show NOFOs that have not been published as the default view
 - No red tagline in ORR theme
+- Return error messages to users for 400-level errors
 
 ### Fixed
 

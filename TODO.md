@@ -15,10 +15,10 @@
   - White large cover HRSA
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
-- TODO: errors should be visible
 
 # DONE
 
+- Fix: returned error messages should be visible
 - Fix: importing tables with colspans?
 - Fix: Indented application checklist for portrait tables also
 - Filter the NOFOs that appear in the table by published status

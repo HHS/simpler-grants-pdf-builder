@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	400 bruv, oops — Bad request
+{% endblock %}
+
+
+{% block content %}
+	<h1 class="font-heading-xl margin-y-0">400 bruv, oops</h1>
+  <p><strong>{{ error_message }}</strong></p>
+  <p>If you don’t know what this means, let Paul know what happened and he will get to the bottom of it.</p>
+	<p>Maybe go back to:</p>
+	<ul class="usa-list">
+		<li><a href="{% url 'index' %}">homepage</a></li>
+		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
+	</ul>
+{% endblock %}
