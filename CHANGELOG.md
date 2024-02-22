@@ -16,9 +16,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - (They will just be rendered as HTML rather than markdown)
 - Change the azure callout boxes to grey in ORR theme
 - Show NOFOs that have not been published as the default view
+- No red tagline in ORR theme
 
 ### Fixed
 
+- When section 3 said "prepare" instead of "write", the icon didn't show up
 - FIXED: martor’s busted markdown link regex
   - https://github.com/pcraig3/django-markdown-editor/commit/9d78dd0bab9a4bfebcc4841794f6f5d54ad6d91a
 - "Border" icons rather than "filled" for ORR theme
