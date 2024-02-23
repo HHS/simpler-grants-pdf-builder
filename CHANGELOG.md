@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Text only cover page for HRSA light theme
 - Add new NOFO field: icon_path
   - Can be used to change ToC colour
+- Added inline images for HRSA 016
 
 ### Changed
 
