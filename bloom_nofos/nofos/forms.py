@@ -47,7 +47,9 @@ NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
 NofoCoverForm = create_nofo_form_class(["cover"])
 NofoStatusForm = create_nofo_form_class(["status"])
-NofoIconPathForm = create_nofo_form_class(["icon_path"])
+NofoIconPathForm = create_nofo_form_class(
+    ["icon_path"], not_required_field_labels=["Icon path"]
+)
 
 
 # this one needs a custom field and a custom widget so don't use the factory function
