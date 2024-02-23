@@ -155,6 +155,13 @@ class Nofo(models.Model):
         help_text="The status of this NOFO in the NOFO builder.",
     )
 
+    icon_path = models.CharField(
+        "Icon path",
+        max_length=64,
+        blank=True,
+        help_text="An override for the icon path if the default doens’t work.",
+    )
+
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
