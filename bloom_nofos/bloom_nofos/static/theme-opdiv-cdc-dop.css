@@ -42,13 +42,6 @@
   width: 100%;
 }
 
-img.usa-icon--check_box_outline_blank {
-  background: var(--color--white);
-  -webkit-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
-  -moz-box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
-  box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
-}
-
 /* Headings */
 
 h1 {
