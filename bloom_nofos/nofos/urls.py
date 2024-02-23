@@ -82,6 +82,11 @@ urlpatterns = [
         name="nofo_edit_status",
     ),
     path(
+        "<int:pk>/edit/icon-path",
+        views.NofoEditIconPathView.as_view(),
+        name="nofo_edit_icon_path",
+    ),
+    path(
         "<int:pk>/edit/subsection/<int:subsection_pk>",
         views.nofo_subsection_edit,
         name="subsection_edit",
