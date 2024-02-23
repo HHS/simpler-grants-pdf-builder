@@ -135,7 +135,7 @@
       {% for section in nofo.sections.all|dictsort:"order" %}
         {% if section.has_section_page %}
           <li class="toc--section-name">
-            <img class="toc--section-name--img {% static_icon section.name nofo.theme 'toc' nofo.number %}" src="{% static_icon section.name nofo.theme 'toc' nofo.number %}" alt="">
+            <img class="toc--section-name--img {% static_icon section.name nofo.theme 'toc' nofo %}" src="{% static_icon section.name nofo.theme 'toc' nofo %}" alt="">
             <div class="toc--section-name--wrapper">
               <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 

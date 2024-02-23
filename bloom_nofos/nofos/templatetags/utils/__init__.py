@@ -150,7 +150,7 @@ def is_callout_box_table_markdown(table):
 # Icons
 
 
-def _get_icon_path_from_theme(theme, section, nofo_number=""):
+def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path=""):
     """
     Returns the path to the given theme's icons.
 
@@ -166,6 +166,9 @@ def _get_icon_path_from_theme(theme, section, nofo_number=""):
             return "img/figma-icons/med-blue-border"
 
     if section == "toc":
+        if nofo_icon_path:
+            return nofo_icon_path
+
         if "orr" in theme:
             return "img/figma-icons/orr-blue-border"
         if colour == "white":
@@ -233,6 +236,7 @@ def get_icon_from_theme(
     theme="portrait-cdc-blue",
     section="section_cover",
     nofo_number="",
+    nofo_icon_path="",
 ):
     """
     Returns the icon filename for the given section name and theme.
@@ -259,7 +263,7 @@ def get_icon_from_theme(
     ]
     icon_name = icon_name.lower()
 
-    icon_path = _get_icon_path_from_theme(theme, section, nofo_number)
+    icon_path = _get_icon_path_from_theme(theme, section, nofo_number, nofo_icon_path)
 
     for search_term, filename in icon_tuples:
         if search_term in icon_name:
