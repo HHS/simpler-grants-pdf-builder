@@ -91,5 +91,10 @@ urlpatterns = [
         views.nofo_subsection_edit,
         name="subsection_edit",
     ),
+    path(
+        "<int:pk>/check-links/",
+        views.CheckNOFOLinksDetailView.as_view(),
+        name="check_nofo_links",
+    ),
     path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
 ]

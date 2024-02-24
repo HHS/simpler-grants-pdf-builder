@@ -22,6 +22,7 @@ django-constance = "^3.1.0"
 django-picklefield = "^3.1"
 markdown = "3.3"
 martor = {git = "https://github.com/pcraig3/django-markdown-editor.git"}
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
