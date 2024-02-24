@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load martortags nofo_name get_value_or_none add_classes_to_tables %}
+
+{% block title %}
+  All links for “{{ nofo|nofo_name }}”
+{% endblock %}
+
+{% block body_class %}nofo_links{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="All links" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>Here are all the external links in this NOFO</p>
+
+  <p><a href="{% url 'nofos:check_nofo_links' object.id %}?get_statuses=True">Get link statuses</a></p>
+    
+  <table class="usa-table">
+    <caption>
+      All external links in NOFO
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Domain</th>
+        <th scope="col">Location</th>
+        <th scope="col">Status</th>
+        <th scope="col">Redir</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for link in all_links %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td style="width: 45%; word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
+          <td>
+            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}">{{ link.subsection.name }}</a>
+          </td>
+          <td>{{ link.status }} {% if link.status == 200 %}🟢{% elif link.status > 499 %}🟠{% elif link.status > 399 %}🔴{% endif %}</td>
+          <td>{% if link.redirect_url %}Yes{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

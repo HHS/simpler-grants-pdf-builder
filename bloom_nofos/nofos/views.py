@@ -2,6 +2,12 @@ import io
 import os
 
 import docraptor
+import markdown
+
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse
+
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -532,6 +538,85 @@ class PrintNofoAsPDFView(View):
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
+
+
+# TODO: clean this up if we keep it
+
+
+def update_link_statuses(all_links):
+    def check_link_status(link):
+        try:
+            response = requests.head(link["url"], timeout=5, allow_redirects=True)
+            link["status"] = response.status_code
+            if len(response.history):
+                link["redirect_url"] = response.url
+        except requests.RequestException as e:
+            link["error"] = "Error: " + str(e)
+        return link
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        # Submit all tasks and create a dictionary to track future to link mapping
+        future_to_link = {
+            executor.submit(check_link_status, link): link for link in all_links
+        }
+
+        for future in as_completed(future_to_link):
+            link = future_to_link[future]
+            try:
+                result = future.result()
+                # Update the link in all_links with the result
+                link.update(result)
+            except Exception as e:
+                print(f"Error checking link {link['url']}: {e}")
+
+
+class CheckNOFOLinksDetailView(DetailView):
+
+    model = Nofo
+    template_name = (
+        "nofos/check_nofo_links.html"  # Replace with your actual template name
+    )
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        nofo = context["object"]
+        all_links = []
+
+        sections = nofo.sections.all().order_by("order")
+        for section in sections:
+            subsections = section.subsections.all().order_by("order")
+
+            for subsection in subsections:
+                soup = BeautifulSoup(
+                    markdown.markdown(subsection.body, extensions=["extra"]),
+                    "html.parser",
+                )
+                links = soup.find_all("a")
+                for link in links:
+                    link_text = link.get("href", "#")
+
+                    if link_text.startswith("http"):
+                        all_links.append(
+                            {
+                                "url": link_text,
+                                "domain": urlparse(link_text).hostname,
+                                "section": section,
+                                "subsection": subsection,
+                                "status": "",
+                                "error": "",
+                                "redirect_url": "",
+                            }
+                        )
+
+        get_statuses = self.request.GET.get("get_statuses", None)
+        if get_statuses:
+            update_link_statuses(all_links)
+
+        context["all_links"] = all_links
+
+        print(all_links)
+        return context
 
 
 def insert_order_space(section_id, insert_at_order):
