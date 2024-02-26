@@ -2,6 +2,9 @@ import datetime
 import re
 from urllib.parse import parse_qs, urlparse
 
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import markdown
 from bs4 import BeautifulSoup, NavigableString, Tag
 from django.db import transaction
@@ -350,6 +353,104 @@ def get_subsections_from_sections(sections):
     return sections
 
 
+def get_logo(
+    opdiv="cdc", colour="blue", cover="nofo--cover-page--medium", orientation="portrait"
+):
+    if not colour or not opdiv or not cover:
+        raise ValueError("opdiv, colour, and/or cover cannot be empty")
+
+    if opdiv == "acf":
+        if cover == "nofo--cover-page--text" and colour == "blue":
+            return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)
+
+        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
+
+    if opdiv == "hrsa":
+        if cover == "nofo--cover-page--text":
+            # confusing, but if we are on the white theme, we want the blue logo
+            colour = "blue" if colour == "white" else "white"
+            return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
+
+        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
+
+    if opdiv == "cdc":
+        if orientation == "portrait":
+            if cover == "nofo--cover-page--medium":
+                colour = "white"
+            if cover == "nofo--cover-page--hero":
+                colour = "blue"
+        return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
+
+    return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
+
+
+def _update_link_statuses(all_links):
+    def check_link_status(link):
+        try:
+            response = requests.head(link["url"], timeout=5, allow_redirects=True)
+            link["status"] = response.status_code
+            if len(response.history):
+                link["redirect_url"] = response.url
+        except requests.RequestException as e:
+            link["error"] = "Error: " + str(e)
+        return link
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        # Submit all tasks and create a dictionary to track future to link mapping
+        future_to_link = {
+            executor.submit(check_link_status, link): link for link in all_links
+        }
+
+        for future in as_completed(future_to_link):
+            link = future_to_link[future]
+            try:
+                result = future.result()
+                # Update the link in all_links with the result
+                link.update(result)
+            except Exception as e:
+                print(f"Error checking link {link['url']}: {e}")
+
+
+def find_external_links(nofo, with_status):
+    all_links = []
+
+    sections = nofo.sections.all().order_by("order")
+    for section in sections:
+        subsections = section.subsections.all().order_by("order")
+
+        for subsection in subsections:
+            soup = BeautifulSoup(
+                markdown.markdown(subsection.body, extensions=["extra"]),
+                "html.parser",
+            )
+            links = soup.find_all("a")
+            for link in links:
+                link_text = link.get("href", "#")
+
+                if link_text.startswith("http"):
+                    all_links.append(
+                        {
+                            "url": link_text,
+                            "domain": urlparse(link_text).hostname,
+                            "section": section,
+                            "subsection": subsection,
+                            "status": "",
+                            "error": "",
+                            "redirect_url": "",
+                        }
+                    )
+
+    if with_status:
+        _update_link_statuses(all_links)
+
+    return all_links
+
+
+###########################################################
+#################### SUGGEST VAR FUNCS ####################
+###########################################################
+
+
 def _suggest_by_startswith_string(soup, startswith_string):
     suggestion = ""
     regex = re.compile("^{}".format(startswith_string), re.IGNORECASE)
@@ -440,35 +541,9 @@ def suggest_nofo_keywords(soup):
     return suggestion or ""
 
 
-def get_logo(
-    opdiv="cdc", colour="blue", cover="nofo--cover-page--medium", orientation="portrait"
-):
-    if not colour or not opdiv or not cover:
-        raise ValueError("opdiv, colour, and/or cover cannot be empty")
-
-    if opdiv == "acf":
-        if cover == "nofo--cover-page--text" and colour == "blue":
-            return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)
-
-        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
-
-    if opdiv == "hrsa":
-        if cover == "nofo--cover-page--text":
-            # confusing, but if we are on the white theme, we want the blue logo
-            colour = "blue" if colour == "white" else "white"
-            return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
-
-        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
-
-    if opdiv == "cdc":
-        if orientation == "portrait":
-            if cover == "nofo--cover-page--medium":
-                colour = "white"
-            if cover == "nofo--cover-page--hero":
-                colour = "blue"
-        return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
-
-    return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
+###########################################################
+#################### MUTATE HTML FUNCS ####################
+###########################################################
 
 
 def join_nested_lists(soup):
