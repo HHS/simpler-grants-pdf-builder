@@ -87,6 +87,13 @@
           <ul class="usa-list usa-list--unstyled">
             <li>
               <p>
+              <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+                Check external links
+              </a>— There are {{ external_links|length }} external links in this NOFO
+              </p>
+            </li>
+            <li>
+              <p>
               <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
                 Re-import NOFO
               </a>— upload an updated HTML file
@@ -109,23 +116,27 @@
 
   {% if broken_links|length %}
     <section
-    class="usa-site-alert usa-site-alert--emergency"
+    class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links"
     aria-label="Site alert"
     >
       <div class="usa-alert">
         <div class="usa-alert__body">
-          <h3 class="usa-alert__heading">Warning: some links are no bueno</h3>
+          <h3 class="usa-alert__heading">Warning: some internal links are no bueno</h3>
           <div>
             <details>
               <summary>
-                <span>There are {{ broken_links|length }} broken links</span>
+                  {% if broken_links|length == 1 %}
+                    <span>There is 1 broken link</span>
+                  {% else %}
+                    <span>There are {{ broken_links|length }} broken links</span>
+                  {% endif %}
               </summary>
               <div>
-                {% for broken_link in broken_links %}
-                  <ul>
+                <ol class="usa-list usa-list--no-max-width">
+                  {% for broken_link in broken_links %}
                     <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
-                  </ul>
-                {% endfor %}
+                  {% endfor %}
+                </ol>
               </div>
             </details>
           </div>
