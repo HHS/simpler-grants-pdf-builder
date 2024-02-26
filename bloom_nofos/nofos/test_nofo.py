@@ -1,4 +1,6 @@
-from unittest.mock import patch
+import requests
+
+from unittest.mock import patch, MagicMock
 
 from bs4 import BeautifulSoup
 from django.test import TestCase
@@ -17,6 +19,7 @@ from .nofo import (
     decompose_empty_tags,
     escape_asterisks_in_table_cells,
     find_broken_links,
+    find_external_links,
     get_logo,
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -35,6 +38,7 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    _update_link_statuses as update_link_statuses,
 )
 from .utils import clean_string, match_view_url
 
@@ -1019,6 +1023,95 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+
+class TestUpdateLinkStatuses(TestCase):
+
+    @patch("nofos.nofo.requests.head")
+    def test_status_code_200(self, mock_head):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.history = []
+        mock_head.return_value = mock_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+        self.assertEqual(all_links[0]["status"], 200)
+
+    @patch("nofos.nofo.requests.head")
+    def test_status_code_404(self, mock_head):
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.history = []
+        mock_head.return_value = mock_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+        self.assertEqual(all_links[0]["status"], 404)
+
+    @patch("nofos.nofo.requests.head")
+    def test_status_code_301_with_redirect(self, mock_head):
+        mock_response = MagicMock()
+        mock_response.status_code = 301
+        mock_response.url = "https://redirected.com"
+        mock_response.history = ["dummy_history"]
+        mock_head.return_value = mock_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+        self.assertEqual(all_links[0]["status"], 301)
+        self.assertEqual(all_links[0]["redirect_url"], "https://redirected.com")
+
+    @patch("nofos.nofo.requests.head")
+    def test_request_exception(self, mock_head):
+        mock_head.side_effect = requests.RequestException("Connection error")
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+        self.assertIn("Error: Connection error", all_links[0]["error"])
+
+
+class TestFindExternalLinks(TestCase):
+    def setUp(self):
+        self.sections = _get_sections_dict()
+
+    def test_find_external_links_with_one_link_in_subsections(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+
+        # Assertions
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+
+    def test_find_external_links_with_two_links_in_subsections(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
+        ]
+        self_sections[0]["subsections"][1]["body"] = [
+            '<p>Section 2 body with link to <a href="https://canada-holidays.ca">Canada Holidays</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+        self.assertEqual(links[1]["url"], "https://canada-holidays.ca")
+
+    def test_find_external_links_no_link_in_subsection(self):
+        # no links in the original subsections
+        nofo = create_nofo("Test Nofo", self.sections)
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
 
 
 #########################################################

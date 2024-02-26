@@ -17,7 +17,7 @@
 
   <p>Here are all the external links in this NOFO</p>
 
-  <p><a href="{% url 'nofos:check_nofo_links' object.id %}?get_statuses=True">Get link statuses</a></p>
+  <p><a href="{% url 'nofos:nofo_check_links' object.id %}?get_statuses=True">Get link statuses</a></p>
     
   <table class="usa-table">
     <caption>
@@ -33,14 +33,14 @@
       </tr>
     </thead>
     <tbody>
-      {% for link in all_links %}
+      {% for link in links %}
         <tr>
           <td>{{ forloop.counter }}</td>
           <td style="width: 45%; word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
           <td>
             {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}">{{ link.subsection.name }}</a>
           </td>
-          <td>{{ link.status }} {% if link.status == 200 %}🟢{% elif link.status > 499 %}🟠{% elif link.status > 399 %}🔴{% endif %}</td>
+          <td>{{ link.status }} <span aria-hidden="true">{% if link.status == 200 %}🟢{% elif link.status > 499 %}🟠{% elif link.status > 399 %}🔴{% else %}🤔{% endif %}</span></td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>
         </tr>
       {% endfor %}

@@ -27,3 +27,7 @@ def clean_string(string):
 def create_subsection_html_id(counter, subsection):
     section_name = subsection.section.name
     return "{}--{}--{}".format(counter, slugify(section_name), slugify(subsection.name))
+
+
+def cast_to_bool(str):
+    return str.lower() in ["true", "1"]

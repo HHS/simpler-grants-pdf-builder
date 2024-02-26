@@ -94,7 +94,7 @@ urlpatterns = [
     path(
         "<int:pk>/check-links/",
         views.CheckNOFOLinksDetailView.as_view(),
-        name="check_nofo_links",
+        name="nofo_check_links",
     ),
     path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
 ]
