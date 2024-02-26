@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add link checker to looks for bad external links
+  - Add button to the NOFO edit page for the broken link checker
 - Add 'print' button to NOFO edit view
 - Text only cover page for HRSA light theme
 - Add new NOFO field: icon_path

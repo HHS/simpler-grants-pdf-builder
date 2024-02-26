@@ -191,6 +191,7 @@ class NofosEditView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["broken_links"] = find_broken_links(self.object)
+        context["external_links"] = find_external_links(self.object, with_status=False)
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
@@ -548,10 +549,10 @@ class CheckNOFOLinksDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        nofo = context["object"]
         with_status = cast_to_bool(self.request.GET.get("with_status", ""))
 
-        context["links"] = find_external_links(nofo, with_status)
+        context["links"] = find_external_links(self.object, with_status)
+        context["with_status"] = with_status
         return context
 
 

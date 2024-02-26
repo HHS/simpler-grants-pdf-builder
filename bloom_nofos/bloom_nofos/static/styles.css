@@ -31,6 +31,10 @@ details > summary > span:hover {
   text-decoration: underline;
 }
 
+.usa-list--no-max-width li {
+  max-width: none;
+}
+
 .usa-nav__primary .usa-nav__primary-item a[aria-current] {
   text-decoration: underline;
 }
@@ -76,8 +80,12 @@ details > summary > span:hover {
   margin-bottom: 0;
 }
 
-.nofo_edit .usa-site-alert--emergency a {
+.nofo_edit .usa-site-alert--broken-links a {
   color: var(--color--white);
+}
+
+.nofo_edit .usa-site-alert--broken-links li {
+  margin-bottom: 0.75em;
 }
 
 .nofo_edit caption {

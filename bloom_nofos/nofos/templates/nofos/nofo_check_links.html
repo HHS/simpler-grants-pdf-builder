@@ -10,18 +10,38 @@
 {% block content %}
   {% with nofo|nofo_name as nofo_name_str %}
   {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+  {% with "Check links for “"|add:nofo_name_str|add:"”" as title %}
     {% url 'nofos:nofo_edit' nofo.id as back_href %}
-    {% include "includes/page_heading.html" with title="All links" back_text=back_text back_href=back_href only %}
+    {% include "includes/page_heading.html" with title=title back_text=back_text back_href=back_href only %}
+  {% endwith %}
   {% endwith %}
   {% endwith %}
 
-  <p>Here are all the external links in this NOFO</p>
+  <p>There are <strong>{{ links|length }} external links</strong> in this NOFO.</p>
+  
+  {% if with_status %}
+  <details>
+    <summary><span>What does the ‘Status’ number mean?</span></summary>
+    <div>
+      <ul class="usa-list usa-list--no-max-width">
+        <li> <strong>200 🟢 (OK):</strong> The request succeeded — all good.</li>
+        <li><strong>404 🔴 (Not Found):</strong> This page can’t be found — likely a broken link.</li>
+        <li><strong>500 🟠 (Internal server error):</strong> The server has encountered a problem — manually check if the link is working.</li>
+      </ul>
+      <p>Learn more about <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">HTTP response status codes</a>.</p>
+    </div>
+  </details>
+  {% else %}
+    <p>
+      <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' object.id %}?with_status=True">
+        Get link statuses
+      </a>
+    </p>
+  {% endif %}
 
-  <p><a href="{% url 'nofos:nofo_check_links' object.id %}?get_statuses=True">Get link statuses</a></p>
-    
   <table class="usa-table">
     <caption>
-      All external links in NOFO
+      External links in NOFO
     </caption>
     <thead>
       <tr>
@@ -38,9 +58,9 @@
           <td>{{ forloop.counter }}</td>
           <td style="width: 45%; word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
           <td>
-            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}">{{ link.subsection.name }}</a>
+            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{{ link.subsection.name }}</a>
           </td>
-          <td>{{ link.status }} <span aria-hidden="true">{% if link.status == 200 %}🟢{% elif link.status > 499 %}🟠{% elif link.status > 399 %}🔴{% else %}🤔{% endif %}</span></td>
+          <td>{{ link.status }} <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% endif %}</span></td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>
         </tr>
       {% endfor %}
