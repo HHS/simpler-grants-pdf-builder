@@ -1,8 +1,11 @@
 import datetime
 import re
+import logging
 from urllib.parse import parse_qs, urlparse
 
 import requests
+import cssutils
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import markdown
@@ -884,3 +887,57 @@ def escape_asterisks_in_table_cells(soup):
             # Use the regex pattern to replace '*' with '\*' only if '*' is not already preceded by '\'
             escaped_content = pattern.sub(r"\\*", content)
             content.replace_with(escaped_content)
+
+
+def _get_font_size_from_cssText(cssText):
+    font_size = [rule for rule in cssText.split("\n") if "font-size" in rule]
+
+    font_size = font_size.pop().split(":")[1].strip(" ;")
+    if "pt" in font_size:
+        return int(font_size.strip("pt"))
+
+    return font_size
+
+
+def _get_classnames_for_font_weight_bold(styles_as_text):
+    cssutils.log.setLevel(logging.CRITICAL)
+    stylesheet = cssutils.parseString(styles_as_text)
+
+    include_rule = "font-weight: 700"
+    matching_classes = set()
+
+    for rule in stylesheet:
+        if isinstance(rule, cssutils.css.CSSStyleRule):
+            for selector in rule.selectorList:
+                if selector.selectorText.startswith(
+                    "."
+                ):  # Make sure it's a class selector
+
+                    class_name = selector.selectorText[1:]
+                    if include_rule in rule.style.cssText:
+                        font_size = ""
+
+                        if "font-size" in rule.style.cssText:
+                            font_size = _get_font_size_from_cssText(rule.style.cssText)
+
+                        # exclude classes with font-size >= 18pt
+                        if font_size and isinstance(font_size, int) and font_size >= 18:
+                            pass
+                        else:
+                            matching_classes.add(class_name)
+
+    return matching_classes
+
+
+def add_strongs_to_soup(soup):
+    style_tag = soup.find("style")
+    if style_tag:
+        matching_classes = _get_classnames_for_font_weight_bold(style_tag.get_text())
+
+        for class_name in matching_classes:
+            for element in soup.find_all(class_=class_name):
+                # Check if the element is inside a <td> in the first row of a table
+                parent_tr = element.find_parent("tr")
+                if parent_tr and parent_tr.find_previous_sibling() is None:
+                    continue
+                element.wrap(soup.new_tag("strong"))

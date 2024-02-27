@@ -40,6 +40,7 @@ from .models import Nofo, Section, Subsection, THEME_CHOICES
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
+    add_strongs_to_soup,
     clean_table_cells,
     combine_consecutive_links,
     create_nofo,
@@ -241,6 +242,7 @@ def nofo_import(request, pk=None):
 
         # mutate the HTML
         join_nested_lists(soup)
+        add_strongs_to_soup(soup)
         decompose_empty_tags(soup)
         clean_table_cells(soup)
         combine_consecutive_links(soup)

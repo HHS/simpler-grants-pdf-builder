@@ -12,6 +12,7 @@ from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
+    add_strongs_to_soup,
     clean_table_cells,
     combine_consecutive_links,
     convert_table_first_row_to_header_row,
@@ -39,6 +40,8 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
     _update_link_statuses as update_link_statuses,
+    _get_font_size_from_cssText,
+    _get_classnames_for_font_weight_bold,
 )
 from .utils import clean_string, match_view_url
 
@@ -1722,6 +1725,222 @@ class TestEscapeAsterisksInTableCells(TestCase):
             str(soup),
             "<div><p>Test*</p><table><tr><td>Test\\* Text</td></tr></table></div>",
         )
+
+
+class TestGetFontSizeFromCssText(TestCase):
+
+    def test_get_font_size_in_points(self):
+        css_text = """
+        background-color: #fff;
+        color: #000;
+        font-weight: 700;
+        text-decoration: none;
+        vertical-align: baseline;
+        font-size: 12pt;
+        font-family: "Calibri";
+        font-style: normal
+        """
+        self.assertEqual(_get_font_size_from_cssText(css_text), 12)
+
+    def test_get_font_size_in_pixels(self):
+        css_text = """
+        font-size: 16px;
+        """
+        self.assertEqual(_get_font_size_from_cssText(css_text), "16px")
+
+    def test_font_size_missing(self):
+        css_text = """
+        background-color: #fff;
+        color: #000;
+        """
+        with self.assertRaises(IndexError):
+            _get_font_size_from_cssText(css_text)
+
+    def test_font_size_with_extra_spaces(self):
+        css_text = """
+        font-size:    14pt   ;
+        """
+        self.assertEqual(_get_font_size_from_cssText(css_text), 14)
+
+    def test_font_size_with_multiple_rules(self):
+        css_text = """
+        font-size: 10pt;
+        font-size: 18pt;
+        """
+        self.assertEqual(
+            _get_font_size_from_cssText(css_text), 18
+        )  # Should return the last defined size
+
+
+class TestGetClassnamesForFontWeightBold(TestCase):
+
+    def test_get_classnames_for_bold_font_weight(self):
+        styles_as_text = """
+        .c1{font-weight:700;font-size:12pt;}
+        .c2{font-weight:700;font-size:18px;}
+        .c3{font-weight:700;font-size:36pt;}
+        """
+        expected_classes = {"c1", "c2"}
+        self.assertEqual(
+            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+        )
+
+    def test_exclude_large_font_size(self):
+        styles_as_text = """
+        .c1{font-weight:700;font-size:12pt;}
+        .c3{font-weight:700;font-size:36pt;}
+        """
+        expected_classes = {"c1"}
+        self.assertEqual(
+            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+        )
+
+    def test_no_bold_font_weight(self):
+        styles_as_text = """
+        .c1{font-weight:400;font-size:12pt;}
+        .c2{font-weight:400;font-size:18px;}
+        """
+        expected_classes = set()
+        self.assertEqual(
+            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+        )
+
+    def test_mixed_rules(self):
+        styles_as_text = """
+        .c1{font-weight:700;font-size:12pt;}
+        .c2{font-weight:700;}
+        .c3{font-size:36pt;}
+        .c4{font-weight:700;font-size:16pt;}
+        """
+        expected_classes = {"c1", "c2", "c4"}
+        self.assertEqual(
+            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+        )
+
+
+class TestAddStrongsToSoup(TestCase):
+    def test_add_strongs_to_elements(self):
+        html = """
+        <html>
+            <head>
+                <style>.bold{font-weight:700;}</style>
+            </head>
+            <body>
+                <p><span class="bold">Bold text</span></p>
+                <p>Normal text</p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+        self.assertEqual(soup.find("span", class_="bold").parent.name, "strong")
+
+    def test_do_not_bold_elements_in_first_row_td(self):
+        html = """
+        <html>
+            <head>
+                <style>.bold{font-weight:700;}</style>
+            </head>
+            <table>
+                <tr>
+                    <td><span class="bold first-row">Bold heading</span></th>
+                </tr>
+                <tr>
+                    <td><span class="bold second-row">Bold heading</span></th>
+                </tr>
+            </table>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+
+        # no strong tag on this one
+        self.assertEqual(soup.find("span", class_="first-row").parent.name, "td")
+        self.assertEqual(soup.find("span", class_="second-row").parent.name, "strong")
+
+    def test_multiple_bold_elements(self):
+        html = """
+        <html>
+            <head>
+                <style>.bold{font-weight:700;}</style>
+            </head>
+            <body>
+                <p><span class="bold">First bold text</span></p>
+                <p><span class="bold">Second bold text</span></p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+        bold_elements = soup.find_all("span", class_="bold")
+        for element in bold_elements:
+            self.assertEqual(element.parent.name, "strong")
+
+    def test_do_not_bold_heading_classes(self):
+        html = """
+        <html>
+            <head>
+                <style>
+                    .bold-heading{font-weight:700; font-size: 36pt;}
+                    .bold{font-weight:700;}
+                </style>
+            </head>
+            <body>
+                <h1><span class="bold-heading">First bold text</span></h1>
+                <p><span class="bold">Second bold text</span></p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+        self.assertEqual(soup.find("span", class_="bold-heading").parent.name, "h1")
+        self.assertEqual(soup.find("span", class_="bold").parent.name, "strong")
+
+    def test_do_not_bold_other_font_weights(self):
+        html = """
+        <html>
+            <head>
+                <style>
+                    .bold-600{font-weight:600;}
+                    .bold-700{font-weight:700;}
+                    .bold-800{font-weight:800;}
+                </style>
+            </head>
+            <body>
+                <p><span class="bold-600">Bold text 600</span></p>
+                <p><span class="bold-700">Bold text 700</span></p>
+                <p><span class="bold-800">Bold text 800</span></p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+        self.assertEqual(soup.find("span", class_="bold-600").parent.name, "p")
+        self.assertEqual(soup.find("span", class_="bold-700").parent.name, "strong")
+        self.assertEqual(soup.find("span", class_="bold-800").parent.name, "p")
+
+    def test_multiple_bold_classes_are_added(self):
+        html = """
+        <html>
+            <head>
+                <style>
+                    .bold-1{font-weight:700; font-size: 20pt;}
+                    .bold-2{font-weight:700; font-size: 10pt;}
+                    .bold-3{font-weight:700; font-size: 100px;}
+                </style>
+            </head>
+            <body>
+                <p><span class="bold-1">Bold text 1</span></p>
+                <p><span class="bold-2">Bold text 2</span></p>
+                <p><span class="bold-3">Bold text 3</span></p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_strongs_to_soup(soup)
+        self.assertEqual(soup.find("span", class_="bold-1").parent.name, "p")
+        self.assertEqual(soup.find("span", class_="bold-2").parent.name, "strong")
+        self.assertEqual(soup.find("span", class_="bold-3").parent.name, "strong")
 
 
 ###########################################################
