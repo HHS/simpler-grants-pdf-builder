@@ -2,10 +2,6 @@ import io
 import os
 
 import docraptor
-import markdown
-
-from urllib.parse import urlparse
-
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -36,7 +32,7 @@ from .forms import (
     NofoThemeForm,
     SubsectionForm,
 )
-from .models import Nofo, Section, Subsection, THEME_CHOICES
+from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,

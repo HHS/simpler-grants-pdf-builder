@@ -1,8 +1,5 @@
 from django import forms
-from django.db import transaction
-from django.db.models import F, Max
 from martor.fields import MartorFormField
-from martor.widgets import AdminMartorWidget
 
 from .models import Nofo, Section, Subsection
 

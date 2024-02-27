@@ -1,14 +1,18 @@
+from unittest.mock import MagicMock, patch
+
 import requests
-
-from unittest.mock import patch, MagicMock
-
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
+from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER
 from .nofo import (
-    DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    _get_classnames_for_font_weight_bold as get_classnames_for_font_weight_bold,
+)
+from .nofo import _get_font_size_from_cssText as get_font_size_from_cssText
+from .nofo import _update_link_statuses as update_link_statuses
+from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_newline_to_ref_numbers,
@@ -39,9 +43,6 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
-    _update_link_statuses as update_link_statuses,
-    _get_font_size_from_cssText,
-    _get_classnames_for_font_weight_bold,
 )
 from .utils import clean_string, match_view_url
 
@@ -1029,7 +1030,6 @@ class TestFindBrokenLinks(TestCase):
 
 
 class TestUpdateLinkStatuses(TestCase):
-
     @patch("nofos.nofo.requests.head")
     def test_status_code_200(self, mock_head):
         mock_response = MagicMock()
@@ -1728,7 +1728,6 @@ class TestEscapeAsterisksInTableCells(TestCase):
 
 
 class TestGetFontSizeFromCssText(TestCase):
-
     def test_get_font_size_in_points(self):
         css_text = """
         background-color: #fff;
@@ -1740,13 +1739,13 @@ class TestGetFontSizeFromCssText(TestCase):
         font-family: "Calibri";
         font-style: normal
         """
-        self.assertEqual(_get_font_size_from_cssText(css_text), 12)
+        self.assertEqual(get_font_size_from_cssText(css_text), 12)
 
     def test_get_font_size_in_pixels(self):
         css_text = """
         font-size: 16px;
         """
-        self.assertEqual(_get_font_size_from_cssText(css_text), "16px")
+        self.assertEqual(get_font_size_from_cssText(css_text), "16px")
 
     def test_font_size_missing(self):
         css_text = """
@@ -1754,13 +1753,13 @@ class TestGetFontSizeFromCssText(TestCase):
         color: #000;
         """
         with self.assertRaises(IndexError):
-            _get_font_size_from_cssText(css_text)
+            get_font_size_from_cssText(css_text)
 
     def test_font_size_with_extra_spaces(self):
         css_text = """
         font-size:    14pt   ;
         """
-        self.assertEqual(_get_font_size_from_cssText(css_text), 14)
+        self.assertEqual(get_font_size_from_cssText(css_text), 14)
 
     def test_font_size_with_multiple_rules(self):
         css_text = """
@@ -1768,12 +1767,11 @@ class TestGetFontSizeFromCssText(TestCase):
         font-size: 18pt;
         """
         self.assertEqual(
-            _get_font_size_from_cssText(css_text), 18
+            get_font_size_from_cssText(css_text), 18
         )  # Should return the last defined size
 
 
 class TestGetClassnamesForFontWeightBold(TestCase):
-
     def test_get_classnames_for_bold_font_weight(self):
         styles_as_text = """
         .c1{font-weight:700;font-size:12pt;}
@@ -1782,7 +1780,7 @@ class TestGetClassnamesForFontWeightBold(TestCase):
         """
         expected_classes = {"c1", "c2"}
         self.assertEqual(
-            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+            get_classnames_for_font_weight_bold(styles_as_text), expected_classes
         )
 
     def test_exclude_large_font_size(self):
@@ -1792,7 +1790,7 @@ class TestGetClassnamesForFontWeightBold(TestCase):
         """
         expected_classes = {"c1"}
         self.assertEqual(
-            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+            get_classnames_for_font_weight_bold(styles_as_text), expected_classes
         )
 
     def test_no_bold_font_weight(self):
@@ -1802,7 +1800,7 @@ class TestGetClassnamesForFontWeightBold(TestCase):
         """
         expected_classes = set()
         self.assertEqual(
-            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+            get_classnames_for_font_weight_bold(styles_as_text), expected_classes
         )
 
     def test_mixed_rules(self):
@@ -1814,7 +1812,7 @@ class TestGetClassnamesForFontWeightBold(TestCase):
         """
         expected_classes = {"c1", "c2", "c4"}
         self.assertEqual(
-            _get_classnames_for_font_weight_bold(styles_as_text), expected_classes
+            get_classnames_for_font_weight_bold(styles_as_text), expected_classes
         )
 
 
