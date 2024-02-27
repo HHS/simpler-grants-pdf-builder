@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Cover image for CDC-RFA-EH-24-0044
+
 ### Changed
 
 ### Fixed
