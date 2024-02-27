@@ -849,6 +849,10 @@ p[role="heading"] {
   widows: 2;
 }
 
+.section--content strong {
+  font-weight: 600;
+}
+
 .section--content h3:first-of-type {
   margin-top: 0;
 }

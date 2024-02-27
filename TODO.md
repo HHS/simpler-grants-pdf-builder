@@ -12,11 +12,12 @@
 - Update the README
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
-- Fix: bolds on import
 - Stop demoting headers on the way in
+- Fix: Slash domains, we don't want them, also Google docs
 
 # DONE
 
+- Fix: Preserve bolds on import (boom, eff yeah)
 - Fix: returned error messages should be visible
 - Fix: importing tables with colspans?
 - Fix: Indented application checklist for portrait tables also
