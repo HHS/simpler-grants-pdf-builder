@@ -981,10 +981,9 @@ class TestFindBrokenLinks(TestCase):
         nofo = Nofo.objects.create(title="Test Nofo")
         section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
 
-        # Subsection with a broken link
         Subsection.objects.create(
             section=section,
-            name="Subsection with Broken H Link",
+            name="Subsection with an #h Link",
             tag="h3",
             body="This is a test [broken link](#h.broken-link) in markdown.",
             order=1,
@@ -999,21 +998,41 @@ class TestFindBrokenLinks(TestCase):
             order=2,
         )
 
-        # Subsection without a broken link
         Subsection.objects.create(
             section=section,
-            name="Subsection with Broken ID Link",
+            name="Subsection with an #id link",
             tag="h3",
             body="This is a second [broken link](#id.broken-link) in markdown.",
             order=3,
         )
 
+        Subsection.objects.create(
+            section=section,
+            name='Subsection with a slash ("/") link',
+            tag="h3",
+            body="This is a [link that assumes a root domain](/contacts) in markdown.",
+            order=4,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a Google Docs link",
+            tag="h3",
+            body="This is a [Google Docs link](https://docs.google.com/document/d/some-document) in markdown.",
+            order=5,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 2)
+        self.assertEqual(len(broken_links), 4)
         self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
+        self.assertEqual(broken_links[2]["link_href"], "/contacts")
+        self.assertEqual(
+            broken_links[3]["link_href"],
+            "https://docs.google.com/document/d/some-document",
+        )
 
     def test_find_broken_links_ignores_valid_links(self):
         nofo = Nofo.objects.get(title="Test Nofo")
@@ -1024,6 +1043,8 @@ class TestFindBrokenLinks(TestCase):
             if not (
                 link["link_href"].startswith("#h.")
                 or link["link_href"].startswith("#id.")
+                or link["link_href"].startswith("/")
+                or link["link_href"].startswith("https://docs.google.com")
             )
         ]
         self.assertEqual(len(valid_links), 0)
