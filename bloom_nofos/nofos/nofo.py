@@ -1,14 +1,12 @@
 import datetime
-import re
 import logging
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
-import requests
 import cssutils
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import markdown
+import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 from django.db import transaction
 from markdownify import MarkdownConverter
@@ -912,7 +910,6 @@ def _get_classnames_for_font_weight_bold(styles_as_text):
                 if selector.selectorText.startswith(
                     "."
                 ):  # Make sure it's a class selector
-
                     class_name = selector.selectorText[1:]
                     if include_rule in rule.style.cssText:
                         font_size = ""

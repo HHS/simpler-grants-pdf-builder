@@ -5,7 +5,6 @@ from martor.models import MartorField
 
 from .utils import create_subsection_html_id
 
-
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
     ("landscape-cdc-white", "CDC Landscape (Light)"),
