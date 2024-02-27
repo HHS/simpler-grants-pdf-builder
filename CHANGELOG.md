@@ -15,6 +15,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Two more href patterns for the "broken links" widget: "/" links and google docs domains
+
 ### Fixed
 
 ## [1.12.0] - 2023-02-26
