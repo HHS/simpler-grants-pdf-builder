@@ -13,6 +13,7 @@
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
 - Fix: bolds on import
+- Stop demoting headers on the way in
 
 # DONE
 
