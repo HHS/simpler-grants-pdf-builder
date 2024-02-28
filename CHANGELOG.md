@@ -8,6 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- It is now possible to switch between "Test" and "live" from the UI
 - Cover image for CDC-RFA-EH-24-0044
 - Add `<strong>` tags to classes with `font-size: 700` on import
   - skip table headings, and large font classes, but otherwise strong ’em up

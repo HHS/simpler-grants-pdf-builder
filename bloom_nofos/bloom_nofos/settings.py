@@ -129,6 +129,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "djversion.context_processors.version",
+                "bloom_nofos.context_processors.add_docraptor_test_mode",
             ],
         },
     },

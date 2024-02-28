@@ -39,6 +39,15 @@
           <em class="usa-logo__text">
             <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a>
           </em>
+          {% if user.is_authenticated %}
+            <a class="inline-block usa-tag--link" href="{% url 'test_mode' %}">
+              {% if DOCRAPTOR_TEST_MODE %}
+                <span class="usa-tag bg-accent-cool-dark">Test</span>
+              {% else %}
+                <span class="usa-tag bg-green">Live</span>
+              {% endif %}
+            </a>
+          {% endif %}
         </div>
       </div>
       <nav aria-label="Primary navigation" class="usa-nav">
@@ -48,7 +57,7 @@
           </li>
           {% if request.user.is_superuser %}
             <li class="usa-nav__primary-item">
-              <a href="/admin/constance/config/" class="usa-nav-link">
+              <a href="{% url 'test_mode' %}?next={{ request.path }}" class="usa-nav-link">
                 {% if DOCRAPTOR_TEST_MODE %}Deactivate ‘test mode’{% else %}Activate ‘test mode’{% endif %}
               </a>
             </li>
