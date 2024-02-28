@@ -890,6 +890,15 @@ def escape_asterisks_in_table_cells(soup):
 
 
 def _get_font_size_from_cssText(cssText):
+    """
+    Extracts the font-size value from a CSS text block.
+
+    This function parses a CSS text block and extracts the font size specified in it.
+    If the font size is specified in points (pt), it returns the size as an integer.
+    Otherwise, it returns the font size as a string.
+
+    Note that the font-size rule definitely exists when the block is passed in.
+    """
     font_size = [rule for rule in cssText.split("\n") if "font-size" in rule]
 
     font_size = font_size.pop().split(":")[1].strip(" ;")
@@ -900,6 +909,13 @@ def _get_font_size_from_cssText(cssText):
 
 
 def _get_classnames_for_font_weight_bold(styles_as_text):
+    """
+    Extracts class names from CSS text that have a font-weight: 700
+    and filters out classes with a font size of 18pt or larger.
+
+    Returns a set of class names that match the criteria
+    (bold font weight and optionally font size less than 18pt).
+    """
     cssutils.log.setLevel(logging.CRITICAL)
     stylesheet = cssutils.parseString(styles_as_text)
 
@@ -929,6 +945,18 @@ def _get_classnames_for_font_weight_bold(styles_as_text):
 
 
 def add_strongs_to_soup(soup):
+    """
+    This function mutates the soup!
+
+    Wraps elements with a specified class in a <strong> tag, excluding elements
+    in the first row of a table.
+
+    This function searches for elements with class names that indicate bold font
+    weight (as determined by the _get_classnames_for_font_weight_bold function) and
+    wraps them in a <strong> tag to preserve them once we convert the HTML to markdown.
+    Elements in the first row of a table (inside a <td> within the first <tr>) are excluded
+    from this because table headings are already bolded.
+    """
     style_tag = soup.find("style")
     if style_tag:
         matching_classes = _get_classnames_for_font_weight_bold(style_tag.get_text())
