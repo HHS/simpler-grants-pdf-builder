@@ -13,9 +13,8 @@
           <em class="usa-logo__text">
             <a href="{% url 'index' %}">NOFO Builder</a>
           </em>
-
           {% if user.is_authenticated %}
-            <a class="inline-block usa-tag--link" href="{% url 'test_mode' %}">
+            <a class="inline-block usa-tag--link" href="{% url 'test_mode' %}{% if request.path|slice:"-5:" == "/edit" %}?next={{ request.path }}{% endif %}">
               {% if DOCRAPTOR_TEST_MODE %}
                 <span class="usa-tag bg-accent-cool-dark">Test</span>
               {% else %}
