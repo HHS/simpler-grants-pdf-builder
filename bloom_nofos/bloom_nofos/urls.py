@@ -44,6 +44,7 @@ urlpatterns = [
     path("nofos/", include("nofos.urls")),
     path("", include("users.urls")),
     path("admin/", admin.site.urls),
+    path("test-mode", views.TestModeView.as_view(), name="test_mode"),
     path("", views.index, name="index"),
     path("404/", views.page_not_found),
 ]

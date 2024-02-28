@@ -13,10 +13,12 @@
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
 - Stop demoting headers on the way in
-- Fix: Slash domains, we don't want them, also Google docs
 
 # DONE
 
+- Change Test mode from the UI
+- Fix: 2 more link patterns for broken links widget
+  - "/" domains and Google docs links
 - Fix: Preserve bolds on import (boom, eff yeah)
 - Fix: returned error messages should be visible
 - Fix: importing tables with colspans?

@@ -942,6 +942,28 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 /* Media queries */
 
 @media screen {
+  /* top nav */
+  .usa-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .usa-logo .usa-tag--link {
+    display: inline-flex;
+    align-items: center;
+    color: white;
+  }
+
+  .usa-logo .usa-tag--link:hover {
+    text-decoration: underline;
+    opacity: 0.9;
+  }
+
+  .usa-logo__text {
+    display: inline-block;
+  }
+
   .page-break--hr.page-break-before,
   .page-break--hr.column-break-before {
     border-bottom: none;

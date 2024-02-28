@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    NOFO Contstance
+{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">Docraptor test mode</h1>
+  <p class="font-sans-md">Currently, test mode is <strong>{% if DOCRAPTOR_TEST_MODE %}ON{% else %}OFF{% endif %}</strong>.</p>
+  {% if DOCRAPTOR_TEST_MODE %}
+    <p>In “Test” mode, PDFs are watermarked with a DocRaptor banner.</p>
+    <p>Test PDFs are free, so we recommend using test mode until you are ready to send.</p>
+  {% else %}
+    <p>In “Live” mode, PDFs are not watermarked, but there is a limit of <a href="https://app.docraptor.com/signup">325 a month</a>.</p>
+    <p>Use “Live” mode when you have a good-copy PDF ready to send back to our OpDivs.</p>
+  {% endif %}
+  
+  <br />
+
+  <form method="post">
+    {% csrf_token %}
+
+    <fieldset class="usa-fieldset">
+      <legend class="usa-legend usa-legend font-serif-lg padding-bottom-105"><strong>Set print mode</strong></legend>
+      <div class="usa-radio">
+        <input
+          class="usa-radio__input"
+          id="docraptor_test_mode--true"
+          type="radio"
+          name="docraptor_test_mode"
+          value="true"
+          {% if DOCRAPTOR_TEST_MODE %}checked="checked"{% endif %}
+        />
+        <label class="usa-radio__label" for="docraptor_test_mode--true"
+          >Test mode</label
+        >
+      </div>
+      <div class="usa-radio">
+        <input
+          class="usa-radio__input"
+          id="docraptor_test_mode--false"
+          type="radio"
+          name="docraptor_test_mode"
+          value="false"
+          {% if not DOCRAPTOR_TEST_MODE %}checked="checked"{% endif %}
+        />
+        <label class="usa-radio__label" for="docraptor_test_mode--false"
+          >Live mode</label
+        >
+      </div>
+    
+    <button class="usa-button margin-top-3" type="submit">Save</button>
+  </form>
+{% endblock %}
