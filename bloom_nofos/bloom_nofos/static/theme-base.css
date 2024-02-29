@@ -345,12 +345,12 @@ table td {
   vertical-align: baseline;
 }
 
-table.table--empty td {
-  height: 25px;
+table tr.table-row--empty {
+  height: 28px;
 }
 
 table th.header-row-empty[colspan] {
-  height: 30px;
+  height: 31px;
   background-color: var(--color--table-blue);
 }
 

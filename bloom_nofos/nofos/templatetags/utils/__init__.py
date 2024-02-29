@@ -52,6 +52,18 @@ def add_caption_to_table(table):
         _add_class_if_not_exists_to_tag(table, "table--with-caption", "table")
 
 
+def _get_total_word_count(table_cells):
+    word_count = 0
+
+    for cell in table_cells:
+        cell_text = cell.get_text()
+        # Split the text into words based on whitespace and count them
+        words = cell_text.split()
+        word_count += len(words)
+
+    return word_count
+
+
 def add_class_to_table(table):
     """
     Adds a size class to a BeautifulSoup table based on column and row count.
@@ -67,17 +79,6 @@ def add_class_to_table(table):
 
         return "table--small"
 
-    def _get_total_word_count(table):
-        word_count = 0
-
-        for cell in table.find_all("td"):
-            cell_text = cell.get_text()
-            # Split the text into words based on whitespace and count them
-            words = cell_text.split()
-            word_count += len(words)
-
-        return word_count
-
     if is_callout_box_table_markdown(table):
         return "table--callout-box"
 
@@ -87,18 +88,25 @@ def add_class_to_table(table):
     if table.find("th", string="Recommended For"):
         return "table--large"
 
-    word_count = _get_total_word_count(table)
+    word_count = _get_total_word_count(table.find_all("td"))
 
-    if word_count == 0:
-        if len(cols) > 3:
-            return "table--large table--empty"
-
-        return "table--small table--empty"
-
+    if word_count == 0 and len(cols) < 4:
+        return "table--small"
     elif word_count > 120:
         return "table--large"
 
     return _get_table_class(len(cols))
+
+
+def add_class_to_table_rows(table_row):
+    """
+    Adds a size class to a BeautifulSoup table cell based on if the row is empty.
+    """
+
+    word_count = _get_total_word_count(table_row.find_all(["td", "th"]))
+
+    if word_count == 0:
+        return "table-row--empty"
 
 
 def find_elements_with_character(element, container, character="~"):
