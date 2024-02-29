@@ -267,6 +267,14 @@ class GetIconPathFromThemeTests(TestCase):
         path = _get_icon_path_from_theme("theme-cdc-blue", "before_you_begin")
         self.assertEqual(path, "img/figma-icons/med-blue-border")
 
+    def test_callout_box_section_acf_white_theme(self):
+        path = _get_icon_path_from_theme("theme-acf-white", "callout_box")
+        self.assertEqual(path, "img/figma-icons/acf-black-border")
+
+    def test_callout_box_section_acf_blue_theme(self):
+        path = _get_icon_path_from_theme("theme-acf-blue", "callout_box")
+        self.assertEqual(path, "img/figma-icons/white-border")
+
     def test_callout_box_section_white_theme(self):
         path = _get_icon_path_from_theme("theme-cdc-white", "callout_box")
         self.assertEqual(path, "img/figma-icons/dark-blue-border")
@@ -280,7 +288,15 @@ class GetIconPathFromThemeTests(TestCase):
         self.assertEqual(path, "img/figma-icons/med-blue-border")
 
     def test_section_cover_section_cms_white_theme(self):
-        path = _get_icon_path_from_theme("theme-cms-blue", "section_cover")
+        path = _get_icon_path_from_theme("theme-cms-white", "section_cover")
+        self.assertEqual(path, "img/figma-icons/white-border")
+
+    def test_section_cover_section_acf_white_theme(self):
+        path = _get_icon_path_from_theme("theme-acf-white", "section_cover")
+        self.assertEqual(path, "img/figma-icons/acf-black-border")
+
+    def test_section_cover_section_acf_blue_theme(self):
+        path = _get_icon_path_from_theme("theme-acf-blue", "section_cover")
         self.assertEqual(path, "img/figma-icons/white-border")
 
     def test_section_cover_section_any_theme(self):

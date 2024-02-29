@@ -160,11 +160,6 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
     colour = theme.split("-")[-1]
     opdiv = theme.split("-")[-2]
 
-    # med-blue icons for the table of contents in this one NOFO
-    if nofo_number and nofo_number.lower() == "cdc-rfa-dp-24-0023":
-        if section == "toc":
-            return "img/figma-icons/med-blue-border"
-
     if section == "toc":
         if nofo_icon_path:
             return nofo_icon_path
@@ -209,7 +204,10 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
-            return "img/figma-icons/acf-black-border"
+            if colour == "white":
+                return "img/figma-icons/acf-black-border"
+            else:
+                return "img/figma-icons/white-border"
         if opdiv == "acl":
             return "img/figma-icons/black-icon"
         if colour == "white":
@@ -219,7 +217,10 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
         if opdiv == "ihs":
             return "img/figma-icons/ihs-blue-border"
         if opdiv == "acf":
-            return "img/figma-icons/acf-black-border"
+            if colour == "white":
+                return "img/figma-icons/acf-black-border"
+            else:
+                return "img/figma-icons/white-border"
         if opdiv == "acl":
             return "img/figma-icons/acl-blue-border"
         if theme == "portrait-cms-white":
