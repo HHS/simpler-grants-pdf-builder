@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add custom classnames to callout box subsections
 - Fixed imports when font sizes contain decimal pt sizes
+- Hotfix: CSS update for moving table of contents up in 1 Nofo
 
 ## [1.12.0] - 2023-02-26
 
