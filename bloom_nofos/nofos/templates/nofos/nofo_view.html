@@ -210,6 +210,16 @@
 
       <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline|split_char_and_remove:"-" }}</p>
       <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+
+      {# Show "Adobe Reader" callout box in this section if using ACF theme #}
+      {% if nofo_opdiv.key == 'acf' %}
+      <div class="callout-box callout-box--icon callout-box--keyboard">
+        <div class="callout-box--contents">
+            <img class="toc--section-name--img" src="{% static_icon 'adobe' nofo.theme 'callout_box' %}" alt="">
+            <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </section>
 
@@ -221,6 +231,7 @@
           <div class="header-nav section--title-page--header-nav">
             <p>Jump to a step</p>
             <ol>
+              {% spaceless %}
               {% with nofo.sections.all|dictsort:"order" as nav_sections %}
                 <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
                 <li><a href="#section--{{ nav_sections.1.html_id }}" {% if nav_sections.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get ready</a></li>
@@ -230,6 +241,7 @@
                 <li><a href="#section--{{ nav_sections.5.html_id }}" {% if nav_sections.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
                 <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
               {% endwith %}
+              {% endspaceless %}
             </ol>
           </div>
           <div class="section--title-page--name">
