@@ -16,6 +16,7 @@
 
 # DONE
 
+- Fix: add classnames to callout box subsections
 - Change Test mode from the UI
 - Fix: 2 more link patterns for broken links widget
   - "/" domains and Google docs links
