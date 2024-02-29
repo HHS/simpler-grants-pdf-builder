@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added link from subsection edit page to admin page and vice versa
   - Only for superusers
 - Add class to empty table rows
+- Add "Appendicies" to list of headings without section pages
 
 ### Changed
 

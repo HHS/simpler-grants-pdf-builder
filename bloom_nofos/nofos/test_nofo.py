@@ -281,7 +281,7 @@ class HTMLSectionTests(TestCase):
         self.assertEqual(sections[0].get("name"), "Step 1: Review the Opportunity")
 
     def test_get_sections_from_soup_with_no_section_page(self):
-        for no_section_page_title in ["Appendix", "Glossary", "Endnotes", "References"]:
+        for no_section_page_title in ["Appendix", "Appendices", "Glossary", "Endnotes", "References"]:
             soup = BeautifulSoup(
                 '<h1 id="section-1">{}</span></h1><p>Section 1 body</p>'.format(
                     no_section_page_title
