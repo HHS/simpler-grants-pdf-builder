@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Add custom classnames to callout box subsections
+- Fixed imports when font sizes contain decimal pt sizes
 
 ## [1.12.0] - 2023-02-26
 

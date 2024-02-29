@@ -1762,6 +1762,12 @@ class TestGetFontSizeFromCssText(TestCase):
         """
         self.assertEqual(get_font_size_from_cssText(css_text), 12)
 
+    def test_get_font_size_in_points_with_decimal(self):
+        css_text = """
+        font-size: 10.5pt;
+        """
+        self.assertEqual(get_font_size_from_cssText(css_text), "10.5pt")
+
     def test_get_font_size_in_pixels(self):
         css_text = """
         font-size: 16px;
