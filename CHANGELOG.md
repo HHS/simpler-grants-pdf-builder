@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add `<strong>` tags to classes with `font-size: 700` on import
   - skip table headings, and large font classes, but otherwise strong ’em up
 - Add ids to page headings for table of contents and before you begin
+- Added a new class for ACF white callout boxes (applied manually)
 
 ### Changed
 
@@ -20,6 +21,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Two more href patterns for the "broken links" widget: "/" links and google docs domains
 
 ### Fixed
+
+- Add custom classnames to callout box subsections
 
 ## [1.12.0] - 2023-02-26
 

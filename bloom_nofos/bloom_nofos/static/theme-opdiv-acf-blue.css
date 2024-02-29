@@ -89,12 +89,16 @@ h4 {
 }
 
 .callout-box {
-  background-color: var(--color--dark-blue);
+  background-color: var(--color--acf-blue);
   color: var(--color--white);
 }
 
 .callout-box--contents a {
   color: var(--color--white);
+}
+
+.callout-box--icon {
+  background-color: var(--color--acf-blue-light);
 }
 
 table th {

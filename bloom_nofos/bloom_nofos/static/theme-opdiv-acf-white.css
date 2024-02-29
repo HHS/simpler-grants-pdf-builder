@@ -112,6 +112,15 @@ h5 {
   border: 2px solid var(--color--light-black);
 }
 
+.callout-box--components {
+  background-color: var(--color--acf-blue);
+  color: var(--color--white);
+}
+
+.callout-box--components .callout-box--contents a {
+  color: var(--color--white);
+}
+
 table th {
   color: var(--color--white);
   background-color: var(--color--acf-blue);
