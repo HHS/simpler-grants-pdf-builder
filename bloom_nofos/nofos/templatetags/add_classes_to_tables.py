@@ -2,7 +2,11 @@ from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
-from .utils import _add_class_if_not_exists_to_tag, add_class_to_table
+from .utils import (
+    _add_class_if_not_exists_to_tag,
+    add_class_to_table,
+    add_class_to_table_rows,
+)
 
 register = template.Library()
 
@@ -13,5 +17,10 @@ def add_classes_to_tables(html_string):
     for table in soup.find_all("table"):
         table_class = add_class_to_table(table)
         _add_class_if_not_exists_to_tag(table, table_class, "table")
+
+        for table_row in table.find_all("tr"):
+            table_row_class = add_class_to_table_rows(table_row)
+            if table_row_class:
+                _add_class_if_not_exists_to_tag(table_row, table_row_class, "tr")
 
     return mark_safe(str(soup))

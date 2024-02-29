@@ -16,6 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added a new class for ACF white callout boxes (applied manually)
 - Added link from subsection edit page to admin page and vice versa
   - Only for superusers
+- Add class to empty table rows
 
 ### Changed
 

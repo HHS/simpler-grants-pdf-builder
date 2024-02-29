@@ -10,6 +10,7 @@ from .templatetags.utils import (
     _get_icon_path_from_theme,
     add_caption_to_table,
     add_class_to_table,
+    add_class_to_table_rows,
     find_elements_with_character,
     format_footnote_ref,
     get_icon_from_theme,
@@ -158,9 +159,7 @@ class HTMLTableClassTests(TestCase):
         table_html = self._generate_table(num_cols=2, table_empty=True)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(
-            add_class_to_table(soup.find("table")), "table--small table--empty"
-        )
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
     def test_table_class_3_cols(self):
         table_html = self._generate_table(num_cols=3)
@@ -172,9 +171,7 @@ class HTMLTableClassTests(TestCase):
         table_html = self._generate_table(num_cols=3, table_empty=True)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(
-            add_class_to_table(soup.find("table")), "table--small table--empty"
-        )
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
 
     def test_table_class_4_cols(self):
         table_html = self._generate_table(num_cols=4)
@@ -186,9 +183,7 @@ class HTMLTableClassTests(TestCase):
         table_html = self._generate_table(num_cols=4, table_empty=True)
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(
-            add_class_to_table(soup.find("table")), "table--large table--empty"
-        )
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
 
     def test_table_class_5_cols(self):
         table_html = self._generate_table(num_cols=5)
@@ -219,6 +214,57 @@ class HTMLTableClassTests(TestCase):
         soup = BeautifulSoup(table_html, "html.parser")
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--large")
+
+
+class TestAddClassToTableRows(TestCase):
+    def test_all_empty_rows(self):
+        html = """
+        <table>
+            <tr><td></td><td></td></tr>
+            <tr><td></td><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table_rows = soup.find_all("tr")
+        for row in table_rows:
+            self.assertEqual(add_class_to_table_rows(row), "table-row--empty")
+
+    def test_all_empty_rows_including_header_row(self):
+        html = """
+        <table>
+            <tr><th></th><th></th></tr>
+            <tr><td></td><td></td></tr>
+            <tr><td></td><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table_rows = soup.find_all("tr")
+        for row in table_rows:
+            self.assertEqual(add_class_to_table_rows(row), "table-row--empty")
+
+    def test_non_empty_row(self):
+        html = """
+        <table>
+            <tr><td>Content</td><td></td></tr>
+            <tr><td></td><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table_rows = soup.find_all("tr")
+        self.assertNotEqual(add_class_to_table_rows(table_rows[0]), "table-row--empty")
+        self.assertEqual(add_class_to_table_rows(table_rows[1]), "table-row--empty")
+
+    def test_non_empty_header_row(self):
+        html = """
+        <table>
+            <tr><th>Column 1</th><th>Column 2</th></tr>
+            <tr><td></td><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table_rows = soup.find_all("tr")
+        self.assertNotEqual(add_class_to_table_rows(table_rows[0]), "table-row--empty")
+        self.assertEqual(add_class_to_table_rows(table_rows[1]), "table-row--empty")
 
 
 class TestFindElementsWithChar(TestCase):
