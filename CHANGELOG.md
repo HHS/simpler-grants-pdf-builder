@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - skip table headings, and large font classes, but otherwise strong ’em up
 - Add ids to page headings for table of contents and before you begin
 - Added a new class for ACF white callout boxes (applied manually)
+- Added link from subsection edit page to admin page and vice versa
+  - Only for superusers
 
 ### Changed
 
