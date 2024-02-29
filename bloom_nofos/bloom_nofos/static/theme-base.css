@@ -247,6 +247,13 @@ h2 {
   width: 10%;
 }
 
+/* Custom CSS for one nofo at a time */
+
+.hrsa-24-014 .toc h2 {
+  margin-top: -3mm;
+  margin-bottom: 10px;
+}
+
 /* Regular CSS */
 
 * {
