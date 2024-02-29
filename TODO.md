@@ -16,6 +16,7 @@
 
 # DONE
 
+- Link from Subsection edit page to admin page and vice-versa
 - Fix: add classnames to callout box subsections
 - Change Test mode from the UI
 - Fix: 2 more link patterns for broken links widget

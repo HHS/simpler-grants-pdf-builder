@@ -259,3 +259,7 @@ class Subsection(models.Model):
 
         self.full_clean()  # Call the clean method for validation
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        nofo_id = self.section.nofo.id
+        return reverse("nofos:subsection_edit", args=(nofo_id, self.id))

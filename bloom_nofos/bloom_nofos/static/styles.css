@@ -6,10 +6,13 @@ html {
 }
 
 /* Make sure footer sits on the bottom */
-body {
+body,
+body.subsection_edit {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+    sans-serif;
 }
 body > main {
   flex-grow: 1;
@@ -75,15 +78,18 @@ details > summary > span:hover {
 
 /* header widget for NOFO */
 
-.nofo_edit--header {
+.nofo_edit--header,
+.subsection_edit--header {
   position: relative;
 }
 
-.nofo_edit--header h1 {
+.nofo_edit--header h1,
+.subsection_edit--header h1 {
   width: 70%;
 }
 
-.nofo_edit--header--view {
+.nofo_edit--header--view,
+.subsection_edit--header--view {
   position: absolute;
   right: 0;
   top: 0px;

@@ -19,8 +19,15 @@
     <div class="back-link font-body-md margin-bottom-105">
       <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo_name_str }}”</a>
     </div>
-    <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
-    {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base">Callout box</h2>{% endif %}
+    <div class="subsection_edit--header">
+      <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+      {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base">Callout box</h2>{% endif %}
+      {% if request.user.is_superuser %}
+        <div class="subsection_edit--header--view font-sans-md">
+          <a href="{% url 'admin:nofos_subsection_change' subsection.id %}">Edit in Admin</a>
+        </div>
+      {% endif %}
+    </div>
   {% endwith %}
   
   <p>Edit page for this subsection.</p>
