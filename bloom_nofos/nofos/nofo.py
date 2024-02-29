@@ -903,7 +903,10 @@ def _get_font_size_from_cssText(cssText):
 
     font_size = font_size.pop().split(":")[1].strip(" ;")
     if "pt" in font_size:
-        return int(font_size.strip("pt"))
+        try:
+            return int(font_size.strip("pt"))
+        except ValueError:
+            pass
 
     return font_size
 
