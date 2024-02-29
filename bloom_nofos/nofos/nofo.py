@@ -231,7 +231,13 @@ def get_sections_from_soup(soup):
 
                 has_section_page = not any(
                     word.lower() in section_name.lower()
-                    for word in ["Appendix", "Glossary", "Endnotes", "References"]
+                    for word in [
+                        "Appendix",
+                        "Appendices",
+                        "Glossary",
+                        "Endnotes",
+                        "References",
+                    ]
                 )
 
                 sections.append(
