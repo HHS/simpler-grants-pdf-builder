@@ -111,51 +111,6 @@ def add_headings_to_nofo(nofo):
             subsection.save()
 
 
-def add_newline_to_ref_numbers(text):
-    """
-    Adds a newline character after a pattern that matches 'ref' followed by a one or two-digit number and a parenthesis.
-
-    Args:
-    text (str): The input string.
-
-    Returns:
-    str: The modified string with newline characters added after the specified pattern.
-    """
-    # Regular expression pattern to match 'ref' followed by a one or two-digit number and a parenthesis
-    pattern = r"(ref\d{1,2}\))"
-
-    # Replace the found pattern with itself followed by a newline
-    modified_text = re.sub(pattern, r"\1\n", text)
-
-    return modified_text
-
-
-def format_endnotes(md_body):
-    """
-    Processes and formats the endnotes in a Markdown body text.
-
-    This function performs two primary tasks:
-    1. Removes non-breaking space characters (nbsp) from the Markdown text.
-    2. Splits the Markdown text into endnotes based on newline characters and
-       adds a newline character after any pattern matching 'ref' followed by a
-       one or two-digit number and a parenthesis (like 'ref10)', 'ref1)', etc.).
-
-    Args:
-    md_body (str): A string representing the Markdown text to be processed.
-
-    Returns:
-    str: The processed and formatted Markdown text with formatted endnotes.
-    """
-    # remove non-breaking spaces
-    md_body = md_body.replace("\xa0", "")
-
-    endnotes = md_body.split("\n")
-    for i, endnote in enumerate(endnotes):
-        endnotes[i] = add_newline_to_ref_numbers(endnote)
-
-    return "\n".join(endnotes)
-
-
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(
@@ -173,9 +128,6 @@ def _build_nofo(nofo, sections):
 
             if html_body:
                 md_body = md("".join(html_body))
-
-            if subsection.get("name") == "Endnotes":
-                md_body = format_endnotes(md_body)
 
             model_subsection = Subsection(
                 name=subsection.get("name", ""),

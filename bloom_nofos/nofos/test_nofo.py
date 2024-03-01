@@ -15,7 +15,6 @@ from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
-    add_newline_to_ref_numbers,
     add_strongs_to_soup,
     clean_table_cells,
     combine_consecutive_links,
@@ -201,20 +200,6 @@ class TableConvertFirstRowToHeaderRowTests(TestCase):
         self.assertIn("Year", first_cell.text.strip())
 
 
-class AddNewLineToRefsTest(TestCase):
-    def test_ref_0(self):
-        self.assertEqual(add_newline_to_ref_numbers("ref0)"), "ref0)\n")
-
-    def test_ref_1(self):
-        self.assertEqual(add_newline_to_ref_numbers("ref1)"), "ref1)\n")
-
-    def test_ref_5(self):
-        self.assertEqual(add_newline_to_ref_numbers("ref5)"), "ref5)\n")
-
-    def test_ref_10(self):
-        self.assertEqual(add_newline_to_ref_numbers("ref10)"), "ref10)\n")
-
-
 class HTMLSectionTests(TestCase):
     def test_get_sections_from_soup(self):
         soup = BeautifulSoup("<h1>Section 1</h1><p>Section 1 body</p>", "html.parser")
@@ -281,7 +266,13 @@ class HTMLSectionTests(TestCase):
         self.assertEqual(sections[0].get("name"), "Step 1: Review the Opportunity")
 
     def test_get_sections_from_soup_with_no_section_page(self):
-        for no_section_page_title in ["Appendix", "Appendices", "Glossary", "Endnotes", "References"]:
+        for no_section_page_title in [
+            "Appendix",
+            "Appendices",
+            "Glossary",
+            "Endnotes",
+            "References",
+        ]:
             soup = BeautifulSoup(
                 '<h1 id="section-1">{}</span></h1><p>Section 1 body</p>'.format(
                     no_section_page_title
