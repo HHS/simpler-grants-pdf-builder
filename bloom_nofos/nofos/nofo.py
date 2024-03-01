@@ -256,6 +256,9 @@ def get_subsections_from_sections(sections):
             "body": body or [],
         }
 
+    def get_empty_subsection(order):
+        return get_subsection_dict(heading_tag=None, order=order, is_callout_box=False)
+
     for section in sections:
         section["subsections"] = []
         # remove 'body' key
@@ -295,19 +298,19 @@ def get_subsections_from_sections(sections):
                 if tag.name == "table":
                     convert_table_first_row_to_header_row(tag)
 
-                if len(section["subsections"]):
-                    # get latest subsection
-                    subsection = section["subsections"][-1]
-                    if subsection.get("is_callout_box", False):
-                        # never add to a callout box subsection, create new empty subsection
-                        empty_subsection = get_subsection_dict(
-                            heading_tag=None,
-                            order=len(section["subsections"]) + 1,
-                            is_callout_box=False,
-                        )
-                        section["subsections"].append(empty_subsection)
+                if not len(section["subsections"]):
+                    # create new empty subsection if there are no other ones in this section
+                    section["subsections"].append(get_empty_subsection(1))
 
-                    section["subsections"][-1]["body"].append(tag)
+                # get latest subsection
+                subsection = section["subsections"][-1]
+                if subsection.get("is_callout_box", False):
+                    # create new empty subsection after a callout box
+                    section["subsections"].append(
+                        get_empty_subsection(len(section["subsections"]) + 1)
+                    )
+
+                section["subsections"][-1]["body"].append(tag)
 
     return sections
 
