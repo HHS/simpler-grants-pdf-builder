@@ -361,14 +361,27 @@ class HTMLSubsectionTests(TestCase):
         subsection = sections[0].get("subsections")[0]
         self.assertEqual(subsection.get("body"), [])
 
-    def test_get_subsections_from_soup_lost_paragraph_before_heading(self):
+    def test_get_subsections_from_soup_create_subsection_if_no_headingg(self):
         soup = BeautifulSoup(
-            "<h1>Section 1</h1><p>This paragraph disappears</p><h2>Subsection 1</h2><p>Section 1 body</p>",
+            "<h1>Section 1</h1><p>Subsection 1 body</p><h2>Subsection 2</h2><p>Subsection 2 body</p>",
             "html.parser",
         )
         sections = get_subsections_from_sections(get_sections_from_soup(soup))
-        subsection = sections[0].get("subsections")[0]
-        self.assertEqual(str(subsection.get("body")[0]), "<p>Section 1 body</p>")
+        subsections = sections[0].get("subsections")
+        self.assertEqual(len(subsections), 2)
+        # subsection 1
+        self.assertEqual(subsections[0].get("name"), "")
+        self.assertEqual(
+            str(subsections[0].get("body")),
+            "[<p>Subsection 1 body</p>]",
+        )
+
+        # subsection 2
+        self.assertEqual(subsections[1].get("name"), "Subsection 2")
+        self.assertEqual(
+            str(subsections[1].get("body")),
+            "[<p>Subsection 2 body</p>]",
+        )
 
     def test_get_subsections_from_soup_two_subsections(self):
         soup = BeautifulSoup(
