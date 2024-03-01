@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.13.0] - 2023-03-01
+
+### Added
+
 - It is now possible to switch between "Test" and "live" from the UI
 - Cover image for CDC-RFA-EH-24-0044
 - Add `<strong>` tags to classes with `font-size: 700` on import
@@ -25,6 +33,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - For ACF Nofos, move the "Adobe Reader" annoucement to the Before you Begin page
   - For all Nofos except HRSA
 - Two more href patterns for the "broken links" widget: "/" links and google docs domains
+- Extra margin above running footer
 
 ### Fixed
 
