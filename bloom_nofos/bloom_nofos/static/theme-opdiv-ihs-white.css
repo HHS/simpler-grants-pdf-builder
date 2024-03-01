@@ -20,7 +20,7 @@ h6 {
 }
 
 /* this functions as an h7 */
-p[role="heading"] {
+div[role="heading"] {
   color: var(--black);
 }
 

@@ -284,7 +284,7 @@ p + p {
 }
 
 .section--before-you-begin--psuedo-header + p,
-p[role="heading"] + p,
+div[role="heading"] + p,
 .section--content--intro p + p {
   margin-top: 5px;
 }
@@ -512,7 +512,7 @@ h5 + h6 {
 }
 
 /* this functions as an h7 */
-p[role="heading"] {
+div[role="heading"] {
   margin: 10px 0 5px;
   font-size: 12.5pt;
   font-weight: 500;

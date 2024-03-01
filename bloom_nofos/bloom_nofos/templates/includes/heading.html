@@ -11,5 +11,5 @@
 {% elif tag == "h6" %}
   <h6 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content }}</h6>
 {% elif tag == "h7" %}
-  <p {% if id %}id="{{ id }}"{% endif %} role="heading" aria-level="7" {% if class %}class="{{ class }}"{% endif %}>{{ content }}</p>
+  <div {% if id %}id="{{ id }}"{% endif %} role="heading" aria-level="7" {% if class %}class="{{ class }}"{% endif %}>{{ content }}</div>
 {% endif %}

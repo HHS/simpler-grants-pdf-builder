@@ -50,7 +50,7 @@ h6 {
 }
 
 /* this functions as an h7 */
-p[role="heading"] {
+div[role="heading"] {
   font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
   font-weight: 700;
 }
