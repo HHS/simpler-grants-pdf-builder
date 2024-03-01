@@ -212,7 +212,7 @@
       <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
 
       {# Show "Adobe Reader" callout box in this section if using ACF theme #}
-      {% if nofo_opdiv.key == 'acf' %}
+      {% if nofo_opdiv.key != 'hrsa' %}
       <div class="callout-box callout-box--icon callout-box--keyboard">
         <div class="callout-box--contents">
             <img class="toc--section-name--img" src="{% static_icon 'adobe' nofo.theme 'callout_box' %}" alt="">

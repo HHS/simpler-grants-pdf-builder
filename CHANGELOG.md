@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - For ACF Nofos, move the "Adobe Reader" annoucement to the Before you Begin page
+  - For all Nofos except HRSA
 - Two more href patterns for the "broken links" widget: "/" links and google docs domains
 
 ### Fixed
