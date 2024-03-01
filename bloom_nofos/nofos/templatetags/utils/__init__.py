@@ -181,6 +181,8 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
                 return "img/figma-icons/acf-black-border"
             elif opdiv == "acl":
                 return "img/figma-icons/acl-blue-border"
+            elif opdiv == "hrsa":
+                return "img/figma-icons/hrsa-blue-border"
             else:
                 return "img/figma-icons/med-blue-border"
         else:
@@ -198,7 +200,10 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
         if opdiv == "acf":
             return "img/figma-icons/acf-black-border"
         if opdiv == "hrsa":
-            return "img/figma-icons/dark-blue-border"
+            if colour == "white":
+                return "img/figma-icons/hrsa-blue-border"
+            else:
+                return "img/figma-icons/dark-blue-border"
         elif opdiv == "cms":
             return "img/figma-icons/cms-blue-border"
         else:
@@ -233,7 +238,11 @@ def _get_icon_path_from_theme(theme, section, nofo_number="", nofo_icon_path="")
             return "img/figma-icons/acl-blue-border"
         if theme == "portrait-cms-white":
             return "img/figma-icons/cms-blue-border"
-
+        if opdiv == "hrsa":
+            if colour == "white":
+                return "img/figma-icons/hrsa-blue-border"
+            else:
+                return "img/figma-icons/white-border"
         elif "cdc-white" in theme:
             return "img/figma-icons/med-blue-border"
 

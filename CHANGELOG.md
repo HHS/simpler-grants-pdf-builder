@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Only for superusers
 - Add class to empty table rows
 - Add "Appendicies" to list of headings without section pages
+- Add HRSA blue border svg images
 
 ### Changed
 
@@ -30,6 +31,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add custom classnames to callout box subsections
 - Fixed imports when font sizes contain decimal pt sizes
 - Hotfix: CSS update for moving table of contents up in 1 Nofo
+- Shaved off the fill on the checkbox SVG which was fatter than the others
 
 ## [1.12.0] - 2023-02-26
 
