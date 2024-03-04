@@ -365,7 +365,8 @@ table td a {
   color: var(--color--vibrant-blue);
 }
 
-table thead th {
+table thead th,
+table tbody tr:first-of-type th {
   background-clip: padding-box;
   font-weight: 600;
   line-height: 1.3;
