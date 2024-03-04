@@ -111,6 +111,20 @@ def add_headings_to_nofo(nofo):
             subsection.save()
 
 
+def add_page_breaks_to_headings(nofo):
+    page_break_headings = [
+        "eligibility",
+        "program description",
+        "application checklist",
+    ]
+
+    for section in nofo.sections.all():
+        for subsection in section.subsections.all():
+            if subsection.name and subsection.name.lower() in page_break_headings:
+                subsection.html_class = "page-break-before"
+                subsection.save()
+
+
 def _build_nofo(nofo, sections):
     for section in sections:
         model_section = Section(

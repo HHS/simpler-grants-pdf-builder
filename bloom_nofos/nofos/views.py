@@ -37,6 +37,7 @@ from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_strongs_to_soup,
+    add_page_breaks_to_headings,
     clean_table_cells,
     combine_consecutive_links,
     create_nofo,
@@ -268,6 +269,7 @@ def nofo_import(request, pk=None):
             try:
                 nofo = overwrite_nofo(nofo, sections)
                 add_headings_to_nofo(nofo)
+                add_page_breaks_to_headings(nofo)
             except Exception as e:
                 return HttpResponseBadRequest("Error re-importing NOFO: {}".format(e))
 
@@ -286,6 +288,7 @@ def nofo_import(request, pk=None):
             try:
                 nofo = create_nofo(nofo_title, sections)
                 add_headings_to_nofo(nofo)
+                add_page_breaks_to_headings(nofo)
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
