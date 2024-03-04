@@ -373,6 +373,11 @@ table tbody tr:first-of-type th {
   text-align: left;
 }
 
+table thead th a,
+table tbody tr:first-of-type th a {
+  color: currentColor;
+}
+
 table td > *:first-child,
 table td > *:first-child {
   margin-top: 0;
