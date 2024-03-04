@@ -8,9 +8,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add "page-break-before" class on import to 3 subsections:
+  - "eligibility", "program description", and "application checklist"
+
 ### Changed
 
 ### Fixed
+
+- HRSA section pages now have white icons again
+- Headings in first row of HTML tables (not markdown) have proper CSS styling
 
 ## [1.13.0] - 2023-03-01
 
