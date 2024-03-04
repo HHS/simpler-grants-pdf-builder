@@ -15,6 +15,7 @@ from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
+    add_page_breaks_to_headings,
     add_strongs_to_soup,
     clean_table_cells,
     combine_consecutive_links,
@@ -845,6 +846,76 @@ class AddHeadingsTests(TestCase):
         )
 
 
+class AddPageBreaksToHeadingsTests(TestCase):
+    def setUp(self):
+        # Set up a Nofo instance and related Sections and Subsections
+        nofo = Nofo.objects.create(title="Test Nofo AddPageBreaksToHeadingsTests")
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+
+        Subsection.objects.create(
+            section=section,
+            name="Basic information",
+            tag="h3",
+            body="Basic information section, no html_class",
+            order=1,
+        )
+
+        # Subsection without a broken link
+        Subsection.objects.create(
+            section=section,
+            name="Eligibility",
+            tag="h3",
+            body="Eligibility section, yes html_class",
+            order=2,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Eligible applicants",
+            tag="h4",
+            body="Eligible applicants section, no html_class",
+            order=3,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Program description",
+            tag="h3",
+            body="Program description section, yes html_class",
+            order=4,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Application checklist",
+            tag="h3",
+            body="Application checklist section, yes html_class",
+            order=5,
+        )
+
+    def test_add_page_breaks_to_headings(self):
+        nofo = Nofo.objects.get(title="Test Nofo AddPageBreaksToHeadingsTests")
+
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                self.assertEqual(subsection.html_class, "")
+
+        add_page_breaks_to_headings(nofo)
+
+        for section in nofo.sections.all():
+            self.assertEqual(section.subsections.get(order=1).html_class, "")
+            self.assertEqual(
+                section.subsections.get(order=2).html_class, "page-break-before"
+            )
+            self.assertEqual(section.subsections.get(order=3).html_class, "")
+            self.assertEqual(
+                section.subsections.get(order=4).html_class, "page-break-before"
+            )
+            self.assertEqual(
+                section.subsections.get(order=5).html_class, "page-break-before"
+            )
+
+
 class TestGetLogo(TestCase):
     def test_cdc_blue_logo_portrait(self):
         """Test for CDC with blue colour"""
@@ -982,7 +1053,7 @@ class TestGetLogo(TestCase):
 class TestFindBrokenLinks(TestCase):
     def setUp(self):
         # Set up a Nofo instance and related Sections and Subsections
-        nofo = Nofo.objects.create(title="Test Nofo")
+        nofo = Nofo.objects.create(title="Test Nofo TestFindBrokenLinks")
         section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
 
         Subsection.objects.create(
@@ -1027,7 +1098,7 @@ class TestFindBrokenLinks(TestCase):
         )
 
     def test_find_broken_links_identifies_broken_links(self):
-        nofo = Nofo.objects.get(title="Test Nofo")
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
         self.assertEqual(len(broken_links), 4)
         self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
@@ -1039,7 +1110,7 @@ class TestFindBrokenLinks(TestCase):
         )
 
     def test_find_broken_links_ignores_valid_links(self):
-        nofo = Nofo.objects.get(title="Test Nofo")
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
         valid_links = [
             link
