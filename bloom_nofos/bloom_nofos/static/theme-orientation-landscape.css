@@ -200,7 +200,14 @@ body[class^="landscape"] .grid-container {
 }
 
 table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
-  padding-left: 28px;
+  position: relative;
+  padding-left: 44px;
+}
+
+table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) img.usa-icon {
+  position: absolute;
+  top: 7px;
+  left: 22px;
 }
 
 @media print {
