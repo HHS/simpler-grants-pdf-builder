@@ -139,6 +139,19 @@ class Nofo(models.Model):
         help_text="The coach has the primary responsibility for editing this NOFO.",
     )
 
+    DESIGNER_CHOICES = [
+        ("adam", "Adam"),
+        ("kevin", "Kevin"),
+        ("emily", "Emily"),
+    ]
+
+    designer = models.CharField(
+        max_length=16,
+        choices=DESIGNER_CHOICES,
+        blank=True,
+        help_text="The designer is responsible for the layout of this NOFO.",
+    )
+
     STATUS_CHOICES = [
         ("draft", "Draft"),
         ("active", "Active"),

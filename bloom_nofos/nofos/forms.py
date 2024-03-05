@@ -34,6 +34,7 @@ NofoNameForm = create_nofo_form_class(
 )
 
 NofoCoachForm = create_nofo_form_class(["coach"])
+NofoDesignerForm = create_nofo_form_class(["designer"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoAgencyForm = create_nofo_form_class(["agency"])

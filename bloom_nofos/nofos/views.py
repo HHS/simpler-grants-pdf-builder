@@ -19,6 +19,7 @@ from .forms import (
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachForm,
+    NofoDesignerForm,
     NofoCoverForm,
     NofoIconPathForm,
     NofoMetadataForm,
@@ -366,6 +367,11 @@ class NofoEditTitleView(BaseNofoEditView):
 class NofoEditCoachView(BaseNofoEditView):
     form_class = NofoCoachForm
     template_name = "nofos/nofo_edit_coach.html"
+
+
+class NofoEditDesignerView(BaseNofoEditView):
+    form_class = NofoDesignerForm
+    template_name = "nofos/nofo_edit_designer.html"
 
 
 class NofoEditNumberView(BaseNofoEditView):
