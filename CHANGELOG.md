@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Absolutely position checkbox svg to emulate bullets
 - HRSA section pages now have white icons again
 - Headings in first row of HTML tables (not markdown) have proper CSS styling
+  - Borders are back!
 - Links in table headings (what) should be currentColor
 
 ## [1.13.0] - 2023-03-01
