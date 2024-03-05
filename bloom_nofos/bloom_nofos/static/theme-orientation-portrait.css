@@ -238,6 +238,7 @@ table.table--large {
 table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
   position: relative;
   padding-left: 44px;
+  z-index: -1;
 }
 
 table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) img.usa-icon {

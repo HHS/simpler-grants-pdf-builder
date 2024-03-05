@@ -139,6 +139,20 @@ table td a {
 
 .section--step-5-submit-your-application
   table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist:not(.usa-icon__td--link),
+.section--step-5-submit-your-application
+  table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist:not(.usa-icon__td--link)
+  ~ td {
+  border-bottom: none;
+}
+
+.section--step-5-submit-your-application
+  table
   tr
   td.usa-icon__td.usa-icon__td--before-sublist,
 .section--step-5-submit-your-application

@@ -221,6 +221,16 @@ table td a {
   background-color: var(--color--table-blue);
 }
 
+.section--step-5-submit-your-application table tbody tr:last-of-type td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom: none;
+}
+
 .section--step-5-submit-your-application
   table
   tr
