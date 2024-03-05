@@ -63,7 +63,7 @@ if allowed_domain:
 SECURE_SSL_REDIRECT = is_prod
 SESSION_COOKIE_SECURE = is_prod
 CSRF_COOKIE_SECURE = is_prod
-CSRF_COOKIE_HTTPONLY = is_prod
+CSRF_COOKIE_HTTPONLY = False
 SECURE_BROWSER_XSS_FILTER = is_prod
 
 # X-Frame-Options
