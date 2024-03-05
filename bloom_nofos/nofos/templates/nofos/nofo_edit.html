@@ -2,13 +2,13 @@
 {% load martortags nofo_name get_value_or_none add_classes_to_tables %}
 
 {% block title %}
-  Edit “{{ nofo|nofo_name }}”
+Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
 {% block js_footer %}
 <script>
   const els = document.querySelectorAll("caption")
-  const observer = new IntersectionObserver( 
+  const observer = new IntersectionObserver(
     ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
     { threshold: [1] }
   );
@@ -20,303 +20,322 @@
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
-  {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" only %}
+{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" only %}
 
-  <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
-  </div>
-  <div class="nofo_edit--header">
-    {% with nofo|nofo_name as nofo_name_str %}
-      <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
-    {% endwith %}
-    <div class="nofo_edit--header--view font-sans-xs">
-      <a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a>
-      <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
-        {% csrf_token %}
-        <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
-        <button type="submit" class="usa-button font-sans-xs text-normal" {% if request.scheme == 'http' %}disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"{% else %}style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"{% endif %}>
-          Print{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <p>Make small edits to your NOFO here.</p>
-  {% if nofo.status == 'published' %}
-    <div
-      class="usa-summary-box"
-      role="region"
-      aria-labelledby="summary-box-key-information"
-    >
-      <div class="usa-summary-box__body">
-        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-          NOFO status is ‘published’.
-        </h2>
-        <div class="usa-summary-box__text">
-          <p>Published NOFOs can’t be edited, re-imported, or deleted.</p>
-          <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a>.</p>
-        </div>
-      </div>
-    </div>
-  {% elif nofo.status == 'review' %}
-    <div
-      class="usa-summary-box"
-      role="region"
-      aria-labelledby="summary-box-key-information"
-    >
-      <div class="usa-summary-box__body">
-        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-          NOFO is ‘In review’.
-        </h2>
-        <div class="usa-summary-box__text">
-          <p>NOFOs that are in review can’t be re-imported or deleted, but they can be edited as needed.</p>
-        </div>
-      </div>
-    </div>
-  {% else %}
-    <div
-      class="usa-summary-box"
-      role="region"
-      aria-labelledby="summary-box-key-information"
-    >
-      <div class="usa-summary-box__body">
-        <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-          Other actions
-        </h2>
-        <div class="usa-summary-box__text">
-          <ul class="usa-list usa-list--unstyled">
-            <li>
-              <p>
-              <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
-                Check external links
-              </a>— There are {{ external_links|length }} external links in this NOFO
-              </p>
-            </li>
-            <li>
-              <p>
-              <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
-                Re-import NOFO
-              </a>— upload an updated HTML file
-              </p>
-            </li>
-            {% if nofo.status == 'draft' %}
-            <li>
-              <p>
-              <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
-                Delete NOFO
-              </a>— remove this NOFO completely
-              </p>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
-  {% if broken_links|length %}
-    <section
-    class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links"
-    aria-label="Site alert"
-    >
-      <div class="usa-alert">
-        <div class="usa-alert__body">
-          <h3 class="usa-alert__heading">Warning: some internal links are no bueno</h3>
-          <div>
-            <details>
-              <summary>
-                  {% if broken_links|length == 1 %}
-                    <span>There is 1 broken link</span>
-                  {% else %}
-                    <span>There are {{ broken_links|length }} broken links</span>
-                  {% endif %}
-              </summary>
-              <div>
-                <ol class="usa-list usa-list--no-max-width">
-                  {% for broken_link in broken_links %}
-                    <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
-                  {% endfor %}
-                </ol>
-              </div>
-            </details>
-          </div>
-        </div>
-      </div>
-    </section>
-  {% endif %}
-
-  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
-    <caption>
-      <h2 class="margin-bottom-0">NOFO data</h2>
-      <span><a href="#back-to-top">Top ↑</a></span>
-    </caption>
-    <thead class="usa-sr-only">
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Value</th>
-        <th scope="col">Manage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">Title</th>
-        <td>{{ nofo.title }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
-      </tr>
-      {% if nofo.short_name %}
-        <tr>
-          <th scope="row">Short&nbsp;name</th>
-          <td>{{ nofo.short_name }}</td>
-          <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
-        </tr>
+<div class="back-link font-body-md margin-bottom-105">
+  <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+</div>
+<div class="nofo_edit--header">
+  {% with nofo|nofo_name as nofo_name_str %}
+  <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
+  {% endwith %}
+  <div class="nofo_edit--header--view font-sans-xs">
+    <a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a>
+    <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
+      {% csrf_token %}
+      <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
+      <button type="submit" class="usa-button font-sans-xs text-normal"
+        {% if request.scheme == 'http' %}
+          disabled style="margin-bottom:5px;border-radius:.25rem;text-decoration:line-through;box-shadow: inset 0 0 0 2px #c9c9c9;"
+        {% else %}
+         style="margin-bottom:5px;border-radius:.25rem;color:white;background-color:#005ea2;"
         {% endif %}
-      <tr>
-        <th scope="row">Number</th>
-        <td>{{ nofo.number|get_value_or_none:"number" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_number' nofo.id %}">Edit<span class="usa-sr-only"> number</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Application deadline</th>
-        <td>{{ nofo.application_deadline|get_value_or_none:"application deadline" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_application_deadline' nofo.id %}">Edit<span class="usa-sr-only"> application deadline</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">OpDiv</th>
-        <td>{{ nofo.opdiv|get_value_or_none:"OpDiv" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_opdiv' nofo.id %}">Edit<span class="usa-sr-only"> OpDiv</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Agency</th>
-        <td>{{ nofo.agency|get_value_or_none:"agency" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_agency' nofo.id %}">Edit<span class="usa-sr-only"> Agency</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Subagency</th>
-        <td>{{ nofo.subagency|get_value_or_none:"subagency" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_subagency' nofo.id %}">Edit<span class="usa-sr-only"> Subagency</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Subagency 2</th>
-        <td>{{ nofo.subagency2|get_value_or_none:"subagency 2" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_subagency2' nofo.id %}">Edit<span class="usa-sr-only"> Subagency 2</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Tagline</th>
-        <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
-      </tr>
-    </tbody>
-  </table>
+      >
+        Print{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO
+      </button>
+    </form>
+  </div>
+</div>
 
-  <table class="usa-table usa-table--borderless width-full">
-    <caption>
-      <h2 class="margin-bottom-0">NOFO metadata</h2>
-      <span><a href="#back-to-top">Top ↑</a></span>
-    </caption>
-    <thead class="usa-sr-only">
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Value</th>
-        <th scope="col">Manage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">Author</th>
-        <td>{{ nofo.author|get_value_or_none:"author" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Subject</th>
-        <td>{{ nofo.subject|get_value_or_none:"subject" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Keywords</th>
-        <td>{{ nofo.keywords|get_value_or_none:"keywords" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
-      </tr>
-    </tbody>
-  </table>
+<p>Make small edits to your NOFO here.</p>
+{% if nofo.status == 'published' %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO status is ‘published’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>Published NOFOs can’t be edited, re-imported, or deleted.</p>
+      <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its
+          status</a>.</p>
+    </div>
+  </div>
+</div>
+{% elif nofo.status == 'review' %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO is ‘In review’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>NOFOs that are in review can’t be re-imported or deleted, but they can be edited as needed.</p>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      Other actions
+    </h2>
+    <div class="usa-summary-box__text">
+      <ul class="usa-list usa-list--unstyled">
+        <li>
+          <p>
+            <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+              Check external links
+            </a>— There are {{ external_links|length }} external links in this NOFO
+          </p>
+        </li>
+        <li>
+          <p>
+            <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+              Re-import NOFO
+            </a>— upload an updated HTML file
+          </p>
+        </li>
+        {% if nofo.status == 'draft' %}
+        <li>
+          <p>
+            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
+              Delete NOFO
+            </a>— remove this NOFO completely
+          </p>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
 
-  <table class="usa-table usa-table--borderless width-full">
-    <caption>
-      <h2 class="margin-bottom-0">NOFO theme options</h2>
-      <span><a href="#back-to-top">Top ↑</a></span>
-    </caption>
-    <thead class="usa-sr-only">
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Value</th>
-        <th scope="col">Manage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">Theme</th>
-        <td>{{ nofo.get_theme_display|get_value_or_none:"theme" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_theme' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Cover style</th>
-        <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
-      </tr>
-    </tbody>
-  </table>
+{% if broken_links|length %}
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Site alert">
+  <div class="usa-alert">
+    <div class="usa-alert__body">
+      <h3 class="usa-alert__heading">Warning: some internal links are no bueno</h3>
+      <div>
+        <details>
+          <summary>
+            {% if broken_links|length == 1 %}
+            <span>There is 1 broken link</span>
+            {% else %}
+            <span>There are {{ broken_links|length }} broken links</span>
+            {% endif %}
+          </summary>
+          <div>
+            <ol class="usa-list usa-list--no-max-width">
+              {% for broken_link in broken_links %}
+              <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{
+                broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
+              {% endfor %}
+            </ol>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
 
-  <table class="usa-table usa-table--borderless width-full">
-    <caption>
-      <h2 class="margin-bottom-0">NOFO management options</h2>
-      <span><a href="#back-to-top">Top ↑</a></span>
-    </caption>
-    <thead class="usa-sr-only">
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Value</th>
-        <th scope="col">Manage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">NOFO status</th>
-        <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Name of coach</th>
-        <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>
-        <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a></td>
-      </tr>
-    </tbody>
-  </table>
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
+  <caption>
+    <h2 class="margin-bottom-0">NOFO data</h2>
+    <span><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Title</th>
+      <td>{{ nofo.title }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> title</span></a></td>
+    </tr>
+    {% if nofo.short_name %}
+    <tr>
+      <th scope="row">Short&nbsp;name</th>
+      <td>{{ nofo.short_name }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_title' nofo.id %}">Edit<span class="usa-sr-only"> short name</span></a></td>
+    </tr>
+    {% endif %}
+    <tr>
+      <th scope="row">Number</th>
+      <td>{{ nofo.number|get_value_or_none:"number" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_number' nofo.id %}">Edit<span class="usa-sr-only"> number</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Application deadline</th>
+      <td>{{ nofo.application_deadline|get_value_or_none:"application deadline" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_application_deadline' nofo.id %}">Edit<span class="usa-sr-only"> application
+            deadline</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">OpDiv</th>
+      <td>{{ nofo.opdiv|get_value_or_none:"OpDiv" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_opdiv' nofo.id %}">Edit<span class="usa-sr-only"> OpDiv</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Agency</th>
+      <td>{{ nofo.agency|get_value_or_none:"agency" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_agency' nofo.id %}">Edit<span class="usa-sr-only"> Agency</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Subagency</th>
+      <td>{{ nofo.subagency|get_value_or_none:"subagency" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_subagency' nofo.id %}">Edit<span class="usa-sr-only"> Subagency</span></a>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Subagency 2</th>
+      <td>{{ nofo.subagency2|get_value_or_none:"subagency 2" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_subagency2' nofo.id %}">Edit<span class="usa-sr-only"> Subagency 2</span></a>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Tagline</th>
+      <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+    </tr>
+  </tbody>
+</table>
 
-  {% for section in nofo.sections.all|dictsort:"order" %}
-    <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
-      <caption>
-        <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-        <span><a href="#back-to-top">Top ↑</a></span>
-      </caption>
-      <thead class="usa-sr-only">
-        <tr>
-          <th scope="col">Heading</th>
-          <th scope="col">Is callout box</th>
-          <th scope="col">Content</th>
-          <th scope="col">Manage</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for subsection in section.subsections.all|dictsort:"order" %}
-          <tr>
-            <th scope="row" class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}" id="{{ subsection.html_id }}">
-              {% if subsection.name %}{{ subsection.name }}{% else %}<span class="text-base">(#{{ subsection.order }})</span>{% endif %}
-            </th>
-            <td class="nofo-edit-table--subsection--callout-box">{% if subsection.callout_box %}<span role="img" aria-label="Callout box" title="Callout box">📦</span>{% endif %}</td>
-            <td class="nofo-edit-table--subsection--body">{{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}</td>
-            <td><a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a></td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endfor %}
+<table class="usa-table usa-table--borderless width-full">
+  <caption>
+    <h2 class="margin-bottom-0">NOFO metadata</h2>
+    <span><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Author</th>
+      <td>{{ nofo.author|get_value_or_none:"author" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Subject</th>
+      <td>{{ nofo.subject|get_value_or_none:"subject" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Keywords</th>
+      <td>{{ nofo.keywords|get_value_or_none:"keywords" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="usa-table usa-table--borderless width-full">
+  <caption>
+    <h2 class="margin-bottom-0">NOFO theme options</h2>
+    <span><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Theme</th>
+      <td>{{ nofo.get_theme_display|get_value_or_none:"theme" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_theme' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+    </tr>
+    <tr>
+      <th scope="row">Cover style</th>
+      <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="usa-table usa-table--borderless width-full">
+  <caption>
+    <h2 class="margin-bottom-0">NOFO management options</h2>
+    <span><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">NOFO status</th>
+      <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Coach name</th>
+      <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Designer name</th>
+      <td>{{ nofo.get_designer_display|get_value_or_none:"designer" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_designer' nofo.id %}">Edit<span class="usa-sr-only"> assigned
+            designer</span></a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+{% for section in nofo.sections.all|dictsort:"order" %}
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
+  <caption>
+    <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+    <span><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Heading</th>
+      <th scope="col">Is callout box</th>
+      <th scope="col">Content</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for subsection in section.subsections.all|dictsort:"order" %}
+    <tr>
+      <th scope="row"
+        class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
+        id="{{ subsection.html_id }}">
+        {% if subsection.name %}
+          {{ subsection.name }}
+        {% else %}
+          <span class="text-base">(#{{ subsection.order}})</span>
+        {% endif %}
+      </th>
+      <td class="nofo-edit-table--subsection--callout-box">
+        {% if subsection.callout_box %}
+        <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+        {% endif %}
+      </td>
+      <td class="nofo-edit-table--subsection--body">
+        {{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}
+      </td>
+      <td>
+        <a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
 {% endblock %}

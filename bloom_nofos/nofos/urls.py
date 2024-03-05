@@ -24,6 +24,11 @@ urlpatterns = [
         "<int:pk>/edit/coach", views.NofoEditCoachView.as_view(), name="nofo_edit_coach"
     ),
     path(
+        "<int:pk>/edit/designer",
+        views.NofoEditDesignerView.as_view(),
+        name="nofo_edit_designer",
+    ),
+    path(
         "<int:pk>/edit/title", views.NofoEditTitleView.as_view(), name="nofo_edit_title"
     ),
     path(
