@@ -254,6 +254,10 @@ h2 {
   margin-bottom: 10px;
 }
 
+.hhs-2024-acl-aoa-innu-0025 .before-you-begin .callout-box--keyboard {
+  display: none;
+}
+
 /* Regular CSS */
 
 * {
