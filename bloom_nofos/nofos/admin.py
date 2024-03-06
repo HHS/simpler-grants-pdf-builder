@@ -33,7 +33,7 @@ class SectionModelForm(forms.ModelForm):
 class NofoModelForm(forms.ModelForm):
     class Meta:
         model = Nofo
-        fields = ["title", "coach"]
+        fields = ["title", "short_name", "number", "opdiv", "coach", "designer"]
         widgets = {
             "title": forms.TextInput(),
         }
@@ -88,7 +88,7 @@ class SectionAdmin(admin.ModelAdmin):
 class NofoAdmin(admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
-    list_display = ["title", "number", "status", "coach", "created"]
+    list_display = ["title", "number", "status", "designer", "created", "updated"]
 
 
 admin.site.register(Subsection, SubsectionAdmin)

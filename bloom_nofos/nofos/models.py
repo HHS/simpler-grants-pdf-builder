@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+from django.utils import timezone
 from martor.models import MartorField
 
 from .utils import create_subsection_html_id
@@ -175,6 +176,7 @@ class Nofo(models.Model):
     )
 
     created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -203,6 +205,14 @@ class Section(models.Model):
 
     class Meta:
         unique_together = ("nofo", "order")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # set "updated" field on Nofo
+        if self.nofo:
+            self.nofo.updated = timezone.now()
+            self.nofo.save()
 
     def __str__(self):
         nofo_id = "999"
@@ -272,6 +282,11 @@ class Subsection(models.Model):
 
         self.full_clean()  # Call the clean method for validation
         super().save(*args, **kwargs)
+
+        # set "updated" field on Nofo
+        if self.section and self.section.nofo:
+            self.section.nofo.updated = timezone.now()
+            self.section.nofo.save()
 
     def get_absolute_url(self):
         nofo_id = self.section.nofo.id
