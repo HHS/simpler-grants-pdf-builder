@@ -55,6 +55,10 @@ h3 {
 
 /* Before you begin */
 
+.before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--acl-blue);
+}
+
 .before-you-begin h2 {
   color: var(--color--acl-blue);
 }

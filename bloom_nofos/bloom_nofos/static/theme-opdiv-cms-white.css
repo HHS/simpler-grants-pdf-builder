@@ -34,6 +34,14 @@ h2 {
 
 /* Before you begin page */
 
+.before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--cms-blue);
+}
+
+section.before-you-begin h2 {
+  color: var(--color--cms-blue);
+}
+
 /* Section title page */
 
 .section--title-page--header-nav {

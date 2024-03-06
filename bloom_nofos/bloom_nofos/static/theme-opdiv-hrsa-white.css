@@ -45,6 +45,10 @@ h4 {
 
 /* Before you begin */
 
+.before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--hrsa-blue);
+}
+
 /* Section title page */
 
 .section--title-page--header-nav {
