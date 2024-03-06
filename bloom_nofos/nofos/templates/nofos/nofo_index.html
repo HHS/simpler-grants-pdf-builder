@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 {% block title %}
 	All NOFOs
 {% endblock %}
+
+{% block body_class %}nofo_index{% endblock %}
 
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
@@ -33,18 +36,24 @@
 					<th scope="col">Name</th>
 					<th scope="col">Number</th>
 					<th scope="col">Status</th>
-					<th scope="col">Created</th>
-					<th scope="col">Manage</th>
+					<th scope="col">Coach</th>
+					<th scope="col">Designer</th>
+					<th scope="col">Updated</th>
+					<th span class="usa-sr-only" scope="col">Preview</th>
 				</tr>
 			</thead>
 			<tbody>
 				{% for nofo in nofo_list %}
 					<tr>
-						<th scope="row"><a href="{% url 'nofos:nofo_view' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
+						<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
 						<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
 						<td>{{ nofo.get_status_display }}</td>
-						<td>{{ nofo.created|date:'M j' }}</td>
-						<td><a href="{% url 'nofos:nofo_edit' nofo.id %}">Edit<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
+						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
+						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
+						{% timezone "America/New_York" %}
+							<td>{{ nofo.updated|date:'M j, H:i' }}</td>
+						{% endtimezone %}
+						<td><a href="{% url 'nofos:nofo_view' nofo.id %}">View<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
 					<tr>
 				{% endfor %}
 			</tbody>

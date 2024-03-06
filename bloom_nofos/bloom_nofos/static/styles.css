@@ -69,7 +69,7 @@ details > summary > span:hover {
 
 /* List page */
 
-.nofo_index--filter a[aria-current] {
+.nofo_index .nofo_index--filter a[aria-current] {
   font-weight: 700;
   text-decoration: none;
 }

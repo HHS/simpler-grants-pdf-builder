@@ -11,10 +11,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add "page-break-before" class on import to 3 subsections:
   - "eligibility", "program description", and "application checklist"
 - Add "designer" field to Nofo object
+- Add "created" field to Nofo object
+  - Updates whenever the Nofo is changed or its (sub)sections
 
 ### Changed
 
 - Hide BYB Adobe Reader callout box on ACL 0025
+- Nofo listing table on the main page
+  - Show Coach and Designer
+  - Show "Updated" instead of "Created"
+  - Flip the "Edit" and "View" links
 
 ### Fixed
 
