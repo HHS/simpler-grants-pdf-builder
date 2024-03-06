@@ -33,6 +33,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Links in table headings (what) should be currentColor
 - Sort nofo table by last updated
 - Smaller H6 size for ACF
+- Allow importing Nofos with <a> tags with no href
 
 ## [1.13.0] - 2023-03-01
 
