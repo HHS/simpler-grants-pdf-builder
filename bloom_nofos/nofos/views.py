@@ -12,6 +12,7 @@ from django.db.models import F
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import dateformat, timezone
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
 
 from .forms import (
@@ -120,10 +121,11 @@ class NofosListView(ListView):
             else:
                 queryset = queryset.filter(status=self.status)
 
-        return queryset.order_by("-created")
+        return queryset.order_by("-updated")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['today_m_j'] = dateformat.format(timezone.now(), 'M j')
         context["nofo_status"] = self.status  # Add the status to the context
         return context
 
