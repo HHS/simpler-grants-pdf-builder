@@ -126,8 +126,7 @@ Edit “{{ nofo|nofo_name }}”
           <div>
             <ol class="usa-list usa-list--no-max-width">
               {% for broken_link in broken_links %}
-              <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{
-                broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
+              <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
               {% endfor %}
             </ol>
           </div>
