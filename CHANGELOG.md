@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Tag the table of contents list as a TOC
+- Replace "before you begin" icon with SVG, not image
 - Hide BYB Adobe Reader callout box on ACL 0025
 - Nofo listing table on the main page
   - Show Coach and Designer

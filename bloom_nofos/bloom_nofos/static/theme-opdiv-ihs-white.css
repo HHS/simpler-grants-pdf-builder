@@ -49,6 +49,14 @@ div[role="heading"] {
 
 /* Before you begin page */
 
+.before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--ihs-blue);
+}
+
+section.before-you-begin h2 {
+  color: var(--color--ihs-blue);
+}
+
 /* Section title page */
 
 .section--title-page--header-nav {

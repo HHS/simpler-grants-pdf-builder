@@ -103,6 +103,10 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 /* Before you begin page */
 
+.before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--vibrant-blue);
+}
+
 /* Section title page */
 
 /* Section contents */

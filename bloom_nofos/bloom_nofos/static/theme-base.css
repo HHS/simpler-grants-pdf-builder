@@ -895,6 +895,7 @@ div[role="heading"] {
 }
 
 .section--before-you-begin--icon img,
+.section--before-you-begin--icon svg,
 .section--title-page--icon img {
   width: 65px;
   height: 65px;
