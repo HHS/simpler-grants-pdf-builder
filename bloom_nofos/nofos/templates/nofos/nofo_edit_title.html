@@ -18,6 +18,10 @@
 
     {% include "includes/form_macro.html" with hint2="eg: “Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program”" hint2for="title" %}
 
+    <div class="usa-hint margin-top-05" id="short_name--hint-2">
+      Opportunity number for this NOFO: {{ nofo.number }}
+    </div>
+
     <button class="usa-button margin-top-3" type="submit">Save name</button>
   </form>
 {% endblock %}
