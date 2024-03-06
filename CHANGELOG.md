@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Show Coach and Designer
   - Show "Updated" instead of "Created"
   - Flip the "Edit" and "View" links
+- Only show NOFO last updated times in table if they were updated today
 
 ### Fixed
 
@@ -30,6 +31,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Headings in first row of HTML tables (not markdown) have proper CSS styling
   - Borders are back!
 - Links in table headings (what) should be currentColor
+- Sort nofo table by last updated
 
 ## [1.13.0] - 2023-03-01
 
