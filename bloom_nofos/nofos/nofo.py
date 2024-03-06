@@ -704,7 +704,7 @@ def combine_consecutive_links(soup):
         if (
             next_sibling
             and next_sibling.name == "a"
-            and link["href"] == next_sibling["href"]
+            and link.get("href") == next_sibling.get("href")
         ):
             # If there's whitespace, add a space before merging texts
             separator = " " if whitespace_between else ""

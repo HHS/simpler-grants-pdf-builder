@@ -1580,6 +1580,30 @@ class CombineLinksTestCase(TestCase):
         combine_consecutive_links(soup)
         self.assertEqual(str(soup), expected_html)
 
+    def test_both_links_href_empty(self):
+        html = '<p>See <a id="t.123"></a><a id="t.123"></a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), '<p>See <a id="t.123"></a></p>')
+
+    def test_first_link_href_empty(self):
+        html = '<p>See <a id="t.123"></a><a id="t.123">Second link</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), '<p>See <a id="t.123">Second link</a></p>')
+
+    def test_second_link_href_empty(self):
+        html = '<p>See <a id="t.123">First link</a><a id="t.123"></a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), '<p>See <a id="t.123">First link</a></p>')
+
+    def test_second_unmatched_link_is_dropped(self):
+        html = '<p>See <a id="t.111"></a><a id="t.999"></a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        combine_consecutive_links(soup)
+        self.assertEqual(str(soup), '<p>See <a id="t.111"></a></p>')
+
 
 class SuggestNofoKeywordsTests(TestCase):
     def test_keywords_present_in_paragraph(self):
