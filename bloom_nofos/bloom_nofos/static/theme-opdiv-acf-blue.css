@@ -51,7 +51,7 @@ h4 {
   color: var(--color--black);
 }
 
-.toc .toc--section-name .toc--section-name--img {
+.toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
   background: var(--color--acf-blue);
 }
 

@@ -82,7 +82,7 @@ h1 {
 
 .toc
   .toc--section-name
-  .toc--section-name--img:not([class*="med-blue-border"]) {
+  .toc--section-name--img[class*="white-icon"] {
   background: var(--color--vibrant-blue);
 }
 
