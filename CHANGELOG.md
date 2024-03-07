@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add "created" field to Nofo object
   - Updates whenever the Nofo is changed or its (sub)sections
 - Show Nofo number on the "title" page
+- Added another one-off: a callout box to the cover page of HRSA 014
 
 ### Changed
 
