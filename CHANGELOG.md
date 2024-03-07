@@ -34,6 +34,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Borders are back!
 - Links in table headings (what) should be currentColor
 - Sort nofo table by last updated
+  - Limit first column to 25% width otherwise it's ugly
 - Smaller H6 size for ACF
 - Allow importing Nofos with <a> tags with no href
 - Fix adjusting icons in the ToC for the ACF default theme
