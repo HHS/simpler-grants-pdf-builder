@@ -36,6 +36,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Sort nofo table by last updated
 - Smaller H6 size for ACF
 - Allow importing Nofos with <a> tags with no href
+- Fix adjusting icons in the ToC for the ACF default theme
 
 ## [1.13.0] - 2023-03-01
 
