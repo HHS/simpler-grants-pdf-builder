@@ -249,7 +249,10 @@ h2 {
 
 /* Custom CSS for one nofo at a time */
 
-.hrsa-24-014 .nofo--cover-page--text .nofo--cover-page--footer .callout-box--alert {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .nofo--cover-page--footer
+  .callout-box--alert {
   display: block;
 }
 
@@ -264,25 +267,44 @@ h2 {
   color: black;
 }
 
-.hrsa-24-014 .nofo--cover-page--text .callout-box--icon.callout-box--alert .callout-box--contents {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .callout-box--icon.callout-box--alert
+  .callout-box--contents {
   align-items: flex-start;
 }
 
-.hrsa-24-014 .nofo--cover-page--text .callout-box--icon.callout-box--alert .callout-box--contents img {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .callout-box--icon.callout-box--alert
+  .callout-box--contents
+  img {
   width: 30px;
   height: auto;
   margin-top: 3px;
 }
 
-.hrsa-24-014 .nofo--cover-page--text .callout-box--icon.callout-box--alert .callout-box--contents p {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .callout-box--icon.callout-box--alert
+  .callout-box--contents
+  p {
   margin: 0;
 }
 
-.hrsa-24-014 .nofo--cover-page--text .callout-box--icon.callout-box--alert .callout-box--contents a {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .callout-box--icon.callout-box--alert
+  .callout-box--contents
+  a {
   color: black;
 }
 
-.hrsa-24-014 .nofo--cover-page--text .callout-box--icon.callout-box--alert .callout-box--contents a:after {
+.hrsa-24-014
+  .nofo--cover-page--text
+  .callout-box--icon.callout-box--alert
+  .callout-box--contents
+  a:after {
   content: " (page " target-counter(attr(href, url), page) ")";
 }
 
@@ -1081,6 +1103,10 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
   .toc .toc--ol li {
     -prince-pdf-tag-type: TOCI;
+  }
+
+  svg[aria-hidden] {
+    -prince-pdf-tag-type: Artifact;
   }
 
   /* Page break rules */
