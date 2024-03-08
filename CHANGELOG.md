@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Flip the "Edit" and "View" links
 - Only show NOFO last updated times in table if they were updated today
 - Remove ACF blue theme, since it is not allowed right now
+- Rename "Medium image" to "Small image" for cover page options
 
 ### Fixed
 
