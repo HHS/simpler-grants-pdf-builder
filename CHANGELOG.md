@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- New default image for the preview NOFOs
+
 ### Fixed
 
 ## [1.14.0] - 2023-03-08
