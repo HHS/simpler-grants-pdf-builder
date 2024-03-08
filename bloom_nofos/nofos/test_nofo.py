@@ -1326,12 +1326,22 @@ class HTMLSuggestThemeTests(TestCase):
 
     def test_suggest_nofo_number_acf_returns_acf_theme(self):
         nofo_number = "HHS-2024-ACF-ANA-NB-0050"
-        nofo_theme = "portrait-acf-blue"
+        nofo_theme = "portrait-acf-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
-    def test_suggest_nofo_number_acl_returns_hrsa_theme(self):
+    def test_suggest_nofo_number_acl_returns_acl_theme(self):
         nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
-        nofo_theme = "portrait-hrsa-blue"
+        nofo_theme = "portrait-acl-white"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_ihs_returns_ihs_theme(self):
+        nofo_number = "HHS-2024-IHS-INMED-0001"
+        nofo_theme = "portrait-ihs-white"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_cms_returns_cms_theme(self):
+        nofo_number = "CMS-1W1-24-001"
+        nofo_theme = "portrait-cms-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
     def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):
