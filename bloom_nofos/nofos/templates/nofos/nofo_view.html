@@ -88,8 +88,6 @@
             <p>{{ nofo.agency }}</p>
             <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
-            {# TODO: remove once DOP is published #}
-            {% if nofo.number == 'CDC-RFA-CE-24-0120' or nofo.number == 'CDC-RFA-CE-24-0068' %}<p>{{ nofo.agency }}</p>{% endif %}
             <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
           {% endif %}
         </div>
@@ -192,23 +190,6 @@
     </div>
     <h2 id="section--before-you-begin--heading">Before you begin</h2>
     <div class="before-you-begin--content">
-
-      {# TODO: remove this once the DOP nofos ship #}
-      {% if nofo.number == 'CDC-RFA-CE20-2004CC06CONT24' %}
-        <div class="callout-box callout-box--icon callout-box--before-you-begin">
-          <div class="callout-box--contents">   
-              <img class="toc--section-name--img" src="{% static 'img/figma-icons/dop/icon-stop.svg' %}" alt="">
-              <p>This NOFO is intended for applicants who received DFC funds that experienced a lapse in funding or have concluded the first 5-year funding cycle and are applying for a second 5-year funding cycle. Please make sure you are applying to the correct NOFO.</a></p>
-          </div>
-        </div>
-      {% elif nofo.number == 'CDC-RFA-CE-24-0050' %}
-        <div class="callout-box callout-box--icon callout-box--before-you-begin">
-          <div class="callout-box--contents">
-              <img class="toc--section-name--img" src="{% static 'img/figma-icons/dop/icon-stop.svg' %}" alt="">
-              <p>This NOFO is intended for applicants who have never received DFC funding. Please make sure you are applying to the correct NOFO.</a></p>
-          </div>
-        </div>
-      {% endif %}
 
       <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registration is active and up-to-date.</p>
       <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
