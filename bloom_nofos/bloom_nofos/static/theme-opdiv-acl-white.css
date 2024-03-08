@@ -59,6 +59,14 @@ h3 {
   color: var(--color--acl-blue);
 }
 
+.before-you-begin .callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+}
+
+.before-you-begin .callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
+}
+
 .before-you-begin h2 {
   color: var(--color--acl-blue);
 }

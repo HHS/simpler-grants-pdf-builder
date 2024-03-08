@@ -999,9 +999,11 @@ div[role="heading"] {
   align-items: flex-start;
 }
 
+.callout-box--icon .callout-box--contents svg,
 .callout-box--icon .callout-box--contents img {
   width: 30px;
   margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .callout-box--questions .callout-box--contents p {
