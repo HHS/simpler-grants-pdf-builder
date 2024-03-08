@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.14.0] - 2023-03-08
+
+### Added
+
 - Add "page-break-before" class on import to 3 subsections:
   - "eligibility", "program description", and "application checklist"
 - Add "designer" field to Nofo object
