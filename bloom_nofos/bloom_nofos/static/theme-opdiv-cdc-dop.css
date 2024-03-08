@@ -105,9 +105,7 @@ h4 {
   color: var(--color--dop-teal);
 }
 
-.toc
-  .toc--section-name
-  .toc--section-name--img[class*="white-icon"] {
+.toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
   background: var(--color--dop-teal);
 }
 
@@ -119,6 +117,15 @@ h4 {
 
 .before-you-begin h2 {
   color: var(--color--dop-teal);
+}
+
+.before-you-begin .callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+  color: var(--color--dop-blue);
+}
+
+.before-you-begin .callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
 }
 
 /* Section title page */

@@ -51,6 +51,14 @@
 
 /* Before you begin */
 
+.before-you-begin h2 {
+  color: var(--color--vibrant-blue);
+}
+
+.before-you-begin .callout-box--icon .callout-box--contents svg {
+  color: var(--color--dark-blue);
+}
+
 /* Section title page */
 
 .section--title-page--header-nav {

@@ -34,7 +34,8 @@ h2 {
 
 /* Before you begin page */
 
-.before-you-begin .section--before-you-begin--icon svg {
+.before-you-begin .section--before-you-begin--icon svg,
+.before-you-begin .callout-box--icon .callout-box--contents svg {
   color: var(--color--cms-blue);
 }
 
