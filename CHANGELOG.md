@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Updates whenever the Nofo is changed or its (sub)sections
 - Show Nofo number on the "title" page
 - Added another one-off: a callout box to the cover page of HRSA 014
+- Cover image for CMS-1W1-24-001
 
 ### Changed
 
