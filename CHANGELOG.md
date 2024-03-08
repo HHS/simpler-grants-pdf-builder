@@ -27,6 +27,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Show "Updated" instead of "Created"
   - Flip the "Edit" and "View" links
 - Only show NOFO last updated times in table if they were updated today
+- Remove ACF blue theme, since it is not allowed right now
 
 ### Fixed
 
