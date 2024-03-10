@@ -15,6 +15,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Use official version of martor, no longer relying on a forked version
+
 ## [1.14.0] - 2023-03-08
 
 ### Added

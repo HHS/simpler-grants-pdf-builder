@@ -496,12 +496,13 @@ six = ">=1.15,<2"
 
 [[package]]
 name = "martor"
-version = "1.6.28"
+version = "1.6.37"
 description = "Django Markdown Editor"
 optional = false
 python-versions = "*"
-files = []
-develop = false
+files = [
+    {file = "martor-1.6.37.tar.gz", hash = "sha256:6d35c0860b4d06b616649a9ddaed17caf5373b85c6f79cc0a8fce3c906440435"},
+]
 
 [package.dependencies]
 bleach = "*"
@@ -510,12 +511,6 @@ importlib_metadata = "<4.9"
 Markdown = "<3.4"
 requests = "*"
 tzdata = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/pcraig3/django-markdown-editor.git"
-reference = "HEAD"
-resolved_reference = "c5b5b6f014ac2128eea53049715c4ab26d78ff1b"
 
 [[package]]
 name = "mypy-extensions"
@@ -781,4 +776,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c82d5e0f65cceaee42776dd2b038ad84959a9bb07f7b783ce23ddddf24bc4b8a"
+content-hash = "95cbb7e704c2b6656bc9d4335ffd2caea18f2eacd1d8d85c7553f58a64964baa"
