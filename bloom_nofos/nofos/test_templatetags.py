@@ -134,6 +134,40 @@ class AddCaptionToTableTests(TestCase):
         add_caption_to_table(table)
         self.assertIsNone(table.caption)
 
+    def test_add_caption_only_to_first_table(self):
+        html = "<p>Table: Example Caption for Table 1</p><table><tr><th>Table 1</th></tr><tr><td>Data</td></tr></table><table><tr><th>Table 2</th></tr><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table1 = soup.find_all("table")[0]
+        table2 = soup.find_all("table")[1]
+
+        add_caption_to_table(table1)
+        self.assertIsNotNone(table1.caption)
+        self.assertEqual(
+            table1.caption.string.strip(), "Table: Example Caption for Table 1"
+        )
+        self.assertIn("table--with-caption", table1.get("class", []))
+
+        add_caption_to_table(table2)
+        self.assertIsNone(table2.caption)
+        self.assertNotIn("table--with-caption", table2.get("class", []))
+
+    def test_add_caption_only_to_second_table(self):
+        html = "<table><tr><th>Table 1</th></tr><tr><td>Data</td></tr></table><p>Table: Example Caption for Table 2</p><table><tr><th>Table 2</th></tr><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table1 = soup.find_all("table")[0]
+        table2 = soup.find_all("table")[1]
+
+        add_caption_to_table(table1)
+        self.assertIsNone(table1.caption)
+        self.assertNotIn("table--with-caption", table1.get("class", []))
+
+        add_caption_to_table(table2)
+        self.assertIsNotNone(table2.caption)
+        self.assertEqual(
+            table2.caption.string.strip(), "Table: Example Caption for Table 2"
+        )
+        self.assertIn("table--with-caption", table2.get("class", []))
+
 
 class HTMLTableClassTests(TestCase):
     def _generate_table(self, num_cols, num_rows=1, cell="td", table_empty=False):

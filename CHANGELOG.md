@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Stop sequential tables eating each other
 - Remove 65% width for criteria tables
 - Use official version of martor, no longer relying on a forked version
 
