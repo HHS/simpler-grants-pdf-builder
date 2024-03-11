@@ -1,3 +1,9 @@
+/* CSS vars */
+
+:root {
+  --color--cms-pale-blue: #eff5fb;
+}
+
 /* Set @page rules */
 
 /* Regular CSS */
@@ -27,6 +33,10 @@ h2 {
 }
 
 /* Cover page: medium image */
+
+.nofo--cover-page--medium .nofo--cover-page--header {
+  background-color: var(--color--cms-pale-blue);
+}
 
 /* Cover page: hero image */
 
