@@ -129,30 +129,13 @@ table td a {
   border-bottom-color: var(--color--white);
 }
 
+.section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td--sublist:not(.usa-icon__td--link),
-.section--step-5-submit-your-application
-  table
-  tr
-  td.usa-icon__td--sublist:not(.usa-icon__td--link)
+  td.usa-icon__td--sublist
   ~ td {
   border-bottom-color: var(--color--table-blue);
-}
-
-.section--step-5-submit-your-application
-  table
-  tbody
-  tr:last-of-type
-  td.usa-icon__td--sublist:not(.usa-icon__td--link),
-.section--step-5-submit-your-application
-  table
-  tbody
-  tr:last-of-type
-  td.usa-icon__td--sublist:not(.usa-icon__td--link)
-  ~ td {
-  border-bottom: none;
 }
 
 .section--step-5-submit-your-application
@@ -165,4 +148,8 @@ table td a {
   td.usa-icon__td.usa-icon__td--before-sublist
   ~ td {
   border-bottom-color: var(--color--white);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: none;
 }
