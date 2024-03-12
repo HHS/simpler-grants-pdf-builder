@@ -297,7 +297,7 @@
               <p>{{ nofo.agency }}</p>
               {% if nofo.subagency %}<p>{{ nofo.subagency }}</p>{% endif %}
               {% if nofo.subagency2 %}<p>{{ nofo.subagency2 }}</p>{% endif %}
-              {% if  nofo.tagline %}<p class="nofo--tagline">{{ nofo.tagline }}</p>{% endif %}
+              {% if nofo.tagline %}<div class="nofo--tagline">{{ nofo.tagline|safe_markdown }}</div>{% endif %}
             </div>
           {% endwith %}
         {% endif %}
