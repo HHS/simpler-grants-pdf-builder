@@ -6,9 +6,9 @@
   {% endif %}
   <div class="callout-box--contents">
     {% if 'uestions?' in subsection.body %}
-      <img class="toc--section-name--img" src="{% static_icon 'contacts' nofo.theme 'callout_box' %}" alt="">
+      {% include "includes/icons/7-contact.svg" %}
     {% elif 'Adobe Reader' in subsection.body %}
-      <img class="toc--section-name--img" src="{% static_icon 'adobe' nofo.theme 'callout_box' %}" alt="">
+      {% include "includes/icons/00-adobe-pdf.svg" %}
     {% endif %}
     {% if break_colons %}
       {{ subsection.body|safe_markdown|callout_box_contents }}

@@ -126,15 +126,6 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--orr-blue);
 }
 
-.before-you-begin .callout-box--icon .callout-box--contents svg {
-  fill: var(--color--white);
-  color: var(--color--orr-grey);
-}
-
-.before-you-begin .callout-box--icon .callout-box--contents svg circle {
-  stroke: var(--color--white);
-}
-
 /* Section title page */
 
 .section--title-page .section--title-page--header-nav > p {
@@ -188,9 +179,13 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--orr-white);
 }
 
-.callout-box--icon .callout-box--contents img {
-  background-color: var(--color--white);
-  border-radius: 50%;
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+  color: var(--color--orr-grey);
+}
+
+.callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
 }
 
 table th {
