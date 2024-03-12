@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Remove 65% width for criteria tables
 - Use official version of martor, no longer relying on a forked version
 - Add pale blue background to CMS medium cover header
+- Small CSS tweak to prevent HHS-2024-ACF-OPRE-YE-0195 on new page
 
 ## [1.14.0] - 2023-03-08
 
