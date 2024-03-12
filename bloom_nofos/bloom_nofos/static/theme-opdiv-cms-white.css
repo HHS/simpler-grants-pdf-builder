@@ -85,3 +85,39 @@ table td {
 table td a {
   color: var(--color--cms-blue);
 }
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table tr td {
+  border-bottom-color: var(--color--table-blue);
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td,
+.section--step-5-submit-your-application table tr td.usa-icon__td ~ td {
+  border-bottom-color: var(--color--white);
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom-color: var(--color--white);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: none;
+}

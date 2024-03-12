@@ -145,6 +145,18 @@ div[role="heading"] {
   border-bottom: 2px solid var(--color--ihs-grey);
 }
 
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist),
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist)
+  ~ td {
+  border-bottom: 2px solid var(--color--ihs-grey);
+}
+
 .section--step-5-submit-your-application table tr:last-of-type td {
   border-bottom: 2px solid var(--color--ihs-grey);
 }

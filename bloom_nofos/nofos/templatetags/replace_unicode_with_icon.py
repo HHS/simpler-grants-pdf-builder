@@ -37,7 +37,27 @@ def has_link_in_above_rows(td):
     return False
 
 
-def has_link_in_next_row(td):
+def has_checkbox(td):
+    if "◻" in td.get_text():
+        return True
+
+    if td.find("img", alt="Checkbox"):
+        return True
+
+    return False
+
+
+def is_list_heading(td):
+    if td.find("a"):
+        return True
+
+    if td.find("strong") and ":" in td.get_text():
+        return True
+
+    return False
+
+
+def is_before_sublist(td):
     # Find the parent row of the cell
     parent_row = td.find_parent("tr")
 
@@ -45,7 +65,23 @@ def has_link_in_next_row(td):
     next_row = parent_row.find_next_sibling("tr")
     if next_row:
         first_cell = next_row.find(["td", "th"])
-        if first_cell and first_cell.find("a"):
+        if first_cell and is_list_heading(first_cell) and not has_checkbox(first_cell):
+            return True
+
+    return False
+
+
+def is_sublist(td):
+    # Find the parent row of the cell
+    parent_row = td.find_parent("tr")
+
+    # Iterate over previous siblings (rows above the current one)
+    prev_row = parent_row.find_previous_sibling("tr")
+    if prev_row:
+        first_cell = prev_row.find(["td", "th"])
+        if first_cell and is_list_heading(first_cell) and not has_checkbox(first_cell):
+            return True
+        if "usa-icon__td--sublist" in first_cell.get("class", []):
             return True
 
     return False
@@ -109,14 +145,15 @@ def replace_unicode_with_icon(html_string):
                     )
 
                     # add classname for cells which don't have rows with a link above them
-                    if has_link_in_above_rows(parent_td):
+                    if is_sublist(parent_td):
                         _add_class_if_not_exists_to_tag(
                             element=parent_td,
                             classname="usa-icon__td--sublist",
                             tag_name="td",
                         )
 
-                    if has_link_in_next_row(parent_td):
+                    if is_before_sublist(parent_td):
+                        # if the next row's first cell has a link and no checkbox
                         _add_class_if_not_exists_to_tag(
                             element=parent_td,
                             classname="usa-icon__td--before-sublist",

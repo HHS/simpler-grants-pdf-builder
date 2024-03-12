@@ -80,9 +80,7 @@ h1 {
 
 /* Table of contents */
 
-.toc
-  .toc--section-name
-  .toc--section-name--img[class*="white-icon"] {
+.toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
   background: var(--color--vibrant-blue);
 }
 
@@ -163,7 +161,11 @@ table td a {
   background-color: var(--color--table-blue);
 }
 
-.section--step-5-submit-your-application table tbody tr:last-of-type td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist,
 .section--step-5-submit-your-application
   table
   tbody

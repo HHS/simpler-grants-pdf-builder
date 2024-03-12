@@ -235,13 +235,13 @@ table.table--large {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }
 
-table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) {
+table tr td.usa-icon__td--sublist {
   position: relative;
   padding-left: 44px;
   z-index: -1;
 }
 
-table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) img.usa-icon {
+table tr td.usa-icon__td--sublist img.usa-icon {
   position: absolute;
   top: 7px;
   left: 22px;
