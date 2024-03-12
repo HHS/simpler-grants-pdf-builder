@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - New default image for the preview NOFOs
 - Double default timeout to 59 seconds
 - Allow markdown content in taglines
+- Ensmallen the H5 and H6 headings for the CMS theme
 
 ### Fixed
 
