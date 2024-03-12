@@ -197,7 +197,7 @@ Edit “{{ nofo|nofo_name }}”
     </tr>
     <tr>
       <th scope="row">Tagline</th>
-      <td>{{ nofo.tagline|get_value_or_none:"tagline" }}</td>
+      <td>{{ nofo.tagline|get_value_or_none:"tagline"|safe_markdown }}</td>
       <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
     </tr>
   </tbody>

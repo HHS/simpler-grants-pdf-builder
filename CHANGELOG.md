@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - New default image for the preview NOFOs
 - Double default timeout to 59 seconds
+- Allow markdown content in taglines
 
 ### Fixed
 
