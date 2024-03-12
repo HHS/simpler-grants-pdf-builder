@@ -177,21 +177,13 @@ h4 {
   color: var(--color--white);
 }
 
-.callout-box--icon:not(.callout-box--before-you-begin)
-  .callout-box--contents
-  img {
-  background-color: var(--color--white);
-  border-radius: 50%;
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+  color: var(--color--dop-blue);
 }
 
-.callout-box--icon.callout-box--before-you-begin {
-  color: var(--color--black);
-  background-color: var(--color--dop-yellow);
-  border: none;
-}
-
-.callout-box--icon.callout-box--before-you-begin .callout-box--contents {
-  align-items: flex-start;
+.callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
 }
 
 table th {

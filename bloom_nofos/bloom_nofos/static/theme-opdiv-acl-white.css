@@ -59,14 +59,6 @@ h3 {
   color: var(--color--acl-blue);
 }
 
-.before-you-begin .callout-box--icon .callout-box--contents svg {
-  fill: var(--color--white);
-}
-
-.before-you-begin .callout-box--icon .callout-box--contents svg circle {
-  stroke: var(--color--white);
-}
-
 .before-you-begin h2 {
   color: var(--color--acl-blue);
 }
@@ -119,9 +111,12 @@ h3 {
   background-color: var(--color--acl-yellow);
 }
 
-.callout-box--icon .callout-box--contents img {
-  background-color: var(--color--white);
-  border-radius: 50%;
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+}
+
+.callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
 }
 
 table th {

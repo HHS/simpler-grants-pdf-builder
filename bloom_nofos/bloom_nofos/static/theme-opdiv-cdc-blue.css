@@ -124,6 +124,15 @@ h1 {
   background-color: var(--color--dark-blue);
 }
 
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+  color: var(--color--dark-blue);
+}
+
+.callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
+}
+
 table th {
   color: var(--color--white);
   background-color: var(--color--vibrant-blue);
