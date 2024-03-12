@@ -57,12 +57,15 @@ h5 {
   font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
     Arial, sans-serif;
   color: var(--color--black);
+  font-weight: 500;
 }
 
 h6 {
   font-family: "Lexend", Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto,
     Arial, sans-serif;
   color: var(--color--black);
+  font-weight: 500;
+  font-size: 13pt;
 }
 
 /* Running header */
