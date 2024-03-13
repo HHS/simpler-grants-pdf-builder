@@ -1673,7 +1673,7 @@ class TestDecomposeEmptyTags(TestCase):
         self.assertEqual(len(soup.find_all("div")), 0)
         self.assertEqual(len(soup.find_all("span")), 1)
 
-    def test_remove_empty_nested_tags(self):
+    def test_remove_empty_nested_tags_with_href(self):
         html = "<body><div><p><a href='#'></a></p></div><div><span>Hello</span></div></body>"
         soup = BeautifulSoup(html, "html.parser")
         decompose_empty_tags(soup)
@@ -1682,13 +1682,35 @@ class TestDecomposeEmptyTags(TestCase):
         self.assertEqual(len(soup.find_all("a")), 0)
 
     def test_keep_empty_nested_tags_if_parent_tag_is_not_empty(self):
-        html = "<body><div><p><a href='#'></a></p><span>Hello</span></div><div><span>Hello</span></div></body>"
+        html = "<body><div><a href='#'></a><span>Hello</span></div><div><span>Hello</span></div></body>"
         soup = BeautifulSoup(html, "html.parser")
         decompose_empty_tags(soup)
         # first div is kept because span in first div is not empty
         self.assertEqual(len(soup.find_all("div")), 2)
         # empty anchor tag is kept
         self.assertEqual(len(soup.find_all("a")), 1)
+
+    def test_keep_remove_nested_p_tags_if_parent_tag_is_not_empty(self):
+        html = "<body><div><p></p><span>Hello</span></div><div><span>Hello</span></div></body>"
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        # first div is kept because span in first div is not empty
+        self.assertEqual(len(soup.find_all("div")), 2)
+        self.assertEqual(len(soup.find_all("span")), 2)
+        # empty anchor tag is kept
+        self.assertEqual(len(soup.find_all("p")), 0)
+
+    def test_keep_remove_nested_span_tags_if_parent_tag_is_not_empty(self):
+        html = (
+            "<body><div><span></span><p>Hello</p></div><div><p>Hello</p></div></body>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        decompose_empty_tags(soup)
+        # first div is kept because span in first div is not empty
+        self.assertEqual(len(soup.find_all("div")), 2)
+        self.assertEqual(len(soup.find_all("p")), 2)
+        # empty anchor tag is kept
+        self.assertEqual(len(soup.find_all("span")), 0)
 
     def test_remove_empty_list_items(self):
         html = "<body><div><p>Hello</p><ul><li></li><li>Item</li></ul></div></body>"

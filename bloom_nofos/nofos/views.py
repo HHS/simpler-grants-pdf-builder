@@ -125,7 +125,7 @@ class NofosListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['today_m_j'] = dateformat.format(timezone.now(), 'M j')
+        context["today_m_j"] = dateformat.format(timezone.now(), "M j")
         context["nofo_status"] = self.status  # Add the status to the context
         return context
 
@@ -279,7 +279,7 @@ def nofo_import(request, pk=None):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                "Re-imported NOFO: <a href='/nofos/{}'>{}</a>".format(
+                "Re-imported NOFO: <a href='/nofos/{}/edit'>{}</a>".format(
                     nofo.id, nofo.short_name or nofo.title
                 ),
             )
@@ -342,7 +342,7 @@ class NofoImportTitleView(BaseNofoEditView):
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            "View NOFO: <a href='/nofos/{}'>{}</a>".format(
+            "View NOFO: <a href='/nofos/{}/edit'>{}</a>".format(
                 nofo.id, nofo.short_name or nofo.title
             ),
         )
