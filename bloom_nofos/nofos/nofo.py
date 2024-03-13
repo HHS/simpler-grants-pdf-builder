@@ -760,10 +760,14 @@ def decompose_empty_tags(soup):
             if len(tag.find_all("img")) == 0:
                 tag.decompose()
 
-    lis = soup.find_all("li")
-    for li in lis:
-        if not li.get_text().strip():
-            li.decompose()
+    def _decompose_empty_elements(element):
+        if not element.get_text().strip():
+            element.decompose()
+
+    # remove all list items, paragraphs, and spans that are empty
+    elements = soup.find_all(["li", "p", "span"])
+    for element in elements:
+        _decompose_empty_elements(element)
 
 
 def clean_table_cells(soup):
