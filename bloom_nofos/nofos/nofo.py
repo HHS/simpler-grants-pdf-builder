@@ -142,6 +142,7 @@ def _build_nofo(nofo, sections):
 
             if html_body:
                 md_body = md("".join(html_body))
+                md_body = md_body.replace("\\\\", "\\")
 
             model_subsection = Subsection(
                 name=subsection.get("name", ""),
