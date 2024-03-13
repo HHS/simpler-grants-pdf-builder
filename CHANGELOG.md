@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Use official version of martor, no longer relying on a forked version
 - Add pale blue background to CMS medium cover header
 - Small CSS tweak to avoid orphan on HHS-2024-ACF-OPRE-YE-0195
+- Fix double backslashes in table cells on import
 - Application table fixes
   - Better understanding of when a cell is in a sublist
   - CSS is more precise
