@@ -103,7 +103,7 @@
     </div>
     <div class="nofo--cover-page--title">
       <div class="nofo--cover-page--title--block">
-        <h1>{{ nofo.title }}</h1>
+        <h1 {% if nofo.title|length > 120 %}class="nofo--cover-page--title--h1--smaller"{% endif %}>{{ nofo.title }}</h1>
         <div class="nofo--cover-page--title--subheading">
           <span>Opportunity number: {{ nofo.number }}</span>
         </div>
