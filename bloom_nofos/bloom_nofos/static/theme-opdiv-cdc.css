@@ -1,4 +1,25 @@
+/* CSS vars */
+
+:root {
+  --color--powder-blue: #c0e9ff;
+}
+
 /* Set @page rules */
+
+/* Utility classes for tables */
+
+.table-row--blue-med td {
+  background-color: var(--color--vibrant-blue);
+  color: var(--color--white);
+}
+
+.table-row--blue-light td {
+  background-color: var(--color--powder-blue);
+}
+
+.table-row--blue-pale td {
+  background-color: var(--color--pale-blue);
+}
 
 /* Regular CSS */
 
