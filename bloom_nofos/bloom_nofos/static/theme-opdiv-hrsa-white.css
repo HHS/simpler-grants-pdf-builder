@@ -62,12 +62,13 @@ h4 {
 }
 
 .section--title-page--name,
-.section--title-page--toc {
+.section--title-page--toc,
+.section--title-page--toc a {
   color: var(--color--black);
 }
 
-.section--title-page--toc a {
-  color: var(--color--black);
+.section--title-page--icon svg {
+  color: var(--color--hrsa-blue);
 }
 
 /* Section contents */

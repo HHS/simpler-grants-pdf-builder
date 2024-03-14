@@ -80,12 +80,12 @@ h3 {
   color: var(--color--acl-blue);
 }
 
-.section--title-page--name,
-.section--title-page--toc {
-  color: var(--color--black);
+.section--title-page--name {
+  color: var(--color--acl-blue);
 }
 
-.section--title-page a {
+.section--title-page--toc,
+.section--title-page--toc a {
   color: var(--color--black);
 }
 

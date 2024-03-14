@@ -849,9 +849,9 @@ div[role="heading"] {
   list-style-type: none;
 }
 
-.section--before-you-begin--icon img,
 .section--before-you-begin--icon svg,
-.section--title-page--icon img {
+.section--title-page--icon img,
+.section--title-page--icon svg {
   width: 65px;
   height: 65px;
   border-radius: 50%;
