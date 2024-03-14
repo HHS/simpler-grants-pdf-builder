@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Smaller h1 on the title page if the title is too long
 - All sections should trigger a page break before
 - Stop sequential tables eating each other
 - Remove 65% width for criteria tables
