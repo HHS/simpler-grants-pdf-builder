@@ -122,6 +122,19 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--orr-blue);
 }
 
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--orr-blue);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--orr-blue);
+}
+
 .before-you-begin h2 {
   color: var(--color--orr-blue);
 }
@@ -148,6 +161,15 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 .section--title-page--header-nav {
   background-color: var(--color--orr-azure);
+}
+
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--orr-blue);
+  fill: var(--color--white);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--white);
 }
 
 /* Section contents */

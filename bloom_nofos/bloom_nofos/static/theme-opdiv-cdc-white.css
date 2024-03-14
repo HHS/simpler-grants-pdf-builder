@@ -80,6 +80,15 @@
   color: var(--color--black);
 }
 
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--white);
+  fill: var(--color--vibrant-blue);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--vibrant-blue);
+}
+
 /* Section contents */
 
 .nofo--tagline {

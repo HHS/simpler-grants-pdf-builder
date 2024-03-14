@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add utility classes for table rows
 - Edit links float now for improved clickability
+- New "icon style" attribute for NOFOs
 
 ### Changed
 

@@ -128,6 +128,19 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--vibrant-blue);
 }
 
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--vibrant-blue);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--vibrant-blue);
+}
+
 /* Section title page */
 
 /* Section contents */

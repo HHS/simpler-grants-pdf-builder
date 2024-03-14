@@ -23,6 +23,7 @@ from .forms import (
     NofoDesignerForm,
     NofoCoverForm,
     NofoIconPathForm,
+    NofoIconStyleForm,
     NofoMetadataForm,
     NofoNameForm,
     NofoNumberForm,
@@ -445,6 +446,11 @@ class NofoEditThemeView(BaseNofoEditView):
 class NofoEditCoverView(BaseNofoEditView):
     form_class = NofoCoverForm
     template_name = "nofos/nofo_edit_cover.html"
+
+
+class NofoEditIconStyleView(BaseNofoEditView):
+    form_class = NofoIconStyleForm
+    template_name = "nofos/nofo_edit_icon_style.html"
 
 
 class NofoEditStatusView(BaseNofoEditView):

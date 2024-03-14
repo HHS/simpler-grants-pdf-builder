@@ -115,6 +115,19 @@ h4 {
   color: var(--color--dop-teal);
 }
 
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--dop-teal);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--dop-teal);
+}
+
 .before-you-begin h2 {
   color: var(--color--dop-teal);
 }
@@ -146,6 +159,15 @@ h4 {
 
 .section--title-page--header-nav {
   background-color: var(--color--dop-blue);
+}
+
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--dop-blue);
+  fill: var(--color--white);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--white);
 }
 
 /* Section contents */
