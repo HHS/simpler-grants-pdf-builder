@@ -86,8 +86,30 @@ h1 {
 
 /* Before you begin */
 
-.before-you-begin h2 {
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--vibrant-blue);
+  fill: var(--color--white);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--vibrant-blue);
+}
+
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--vibrant-blue);
+}
+
+.nofo--icons--border
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--vibrant-blue);
 }
 
 /* Section title page */

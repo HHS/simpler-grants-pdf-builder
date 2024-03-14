@@ -49,21 +49,21 @@ div[role="heading"] {
 
 /* Before you begin page */
 
-.before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--ihs-blue);
-}
-
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
   fill: var(--color--ihs-blue);
 }
 
-.nofo--icons--solid
+.nofo--icons--border
   .before-you-begin
   .section--before-you-begin--icon
   svg
   circle {
   stroke: var(--color--ihs-blue);
+}
+
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--ihs-blue);
 }
 
 section.before-you-begin h2 {
@@ -88,12 +88,12 @@ section.before-you-begin h2 {
   color: var(--color--ihs-blue);
 }
 
-.nofo--icons--solid .section--title-page--icon svg {
+.nofo--icons--border .section--title-page--icon svg {
   color: var(--color--white);
   fill: var(--color--ihs-blue);
 }
 
-.nofo--icons--solid .section--title-page--icon svg circle {
+.nofo--icons--border .section--title-page--icon svg circle {
   stroke: var(--color--ihs-blue);
 }
 

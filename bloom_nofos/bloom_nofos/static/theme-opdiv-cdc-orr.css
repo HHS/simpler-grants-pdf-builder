@@ -118,16 +118,25 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 /* Before you begin */
 
-.before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--orr-blue);
+  fill: var(--color--white);
 }
 
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--orr-blue);
+}
+
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
   fill: var(--color--orr-blue);
 }
 
-.nofo--icons--solid
+.nofo--icons--border
   .before-you-begin
   .section--before-you-begin--icon
   svg
