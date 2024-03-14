@@ -124,8 +124,11 @@ class Nofo(models.Model):
     )
 
     ICON_STYLE_CHOICES = [
-        ("nofo--icons--border", "White border, transparent background"),
-        ("nofo--icons--solid", "Solid coloured background"),
+        ("nofo--icons--border", "Color background, white icon, white outline (Filled)"),
+        (
+            "nofo--icons--solid",
+            "White background, color icon, color outline (Standard)",
+        ),
     ]
 
     icon_style = models.CharField(
