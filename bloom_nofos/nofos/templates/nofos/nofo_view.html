@@ -227,7 +227,7 @@
           </div>
           <div class="section--title-page--name">
             <div class="section--title-page--icon">
-              <img src="{% static_icon section.name nofo.theme 'section_cover' %}" alt="">
+              {% include "includes/icon_macro.html" with section_name=section.name|lower only %}
             </div>
             <h2 id="{{ section.html_id }}">
               {% with section.name|nofo_section_name_separator as section_name %}
@@ -242,6 +242,7 @@
           <div class="section--title-page--toc">
             <p>In this step</p>
             <ul>
+              {% spaceless %}
               {% for subsection in section.subsections.all|dictsort:"order" %}
                 {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                   {% if tag == 'h3' %}
@@ -249,6 +250,7 @@
                   {% endif %}
                 {% endwith %}
               {% endfor %}
+              {% endspaceless %}
             </ul>
           </div>
         </div>

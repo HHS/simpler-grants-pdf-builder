@@ -64,8 +64,9 @@ section.before-you-begin h2 {
   border-top: 4px solid var(--color--cms-blue);
 }
 
+.section--title-page--name,
 .section--title-page--toc,
-.section--title-page a {
+.section--title-page--toc a {
   color: var(--color--cms-blue);
 }
 
