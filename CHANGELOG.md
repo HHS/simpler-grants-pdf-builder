@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add utility classes for table rows
+- Edit links float now for improved clickability
 
 ### Changed
 

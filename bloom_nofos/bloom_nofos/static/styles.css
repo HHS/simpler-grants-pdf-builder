@@ -124,6 +124,7 @@ details > summary > span:hover {
   top: -1px;
   margin: 0;
   background: white;
+  z-index: 10;
 }
 
 .nofo_edit caption h2 {
@@ -169,6 +170,19 @@ details > summary > span:hover {
 .nofo_edit main table.table--section th,
 .nofo_edit main table.table--section td {
   border-top: none;
+}
+
+.nofo_edit main table.table--section .nofo-edit-table--subsection--name,
+.nofo_edit main table.table--section .nofo-edit-table--subsection--callout-box,
+.nofo_edit main table.table--section .nofo-edit-table--subsection--manage {
+  vertical-align: top;
+}
+
+.nofo_edit main table.table--section .floating {
+  display: inline-block;
+  margin: 1em 0;
+  position: sticky;
+  top: 90px;
 }
 
 .nofo_edit main table tbody tr:first-of-type th {

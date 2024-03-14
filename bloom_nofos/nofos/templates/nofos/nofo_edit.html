@@ -315,22 +315,28 @@ Edit “{{ nofo|nofo_name }}”
       <th scope="row"
         class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
         id="{{ subsection.html_id }}">
-        {% if subsection.name %}
-          {{ subsection.name }}
-        {% else %}
-          <span class="text-base">(#{{ subsection.order}})</span>
-        {% endif %}
+        <span class="floating">
+          {% if subsection.name %}
+            {{ subsection.name }}
+          {% else %}
+            <span class="text-base">(#{{ subsection.order}})</span>
+          {% endif %}
+        </span>
       </th>
       <td class="nofo-edit-table--subsection--callout-box">
         {% if subsection.callout_box %}
-        <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+        <span class="floating">
+          <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+        </span>
         {% endif %}
       </td>
       <td class="nofo-edit-table--subsection--body">
         {{ subsection.body|safe_markdown|add_classes_to_tables|get_value_or_none:"content" }}
       </td>
-      <td>
-        <a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+      <td class="nofo-edit-table--subsection--manage">
+        <span class="floating">
+          <a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+        </span>
       </td>
     </tr>
     {% endfor %}
