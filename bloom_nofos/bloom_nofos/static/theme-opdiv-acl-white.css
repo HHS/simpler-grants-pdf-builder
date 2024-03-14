@@ -55,21 +55,21 @@ h3 {
 
 /* Before you begin */
 
-.before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--acl-blue);
-}
-
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
   fill: var(--color--acl-blue);
 }
 
-.nofo--icons--solid
+.nofo--icons--border
   .before-you-begin
   .section--before-you-begin--icon
   svg
   circle {
   stroke: var(--color--acl-blue);
+}
+
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--acl-blue);
 }
 
 .before-you-begin h2 {
@@ -102,12 +102,12 @@ h3 {
   color: var(--color--black);
 }
 
-.nofo--icons--solid .section--title-page--icon svg {
+.nofo--icons--border .section--title-page--icon svg {
   color: var(--color--white);
   fill: var(--color--acl-blue);
 }
 
-.nofo--icons--solid .section--title-page--icon svg circle {
+.nofo--icons--border .section--title-page--icon svg circle {
   stroke: var(--color--acl-blue);
 }
 

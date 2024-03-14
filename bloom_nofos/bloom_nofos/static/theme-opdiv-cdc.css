@@ -124,21 +124,8 @@ section.nofo--cover-page.nofo--cover-page--hero {
 
 /* Before you begin page */
 
-.before-you-begin .section--before-you-begin--icon svg {
+.before-you-begin h2 {
   color: var(--color--vibrant-blue);
-}
-
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--white);
-  fill: var(--color--vibrant-blue);
-}
-
-.nofo--icons--solid
-  .before-you-begin
-  .section--before-you-begin--icon
-  svg
-  circle {
-  stroke: var(--color--vibrant-blue);
 }
 
 /* Section title page */

@@ -111,16 +111,25 @@ h4 {
 
 /* Before you begin */
 
-.before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--dop-teal);
+  fill: var(--color--white);
 }
 
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--dop-teal);
+}
+
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
   fill: var(--color--dop-teal);
 }
 
-.nofo--icons--solid
+.nofo--icons--border
   .before-you-begin
   .section--before-you-begin--icon
   svg

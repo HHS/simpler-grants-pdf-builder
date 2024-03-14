@@ -63,21 +63,21 @@ h5 {
 
 /* Before you begin */
 
-.before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--light-black);
-}
-
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
   fill: var(--color--light-black);
 }
 
-.nofo--icons--solid
+.nofo--icons--border
   .before-you-begin
   .section--before-you-begin--icon
   svg
   circle {
   stroke: var(--color--light-black);
+}
+
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--light-black);
 }
 
 .before-you-begin h2 {
@@ -106,12 +106,12 @@ h5 {
   color: var(--color--black);
 }
 
-.nofo--icons--solid .section--title-page--icon svg {
+.nofo--icons--border .section--title-page--icon svg {
   color: var(--color--white);
   fill: var(--color--light-black);
 }
 
-.nofo--icons--solid .section--title-page--icon svg circle {
+.nofo--icons--border .section--title-page--icon svg circle {
   stroke: var(--color--light-black);
 }
 
