@@ -35,13 +35,7 @@ div.section--title-page {
 /* Assign page breaks */
 
 div.title-page,
-section.toc,
-section.before-you-begin {
-  page-break-before: always;
-}
-
-/* put endnotes on its own page */
-#contacts-support--endnotes {
+section {
   page-break-before: always;
 }
 
