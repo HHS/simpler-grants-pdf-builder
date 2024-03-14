@@ -257,6 +257,11 @@ Edit “{{ nofo|nofo_name }}”
       <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
       <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
     </tr>
+    <tr>
+      <th scope="row">Icon style</th>
+      <td>{{ nofo.get_icon_style_display|get_value_or_none:"Bordered" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_icon_style' nofo.id %}">Edit<span class="usa-sr-only"> icon style</span></a></td>
+    </tr>
   </tbody>
 </table>
 

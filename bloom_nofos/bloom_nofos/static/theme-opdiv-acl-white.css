@@ -59,6 +59,19 @@ h3 {
   color: var(--color--acl-blue);
 }
 
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--acl-blue);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--acl-blue);
+}
+
 .before-you-begin h2 {
   color: var(--color--acl-blue);
 }
@@ -87,6 +100,15 @@ h3 {
 .section--title-page--toc,
 .section--title-page--toc a {
   color: var(--color--black);
+}
+
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--white);
+  fill: var(--color--acl-blue);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--acl-blue);
 }
 
 /* Section contents */

@@ -33,21 +33,22 @@ NofoNameForm = create_nofo_form_class(
     ["title", "short_name"], not_required_field_labels=["Short name"]
 )
 
-NofoCoachForm = create_nofo_form_class(["coach"])
-NofoDesignerForm = create_nofo_form_class(["designer"])
-NofoNumberForm = create_nofo_form_class(["number"])
-NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoAgencyForm = create_nofo_form_class(["agency"])
-NofoSubagencyForm = create_nofo_form_class(["subagency"])
-NofoSubagency2Form = create_nofo_form_class(["subagency2"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
-NofoTaglineForm = create_nofo_form_class(["tagline"])
-NofoThemeForm = create_nofo_form_class(["theme"])
+NofoCoachForm = create_nofo_form_class(["coach"])
 NofoCoverForm = create_nofo_form_class(["cover"])
-NofoStatusForm = create_nofo_form_class(["status"])
+NofoDesignerForm = create_nofo_form_class(["designer"])
 NofoIconPathForm = create_nofo_form_class(
     ["icon_path"], not_required_field_labels=["Icon path"]
 )
+NofoIconStyleForm = create_nofo_form_class(["icon_style"])
+NofoNumberForm = create_nofo_form_class(["number"])
+NofoOpDivForm = create_nofo_form_class(["opdiv"])
+NofoStatusForm = create_nofo_form_class(["status"])
+NofoSubagency2Form = create_nofo_form_class(["subagency2"])
+NofoSubagencyForm = create_nofo_form_class(["subagency"])
+NofoTaglineForm = create_nofo_form_class(["tagline"])
+NofoThemeForm = create_nofo_form_class(["theme"])
 
 
 # this one needs a custom field and a custom widget so don't use the factory function

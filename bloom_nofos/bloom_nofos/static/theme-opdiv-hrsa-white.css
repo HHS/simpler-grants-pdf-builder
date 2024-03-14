@@ -49,6 +49,19 @@ h4 {
   color: var(--color--hrsa-blue);
 }
 
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--hrsa-blue);
+}
+
+.nofo--icons--solid
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--hrsa-blue);
+}
+
 /* Section title page */
 
 .section--title-page--header-nav {
@@ -69,6 +82,15 @@ h4 {
 
 .section--title-page--icon svg {
   color: var(--color--hrsa-blue);
+}
+
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--white);
+  fill: var(--color--hrsa-blue);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--hrsa-blue);
 }
 
 /* Section contents */

@@ -105,6 +105,15 @@ h1 {
   background-color: var(--color--dark-blue);
 }
 
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--vibrant-blue);
+  fill: var(--color--white);
+}
+
+.nofo--icons--solid .section--title-page--icon svg circle {
+  stroke: var(--color--white);
+}
+
 /* Section contents */
 
 .nofo--tagline {

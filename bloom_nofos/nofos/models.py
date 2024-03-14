@@ -28,6 +28,7 @@ class Nofo(models.Model):
         blank=True,
         help_text="This will be publicly visible when the NOFO is published.",
     )
+
     short_name = models.CharField(
         max_length=511,
         blank=True,
@@ -122,6 +123,19 @@ class Nofo(models.Model):
         help_text="The cover style for the NOFO (eg, large image, medium image, no image).",
     )
 
+    ICON_STYLE_CHOICES = [
+        ("nofo--icons--border", "White border, transparent background"),
+        ("nofo--icons--solid", "Solid coloured background"),
+    ]
+
+    icon_style = models.CharField(
+        max_length=32,
+        choices=ICON_STYLE_CHOICES,
+        blank=False,
+        default="nofo--icons--border",
+        help_text="Defines the icon style on section cover pages.",
+    )
+
     COACH_CHOICES = [
         ("emily", "Emily"),
         ("hannah", "Hannah"),
@@ -171,7 +185,7 @@ class Nofo(models.Model):
         "Icon path",
         max_length=64,
         blank=True,
-        help_text="An override for the icon path if the default doens’t work.",
+        help_text="An override for the icon path if the default doesn’t work.",
     )
 
     created = models.DateTimeField(auto_now_add=True)
