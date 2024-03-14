@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add utility classes for table rows
+
 ### Changed
 
 - New default image for the preview NOFOs
