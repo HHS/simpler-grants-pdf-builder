@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Bigger logo for CDC all-text
+
 ### Fixed
 
 ## [1.15.0] - 2023-03-09
