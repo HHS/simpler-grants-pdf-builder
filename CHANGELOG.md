@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.15.0] - 2023-03-09
+
+### Added
+
 - Add utility classes for table rows
 - Edit links float now for improved clickability
 - New "icon style" attribute for NOFOs
@@ -22,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Rename folder for CDC-RFA-EH24-0044
 - Smaller h1 on the title page if the title is too long
 - All sections should trigger a page break before
 - Stop sequential tables eating each other
