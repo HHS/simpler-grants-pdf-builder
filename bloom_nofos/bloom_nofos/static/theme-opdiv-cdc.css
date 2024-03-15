@@ -93,6 +93,12 @@ h6 {
   display: none !important;
 }
 
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo img {
+  width: 270px;
+}
+
 /* Cover page: medium image */
 
 .portrait
