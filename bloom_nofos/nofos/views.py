@@ -22,7 +22,6 @@ from .forms import (
     NofoCoachForm,
     NofoDesignerForm,
     NofoCoverForm,
-    NofoIconPathForm,
     NofoIconStyleForm,
     NofoMetadataForm,
     NofoNameForm,
@@ -415,11 +414,6 @@ class NofoEditSubagencyView(BaseNofoEditView):
 class NofoEditSubagency2View(BaseNofoEditView):
     form_class = NofoSubagency2Form
     template_name = "nofos/nofo_edit_subagency2.html"
-
-
-class NofoEditIconPathView(BaseNofoEditView):
-    form_class = NofoIconPathForm
-    template_name = "nofos/nofo_edit_icon_path.html"
 
 
 class NofoEditThemeView(BaseNofoEditView):
