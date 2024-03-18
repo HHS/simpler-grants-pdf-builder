@@ -38,9 +38,6 @@ NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoCoachForm = create_nofo_form_class(["coach"])
 NofoCoverForm = create_nofo_form_class(["cover"])
 NofoDesignerForm = create_nofo_form_class(["designer"])
-NofoIconPathForm = create_nofo_form_class(
-    ["icon_path"], not_required_field_labels=["Icon path"]
-)
 NofoIconStyleForm = create_nofo_form_class(["icon_style"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
