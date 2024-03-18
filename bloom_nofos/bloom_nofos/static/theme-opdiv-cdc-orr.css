@@ -116,6 +116,24 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--orr-blue);
 }
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--orr-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--orr-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--orr-blue);
+}
+
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {

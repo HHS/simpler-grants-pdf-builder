@@ -13,11 +13,6 @@
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
 - Stop demoting headers on the way in
-- Covert the icons to svgs
-  - Before you begin
-  - Callout boxes
-  - Section title pages
-  - Table of contents
 - Covert logos to svgs
   - HHS
   - etc
@@ -27,6 +22,8 @@
 - Covert the icons to svgs
   - Before you begin
   - Callout boxes
+  - Section title pages
+  - Table of contents
 - Link from Subsection edit page to admin page and vice-versa
 - Fix: add classnames to callout box subsections
 - Change Test mode from the UI

@@ -47,6 +47,24 @@ div[role="heading"] {
 
 /* Table of contents */
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--ihs-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--ihs-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--ihs-blue);
+}
+
 /* Before you begin page */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
