@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Remove static_icon function and all static images associated with it
+
 ## [1.15.0] - 2023-03-09
 
 ### Added

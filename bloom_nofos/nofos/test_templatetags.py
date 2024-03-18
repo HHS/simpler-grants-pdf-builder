@@ -7,13 +7,11 @@ from django.test import TestCase
 from .templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
-    _get_icon_path_from_theme,
     add_caption_to_table,
     add_class_to_table,
     add_class_to_table_rows,
     find_elements_with_character,
     format_footnote_ref,
-    get_icon_from_theme,
     get_parent_td,
     is_footnote_ref,
 )
@@ -324,116 +322,6 @@ class TestFindElementsWithChar(TestCase):
         container = []
         find_elements_with_character(soup, container, "~")
         self.assertEqual(len(container), 0)
-
-
-class GetIconPathFromThemeTests(TestCase):
-    def test_toc_section_with_white_colour(self):
-        path = _get_icon_path_from_theme("landscape-cbc-white", "toc")
-        self.assertEqual(path, "img/figma-icons/med-blue-border")
-
-    def test_toc_section_non_white_colour(self):
-        path = _get_icon_path_from_theme("landscape-cbc-blue", "toc")
-        self.assertEqual(path, "img/figma-icons/white-icon")
-
-    def test_before_you_begin_section_hrsa_opdiv(self):
-        path = _get_icon_path_from_theme("theme-hrsa-blue", "before_you_begin")
-        self.assertEqual(path, "img/figma-icons/dark-blue-border")
-
-    def test_before_you_begin_section_cms_opdiv(self):
-        path = _get_icon_path_from_theme("theme-cms-blue", "before_you_begin")
-        self.assertEqual(path, "img/figma-icons/cms-blue-border")
-
-    def test_before_you_begin_section_other_opdiv(self):
-        path = _get_icon_path_from_theme("theme-cdc-blue", "before_you_begin")
-        self.assertEqual(path, "img/figma-icons/med-blue-border")
-
-    def test_callout_box_section_acf_white_theme(self):
-        path = _get_icon_path_from_theme("theme-acf-white", "callout_box")
-        self.assertEqual(path, "img/figma-icons/acf-black-border")
-
-    def test_callout_box_section_acf_blue_theme(self):
-        path = _get_icon_path_from_theme("theme-acf-blue", "callout_box")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_callout_box_section_white_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-white", "callout_box")
-        self.assertEqual(path, "img/figma-icons/dark-blue-border")
-
-    def test_callout_box_section_any_nonwhite_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-blue", "callout_box")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_section_cover_section_any_white_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-white", "section_cover")
-        self.assertEqual(path, "img/figma-icons/med-blue-border")
-
-    def test_section_cover_section_cms_white_theme(self):
-        path = _get_icon_path_from_theme("theme-cms-white", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_section_cover_section_acf_white_theme(self):
-        path = _get_icon_path_from_theme("theme-acf-white", "section_cover")
-        self.assertEqual(path, "img/figma-icons/acf-black-border")
-
-    def test_section_cover_section_acf_blue_theme(self):
-        path = _get_icon_path_from_theme("theme-acf-blue", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_section_cover_section_any_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-blue", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_before_you_begin_section_dop_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_callout_box_section_dop_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_section_cover_section_dop_theme(self):
-        path = _get_icon_path_from_theme("theme-cdc-dop", "section_cover")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-    def test_default_case(self):
-        path = _get_icon_path_from_theme("any-theme-any-colour", "any-section")
-        self.assertEqual(path, "img/figma-icons/white-border")
-
-
-class GetIconFromThemeTests(TestCase):
-    @patch("nofos.templatetags.utils._get_icon_path_from_theme")
-    def test_icon_matching(self, mock_get_icon_path):
-        mock_get_icon_path.return_value = "img/figma-icons/med-blue-border"
-        # Test known icon name
-        icon_path = get_icon_from_theme(
-            "review the opportunity", "portrait-cdc-blue", "section_cover"
-        )
-        self.assertEqual(icon_path, "img/figma-icons/med-blue-border/1-review.svg")
-
-    @patch("nofos.templatetags.utils._get_icon_path_from_theme")
-    def test_icon_default_when_no_match(self, mock_get_icon_path):
-        mock_get_icon_path.return_value = "img/figma-icons/med-blue-border"
-        # Test an unknown icon name, which should default
-        icon_path = get_icon_from_theme(
-            "unknown icon", "portrait-cdc-blue", "section_cover"
-        )
-        self.assertEqual(icon_path, "img/figma-icons/med-blue-border/1-review.svg")
-
-    @patch("nofos.templatetags.utils._get_icon_path_from_theme")
-    def test_correct_path_construction(self, mock_get_icon_path):
-        mock_get_icon_path.return_value = "img/figma-icons/custom-path"
-        # Test correct path construction
-        icon_path = get_icon_from_theme("write", "custom-theme", "custom_section")
-        self.assertEqual(icon_path, "img/figma-icons/custom-path/3-write.svg")
-
-    @patch("nofos.templatetags.utils._get_icon_path_from_theme")
-    def test_correct_path_construction(self, mock_get_icon_path):
-        mock_get_icon_path.return_value = "img/figma-icons/custom-path"
-        # Test correct path construction
-        icon_path = get_icon_from_theme(
-            "prepare your application", "custom-theme", "custom_section"
-        )
-        self.assertEqual(icon_path, "img/figma-icons/custom-path/3-write.svg")
 
 
 class TestGetParentTd(TestCase):

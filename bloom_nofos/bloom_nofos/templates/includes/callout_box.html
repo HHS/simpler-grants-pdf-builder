@@ -1,4 +1,4 @@
-{% load static martortags callout_box_contents add_classes_to_tables static_icon is_floating_callout_box %}
+{% load static martortags callout_box_contents add_classes_to_tables is_floating_callout_box %}
 
 <div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %} {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}">
   {% if subsection.name %}
