@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change ACL line-height to 1.4
 - Bigger logo for CDC all-text
 
 ### Fixed

@@ -49,6 +49,10 @@ h6 {
   font-weight: 700;
 }
 
+h5 {
+  line-height: 1.4;
+}
+
 /* this functions as an h7 */
 div[role="heading"] {
   font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
