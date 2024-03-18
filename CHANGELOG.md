@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Change ACL line-height to 1.4
 - Bigger logo for CDC all-text
+- Use SVG icons instead of img icons for table of contents
+  - Finally, I can get rid of all those hardcoded images
 
 ### Fixed
 

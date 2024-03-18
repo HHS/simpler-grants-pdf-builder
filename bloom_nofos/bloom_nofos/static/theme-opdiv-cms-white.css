@@ -42,6 +42,24 @@ h2 {
 
 /* Table of contents */
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--cms-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--cms-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--cms-blue);
+}
+
 /* Before you begin page */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {

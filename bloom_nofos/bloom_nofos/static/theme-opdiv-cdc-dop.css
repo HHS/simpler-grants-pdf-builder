@@ -109,6 +109,24 @@ h4 {
   background: var(--color--dop-teal);
 }
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--dop-teal);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--dop-teal);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--dop-teal);
+}
+
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {

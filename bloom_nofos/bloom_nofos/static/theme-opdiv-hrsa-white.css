@@ -43,6 +43,24 @@ h4 {
   color: var(--color--black);
 }
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--hrsa-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--hrsa-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--hrsa-blue);
+}
+
 /* Before you begin */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {

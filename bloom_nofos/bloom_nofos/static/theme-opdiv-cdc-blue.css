@@ -84,6 +84,24 @@ h1 {
   background: var(--color--vibrant-blue);
 }
 
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--vibrant-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--vibrant-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--vibrant-blue);
+}
+
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {

@@ -751,7 +751,9 @@ div[role="heading"] {
   margin-left: 10px;
 }
 
-.toc .toc--section-name .toc--section-name--img {
+.toc .toc--section-name .toc--section-name--img,
+.toc .toc--section-name .toc--section-name--img svg {
+  height: 30px;
   width: 30px;
   border-radius: 50%;
 }
