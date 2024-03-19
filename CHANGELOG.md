@@ -16,6 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Bigger logo for CDC all-text
 - Use SVG icons instead of img icons for table of contents
   - Finally, I can get rid of all those hardcoded images
+- H7 'headings' in ACF are now 13pt
 
 ### Fixed
 

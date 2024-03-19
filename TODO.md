@@ -16,6 +16,7 @@
 - Covert logos to svgs
   - HHS
   - etc
+- Fix: clean NBSPs in headings
 
 # DONE
 

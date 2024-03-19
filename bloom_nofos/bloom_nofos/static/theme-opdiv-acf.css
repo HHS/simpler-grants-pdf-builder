@@ -65,7 +65,12 @@ h5 {
 h6 {
   font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
     serif;
-    font-size: 12.5pt;
+  font-size: 12.5pt;
+}
+
+/* this functions as an h7 */
+div[role="heading"] {
+  font-size: 13pt;
 }
 
 /* Cover page */
