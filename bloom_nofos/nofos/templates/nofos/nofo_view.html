@@ -317,7 +317,7 @@
               {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv only %}
             {% endif %}
           {% else %}
-            {% if subsection.name != 'Basic information' %}
+            {% if subsection.name|lower != 'basic information' %}
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                 {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
               {% endwith %}
