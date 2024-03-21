@@ -113,6 +113,20 @@
       </div>
     </div>
     <div class="nofo--cover-page--footer">
+      {# TODO: remove this once HRSA 014 ships #}
+      <div class="nofo--cover-page--callout-box callout-box callout-box--icon callout-box--alert">
+        <div class="callout-box--contents">
+          <img class="toc--section-name--img" src="{% static "img/alert.svg" %}" alt="">
+          <div>
+            <p><strong>MODIFIED on March 8, 2024:</strong></p>
+            <p>Updated the list of <a href="#100--step-3-write-your-application--other-required-forms">Other required forms</a> to include 3 additional required forms.</p>
+            <br />
+            <p><strong>MODIFIED on March 25, 2024:</strong></p>
+            <p>Updated the <a href="#85--step-3-write-your-application--budget-budget-narrative">Budget & budget narrative section</a> to include budget requirements.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="nofo--cover-page--footer--logo">
         <img alt="Heath and Human Services logo" src="{% static nofo_hhs_img %}">
       </div>
@@ -194,8 +208,8 @@
       <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline|split_char_and_remove:"-" }}</p>
       <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
 
-      {# Show "Adobe Reader" callout box in this section on non-HRSA NOFOs #}
-      {% if nofo_opdiv.key != 'hrsa' %}
+      {# Show "Adobe Reader" callout box in this section on non-HRSA 014 NOFOs #}
+      {% if nofo.number|lower != 'hrsa-24-014' %}
       <div class="callout-box callout-box--icon callout-box--keyboard">
         <div class="callout-box--contents">
           {% include "includes/icons/00-adobe-pdf.svg" %}
