@@ -247,8 +247,9 @@ h2 {
   margin-bottom: 20px;
 }
 
-.hhs-2024-acl-aoa-innu-0025 .before-you-begin .callout-box--keyboard {
-  display: none;
+.hrsa-24-046 .toc h2,
+.hhs-2024-acl-aoa-lrlr-0020 .toc h2 {
+  margin-top: -10px;
 }
 
 /* Regular CSS */
