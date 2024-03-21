@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Use "Write" in the running nav for section 3 if the section name inclues "Write"
 - Change ACL line-height to 1.4
 - Bigger logo for CDC all-text
 - Use SVG icons instead of img icons for table of contents
@@ -20,6 +21,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- The check for Basic information headings is more robust
 - Handle HTML in strings for the wrap_text_before_colon_in_strong function
 - Remove static_icon function and all static images associated with it
 
