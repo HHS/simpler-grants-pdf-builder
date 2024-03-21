@@ -81,9 +81,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Only show NOFO last updated times in table if they were updated today
 - Remove ACF blue theme, since it is not allowed right now
 - Rename "Medium image" to "Small image" for cover page options
+- Light Blue icon for HRSA blue theme on ByB page
 
 ### Fixed
 
+- Pencil icon SVG should show up for "write" or "prepare"
+- Adjustments to fit the table of contents on one page
 - Absolutely position checkbox svg to emulate bullets
 - HRSA section pages now have white icons again
 - Headings in first row of HTML tables (not markdown) have proper CSS styling
