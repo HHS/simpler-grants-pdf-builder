@@ -78,7 +78,7 @@ h4 {
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--dark-blue);
+  color: var(--color--hrsa-blue);
   fill: var(--color--white);
 }
 
@@ -87,12 +87,12 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--dark-blue);
+  stroke: var(--color--hrsa-blue);
 }
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--dark-blue);
+  fill: var(--color--hrsa-blue);
 }
 
 .nofo--icons--border
@@ -100,7 +100,7 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--dark-blue);
+  stroke: var(--color--hrsa-blue);
 }
 
 .before-you-begin h2 {
