@@ -1097,11 +1097,11 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 /* Media queries */
 @media print {
   /* Tag elements in the PDF */
-  .toc .toc--ol {
+  .toc ol {
     -prince-pdf-tag-type: TOC;
   }
 
-  .toc .toc--ol li {
+  .toc li {
     -prince-pdf-tag-type: TOCI;
   }
 
