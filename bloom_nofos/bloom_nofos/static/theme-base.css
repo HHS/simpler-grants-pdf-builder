@@ -251,10 +251,14 @@ h2 {
   margin-top: -10px;
 }
 
-.hrsa-24-046 .toc h2,
 .hrsa-24-014 .toc h2 {
   margin-top: -16px;
   margin-bottom: 16px;
+}
+
+.hrsa-24-046 .toc h2 {
+  margin-top: -24px;
+  margin-bottom: 10px;
 }
 
 .hrsa-24-014
