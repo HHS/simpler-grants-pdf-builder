@@ -41,6 +41,7 @@ from .nofo import (
     add_strongs_to_soup,
     add_page_breaks_to_headings,
     clean_table_cells,
+    clean_heading_tags,
     combine_consecutive_links,
     create_nofo,
     decompose_empty_tags,
@@ -243,6 +244,7 @@ def nofo_import(request, pk=None):
         # mutate the HTML
         join_nested_lists(soup)
         add_strongs_to_soup(soup)
+        clean_heading_tags(soup)
         decompose_empty_tags(soup)
         clean_table_cells(soup)
         combine_consecutive_links(soup)

@@ -18,6 +18,7 @@ from .nofo import (
     add_page_breaks_to_headings,
     add_strongs_to_soup,
     clean_table_cells,
+    clean_heading_tags,
     combine_consecutive_links,
     convert_table_first_row_to_header_row,
     create_nofo,
@@ -2097,6 +2098,41 @@ class TestAddStrongsToSoup(TestCase):
         self.assertEqual(soup.find("span", class_="bold-1").parent.name, "p")
         self.assertEqual(soup.find("span", class_="bold-2").parent.name, "strong")
         self.assertEqual(soup.find("span", class_="bold-3").parent.name, "strong")
+
+
+class CleanHeadingsTestCase(TestCase):
+    def test_clean_heading_tags_with_various_headings(self):
+        html = """
+        <h1>   Heading with    <span>spans</span> and &nbsp;spaces&nbsp;   </h1>
+        <h2>Another&nbsp;heading</h2>
+        <h3> Normal heading </h3>
+        <h4>Heading with <span>multiple</span> <span>spans</span></h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        clean_heading_tags(soup)
+
+        self.assertEqual(soup.find("h1").get_text(), "Heading with spans and spaces")
+        self.assertEqual(soup.find("h2").get_text(), "Another heading")
+        self.assertEqual(soup.find("h3").get_text(), "Normal heading")
+        self.assertEqual(soup.find("h4").get_text(), "Heading with multiple spans")
+
+    def test_clean_heading_tags_with_nbsp_in_a_span(self):
+        html = '<h1 class="c110"><span>Step</span><span class="c95 c141">&nbsp;</span><span class="c12 c9">1: Review the Opportunity</span></h1>'
+        soup = BeautifulSoup(html, "html.parser")
+        clean_heading_tags(soup)
+        self.assertEqual(soup.find("h1").get_text(), "Step 1: Review the Opportunity")
+
+    def test_clean_heading_tags_with_empty_heading(self):
+        html = "<h1> </h1>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_heading_tags(soup)
+        self.assertEqual(soup.find("h1").get_text(), "")
+
+    def test_clean_heading_tags_with_no_change_needed(self):
+        html = "<h1>Perfect Heading</h1>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_heading_tags(soup)
+        self.assertEqual(soup.find("h1").get_text(), "Perfect Heading")
 
 
 ###########################################################
