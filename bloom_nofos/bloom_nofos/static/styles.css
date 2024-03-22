@@ -78,6 +78,13 @@ details > summary > span:hover {
   width: 25%;
 }
 
+.nofo_index .usa-prose > table td,
+.nofo_index .usa-prose > table th,
+.nofo_index .usa-table td,
+.nofo_index .usa-table th {
+  padding: 0.5rem 0.6rem;
+}
+
 /* Edit page */
 
 /* header widget for NOFO */

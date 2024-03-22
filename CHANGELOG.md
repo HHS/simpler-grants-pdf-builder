@@ -19,12 +19,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Use SVG icons instead of img icons for table of contents
   - Finally, I can get rid of all those hardcoded images
 - H7 'headings' in ACF are now 13pt
+- Slightly less padding on the main NOFO index page table
 
 ### Fixed
 
 - The check for Basic information headings is more robust
 - Handle HTML in strings for the wrap_text_before_colon_in_strong function
 - Remove static_icon function and all static images associated with it
+- Shipped a fix for NBSP tags in headings
 
 ## [1.15.0] - 2023-03-09
 
