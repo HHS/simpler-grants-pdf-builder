@@ -160,6 +160,7 @@ class Nofo(models.Model):
         ("adam", "Adam"),
         ("kevin", "Kevin"),
         ("emily", "Emily"),
+        ("yasmine", "Yasmine"),
     ]
 
     designer = models.CharField(
