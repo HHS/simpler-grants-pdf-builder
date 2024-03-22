@@ -960,3 +960,37 @@ def add_strongs_to_soup(soup):
                 if parent_tr and parent_tr.find_previous_sibling() is None:
                     continue
                 element.wrap(soup.new_tag("strong"))
+
+
+def clean_heading_tags(soup):
+    """
+    This function mutates the soup!
+
+    Finds all headings, it will:
+    - Unwrap span tags in the heading
+    - Replace non-breaking spaces with regular spaces
+    - Collapse multiple spaces into one
+    - Trim leading and trailing spaces
+    """
+    # Find all headings (h1, h2, ..., h6)
+    headings = soup.find_all(re.compile("^h[1-6]$"))
+
+    for heading in headings:
+        # Unwrap spans
+        for span in heading.find_all("span"):
+            span.unwrap()
+
+        # Get the text content of the heading
+        text = heading.get_text()
+
+        # Replace non-breaking spaces with regular spaces
+        text = text.replace("\xa0", " ")
+
+        # Collapse multiple spaces into one
+        text = re.sub(r"\s+", " ", text)
+
+        # Trim whitespace from the front and back
+        text = text.strip()
+
+        # Replace the original heading text with the cleaned text
+        heading.string = text
