@@ -77,6 +77,18 @@ h6 {
 
 /* Cover page */
 
+.nofo--cover-page--header {
+  padding: 12mm 20mm;
+}
+
+.nofo--cover-page--header--logo--img {
+  display: block;
+}
+
+.nofo--cover-page--header--logo--subheading {
+  display: none;
+}
+
 /* Cover page: text */
 
 /* Cover page: medium image */
