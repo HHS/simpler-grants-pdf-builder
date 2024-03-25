@@ -58,6 +58,7 @@ from .nofo import (
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_author,
+    suggest_nofo_cover,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -310,6 +311,7 @@ def nofo_import(request, pk=None):
                 soup
             )  # guess the NOFO application deadline
             nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
+            nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
             nofo.save()
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
