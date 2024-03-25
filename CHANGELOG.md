@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Finally, I can get rid of all those hardcoded images
 - H7 'headings' in ACF are now 13pt
 - Slightly less padding on the main NOFO index page table
+- Remove the name of the subagency from the CMS cover page
 
 ### Fixed
 
