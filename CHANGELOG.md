@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Never show "Contacts and support" sublinks in ToC, no matter the capitalization
+
 ## [1.16.0] - 2023-03-25
 
 ### Added

@@ -162,7 +162,7 @@
             <div class="toc--section-name--wrapper">
               <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
 
-              {% if section.name != "Contacts & Support" and section.name != "Contacts and Support" %}
+              {% if section.name|lower != "contacts & support" and section.name|lower != "contacts and support" %}
                 <ol class="usa-list usa-list--unstyled">
                   {% for subsection in section.subsections.all|dictsort:"order" %}
                     {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}

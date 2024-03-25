@@ -16,10 +16,10 @@
 - Covert logos to svgs
   - HHS
   - etc
-- Fix: clean NBSPs in headings
 
 # DONE
 
+- Fix: clean NBSPs in headings
 - Covert the icons to svgs
   - Before you begin
   - Callout boxes
