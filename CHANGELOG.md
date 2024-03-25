@@ -24,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Default to text covers for ACF and ACL
 - Default to standard icons for ACL
   - Also hide the edit link
+- Smaller h1 font size for HHS-2024-ACF-ACYF-EV-0039
 
 ### Fixed
 
