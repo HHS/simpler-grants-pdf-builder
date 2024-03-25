@@ -35,6 +35,7 @@ from .nofo import (
     replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_author,
+    suggest_nofo_cover,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -1354,6 +1355,36 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_number = ""
         nofo_theme = "portrait-hrsa-blue"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+
+class HTMLSuggestCoverTests(TestCase):
+    def test_suggest_nofo_cover_hrsa_returns_medium(self):
+        nofo_cover = "nofo--cover-page--medium"
+        self.assertEqual(suggest_nofo_cover("portrait-hrsa-blue"), nofo_cover)
+
+    def test_suggest_nofo_cover_cdc_returns_medium(self):
+        nofo_cover = "nofo--cover-page--medium"
+        self.assertEqual(suggest_nofo_cover("portrait-cdc-blue"), nofo_cover)
+
+    def test_suggest_nofo_cover_cms_returns_medium(self):
+        nofo_cover = "nofo--cover-page--medium"
+        self.assertEqual(suggest_nofo_cover("portrait-cms-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_ihs_returns_medium(self):
+        nofo_cover = "nofo--cover-page--medium"
+        self.assertEqual(suggest_nofo_cover("portrait-ihs-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_acf_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
+        self.assertEqual(suggest_nofo_cover("portrait-acf-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_acl_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
+        self.assertEqual(suggest_nofo_cover("portrait-acl-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_empty_string_returns_medium(self):
+        nofo_cover = "nofo--cover-page--medium"
+        self.assertEqual(suggest_nofo_cover(""), nofo_cover)
 
 
 class SuggestNofoOpDivTests(TestCase):

@@ -459,6 +459,13 @@ def suggest_nofo_application_deadline(soup):
     return suggestion or nofo_application_deadline_default
 
 
+def suggest_nofo_cover(nofo_theme):
+    if "acf-" in nofo_theme.lower() or "acl-" in nofo_theme.lower():
+        return "nofo--cover-page--text"
+
+    return "nofo--cover-page--medium"
+
+
 def suggest_nofo_theme(nofo_number):
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
