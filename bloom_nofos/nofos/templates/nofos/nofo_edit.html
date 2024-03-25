@@ -260,7 +260,11 @@ Edit “{{ nofo|nofo_name }}”
     <tr>
       <th scope="row">Icon style</th>
       <td>{{ nofo.get_icon_style_display|get_value_or_none:"Bordered" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_icon_style' nofo.id %}">Edit<span class="usa-sr-only"> icon style</span></a></td>
+      <td>
+        {% if "-acl" not in nofo.theme %}
+          <a href="{% url 'nofos:nofo_edit_icon_style' nofo.id %}">Edit<span class="usa-sr-only"> icon style</span></a>
+        {% endif %}
+      </td>
     </tr>
   </tbody>
 </table>

@@ -466,6 +466,13 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
+def suggest_nofo_icon_style(nofo_theme):
+    if "acl-" in nofo_theme.lower():
+        return "nofo--icons--solid"
+
+    return "nofo--icons--border"
+
+
 def suggest_nofo_theme(nofo_number):
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
