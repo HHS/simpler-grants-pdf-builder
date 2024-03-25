@@ -22,6 +22,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Slightly less padding on the main NOFO index page table
 - Remove the name of the subagency from the CMS cover page
 - Default to text covers for ACF and ACL
+- Default to standard icons for ACL
+  - Also hide the edit link
 
 ### Fixed
 

@@ -36,6 +36,7 @@ from .nofo import (
     suggest_nofo_agency,
     suggest_nofo_author,
     suggest_nofo_cover,
+    suggest_nofo_icon_style,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -1385,6 +1386,41 @@ class HTMLSuggestCoverTests(TestCase):
     def test_suggest_nofo_cover_empty_string_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
         self.assertEqual(suggest_nofo_cover(""), nofo_cover)
+
+
+class HTMLSuggestIconStyleTests(TestCase):
+    def test_suggest_nofo_icon_style_hrsa_returns_border(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-hrsa-blue"), "nofo--icons--border"
+        )
+
+    def test_suggest_nofo_icon_style_cdc_returns_border(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-cdc-blue"), "nofo--icons--border"
+        )
+
+    def test_suggest_nofo_icon_style_cms_returns_border(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-cms-white"), "nofo--icons--border"
+        )
+
+    def test_suggest_nofo_icon_style_ihs_returns_border(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-ihs-white"), "nofo--icons--border"
+        )
+
+    def test_suggest_nofo_icon_style_acf_returns_border(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-acf-white"), "nofo--icons--border"
+        )
+
+    def test_suggest_nofo_icon_style_acl_returns_solid(self):
+        self.assertEqual(
+            suggest_nofo_icon_style("portrait-acl-white"), "nofo--icons--solid"
+        )
+
+    def test_suggest_nofo_icon_style_empty_string_returns_border(self):
+        self.assertEqual(suggest_nofo_icon_style(""), "nofo--icons--border")
 
 
 class SuggestNofoOpDivTests(TestCase):
