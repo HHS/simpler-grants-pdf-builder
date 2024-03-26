@@ -86,7 +86,7 @@ OPDIVS = {
     "aspr": {
         "key": "aspr",
         "name": "Administration for Strategic Preparedness and Response",
-        "filename": "",
+        "filename": "img/aspr-logo.svg",
     },
     "cdc": {
         "key": "cdc",
@@ -179,6 +179,7 @@ class NofosDetailView(DetailView):
         if self.object.theme in [
             "portrait-acf-white",
             "portrait-acl-white",
+            "portrait-aspr-white",
             "portrait-cms-white",
             "portrait-ihs-white",
         ]:

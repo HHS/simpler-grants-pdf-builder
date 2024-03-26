@@ -4,6 +4,7 @@
 :root {
   --color--aspr-blue: #155191;
   --color--aspr-navy: #062e61;
+  --color--aspr-ice-blue: #dde8f4;
 }
 
 /* Set @page rules */
@@ -66,12 +67,11 @@ h6 {
 
 /* Cover page */
 
-.nofo--cover-page--header .nofo--cover-page--header--intro span:last-of-type {
+.nofo--cover-page--medium
+  .nofo--cover-page--header
+  .nofo--cover-page--header--intro
+  span:last-of-type {
   font-weight: 400;
-}
-
-.nofo--cover-page--header--logo img {
-  width: 300px;
 }
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--title {
@@ -79,11 +79,13 @@ h6 {
   color: var(--color--white);
 }
 
-/* Cover page: text */
-
-.nofo--cover-page--text .nofo--cover-page--header--logo img {
-  width: 270px;
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  font-weight: 600;
 }
+
+/* Cover page: text */
 
 /* Cover page: hero image */
 
