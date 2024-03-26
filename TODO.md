@@ -8,7 +8,6 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Maybe: include preceding paragraph in front of tables potentially
 - Update the README
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table

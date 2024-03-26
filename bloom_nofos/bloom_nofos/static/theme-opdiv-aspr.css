@@ -1,0 +1,116 @@
+/* CSS vars */
+
+/* CSS vars */
+:root {
+  --color--aspr-blue: #155191;
+  --color--aspr-navy: #062e61;
+}
+
+/* Set @page rules */
+
+/* Regular CSS */
+
+html {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color--vibrant-blue);
+}
+
+/* Headings */
+
+h1 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-weight: 700;
+}
+
+h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+}
+
+h3 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--dark-blue);
+}
+
+h4 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--vibrant-blue);
+}
+
+h5 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--black);
+}
+
+h6 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--black);
+}
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top: 4px solid var(--color--aspr-blue);
+  color: var(--color--aspr-blue);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header .nofo--cover-page--header--intro span:last-of-type {
+  font-weight: 400;
+}
+
+.nofo--cover-page--header--logo img {
+  width: 300px;
+}
+
+.portrait .nofo--cover-page--medium .nofo--cover-page--title {
+  padding: 5mm 20mm 10mm 20mm;
+  color: var(--color--white);
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo img {
+  width: 270px;
+}
+
+/* Cover page: hero image */
+
+section.nofo--cover-page.nofo--cover-page--hero {
+  background-color: var(--color--aspr-navy);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--aspr-navy);
+}
+
+.toc--section-name--a {
+  color: var(--color--aspr-blue);
+}
+
+.toc ol ol li a {
+  color: var(--color--black);
+}
+
+/* Before you begin page */
+
+.before-you-begin h2 {
+  color: var(--color--aspr-navy);
+}
+
+/* Section title page */
+
+/* Section contents */

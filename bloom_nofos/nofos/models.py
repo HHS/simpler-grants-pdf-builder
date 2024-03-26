@@ -15,6 +15,7 @@ THEME_CHOICES = [
     ("portrait-cdc-white", "CDC Portrait (Light)"),
     ("portrait-acf-white", "ACF (Light)"),
     ("portrait-acl-white", "ACL (Default)"),
+    ("portrait-aspr-blue", "ASPR (Default)"),
     ("portrait-cms-white", "CMS (Light)"),
     ("portrait-hrsa-blue", "HRSA (Default)"),
     ("portrait-hrsa-white", "HRSA (Light)"),
