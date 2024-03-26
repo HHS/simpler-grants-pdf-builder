@@ -44,7 +44,7 @@
 			</thead>
 			<tbody>
 				{% for nofo in nofo_list %}
-					<tr>
+					<tr {% if nofo.status == 'ready_for_adam' %}class="ready_for_adam"{% endif %}>
 						<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
 						<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
 						<td>{{ nofo.get_status_display }}</td>
