@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
@@ -187,7 +189,7 @@ class Nofo(models.Model):
     )
 
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -197,6 +199,23 @@ class Nofo(models.Model):
 
     def get_first_subsection(self):
         return self.sections.first().subsections.first()
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # If the instance already exists, check if any field other than 'status' has changed
+            original_nofo = Nofo.objects.get(pk=self.pk)
+            for field in self._meta.fields:
+                if field.name != "status" and getattr(
+                    original_nofo, field.name
+                ) != getattr(self, field.name):
+                    # A field other than 'status' has changed, update the 'updated' field
+                    self.updated = datetime.now()
+                    break
+        else:
+            # If it's a new instance, set the 'updated' field to the current time
+            self.updated = datetime.now()
+
+        super().save(*args, **kwargs)
 
 
 class Section(models.Model):
