@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- New theme: ASPR (blue)
+
 ### Changed
 
 ### Fixed

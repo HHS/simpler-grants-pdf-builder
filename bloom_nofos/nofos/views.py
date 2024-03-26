@@ -83,6 +83,11 @@ OPDIVS = {
         "name": "Administration for Community Living",
         "filename": "img/acl-logo.svg",
     },
+    "aspr": {
+        "key": "aspr",
+        "name": "Administration for Strategic Preparedness and Response",
+        "filename": "",
+    },
     "cdc": {
         "key": "cdc",
         "name": "Centers for Disease Control and Prevention",
