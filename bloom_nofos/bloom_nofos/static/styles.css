@@ -78,6 +78,11 @@ details > summary > span:hover {
   width: 25%;
 }
 
+.nofo_index table tr.ready_for_adam th,
+.nofo_index table tr.ready_for_adam td {
+  background: #f2e4d4;
+}
+
 .nofo_index .usa-prose > table td,
 .nofo_index .usa-prose > table th,
 .nofo_index .usa-table td,
