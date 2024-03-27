@@ -87,7 +87,6 @@ div[role="heading"] {
   padding-left: 20mm;
 }
 
-.nofo--cover-page--header--logo,
 .nofo--cover-page--header--logo img {
   width: 250px;
 }
@@ -118,6 +117,12 @@ div[role="heading"] {
 
 .nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   width: 100px;
+}
+
+/* Cover page: small image */
+.nofo--cover-page--medium .nofo--cover-page--header--logo--subheading {
+  margin-top: 5px;
+  font-weight: 400;
 }
 
 /* Cover page: text */
