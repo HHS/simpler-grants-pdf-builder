@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Clean up cover page for ACF medium image
 - Show the right heading level for callout boxes with headings
 - Never show "Contacts and support" sublinks in ToC, no matter the capitalization
 
