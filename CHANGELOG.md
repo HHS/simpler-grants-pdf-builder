@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Only newline `<strong>` tags in right column callout boxes
 - Add "page-break-before: avoid" to short final list items
 
 ### Fixed
