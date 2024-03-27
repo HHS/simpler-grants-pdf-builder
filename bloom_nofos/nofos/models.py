@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from django.db import models
 from django.forms import ValidationError
@@ -210,11 +210,11 @@ class Nofo(models.Model):
                     original_nofo, field.name
                 ) != getattr(self, field.name):
                     # A field other than 'status' has changed, update the 'updated' field
-                    self.updated = datetime.now()
+                    self.updated = timezone.now()
                     break
         else:
             # If it's a new instance, set the 'updated' field to the current time
-            self.updated = datetime.now()
+            self.updated = timezone.now()
 
         super().save(*args, **kwargs)
 
