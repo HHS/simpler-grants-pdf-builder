@@ -52,6 +52,18 @@ def add_caption_to_table(table):
         _add_class_if_not_exists_to_tag(table, "table--with-caption", "table")
 
 
+def add_class_to_list(html_list):
+    # Get the last list item
+    final_list_item = html_list.find_all("li")[-1] if html_list.find_all("li") else None
+    if final_list_item:
+        # Check if the text length is less than 70 characters
+        if len(final_list_item.get_text(strip=True)) < 70:
+            # Add the classname
+            _add_class_if_not_exists_to_tag(
+                final_list_item, "avoid-page-break-before", "li"
+            )
+
+
 def _get_total_word_count(table_cells):
     word_count = 0
 
