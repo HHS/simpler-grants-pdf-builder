@@ -8,6 +8,7 @@ from .templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
     add_caption_to_table,
+    add_class_to_list,
     add_class_to_table,
     add_class_to_table_rows,
     find_elements_with_character,
@@ -165,6 +166,49 @@ class AddCaptionToTableTests(TestCase):
             table2.caption.string.strip(), "Table: Example Caption for Table 2"
         )
         self.assertIn("table--with-caption", table2.get("class", []))
+
+
+class AddClassToListsTests(TestCase):
+
+    def test_add_class_to_ordered_list(self):
+        html_content = "<ol><li>Item 1</li><li>Item 2</li><li>Short</li></ol>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ol)
+        self.assertIn("avoid-page-break-before", soup.find_all("li")[-1]["class"])
+
+    def test_add_class_to_unordered_list(self):
+        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>Short</li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ul)
+        self.assertIn("avoid-page-break-before", soup.find_all("li")[-1]["class"])
+
+    def test_do_not_add_class_to_70_char_final_item(self):
+        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is 70 characters long, so it shouldn't add the classname</li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ul)
+        final_list_item = soup.find_all("li")[-1]
+        self.assertFalse("avoid-page-break-before" in final_list_item.get("class", []))
+
+    def test_add_class_to_69_char_final_item(self):
+        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is 69 characters long, so it should add the classname!!</li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ul)
+        final_list_item = soup.find_all("li")[-1]
+        self.assertTrue("avoid-page-break-before" in final_list_item.get("class", []))
+
+    def test_empty_list(self):
+        html_content = "<ul></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ul)
+        self.assertEqual(len(soup.find_all("li")), 0)
+
+    def test_class_already_exists(self):
+        html_content = (
+            "<ul><li>Item 1</li><li class='avoid-page-break-before'>Short</li></ul>"
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_class_to_list(soup.ul)
+        self.assertEqual(soup.find_all("li")[-1]["class"], ["avoid-page-break-before"])
 
 
 class HTMLTableClassTests(TestCase):

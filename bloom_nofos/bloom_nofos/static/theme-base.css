@@ -1130,6 +1130,10 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     page-break-after: always !important;
   }
 
+  .avoid-page-break-before {
+    page-break-before: avoid;
+  }
+
   .column-break-before {
     break-before: column;
   }
