@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Only newline `<strong>` tags in right column callout boxes
 - Add "page-break-before: avoid" to short final list items
+- Bigger CMS logo
 
 ### Fixed
 
