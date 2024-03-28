@@ -84,6 +84,7 @@ h6 {
 .nofo--cover-page--header--logo img {
   display: block;
   width: 220px;
+  margin-bottom: -6px;
 }
 
 .nofo--cover-page--header--logo--subheading {
