@@ -38,6 +38,19 @@ h4 {
   background-color: var(--color--hrsa-blue);
 }
 
+.nofo--cover-page--footer svg {
+  fill: var(--color--white);
+}
+
+/* Cover page: hero image */
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo
+  svg {
+  fill: var(--color--white);
+}
+
 /* Table of contents */
 
 .toc h2 {

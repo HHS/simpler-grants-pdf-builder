@@ -173,24 +173,6 @@ class NofosDetailView(DetailView):
             # TODO: test orientation
             nofo_opdiv["filename"] = get_logo(opdiv, colour, cover, orientation)
 
-        # Add HHS logo
-        context["nofo_hhs_img"] = "img/logos/hhs/white/hhs-logo.svg"
-
-        if self.object.theme in [
-            "portrait-acf-white",
-            "portrait-acl-white",
-            "portrait-aspr-white",
-            "portrait-cms-white",
-            "portrait-ihs-white",
-        ]:
-            context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"
-
-        if (
-            self.object.theme == "portrait-hrsa-white"
-            and self.object.cover == "nofo--cover-page--text"
-        ):
-            context["nofo_hhs_img"] = "img/logos/hhs/blue/hhs-logo.svg"
-
         return context
 
 

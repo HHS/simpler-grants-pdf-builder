@@ -23,6 +23,15 @@ h4 {
   background-color: var(--color--pale-blue);
 }
 
+/* Cover page: hero image */
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo
+  svg {
+  fill: var(--color--hhs-blue);
+}
+
 /* Cover page: text */
 
 .nofo--cover-page--text .nofo--cover-page--header {

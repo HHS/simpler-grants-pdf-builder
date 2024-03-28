@@ -53,8 +53,9 @@
   float: right;
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
+.nofo--cover-page--footer .nofo--cover-page--footer--logo svg {
   width: 100px;
+  height: 120px;
 }
 
 /* Cover page: text */
@@ -119,7 +120,7 @@ section.nofo--cover-page.nofo--cover-page--text {
   width: 120px;
 }
 
-.nofo--cover-page--text .nofo--cover-page--footer img {
+.nofo--cover-page--text .nofo--cover-page--footer svg {
   width: 120px;
   height: 120px;
 }

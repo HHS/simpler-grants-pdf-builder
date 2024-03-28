@@ -13,11 +13,13 @@
 - Add UI to reorder the NOFOs table
 - Stop demoting headers on the way in
 - Covert logos to svgs
-  - HHS
-  - etc
+  - HRSA
+  - CDC
 
 # DONE
 
+- Covert logos to svgs
+  - HHS
 - Fix: clean NBSPs in headings
 - Covert the icons to svgs
   - Before you begin
