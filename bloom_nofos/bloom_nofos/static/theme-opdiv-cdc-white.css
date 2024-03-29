@@ -16,6 +16,10 @@
   color: var(--color--vibrant-blue);
 }
 
+.nofo--cover-page--header--logo svg .cls-6 {
+  stroke: var(--color--vibrant-blue);
+}
+
 /* Cover page: medium image */
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--header,
@@ -32,6 +36,10 @@
 
 .nofo--cover-page--hero .nofo--cover-page--header {
   background-color: var(--color--vibrant-blue);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-6 {
+  stroke: var(--color--white);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
