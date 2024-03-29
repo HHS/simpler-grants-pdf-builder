@@ -2,7 +2,7 @@
 {% load static nofo_name input_type %}
 
 {% block title %}
-  Subsection: {{ subsection.name }}
+  Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
 {% endblock %}
 
 {% block css %}

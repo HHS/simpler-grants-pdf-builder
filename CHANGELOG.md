@@ -30,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Add subsection order number to page title if there is no subsection name
 - Update the date on the little callout box for HRSA 14
 - Move the CMS logo down so that it aligns better with text baseline on cover page
 - Clean up cover page for ACF medium image
