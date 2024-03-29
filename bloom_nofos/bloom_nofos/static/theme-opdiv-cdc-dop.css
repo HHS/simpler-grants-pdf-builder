@@ -95,6 +95,10 @@ h4 {
   background-color: var(--color--dop-teal);
 }
 
+.nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-5 {
+  fill: var(--color--vibrant-blue);
+}
+
 /* Table of contents */
 
 .toc h2 {

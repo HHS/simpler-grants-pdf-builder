@@ -51,8 +51,14 @@ h1 {
   background: var(--color--white);
 }
 
-.portrait .nofo--cover-page--footer {
-  background: var(--color--vibrant-blue);
+/* Cover page: landscape */
+
+.landscape
+  .nofo--cover-page--medium
+  .nofo--cover-page--header--logo
+  svg
+  .cls-5 {
+  fill: var(--color--white);
 }
 
 /* Cover page: portrait */
@@ -64,6 +70,16 @@ h1 {
 .portrait .nofo--cover-page--medium .nofo--cover-page--header--logo--subheading,
 .portrait .nofo--cover-page--medium .nofo--cover-page--header--intro {
   color: var(--color--vibrant-blue);
+}
+
+.portrait .nofo--cover-page--footer {
+  background: var(--color--vibrant-blue);
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg .cls-5 {
+  fill: var(--color--white);
 }
 
 /* Cover page: medium image */
