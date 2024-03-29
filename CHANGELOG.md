@@ -17,13 +17,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Only newline `<strong>` tags in right column callout boxes
 - Add "page-break-before: avoid" to short final list items
 - Bigger CMS logo
-- Swap out HHS `<img>` logo for HHS `<svg>` logo
-- Swap out ASPR `<img>` logo for ASPR `<svg>` logo
-- Swap out HRSA `<img>` logo for HRSA `<svg>` logo
-- Swap out CDC `<img>` logo for CDC `<svg>` logo
-- Swap out ACF `<img>` logo for ACF `<svg>` logo
-- Swap out ACL `<img>` logo for ACL `<svg>` logo
-- Swap out CMS `<img>` logo for CMS `<svg>` logo
+- Swap out `<img>` logos for `<svg>` logos
+  - ACF
+  - ACL
+  - ASPR
+  - CDC
+  - CMS
+  - HHS
+  - HRSA
+  - IHS
 
 ### Fixed
 
