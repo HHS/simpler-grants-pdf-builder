@@ -1,3 +1,10 @@
+/* CSS vars */
+
+:root {
+  --color--hrsa-blue: #006699;
+  --color--hrsa-red: #940200;
+}
+
 /* Add Helvetica condensed font */
 
 @font-face {
@@ -17,14 +24,14 @@
     font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
       sans-serif;
     font-weight: 700;
-    color: var(--color--med-red);
+    color: var(--color--hrsa-red);
   }
 
   @bottom-right {
     font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
       sans-serif;
     font-weight: 700;
-    color: var(--color--med-red);
+    color: var(--color--hrsa-red);
   }
 }
 
@@ -46,8 +53,8 @@ a {
 }
 
 .header-nav.header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--med-red);
-  color: var(--color--med-red);
+  border-top: 4px solid var(--color--hrsa-red);
+  color: var(--color--hrsa-red);
 }
 
 .section--title-page--header-nav a[aria-current] {
@@ -88,6 +95,14 @@ h6 {
 }
 
 /* Cover page */
+
+.nofo--cover-page--header--logo svg .hrsa-text--blue {
+  fill: var(--color--hrsa-blue);
+}
+
+.nofo--cover-page--header--logo svg .hrsa-text--red {
+  fill: var(--color--hrsa-red);
+}
 
 /* Cover page: medium image */
 
