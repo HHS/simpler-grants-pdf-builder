@@ -78,8 +78,10 @@ section.nofo--cover-page.nofo--cover-page--text {
   align-self: flex-start;
 }
 
-.nofo--cover-page--text .nofo--cover-page--header--logo img {
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
   width: 200px;
+  height: auto;
+  margin-bottom: 5px;
 }
 
 .nofo--cover-page--text .nofo--cover-page--header--logo--subheading p {

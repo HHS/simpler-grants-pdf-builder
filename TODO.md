@@ -13,7 +13,6 @@
 - Add UI to reorder the NOFOs table
 - Stop demoting headers on the way in
 - Covert logos to svgs
-  - ACL
   - CMS
   - IHS
 
@@ -21,6 +20,7 @@
 
 - Covert logos to svgs
   - ACF
+  - ACL
   - ASPR
   - CDC
   - HHS

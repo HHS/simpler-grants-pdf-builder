@@ -79,19 +79,22 @@ h6 {
   color: var(--color--white);
 }
 
+.nofo--cover-page--header--logo svg {
+  fill: var(--color--aspr-blue);
+  margin-left: -6px;
+}
+
+/* Cover page: text */
+
 .nofo--cover-page--text
   .nofo--cover-page--title
   .nofo--cover-page--title--subheading {
   font-weight: 600;
 }
 
-.nofo--cover-page--header--logo svg {
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
   width: 160px;
-  fill: var(--color--aspr-blue);
-  margin-bottom: 5px;
 }
-
-/* Cover page: text */
 
 /* Cover page: hero image */
 
