@@ -78,8 +78,22 @@ h6 {
 
 /* Cover page */
 
-.nofo--cover-page--header--logo img {
+.nofo--cover-page--header--logo svg {
   width: 300px;
+}
+
+.nofo--cover-page--header--logo svg .cls-3,
+.nofo--cover-page--header--logo svg .cls-4 {
+  fill: var(--color--white);
+}
+
+.nofo--cover-page--header--logo svg .cls-5 {
+  fill: var(--color--vibrant-blue);
+}
+
+.nofo--cover-page--header--logo svg .cls-6 {
+  fill: var(--color--vibrant-blue);
+  stroke: var(--color--white);
 }
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--title {
@@ -95,7 +109,7 @@ h6 {
 
 /* Cover page: text */
 
-.nofo--cover-page--text .nofo--cover-page--header--logo img {
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
   width: 270px;
 }
 
@@ -112,6 +126,10 @@ h6 {
 
 section.nofo--cover-page.nofo--cover-page--hero {
   background-color: var(--color--dark-blue);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-5 {
+  fill: var(--color--white);
 }
 
 /* Table of contents */

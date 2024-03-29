@@ -13,7 +13,10 @@
 - Add UI to reorder the NOFOs table
 - Stop demoting headers on the way in
 - Covert logos to svgs
-  - CDC
+  - ACL
+  - ACF
+  - CMS
+  - IHS
 
 # DONE
 
@@ -21,6 +24,7 @@
   - HHS
   - HRSA
   - ASPR
+  - CDC
 - Fix: clean NBSPs in headings
 - Covert the icons to svgs
   - Before you begin
