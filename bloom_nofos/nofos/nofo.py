@@ -330,37 +330,6 @@ def get_subsections_from_sections(sections):
     return sections
 
 
-def get_logo(
-    opdiv="cdc", colour="blue", cover="nofo--cover-page--medium", orientation="portrait"
-):
-    if not colour or not opdiv or not cover:
-        raise ValueError("opdiv, colour, and/or cover cannot be empty")
-
-    if opdiv == "acf":
-        if cover == "nofo--cover-page--text" and colour == "blue":
-            return "img/logos/{0}/white/{0}-logo.svg".format(opdiv)
-
-        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
-
-    if opdiv == "hrsa":
-        if cover == "nofo--cover-page--text":
-            # confusing, but if we are on the white theme, we want the blue logo
-            colour = "blue" if colour == "white" else "white"
-            return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
-
-        return "img/logos/{0}/blue/{0}-logo.svg".format(opdiv)
-
-    if opdiv == "cdc":
-        if orientation == "portrait":
-            if cover == "nofo--cover-page--medium":
-                colour = "white"
-            if cover == "nofo--cover-page--hero":
-                colour = "blue"
-        return "img/logos/{0}/{1}/{0}-logo.svg".format(opdiv, colour)
-
-    return "img/logos/cdc/blue/cdc-logo.svg".format(opdiv, colour)
-
-
 def _update_link_statuses(all_links):
     def check_link_status(link):
         try:

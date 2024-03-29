@@ -18,7 +18,7 @@
     <link href="{% static filename_orientation %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
-  {% with "theme-opdiv-"|add:nofo_opdiv.key|add:'.css' as filename_opdiv %}
+  {% with "theme-opdiv-"|add:nofo_opdiv|add:'.css' as filename_opdiv %}
     <link href="{% static filename_opdiv %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
@@ -29,7 +29,7 @@
 
 {% block title %}{{ nofo.title }}{% endblock %}
 
-{% block body_class %}{{ nofo.theme }} {{ nofo_theme_orientation }} {{ nofo_opdiv.key }} {{ nofo_theme_base }} {{ nofo.number|lower }} {{ nofo.icon_style }}{% endblock %}
+{% block body_class %}{{ nofo.theme }} {{ nofo_theme_orientation }} {{ nofo_opdiv }} {{ nofo_theme_base }} {{ nofo.number|lower }} {{ nofo.icon_style }}{% endblock %}
 
 {% block header %}
   <header class="usa-header usa-header--basic">
@@ -82,7 +82,7 @@
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
-        {% with "includes/logos/"|add:nofo_opdiv.key|add:"-logo.svg" as opdiv_logo_path %}
+        {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
           {% include opdiv_logo_path %}
         {% endwith %}
         <div class="nofo--cover-page--header--logo--subheading">
@@ -316,7 +316,7 @@
           <div class="section--absolute--right-col">
             {% for subsection in section.subsections.all|dictsort:"order" %}
               {% if subsection.callout_box and subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv break_colons=True only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
               {% endif %}
             {% endfor %}
           </div>
@@ -327,10 +327,10 @@
           {% if subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% if not subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv break_colons=False only %}
+                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
               {% endif %}
             {% else %}
-              {% include "includes/callout_box.html" with subsection=subsection nofo=nofo nofo_opdiv=nofo_opdiv only %}
+              {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
             {% endif %}
           {% else %}
             {% if subsection.name|lower != 'basic information' %}
