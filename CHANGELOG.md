@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added section ids to the table captions on hover in edit mode
+
 ### Changed
 
 ### Fixed

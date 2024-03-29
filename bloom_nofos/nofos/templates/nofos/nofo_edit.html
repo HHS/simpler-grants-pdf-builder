@@ -139,8 +139,10 @@ Edit “{{ nofo|nofo_name }}”
 
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
   <caption>
-    <h2 class="margin-bottom-0">NOFO data</h2>
-    <span><a href="#back-to-top">Top ↑</a></span>
+    <div>
+      <h2 class="margin-bottom-0">NOFO data</h2>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -205,8 +207,10 @@ Edit “{{ nofo|nofo_name }}”
 
 <table class="usa-table usa-table--borderless width-full">
   <caption>
-    <h2 class="margin-bottom-0">NOFO metadata</h2>
-    <span><a href="#back-to-top">Top ↑</a></span>
+    <div>
+      <h2 class="margin-bottom-0">NOFO metadata</h2>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -236,8 +240,10 @@ Edit “{{ nofo|nofo_name }}”
 
 <table class="usa-table usa-table--borderless width-full">
   <caption>
-    <h2 class="margin-bottom-0">NOFO theme options</h2>
-    <span><a href="#back-to-top">Top ↑</a></span>
+    <div>
+      <h2 class="margin-bottom-0">NOFO theme options</h2>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -271,8 +277,10 @@ Edit “{{ nofo|nofo_name }}”
 
 <table class="usa-table usa-table--borderless width-full">
   <caption>
-    <h2 class="margin-bottom-0">NOFO management options</h2>
-    <span><a href="#back-to-top">Top ↑</a></span>
+    <div>
+      <h2 class="margin-bottom-0">NOFO management options</h2>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -307,8 +315,11 @@ Edit “{{ nofo|nofo_name }}”
 {% for section in nofo.sections.all|dictsort:"order" %}
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
   <caption>
-    <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-    <span><a href="#back-to-top">Top ↑</a></span>
+    <div>
+      <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+      <code class="section--html-id">#{{ section.html_id }}</code>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>

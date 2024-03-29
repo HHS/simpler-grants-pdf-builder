@@ -139,14 +139,29 @@ details > summary > span:hover {
   z-index: 10;
 }
 
-.nofo_edit caption h2 {
+.nofo_edit caption div {
+  margin-top: 20px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ccc;
 }
 
-.nofo_edit caption span {
+.nofo_edit caption div h2 {
+  display: inline;
+  margin-right: 15px;
+}
+
+.nofo_edit caption div .section--html-id {
+  display: none;
+  color: #71767a;
+}
+
+.nofo_edit caption:hover div .section--html-id {
+  display: inline-block;
+}
+
+.nofo_edit caption span.caption--top-link {
   position: absolute;
-  right: 0;
+  right: 8px;
   bottom: 12px;
   font-weight: 400;
   visibility: hidden;
