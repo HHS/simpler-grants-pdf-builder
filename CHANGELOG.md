@@ -26,9 +26,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - HHS
   - HRSA
   - IHS
+- Swap out the alert `<img>` for an `<svg>` on the HRSA 14 cover
 
 ### Fixed
 
+- Update the date on the little callout box for HRSA 14
 - Move the CMS logo down so that it aligns better with text baseline on cover page
 - Clean up cover page for ACF medium image
 - Show the right heading level for callout boxes with headings
