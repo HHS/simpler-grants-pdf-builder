@@ -77,26 +77,20 @@ class TestsCleanTableCells(TestCase):
         clean_table_cells(soup)
         self.assertEqual(str(soup.td), "<td>Content and more content</td>")
 
-    def test_replace_non_breaking_space(self):
-        html = "<table><tr><td>Content\xa0here</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        clean_table_cells(soup)
-        self.assertIn("Content here", soup.td.text)
-
     def test_table_with_one_cell(self):
         html = "<table><tr><td>Only one cell</td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertIn("Only one cell", soup.td.text)
 
-    def test_table_with_span_and_nbsp(self):
-        html = "<table><tr><td><span>Some</span>\xa0content and<span> more content</span></td></tr></table>"
+    def test_table_with_span(self):
+        html = "<table><tr><td><span>Some</span> content and<span> more content</span></td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertEqual(soup.td.text, "Some content and more content")
 
-    def test_table_with_span_and_nbsp_and_link(self):
-        html = "<table><tr><td><span>Some</span>\xa0content and<span> <a href='https://groundhog-day.com'>a link</a></span></td></tr></table>"
+    def test_table_with_span_and_link(self):
+        html = "<table><tr><td><span>Some</span> content and<span> <a href='https://groundhog-day.com'>a link</a></span></td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertEqual(
@@ -104,8 +98,8 @@ class TestsCleanTableCells(TestCase):
             '<td>Some content and <a href="https://groundhog-day.com">a link</a></td>',
         )
 
-    def test_table_with_span_and_nbsp_and_a_list(self):
-        html = "<table><tr><td><span>Some</span>\xa0content and<span> <ul><li>a list item 1</li><li>a list item 2</li></ul></span></td></tr></table>"
+    def test_table_with_span_and_a_list(self):
+        html = "<table><tr><td><span>Some</span> content and<span> <ul><li>a list item 1</li><li>a list item 2</li></ul></span></td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertEqual(

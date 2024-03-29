@@ -793,7 +793,6 @@ def clean_table_cells(soup):
 
     This function performs two main operations on each table cell (`<td>` and `<th>` elements) within a given BeautifulSoup object:
     1. Unwraps all `<span>` elements, effectively removing the `<span>` tags but keeping their contents intact in the cell.
-    2. Replaces all non-breaking space characters (`\xa0`, also known as `&nbsp;` in HTML) with regular space characters.
 
     These operations are applied to ensure that the text within table cells is normalized for further processing or display, without unnecessary `<span>` tags or non-standard whitespace characters.
 
@@ -805,7 +804,7 @@ def clean_table_cells(soup):
 
     Example:
     >>> from bs4 import BeautifulSoup
-    >>> html_content = "<table><tr><td><span>Example</span>\xa0Text and <a href='https://groundhog-day.com'>a link</a></td></tr></table>"
+    >>> html_content = "<table><tr><td><span>Example</span> Text and <a href='https://groundhog-day.com'>a link</a></td></tr></table>"
     >>> soup = BeautifulSoup(html_content, 'html.parser')
     >>> clean_table_cells(soup)
     >>> str(soup)
@@ -815,12 +814,6 @@ def clean_table_cells(soup):
         # strip spans but keep their content
         for span in cell.find_all("span"):
             span.unwrap()
-
-        # replace newlines with regular spaces
-        for text in cell.find_all(text=True):
-            if "\xa0" in text:
-                updated_text = text.replace("\xa0", " ")
-                text.replace_with(updated_text)
 
 
 def replace_src_for_inline_images(soup):
@@ -982,7 +975,6 @@ def clean_heading_tags(soup):
 
     Finds all headings, it will:
     - Unwrap span tags in the heading
-    - Replace non-breaking spaces with regular spaces
     - Collapse multiple spaces into one
     - Trim leading and trailing spaces
     """
@@ -996,9 +988,6 @@ def clean_heading_tags(soup):
 
         # Get the text content of the heading
         text = heading.get_text()
-
-        # Replace non-breaking spaces with regular spaces
-        text = text.replace("\xa0", " ")
 
         # Collapse multiple spaces into one
         text = re.sub(r"\s+", " ", text)
