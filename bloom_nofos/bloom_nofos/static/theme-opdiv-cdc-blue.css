@@ -88,6 +88,10 @@ h1 {
   color: var(--color--vibrant-blue);
 }
 
+.nofo--cover-page--medium .nofo--cover-page--header--logo svg .cls-6 {
+  stroke: var(--color--vibrant-blue);
+}
+
 /* Cover page: hero image */
 
 .nofo--cover-page--hero .nofo--cover-page--title {
