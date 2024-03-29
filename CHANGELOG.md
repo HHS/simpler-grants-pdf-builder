@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.17.0] - 2023-03-29
+
+### Added
+
 - New theme: ASPR (white)
   - Removed the blue theme because we don't need it
 
