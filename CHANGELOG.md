@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Swap out CDC `<img>` logo for CDC `<svg>` logo
 - Swap out ACF `<img>` logo for ACF `<svg>` logo
 - Swap out ACL `<img>` logo for ACL `<svg>` logo
+- Swap out CMS `<img>` logo for CMS `<svg>` logo
 
 ### Fixed
 

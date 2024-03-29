@@ -100,7 +100,7 @@ OPDIVS = {
     },
     "hrsa": {
         "key": "hrsa",
-        "name": "The Health Resources & Services Administration",
+        "name": "The Health Resources and Services Administration",
         "filename": "",
     },
     "ihs": {
