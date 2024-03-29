@@ -229,7 +229,11 @@ def nofo_import(request, pk=None):
             )
             return redirect(view_path, **kwargs)
 
-        soup = BeautifulSoup(uploaded_file.read(), "html.parser")
+        file_content = uploaded_file.read().decode("utf-8")  # Decode bytes to a string
+        cleaned_content = file_content.replace("\xa0", " ").replace(
+            "&nbsp;", " "
+        )  # Replace all non-breaking spaces with regular spaces on import
+        soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
 
         # mutate the HTML
         join_nested_lists(soup)
