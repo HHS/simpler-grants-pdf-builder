@@ -42,6 +42,13 @@ h4 {
   fill: var(--color--white);
 }
 
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg .hrsa-text--blue,
+.nofo--cover-page--text .nofo--cover-page--header--logo svg .hrsa-text--red {
+  fill: var(--color--white);
+}
+
 /* Cover page: hero image */
 
 .nofo--cover-page--hero

@@ -82,10 +82,12 @@
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
-        {% if nofo_opdiv.key != 'aspr'%}
-          <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/{{ nofo_opdiv.filename }}">
-        {% else %}
+        {% if nofo_opdiv.key == 'aspr'%}
           {% include "includes/logos/aspr-logo.svg" %}
+        {% elif nofo_opdiv.key == 'hrsa'%}
+          {% include "includes/logos/hrsa-logo.svg" %}
+        {% else %}
+          <img class="nofo--cover-page--header--logo--img" alt="{{ nofo_opdiv.name }} logo" src="https://bn-ptzepiewjq-uc.a.run.app/static/{{ nofo_opdiv.filename }}">
         {% endif %}
         <div class="nofo--cover-page--header--logo--subheading">
           {% if nofo.cover == 'nofo--cover-page--text' %}

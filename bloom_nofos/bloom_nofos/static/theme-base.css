@@ -14,13 +14,11 @@
   --color--dark-blue: #00345e;
   --color--med-blue: #336a90;
   --color--vibrant-blue: #005eaa;
-  --color--hrsa-blue: #006699;
   --color--cms-blue: #004a86;
   --color--hhs-blue: #005ea2;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e8f0f3;
   --color--med-brown: #c0b0a2;
-  --color--med-red: #940200;
 }
 
 /* Assign named pages */
@@ -668,6 +666,7 @@ div[role="heading"] {
 .nofo--cover-page--header--logo img,
 .nofo--cover-page--header--logo svg {
   width: 150px;
+  height: 100%;
 }
 
 .nofo--cover-page--header--logo--subheading p {
