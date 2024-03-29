@@ -14,17 +14,17 @@
 - Stop demoting headers on the way in
 - Covert logos to svgs
   - ACL
-  - ACF
   - CMS
   - IHS
 
 # DONE
 
 - Covert logos to svgs
-  - HHS
-  - HRSA
+  - ACF
   - ASPR
   - CDC
+  - HHS
+  - HRSA
 - Fix: clean NBSPs in headings
 - Covert the icons to svgs
   - Before you begin

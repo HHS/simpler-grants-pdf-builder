@@ -87,8 +87,9 @@ div[role="heading"] {
   padding-left: 20mm;
 }
 
-.nofo--cover-page--header--logo img {
+.nofo--cover-page--header--logo svg {
   width: 250px;
+  fill: var(--color--acf-blue);
 }
 
 .nofo--cover-page--header--logo--subheading {
@@ -120,6 +121,7 @@ div[role="heading"] {
 }
 
 /* Cover page: small image */
+
 .nofo--cover-page--medium .nofo--cover-page--header--logo--subheading {
   margin-top: 5px;
   font-weight: 400;
@@ -129,6 +131,11 @@ div[role="heading"] {
 
 .nofo--cover-page--text .nofo--cover-page--header--intro {
   width: 120%;
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
+  height: auto;
+  margin-bottom: 5px;
 }
 
 /* Before you begin page */

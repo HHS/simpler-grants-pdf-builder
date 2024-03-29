@@ -21,6 +21,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Swap out ASPR `<img>` logo for ASPR `<svg>` logo
 - Swap out HRSA `<img>` logo for HRSA `<svg>` logo
 - Swap out CDC `<img>` logo for CDC `<svg>` logo
+- Swap out ACF `<img>` logo for ACF `<svg>` logo
 
 ### Fixed
 

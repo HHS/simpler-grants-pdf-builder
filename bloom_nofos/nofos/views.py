@@ -75,7 +75,7 @@ from .utils import cast_to_bool
 OPDIVS = {
     "acf": {
         "key": "acf",
-        "name": "The Administration for Children and Families",
+        "name": "Administration for Children and Families",
         "filename": "",
     },
     "acl": {
