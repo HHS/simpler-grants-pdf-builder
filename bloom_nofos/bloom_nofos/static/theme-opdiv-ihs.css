@@ -73,15 +73,15 @@ div[role="heading"] {
 
 /* Cover page */
 
-.nofo--cover-page--header--logo img {
+.nofo--cover-page--header--logo svg {
   width: 100px;
+  padding-bottom: 5px;
 }
 
 /* Cover page: text */
 
-.nofo--cover-page--text .nofo--cover-page--header--logo img {
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
   width: 100px;
-  padding-bottom: 15px;
 }
 
 /* Cover page: medium image */

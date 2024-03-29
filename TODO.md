@@ -11,9 +11,6 @@
 - Update the README
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
-- Stop demoting headers on the way in
-- Covert logos to svgs
-  - IHS
 
 # DONE
 
@@ -25,6 +22,7 @@
   - CMS
   - HHS
   - HRSA
+  - IHS
 - Fix: clean NBSPs in headings
 - Covert the icons to svgs
   - Before you begin
