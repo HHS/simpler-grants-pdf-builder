@@ -85,6 +85,12 @@ h6 {
   font-weight: 600;
 }
 
+.nofo--cover-page--header--logo svg {
+  width: 160px;
+  fill: var(--color--aspr-blue);
+  margin-bottom: 5px;
+}
+
 /* Cover page: text */
 
 /* Cover page: hero image */

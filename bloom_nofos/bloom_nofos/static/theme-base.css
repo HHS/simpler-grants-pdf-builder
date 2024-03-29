@@ -665,7 +665,8 @@ div[role="heading"] {
   align-items: flex-end;
 }
 
-.nofo--cover-page--header--logo img {
+.nofo--cover-page--header--logo img,
+.nofo--cover-page--header--logo svg {
   width: 150px;
 }
 
