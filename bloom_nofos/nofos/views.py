@@ -48,7 +48,6 @@ from .nofo import (
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
-    get_logo,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -71,44 +70,6 @@ from .nofo import (
     suggest_nofo_title,
 )
 from .utils import cast_to_bool
-
-OPDIVS = {
-    "acf": {
-        "key": "acf",
-        "name": "Administration for Children and Families",
-        "filename": "",
-    },
-    "acl": {
-        "key": "acl",
-        "name": "Administration for Community Living",
-        "filename": "img/acl-logo.svg",
-    },
-    "aspr": {
-        "key": "aspr",
-        "name": "Administration for Strategic Preparedness and Response",
-        "filename": "img/aspr-logo.svg",
-    },
-    "cdc": {
-        "key": "cdc",
-        "name": "Centers for Disease Control and Prevention",
-        "filename": "",
-    },
-    "cms": {
-        "key": "cms",
-        "name": "Centers for Medicare and Medicaid Services",
-        "filename": "img/cms-logo.svg",
-    },
-    "hrsa": {
-        "key": "hrsa",
-        "name": "The Health Resources and Services Administration",
-        "filename": "",
-    },
-    "ihs": {
-        "key": "ihs",
-        "name": "Indian Health Service",
-        "filename": "img/ihs-logo.svg",
-    },
-}
 
 
 class NofosListView(ListView):
@@ -152,8 +113,7 @@ class NofosDetailView(DetailView):
         context["nofo_theme_base"] = "{}-{}".format(opdiv, colour)
 
         # get the name of the opdiv (eg, "cdc", "hrsa", etc)
-        nofo_opdiv = OPDIVS[opdiv]
-        context["nofo_opdiv"] = nofo_opdiv
+        context["nofo_opdiv"] = opdiv
         # get the orientation (eg, "landscape" or "portrait")
         context["nofo_theme_orientation"] = orientation
 
@@ -166,12 +126,6 @@ class NofosDetailView(DetailView):
             cover_img = "img/cover.jpg"
 
         context["nofo_cover_img"] = cover_img
-
-        # if no filename, build path
-        if not nofo_opdiv["filename"]:
-            cover = self.object.cover
-            # TODO: test orientation
-            nofo_opdiv["filename"] = get_logo(opdiv, colour, cover, orientation)
 
         return context
 

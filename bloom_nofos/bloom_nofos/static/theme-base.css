@@ -663,7 +663,6 @@ div[role="heading"] {
   align-items: flex-end;
 }
 
-.nofo--cover-page--header--logo img,
 .nofo--cover-page--header--logo svg {
   width: 150px;
   height: 100%;
@@ -924,7 +923,6 @@ div[role="heading"] {
 }
 
 .section--before-you-begin--icon svg,
-.section--title-page--icon img,
 .section--title-page--icon svg {
   width: 65px;
   height: 65px;
@@ -1010,8 +1008,7 @@ div[role="heading"] {
   align-items: flex-start;
 }
 
-.callout-box--icon .callout-box--contents svg,
-.callout-box--icon .callout-box--contents img {
+.callout-box--icon .callout-box--contents svg {
   width: 30px;
   margin-right: 10px;
   flex-shrink: 0;
