@@ -483,6 +483,14 @@ ol ol:last-child {
   margin-bottom: 0.5rem;
 }
 
+ol ol {
+  list-style-type: lower-alpha;
+}
+
+ol ol ol {
+  list-style-type: lower-roman;
+}
+
 img.usa-icon--check_box_outline_blank {
   height: 17px;
   width: 17px;
