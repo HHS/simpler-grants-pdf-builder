@@ -2066,7 +2066,193 @@ class CleanHeadingsTestCase(TestCase):
 ###########################################################
 
 
-class NestedListTests(TestCase):
+class NestedListTestsULandOL(TestCase):
+    def setUp(self):
+        # ol > ul > ul
+        # ol > ul > ol
+
+        self.html_ul_ol = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
+            </ul>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_ul_ol_ol = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
+            </ul>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
+                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_ul_ol_ul = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ul class="c34 lst-kix_list_25-0">
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
+            </ul>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_ol_ul = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_ol_ul_ul = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <ul class="c34 lst-kix_list_13-1 start">
+                <li class="c91 c143 li-bullet-0"><span class="c4">Setting positive behavioral expectations for students</span></li>
+            </ul>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_ol_ul_ol = """
+            <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
+            <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ul class="c34 lst-kix_list_22-0 start">
+                <li class="c9 c80 li-bullet-0"><span class="c4">Staff who provide health services, and </span></li>
+                <li class="c9 c80 li-bullet-0"><span class="c4">Other school staff</span></li>
+            </ul>
+            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
+                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+    def test_ul_ol(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ul_ol, "html.parser"))
+        self.assertEqual(len(soup.select("ul")), 1)
+
+        # ol is nested list
+        self.assertEqual(len(soup.select("ul > li > ol")), 1)
+
+        # last li of first list HAS a nested ol
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+
+    def test_ul_ol_ol(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ul_ol_ol, "html.parser"))
+        self.assertEqual(len(soup.select("ul")), 1)
+
+        # ol is nested list
+        self.assertEqual(len(soup.select("ul > li > ol")), 1)
+
+        # 2nd ol is nested list
+        self.assertEqual(len(soup.select("ul > li > ol > li > ol")), 1)
+
+        # last li of first list HAS 2 nested ols
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 2)
+
+    def test_ul_ol_ul(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ul_ol_ul, "html.parser"))
+        self.assertEqual(len(soup.select("ul")), 2)
+
+        # ol is nested list
+        self.assertEqual(len(soup.select("ul > li > ol")), 1)
+
+        # 2nd ol is nested list
+        self.assertEqual(len(soup.select("ul > li > ol > li > ul")), 1)
+
+        # last li of first list HAS 1 nested ol and 1 nested ul
+        last_li = soup.find("ul").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+
+    def test_ol_ul(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ol_ul, "html.parser"))
+        self.assertEqual(len(soup.select("ol")), 1)
+
+        # ul is nested list
+        self.assertEqual(len(soup.select("ol > li > ul")), 1)
+
+        # last li of first list HAS a nested ul
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+
+    def test_ol_ul_ul(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ol_ul_ul, "html.parser"))
+        self.assertEqual(len(soup.select("ol")), 1)
+
+        # ul is nested list
+        self.assertEqual(len(soup.select("ol > li > ul")), 1)
+
+        # 2nd ul is nested list
+        self.assertEqual(len(soup.select("ol > li > ul > li > ul")), 1)
+
+        # last li of first list HAS 2 nested uls
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 2)
+
+    def test_ol_ul_ol(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_ol_ul_ol, "html.parser"))
+        self.assertEqual(len(soup.select("ol")), 2)
+
+        # ul is nested list
+        self.assertEqual(len(soup.select("ol > li > ul")), 1)
+
+        # 2nd ol is nested list
+        self.assertEqual(len(soup.select("ol > li > ul > li > ol")), 1)
+
+        # last li of first list HAS a nested ul and nested ol
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ul")), 1)
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+
+
+class NestedListTestsUL(TestCase):
     def setUp(self):
         self.html_single_list = """
             <h4 class="c1"><span class="c35">Funding strategy</span></h4>
@@ -2430,6 +2616,343 @@ class NestedListTests(TestCase):
         self.assertEqual(len(last_li.find_all("ul")), 2)
         # nested ul has 5 lis
         self.assertEqual(len(last_li.find("ul").find_all("li", recursive=False)), 4)
+
+
+class NestedListTestsOL(TestCase):
+    def setUp(self):
+        self.html_single_list_ol = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_nested_list_ol = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_nested_list_ol_followed_by_li = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_nested_lists_ol = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_nested_lists_ol_followed_by_li = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant’s purpose/need?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_double_nested_list_ol = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
+                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_double_nested_list_ol_followed_by_li = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
+                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant’s purpose/need?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_lists_ol_to_join = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_nested_lists_ol_to_join = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="2">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+        self.html_2_nested_lists_ol_to_join_after_double_nested_list = """
+            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
+            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
+            </ol>
+            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
+                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
+            </ol>
+            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="2">
+                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
+            </ol>
+            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
+        """
+
+    def test_single_list_nothing_happens(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_single_list_ol, "html.parser"))
+        self.assertEqual(len(soup.select("ol")), 1)
+
+        # last li of first list DOES NOT HAVE a nested ul
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 0)
+
+    def test_nested_list_becomes_nested(self):
+        soup = join_nested_lists(BeautifulSoup(self.html_nested_list_ol, "html.parser"))
+        # two uls
+        self.assertEqual(len(soup.select("ol")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ol > li > ol")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # last li of first list HAS a nested ul
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+
+    def test_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_nested_list_ol_followed_by_li, "html.parser")
+        )
+
+        # two uls
+        self.assertEqual(len(soup.select("ol")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ol > li > ol")), 1)
+        # no uls are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 4 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
+
+    def test_2_nested_lists_become_nested(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_nested_lists_ol, "html.parser")
+        )
+        # three uls
+        self.assertEqual(len(soup.select("ol")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ol > li > ol")), 2)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 4 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
+
+        # last li of first list HAS a nested ol
+        last_li = first_ol.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+
+    def test_2_nested_lists_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_nested_lists_ol_followed_by_li, "html.parser")
+        )
+        # three ols
+        self.assertEqual(len(soup.select("ol")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ol > li > ol")), 2)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 5 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 5)
+
+        # last li of first list DOES NOT HAVE a nested ol
+        last_li = first_ol.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 0)
+
+    def test_double_nested_list_becomes_nested(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_double_nested_list_ol, "html.parser")
+        )
+        # three ols
+        self.assertEqual(len(soup.select("ol")), 3)
+        # two single nested lists
+        self.assertEqual(len(soup.select("ol > li > ol")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 3 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 3)
+
+        # last li of first list HAS 2 ols
+        last_li = first_ol.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 2)
+
+    def test_double_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_double_nested_list_ol_followed_by_li, "html.parser")
+        )
+        # three ols
+        self.assertEqual(len(soup.select("ol")), 3)
+        # two single nested lists
+        self.assertEqual(len(soup.select("ol > li > ol")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 4 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
+
+        # last li of first list DOES NOT HAVE ols
+        last_li = first_ol.find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 0)
+
+    def test_join_2_lists_with_same_classname(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_lists_ol_to_join, "html.parser")
+        )
+        # two ols
+        self.assertEqual(len(soup.select("ol")), 1)
+        # one nested list
+        self.assertEqual(len(soup.select("ol > li > ol")), 0)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # first ol has 4 li children
+        first_ol = soup.find("ol")
+        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
+
+    def test_join_2_nested_lists_with_same_classname(self):
+        soup = join_nested_lists(
+            BeautifulSoup(self.html_2_nested_lists_ol_to_join, "html.parser")
+        )
+        # two ols
+        self.assertEqual(len(soup.select("ol")), 2)
+        # one nested list
+        self.assertEqual(len(soup.select("ol > li > ol")), 1)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # last li of first list HAS a nested ol
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 1)
+        # nested ol has 2 lis
+        self.assertEqual(len(last_li.find("ol").find_all("li")), 2)
+
+    def test_join_2_nested_lists_with_same_classname_after_a_double_nested_list(self):
+        soup = join_nested_lists(
+            BeautifulSoup(
+                self.html_2_nested_lists_ol_to_join_after_double_nested_list,
+                "html.parser",
+            )
+        )
+        # three ols
+        self.assertEqual(len(soup.select("ol")), 3)
+        # two nested lists
+        self.assertEqual(len(soup.select("ol > li > ol")), 2)
+        # one double nested list
+        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
+        # no ols are siblings
+        self.assertEqual(len(soup.select("ol + ol")), 0)
+
+        # last li of first list HAS a nested ol
+        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
+        self.assertEqual(len(last_li.find_all("ol")), 2)
+        # nested ol has 4 lis
+        self.assertEqual(len(last_li.find("ol").find_all("li", recursive=False)), 2)
 
 
 ###########################################################
