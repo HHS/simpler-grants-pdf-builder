@@ -11,6 +11,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added section ids to the table captions on hover in edit mode
 - Nested lists now work with ols as well as uls
   - Supports intermixing them as well (eg: ul, ol, ul)
+  - nested ols use "a,b,c" instead of "1,2,3"
+  - double-nested ols use "i,ii,iii"
 
 ### Changed
 
