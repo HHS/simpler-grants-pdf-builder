@@ -13,6 +13,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Supports intermixing them as well (eg: ul, ol, ul)
   - nested ols use "a,b,c" instead of "1,2,3"
   - double-nested ols use "i,ii,iii"
+    - also include new ol styling on edit pages
+- Add "align-top"/"align-bottom" classes for table headings and cells
 
 ### Changed
 
