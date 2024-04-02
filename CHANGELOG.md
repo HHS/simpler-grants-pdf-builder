@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Solve weird page break bug affecting section 4 headings
 - "Get Ready" in nav to match the section title (uppercase "R")
 
 ## [1.17.0] - 2023-03-29
