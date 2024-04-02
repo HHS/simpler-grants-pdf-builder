@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Longer timeout time in gunicorn
+
 ### Fixed
 
 ## [1.17.0] - 2023-03-29
