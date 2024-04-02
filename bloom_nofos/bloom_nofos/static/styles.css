@@ -171,6 +171,14 @@ details > summary > span:hover {
   visibility: visible;
 }
 
+.nofo_edit ol ol {
+  list-style-type: lower-alpha;
+}
+
+.nofo_edit ol ol ol {
+  list-style-type: lower-roman;
+}
+
 .nofo_edit .nofo-edit-table--subsection--body {
   word-break: break-word;
 }

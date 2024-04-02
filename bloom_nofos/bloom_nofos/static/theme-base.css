@@ -414,6 +414,16 @@ table td {
   vertical-align: baseline;
 }
 
+table th.align-top,
+table td.align-top {
+  vertical-align: top;
+}
+
+table th.align-bottom,
+table td.align-bottom {
+  vertical-align: bottom;
+}
+
 table tr.table-row--empty {
   height: 28px;
 }
