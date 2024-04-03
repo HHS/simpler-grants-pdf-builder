@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django_mirror.admin import MirrorAdmin
+from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
 from .models import Nofo, Section, Subsection
@@ -33,9 +35,18 @@ class SectionModelForm(forms.ModelForm):
 class NofoModelForm(forms.ModelForm):
     class Meta:
         model = Nofo
-        fields = ["title", "short_name", "number", "opdiv", "coach", "designer"]
+        fields = [
+            "title",
+            "short_name",
+            "number",
+            "opdiv",
+            "coach",
+            "designer",
+            "inline_css",
+        ]
         widgets = {
             "title": forms.TextInput(),
+            "inline_css": MirrorArea(attrs={"rows": 4}),
         }
 
 
@@ -85,7 +96,8 @@ class SectionAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
 
-class NofoAdmin(admin.ModelAdmin):
+class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
+    mirror_fields = ("inline_css",)
     form = NofoModelForm
     inlines = [SectionLinkInline]
     list_display = ["title", "number", "status", "designer", "created", "updated"]

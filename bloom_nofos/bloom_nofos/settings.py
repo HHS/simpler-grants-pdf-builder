@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "easyaudit",
     "djversion",
+    "django_mirror",
 ]
 
 MIDDLEWARE = [
@@ -418,4 +419,12 @@ CONSTANCE_CONFIG = {
         "Whether to print PDFs with watermarks. If True, documents will be watermarked.",
         bool,
     ),
+}
+
+# Django codemirror
+DJANGO_MIRROR_DEFAULTS = {
+    "mode": "css",
+    "addons": ["edit/matchbrackets", "hint/css-hint"],
+    "line_wrapping": True,
+    "line_numbers": True,
 }

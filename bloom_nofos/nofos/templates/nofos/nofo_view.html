@@ -25,6 +25,10 @@
   {% with "theme-opdiv-"|add:nofo_theme_base|add:'.css' as filename %}
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
+
+  {% if nofo.inline_css %}
+    <style>{{ nofo.inline_css }}</style>
+  {% endif %}
 {% endblock %}
 
 {% block title %}{{ nofo.title }}{% endblock %}

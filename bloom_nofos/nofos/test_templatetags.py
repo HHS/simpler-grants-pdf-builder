@@ -169,7 +169,6 @@ class AddCaptionToTableTests(TestCase):
 
 
 class AddClassToListsTests(TestCase):
-
     def test_add_class_to_ordered_list(self):
         html_content = "<ol><li>Item 1</li><li>Item 2</li><li>Short</li></ol>"
         soup = BeautifulSoup(html_content, "html.parser")
