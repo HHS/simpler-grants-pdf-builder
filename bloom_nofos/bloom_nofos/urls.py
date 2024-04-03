@@ -42,6 +42,7 @@ urlpatterns = [
     re_path(r"^favicon\.ico$", favicon_view),
     path("martor/", include("martor.urls")),
     path("nofos/", include("nofos.urls")),
+    path("odi_documents/", include("odi_documents.urls")),
     path("", include("users.urls")),
     path("admin/", admin.site.urls),
     path("test-mode", views.TestModeView.as_view(), name="test_mode"),

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Import Document</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="document-import" accept="text/html">
+    <button type="submit">Import</button>
+</form>
+{% endblock %}

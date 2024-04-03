@@ -13,7 +13,7 @@ class ODIDocument(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('documents:document_detail', args=[self.id])
+        return reverse('documents:odi_document_detail', args=[self.id])
 
 
 class Section(models.Model):
