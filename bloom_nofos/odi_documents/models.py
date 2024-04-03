@@ -37,4 +37,4 @@ class Section(models.Model):
         ordering = ['order']
 
     def __str__(self):
-        return self.title
+        return self.name

@@ -1,10 +1,47 @@
 {% extends 'base.html' %}
+{% load tz %}
+
+{% block title %}
+	All ODI Documents
+{% endblock %}
+
+{% block body_class %}odi_document_index{% endblock %}
 
 {% block content %}
-<h1>Documents</h1>
-<ul>
-    {% for document in object_list %}
-    <li><a href="{{ document.get_absolute_url }}">{{ document.title }}</a></li>
-    {% endfor %}
-</ul>
+	{% include "includes/alerts.html" with messages=messages success_heading="Document imported successfully" error_heading="Document deleted" only %}
+
+	<h1 class="font-heading-xl margin-y-0">All ODI Documents</h1>
+
+	{% if object_list %}
+		<table class="usa-table usa-table--borderless width-full">
+			<caption>
+				List of ODI Documents
+			</caption>
+			<thead>
+				<tr>
+					<th scope="col">Title</th>
+					<th scope="col">Created</th>
+					<th scope="col">Updated</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for document in object_list %}
+					<tr>
+						<th scope="row"><a href="{{ document.get_absolute_url }}">{{ document.title }}</a></th>
+						<td>{{ document.created }}</td>
+						<td>{{ document.updated }}</td>
+					<tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>No documents are available.</p>
+	{% endif %}
+	<h2 class="font-heading-md margin-top-6">Import a new ODI Document</h2>
+	<p>Export your Document document as HTML from Google Docs and then upload it here.</p>
+	<p>
+		<a class="usa-button" href="{% url 'documents:odi_document_import' %}">
+    Import Document
+		</a>
+	</p>
 {% endblock %}
