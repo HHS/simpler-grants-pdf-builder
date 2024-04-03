@@ -242,6 +242,12 @@ h2 {
 
 /* Custom CSS for one nofo at a time */
 
+.hhs-2024-acl-aoa-adpi-0029 .section--3 .table--large td,
+.hhs-2024-acl-aoa-adpi-0029 .section--3 .table--large th {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
 .hhs-2024-acf-opre-ye-0195 .section--content--intro .nofo--tagline {
   margin-bottom: 20px;
 }
