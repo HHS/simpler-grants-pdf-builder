@@ -1,3 +1,5 @@
+import cssutils
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
@@ -187,6 +189,12 @@ class Nofo(models.Model):
         help_text="The status of this NOFO in the NOFO builder.",
     )
 
+    inline_css = models.TextField(
+        "Inline CSS",
+        blank=True,
+        help_text="Extra CSS to include for this specific NOFO.",
+    )
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
 
@@ -198,6 +206,15 @@ class Nofo(models.Model):
 
     def get_first_subsection(self):
         return self.sections.first().subsections.first()
+
+    def clean(self):
+        if self.inline_css:
+            # Parse the CSS to check for errors
+            parser = cssutils.CSSParser(raiseExceptions=True)
+            try:
+                parser.parseString(self.inline_css)
+            except Exception as e:
+                raise ValidationError(f"Invalid CSS: {e}")
 
     def save(self, *args, **kwargs):
         if self.pk:
@@ -214,6 +231,8 @@ class Nofo(models.Model):
             # If it's a new instance, set the 'updated' field to the current time
             self.updated = timezone.now()
 
+        # Call the clean method for validation
+        self.full_clean()
         super().save(*args, **kwargs)
 
 
