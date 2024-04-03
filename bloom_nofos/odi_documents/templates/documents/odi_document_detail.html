@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ object.title }}</h1>
+{% for section in object.sections.all %}
+    <h2>{{ section.title }}</h2>
+    {{ section.body|safe }}
+{% endfor %}
+{% endblock %}

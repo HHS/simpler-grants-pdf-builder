@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Documents</h1>
+<ul>
+    {% for document in object_list %}
+    <li><a href="{{ document.get_absolute_url }}">{{ document.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

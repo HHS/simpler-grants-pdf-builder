@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     "constance",
     "nofos.apps.NofosConfig",
     "users.apps.UsersConfig",
+    "odi_documents.apps.ODIDocumentsConfig",
     "easyaudit",
     "djversion",
 ]
