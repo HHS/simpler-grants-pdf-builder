@@ -6,10 +6,21 @@
 	Edit "{{ object.title }}"
 {% endblock %}
 
+{% block css %}
+    <style>
+      td {
+        word-break: break-all;
+      }
+    </style>
+
+{% endblock %}
+
 {% block body_class %}odi_document_edit{% endblock %}
 
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="Document imported successfully" error_heading="Document deleted" only %}
+
+  <p><a href="{% url 'documents:odi_document_list' %}">Back to all documents</a></p>
 
 	<h1 class="font-heading-xl margin-y-0">Edit "{{ object.title }}"</h1>
 
@@ -55,7 +66,7 @@
       <th scope="row" style="width: 33%;">
         {{ section.name }}
       </th>
-      <td>
+      <td style="width: 66%;">
         {{ section.body|safe_markdown }}
       </td>
     </tr>

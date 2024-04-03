@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<p><a href="{% url 'documents:odi_document_list' %}">Back to all documents</a></p>
+
 {% url 'documents:odi_document_index' as back_href %}
 {% include "includes/page_heading.html" with title="Import a new ODI Document" back_text="All Documents" back_href=back_href only %}
 
