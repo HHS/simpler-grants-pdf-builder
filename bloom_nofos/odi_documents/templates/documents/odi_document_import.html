@@ -1,10 +1,21 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Import Document</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="document-import" accept="text/html">
-    <button type="submit">Import</button>
+{% url 'documents:odi_document_index' as back_href %}
+{% include "includes/page_heading.html" with title="Import a new ODI Document" back_text="All Documents" back_href=back_href only %}
+
+<form id="odi-import--form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% with id="document-import" label="Select document file" hint="Please only submit HTML or Markdown files." value=title %}
+    {% for message in messages %}
+      {% if "error" in message.tags %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
+      {% endif %}
+    {% empty %}
+      {% include "includes/file_input.html" with id=id label=label hint=hint only %}
+    {% endfor %}
+  {% endwith %}
+
+  <button class="usa-button margin-top-3" type="submit">Import</button>
 </form>
 {% endblock %}

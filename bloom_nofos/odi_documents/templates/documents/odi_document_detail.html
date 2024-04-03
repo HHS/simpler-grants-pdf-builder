@@ -1,9 +1,57 @@
 {% extends 'base.html' %}
 
+{% block css %}
+    <style>
+        @page {
+        /* portrait letter size */
+            size: 216mm 279mm;
+            margin: 20mm 20mm 16mm 20mm;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #da6414;
+            font-size: 56pt;
+        }
+        h2 {
+            font-size: 20pt;
+            font-family: "Arial";
+        }
+
+        h3, h4 {
+            font-size: 12pt;
+            font-family: "Arial";
+        }
+
+        p {
+            font-size: 11pt;
+            font-family: "Arial";
+        }
+
+        @media screen {
+            .page--container {
+                outline: 1px solid #cdc;
+                padding: 20mm;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<h1>{{ object.title }}</h1>
-{% for section in object.sections.all %}
-    <h2>{{ section.name }}</h2>
-    {{ section.body|safe }}
-{% endfor %}
+<div class="page--container">
+    <h1>{{ object.title }}</h1>
+    {% for section in object.sections.all %}
+        {% if section.tag == 'h2' %}
+            <h2>{{ section.name }}</h2>
+        {% elif section.tag == 'h3' %}
+            <h3>{{ section.name }}</h3>
+        {% elif section.tag == 'h4' %}
+            <h4>{{ section.name }}</h4>
+        {% else %}
+            <h5>{{ section.name }}</h5>
+        {% endif %}
+
+        {{ section.body|safe }}
+    {% endfor %}
+</div>
 {% endblock %}
