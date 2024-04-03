@@ -1,10 +1,65 @@
 {% extends 'base.html' %}
+{% load tz martortags nofo_name get_value_or_none add_classes_to_tables %}
+
+
+{% block title %}
+	Edit "{{ object.title }}"
+{% endblock %}
+
+{% block body_class %}odi_document_edit{% endblock %}
 
 {% block content %}
-<h1>Edit Document</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+	{% include "includes/alerts.html" with messages=messages success_heading="Document imported successfully" error_heading="Document deleted" only %}
+
+	<h1 class="font-heading-xl margin-y-0">Edit "{{ object.title }}"</h1>
+
+    <table class="usa-table usa-table--borderless width-full">
+        <caption>
+            <h2 class="margin-bottom-0">Document metadata</h2>
+        </caption>
+        <thead class="usa-sr-only">
+          <tr>
+            <th scope="col">Key</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row" style="width: 33%;">Title</th>
+            <td>{{ object.title }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Created at</th>
+            <td>{{ object.created }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Updated at</th>
+            <td>{{ object.updated }}</td>
+          </tr>
+        </tbody>
+    </table>
+
+<table class="usa-table usa-table--borderless width-full">
+  <caption>
+    <h2>Sections</h2>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col" >Heading</th>
+      <th scope="col">Content</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for section in object.sections.all|dictsort:"order" %}
+    <tr>
+      <th scope="row" style="width: 33%;">
+        {{ section.name }}
+      </th>
+      <td>
+        {{ section.body|safe_markdown }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

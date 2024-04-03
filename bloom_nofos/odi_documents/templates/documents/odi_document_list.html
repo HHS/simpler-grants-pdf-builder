@@ -22,6 +22,7 @@
 					<th scope="col">Title</th>
 					<th scope="col">Created</th>
 					<th scope="col">Updated</th>
+					<th scope="col">Manage</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -30,6 +31,7 @@
 						<th scope="row"><a href="{{ document.get_absolute_url }}">{{ document.title }}</a></th>
 						<td>{{ document.created }}</td>
 						<td>{{ document.updated }}</td>
+						<td><a href="{{ document.get_absolute_url }}edit">Edit</a></td>
 					<tr>
 				{% endfor %}
 			</tbody>
