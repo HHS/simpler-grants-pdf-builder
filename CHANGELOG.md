@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Longer timeout time in gunicorn
 - Changed NOFO number for ACF 0039
+- Lengthen final list items that don't need the avoid-page-break class to 85 chars
 
 ### Fixed
 
