@@ -523,9 +523,9 @@ td.usa-icon__td p + ol {
 .usa-icon__list-element .usa-icon {
   position: absolute;
   left: -25px;
-  height: 20px;
-  width: 20px;
-  min-width: 20px;
+  height: 17px;
+  width: 17px;
+  min-width: 17px;
   top: 1px;
 }
 

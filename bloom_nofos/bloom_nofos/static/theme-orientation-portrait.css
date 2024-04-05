@@ -256,6 +256,11 @@ table tr td.usa-icon__td--sublist img.usa-icon {
   left: 22px;
 }
 
+table tr td.usa-icon__td--sublist li.usa-icon__list-element img.usa-icon {
+  left: -22px;
+  top: 0;
+}
+
 body.portrait.cdc
   .section--step-4-learn-about-review-and-award
   .section--content

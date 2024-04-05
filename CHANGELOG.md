@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Checklist icons are usually "◻" (medium square) but sometimes "☐" (ballot box)
 - Solve weird page break bug affecting section 4 headings
 - "Get Ready" in nav to match the section title (uppercase "R")
 - Smaller padding for v v big table in ACL 0029
