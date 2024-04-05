@@ -19,7 +19,8 @@ uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_o
 ICONS = [
     ("↑", uswds_arrow_upward_icon),
     ("↓", uswds_arrow_downward_icon),
-    ("◻", uswds_check_box_outline_blank_icon),
+    ("◻", uswds_check_box_outline_blank_icon), # (U+25FB WHITE MEDIUM SQUARE)
+    ("☐", uswds_check_box_outline_blank_icon), # (U+2610 BALLOT BOX)
 ]
 
 
