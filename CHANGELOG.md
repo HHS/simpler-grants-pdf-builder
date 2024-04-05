@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Longer timeout time in gunicorn
+- Changed NOFO number for ACF 0039
 
 ### Fixed
 
