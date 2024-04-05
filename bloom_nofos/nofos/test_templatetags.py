@@ -182,14 +182,14 @@ class AddClassToListsTests(TestCase):
         self.assertIn("avoid-page-break-before", soup.find_all("li")[-1]["class"])
 
     def test_do_not_add_class_to_70_char_final_item(self):
-        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is 70 characters long, so it shouldn't add the classname</li></ul>"
+        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is exactly 85 characters in length, so it should not add the classname.</li></ul>"
         soup = BeautifulSoup(html_content, "html.parser")
         add_class_to_list(soup.ul)
         final_list_item = soup.find_all("li")[-1]
         self.assertFalse("avoid-page-break-before" in final_list_item.get("class", []))
 
     def test_add_class_to_69_char_final_item(self):
-        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is 69 characters long, so it should add the classname!!</li></ul>"
+        html_content = "<ul><li>Item 1</li><li>Item 2</li><li>This sentence is exactly 84 characters in length, so it should not add the classname</li></ul>"
         soup = BeautifulSoup(html_content, "html.parser")
         add_class_to_list(soup.ul)
         final_list_item = soup.find_all("li")[-1]
