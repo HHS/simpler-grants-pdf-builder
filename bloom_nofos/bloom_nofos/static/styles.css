@@ -179,6 +179,32 @@ details > summary > span:hover {
   list-style-type: lower-roman;
 }
 
+.nofo_edit hr.page-break--hr {
+  position: relative;
+  margin: 18px 0;
+  border-top: none;
+  border-bottom: 2px dashed #5c5c5c;
+}
+
+.nofo_edit hr.page-break--hr::before {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translate(-50%);
+  background: white;
+  color: #5c5c5c;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.nofo_edit hr.page-break-before.page-break--hr::before {
+  content: "[ ↑ page-break-before ↑ ]";
+}
+
+.nofo_edit hr.page-break-after.page-break--hr::before {
+  content: "[ ↓ page-break-after ↓ ]";
+}
+
 .nofo_edit .nofo-edit-table--subsection--body {
   word-break: break-word;
 }
