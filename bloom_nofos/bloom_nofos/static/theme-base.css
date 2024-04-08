@@ -241,29 +241,9 @@ h2 {
 }
 
 /* Custom CSS for one nofo at a time */
-
-.hhs-2024-acl-aoa-adpi-0029 .section--3 .table--large td,
-.hhs-2024-acl-aoa-adpi-0029 .section--3 .table--large th {
-  padding-left: 3px;
-  padding-right: 3px;
-}
-
-.hhs-2024-acf-opre-ye-0195 .section--content--intro .nofo--tagline {
-  margin-bottom: 20px;
-}
-
-.hhs-2024-acl-aoa-lrlr-0020 .toc h2 {
-  margin-top: -10px;
-}
-
 .hrsa-24-014 .toc h2 {
   margin-top: -16px;
   margin-bottom: 16px;
-}
-
-.hrsa-24-046 .toc h2 {
-  margin-top: -24px;
-  margin-bottom: 10px;
 }
 
 .hrsa-24-014

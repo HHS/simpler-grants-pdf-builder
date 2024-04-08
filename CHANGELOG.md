@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.18.0] - 2023-04-08
+
+### Added
+
 - Added section ids to the table captions on hover in edit mode
 - Nested lists now work with ols as well as uls
   - Supports intermixing them as well (eg: ul, ol, ul)
@@ -15,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - double-nested ols use "i,ii,iii"
     - also include new ol styling on edit pages
 - Add "align-top"/"align-bottom" classes for table headings and cells
+- Added new styling for "page-break-after|before" elements in edit view
 
 ### Changed
 
@@ -24,6 +33,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Removed a bunch of custom CSS rules now that we have NOFO-specific CSS
 - Checklist icons are usually "◻" (medium square) but sometimes "☐" (ballot box)
 - Solve weird page break bug affecting section 4 headings
 - "Get Ready" in nav to match the section title (uppercase "R")
