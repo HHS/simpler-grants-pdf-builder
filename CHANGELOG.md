@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add "superuser status" to the users add + edit page
+- Cover image for CDC-RFA-DP-24-0025
 
 ### Changed
 
