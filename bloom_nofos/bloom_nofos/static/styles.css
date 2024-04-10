@@ -179,14 +179,18 @@ details > summary > span:hover {
   list-style-type: lower-roman;
 }
 
-.nofo_edit hr.page-break--hr {
+.nofo_edit .page-break--hr--container {
+  position: relative;
+}
+
+.nofo_edit .page-break--hr--container hr.page-break--hr {
   position: relative;
   margin: 18px 0;
   border-top: none;
   border-bottom: 2px dashed #5c5c5c;
 }
 
-.nofo_edit hr.page-break--hr::before {
+.nofo_edit .page-break--hr--container .page-break--hr--text {
   position: absolute;
   top: -8px;
   left: 50%;
@@ -197,11 +201,11 @@ details > summary > span:hover {
   font-size: 12px;
 }
 
-.nofo_edit hr.page-break-before.page-break--hr::before {
+.nofo_edit .nothing hr.page-break-before.page-break--hr::before {
   content: "[ ↑ page-break-before ↑ ]";
 }
 
-.nofo_edit hr.page-break-after.page-break--hr::before {
+.nofo_edit .nothing hr.page-break-after.page-break--hr::before {
   content: "[ ↓ page-break-after ↓ ]";
 }
 

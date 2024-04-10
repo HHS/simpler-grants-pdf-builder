@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove add_classes_to_lists %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove add_classes_to_lists convert_paragraphs_to_hrs %}
 
 {% block metadata %}
   {% if nofo.author %}
@@ -341,7 +341,7 @@
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                 {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
               {% endwith %}
-                {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists }}
+                {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
             {% endif %}
           {% endif %}
         {% endfor %}

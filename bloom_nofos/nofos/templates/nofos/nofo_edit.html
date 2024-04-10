@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name get_value_or_none add_classes_to_tables add_classes_to_paragraphs %}
+{% load martortags nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
 
 
 {% block title %}
@@ -352,7 +352,7 @@ Edit “{{ nofo|nofo_name }}”
         {% endif %}
       </td>
       <td class="nofo-edit-table--subsection--body">
-        {{ subsection.body|safe_markdown|add_classes_to_tables|add_classes_to_paragraphs|get_value_or_none:"content" }}
+        {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
       </td>
       <td class="nofo-edit-table--subsection--manage">
         <span class="floating">
