@@ -190,6 +190,11 @@ details > summary > span:hover {
   border-bottom: 2px dashed #5c5c5c;
 }
 
+.nofo_edit .page-break--hr--container hr.column-break-before.page-break--hr,
+.nofo_edit .page-break--hr--container hr.column-break-after.page-break--hr {
+  border-bottom: 1px dotted #5c5c5c;
+}
+
 .nofo_edit .page-break--hr--container .page-break--hr--text {
   position: absolute;
   top: -8px;
@@ -199,14 +204,6 @@ details > summary > span:hover {
   color: #5c5c5c;
   font-family: monospace;
   font-size: 12px;
-}
-
-.nofo_edit .nothing hr.page-break-before.page-break--hr::before {
-  content: "[ ↑ page-break-before ↑ ]";
-}
-
-.nofo_edit .nothing hr.page-break-after.page-break--hr::before {
-  content: "[ ↓ page-break-after ↓ ]";
 }
 
 .nofo_edit .nofo-edit-table--subsection--body {
