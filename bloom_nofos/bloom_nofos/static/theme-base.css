@@ -1055,20 +1055,24 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
   /* Page break rules */
   .page-break-before,
-  .page-break-before--heading {
+  .page-break-before--heading,
+  .page-break--hr--container hr.page-break-before.page-break--hr {
     border-top: 2px dashed var(--color--med-grey);
   }
 
   .page-break-after,
-  .page-break-after--heading {
+  .page-break-after--heading,
+  .page-break--hr--container hr.page-break-after.page-break--hr {
     border-bottom: 2px dashed var(--color--med-grey);
   }
 
-  .column-break-before {
+  .column-break-before,
+  .page-break--hr--container hr.column-break-before.page-break--hr {
     border-top: 1px dotted var(--color--med-grey);
   }
 
-  .column-break-after {
+  .column-break-after,
+  .page-break--hr--container hr.column-break-after.page-break--hr {
     border-bottom: 1px dotted var(--color--med-grey);
   }
 
@@ -1079,8 +1083,6 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   .page-break--hr--container hr.page-break--hr {
     position: relative;
     margin: 18px 0;
-    border-top: none;
-    border-bottom: 2px dashed var(--color--med-grey);
   }
 
   .page-break--hr--container .page-break--hr--text {

@@ -14,6 +14,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Harmonize the page-break-befores and make them searchable
+  - page-break-after
+  - column-break-before
+  - column-break-after
 
 ### Fixed
 
