@@ -11,6 +11,7 @@ from .templatetags.utils import (
     add_class_to_list,
     add_class_to_table,
     add_class_to_table_rows,
+    convert_paragraph_to_searchable_hr,
     find_elements_with_character,
     format_footnote_ref,
     get_parent_td,
@@ -341,6 +342,42 @@ class TestAddClassToTableRows(TestCase):
         self.assertNotEqual(add_class_to_table_rows(table_rows[0]), "table-row--empty")
         self.assertEqual(add_class_to_table_rows(table_rows[1]), "table-row--empty")
 
+
+class ModifyHtmlTests(TestCase):
+
+    def test_convert_paragraph_to_searchable_hr_with_matching_paragraph(self):
+        original_html = "<p>page-break-before</p>"
+        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↑ page-break-before ↑ ]</span></div>'
+        soup = BeautifulSoup(original_html, 'html.parser')
+        convert_paragraph_to_searchable_hr(soup.p)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_convert_paragraph_to_searchable_hr_without_matching_paragraph(self):
+        original_html = "<p>Some other content</p>"
+        soup = BeautifulSoup(original_html, 'html.parser')
+        convert_paragraph_to_searchable_hr(soup.p)
+        self.assertEqual(str(soup), original_html)
+
+    def test_convert_paragraph_to_searchable_hr_without_matching_paragraph(self):
+        original_html = "<p> page-break-before </p>" # fails because of the extra whitespace
+        soup = BeautifulSoup(original_html, 'html.parser')
+        convert_paragraph_to_searchable_hr(soup.p)
+        self.assertEqual(str(soup), original_html)
+
+    def test_convert_paragraph_to_searchable_hr_with_multiple_matching_paragraphs(self):
+        original_html = "<p>page-break-before</p><p>page-break-before</p>"
+        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↑ page-break-before ↑ ]</span></div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↑ page-break-before ↑ ]</span></div>'
+        soup = BeautifulSoup(original_html, 'html.parser')
+        for p in soup.find_all('p'):
+            convert_paragraph_to_searchable_hr(p)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_convert_paragraph_to_searchable_hr_with_nested_tags(self):
+        original_html = "<div><p>page-break-before</p></div>"
+        expected_html = '<div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↑ page-break-before ↑ ]</span></div></div>'
+        soup = BeautifulSoup(original_html, 'html.parser')
+        convert_paragraph_to_searchable_hr(soup.p)
+        self.assertEqual(str(soup), expected_html)
 
 class TestFindElementsWithChar(TestCase):
     def test_single_element_with_char(self):

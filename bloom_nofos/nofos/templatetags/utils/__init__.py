@@ -1,4 +1,4 @@
-from bs4 import NavigableString
+from bs4 import BeautifulSoup, NavigableString
 
 # HTML tables
 
@@ -119,6 +119,23 @@ def add_class_to_table_rows(table_row):
 
     if word_count == 0:
         return "table-row--empty"
+
+
+def convert_paragraph_to_searchable_hr(p):
+    if p.name == "p" and p.string == 'page-break-before':
+        # Change the tag name from 'p' to 'div'
+        p.name = "div"
+        p['class'] = "page-break--hr--container page-break-before--container"
+
+        # Create 'hr' and 'span' elements
+        hr_html = '<hr class="page-break-before page-break--hr"/>'
+        span_html = '<span class="page-break--hr--text">[ ↑ page-break-before ↑ ]</span>'
+
+        p.clear()
+
+        # Append the 'hr' and 'span' as new BeautifulSoup objects
+        p.append(BeautifulSoup(hr_html, 'html.parser'))
+        p.append(BeautifulSoup(span_html, 'html.parser'))
 
 
 def find_elements_with_character(element, container, character="~"):

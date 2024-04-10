@@ -1072,6 +1072,28 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     border-bottom: 1px dotted var(--color--med-grey);
   }
 
+  .page-break--hr--container {
+    position: relative;
+  }
+
+  .page-break--hr--container hr.page-break--hr {
+    position: relative;
+    margin: 18px 0;
+    border-top: none;
+    border-bottom: 2px dashed var(--color--med-grey);
+  }
+
+  .page-break--hr--container .page-break--hr--text {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translate(-50%);
+    background: white;
+    color: var(--color--med-grey);
+    font-family: monospace;
+    font-size: 12px;
+  }
+
   /* Outlines for the view page */
   section.nofo--cover-page,
   section.toc,
@@ -1140,6 +1162,10 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     visibility: hidden;
     border: 0;
     margin: 0;
+  }
+
+  .page-break--hr--container .page-break--hr--text {
+    display: none;
   }
 
   .running-header,
