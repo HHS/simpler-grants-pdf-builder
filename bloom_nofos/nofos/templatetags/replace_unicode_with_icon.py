@@ -39,7 +39,7 @@ def has_link_in_above_rows(td):
 
 
 def has_checkbox(td):
-    if "◻" in td.get_text():
+    if any(x in td.get_text() for x in ["◻","☐"]):
         return True
 
     if td.find("img", alt="Checkbox"):
