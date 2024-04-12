@@ -1,0 +1,17 @@
+{% if "review the opportunity" in section_name %}
+  {% include icon_path|add:"1-review.svg" %}
+{% elif "ready" in section_name %}
+  {% include icon_path|add:"2-get-ready.svg" %}
+{% elif "write your" in section_name or "prepare your application" in section_name %}
+  {% include icon_path|add:"3-write.svg" %}
+{% elif "learn about review" in section_name %}
+  {% include icon_path|add:"4-learn.svg" %}
+{% elif "submit" in section_name %}
+  {% include icon_path|add:"5-submit.svg" %}
+{% elif "learn what happens" in section_name %}
+  {% include icon_path|add:"6-next.svg" %}
+{% elif "contacts" in section_name %}
+  {% include icon_path|add:"7-contact.svg" %}
+{% else %}
+  {% include icon_path|add:"1-review.svg" %}
+{% endif %}

@@ -1,19 +1,13 @@
-{% if "review the opportunity" in section_name %}
-  {% include "includes/icons/1-review.svg" %}
-{% elif "ready" in section_name %}
-  {% include "includes/icons/2-get-ready.svg" %}
-{% elif "write your" in section_name %}
-  {% include "includes/icons/3-write.svg" %}
-{% elif "prepare your application" in section_name %}
-  {% include "includes/icons/3-write.svg" %}
-{% elif "learn about review" in section_name %}
-  {% include "includes/icons/4-learn.svg" %}
-{% elif "submit" in section_name %}
-  {% include "includes/icons/5-submit.svg" %}
-{% elif "learn what happens" in section_name %}
-  {% include "includes/icons/6-next.svg" %}
-{% elif "contacts" in section_name %}
-  {% include "includes/icons/7-contact.svg" %}
+{% if "thin" in icon_style %}
+  {% with icon_path="includes/icons/thin/" %}
+
+    {% include "includes/_icon_macro.html" with section_name=section_name icon_path=icon_path only %}
+
+  {% endwith %}
 {% else %}
-  {% include "includes/icons/1-review.svg" %}
+  {% with icon_path="includes/icons/" %}
+
+    {% include "includes/_icon_macro.html" with section_name=section_name icon_path=icon_path only %}
+
+  {% endwith %}
 {% endif %}
