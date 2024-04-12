@@ -132,6 +132,10 @@ class Nofo(models.Model):
             "nofo--icons--solid",
             "White background, color icon, color outline (Standard)",
         ),
+        (
+            "nofo--icons--thin",
+            "Thin icons with white background, color icon, color outline (Thin)",
+        ),
     ]
 
     icon_style = models.CharField(

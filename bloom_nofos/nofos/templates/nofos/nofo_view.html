@@ -163,7 +163,7 @@
         {% if section.has_section_page %}
           <li class="toc--section-name">
             <div class="toc--section-name--img">
-              {% include "includes/icon_macro.html" with section_name=section.name|lower only %}
+              {% include "includes/icon_macro.html" with section_name=section.name|lower icon_style=nofo.icon_style only %}
             </div>
             <div class="toc--section-name--wrapper">
               <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
@@ -197,7 +197,11 @@
 
   <section id="section--before-you-begin" class="before-you-begin">
     <div class="section--before-you-begin--icon">
-      {% include "includes/icons/0-before.svg" %}
+      {% if "thin" in nofo.icon_style %}
+        {% include "includes/icons/thin/0-before.svg" %}
+      {% else %}
+        {% include "includes/icons/0-before.svg" %}
+      {% endif %}
     </div>
     <h2 id="section--before-you-begin--heading">Before you begin</h2>
     <div class="before-you-begin--content">
@@ -218,7 +222,11 @@
       {% if nofo.number|lower != 'hrsa-24-014' %}
       <div class="callout-box callout-box--icon callout-box--keyboard">
         <div class="callout-box--contents">
-          {% include "includes/icons/00-adobe-pdf.svg" %}
+            {% if "thin" in nofo.icon_style %}
+              {% include "includes/icons/thin/00-adobe-pdf.svg" %}
+            {% else %}
+              {% include "includes/icons/00-adobe-pdf.svg" %}
+            {% endif %}
             <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
         </div>
       </div>
@@ -249,7 +257,7 @@
           </div>
           <div class="section--title-page--name">
             <div class="section--title-page--icon">
-              {% include "includes/icon_macro.html" with section_name=section.name|lower only %}
+              {% include "includes/icon_macro.html" with section_name=section.name|lower icon_style=nofo.icon_style only %}
             </div>
             <h2 id="{{ section.html_id }}">
               {% with section.name|nofo_section_name_separator as section_name %}
