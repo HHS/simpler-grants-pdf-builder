@@ -57,7 +57,9 @@ class NofoIconStyleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(NofoIconStyleForm, self).__init__(*args, **kwargs)
         if self.instance and self.instance.theme:
-            self.fields['icon_style'].choices = get_icon_path_choices(self.instance.theme)
+            self.fields["icon_style"].choices = get_icon_path_choices(
+                self.instance.theme
+            )
 
 
 # this one needs a custom field and a custom widget so don't use the factory function

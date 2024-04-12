@@ -32,7 +32,10 @@ def create_subsection_html_id(counter, subsection):
 def get_icon_path_choices(theme):
     if theme == "portrait-acf-white":
         return [
-            ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
+            (
+                "nofo--icons--border",
+                "(Filled) Color background, white icon, white outline",
+            ),
             (
                 "nofo--icons--solid",
                 "(Standard) White background, color icon, color outline",
@@ -48,5 +51,5 @@ def get_icon_path_choices(theme):
         (
             "nofo--icons--solid",
             "(Standard) White background, color icon, color outline",
-        )
+        ),
     ]

@@ -15,6 +15,8 @@ from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
 
+from bloom_nofos.utils import cast_to_boolean
+
 from .forms import (
     InsertOrderSpaceForm,
     NofoAgencyForm,
@@ -68,7 +70,6 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
 )
-from bloom_nofos.utils import cast_to_boolean
 
 
 class NofosListView(ListView):
