@@ -68,7 +68,7 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
 )
-from .utils import cast_to_bool
+from bloom_nofos.utils import cast_to_boolean
 
 
 class NofosListView(ListView):
@@ -508,7 +508,7 @@ class CheckNOFOLinksDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        with_status = cast_to_bool(self.request.GET.get("with_status", ""))
+        with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
 
         context["links"] = find_external_links(self.object, with_status)
         context["with_status"] = with_status

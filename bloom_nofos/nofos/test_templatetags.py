@@ -1,5 +1,4 @@
 import re
-from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from django.test import TestCase

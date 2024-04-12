@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add "superuser status" to the users add + edit page
 - Cover image for CDC-RFA-DP-24-0025
 - Add thin icons now that somebody has asked for them
+  - Only visible for NOFOs using the ACF theme
 
 ### Changed
 

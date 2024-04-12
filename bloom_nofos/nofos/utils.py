@@ -29,5 +29,24 @@ def create_subsection_html_id(counter, subsection):
     return "{}--{}--{}".format(counter, slugify(section_name), slugify(subsection.name))
 
 
-def cast_to_bool(str):
-    return str.lower() in ["true", "1"]
+def get_icon_path_choices(theme):
+    if theme == "portrait-acf-white":
+        return [
+            ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
+            (
+                "nofo--icons--solid",
+                "(Standard) White background, color icon, color outline",
+            ),
+            (
+                "nofo--icons--thin",
+                "(Thin) White background, color icon, color outline",
+            ),
+        ]
+
+    return [
+        ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
+        (
+            "nofo--icons--solid",
+            "(Standard) White background, color icon, color outline",
+        )
+    ]
