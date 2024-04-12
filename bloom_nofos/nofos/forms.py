@@ -2,6 +2,7 @@ from django import forms
 from martor.fields import MartorFormField
 
 from .models import Nofo, Section, Subsection
+from .utils import get_icon_path_choices
 
 
 def create_nofo_form_class(field_arr, not_required_field_labels=None):
@@ -38,7 +39,6 @@ NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoCoachForm = create_nofo_form_class(["coach"])
 NofoCoverForm = create_nofo_form_class(["cover"])
 NofoDesignerForm = create_nofo_form_class(["designer"])
-NofoIconStyleForm = create_nofo_form_class(["icon_style"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoStatusForm = create_nofo_form_class(["status"])
@@ -46,6 +46,18 @@ NofoSubagency2Form = create_nofo_form_class(["subagency2"])
 NofoSubagencyForm = create_nofo_form_class(["subagency"])
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
+
+
+# we want to change the available icon style options based on the nofo theme
+class NofoIconStyleForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["icon_style"]
+
+    def __init__(self, *args, **kwargs):
+        super(NofoIconStyleForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.theme:
+            self.fields['icon_style'].choices = get_icon_path_choices(self.instance.theme)
 
 
 # this one needs a custom field and a custom widget so don't use the factory function

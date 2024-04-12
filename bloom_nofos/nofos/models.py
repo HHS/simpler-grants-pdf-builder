@@ -127,14 +127,14 @@ class Nofo(models.Model):
     )
 
     ICON_STYLE_CHOICES = [
-        ("nofo--icons--border", "Color background, white icon, white outline (Filled)"),
+        ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
         (
             "nofo--icons--solid",
-            "White background, color icon, color outline (Standard)",
+            "(Standard) White background, color icon, color outline",
         ),
         (
             "nofo--icons--thin",
-            "Thin icons with white background, color icon, color outline (Thin)",
+            "(Thin) Thin icons with white background, color icon, color outline",
         ),
     ]
 
