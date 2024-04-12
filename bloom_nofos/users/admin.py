@@ -15,7 +15,14 @@ class BloomUserAdmin(UserAdmin):
         (None, {"fields": ("email", "full_name", "password")}),
         (
             "Permissions",
-            {"fields": ("is_staff", "is_superuser", "is_active", "force_password_reset")},
+            {
+                "fields": (
+                    "is_staff",
+                    "is_superuser",
+                    "is_active",
+                    "force_password_reset",
+                )
+            },
         ),
     )
     add_fieldsets = (

@@ -19,8 +19,8 @@ uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_o
 ICONS = [
     ("↑", uswds_arrow_upward_icon),
     ("↓", uswds_arrow_downward_icon),
-    ("◻", uswds_check_box_outline_blank_icon), # (U+25FB WHITE MEDIUM SQUARE)
-    ("☐", uswds_check_box_outline_blank_icon), # (U+2610 BALLOT BOX)
+    ("◻", uswds_check_box_outline_blank_icon),  # (U+25FB WHITE MEDIUM SQUARE)
+    ("☐", uswds_check_box_outline_blank_icon),  # (U+2610 BALLOT BOX)
 ]
 
 
@@ -39,7 +39,7 @@ def has_link_in_above_rows(td):
 
 
 def has_checkbox(td):
-    if any(x in td.get_text() for x in ["◻","☐"]):
+    if any(x in td.get_text() for x in ["◻", "☐"]):
         return True
 
     if td.find("img", alt="Checkbox"):
