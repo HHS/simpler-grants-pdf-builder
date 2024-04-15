@@ -287,6 +287,52 @@ details > summary > span:hover {
   display: none;
 }
 
+.nofo_edit .button-group {
+  position: relative;
+  display: flex;
+  vertical-align: middle;
+  flex-direction: row;
+}
+
+.nofo_edit .button-group > * {
+  float: left;
+  border-right-width: 0;
+  border-radius: 0;
+}
+
+.nofo_edit .button-group .usa-button.button-group--primary {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-right: 1px solid white;
+  margin-right: 0;
+}
+
+.nofo_edit .button-group .usa-button.button-group--summary {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  padding-bottom: calc(0.75rem - 0.5px);
+}
+
+.nofo_edit .button-group summary::after {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  content: "";
+  border: 6px solid;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  margin-bottom: -5px;
+}
+
+.nofo_edit .button-group .button-group--content {
+  top: 100%;
+  position: absolute;
+  z-index: 99;
+  margin-top: 4px;
+  right: 0;
+}
+
 .subsection_edit .hint--subsection-id {
   display: flex;
   justify-content: space-between;
