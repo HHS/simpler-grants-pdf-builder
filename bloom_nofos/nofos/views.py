@@ -487,7 +487,7 @@ class PrintNofoAsPDFView(View):
 
             # Build response
             response = HttpResponse(pdf_file, content_type="application/pdf")
-            response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+            response["Content-Disposition"] = 'inline; filename="{}"'.format(
                 nofo_filename
             )
 
