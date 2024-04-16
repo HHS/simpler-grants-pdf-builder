@@ -102,7 +102,7 @@ class SectionAdmin(admin.ModelAdmin):
 class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
-    list_display = ["title", "number", "status", "designer", "created", "updated"]
+    list_display = ["title", "id", "number", "status", "designer", "created", "updated"]
 
     fieldsets = (
         (
