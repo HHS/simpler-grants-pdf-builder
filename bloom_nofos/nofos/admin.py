@@ -42,6 +42,9 @@ class NofoModelForm(forms.ModelForm):
             "opdiv",
             "coach",
             "designer",
+            "theme",
+            "cover",
+            "icon_style",
             "inline_css",
         ]
         widgets = {
@@ -97,10 +100,37 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
-    mirror_fields = ("inline_css",)
     form = NofoModelForm
     inlines = [SectionLinkInline]
     list_display = ["title", "number", "status", "designer", "created", "updated"]
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "title",
+                    "short_name",
+                    "number",
+                    "opdiv",
+                    "coach",
+                    "designer",
+                    "theme",
+                    "cover",
+                    "icon_style",
+                )
+            },
+        ),
+        (
+            "Advanced options",
+            {
+                "classes": ("collapse",),
+                "fields": ("inline_css",),
+            },
+        ),
+    )
+
+    mirror_fields = ("inline_css",)
 
 
 admin.site.register(Subsection, SubsectionAdmin)
