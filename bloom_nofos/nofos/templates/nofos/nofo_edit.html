@@ -32,30 +32,8 @@ Edit “{{ nofo|nofo_name }}”
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
     <a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a>
-    <div class="button-group">
 
-      <!-- this is the first button, the one that does the primary action -->
-      <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
-        {% csrf_token %}
-        <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
-        <button type="submit" class="usa-button button-group--primary font-sans-xs text-normal">
-          Print{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO
-        </button>
-      </form>
-
-      <details>
-        <summary aria-label="Print the NOFO" class="usa-button button-group--summary " aria-haspopup="menu" role="button"></summary>
-        <div class="button-group--content">
-          <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}">
-            {% csrf_token %}
-            <!-- Adding inline styling here because I don't want to clutter up the CSS file with non-PDF css -->
-            <button type="submit" class="usa-button usa-button--accent-cool font-sans-xs text-normal">
-              Print{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO
-            </button>
-          </form>
-        </div>
-      </details>
-    </div>
+    {% include "includes/print-button.html" with DOCRAPTOR_TEST_MODE=DOCRAPTOR_TEST_MODE nofo=nofo only %}
   </div>
 </div>
 

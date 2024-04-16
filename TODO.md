@@ -11,6 +11,8 @@
 - Update the README
 - Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
+- Add IDs to the admin panel
+- Add the icon style to the admin panel
 
 # DONE
 
