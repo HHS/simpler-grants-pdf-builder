@@ -465,6 +465,10 @@ class PrintNofoAsPDFView(View):
             nofo.number or nofo.short_name or nofo.title
         ).lower()
 
+        mode = request.GET.get('mode', 'attachment')  # Default to inline if not specified
+        if mode not in ['attachment', 'inline']:
+            mode = 'attachment'
+
         doc_api = docraptor.DocApi()
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
         doc_api.api_client.configuration.debug = True
@@ -487,8 +491,8 @@ class PrintNofoAsPDFView(View):
 
             # Build response
             response = HttpResponse(pdf_file, content_type="application/pdf")
-            response["Content-Disposition"] = 'inline; filename="{}"'.format(
-                nofo_filename
+            response["Content-Disposition"] = '{}; filename="{}"'.format(
+                mode, nofo_filename
             )
 
             return response
