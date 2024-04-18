@@ -17,7 +17,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - TODO: disable buttons on localhost
 - Allow images as background of section pages
   - Don't actually add the image in CSS, we will do that using inline CSS for now
-- Add a link to the admin backend to the NOFO
 
 ### Changed
 
@@ -25,6 +24,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - page-break-after
   - column-break-before
   - column-break-after
+- Change the header nav
+  - Add a link to the admin backend for the NOFO for superusers
+  - Remove the "Logout" link which nobody uses
 
 ### Fixed
 
