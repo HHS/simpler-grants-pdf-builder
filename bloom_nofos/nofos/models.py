@@ -205,7 +205,16 @@ class Nofo(models.Model):
     def __str__(self):
         return self.title
 
+    def get_admin_url(self):
+        """
+        Returns the admin URL for this NOFO.
+        """
+        return reverse("admin:nofos_nofo_change", args=(self.id,))
+
     def get_absolute_url(self):
+        """
+        Returns the main edit view for this NOFO.
+        """
         return reverse("nofos:nofo_edit", args=(self.id,))
 
     def get_first_subsection(self):
