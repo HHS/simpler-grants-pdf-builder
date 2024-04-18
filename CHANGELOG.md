@@ -15,6 +15,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added new button to open nofos in a new tab
   - We can print them using a little drop-down
   - TODO: disable buttons on localhost
+- Allow images as background of section pages
+  - Don't actually add the image in CSS, we will do that using inline CSS for now
 
 ### Changed
 

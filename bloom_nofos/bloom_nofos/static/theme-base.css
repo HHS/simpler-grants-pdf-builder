@@ -847,10 +847,29 @@ div[role="heading"] {
 /* Section title page */
 
 .section--title-page {
+  position: relative;
   color: var(--color--white);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  z-index: 1;
+}
+
+/* overlay for images. if there is no image, this has no effect */
+.section--step-3-prepare-your-application .section--title-page::before {
+  content: " ";
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  background-color: var(--color--vibrant-blue);
+  opacity: 0;
+  z-index: -1;
+}
+
+.section--title-page > * {
+  z-index: 10;
 }
 
 .section--title-page--name {
