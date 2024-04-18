@@ -38,6 +38,11 @@ Edit “{{ nofo|nofo_name }}”
 </div>
 
 <p>Make small edits to your NOFO here.</p>
+
+{% if user.is_superuser %}
+  <p>Or <a href="{{ nofo.get_admin_url }}" >edit this NOFO in the Admin backend</a>.</p>
+{% endif %}
+
 {% if nofo.status == 'published' %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
