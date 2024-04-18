@@ -7,7 +7,13 @@
 {% block content %}
   {% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
 
+  <div class="subsection_edit--header">
   {% include "includes/page_heading.html" with title="Your account" only %}
+
+    <div class="subsection_edit--header--view font-sans-md">
+      <a href="{% url 'users:logout' %}">Logout</a>
+    </div>
+  </div>
 
   <table class="usa-table usa-table--borderless width-full">
     <caption>

@@ -26,19 +26,19 @@
       </div>
       <nav aria-label="Primary navigation" class="usa-nav">
         <ul class="usa-nav__primary usa-accordion">
+          {% if user.is_superuser and nofo %}
+            <li class="usa-nav__primary-item">
+              <a href="{{ nofo.get_admin_url }}">Edit NOFO in Admin</a>
+            </li>
+          {% endif %}
           {% if user.is_authenticated %}
             <li class="usa-nav__primary-item">
               <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
             </li>
           {% endif %}
-          {% if user.is_authenticated %}
-            <li class="usa-nav__primary-item">
-              <a href="{% url 'users:user_view' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'user_view' %}aria-current="page"{% endif %}><span class="usa-sr-only">Your account</span><span aria-hidden="true">{{ user.email }}</span></a>
-            </li>
-          {% endif %}
           <li class="usa-nav__primary-item">
             {% if user.is_authenticated %}
-              <a href="{% url 'users:logout' %}" class="usa-nav-link">Logout</a>
+              <a href="{% url 'users:user_view' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'user_view' %}aria-current="page"{% endif %}><span class="usa-sr-only">Your account</span><span aria-hidden="true">{{ user.email }}</span></a>
             {% else %}
               <a href="{% url 'users:login' %}" class="usa-nav-link">Login</a>
             {% endif %}
