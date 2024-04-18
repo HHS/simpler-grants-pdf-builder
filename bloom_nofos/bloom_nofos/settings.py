@@ -330,6 +330,7 @@ ALLOWED_HTML_TAGS = [
     "command",
     "dd",
     "del",
+    "div",
     "dl",
     "dt",
     "em",
