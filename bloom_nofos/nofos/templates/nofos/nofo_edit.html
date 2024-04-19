@@ -31,9 +31,7 @@ Edit “{{ nofo|nofo_name }}”
   <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
-    <a href="{% url 'nofos:nofo_view' nofo.id %}">View this NOFO</a>
-
-    {% include "includes/print-button.html" %}
+    {% include "includes/print_button.html" %}
   </div>
 </div>
 

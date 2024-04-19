@@ -12,8 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Cover image for CDC-RFA-DP-24-0025
 - Add thin icons now that somebody has asked for them
   - Only visible for NOFOs using the ACF theme
-- Added new button to open nofos in a new tab
-  - We can print them using a little drop-down
+- Added new button group for "View PDF | View HTML | Download PDF"
   - TODO: disable buttons on localhost
 - Allow images as background of section pages
   - Don't actually add the image in CSS, we will do that using inline CSS for now
