@@ -85,7 +85,7 @@
       </div>
       <div class="nofo--cover-page--header--intro">
         <span>Notice of Funding Opportunity</span>
-        <br >
+        <br>
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
     </div>
@@ -100,7 +100,7 @@
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
-        {% include "includes/logos/hhs-logo.svg" %}
+        {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-1" %}
       </div>
     </div>
     <div class="nofo--cover-page--footer">
@@ -111,7 +111,7 @@
           <div>
             <p><strong>MODIFIED on March 8, 2024:</strong></p>
             <p>Updated the list of <a href="#100--step-3-write-your-application--other-required-forms">Other required forms</a> to include 3 additional required forms.</p>
-            <br />
+            <br>
             <p><strong>MODIFIED on April 1, 2024:</strong></p>
             <p>Updated the <a href="#85--step-3-write-your-application--budget-budget-narrative">Budget & budget narrative section</a> to include budget requirements.</p>
           </div>
@@ -119,7 +119,7 @@
       </div>
 
       <div class="nofo--cover-page--footer--logo">
-        {% include "includes/logos/hhs-logo.svg" %}
+        {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-2" %}
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span>Notice of Funding Opportunity</span>
@@ -248,7 +248,7 @@
               {% with section.name|nofo_section_name_separator as section_name %}
                 {% if section_name.number %}
                   <span>Step {{ section_name.number }}:</span>
-                  <br >
+                  <br>
                 {% endif %}
                 <span>{{ section_name.name }}</span>
               {% endwith %}

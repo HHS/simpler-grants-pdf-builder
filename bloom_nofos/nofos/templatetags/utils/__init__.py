@@ -123,7 +123,7 @@ def add_class_to_table_rows(table_row):
 
 def convert_paragraph_to_searchable_hr(p):
     def _create_hr_and_span(hr_class, span_text):
-        hr_html = '<hr class="{} page-break--hr"/>'.format(hr_class)
+        hr_html = '<hr class="{} page-break--hr">'.format(hr_class)
         span_html = '<span class="page-break--hr--text">{}</span>'.format(span_text)
         return BeautifulSoup(hr_html, "html.parser"), BeautifulSoup(
             span_html, "html.parser"
