@@ -9,13 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add "superuser status" to the users add + edit page
-- Cover image for CDC-RFA-DP-24-0025
 - Add thin icons now that somebody has asked for them
   - Only visible for NOFOs using the ACF theme
 - Added new button group for "View PDF | View HTML | Download PDF"
 - Allow images as background of section pages
   - Don't actually add the image in CSS, we will do that using inline CSS for now
 - Wrap all text that says "de minimis" with `<em>` tags
+- Cover image for CDC-RFA-DP-24-0025
+- Add section page background images for 0025
 
 ### Changed
 
