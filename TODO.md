@@ -13,11 +13,13 @@
 - Add designer and reviewer on the same page
 - New logo CDC
 - Automated tests on push
-- HTML validator
 - EM around de minimus
+- No printing locally (disable buttons)
 
 # DONE
 
+- HTML validator fixes
+- Fix for multiple links in a row
 - Add the icon style to the admin panel
 - Add IDs to the admin panel
 - Add a textarea to add CSS to an individual NOFO

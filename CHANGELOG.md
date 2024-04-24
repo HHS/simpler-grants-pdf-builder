@@ -33,6 +33,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Application checklist borders weren't computing properly for ballot boxes, hmmm
 - Unwrap "empty" spans instead of decomposing them
   - Spaces were getting missed sometimes, now they aren't
+- "combine multiple links" function now joins 3 or more links in a row if needed
+  - previously, it would only join 2 at a time
 
 ## [1.18.0] - 2023-04-08
 
