@@ -675,9 +675,7 @@ def combine_consecutive_links(soup):
         if len(span.contents) == 1 and span.a:
             span.unwrap()
 
-    # Now, merge consecutive <a> tags with the same href
-    links = soup.find_all("a")
-    for link in links:
+    def _append_next_sibling(link):
         next_sibling = link.next_sibling
 
         # Determine if there's whitespace between this and the next <a> tag
@@ -697,6 +695,16 @@ def combine_consecutive_links(soup):
             link.string = link.get_text() + separator + next_sibling.get_text()
             # Remove the next link
             next_sibling.extract()
+            return True
+
+        return False
+
+    # Now, merge consecutive <a> tags with the same href
+    # Keep looping on the link so that multiple consecutive links will all be joined together
+    links = soup.find_all("a")
+    for link in links:
+        while _append_next_sibling(link):
+            pass
 
     # Remove spaces between the end a link and punctuation
     punctuation = {".", ",", ";", "!", "?"}
