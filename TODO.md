@@ -13,11 +13,11 @@
 - Add designer and reviewer on the same page
 - New logo CDC
 - Automated tests on push
-- EM around de minimus
 - No printing locally (disable buttons)
 
 # DONE
 
+- `<em>` around "de minimis"
 - HTML validator fixes
 - Fix for multiple links in a row
 - Add the icon style to the admin panel
