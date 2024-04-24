@@ -38,6 +38,7 @@ from .forms import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
+    add_em_to_de_minimis,
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
@@ -202,6 +203,7 @@ def nofo_import(request, pk=None):
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup)
+        add_em_to_de_minimis(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)

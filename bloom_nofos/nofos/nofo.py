@@ -956,6 +956,19 @@ def add_strongs_to_soup(soup):
                 element.wrap(soup.new_tag("strong"))
 
 
+def add_em_to_de_minimis(soup):
+    """
+    This function mutates the soup!
+
+    Transforms all <span> elements containing the exact text 'de minimis' (case insensitive)
+    into <em> elements within the provided BeautifulSoup object.
+    """
+
+    spans = soup.findAll("span", text=re.compile("^de minimis$", re.I))
+    for span in spans:
+        span.name = "em"
+
+
 def clean_heading_tags(soup):
     """
     This function mutates the soup!
