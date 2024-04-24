@@ -9,13 +9,19 @@
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
 - Update the README
-- Add a textarea to add CSS to an individual NOFO
 - Add UI to reorder the NOFOs table
-- Add IDs to the admin panel
-- Add the icon style to the admin panel
+- Add designer and reviewer on the same page
+- New logo CDC
+- Automated tests on push
+- HTML validator
+- EM around de minimus
 
 # DONE
 
+- Add the icon style to the admin panel
+- Add IDs to the admin panel
+- Add a textarea to add CSS to an individual NOFO
+- Fix the NBSP thing
 - Covert logos to svgs
   - ACF
   - ACL

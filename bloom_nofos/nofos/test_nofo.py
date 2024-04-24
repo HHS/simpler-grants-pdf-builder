@@ -44,6 +44,7 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    unwrap_empty_elements
 )
 from .utils import clean_string, match_view_url
 
@@ -1591,18 +1592,6 @@ class TestDecomposeEmptyTags(TestCase):
         # empty anchor tag is kept
         self.assertEqual(len(soup.find_all("p")), 0)
 
-    def test_keep_remove_nested_span_tags_if_parent_tag_is_not_empty(self):
-        html = (
-            "<body><div><span></span><p>Hello</p></div><div><p>Hello</p></div></body>"
-        )
-        soup = BeautifulSoup(html, "html.parser")
-        decompose_empty_tags(soup)
-        # first div is kept because span in first div is not empty
-        self.assertEqual(len(soup.find_all("div")), 2)
-        self.assertEqual(len(soup.find_all("p")), 2)
-        # empty anchor tag is kept
-        self.assertEqual(len(soup.find_all("span")), 0)
-
     def test_remove_empty_list_items(self):
         html = "<body><div><p>Hello</p><ul><li></li><li>Item</li></ul></div></body>"
         soup = BeautifulSoup(html, "html.parser")
@@ -1615,6 +1604,43 @@ class TestDecomposeEmptyTags(TestCase):
         decompose_empty_tags(soup)
         self.assertEqual(soup.body.contents, [" "])  # Body should be empty
 
+
+class UnwrapEmptyElementsTests(TestCase):
+    def test_unwrap_empty_span(self):
+        html = '<div><span> </span>text</div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div> text</div>')
+
+    def test_unwrap_empty_strong(self):
+        html = '<div><strong> </strong>text</div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div> text</div>')
+
+    def test_not_unwrap_non_empty_span(self):
+        html = '<div><span>Not empty</span></div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div><span>Not empty</span></div>')
+
+    def test_not_unwrap_non_empty_strong(self):
+        html = '<div><strong>Not empty</strong></div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div><strong>Not empty</strong></div>')
+
+    def test_unwrap_nested_empty_elements(self):
+        html = '<div><span><strong> </strong></span></div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div> </div>')
+
+    def test_mixed_empty_and_non_empty_elements(self):
+        html = '<div><span> </span><strong>Text</strong><span>More text</span><strong> </strong></div>'
+        soup = BeautifulSoup(html, 'html.parser')
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), '<div> <strong>Text</strong><span>More text</span> </div>')
 
 class TestRemoveGoogleTrackingInfoFromLinks(TestCase):
     def test_remove_tracking_from_google_links(self):

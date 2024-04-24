@@ -724,7 +724,7 @@ def decompose_empty_tags(soup):
 
     Removes empty HTML tags from the BeautifulSoup `soup`.
 
-    Iterates over all body descendants and `li` tags, removing any that have no textual content.
+    Iterates over all body descendants, `p`, and `li` tags, removing any that have no textual content.
     Intended to clean up HTML extracted from PDFs or other sources that may contain many meaningless tags.
 
     It will, however, keep in place: brs, hrs, and tags that contain imgs.
@@ -741,10 +741,27 @@ def decompose_empty_tags(soup):
         if not element.get_text().strip():
             element.decompose()
 
-    # remove all list items, paragraphs, and spans that are empty
-    elements = soup.find_all(["li", "p", "span"])
+    # remove all list items and paragraphs that are empty
+    elements = soup.find_all(["li", "p"])
     for element in elements:
         _decompose_empty_elements(element)
+
+
+def unwrap_empty_elements(soup):
+    """
+    This function mutates the soup!
+
+    Unwraps empty span and strong tags from the BeautifulSoup `soup`.
+    """
+    spans = soup.select("span")
+    for span in spans:
+        if not span.get_text().strip():
+            span.unwrap()
+
+    strongs = soup.select("strong")
+    for strong in strongs:
+        if not strong.get_text().strip():
+            strong.unwrap()
 
 
 def clean_table_cells(soup):

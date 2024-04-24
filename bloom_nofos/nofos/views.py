@@ -69,6 +69,7 @@ from .nofo import (
     suggest_nofo_tagline,
     suggest_nofo_theme,
     suggest_nofo_title,
+    unwrap_empty_elements,
 )
 
 
@@ -193,8 +194,9 @@ def nofo_import(request, pk=None):
         join_nested_lists(soup)
         add_strongs_to_soup(soup)
         clean_heading_tags(soup)
-        decompose_empty_tags(soup)
         clean_table_cells(soup)
+        unwrap_empty_elements(soup)
+        decompose_empty_tags(soup)
         combine_consecutive_links(soup)
         escape_asterisks_in_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
@@ -465,9 +467,11 @@ class PrintNofoAsPDFView(View):
             nofo.number or nofo.short_name or nofo.title
         ).lower()
 
-        mode = request.GET.get('mode', 'attachment')  # Default to inline if not specified
-        if mode not in ['attachment', 'inline']:
-            mode = 'attachment'
+        mode = request.GET.get(
+            "mode", "attachment"
+        )  # Default to inline if not specified
+        if mode not in ["attachment", "inline"]:
+            mode = "attachment"
 
         doc_api = docraptor.DocApi()
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY

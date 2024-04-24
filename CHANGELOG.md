@@ -31,6 +31,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Menu doesn't disappear until ~680px now, not 1024px like before
 - Application checklist borders weren't computing properly for ballot boxes, hmmm
+- Unwrap "empty" spans instead of decomposing them
+  - Spaces were getting missed sometimes, now they aren't
 
 ## [1.18.0] - 2023-04-08
 
