@@ -856,7 +856,13 @@ div[role="heading"] {
 }
 
 /* overlay for images. if there is no image, this has no effect */
-.section--step-3-prepare-your-application .section--title-page::before {
+section.section .section--title-page {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+section.section .section--title-page::before {
   content: " ";
   position: absolute;
   top: 0px;
