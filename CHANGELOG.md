@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.19.0] - 2023-04-25
+
+### Added
+
 - Add "superuser status" to the users add + edit page
 - Add thin icons now that somebody has asked for them
   - Only visible for NOFOs using the ACF theme
@@ -18,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Cover image for CDC-RFA-DP-24-0025
 - Add section page background images for 0025
   - Add black and white images to test
+- Add new CDC logo
 
 ### Changed
 

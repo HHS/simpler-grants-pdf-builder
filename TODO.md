@@ -11,12 +11,12 @@
 - Update the README
 - Add UI to reorder the NOFOs table
 - Add designer and reviewer on the same page
-- New logo CDC
 - Automated tests on push
 - No printing locally (disable buttons)
 
 # DONE
 
+- New logo CDC
 - `<em>` around "de minimis"
 - HTML validator fixes
 - Fix for multiple links in a row
