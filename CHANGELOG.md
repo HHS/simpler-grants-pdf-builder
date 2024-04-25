@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Wrap all text that says "de minimis" with `<em>` tags
 - Cover image for CDC-RFA-DP-24-0025
 - Add section page background images for 0025
+  - Add black and white images to test
 
 ### Changed
 
