@@ -33,12 +33,11 @@ def create_nofo_form_class(field_arr, not_required_field_labels=None):
 NofoNameForm = create_nofo_form_class(
     ["title", "short_name"], not_required_field_labels=["Short name"]
 )
+NofoCoachDesignerForm = create_nofo_form_class(["coach", "designer"])
 
 NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
-NofoCoachForm = create_nofo_form_class(["coach"])
 NofoCoverForm = create_nofo_form_class(["cover"])
-NofoDesignerForm = create_nofo_form_class(["designer"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoStatusForm = create_nofo_form_class(["status"])

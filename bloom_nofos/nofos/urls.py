@@ -21,12 +21,7 @@ urlpatterns = [
     path("<int:pk>", views.NofosDetailView.as_view(), name="nofo_view"),
     path("<int:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
     path(
-        "<int:pk>/edit/coach", views.NofoEditCoachView.as_view(), name="nofo_edit_coach"
-    ),
-    path(
-        "<int:pk>/edit/designer",
-        views.NofoEditDesignerView.as_view(),
-        name="nofo_edit_designer",
+        "<int:pk>/edit/coach-designer", views.NofoEditCoachDesignerView.as_view(), name="nofo_edit_coach_designer"
     ),
     path(
         "<int:pk>/edit/title", views.NofoEditTitleView.as_view(), name="nofo_edit_title"

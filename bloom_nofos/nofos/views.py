@@ -21,9 +21,8 @@ from .forms import (
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
-    NofoCoachForm,
+    NofoCoachDesignerForm,
     NofoCoverForm,
-    NofoDesignerForm,
     NofoIconStyleForm,
     NofoMetadataForm,
     NofoNameForm,
@@ -321,14 +320,9 @@ class NofoEditTitleView(BaseNofoEditView):
     template_name = "nofos/nofo_edit_title.html"
 
 
-class NofoEditCoachView(BaseNofoEditView):
-    form_class = NofoCoachForm
-    template_name = "nofos/nofo_edit_coach.html"
-
-
-class NofoEditDesignerView(BaseNofoEditView):
-    form_class = NofoDesignerForm
-    template_name = "nofos/nofo_edit_designer.html"
+class NofoEditCoachDesignerView(BaseNofoEditView):
+    form_class = NofoCoachDesignerForm
+    template_name = "nofos/nofo_edit_coach_designer.html"
 
 
 class NofoEditNumberView(BaseNofoEditView):

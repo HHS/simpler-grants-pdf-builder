@@ -288,14 +288,13 @@ Edit “{{ nofo|nofo_name }}”
     <tr>
       <th scope="row">Coach name</th>
       <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_coach' nofo.id %}">Edit<span class="usa-sr-only"> assigned coach</span></a>
+      <td><a href="{% url 'nofos:nofo_edit_coach_designer' nofo.id %}">Edit<span class="usa-sr-only"> coach</span></a>
       </td>
     </tr>
     <tr>
       <th scope="row">Designer name</th>
       <td>{{ nofo.get_designer_display|get_value_or_none:"designer" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_designer' nofo.id %}">Edit<span class="usa-sr-only"> assigned
-            designer</span></a>
+      <td><a href="{% url 'nofos:nofo_edit_coach_designer' nofo.id %}">Edit<span class="usa-sr-only"> designer</span></a>
       </td>
     </tr>
   </tbody>
