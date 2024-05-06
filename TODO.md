@@ -10,12 +10,13 @@
 - Refac: short section names for breadcrumbs means we can loop
 - Update the README
 - Add UI to reorder the NOFOs table
-- Add designer and reviewer on the same page
 - Automated tests on push
 - No printing locally (disable buttons)
 
 # DONE
 
+- Add H7 heading role map to the CSS theme
+- Add designer and reviewer on the same page
 - New logo CDC
 - `<em>` around "de minimis"
 - HTML validator fixes
