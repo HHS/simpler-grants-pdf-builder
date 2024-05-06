@@ -84,4 +84,8 @@
     margin-left: -1px;
     width: calc(100% + 2px);
   }
+
+  .usa-button-group--print-buttons button[disabled] {
+    text-decoration: line-through;
+  }
 }

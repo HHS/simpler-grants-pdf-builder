@@ -11,10 +11,10 @@
 - Update the README
 - Add UI to reorder the NOFOs table
 - Automated tests on push
-- No printing locally (disable buttons)
 
 # DONE
 
+- No printing locally (disable buttons)
 - Add H7 heading role map to the CSS theme
 - Add designer and reviewer on the same page
 - New logo CDC
