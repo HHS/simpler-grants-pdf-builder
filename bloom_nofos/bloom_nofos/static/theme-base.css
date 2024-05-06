@@ -1160,6 +1160,14 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     -prince-pdf-tag-type: Artifact;
   }
 
+  div[role="heading"] {
+    prince-pdf-tag-type: "H7";
+  }
+
+  @prince-pdf {
+    prince-pdf-role-map: "H7" P;
+  }
+
   /* Page break rules */
   .page-break-before,
   .page-break-before--heading {
