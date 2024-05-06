@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Consolidate the coach and designer onto the same page
+- Strikeout & disable print buttons on localhost
 
 ### Fixed
 

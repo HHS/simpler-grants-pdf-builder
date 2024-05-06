@@ -1,8 +1,8 @@
-<ul class="usa-button-group usa-button-group--segmented">
+<ul class="usa-button-group usa-button-group--segmented usa-button-group--print-buttons">
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=inline#zoom=100" target="_blank">
       {% csrf_token %}
-      <button type="submit" class="usa-button button-group--primary font-sans-xs" aria-label="View{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO (opens in a new tab)">
+      <button type="submit" class="usa-button button-group--primary font-sans-xs" aria-label="View{% if DOCRAPTOR_TEST_MODE %} test{% endif %} NOFO (opens in a new tab)" {% if 'localhost' in request.get_host %}disabled{% endif %}>
         View PDF
       </button>
     </form>
@@ -15,7 +15,7 @@
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment">
       {% csrf_token %}
-      <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal">
+      <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if 'localhost' in request.get_host %}disabled{% endif %}>
         Download<span class="hide-on-tablet"> PDF</span>
       </button>
     </form>
