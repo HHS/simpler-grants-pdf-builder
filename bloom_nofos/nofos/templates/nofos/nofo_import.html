@@ -10,7 +10,7 @@
 
   <form id="nofo-import--form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {% with id="nofo-import" label="Select NOFO file" hint="Please only submit HTML or Markdown files." value=title %}
+    {% with id="nofo-import" label="Select NOFO file" hint="Please only submit HTML or .docx files." value=title %}
       {% for message in messages %}
         {% if "error" in message.tags %}
           {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}

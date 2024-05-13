@@ -2,6 +2,8 @@ import io
 import os
 
 import docraptor
+import mammoth
+
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -178,13 +180,24 @@ def nofo_import(request, pk=None):
             messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
             return redirect(view_path, **kwargs)
 
-        if uploaded_file.content_type not in ["text/html"]:
+        file_content = ''
+
+        # html file
+        if uploaded_file.content_type == "text/html":
+            file_content = uploaded_file.read().decode("utf-8")  # Decode bytes to a string
+
+        # word document
+        # make sure the wanigns show up in plain text
+        elif uploaded_file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            file_content = mammoth.convert_to_html(uploaded_file).value
+
+        else:
+            print('uploaded_file.content_type', uploaded_file.content_type)
             messages.add_message(
                 request, messages.ERROR, "Yikes! Please import an HTML file"
             )
             return redirect(view_path, **kwargs)
 
-        file_content = uploaded_file.read().decode("utf-8")  # Decode bytes to a string
         cleaned_content = file_content.replace("\xa0", " ").replace(
             "&nbsp;", " "
         )  # Replace all non-breaking spaces with regular spaces on import
