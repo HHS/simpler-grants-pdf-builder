@@ -2,7 +2,7 @@
 
 /* CSS vars */
 :root {
-  --color--aspr-blue: #155191;
+  --color--aspr-blue: #155197;
   --color--aspr-navy: #062e61;
   --color--aspr-ice-blue: #dde8f4;
 }
@@ -18,7 +18,7 @@ html {
 }
 
 a {
-  color: var(--color--vibrant-blue);
+  color: var(--color--aspr-blue);
 }
 
 /* Headings */
@@ -37,13 +37,13 @@ h2 {
 h3 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  color: var(--color--dark-blue);
+  color: var(--color--aspr-navy);
 }
 
 h4 {
   font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
     Roboto, Arial, sans-serif;
-  color: var(--color--vibrant-blue);
+  color: var(--color--aspr-blue);
 }
 
 h5 {

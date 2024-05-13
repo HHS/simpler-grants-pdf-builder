@@ -13,7 +13,7 @@
 .nofo--cover-page--header--intro,
 .nofo--cover-page--title h1,
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--aspr-navy);
+  color: var(--color--aspr-blue);
 }
 
 /* Cover page: medium image */
@@ -50,12 +50,12 @@
 /* Table of contents */
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--aspr-blue);
+  color: var(--color--aspr-navy);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--white);
-  fill: var(--color--aspr-blue);
+  fill: var(--color--aspr-navy);
 }
 
 .nofo--icons--border
@@ -64,14 +64,14 @@
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--aspr-blue);
+  stroke: var(--color--aspr-navy);
 }
 
 /* Before you begin */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--aspr-blue);
+  fill: var(--color--aspr-navy);
 }
 
 .nofo--icons--border
@@ -79,11 +79,11 @@
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--aspr-blue);
+  stroke: var(--color--aspr-navy);
 }
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--aspr-blue);
+  color: var(--color--aspr-navy);
 }
 
 /* Section title page */
@@ -108,16 +108,16 @@
 }
 
 .nofo--icons--solid .section--title-page--icon svg {
-  color: var(--color--aspr-blue);
+  color: var(--color--aspr-navy);
 }
 
 .nofo--icons--border .section--title-page--icon svg {
   color: var(--color--white);
-  fill: var(--color--aspr-blue);
+  fill: var(--color--aspr-navy);
 }
 
 .nofo--icons--border .section--title-page--icon svg circle {
-  stroke: var(--color--aspr-blue);
+  stroke: var(--color--aspr-navy);
 }
 
 /* Section contents */
