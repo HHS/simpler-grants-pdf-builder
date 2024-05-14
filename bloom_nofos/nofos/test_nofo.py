@@ -2030,7 +2030,6 @@ class TestAddStrongsToSoup(TestCase):
 
 
 class TestAddEmToDeMinimis(TestCase):
-
     def test_transforms_de_minimis_spans_to_em(self):
         html = "<p>Some text <span>de minimis</span> rate and <span>De Minimis</span> threshold.</p>"
         expected_html = "<p>Some text <em>de minimis</em> rate and <em>De Minimis</em> threshold.</p>"
