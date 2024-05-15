@@ -402,16 +402,6 @@ six = ">=1.10"
 urllib3 = ">=1.25.3"
 
 [[package]]
-name = "environ"
-version = "1.0"
-description = "Stack Based Globals Management"
-optional = false
-python-versions = "*"
-files = [
-    {file = "environ-1.0.tar.gz", hash = "sha256:4df7f1dfeb7d1c988d2e19a8bd5d547a526e0400aeb35adf732032472f35dcb0"},
-]
-
-[[package]]
 name = "freezegun"
 version = "1.4.0"
 description = "Let your Python tests travel through time"
@@ -800,4 +790,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f3a42dc0ee4d438ea2290db92b5da6e75c3d073d05f1282a0e944d4adc6cad96"
+content-hash = "2152e7262de00e00221ad013713934373cdd9190587d49413f1d2659d9d3cdc5"
