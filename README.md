@@ -48,6 +48,17 @@ This project uses Python >=3.10.
 
 A docker container allows a developer to package up an application and all of its parts. This means we can build an app in any language, in any stack, and then run it anywhere — whether locally or on a server.
 
+## Create a .env file
+
+You will need a `.env` file to run this application.
+
+```bash
+# create .env file from example file
+cp ./bloom_nofos/bloom_nofos/.env.example ./bloom_nofos/bloom_nofos/.env
+```
+
+If you are running locally, the example file will work just fine.
+
 ## Build and run locally with poetry
 
 Just install the dependencies and boot it up. Pretty slick. 😎
@@ -57,6 +68,12 @@ Important: make sure to run poetry commands from the `./bloom_nofos` directory.
 ```bash
 # install dependencies
 poetry install
+
+# make sure you are in the "./bloom_nofos" directory
+cd ./bloom_nofos
+
+# run migrations (needed when first booting up the app)
+poetry run migrations
 
 # run application in 'dev' mode
 # (ie, the server restarts when you save a file)
@@ -90,15 +107,9 @@ I've made a couple of tweaks so that they work in this app.
 - Update icon paths from "../img/usa-icons" to "/static/img/usa-icons"
 - Update checkbox icon paths from "../img/correct8.svg" to "/static/img/correct8.svg"
 
-### Adjustments to HTML
-
-- "The Key Facts" changed to an h3 in the markup
-- Remove semicolons that come after links in paragraphs including multiple links (for more info: https://github.com/agusmakmun/django-markdown-editor/issues/229)
-- Add lists to table cells containing "↑" or "↓"
-
 ## Environment variables
 
-No environment variables are needed to run the application in dev mode, but to run in production, several are needed.
+No additional environment variables are needed to run the application in dev mode, but to run in production, several are needed.
 
 To deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.production`.
 
