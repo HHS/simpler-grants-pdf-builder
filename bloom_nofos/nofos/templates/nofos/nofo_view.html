@@ -71,9 +71,13 @@
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
-        {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
-          {% include opdiv_logo_path %}
-        {% endwith %}
+        {% if nofo_opdiv == 'aspr' %}
+          <img alt="Administration for Strategic Preparedness and Response logo" src="{% static "img/aspr-logo.png" %}">
+        {% else %}
+          {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
+            {% include opdiv_logo_path %}
+          {% endwith %}
+        {% endif %}
         <div class="nofo--cover-page--header--logo--subheading">
           {% if nofo.cover == 'nofo--cover-page--text' %}
             <p>{{ nofo.agency }}</p>
@@ -100,7 +104,11 @@
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
-        {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-1" %}
+        {% if nofo_opdiv == 'aspr' %}
+          <img alt="Department of Health & Human Services logo" src="{% static "img/hhs-logo.png" %}">
+        {% else %}
+          {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-1" %}
+        {% endif%}
       </div>
     </div>
     <div class="nofo--cover-page--footer">
@@ -119,7 +127,11 @@
       </div>
 
       <div class="nofo--cover-page--footer--logo">
-        {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-2" %}
+        {% if nofo_opdiv == 'aspr' %}
+          <img alt="Department of Health & Human Services logo" src="{% static "img/hhs-logo.png" %}">
+        {% else %}
+          {% include "includes/logos/hhs-logo.svg" with title_id="hhs-logo-title-2" %}
+        {% endif%}
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span>Notice of Funding Opportunity</span>

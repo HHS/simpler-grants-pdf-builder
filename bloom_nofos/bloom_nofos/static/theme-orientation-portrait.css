@@ -53,8 +53,8 @@
   float: right;
 }
 
-.nofo--cover-page--footer .nofo--cover-page--footer--logo svg {
-  width: 100px;
+.nofo--cover-page--footer .nofo--cover-page--footer--logo svg,
+.nofo--cover-page--footer .nofo--cover-page--footer--logo img {
   height: 120px;
 }
 
