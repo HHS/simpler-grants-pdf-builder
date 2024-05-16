@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add a Prince role mapping to the CSS theme
   - Basically, we are mapping `div[role="heading"]` to a paragraph tag
+- Add information on creating users to the README
 
 ### Changed
 
@@ -17,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Consolidate the coach and designer onto the same page
 - Strikeout & disable print buttons on localhost
 - Colour changes for the ASPR theme
+- Updated README with improved setup instructions
 
 ### Fixed
 
