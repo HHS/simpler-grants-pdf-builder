@@ -84,6 +84,19 @@ The app should be running at [http://localhost:8000/](http://localhost:8000/).
 
 On a Mac, press `Control` + `C` to quit the running application.
 
+### Adding users
+
+Currently, the NOFO Builder is an internal tool whose entire purpose is managing and printing NOFO documents, so the user features are pretty barebones. What this means is that we rely on the Django admin for user adminstration.
+
+During first-time setup, create a superuser account.
+
+```bash
+# create superuser account
+poetry run python manage.py createsuperuser
+```
+
+Superusers are the only accounts able to access the admin backend at [http://localhost:8000/admin](http://localhost:8000/admin). Once you are logged in, you can use the admin backend to create and manage accounts for new users.
+
 ### Running default django commands with poetry
 
 Django's default commands can be run by calling `python manage.py {command}`. In this repo, we are using poetry to run them.
