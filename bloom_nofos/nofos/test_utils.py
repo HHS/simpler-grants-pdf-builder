@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .utils import clean_string, create_subsection_html_id, get_icon_path_choices
+from .utils import clean_string, create_subsection_html_id, get_icon_path_choices, StyleMapManager
 
 
 class TestGetIconPathChoices(TestCase):
@@ -117,3 +117,50 @@ class TestCleanString(TestCase):
         """Test a string with complex whitespace scenarios."""
         result = clean_string("  Hello   there \t new world   \n")
         self.assertEqual(result, "Hello there new world")
+
+
+class StyleMapManagerTests(TestCase):
+    def test_add_style(self):
+        """ Test adding styles to the manager. """
+        style_map_manager = StyleMapManager()
+        style_map_manager.add_style(
+            style_rule="p[style-name='Emphasis A'] => strong",
+            location_in_nofo="Step 2 > Grants.gov > Need Help?",
+            note="Just bold the entire sentence",
+        )
+        style_map_manager.add_style(
+            style_rule="p[style-name='Table'] => p",
+            location_in_nofo="Step 3 > Other required forms > All table cells",
+        )
+
+        self.assertEqual(len(style_map_manager.styles), 2)
+        self.assertIn({
+            "style_rule": "p[style-name='Emphasis A'] => strong",
+            "location_in_nofo": "Step 2 > Grants.gov > Need Help?",
+            "note": "Just bold the entire sentence"
+        }, style_map_manager.styles)
+        self.assertIn({
+            "style_rule": "p[style-name='Table'] => p",
+            "location_in_nofo": "Step 3 > Other required forms > All table cells",
+            "note": None
+        }, style_map_manager.styles)
+
+    def test_get_style_map(self):
+        """ Test the output of get_style_map method. """
+        style_map_manager = StyleMapManager()
+        style_map_manager.add_style(
+            style_rule="p[style-name='Emphasis A'] => strong",
+            location_in_nofo="Step 2 > Grants.gov > Need Help?",
+            note="Just bold the entire sentence",
+        )
+        style_map_manager.add_style(
+            style_rule="p[style-name='Table'] => p",
+            location_in_nofo="Step 3 > Other required forms > All table cells",
+        )
+        expected_style_map = "p[style-name='Emphasis A'] => strong\np[style-name='Table'] => p"
+        self.assertEqual(style_map_manager.get_style_map(), expected_style_map)
+
+    def test_get_style_map_empty(self):
+        """ Test the output of get_style_map method when no styles have been added. """
+        manager = StyleMapManager()
+        self.assertEqual(manager.get_style_map(), "")

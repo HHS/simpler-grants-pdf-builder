@@ -41,6 +41,7 @@ DJVERSION_VERSION = "1.19.0"
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 if DEBUG:
     print("=====")
+    print("DEBUG: {}".format(DEBUG))
     print("Using env vars from: {}".format(env_file))
     print("=====")
 
