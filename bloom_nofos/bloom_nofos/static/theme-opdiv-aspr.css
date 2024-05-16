@@ -79,7 +79,8 @@ h6 {
   color: var(--color--white);
 }
 
-.nofo--cover-page--header--logo svg {
+.nofo--cover-page--header--logo svg,
+.nofo--cover-page--header--logo img {
   fill: var(--color--aspr-blue);
   margin-left: -6px;
 }
@@ -92,7 +93,8 @@ h6 {
   font-weight: 600;
 }
 
-.nofo--cover-page--text .nofo--cover-page--header--logo svg {
+.nofo--cover-page--text .nofo--cover-page--header--logo svg,
+.nofo--cover-page--text .nofo--cover-page--header--logo img {
   width: 160px;
 }
 
