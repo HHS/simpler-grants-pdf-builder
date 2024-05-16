@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	400 bruv, oops — Bad request
+	{% if status %}{{ status }}{% else %}400{% endif %} bruv, oops — Bad request
 {% endblock %}
 
 
 {% block content %}
-	<h1 class="font-heading-xl margin-y-0">400 bruv, oops</h1>
-  <p><strong>{{ error_message }}</strong></p>
+	<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} bruv, oops</h1>
+	{% if error_message %}
+		<p><strong>{{ error_message }}</strong></p>
+	{% elif error_message_html %}
+		{{ error_message_html | safe }}
+	{% else %}
+		<p><strong>{% if status %}{{ status }}{% else %}400{% endif %} error.</strong></p>
+	{% endif %}
   <p>If you don’t know what this means, let Paul know what happened and he will get to the bottom of it.</p>
 	<p>Maybe go back to:</p>
 	<ul class="usa-list">

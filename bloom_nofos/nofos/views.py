@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.db.models import F
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
@@ -73,6 +73,7 @@ from .nofo import (
     suggest_nofo_title,
     unwrap_empty_elements,
 )
+from .utils import style_map_manager
 
 
 class NofosListView(ListView):
@@ -180,19 +181,39 @@ def nofo_import(request, pk=None):
             messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
             return redirect(view_path, **kwargs)
 
-        file_content = ''
+        file_content = ""
 
         # html file
         if uploaded_file.content_type == "text/html":
-            file_content = uploaded_file.read().decode("utf-8")  # Decode bytes to a string
+            file_content = uploaded_file.read().decode(
+                "utf-8"
+            )  # Decode bytes to a string
 
-        # word document
-        # make sure the wanigns show up in plain text
-        elif uploaded_file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            file_content = mammoth.convert_to_html(uploaded_file).value
+        # Word document
+        elif (
+            uploaded_file.content_type
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ):
+            # TODO: refactor this
+            try:
+                result = mammoth.convert_to_html(
+                    uploaded_file, style_map=style_map_manager.get_style_map()
+                )
+            except Exception as e:
+                return HttpResponseBadRequest(
+                    "Error importing .docx file: {}".format(e)
+                )
+
+            # look for warning messages
+            warnings = [m.message for m in result.messages if m.type == "warning"]
+            if warnings:
+                warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
+                return render(request, '400.html', status=422, context={ "error_message_html": "<p>Warning: not implemented for .docx file:</p> {}".format(warnings_str), "status": 422 })
+
+            file_content = result.value
 
         else:
-            print('uploaded_file.content_type', uploaded_file.content_type)
+            print("uploaded_file.content_type", uploaded_file.content_type)
             messages.add_message(
                 request, messages.ERROR, "Yikes! Please import an HTML file"
             )
