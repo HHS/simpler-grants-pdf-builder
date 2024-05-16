@@ -1162,6 +1162,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
   div[role="heading"] {
     prince-pdf-tag-type: "H7";
+    -prince-bookmark-level: 7;
   }
 
   @prince-pdf {

@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add a Prince role mapping to the CSS theme
   - Basically, we are mapping `div[role="heading"]` to a paragraph tag
 - Add information on creating users to the README
+- Try adding a bookmark heading level 7
 
 ### Changed
 
