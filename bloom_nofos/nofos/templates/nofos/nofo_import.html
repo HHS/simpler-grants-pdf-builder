@@ -5,6 +5,22 @@
 {% endblock %}
 
 {% block content %}
+  {% if WORD_IMPORT_STRICT_MODE %}
+  <div class="usa-alert usa-alert--warning margin-bottom-3">
+    <div class="usa-alert__body">
+      <h4 class="usa-alert__heading">Warning</h4>
+      <p class="usa-alert__text">
+        “Strict mode” is active. In strict mode, .docx files with unhandled formatting will raise an exception.
+      </p>
+      {% if request.user.is_superuser %}
+        <p class="usa-alert__text">
+          <a href="/admin/constance/config/" target="_blank">Visit the admin backend to manage strict mode</a>.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   {% url 'nofos:nofo_index' as back_href %}
   {% include "includes/page_heading.html" with title="Import a new NOFO" back_text="All NOFOs" back_href=back_href only %}
 
