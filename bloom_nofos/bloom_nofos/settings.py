@@ -421,6 +421,11 @@ CONSTANCE_CONFIG = {
         "Whether to print PDFs with watermarks. If True, documents will be watermarked.",
         bool,
     ),
+    "WORD_IMPORT_STRICT_MODE": (
+        False,
+        "In strict mode, unhandled formatting in a .docx file throws an exception and prints the failure message to the screen.",
+        bool,
+    ),
 }
 
 # Django codemirror

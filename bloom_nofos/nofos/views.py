@@ -3,7 +3,6 @@ import os
 
 import docraptor
 import mammoth
-
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -196,7 +195,7 @@ def nofo_import(request, pk=None):
         ):
             # TODO: refactor this
             try:
-                result = mammoth.convert_to_html(
+                doc_to_html_result = mammoth.convert_to_html(
                     uploaded_file, style_map=style_map_manager.get_style_map()
                 )
             except Exception as e:
@@ -204,13 +203,26 @@ def nofo_import(request, pk=None):
                     "Error importing .docx file: {}".format(e)
                 )
 
-            # look for warning messages
-            warnings = [m.message for m in result.messages if m.type == "warning"]
-            if warnings:
-                warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
-                return render(request, '400.html', status=422, context={ "error_message_html": "<p>Warning: not implemented for .docx file:</p> {}".format(warnings_str), "status": 422 })
-
-            file_content = result.value
+            if config.WORD_IMPORT_STRICT_MODE:
+                # if strict mode, throw an error if there are warning messages
+                warnings = [m.message for m in doc_to_html_result.messages if m.type == "warning"]
+                if warnings:
+                    warnings_str = "<ul><li>{}</li></ul>".format(
+                        "</li><li>".join(warnings)
+                    )
+                    return render(
+                        request,
+                        "400.html",
+                        status=422,
+                        context={
+                            "error_message_html": "<p>Warning: not implemented for .docx file:</p> {}".format(
+                                warnings_str
+                            ),
+                            "status": 422,
+                        },
+                    )
+            
+            file_content = doc_to_html_result.value
 
         else:
             print("uploaded_file.content_type", uploaded_file.content_type)
@@ -307,7 +319,11 @@ def nofo_import(request, pk=None):
             {"nofo": nofo},
         )
     else:
-        return render(request, "nofos/nofo_import.html")
+        return render(
+            request,
+            "nofos/nofo_import.html",
+            {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE},
+        )
 
 
 class BaseNofoEditView(UpdateView):
