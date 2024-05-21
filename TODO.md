@@ -8,12 +8,20 @@
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- Update the README
 - Add UI to reorder the NOFOs table
 - Automated tests on push
+- .docx imports
+  - Productionize it
+  - Fix for internal links
+  - Fix for the application checklist
+  - Fix for callout boxes
+  - Investigate footnotes and endnotes
+  - Investigate images
 
 # DONE
 
+- [Beta] .docx imports
+- Update the README
 - No printing locally (disable buttons)
 - Add H7 heading role map to the CSS theme
 - Add designer and reviewer on the same page
