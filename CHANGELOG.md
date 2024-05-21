@@ -8,6 +8,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+- More style maps added based on an early version of HHS-2026-ACL-AOD-DDUC
+
+### Fixed
+
+## [1.20.0] - 2023-05-20
+
+### Added
+
+- Allow .docx imports
+  - Using a library called mammoth to covert .docx files to HTML
+  - Created a new constance-configurable variable called "strict mode" for .docx imports
+  - Added a list of known styles for the mammoth style map
 - Add a Prince role mapping to the CSS theme
   - Basically, we are mapping `div[role="heading"]` to a paragraph tag
 - Add information on creating users to the README
