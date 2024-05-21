@@ -75,11 +75,40 @@ class StyleMapManager:
 
 # Pre-instantiate StyleMapManager and add styles
 style_map_manager = StyleMapManager()
+
+# run styles
 style_map_manager.add_style(
-    style_rule="p[style-name='Emphasis A'] => strong",
-    location_in_nofo="Step 2 > Grants.gov > Need Help?",
-    note="Just bold the entire sentence",
+    style_rule="r[style-name='normaltextrun'] => span",
+    location_in_nofo="Step 2 > Grants.gov > You can see && Step 3 > Third party agreements",
+    note="Don't do anything: body text + a header",
 )
+style_map_manager.add_style(
+    style_rule="r[style-name='criteria-linked-element_data-mode=export_criteria-score'] => span.linked-element",
+    location_in_nofo="Step 4 > Maximum points > 20",
+    note="Don't do anything: body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Intense Reference'] => span.intense-reference",
+    location_in_nofo="Step 3 > Required format",
+    note="Don't do anything: it's formatted as a header already, go with that.",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Subtle Emphasis'] => strong.subtle-emphasis",
+    location_in_nofo="Step 3 > Required format > Fonts/Spacing",
+    note="Bold is safe, but they might possibly be headings.",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Heading 3 Char'] => h4:fresh",
+    location_in_nofo="Step 1 > Program description > Four core functions",
+    note="This signifies an h3, which we demote to h4",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Heading 5 Char'] => h6:fresh",
+    location_in_nofo="Step 1 > Cost-sharing commitments > Reduced Match",
+    note="This signifies an h5, which we demote to h6",
+)
+
+# paragraph styles
 style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",
@@ -91,17 +120,33 @@ style_map_manager.add_style(
     note="Don't do anything: not sure why this is formatted differently, but it's just body text.",
 )
 style_map_manager.add_style(
-    style_rule="r[style-name='normaltextrun'] => span",
-    location_in_nofo="Step 2 > Grants.gov > You can see && Step 3 > Third party agreements",
-    note="Don't do anything: body text + a header",
+    style_rule="p[style-name='div'] => p",
+    location_in_nofo="Step 1 > Key facts > Name and number",
+    note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
-    style_rule="r[style-name='Subtle Emphasis'] => strong.subtle-emphasis",
-    location_in_nofo="Step 3 > Required format > Fonts/Spacing",
-    note="Bold is safe, but they might possibly be headings.",
+    style_rule="p[style-name='Main Heading'] => p",
+    location_in_nofo="Step 1 > Key facts > number",
+    note="Don't do anything: regular body text (may not be true for all, but let's assume).",
 )
 style_map_manager.add_style(
-    style_rule="r[style-name='Intense Reference'] => span.intense-reference",
-    location_in_nofo="Step 3 > Required format",
-    note="Don't do anything: it's formatted as a header already, go with that.",
+    style_rule="p[style-name='Normal_0'] => p",
+    location_in_nofo="Step 3 > Budget justification narrative > Applicants are encouraged...",
+    note="Don't do anything: regular body text (may not be true for all, but let's assume).",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Emphasis A'] => strong.emphasis",
+    location_in_nofo="Step 2 > Grants.gov > Need Help?",
+    note="Just bold the entire sentence",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Subhead2'] => strong.subhead",
+    location_in_nofo="Step 1 > Eligility > Who can apply",
+    note="Bold seems like the main thing we do here.",
+)
+
+style_map_manager.add_style(
+    style_rule="p[style-name='Subhead2'] => strong.subhead",
+    location_in_nofo="Step 1 > Eligility > Who can apply",
+    note="Bold seems like the main thing we do here.",
 )
