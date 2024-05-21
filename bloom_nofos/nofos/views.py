@@ -205,7 +205,11 @@ def nofo_import(request, pk=None):
 
             if config.WORD_IMPORT_STRICT_MODE:
                 # if strict mode, throw an error if there are warning messages
-                warnings = [m.message for m in doc_to_html_result.messages if m.type == "warning"]
+                warnings = [
+                    m.message
+                    for m in doc_to_html_result.messages
+                    if m.type == "warning"
+                ]
                 if warnings:
                     warnings_str = "<ul><li>{}</li></ul>".format(
                         "</li><li>".join(warnings)
@@ -221,7 +225,7 @@ def nofo_import(request, pk=None):
                             "status": 422,
                         },
                     )
-            
+
             file_content = doc_to_html_result.value
 
         else:
