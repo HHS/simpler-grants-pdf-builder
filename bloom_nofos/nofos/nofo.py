@@ -559,10 +559,11 @@ def join_nested_lists(soup):
         return
 
     for lst in soup.find_all(["ul", "ol"]):
-        # check previous sibling
-        previous_element = _get_previous_element(lst)
-        if previous_element and previous_element.name in ["ul", "ol"]:
-            _join_lists(lst, previous_element)
+        if lst.get("class"):
+            # check previous sibling
+            previous_element = _get_previous_element(lst)
+            if previous_element and previous_element.name in ["ul", "ol"]:
+                _join_lists(lst, previous_element)
 
     return soup
 
