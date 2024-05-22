@@ -144,7 +144,6 @@ style_map_manager.add_style(
     location_in_nofo="Step 1 > Eligility > Who can apply",
     note="Bold seems like the main thing we do here.",
 )
-
 style_map_manager.add_style(
     style_rule="p[style-name='Subhead2'] => strong.subhead",
     location_in_nofo="Step 1 > Eligility > Who can apply",

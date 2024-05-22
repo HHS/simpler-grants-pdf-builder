@@ -208,7 +208,7 @@ def nofo_import(request, pk=None):
                 warnings = [
                     m.message
                     for m in doc_to_html_result.messages
-                    if m.type == "warning"
+                    if m.type == "warning" and "FootnoteReference" not in m.message
                 ]
                 if warnings:
                     warnings_str = "<ul><li>{}</li></ul>".format(
