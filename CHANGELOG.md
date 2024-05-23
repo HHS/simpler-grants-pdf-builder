@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - If consecutive lists don't have classnames, do not join them.
+- Add a fix for callout boxes imported from .docx files
 
 ## [1.20.0] - 2023-05-20
 

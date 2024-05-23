@@ -5,12 +5,13 @@ register = template.Library()
 
 @register.filter()
 def is_floating_callout_box(subsection):
-    # this is not a good idea long-term but it works for now
+    # this is not the best idea long-term but it works for now
     floating_subsection_strings = [
         "Key facts",
         "Key dates",
         "Questions?",
         "Have questions?",
+        "**Have questions?",
     ]
 
     if subsection.name:

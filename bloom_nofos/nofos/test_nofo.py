@@ -29,6 +29,7 @@ from .nofo import (
     find_external_links,
     get_sections_from_soup,
     get_subsections_from_sections,
+    is_callout_box_table,
     join_nested_lists,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
@@ -280,6 +281,50 @@ class HTMLSectionTests(TestCase):
             sections = get_sections_from_soup(soup)
             self.assertEqual(sections[0].get("name"), no_section_page_title)
             self.assertEqual(sections[0].get("has_section_page"), False)
+
+
+class CalloutBoxTableTests(TestCase):
+    def test_single_th(self):
+        html = "<table><tr><th>Header</th></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertTrue(is_callout_box_table(table))
+
+    def test_single_td(self):
+        html = "<table><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertTrue(is_callout_box_table(table))
+
+    def test_multiple_ths(self):
+        html = "<table><tr><th>Header 1</th><th>Header 2</th></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table(table))
+
+    def test_multiple_tds(self):
+        html = "<table><tr><td>Data 1</td><td>Data 2</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table(table))
+
+    def test_mixed_th_td(self):
+        html = "<table><tr><th>Header</th><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table(table))
+
+    def test_multiple_rows(self):
+        html = "<table><tr><th>Header</th></tr><tr><td>Data</td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table(table))
+
+    def test_empty_table(self):
+        html = "<table></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table(table))
 
 
 class HTMLSubsectionTests(TestCase):
