@@ -222,6 +222,38 @@ def get_sections_from_soup(soup):
     return sections
 
 
+def is_callout_box_table(table):
+    """
+    Determines if a given HTML table element represents a callout box.
+    This function checks the following conditions:
+    - The table contains exactly one row.
+    - The row contains exactly one cell, which must be either all 'th' or all 'td' but not a mix.
+    - There is either one 'th' or one 'td' in the entire table.
+
+    NOTE: after this goes through the markdown parser, it has 2 rows, but for now it is just 1
+
+    Returns:
+    - bool: True if the table matches the criteria for a callout box table, False otherwise.
+    """
+
+    rows = table.find_all("tr")
+
+    if not rows:
+        return False
+
+    cols = rows[0].find_all("th") + rows[0].find_all("td")
+    ths = table.find_all("th")
+    tds = table.find_all("td")
+
+    return (
+        len(cols) == 1  # 1 column
+        and len(rows) == 1  # 1 row
+        and (
+            (len(tds) == 1 and not len(ths)) or (len(ths) == 1 and not len(tds))
+        )  # 1 th OR 1 td, not both
+    )
+
+
 def get_subsections_from_sections(sections):
     # h1s are gone since get_sections_from_soup
     heading_tags = ["h2", "h3", "h4", "h5", "h6"]
@@ -230,18 +262,6 @@ def get_subsections_from_sections(sections):
         newTags = {"h2": "h3", "h3": "h4", "h4": "h5", "h5": "h6", "h6": "h7"}
 
         return newTags[tag.name]
-
-    def is_callout_box_table(table):
-        # NOTE: after this goes through the markdown parser, it has 2 rows, but for now it is just 1
-        rows = table.find_all("tr")
-        cols = rows[0].find_all("th") + rows[0].find_all("td")
-        tds = table.find_all("td")
-
-        return (
-            len(cols) == 1  # 1 column
-            and len(rows) == 1  # 1 row
-            and len(tds) == 1  # 1 cell
-        )
 
     def extract_first_header(td):
         for tag_name in heading_tags:
@@ -285,15 +305,18 @@ def get_subsections_from_sections(sections):
 
         for tag in body_descendents:
             if tag.name == "table" and is_callout_box_table(tag):
-                # pass in the first heading we find in the 1 table cell, else False
-                td = tag.find("td")
+                # Grab the first td or th
+                cell = tag.find("td")
+                if not cell:
+                    cell = tag.find("th")
+
                 # make the td a div so that it can live on its own
-                td.name = "div"
+                cell.name = "div"
                 callout_box_subsection = get_subsection_dict(
-                    heading_tag=extract_first_header(td),
+                    heading_tag=extract_first_header(cell),
                     order=len(section["subsections"]) + 1,
                     is_callout_box=True,
-                    body=td,
+                    body=cell,
                 )
                 section["subsections"].append(callout_box_subsection)
 
