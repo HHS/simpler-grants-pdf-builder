@@ -100,6 +100,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
+    change_form_template = "admin/nofo_change_form.html"
     form = NofoModelForm
     inlines = [SectionLinkInline]
     list_display = ["title", "id", "number", "status", "designer", "created", "updated"]

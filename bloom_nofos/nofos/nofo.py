@@ -380,7 +380,7 @@ def _update_link_statuses(all_links):
                 print(f"Error checking link {link['url']}: {e}")
 
 
-def find_external_links(nofo, with_status):
+def find_external_links(nofo, with_status=False):
     all_links = []
 
     sections = nofo.sections.all().order_by("order")
@@ -397,17 +397,18 @@ def find_external_links(nofo, with_status):
                 link_text = link.get("href", "#")
 
                 if link_text.startswith("http"):
-                    all_links.append(
-                        {
-                            "url": link_text,
-                            "domain": urlparse(link_text).hostname,
-                            "section": section,
-                            "subsection": subsection,
-                            "status": "",
-                            "error": "",
-                            "redirect_url": "",
-                        }
-                    )
+                    if not "nofo.rodeo" in link_text:
+                        all_links.append(
+                            {
+                                "url": link_text,
+                                "domain": urlparse(link_text).hostname,
+                                "section": section,
+                                "subsection": subsection,
+                                "status": "",
+                                "error": "",
+                                "redirect_url": "",
+                            }
+                        )
 
     if with_status:
         _update_link_statuses(all_links)
