@@ -1092,9 +1092,19 @@ class TestFindExternalLinks(TestCase):
         nofo = create_nofo("Test Nofo", self_sections)
         links = find_external_links(nofo, with_status=False)
 
-        # Assertions
         self.assertEqual(len(links), 1)
         self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+
+    def test_find_external_links_ignore_nofo_rodeo(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://nofo.rodeo/nofos/">All Nofos</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+        self.assertEqual(len(links), 0)
 
     def test_find_external_links_with_two_links_in_subsections(self):
         self_sections = self.sections
