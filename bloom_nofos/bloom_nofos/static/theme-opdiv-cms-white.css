@@ -21,6 +21,15 @@ h2 {
   color: var(--color--cms-blue);
 }
 
+/* logo */
+.nofo--cover-page--header--logo svg .path--cms-yellow {
+  fill: var(--color--cms-yellow); /* previous: #F0CB00 */
+}
+
+.nofo--cover-page--header--logo svg .path--cms-blue {
+  fill: var(--color--cms-blue); /* previous: #00529B */
+}
+
 /* Cover page: text */
 
 .nofo--cover-page--text .nofo--cover-page--header {

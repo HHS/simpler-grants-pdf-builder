@@ -62,11 +62,28 @@ h2 {
   color: var(--color--white);
 }
 
+/* logo */
+.nofo--cover-page--header--logo svg .path--cms-yellow {
+  fill: var(--color--white);
+}
+
+.nofo--cover-page--header--logo svg .path--cms-blue {
+  fill: var(--color--white);
+}
+
+.nofo--cover-page--footer svg {
+  fill: var(--color--white);
+}
+
 /* Cover page: text */
 
 .nofo--cover-page--text .nofo--cover-page--header {
-  background-color: var(--color--white);
-  color: var(--color--black);
+  background-color: var(--color--cms-blue);
+  color: var(--color--white);
+}
+
+.nofo--cover-page--text .nofo--cover-page--footer {
+  background-color: var(--color--cms-blue);
 }
 
 /* Cover page: medium image */
