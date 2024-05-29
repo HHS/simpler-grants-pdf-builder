@@ -373,6 +373,10 @@ table.table--with-caption caption {
   break-inside: avoid-column;
 }
 
+table tr.table-row--light-blue-bg td {
+  background-color: #c5d7f1;
+}
+
 table th,
 table td,
 table caption {
