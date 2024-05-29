@@ -58,6 +58,10 @@
   height: 120px;
 }
 
+.nofo--cover-page--footer .nofo--cover-page--footer--logo svg {
+  width: 120px;
+}
+
 /* Cover page: text */
 
 section.nofo--cover-page.nofo--cover-page--text {

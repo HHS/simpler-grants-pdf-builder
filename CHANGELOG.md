@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add admin-only route to export all external links from a NOFO
 - Add CSS class for light blue table backgrounds (previously this was an inline fix)
+- Add new theme: CMS blue
 
 ### Changed
 

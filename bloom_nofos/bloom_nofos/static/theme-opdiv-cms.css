@@ -1,3 +1,10 @@
+/* CSS vars */
+:root {
+  --color--cms-blue: #004a86;
+  --color--cms-pale-blue: #eff5fb;
+  --color--cms-yellow: #eecd52;
+}
+
 /* Set @page rules */
 
 @page {
@@ -108,15 +115,6 @@ h6 {
 /* Section title page */
 
 /* Section contents */
-
-.callout-box {
-  background-color: var(--color--pale-blue);
-}
-
-.callout-box--icon {
-  background-color: var(--color--white);
-  border: 2px solid var(--color--cms-blue);
-}
 
 .section--absolute--right-col .callout-box--questions .callout-box--contents p {
   font-weight: 400;
