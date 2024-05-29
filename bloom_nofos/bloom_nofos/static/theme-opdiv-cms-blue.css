@@ -2,13 +2,50 @@
 
 /* Set @page rules */
 
+/* Page rules */
+
+@page {
+  @bottom-left {
+    color: var(--color--cms-blue);
+  }
+
+  @bottom-right {
+    color: var(--color--cms-blue);
+  }
+}
+
+@page cover {
+  background-color: var(--color--cms-blue);
+}
+
+@page title {
+  background-color: var(--color--cms-blue);
+
+  @bottom-left {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+
+  @bottom-right {
+    border-top: 1px solid var(--color--white);
+    color: var(--color--white);
+  }
+}
+
 /* Regular CSS */
 
 /* Headings */
 
-h1,
+h1 {
+  color: var(--color--white);
+}
+
 h2 {
   color: var(--color--cms-blue);
+}
+
+.section--title-page h2 {
+  color: var(--color--white);
 }
 
 /* Cover page */
@@ -17,8 +54,12 @@ h2 {
   color: var(--color--cms-blue);
 }
 
+.nofo--cover-page--title {
+  background: var(--color--cms-blue);
+}
+
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--cms-blue);
+  color: var(--color--white);
 }
 
 /* Cover page: text */
@@ -31,20 +72,27 @@ h2 {
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--header {
-  background-color: var(--color--cms-pale-blue);
+  background-color: var(--color--white);
 }
 
 /* Cover page: hero image */
 
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo
+  svg {
+  fill: var(--color--white);
+}
+
 /* Table of contents */
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--cms-blue);
+  color: var(--color--cms-yellow);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--white);
-  fill: var(--color--cms-blue);
+  color: var(--color--cms-blue);
+  fill: var(--color--cms-yellow);
 }
 
 .nofo--icons--border
@@ -53,14 +101,14 @@ h2 {
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--cms-blue);
+  stroke: var(--color--cms-yellow);
 }
 
 /* Before you begin page */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--white);
-  fill: var(--color--cms-blue);
+  color: var(--color--cms-blue);
+  fill: var(--color--cms-yellow);
 }
 
 .nofo--icons--border
@@ -68,12 +116,11 @@ h2 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--cms-blue);
+  stroke: var(--color--cms-yellow);
 }
 
-.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg,
-.before-you-begin .callout-box--icon .callout-box--contents svg {
-  color: var(--color--cms-blue);
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--cms-yellow);
 }
 
 section.before-you-begin h2 {
@@ -83,39 +130,58 @@ section.before-you-begin h2 {
 /* Section title page */
 
 .section--title-page--header-nav {
-  background-color: var(--color--pale-blue);
-  color: var(--color--cms-blue);
+  background-color: var(--color--cms-yellow);
+  color: var(--color--black);
 }
 
 .section--title-page--header-nav li a {
-  border-top: 4px solid var(--color--cms-blue);
-  color: var(--color--cms-blue);
+  border-top: 4px solid var(--color--black);
+  color: var(--color--black);
 }
 
 .section--title-page--name,
 .section--title-page--toc,
 .section--title-page--toc a {
-  color: var(--color--cms-blue);
+  color: var(--color--white);
+  background-color: var(--color--cms-blue);
 }
 
 .nofo--icons--border .section--title-page--icon svg {
-  color: var(--color--white);
-  fill: var(--color--cms-blue);
+  color: var(--color--cms-blue);
+  fill: var(--color--cms-yellow);
 }
 
 .nofo--icons--border .section--title-page--icon svg circle {
-  stroke: var(--color--cms-blue);
+  stroke: var(--color--cms-yellow);
 }
 
 /* Section contents */
 
-.callout-box {
-  background-color: var(--color--pale-blue);
+.nofo--tagline {
+  color: var(--color--cms-blue);
+}
+
+.callout-box:not(.callout-box--icon) {
+  background-color: var(--color--cms-blue);
+  color: var(--color--white);
+}
+
+.callout-box:not(.callout-box--icon) a {
+  color: var(--color--white);
 }
 
 .callout-box--icon {
-  background-color: var(--color--white);
-  border: 2px solid var(--color--cms-blue);
+  background-color: var(--color--cms-yellow);
+  border: 2px solid var(--color--cms-yellow);
+}
+
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+  color: var(--color--cms-blue);
+}
+
+.callout-box--icon .callout-box--contents svg circle {
+  color: var(--color--white);
 }
 
 table th {
