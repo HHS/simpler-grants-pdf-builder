@@ -13,6 +13,7 @@ from .nofo import (
 from .nofo import _get_font_size_from_cssText as get_font_size_from_cssText
 from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
+    md,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
@@ -49,6 +50,91 @@ from .nofo import (
     unwrap_empty_elements,
 )
 from .utils import clean_string, match_view_url
+
+
+class TablesAndStuffInTablesConverterTest(TestCase):
+    maxDiff = None
+
+    def test_table_no_colspan_or_rowspan(self):
+        html = "<table><tr><td>Cell 1</td><td>Cell 2</td></tr></table>"
+        expected_markdown = "|  |  |\n| --- | --- |\n| Cell 1 | Cell 2 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_with_colspan(self):
+        html = '<table><tr><td colspan="2">Cell 1</td></tr></table>'
+        pretty_html = (
+            '<table>\n <tr>\n  <td colspan="2">\n   Cell 1\n  </td>\n </tr>\n</table>'
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_table_with_rowspan(self):
+        html = '<table><tr><td rowspan="2">Cell 1</td><td>Cell 2</td></tr></table>'
+        pretty_html = '<table>\n <tr>\n  <td rowspan="2">\n   Cell 1\n  </td>\n  <td>\n   Cell 2\n  </td>\n </tr>\n</table>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_table_with_nested_html(self):
+        html = '<table class="c229 c294"><tr class="c202"><th class="c170 c184" colspan="4" rowspan="1"><p class="c21 c205">Year 1 Work Plan </p></th></tr><tr class="c100"><td class="c170" colspan="4" rowspan="1"><p class="c18"><strong>Program goal</strong>: Provide targeted assistance to support program efforts for outreach, education, and enrollment in health insurance plans. </p></td></tr><tr class="c281"><td class="c155 c191" colspan="1" rowspan="1"><p class="c21"><strong>Activities</strong></p></td><td class="c155 c218" colspan="1" rowspan="1"><p class="c21"><strong>Target number</strong></p></td></tr><tr class="c303"><td class="c85" colspan="1" rowspan="1"><p class="c18">Publish marketing ads on tv, radio, and print to increase visibility in community. </p></td><td class="c145" colspan="1" rowspan="1"><ul class="c1 lst-kix_list_18-0 start"><li class="c12 li-bullet-0">3 billboards </li><li class="c12 li-bullet-0">6 radio ads  </li><li class="c12 li-bullet-0">8 TV ads </li></ul></td></tr></table>'
+        pretty_html = """<table>
+ <tr>
+  <th colspan="4" rowspan="1">
+   <p>
+    Year 1 Work Plan
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <td colspan="4" rowspan="1">
+   <p>
+    <strong>
+     Program goal
+    </strong>
+    : Provide targeted assistance to support program efforts for outreach, education, and enrollment in health insurance plans.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td colspan="1" rowspan="1">
+   <p>
+    <strong>
+     Activities
+    </strong>
+   </p>
+  </td>
+  <td colspan="1" rowspan="1">
+   <p>
+    <strong>
+     Target number
+    </strong>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td colspan="1" rowspan="1">
+   <p>
+    Publish marketing ads on tv, radio, and print to increase visibility in community.
+   </p>
+  </td>
+  <td colspan="1" rowspan="1">
+   <ul>
+    <li>
+     3 billboards
+    </li>
+    <li>
+     6 radio ads
+    </li>
+    <li>
+     8 TV ads
+    </li>
+   </ul>
+  </td>
+ </tr>
+</table>"""
+
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
 
 
 class MatchUrlTests(TestCase):

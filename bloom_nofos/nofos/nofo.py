@@ -57,11 +57,20 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
             rowspan = tag.get("rowspan", "1")
             return colspan != "1" or rowspan != "1"
 
+        def _remove_classes_from_containing_elements(container_el):
+            if container_el.has_attr("class"):
+                del container_el["class"]
+
+            for el in container_el.find_all(True):
+                if el.has_attr("class"):
+                    del el["class"]
+
         cells = el.find_all(["td", "th"])
         for cell in cells:
             # return table as HTML if we find colspan/rowspan != 1 for any cell
             if _has_colspan_or_rowspan_not_one(cell):
-                return str(el) + "\n"
+                _remove_classes_from_containing_elements(el)
+                return str(el.prettify()) + "\n"
 
         return super().convert_table(el, text, convert_as_inline)
 
