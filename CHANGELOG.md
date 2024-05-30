@@ -24,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Alt text for the CMS logo is fixed
+- White logo for the CMS logo shows up in browser PDF readers
 - If consecutive lists don't have classnames, do not join them.
 - Add a fix for callout boxes imported from .docx files
 
