@@ -204,50 +204,69 @@ section.before-you-begin h2 {
 table th {
   color: var(--color--white);
   background-color: var(--color--cms-blue);
-  border: 2px solid var(--color--white);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:first-of-type {
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:last-of-type {
+  border-right: 2px solid var(--color--light-grey);
 }
 
 table td {
-  background-color: var(--color--table-blue);
-  border: 2px solid var(--color--white);
-}
-
-table td a {
-  color: var(--color--cms-blue);
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 /* Application checklist table */
 
-.section--step-5-submit-your-application table tr td {
-  border-bottom-color: var(--color--table-blue);
+.section--step-5-submit-your-application table td {
+  border: none;
 }
 
-.section--step-5-submit-your-application table tr td.usa-icon__td,
-.section--step-5-submit-your-application table tr td.usa-icon__td ~ td {
-  border-bottom-color: var(--color--white);
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
 }
 
-.section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td--sublist
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
   ~ td {
-  border-bottom-color: var(--color--table-blue);
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td.usa-icon__td--before-sublist,
+  td.usa-icon__td:not(.usa-icon__td--sublist),
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td.usa-icon__td--before-sublist
+  td.usa-icon__td:not(.usa-icon__td--sublist)
   ~ td {
-  border-bottom-color: var(--color--white);
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 .section--step-5-submit-your-application table tr:last-of-type td {
-  border-bottom: none;
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+body[class*="-blue"] table td img.usa-icon--check_box_outline_blank {
+  box-shadow: none;
 }
