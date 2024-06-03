@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Heading links for docx documents are preserved
 - Alt text for the CMS logo is fixed
 - White logo for the CMS logo shows up in browser PDF readers
 - If consecutive lists don't have classnames, do not join them.

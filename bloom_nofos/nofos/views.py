@@ -56,6 +56,7 @@ from .nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
+    preserve_heading_links,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
@@ -245,6 +246,7 @@ def nofo_import(request, pk=None):
         # mutate the HTML
         join_nested_lists(soup)
         add_strongs_to_soup(soup)
+        preserve_heading_links(soup)
         clean_heading_tags(soup)
         clean_table_cells(soup)
         unwrap_empty_elements(soup)

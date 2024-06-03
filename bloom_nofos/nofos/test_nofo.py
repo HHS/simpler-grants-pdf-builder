@@ -32,6 +32,7 @@ from .nofo import (
     get_subsections_from_sections,
     is_callout_box_table,
     join_nested_lists,
+    preserve_heading_links,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
@@ -2244,6 +2245,64 @@ class CleanHeadingsTestCase(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         clean_heading_tags(soup)
         self.assertEqual(soup.find("h1").get_text(), "Perfect Heading")
+
+
+class PreserveHeadingLinksTest(TestCase):
+    def test_empty_anchor_with_heading_id(self):
+        html = '<h4><a id="_heading=h.3rdcrjn"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_heading=h.3rdcrjn">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_non_empty_anchor_with_heading_id(self):
+        html = '<h4><a id="_heading=h.3rdcrjn">Link text</a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4><a id="_heading=h.3rdcrjn">Link text</a>About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_without_heading_id(self):
+        html = '<h4><a id="other_id"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4><a id="other_id"></a>About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_no_anchor_tag(self):
+        html = "<h4>About priority populations</h4>"
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = "<h4>About priority populations</h4>"
+        self.assertEqual(result, expected)
+
+    def test_multiple_empty_anchors_with_heading_id(self):
+        html = """
+        <h4><a id="_heading=h.1"></a>Heading 1</h4>\n<h4><a id="_heading=h.2"></a>Heading 2</h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = """
+        <h4 id="_heading=h.1">Heading 1</h4>\n<h4 id="_heading=h.2">Heading 2</h4>
+        """
+        self.assertEqual(result.strip(), expected.strip())
+
+    def test_mixed_anchors_with_heading_id(self):
+        html = """
+        <h4><a id="_heading=h.1"></a>Heading 1</h4>\n<h4><a id="_heading=h.2">Link text</a>Heading 2</h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = """
+        <h4 id="_heading=h.1">Heading 1</h4>\n<h4><a id="_heading=h.2">Link text</a>Heading 2</h4>
+        """
+        self.assertEqual(result.strip(), expected.strip())
 
 
 ###########################################################
