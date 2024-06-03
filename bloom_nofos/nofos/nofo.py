@@ -1031,3 +1031,32 @@ def clean_heading_tags(soup):
 
         # Replace the original heading text with the cleaned text
         heading.string = text
+
+
+def preserve_heading_links(soup):
+    """
+    This function mutates the soup!
+
+    Preserves heading links by transferring IDs from empty <a> tags to their parent elements.
+    The <a> tags are presumed to be inside heading tags, although this isn't explicit in the function.
+
+    This function searches for all <a> tags with an ID that starts with "_heading". If such an <a> tag is empty (i.e., contains no text),
+    the function transfers the ID to the parent element and removes the empty <a> tag.
+
+    Empty <a> tags are removed, so these were getting screened out and then we were losing the link to the heading.
+
+    Parameters:
+    soup (BeautifulSoup): The BeautifulSoup object representing the parsed HTML content.
+
+    """
+    # Find all <a> tags with an id starting with "_heading"
+    heading_id_anchors = soup.find_all("a", id=lambda x: x and x.startswith("_heading"))
+
+    for a in heading_id_anchors:
+        # Check if the <a> tag is empty
+        if not a.text.strip():
+            parent = a.parent
+            if parent:
+                # Transfer the id to the parent element
+                parent["id"] = a["id"]
+                a.decompose()  # Remove the empty <a> tag
