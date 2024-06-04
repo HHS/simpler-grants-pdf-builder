@@ -48,6 +48,10 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
             if len(list(el.parent.children)) > 1:
                 return str(el)
 
+        # if the paragraph has an id that includes the string "bookmark", keep the paragraph as-is
+        if el and el.attrs.get("id") and "bookmark" in el.attrs.get("id"):
+            return str(el)
+
         return super().convert_p(el, text, convert_as_inline)
 
     def convert_table(self, el, text, convert_as_inline):
@@ -1033,6 +1037,35 @@ def clean_heading_tags(soup):
         heading.string = text
 
 
+def preserve_bookmark_links(soup):
+    """
+    This function mutates the soup!
+
+    Preserves bookmark links by transferring the 'name' attribute from empty <a> tags to be the ID of the following paragraph elements.
+
+    This function searches for all <a> tags with an ID that starts with "#bookmark". If such an <a> tag is empty (i.e., contains no text),
+    the function transfers the 'id' attribute to the 'id' attribute on the next element if that element is a paragraph.
+
+    Empty <a> tags are removed in a later step.
+    """
+    # Find all <a> tags with an id starting with "#bookmark"
+    bookmark_id_anchors = soup.find_all(
+        "a", href=lambda x: x and x.startswith("#bookmark")
+    )
+
+    bookmark_ids = set([link["href"][1:] for link in bookmark_id_anchors])
+
+    for bookmark_id in bookmark_ids:
+        # Find the corresponding anchor tag with the same name, and check if it's empty
+        a = soup.find("a", id=bookmark_id)
+        if a and not a.text.strip():
+            next_elem = a.find_next()
+            if next_elem and next_elem.name == "p":
+                # Transfer the id to the next paragraph element, replacing any existing id
+                next_elem["id"] = a["id"]
+                a.decompose()  # Remove the empty <a> tag
+
+
 def preserve_heading_links(soup):
     """
     This function mutates the soup!
@@ -1043,11 +1076,7 @@ def preserve_heading_links(soup):
     This function searches for all <a> tags with an ID that starts with "_heading". If such an <a> tag is empty (i.e., contains no text),
     the function transfers the ID to the parent element and removes the empty <a> tag.
 
-    Empty <a> tags are removed, so these were getting screened out and then we were losing the link to the heading.
-
-    Parameters:
-    soup (BeautifulSoup): The BeautifulSoup object representing the parsed HTML content.
-
+    Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
     """
     # Find all <a> tags with an id starting with "_heading"
     heading_id_anchors = soup.find_all("a", id=lambda x: x and x.startswith("_heading"))
@@ -1057,6 +1086,6 @@ def preserve_heading_links(soup):
         if not a.text.strip():
             parent = a.parent
             if parent:
-                # Transfer the id to the parent element
+                # Transfer the id to the parent element, replacing any existing id
                 parent["id"] = a["id"]
                 a.decompose()  # Remove the empty <a> tag

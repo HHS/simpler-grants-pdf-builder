@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Bookmark links followed by a paragraph are preserved
 - Heading links for docx documents are preserved
 - Alt text for the CMS logo is fixed
 - White logo for the CMS logo shows up in browser PDF readers
