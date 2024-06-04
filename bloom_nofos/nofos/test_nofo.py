@@ -33,6 +33,7 @@ from .nofo import (
     is_callout_box_table,
     join_nested_lists,
     preserve_heading_links,
+    preserve_bookmark_links,
     overwrite_nofo,
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
@@ -2247,9 +2248,65 @@ class CleanHeadingsTestCase(TestCase):
         self.assertEqual(soup.find("h1").get_text(), "Perfect Heading")
 
 
+class PreserveBookmarkLinksTest(TestCase):
+    def test_empty_anchor_with_matching_link_followed_by_paragraph(self):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_wipes_out_existing_id(
+        self,
+    ):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p id="table-1">Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_link_followed_by_a_SPAN(self):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><span>Table 1: FFE state funding allocations</span>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_empty_anchor_WITHOUT_matching_link_followed_by_a_paragraph(self):
+        html = '<p><a href="#bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_empty_anchor_with_matching_link_with_NO_subsequent_element(self):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_NO_BOOKMARK(self):
+        html = '<p><a href="#id.2xcytpi">Bookmark link</a>.</p><a id="id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NONempty_anchor_with_matching_link_followed_by_paragraph(self):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi">Bookmark</a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        self.assertEqual(str(soup), html)
+
+
 class PreserveHeadingLinksTest(TestCase):
     def test_empty_anchor_with_heading_id(self):
         html = '<h4><a id="_heading=h.3rdcrjn"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_heading=h.3rdcrjn">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_heading_id_wipes_out_existing_id(self):
+        html = '<h4 id="about-priority-populations"><a id="_heading=h.3rdcrjn"></a>About priority populations</h4>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_heading_links(soup)
         result = str(soup)
