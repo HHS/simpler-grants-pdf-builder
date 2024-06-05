@@ -2298,7 +2298,8 @@ class PreserveBookmarkLinksTest(TestCase):
         html = '<p><a href="#bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_links(soup)
-        self.assertEqual(str(soup), html)
+        expected = '<p><a href="#_bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
 
     def test_empty_anchor_with_matching_link_with_NO_subsequent_element(self):
         html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a>'

@@ -637,7 +637,7 @@ def find_broken_links(nofo):
 
     Identifies and returns a list of broken links within a given Nofo.
 
-    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/" or "https://docs.google.com"
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/", "https://docs.google.com", "#_heading", or "_bookmark".
     This means that someone created an internal link to a header, and then later the header was deleted or otherwise
     modified so the original link doesn't point anywhere.
 
@@ -660,13 +660,15 @@ def find_broken_links(nofo):
                       ]
     """
 
-    # Define a function that checks if an 'href' attribute starts with '#h.' or '#id.'
+    # Define a function that checks if an 'href' attribute starts with any of these
     def _href_starts_with_h(tag):
         return tag.name == "a" and (
             tag.get("href", "").startswith("#h.")
             or tag.get("href", "").startswith("#id.")
             or tag.get("href", "").startswith("/")
             or tag.get("href", "").startswith("https://docs.google.com")
+            or tag.get("href", "").startswith("#_heading")
+            or tag.get("href", "").startswith("#_bookmark")
         )
 
     broken_links = []
@@ -1081,6 +1083,17 @@ def preserve_bookmark_links(soup):
                     next_elem["class"] = next_elem.get("class", []) + ["bookmark"]
 
                 a.decompose()  # Remove the empty <a> tag
+        if not a:
+            broken_link = next(
+                (
+                    link
+                    for link in bookmark_id_anchors
+                    if bookmark_id in link.get("href")
+                )
+            )
+
+            # add an underscore so that we can identify this link later as a dead link
+            broken_link["href"] = "#_{}".format(bookmark_id)
 
 
 def preserve_heading_links(soup):
