@@ -2253,7 +2253,21 @@ class PreserveBookmarkLinksTest(TestCase):
         html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_links(soup)
-        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_heading_3(self):
+        html = '<h2>Title 2</h2><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<h2>Title 2</h2><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark-level-3" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_heading_3(self):
+        html = '<h6>Title 6</h6><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<h6>Title 6</h6><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark-level-7" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
         self.assertEqual(str(soup), expected)
 
     def test_empty_anchor_with_matching_link_followed_by_paragraph_wipes_out_existing_id(
@@ -2262,7 +2276,16 @@ class PreserveBookmarkLinksTest(TestCase):
         html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p id="table-1">Table 1: FFE state funding allocations</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_links(soup)
-        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_keeps_existing_class(
+        self,
+    ):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p class="table-caption" id="table-1">Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="table-caption bookmark" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
         self.assertEqual(str(soup), expected)
 
     def test_empty_anchor_with_matching_link_followed_by_a_SPAN(self):

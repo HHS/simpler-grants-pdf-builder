@@ -1063,6 +1063,23 @@ def preserve_bookmark_links(soup):
             if next_elem and next_elem.name == "p":
                 # Transfer the id to the next paragraph element, replacing any existing id
                 next_elem["id"] = a["id"]
+
+                # Find the closest preceding heading
+                prev_elem = a.find_previous()
+                while prev_elem:
+                    if prev_elem.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+                        # we want the heading level to be 1 more than the last heading
+                        level = int(prev_elem.name[1]) + 1
+                        next_elem["class"] = next_elem.get("class", []) + [
+                            "bookmark-level-{}".format(level)
+                        ]
+                        break
+                    prev_elem = prev_elem.find_previous()
+
+                # If no preceding heading is found, assign a generic class
+                if not prev_elem:
+                    next_elem["class"] = next_elem.get("class", []) + ["bookmark"]
+
                 a.decompose()  # Remove the empty <a> tag
 
 
