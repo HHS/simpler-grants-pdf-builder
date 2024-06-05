@@ -1173,6 +1173,25 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     prince-pdf-role-map: "H7" P;
   }
 
+  .bookmark-level-2 {
+    -prince-bookmark-level: 2;
+  }
+  .bookmark-level-3 {
+    -prince-bookmark-level: 3;
+  }
+  .bookmark-level-4 {
+    -prince-bookmark-level: 4;
+  }
+  .bookmark-level-5 {
+    -prince-bookmark-level: 5;
+  }
+  .bookmark-level-6 {
+    -prince-bookmark-level: 6;
+  }
+  .bookmark-level-7 {
+    -prince-bookmark-level: 7;
+  }
+
   /* Page break rules */
   .page-break-before,
   .page-break-before--heading {
