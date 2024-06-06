@@ -1771,6 +1771,12 @@ class UnwrapEmptyElementsTests(TestCase):
         unwrap_empty_elements(soup)
         self.assertEqual(str(soup), "<div> text</div>")
 
+    def test_unwrap_empty_sup(self):
+        html = "<p>At a minimum,<sup> </sup>HVAs must:</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), "<p>At a minimum, HVAs must:</p>")
+
     def test_not_unwrap_non_empty_span(self):
         html = "<div><span>Not empty</span></div>"
         soup = BeautifulSoup(html, "html.parser")
@@ -1782,6 +1788,12 @@ class UnwrapEmptyElementsTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         unwrap_empty_elements(soup)
         self.assertEqual(str(soup), "<div><strong>Not empty</strong></div>")
+
+    def test_not_unwrap_non_empty_sup(self):
+        html = '<p>complete this activity or create your own.<sup><sup><a href="#footnote-16" id="footnote-ref-16">[17]</a></sup></sup> Your HCC(s) must share</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        self.assertEqual(str(soup), html)
 
     def test_unwrap_nested_empty_elements(self):
         html = "<div><span><strong> </strong></span></div>"
