@@ -195,6 +195,32 @@ def convert_table_first_row_to_header_row(table):
             cell.name = "th"
 
 
+def convert_table_with_all_ths_to_a_regular_table(table):
+    """
+    Converts a table with all rows in the thead and th cells to a standard table structure.
+
+    This function checks if the table has a thead, no tbody, and more than one row in the thead.
+    If these conditions are met, it creates a tbody after the thead and moves all rows except
+    the first one to the tbody. Additionally, it converts all th cells in the tbody to td cells.
+    """
+    thead = table.find("thead")
+    tbody = table.find("tbody")
+
+    # Check if thead exists, tbody does not exist, and thead contains more than one row
+    if thead and not tbody and len(thead.find_all("tr")) > 1:
+        # Create a new tbody element as a string and parse it into a BeautifulSoup tag
+        new_tbody = BeautifulSoup("<tbody></tbody>", "html.parser").tbody
+        table.append(new_tbody)
+
+        # Move all rows except the first one to the new tbody
+        rows = thead.find_all("tr")
+        for row in rows[1:]:
+            # Convert th cells to td cells
+            for th in row.find_all("th"):
+                th.name = "td"
+            new_tbody.append(row.extract())
+
+
 def get_sections_from_soup(soup):
     # build a structure that looks like our model
     sections = []
@@ -347,7 +373,10 @@ def get_subsections_from_sections(sections):
             else:
                 # convert first row of header cells into th elements
                 if tag.name == "table":
+                    # make sure the first row is a header row
                     convert_table_first_row_to_header_row(tag)
+                    # if all rows are in a thead, move them to a tbody
+                    convert_table_with_all_ths_to_a_regular_table(tag)
 
                 if not len(section["subsections"]):
                     # create new empty subsection if there are no other ones in this section
