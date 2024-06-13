@@ -286,6 +286,8 @@
       <!-- RUNNING HEADER -->
       <!-- after first section title page -->
       <div class="header-nav header-nav--running-header">
+        <a href="pdf-action:NextPage" class="skip-link">Next page</a>
+        {% spaceless %}
         <ol>
           {% with nofo.sections.all|dictsort:"order" as nav_sections %}
               <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
@@ -297,6 +299,7 @@
               <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
             {% endwith %}
         </ol>
+        {% endspaceless %}
       </div>
 
       <!-- SECTION CONTENT -->

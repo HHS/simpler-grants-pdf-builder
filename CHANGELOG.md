@@ -20,6 +20,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - More style maps added based on an early version of HHS-2026-ACL-AOD-DDUC
 - Ignore "FootnoteReference" warning messages when importing .docx files
   - There is currently no way to build style maps for these
+- Insert a "next page" link before the running header nav
+  - Hopefully this allows screenreader users to avoid that focus trap
 
 ### Fixed
 
