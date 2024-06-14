@@ -286,17 +286,16 @@
       <!-- RUNNING HEADER -->
       <!-- after first section title page -->
       <div class="header-nav header-nav--running-header">
-        <a href="pdf-action:NextPage" class="skip-link">Next page</a>
         {% spaceless %}
         <ol>
           {% with nofo.sections.all|dictsort:"order" as nav_sections %}
-              <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %}>Review</a></li>
-              <li><a href="#section--{{ nav_sections.1.html_id }}" {% if nav_sections.1.html_id == section.html_id %}aria-current="step"{% endif %}>Get Ready</a></li>
-              <li><a href="#section--{{ nav_sections.2.html_id }}" {% if nav_sections.2.html_id == section.html_id %}aria-current="step"{% endif %}>{% if 'Write' in nav_sections.2.name %}Write{% else %}Prepare{% endif %}</a></li>
-              <li><a href="#section--{{ nav_sections.3.html_id }}" {% if nav_sections.3.html_id == section.html_id %}aria-current="step"{% endif %}>Learn</a></li>
-              <li><a href="#section--{{ nav_sections.4.html_id }}" {% if nav_sections.4.html_id == section.html_id %}aria-current="step"{% endif %}>Submit</a></li>
-              <li><a href="#section--{{ nav_sections.5.html_id }}" {% if nav_sections.5.html_id == section.html_id %}aria-current="step"{% endif %}>Award</a></li>
-              <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %}>Contacts</a></li>
+              <li><a href="#section--{{ nav_sections.0.html_id }}" {% if nav_sections.0.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Review</a></li>
+              <li><a href="#section--{{ nav_sections.1.html_id }}" {% if nav_sections.1.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Get Ready</a></li>
+              <li><a href="#section--{{ nav_sections.2.html_id }}" {% if nav_sections.2.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">{% if 'Write' in nav_sections.2.name %}Write{% else %}Prepare{% endif %}</a></li>
+              <li><a href="#section--{{ nav_sections.3.html_id }}" {% if nav_sections.3.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Learn</a></li>
+              <li><a href="#section--{{ nav_sections.4.html_id }}" {% if nav_sections.4.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Submit</a></li>
+              <li><a href="#section--{{ nav_sections.5.html_id }}" {% if nav_sections.5.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Award</a></li>
+              <li><a href="#section--{{ nav_sections.6.html_id }}" {% if nav_sections.6.html_id == section.html_id %}aria-current="step"{% endif %} aria-hidden="true" tabindex="-1">Contacts</a></li>
             {% endwith %}
         </ol>
         {% endspaceless %}
