@@ -245,14 +245,12 @@ def nofo_import(request, pk=None):
         )  # Replace all non-breaking spaces with regular spaces on import
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
 
-        # html_content = str(soup)
-
         # # Specify the output file path
-        # output_file_path = "output_123.html"
+        # output_file_path = "debug_output.html"
 
         # # Write the HTML content to the file
         # with open(output_file_path, "w", encoding="utf-8") as file:
-        #     file.write(html_content)
+        #     file.write(str(soup))
 
         # mutate the HTML
         join_nested_lists(soup)
