@@ -56,9 +56,9 @@ from .nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
+    overwrite_nofo,
     preserve_bookmark_links,
     preserve_heading_links,
-    overwrite_nofo,
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
     suggest_nofo_agency,
@@ -75,6 +75,7 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
     unwrap_empty_elements,
+    unwrap_nested_lists,
 )
 from .utils import style_map_manager
 
@@ -244,6 +245,15 @@ def nofo_import(request, pk=None):
         )  # Replace all non-breaking spaces with regular spaces on import
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
 
+        # html_content = str(soup)
+
+        # # Specify the output file path
+        # output_file_path = "output_123.html"
+
+        # # Write the HTML content to the file
+        # with open(output_file_path, "w", encoding="utf-8") as file:
+        #     file.write(html_content)
+
         # mutate the HTML
         join_nested_lists(soup)
         add_strongs_to_soup(soup)
@@ -259,6 +269,7 @@ def nofo_import(request, pk=None):
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup)
         add_em_to_de_minimis(soup)
+        unwrap_nested_lists(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup)
