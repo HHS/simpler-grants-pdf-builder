@@ -30,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add tbody tags to tables imported from .docx files
   - Previously all the cells became <th> elements, in a huge <thead> (with no tbody)
 - Unwrap empty <sup> tags, which are lying around in Word exports for some reason
+  - Also unwrap empty <em> tags
 - Broken heading/bookmark links from docx files show up on the edit page
 - Bookmark links followed by a paragraph are preserved
   - Add classes for bookmark levels
