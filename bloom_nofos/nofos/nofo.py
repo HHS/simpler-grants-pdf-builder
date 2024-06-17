@@ -828,7 +828,7 @@ def unwrap_empty_elements(soup):
     """
     This function mutates the soup!
 
-    Unwraps empty span, strong, and sup tags from the BeautifulSoup `soup`.
+    Unwraps empty span, strong, sup, and em tags from the BeautifulSoup `soup`.
     """
     spans = soup.select("span")
     for span in spans:
@@ -844,6 +844,11 @@ def unwrap_empty_elements(soup):
     for sup in sups:
         if not sup.get_text().strip():
             sup.unwrap()
+
+    ems = soup.select("em")
+    for em in ems:
+        if not em.get_text().strip():
+            em.unwrap()
 
 
 def clean_table_cells(soup):
