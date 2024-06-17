@@ -1232,8 +1232,15 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     display: block;
   }
 
+  .header-nav.header-nav--running-header ol {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   .header-nav.header-nav--running-header ol a {
-    -prince-alt-text: none;
+    -prince-pdf-tag-type: Artifact;
+    -prince-alt-text: None;
   }
 
   .usa-header {
