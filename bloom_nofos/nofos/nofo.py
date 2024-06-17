@@ -1153,3 +1153,23 @@ def preserve_heading_links(soup):
                 # Transfer the id to the parent element, replacing any existing id
                 parent["id"] = a["id"]
                 a.decompose()  # Remove the empty <a> tag
+
+
+def unwrap_nested_lists(soup):
+    def _has_only_nested_ul(li):
+        # Check if li has exactly one child which is a ul
+        children = li.find_all(recursive=False)
+        if len(children) == 1 and children[0].name == "ul":
+            # Ensure there is no direct text in the li
+            for content in li.contents:
+                if isinstance(content, NavigableString) and content.strip():
+                    return False
+            return True
+        return False
+
+    for li in soup.find_all("li"):
+        if _has_only_nested_ul(li):
+            li.unwrap()
+
+    for ul in soup.select("ul > ul"):
+        ul.unwrap()

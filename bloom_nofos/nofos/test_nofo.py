@@ -13,7 +13,6 @@ from .nofo import (
 from .nofo import _get_font_size_from_cssText as get_font_size_from_cssText
 from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
-    md,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
@@ -33,9 +32,10 @@ from .nofo import (
     get_subsections_from_sections,
     is_callout_box_table,
     join_nested_lists,
-    preserve_heading_links,
-    preserve_bookmark_links,
+    md,
     overwrite_nofo,
+    preserve_bookmark_links,
+    preserve_heading_links,
     remove_google_tracking_info_from_links,
     replace_src_for_inline_images,
     suggest_nofo_agency,
@@ -51,6 +51,7 @@ from .nofo import (
     suggest_nofo_theme,
     suggest_nofo_title,
     unwrap_empty_elements,
+    unwrap_nested_lists,
 )
 from .utils import clean_string, match_view_url
 
@@ -289,7 +290,6 @@ class TableConvertFirstRowToHeaderRowTests(TestCase):
 
 
 class ConvertTableTest(TestCase):
-
     def test_no_thead(self):
         html_content = """
         <table>
@@ -2499,6 +2499,36 @@ class PreserveHeadingLinksTest(TestCase):
         <h4 id="_heading=h.1">Heading 1</h4>\n<h4><a id="_heading=h.2">Link text</a>Heading 2</h4>
         """
         self.assertEqual(result.strip(), expected.strip())
+
+
+class UnwrapNestedListsTest(TestCase):
+    def test_simple_nested_list(self):
+        html_content = "<ul><li><ul><li>My list</li></ul></li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        unwrap_nested_lists(soup)
+        expected_output = "<ul><li>My list</li></ul>"
+        self.assertEqual(str(soup).strip(), expected_output.strip())
+
+    def test_complex_nested_list(self):
+        html_content = "<ul><li><ul><li><ul><li><ul><li>My item 1</li><li>My item 2</li></ul></li></ul></li></ul></li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        unwrap_nested_lists(soup)
+        expected_output = "<ul><li>My item 1</li><li>My item 2</li></ul>"
+        self.assertEqual(str(soup).strip(), expected_output.strip())
+
+    def test_mixed_content_li_list(self):
+        html_content = "<ul><li>Address at least one of the following priority areas:<ul><li>Built environment and housing instability</li><li>Community-clinical linkages</li><li>Food and nutrition security</li></ul></li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        unwrap_nested_lists(soup)
+        expected_output = "<ul><li>My item 1</li><li>My item 2</li></ul>"
+        self.assertEqual(str(soup).strip(), html_content.strip())
+
+    def test_multiple_nested_lists(self):
+        html_content = "<ul><li><ul><li><ul><li>Item 1</li></ul></li></ul></li><li>List 2:<ul><li><ul><li>Item 2.1</li></ul></li></ul></li><li><ul><li><ul><li>Item 3</li></ul></li></ul></li></ul>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        unwrap_nested_lists(soup)
+        expected_output = "<ul><li>Item 1</li><li>List 2:<ul><li>Item 2.1</li></ul></li><li>Item 3</li></ul>"
+        self.assertEqual(str(soup).strip(), expected_output.strip())
 
 
 ###########################################################
