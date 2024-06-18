@@ -126,6 +126,10 @@ def replace_unicode_with_icon(html_string):
 
         for td in tds:
             elements_with_char = []
+
+            if td.get_text().count(icon) > 1:
+                continue  # Skip this td if it contains multiple instances of the icon
+
             find_elements_with_character(td, elements_with_char, icon)
             root_elements.extend(elements_with_char)
 

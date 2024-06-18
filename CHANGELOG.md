@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Do not swap out icons if table cells contain multiple instances
 - Fix for weird lists that look like this: <ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>
   - We were seeing them in docx imports
 - Add tbody tags to tables imported from .docx files
