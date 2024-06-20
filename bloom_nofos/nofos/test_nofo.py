@@ -2078,6 +2078,19 @@ class TestEscapeAsterisksInTableCells(TestCase):
             "<div><p>Test*</p><table><tr><td>Test\\* Text</td></tr></table></div>",
         )
 
+    def test_asterisk_escaped_in_table_headings(self):
+        html = "<table><thead><tr><th>Test* Text</th></tr></thead></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"Test\* Text", soup.th.text)
+
+    def test_already_escaped_asterisk_not_doubly_escaped_in_table_headings(self):
+        html = "<table><thead><tr><th>Test\\* Text</th></tr></thead></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        escape_asterisks_in_table_cells(soup)
+        self.assertIn(r"Test\* Text", soup.th.text)
+        self.assertNotIn(r"Test\\* Text", soup.th.text)
+
 
 class TestGetFontSizeFromCssText(TestCase):
     def test_get_font_size_in_points(self):

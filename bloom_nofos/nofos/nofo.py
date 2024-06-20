@@ -944,7 +944,7 @@ def escape_asterisks_in_table_cells(soup):
     # Match asterisks not preceded by a backslash
     pattern = re.compile(r"(?<!\\)\*")
 
-    for cell in soup.find_all("td"):
+    for cell in soup.find_all(["td", "th"]):
         for content in cell.find_all(text=True):
             # Use the regex pattern to replace '*' with '\*' only if '*' is not already preceded by '\'
             escaped_content = pattern.sub(r"\\*", content)
