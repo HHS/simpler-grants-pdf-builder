@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Wrap soup in a body tag if there isn't one.
 - Remove classes in HTML uls and ols
 - Catch broken links that look like "about:blank"
 - Add endnotes header to the .docx files as well

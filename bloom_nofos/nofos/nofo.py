@@ -577,6 +577,18 @@ def suggest_nofo_keywords(soup):
 ###########################################################
 
 
+def add_body_if_no_body(soup):
+    """
+    This function mutates the soup!
+
+    Checks for a body tag. If there is no body, it wraps all the html in a body tag.
+    """
+    if not soup.body:
+        soup = BeautifulSoup("<body>{}</body>".format(str(soup)), "html.parser")
+
+    return soup
+
+
 def join_nested_lists(soup):
     """
     This function mutates the soup!
