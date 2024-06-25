@@ -40,6 +40,7 @@ from .forms import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
+    add_body_if_no_body,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
     add_headings_to_nofo,
@@ -244,6 +245,7 @@ def nofo_import(request, pk=None):
             "&nbsp;", " "
         )  # Replace all non-breaking spaces with regular spaces on import
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
+        soup = add_body_if_no_body(soup)
 
         # # Specify the output file path
         # output_file_path = "debug_output.html"
