@@ -913,27 +913,58 @@ def add_endnotes_header_if_exists(soup):
     """
     This function mutates the soup!
 
-    Adds a header for endnotes if final <hr> tag has no style attribute.
+    If no "Endnotes" header exists, look for a list of endnotes and add a header if found.
 
-    Checks if the last <hr> tags in the soup has no style attribute.
-    If so, takes the last <hr> tag, converts it to a <h1> tag with the text
-    "Endnotes" to add a header before the endnotes.
+    If this is the Google Docs HTML export, we look for a final <hr> without a style tag.
+        Adds a header for endnotes if final <hr> tag has no style attribute.
+
+        Checks if the last <hr> tags in the soup has no style attribute.
+        If so, takes the last <hr> tag, converts it to a <h1> tag with the text
+        "Endnotes" to add a header before the endnotes.
+
+    If this is a docx export, we look for a final <ol> where the first <li> has an id of "footnote-0".
+        In this case, we create a new h1 with the text "Endnotes" and
+        insert it before the ol.
     """
-    # Find the endnotes in Google Docs HTML export
-    hrs = soup.find_all("hr")
-    if len(hrs):
-        last_hr = hrs.pop()
-        if not last_hr.get("style"):
-            last_hr.name = "h1"
-            last_hr.string = "Endnotes"
 
-    # Find the endnotes in a docx export
-    ols = soup.find_all("ol")
-    if ols:
-        last_ol = ols.pop()
-        # Check if the first li in the ol contains the id "footnote-0"
-        first_li = last_ol.find("li")
-        if first_li and first_li.get("id") == "footnote-0":
+    def _match_endnotes(tag):
+        return (tag.name == "h1" or tag.name == "h2") and tag.text == "Endnotes"
+
+    def _find_google_doc_html_endnotes(soup):
+        hrs = soup.find_all("hr")
+        if len(hrs):
+            last_hr = hrs.pop()
+            if not last_hr.get("style"):
+                return last_hr
+
+        return False
+
+    def _find_docx_html_endnotes(soup):
+        # Find the endnotes in a docx export
+        ols = soup.find_all("ol")
+        if ols:
+            last_ol = ols.pop()
+            # Check if the first li in the ol contains the id "footnote-0"
+            first_li = last_ol.find("li")
+            if first_li and first_li.get("id") == "footnote-0":
+                return last_ol
+
+        return False
+
+    if soup.find(_match_endnotes):
+        return
+
+    # Find the endnotes in Google Docs HTML export
+    last_hr = _find_google_doc_html_endnotes(soup)
+    if last_hr:
+        # Repurpose the hr element as an h1 element
+        last_hr.name = "h1"
+        last_hr.string = "Endnotes"
+
+    else:
+        # Else, find the endnotes in Google Docs HTML export
+        last_ol = _find_docx_html_endnotes(soup)
+        if last_ol:
             # Create the h1 element
             h1_tag = soup.new_tag("h1")
             h1_tag.string = "Endnotes"

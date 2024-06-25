@@ -2065,24 +2065,24 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         add_endnotes_header_if_exists(soup)
         self.assertEqual(str(soup), html_content)
 
-    # this is not what we want but we don't expect it to happen
+    # only convert the hr
     def test_basic_with_hr_without_style_AND_basic_ol_with_footnote_li(self):
         html_content = '<div><hr><ol><li id="footnote-0">Item 1</li></ol></div>'
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
             str(soup),
-            '<div><h1>Endnotes</h1><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol></div>',
+            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol></div>',
         )
 
-    # this is reversed: ALSO not what we want but we don't expect it to happen
+    # only convert the hr, even though it is after the ol
     def test_basic_ol_with_footnote_li_AND_basic_with_hr_without_style(self):
         html_content = '<div><ol><li id="footnote-0">Item 1</li></ol><hr></div>'
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
             str(soup),
-            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol><h1>Endnotes</h1></div>',
+            '<div><ol><li id="footnote-0">Item 1</li></ol><h1>Endnotes</h1></div>',
         )
 
     def test_multiple_ols_with_footnote_li(self):
@@ -2101,6 +2101,32 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         self.assertEqual(
             str(soup),
             '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol><h1>Step 8: Play Northgard</h1><p>Northgard is a fun way to spend time while waiting for the results of your appliation</p></div>',
+        )
+
+    def test_endnotes_h1_already_exists_with_basic_ol_with_footnote_li_AND_basic_with_hr_without_style(
+        self,
+    ):
+        html_content = (
+            '<div><ol><li id="footnote-0">Item 1</li></ol><hr><h1>Endnotes</h1></div>'
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><ol><li id="footnote-0">Item 1</li></ol><hr/><h1>Endnotes</h1></div>',
+        )
+
+    def test_endnotes_h2_already_exists_with_basic_ol_with_footnote_li_AND_basic_with_hr_without_style(
+        self,
+    ):
+        html_content = (
+            '<div><ol><li id="footnote-0">Item 1</li></ol><hr><h2>Endnotes</h2></div>'
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><ol><li id="footnote-0">Item 1</li></ol><hr/><h2>Endnotes</h2></div>',
         )
 
 
