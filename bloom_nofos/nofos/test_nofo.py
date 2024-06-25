@@ -1196,16 +1196,28 @@ class TestFindBrokenLinks(TestCase):
             order=5,
         )
 
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a Blank link",
+            tag="h3",
+            body="This is an [About:Blank link](about:blank) in markdown.",
+            order=6,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 4)
+        self.assertEqual(len(broken_links), 5)
         self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
         self.assertEqual(broken_links[2]["link_href"], "/contacts")
         self.assertEqual(
             broken_links[3]["link_href"],
             "https://docs.google.com/document/d/some-document",
+        )
+        self.assertEqual(
+            broken_links[4]["link_href"],
+            "about:blank",
         )
 
     def test_find_broken_links_ignores_valid_links(self):
@@ -1219,6 +1231,7 @@ class TestFindBrokenLinks(TestCase):
                 or link["link_href"].startswith("#id.")
                 or link["link_href"].startswith("/")
                 or link["link_href"].startswith("https://docs.google.com")
+                or link["link_href"].startswith("about:blank")
             )
         ]
         self.assertEqual(len(valid_links), 0)

@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Catch broken links that look like "about:blank"
 - Add endnotes header to the .docx files as well
   - Do not add an Endnotes header if one already exists
 - Fix asterisks causing unintentional italics
