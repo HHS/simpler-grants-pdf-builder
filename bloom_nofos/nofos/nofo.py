@@ -206,6 +206,14 @@ def convert_table_with_all_ths_to_a_regular_table(table):
     If these conditions are met, it creates a tbody after the thead and moves all rows except
     the first one to the tbody. Additionally, it converts all th cells in the tbody to td cells.
     """
+    # if there are cells with "rowspan" not equal to 1, return early
+    cells_with_rowspan = table.find_all(
+        lambda tag: (tag.name == "td" or tag.name == "th") and tag.has_attr("rowspan")
+    )
+    for cell in cells_with_rowspan:
+        if cell["rowspan"] != "1":
+            return
+
     thead = table.find("thead")
     tbody = table.find("tbody")
 
@@ -844,27 +852,12 @@ def unwrap_empty_elements(soup):
     """
     This function mutates the soup!
 
-    Unwraps empty span, strong, sup, and em tags from the BeautifulSoup `soup`.
+    Unwraps empty span, strong, sup, a, and em tags from the BeautifulSoup `soup`.
     """
-    spans = soup.select("span")
-    for span in spans:
-        if not span.get_text().strip():
-            span.unwrap()
-
-    strongs = soup.select("strong")
-    for strong in strongs:
-        if not strong.get_text().strip():
-            strong.unwrap()
-
-    sups = soup.select("sup")
-    for sup in sups:
-        if not sup.get_text().strip():
-            sup.unwrap()
-
-    ems = soup.select("em")
-    for em in ems:
-        if not em.get_text().strip():
-            em.unwrap()
+    elements = soup.find_all(["em", "span", "strong", "sup"])
+    for el in elements:
+        if not el.get_text().strip():
+            el.unwrap()
 
 
 def clean_table_cells(soup):

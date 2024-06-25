@@ -424,6 +424,25 @@ class ConvertTableTest(TestCase):
         self.assertIn("<th>Data 1</th>", result)
         self.assertNotIn("<td>Data 1</td>", result)
 
+    def test_th_with_rowspan_2(self):
+        html_content = """
+        <table>
+            <thead>
+                <tr><th>Header 1</th><th rowspan="2">Header 2</th><th>Header 3</th></tr>
+                <tr><th>Header 1</th><th>Data 3</th></tr>
+            </thead>
+        </table>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        table = soup.find("table")
+        convert_table_with_all_ths_to_a_regular_table(table)
+        result = str(soup)
+        self.assertEqual(result.count("<tbody>"), 0)
+        rows = soup.select("thead > tr")
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(rows[0].find_all("th")), 3)
+        self.assertEqual(len(rows[1].find_all("th")), 2)
+
     def test_table_with_complex_html_in_ths(self):
         html_content = """<table><thead><tr><th><p>Navigator activity</p></th><th><p>Description of project goal</p></th><th><p>Target number</p></th></tr><tr><th><p>Training and certification</p></th><th><p><a id="_heading=h.1v1yuxt"></a>Navigator staff to be federally trained and certified or re-certified for PY 2025 by October 1, 2024, broken out as follows:</p><ul><li>Total number of federally trained and certified or re-certified Navigators.</li><li>Portion of Navigators that will be paid full-time (100%) from Navigator funding.</li><li>Portion of Navigators that will be paid part-time from Navigator funding, including what percentage of their time will be paid from Navigator funding.</li><li>Portion of Navigators that will be volunteers or otherwise not paid from Navigator funding.</li></ul></th><th><p>Sample response:</p><ul><li>15 Navigators</li><li>8 Navigators</li><li>3 Navigators (2 at 50% and 1 at 25%)</li><li>4 Navigators</li></ul></th></tr><tr><th><p>Education, enrollment, and post-enrollment assistance</p></th><th><p>Number of 1:1 interactions between Navigators and consumers (including both general and specific inquiries). </p></th><th></th></tr><tr><th><p>Enrollment assistance</p></th><th><p>Number of consumers assisted with enrollment or re-enrollment in a QHP.</p></th><th></th></tr><tr><th><p>Enrollment assistance</p></th><th><p>Number of consumers assisted with Medicaid/CHIP applications or referrals.</p></th><th></th></tr><tr><th><p>Health literacy and education </p></th><th><p>Number of consumers assisted with understanding the basic concepts and rights related to <a href="https://www.cms.gov/marketplace/technical-assistance-resources/coverage-to-care-presentation.pdf">health coverage and how to use it.</a></p></th><th></th></tr><tr><th><p>Post-enrollment assistance: Resolving enrollment issues and referrals</p></th><th><p>Number of consumers assisted with complex cases, other Exchange (Marketplace) enrollment issues, or referrals.</p></th><th></th></tr><tr><th><p>Post-enrollment assistance: Tax forms and appeals</p></th><th><p>Number of consumers assisted with Marketplace forms, exemptions, and appeals. </p></th><th></th></tr></thead></table>"""
         soup = BeautifulSoup(html_content, "html.parser")

@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Do not remove headers from tables with a rowspan other than one
 - Clean up table output in markdown conversion
   - Pretty print the HTML and remove classnames when table HTML is used
 - More style maps added based on an early version of HHS-2026-ACL-AOD-DDUC
