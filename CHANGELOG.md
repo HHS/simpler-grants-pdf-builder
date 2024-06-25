@@ -26,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Add endnotes header to the .docx files as well
+  - Do not add an Endnotes header if one already exists
 - Fix asterisks causing unintentional italics
 - Do not swap out icons if table cells contain multiple instances
 - Fix for weird lists that look like this: <ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>
