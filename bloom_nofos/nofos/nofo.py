@@ -919,17 +919,27 @@ def add_endnotes_header_if_exists(soup):
     If so, takes the last <hr> tag, converts it to a <h1> tag with the text
     "Endnotes" to add a header before the endnotes.
     """
+    # Find the endnotes in Google Docs HTML export
     hrs = soup.find_all("hr")
     if len(hrs):
-        hr = hrs.pop()
-        if not hr.get("style"):
-            hr.name = "h1"
-            hr.string = "Endnotes"
+        last_hr = hrs.pop()
+        if not last_hr.get("style"):
+            last_hr.name = "h1"
+            last_hr.string = "Endnotes"
 
-            # create another new tag
-            subsection_header = soup.new_tag("h2")
-            subsection_header.string = "Select the endnote number to jump to the related section in the document."
-            hr.insert_after(subsection_header)
+    # Find the endnotes in a docx export
+    ols = soup.find_all("ol")
+    if ols:
+        last_ol = ols.pop()
+        # Check if the first li in the ol contains the id "footnote-0"
+        first_li = last_ol.find("li")
+        if first_li and first_li.get("id") == "footnote-0":
+            # Create the h1 element
+            h1_tag = soup.new_tag("h1")
+            h1_tag.string = "Endnotes"
+
+            # Insert the h1 element before the ol
+            last_ol.insert_before(h1_tag)
 
 
 def escape_asterisks_in_table_cells(soup):

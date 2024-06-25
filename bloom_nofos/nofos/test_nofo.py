@@ -2007,7 +2007,7 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
             str(soup),
-            "<div><h1>Endnotes</h1><h2>Select the endnote number to jump to the related section in the document.</h2></div>",
+            "<div><h1>Endnotes</h1></div>",
         )
 
     def test_no_hr_tags_present(self):
@@ -2032,7 +2032,75 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
             str(soup),
-            "<div><hr/><h1>Endnotes</h1><h2>Select the endnote number to jump to the related section in the document.</h2></div>",
+            "<div><hr/><h1>Endnotes</h1></div>",
+        )
+
+    def test_basic_ol_with_footnote_li(self):
+        html_content = '<div><ol><li id="footnote-0">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol></div>',
+        )
+
+    def test_basic_ol_with_li_no_id(self):
+        html_content = "<div><ol><li>Item 1</li></ol></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(str(soup), html_content)
+
+    def test_basic_ol_with_wrong_footnote_li(self):
+        html_content = '<div><ol><li id="footnote-1">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            html_content,
+        )
+
+    def test_basic_ol_with_footnote_li_but_NOT_last_ol(self):
+        html_content = '<div><ol><li id="footnote-0">Item 1.1</li></ol><ol><li>Item 2.1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(str(soup), html_content)
+
+    # this is not what we want but we don't expect it to happen
+    def test_basic_with_hr_without_style_AND_basic_ol_with_footnote_li(self):
+        html_content = '<div><hr><ol><li id="footnote-0">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Endnotes</h1><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol></div>',
+        )
+
+    # this is reversed: ALSO not what we want but we don't expect it to happen
+    def test_basic_ol_with_footnote_li_AND_basic_with_hr_without_style(self):
+        html_content = '<div><ol><li id="footnote-0">Item 1</li></ol><hr></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol><h1>Endnotes</h1></div>',
+        )
+
+    def test_multiple_ols_with_footnote_li(self):
+        html_content = '<div><ol><li id="footnote-0">Item 1.1</li></ol><ol><li id="footnote-0">Item 2.1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><ol><li id="footnote-0">Item 1.1</li></ol><h1>Endnotes</h1><ol><li id="footnote-0">Item 2.1</li></ol></div>',
+        )
+
+    def test_basic_ol_with_footnote_li_and_other_stuff(self):
+        html_content = '<div><ol><li id="footnote-0">Item 1</li></ol><h1>Step 8: Play Northgard</h1><p>Northgard is a fun way to spend time while waiting for the results of your appliation</p></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol><h1>Step 8: Play Northgard</h1><p>Northgard is a fun way to spend time while waiting for the results of your appliation</p></div>',
         )
 
 
