@@ -56,9 +56,7 @@ from .nofo import (
 from .utils import clean_string, match_view_url
 
 
-class TablesAndStuffInTablesConverterTest(TestCase):
-    maxDiff = None
-
+class TablesAndStuffInTablesConverterTABLESTest(TestCase):
     def test_table_no_colspan_or_rowspan(self):
         html = "<table><tr><td>Cell 1</td><td>Cell 2</td></tr></table>"
         expected_markdown = "|  |  |\n| --- | --- |\n| Cell 1 | Cell 2 |"
@@ -136,6 +134,51 @@ class TablesAndStuffInTablesConverterTest(TestCase):
   </td>
  </tr>
 </table>"""
+
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+
+class TablesAndStuffInTablesConverterOLSTest(TestCase):
+    maxDiff = None
+
+    def test_ol_start_not_one(self):
+        html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
+        pretty_html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_ol_inside_td(self):
+        html = "<table><tr><th>Header</th></tr><tr><td><ol><li>Item 1</li><li>Item 2</li></ol></td></tr></table>"
+        pretty_html = "| Header |\n| --- |\n| <ol><li>Item 1</li><li>Item 2</li></ol> |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_ol_start_one(self):
+        html = '<ol start="1"><li>Item 1</li><li>Item 2</li></ol>'
+        expected_markdown = "1. Item 1\n2. Item 2"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ol_inside_td_start_not_one(self):
+        html = '<table><tr><th>Header</th></tr><tr><td><ol start="3"><li>Item 1</li><li>Item 2</li></ol></td></tr></table>'
+        pretty_html = (
+            '| Header |\n| --- |\n| <ol start="3"><li>Item 1</li><li>Item 2</li></ol> |'
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_ol_inside_td_start_not_one(self):
+        html = '<table><tr><th>Header</th></tr><tr><td><ol start="3"><li>Item 1</li><li>Item 2</li></ol></td></tr></table>'
+        pretty_html = (
+            '| Header |\n| --- |\n| <ol start="3"><li>Item 1</li><li>Item 2</li></ol> |'
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
+    def test_table_with_ol_strip_classes_nested_html(self):
+        html = '<table class="c40"><tr class="c311"><td class="c68 c127" colspan="1" rowspan="1"><p class="c89"><span class="c6">Demonstrates the ability to comply with all applicable privacy and security standards by developing a PII plan that outlines the following:</span></p></td><td class="c168 c127" colspan="1" rowspan="1"><p class="c41 c104"><span class="c69 c67"></span></p></td></tr><tr class="c216"><td class="c31" colspan="1" rowspan="1"><ul class="c1 lst-kix_list_76-0"><li class="c33 li-bullet-0"><span class="c6">A process for ensuring compliance by all staff performing Navigator activities (as well as those who have access to sensitive information or PII related to your organization’s Navigator activities) with </span><span class="c7"><a class="c32" href="https://www.google.com">FFE privacy and security standards</a></span><span class="c6">, especially when using computers, laptops, tablets, smartphones, and other electronic devices.</span></li></ul></td><td class="c11" colspan="1" rowspan="1"><p class="c41"><span class="c51">5 points</span></p></td></tr></table>'
+        pretty_html = """|  |  |\n| --- | --- |\n| Demonstrates the ability to comply with all applicable privacy and security standards by developing a PII plan that outlines the following: |  |\n| <ul><li><span>A process for ensuring compliance by all staff performing Navigator activities (as well as those who have access to sensitive information or PII related to your organization’s Navigator activities) with </span><span><a href="https://www.google.com">FFE privacy and security standards</a></span><span>, especially when using computers, laptops, tablets, smartphones, and other electronic devices.</span></li></ul> | 5 points |"""
 
         md_body = md(html)
         self.assertEqual(md_body.strip(), pretty_html)
