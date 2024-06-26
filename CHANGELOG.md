@@ -46,12 +46,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Do not add an Endnotes header if one already exists
 - Fix asterisks causing unintentional italics
 - Do not swap out icons if table cells contain multiple instances
-- Fix for weird lists that look like this: <ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>
+- Fix for weird lists that look like this: `<ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>`
   - We were seeing them in docx imports
 - Add tbody tags to tables imported from .docx files
-  - Previously all the cells became <th> elements, in a huge <thead> (with no tbody)
-- Unwrap empty <sup> tags, which are lying around in Word exports for some reason
-  - Also unwrap empty <em> tags
+  - Previously all the cells became `<th>` elements, in a huge `<thead>` (with no tbody)
+- Unwrap empty `<sup>` tags, which are lying around in Word exports for some reason
+  - Also unwrap empty `<em>` tags
 - Broken heading/bookmark links from docx files show up on the edit page
 - Bookmark links followed by a paragraph are preserved
   - Add classes for bookmark levels
