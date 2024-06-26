@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add new theme: CMS blue
   - Works in no-text mode or hero image mode
 - Reconstruct footnotes for the .docx imports
+- Added "filename" field to store filename along with the NOFO
 
 ### Changed
 

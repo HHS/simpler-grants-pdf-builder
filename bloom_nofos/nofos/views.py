@@ -247,12 +247,12 @@ def nofo_import(request, pk=None):
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
 
-        # Specify the output file path
-        output_file_path = "debug_output.html"
+        # # Specify the output file path
+        # output_file_path = "debug_output.html"
 
-        # Write the HTML content to the file
-        with open(output_file_path, "w", encoding="utf-8") as file:
-            file.write(str(soup))
+        # # Write the HTML content to the file
+        # with open(output_file_path, "w", encoding="utf-8") as file:
+        #     file.write(str(soup))
 
         # mutate the HTML
         join_nested_lists(soup)
@@ -282,14 +282,17 @@ def nofo_import(request, pk=None):
             return redirect(view_path, **kwargs)
 
         sections = get_subsections_from_sections(sections)
+        filename = uploaded_file.name.strip()
 
         if pk:
+            # RE-IMPORT NOFO
             if nofo.status in ["published", "review"]:
                 return HttpResponseBadRequest(
                     "In review/Published NOFOs can’t be re-imported."
                 )
 
             try:
+                nofo.filename = filename
                 nofo = overwrite_nofo(nofo, sections)
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
@@ -306,12 +309,14 @@ def nofo_import(request, pk=None):
             return redirect("nofos:nofo_index")
 
         else:
+            # IMPORT NEW NOFO
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
 
             try:
                 nofo = create_nofo(nofo_title, sections)
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
+                nofo.filename = filename
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
