@@ -219,9 +219,12 @@ def is_callout_box_table_markdown(table):
 def is_footnote_ref(a_tag):
     """
     Checks if the given a_tag is a footnote reference link
-    by verifying it matches the expected footnote link format: eg, "[1]" or "[10]"
+    by verifying it matches the expected footnote link format: eg, "[1]" or "[10]", or "↑"
     """
     text = a_tag.get_text().strip()
+    if text == "↑":
+        return True
+
     return (
         len(text) >= 3  # at least 3 characters
         and text.startswith("[")
@@ -230,7 +233,25 @@ def is_footnote_ref(a_tag):
     )
 
 
-def format_footnote_ref(a_tag):
+def get_footnote_type(a_tag):
+    href = a_tag.get("href", "").strip()
+
+    # HTML
+    # Inline footnote links look like "<a href="#ref10">[10]</a>"
+    # Endnote footnote links look like "<a href="#ftnt_ref10">[10]</a>"
+    if href.startswith("#ref") or href.startswith("#ftnt"):
+        return "html"
+
+    # DOCX
+    # Inline footnote links look like "<a href="#footnote-1">[2]</a>"
+    # Endnote footnote links look like "<a href="#footnote-ref-1">↑</a>"
+    if href.startswith("#footnote"):
+        return "docx"
+
+    return None
+
+
+def format_footnote_ref_html(a_tag):
     """
     Formats a footnote reference link tag to have the expected ID and href attributes
     based on whether it is an endnote or inline footnote reference.
@@ -252,3 +273,31 @@ def format_footnote_ref(a_tag):
     else:
         a_tag["id"] = "ftnt_ref{}".format(footnote_number)
         a_tag["href"] = "#ftnt{}".format(footnote_number)
+
+
+def format_footnote_ref_docx(a_tag):
+    """
+    DOCX: Formats a footnote reference link tag to have the expected ID and href attributes
+    based on whether it is an endnote or inline footnote reference.
+
+    Inline: <a href="#footnote-0">[1]</a>
+    Endnote: <a href="#footnote-ref-0">↑</a>
+
+    Final inline: <li id="footnote-1"><p> American Lung Association. <a href="#footnote-ref-1">↑</a></p></li>
+    Final endnote: <sup><a href="#footnote-1" id="footnote-ref-1">[2]</a></sup>
+    """
+    footnote_text = a_tag.get_text().strip()
+    footnote_href = a_tag.get("href", "").strip()
+    if not footnote_href:
+        return
+
+    footnote_number = footnote_href.split("-")[-1]
+
+    if footnote_text != "↑":
+        a_tag["id"] = "footnote-ref-{}".format(footnote_number)
+    else:
+        # add the id to the li in the endnotes
+        li_tag = a_tag.find_parent("li")
+        if li_tag:
+            li_tag["id"] = "footnote-{}".format(footnote_number)
+            li_tag["tabindex"] = "-1"

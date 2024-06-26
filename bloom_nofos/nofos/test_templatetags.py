@@ -12,7 +12,9 @@ from .templatetags.utils import (
     add_class_to_table_rows,
     convert_paragraph_to_searchable_hr,
     find_elements_with_character,
-    format_footnote_ref,
+    format_footnote_ref_docx,
+    format_footnote_ref_html,
+    get_footnote_type,
     get_parent_td,
     is_footnote_ref,
 )
@@ -562,8 +564,16 @@ class IsFootnoteRefTest(TestCase):
         tag = BeautifulSoup('<a href="#ftnt1">[1]</a>', "html.parser").a
         self.assertTrue(is_footnote_ref(tag))
 
+    def test_footnote_ref_arrow_true(self):
+        tag = BeautifulSoup('<a href="#ftnt1">↑</a>', "html.parser").a
+        self.assertTrue(is_footnote_ref(tag))
+
     def test_footnote_ref_false(self):
         tag = BeautifulSoup('<a href="#section">Not a footnote</a>', "html.parser").a
+        self.assertFalse(is_footnote_ref(tag))
+
+    def test_footnote_ref_arrow_false(self):
+        tag = BeautifulSoup('<a href="#section">Not a footnote ↑</a>', "html.parser").a
         self.assertFalse(is_footnote_ref(tag))
 
     def test_empty_tag(self):
@@ -591,31 +601,96 @@ class IsFootnoteRefTest(TestCase):
         self.assertFalse(is_footnote_ref(tag))
 
 
-class FormatFootnoteRefTest(TestCase):
-    def test_format_footnote_ref_body(self):
+class GetFootnoteTypeTest(TestCase):
+    def test_html_inline_footnote(self):
+        html = '<a href="#ref10">[10]</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertEqual(get_footnote_type(a_tag), "html")
+
+    def test_html_endnote_footnote(self):
+        html = '<a href="#ftnt_ref_10">[10]</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertEqual(get_footnote_type(a_tag), "html")
+
+    def test_docx_inline_footnote(self):
+        html = '<sup><a href="#footnote-1" id="footnote-ref-1">[2]</a></sup>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertEqual(get_footnote_type(a_tag), "docx")
+
+    def test_docx_endnote_footnote(self):
+        html = '<li id="footnote-1"><p> American Lung Association. <a href="https://etc">Asthma Trends and Burden</a>.  <a href="#footnote-ref-1">↑</a></p></li>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a", href="#footnote-ref-1")
+        self.assertEqual(get_footnote_type(a_tag), "docx")
+
+    def test_no_footnote(self):
+        html = '<a href="#some-other-link">[2]</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertIsNone(get_footnote_type(a_tag))
+
+
+class FormatFootnoteRefDOCXTest(TestCase):
+    def test_inline_footnote(self):
+        html = '<sup><a href="#footnote-1">[2]</a></sup>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        format_footnote_ref_docx(a_tag)
+        self.assertEqual(a_tag["id"], "footnote-ref-1")
+
+    def test_endnote_footnote(self):
+        html = '<li><p> American Lung Association. <a href="#footnote-ref-1">↑</a></p></li>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        format_footnote_ref_docx(a_tag)
+        li_tag = a_tag.find_parent("li")
+        self.assertEqual(li_tag["id"], "footnote-1")
+        self.assertEqual(li_tag["tabindex"], "-1")
+
+    def test_no_parent_li(self):
+        html = '<a href="#footnote-ref-1">↑</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        format_footnote_ref_docx(a_tag)
+        li_tag = a_tag.find_parent("li")
+        self.assertIsNone(li_tag)
+        self.assertNotIn("id", a_tag.attrs)
+
+    def test_no_href(self):
+        html = "<a>↑</a>"
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertNotIn("id", a_tag.attrs)
+
+
+class FormatFootnoteRefHTMLTest(TestCase):
+    def test_format_footnote_ref_html_body(self):
         tag = BeautifulSoup('<a href="#ftnt1">[1]</a>', "html.parser").a
-        format_footnote_ref(tag)
+        format_footnote_ref_html(tag)
         self.assertEqual(tag.get("href"), "#ftnt1")
         self.assertEqual(tag.get("id"), "ftnt_ref1")
 
-    def test_format_footnote_ref_endnote(self):
+    def test_format_footnote_ref_html_endnote(self):
         tag = BeautifulSoup('<a href="#ftnt_ref1">[1]</a>', "html.parser").a
-        format_footnote_ref(tag)
+        format_footnote_ref_html(tag)
         self.assertEqual(tag.get("href"), "#ftnt_ref1")
         self.assertEqual(tag.get("id"), "ftnt1")
 
-    def test_format_footnote_ref_body_overwrite_id_href(self):
+    def test_format_footnote_ref_html_body_overwrite_id_href(self):
         tag = BeautifulSoup(
             '<a href="#ftnt999" id="ftnt_ref999">[1]</a>', "html.parser"
         ).a
-        format_footnote_ref(tag)
+        format_footnote_ref_html(tag)
         self.assertEqual(tag.get("href"), "#ftnt1")
         self.assertEqual(tag.get("id"), "ftnt_ref1")
 
-    def test_format_footnote_ref_endnote_overwrite_id(self):
+    def test_format_footnote_ref_html_endnote_overwrite_id(self):
         tag = BeautifulSoup(
             '<a href="#ftnt_ref999" id="ftnt999">[1]</a>', "html.parser"
         ).a
-        format_footnote_ref(tag)
+        format_footnote_ref_html(tag)
         self.assertEqual(tag.get("href"), "#ftnt_ref999")
         self.assertEqual(tag.get("id"), "ftnt1")
