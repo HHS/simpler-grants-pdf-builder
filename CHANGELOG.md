@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Change on-screen text around file importing to refer to .docx files before .html
 - Wrap soup in a body tag if there isn't one.
 - Remove classes in HTML uls and ols
 - Catch broken links that look like "about:blank"
