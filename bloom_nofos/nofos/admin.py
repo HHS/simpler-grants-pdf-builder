@@ -119,6 +119,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "theme",
                     "cover",
                     "icon_style",
+                    "filename",
                 )
             },
         ),
@@ -131,6 +132,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
         ),
     )
 
+    readonly_fields = ("filename",)
     mirror_fields = ("inline_css",)
 
 

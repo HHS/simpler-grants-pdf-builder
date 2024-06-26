@@ -33,6 +33,12 @@ class Nofo(models.Model):
         help_text="This will be publicly visible when the NOFO is published.",
     )
 
+    filename = models.CharField(
+        max_length=511,
+        blank=True,
+        help_text="The filename used to import this NOFO. If re-imported, this value is the most recent filename.",
+    )
+
     short_name = models.CharField(
         max_length=511,
         blank=True,
