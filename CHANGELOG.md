@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add CSS class for light blue table backgrounds (previously this was an inline fix)
 - Add new theme: CMS blue
   - Works in no-text mode or hero image mode
+- Reconstruct footnotes for the .docx imports
 
 ### Changed
 
@@ -23,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - There is currently no way to build style maps for these
 - Insert a "next page" link before the running header nav
   - Hopefully this allows screenreader users to avoid that focus trap
+  - Update: removed this
 
 ### Fixed
 
