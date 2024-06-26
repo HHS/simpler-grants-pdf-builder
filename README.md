@@ -6,7 +6,7 @@
 
 ## About
 
-The NOFO Builder is a Word-2-PDF pipeline that ingests HTML files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
+The NOFO Builder is a Word-2-PDF pipeline that ingests Word files (or HTML files) and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
 
 The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
@@ -16,7 +16,11 @@ A "Notice of Financial Opportunity" (NOFO) is a big document accouncing governme
 
 An example of a NOFO might be an announcement of funding to provide preschool services in Florida.
 
-NOFOs are typically very long, very plain documents without much in the way of formatting. The NOFO Builder uses a new design to generate NOFOs that are better structured and easier to read.
+NOFOs are typically very long, very plain documents without much in the way of formatting.
+
+The SimplerNOFOs project relies on NOFOs that have been written using content guides: essentially, templated starter documents that ensure NOFOs are structured in similar ways.
+
+Once the NOFO documents have been finalized, the NOFO Builder imports these documents as .docx files (or as .html files exported from Google Docs) to generate publishable PDFs that are better structured and easier to read.
 
 ## Workflow
 
@@ -25,12 +29,13 @@ NOFOs are written by HHS’ Operating Divisions (OpDivs), and peer-edited by Blo
 Once a NOFO is reviewed and approved, our anticipated workflow is:
 
 1. NOFO is approved to be published
-2. A Bloom coach exports the Word document as an HTML file
+2. A Bloom coach receives the finalized .docx file
 3. The Bloom coach logs into the NOFO builder
-4. The Bloom coach uploads the HTML file to create an HTML representation of the NOFO
-   - optional: The Bloom coach can view and make edits to the uploaded NOFO
-5. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
-6. Done!
+4. The Bloom coach uploads the .docx file to create an HTML representation of the NOFO
+   - optional: The Bloom coach can also use an .html exported from Google Docs
+5. The Bloom coach can view and make edits to the uploaded NOFO
+6. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
+7. Done!
 
 ## Getting started
 
