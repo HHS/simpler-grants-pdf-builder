@@ -103,7 +103,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     change_form_template = "admin/nofo_change_form.html"
     form = NofoModelForm
     inlines = [SectionLinkInline]
-    list_display = ["title", "id", "number", "status", "designer", "created", "updated"]
+    list_display = ["title", "id", "number", "group", "status", "designer", "updated"]
 
     fieldsets = (
         (
@@ -116,6 +116,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "opdiv",
                     "coach",
                     "designer",
+                    "group",
                     "theme",
                     "cover",
                     "icon_style",
