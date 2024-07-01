@@ -200,6 +200,25 @@ class Nofo(models.Model):
         help_text="The status of this NOFO in the NOFO builder.",
     )
 
+    GROUP_CHOICES = [
+        ("bloom", "Bloomworks (Placeholder)"),
+        ("acf", "ACF: Administration for Children and Families"),
+        ("acl", "ACL: Administration for Community Living"),
+        ("aspr", "ASPR: Administration for Strategic Preparedness and Response"),
+        ("cdc", "CDC: Centers for Disease Control and Prevention"),
+        ("cms", "CMS: Centers for Medicare & Medicaid Services"),
+        ("hrsa", "HRSA: Health Resources and Services Administration"),
+        ("ihs", "IHS: Indian Health Service"),
+    ]
+
+    group = models.CharField(
+        max_length=16,
+        choices=GROUP_CHOICES,
+        blank=False,
+        default="bloom",
+        help_text="The OpDiv grouping of this NOFO. The group is used to control access to a NOFO.",
+    )
+
     inline_css = models.TextField(
         "Inline CSS",
         blank=True,
