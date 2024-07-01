@@ -1,7 +1,20 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.core.exceptions import ValidationError
 
 from .models import BloomUser
+
+
+def validate_user_group_for_staff_and_admin(cleaned_data):
+    group = cleaned_data.get("group")
+    is_superuser = cleaned_data.get("is_superuser")
+    is_staff = cleaned_data.get("is_staff")
+
+    if group != "bloom" and (is_superuser or is_staff):
+        raise ValidationError(
+            "Only users in the 'bloom' group can be staff or superusers."
+        )
+    return cleaned_data
 
 
 class BloomUserCreationForm(UserCreationForm):
@@ -11,10 +24,11 @@ class BloomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = BloomUser
-        fields = (
-            "full_name",
-            "email",
-        )
+        fields = ("full_name", "email", "group")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return validate_user_group_for_staff_and_admin(cleaned_data)
 
 
 class BloomUserChangeForm(UserChangeForm):
@@ -24,6 +38,10 @@ class BloomUserChangeForm(UserChangeForm):
             "full_name",
             "email",
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return validate_user_group_for_staff_and_admin(cleaned_data)
 
 
 class BloomUserNameForm(forms.ModelForm):

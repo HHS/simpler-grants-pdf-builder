@@ -9,10 +9,17 @@ class BloomUserAdmin(UserAdmin):
     add_form = BloomUserCreationForm
     form = BloomUserChangeForm
     model = BloomUser
-    list_display = ("email", "full_name", "is_staff", "is_active", "is_superuser")
+    list_display = (
+        "email",
+        "full_name",
+        "group",
+        "is_staff",
+        "is_active",
+        "is_superuser",
+    )
     list_filter = ()
     fieldsets = (
-        (None, {"fields": ("email", "full_name", "password")}),
+        (None, {"fields": ("email", "full_name", "group", "password")}),
         (
             "Permissions",
             {
@@ -33,6 +40,7 @@ class BloomUserAdmin(UserAdmin):
                 "fields": (
                     "email",
                     "full_name",
+                    "group",
                     "password1",
                     "password2",
                     "is_staff",
