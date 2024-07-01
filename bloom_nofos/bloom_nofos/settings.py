@@ -435,3 +435,16 @@ DJANGO_MIRROR_DEFAULTS = {
     "line_wrapping": True,
     "line_numbers": True,
 }
+
+# "Groups" for categorizing users and NOFOs
+
+GROUP_CHOICES = [
+    ("bloom", "Bloomworks"),
+    ("acf", "ACF: Administration for Children and Families"),
+    ("acl", "ACL: Administration for Community Living"),
+    ("aspr", "ASPR: Administration for Strategic Preparedness and Response"),
+    ("cdc", "CDC: Centers for Disease Control and Prevention"),
+    ("cms", "CMS: Centers for Medicare & Medicaid Services"),
+    ("hrsa", "HRSA: Health Resources and Services Administration"),
+    ("ihs", "IHS: Indian Health Service"),
+]

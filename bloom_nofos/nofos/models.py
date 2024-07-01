@@ -1,4 +1,5 @@
 import cssutils
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import ValidationError
@@ -50,6 +51,14 @@ class Nofo(models.Model):
         max_length=200,
         blank=True,
         help_text="The official opportunity number for this NOFO. It will be public.",
+    )
+
+    group = models.CharField(
+        max_length=16,
+        choices=settings.GROUP_CHOICES,
+        blank=False,
+        default="bloom",
+        help_text="The OpDiv grouping of this NOFO. The group is used to control access to a NOFO. The 'Bloomworks' group can be used to hide NOFOs from OpDiv users.",
     )
 
     opdiv = models.CharField(
