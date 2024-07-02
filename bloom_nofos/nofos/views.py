@@ -100,6 +100,11 @@ class NofosListView(ListView):
             else:
                 queryset = queryset.filter(status=self.status)
 
+        # Filter NOFOs by the user's group unless they are 'bloom' users
+        user_group = self.request.user.group
+        if user_group != "bloom":
+            queryset = queryset.filter(group=user_group)
+
         return queryset.order_by("-updated")
 
     def get_context_data(self, **kwargs):
