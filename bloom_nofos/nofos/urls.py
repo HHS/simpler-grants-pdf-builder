@@ -34,6 +34,11 @@ urlpatterns = [
         name="nofo_edit_number",
     ),
     path(
+        "<int:pk>/edit/group",
+        views.NofoEditGroupView.as_view(),
+        name="nofo_edit_group",
+    ),
+    path(
         "<int:pk>/edit/application-deadline",
         views.NofoEditApplicationDeadlineView.as_view(),
         name="nofo_edit_application_deadline",

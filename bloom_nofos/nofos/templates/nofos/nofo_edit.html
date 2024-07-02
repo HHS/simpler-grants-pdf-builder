@@ -35,9 +35,15 @@ Edit “{{ nofo|nofo_name }}”
   </div>
 </div>
 
-<span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
-
-<p>Make small edits to your NOFO here.</p>
+<div class="margin-bottom-3">
+{% if user.group == 'bloom' %}
+  <a href="{% url 'nofos:nofo_edit_group' nofo.id %}" class="usa-tag--link">
+  <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
+  </a>
+{% else %}
+  <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
+{% endif %}
+</div>
 
 {% if nofo.status == 'published' %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
