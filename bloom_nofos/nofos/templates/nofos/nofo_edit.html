@@ -35,7 +35,7 @@ Edit “{{ nofo|nofo_name }}”
   </div>
 </div>
 
-<div class="margin-bottom-3">
+<div class="margin-bottom-5">
 {% if user.group == 'bloom' %}
   <a href="{% url 'nofos:nofo_edit_group' nofo.id %}" class="usa-tag--link">
   <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
