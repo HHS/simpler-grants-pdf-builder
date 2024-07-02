@@ -41,7 +41,8 @@ body > footer {
   color: white;
 }
 
-.usa-logo .usa-tag--link:hover {
+.usa-logo .usa-tag--link:hover,
+.nofo_edit .usa-tag--link:hover .bg-group {
   text-decoration: underline;
   opacity: 0.9;
 }
@@ -100,6 +101,10 @@ details > summary > span:hover {
 
 .nofo_edit .usa-tag.bg-group--not-uppercase {
   text-transform: none;
+}
+
+.nofo_edit a.usa-tag--link {
+  text-decoration: none;
 }
 
 .nofo_edit--header,

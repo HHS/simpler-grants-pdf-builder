@@ -139,7 +139,7 @@ class Nofo(models.Model):
         choices=COVER_CHOICES,
         blank=False,
         default="nofo--cover-page--medium",
-        help_text="The cover style for the NOFO (eg, large image, medium image, no image).",
+        help_text="The cover style for the NOFO.",
     )
 
     ICON_STYLE_CHOICES = [

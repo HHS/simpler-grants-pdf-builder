@@ -13,7 +13,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Add (read-only) group to user table
+- Allow 'bloom' users to change a NOFO's group
+- Add read-only group to user table
 - Add read-only group to nofo index table and nofo edit page
 - Set NOFO group to user's group during import
 
