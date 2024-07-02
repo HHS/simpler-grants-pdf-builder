@@ -39,6 +39,7 @@ from .forms import (
     NofoThemeForm,
     SubsectionForm,
 )
+from .mixins import check_nofo_group_permission, GroupAccessMixin
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_body_if_no_body,
@@ -114,7 +115,7 @@ class NofosListView(ListView):
         return context
 
 
-class NofosDetailView(DetailView):
+class NofosDetailView(GroupAccessMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_view.html"
 
@@ -145,7 +146,7 @@ class NofosDetailView(DetailView):
         return context
 
 
-class NofosEditView(DetailView):
+class NofosEditView(GroupAccessMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
 
@@ -159,7 +160,7 @@ class NofosEditView(DetailView):
         return context
 
 
-class NofosDeleteView(DeleteView):
+class NofosDeleteView(GroupAccessMixin, DeleteView):
     model = Nofo
     success_url = reverse_lazy("nofos:nofo_index")
 
@@ -359,7 +360,7 @@ def nofo_import(request, pk=None):
         )
 
 
-class BaseNofoEditView(UpdateView):
+class BaseNofoEditView(GroupAccessMixin, UpdateView):
     model = Nofo
 
     def get_success_url(self):
@@ -489,6 +490,7 @@ class NofoEditStatusView(BaseNofoEditView):
     template_name = "nofos/nofo_edit_status.html"
 
 
+@check_nofo_group_permission
 def nofo_subsection_edit(request, pk, subsection_pk):
     subsection = get_object_or_404(Subsection, pk=subsection_pk)
     nofo = subsection.section.nofo
@@ -533,7 +535,7 @@ def nofo_subsection_edit(request, pk, subsection_pk):
     )
 
 
-class PrintNofoAsPDFView(View):
+class PrintNofoAsPDFView(GroupAccessMixin, View):
     def post(self, request, pk):
         nofo = get_object_or_404(Nofo, pk=pk)
 
@@ -593,7 +595,7 @@ class PrintNofoAsPDFView(View):
             )
 
 
-class CheckNOFOLinksDetailView(DetailView):
+class CheckNOFOLinksDetailView(GroupAccessMixin, DetailView):
     model = Nofo
     template_name = (
         "nofos/nofo_check_links.html"  # Replace with your actual template name
