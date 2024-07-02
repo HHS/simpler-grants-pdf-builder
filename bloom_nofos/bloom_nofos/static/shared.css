@@ -1,3 +1,60 @@
+/* CSS vars */
+:root {
+  --color--black: #000000;
+  --color--white: #ffffff;
+  --color--table-grey: #edf1f3;
+  --color--table-blue: #f2f6fc;
+  --color--light-grey: #dde2e8;
+  --color--med-grey: #5c5c5c;
+  --color--dark-blue: #00345e;
+  --color--med-blue: #336a90;
+  --color--vibrant-blue: #005eaa;
+  --color--hhs-blue: #005ea2;
+  --color--light-blue: #bdd9ed;
+  --color--pale-blue: #e8f0f3;
+  --color--med-brown: #c0b0a2;
+
+  --color--bloom-green: #37a576;
+  --color--acf-blue: #264a64;
+  --color--acl-blue: #08508f;
+  --color--aspr-blue: #155197;
+  --color--cms-blue: #004a86;
+  --color--hrsa-blue: #006699;
+  --color--ihs-blue: #012f52;
+}
+
+.bg-group--bloom {
+  background-color: var(--color--bloom-green);
+}
+
+.bg-group--acf {
+  background-color: var(--color--acf-blue);
+}
+
+.bg-group--acl {
+  background-color: var(--color--acl-blue);
+}
+
+.bg-group--aspr {
+  background-color: var(--color--aspr-blue);
+}
+
+.bg-group--cdc {
+  background-color: var(--color--vibrant-blue);
+}
+
+.bg-group--cms {
+  background-color: var(--color--cms-blue);
+}
+
+.bg-group--hrsa {
+  background-color: var(--color--hrsa-blue);
+}
+
+.bg-group--ihs {
+  background-color: var(--color--ihs-blue);
+}
+
 @media screen {
   /* Remove right padding from last nav item */
   .usa-nav__primary-item:not(.usa-nav__primary-item__right-padding):last-of-type

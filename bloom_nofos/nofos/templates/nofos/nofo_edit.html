@@ -28,12 +28,14 @@ Edit “{{ nofo|nofo_name }}”
 </div>
 <div class="nofo_edit--header">
   {% with nofo|nofo_name as nofo_name_str %}
-  <h1 class="font-heading-xl margin-y-0">Edit “{{ nofo_name_str }}”</h1>
+    <h1 class="font-heading-xl margin-y-1">Edit “{{ nofo_name_str }}”</h1>
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
     {% include "includes/print_button.html" %}
   </div>
 </div>
+
+<span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
 
 <p>Make small edits to your NOFO here.</p>
 

@@ -13,6 +13,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Add (read-only) group to user table
+- Add read-only group to nofo index table and nofo edit page
+
 ### Fixed
 
 ## [1.21.0] - 2023-06-26
