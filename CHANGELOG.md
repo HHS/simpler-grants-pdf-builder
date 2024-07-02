@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add (read-only) group to user table
 - Add read-only group to nofo index table and nofo edit page
+- Set NOFO group to user's group during import
 
 ### Fixed
 
