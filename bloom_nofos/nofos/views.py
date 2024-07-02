@@ -320,6 +320,7 @@ def nofo_import(request, pk=None):
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
+            nofo.group = request.user.group  # set the group to the user's group
             nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
             nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
             nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
