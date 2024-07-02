@@ -35,6 +35,7 @@
 				<tr>
 					<th scope="col">Name</th>
 					<th scope="col">Number</th>
+					<th scope="col" class="nofo-group-col">Group</th>
 					<th scope="col">Status</th>
 					<th scope="col">Coach</th>
 					<th scope="col">Designer</th>
@@ -47,6 +48,9 @@
 					<tr {% if nofo.status == 'ready_for_adam' %}class="ready_for_adam"{% endif %}>
 						<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
 						<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
+						<td>
+							<span class="usa-tag bg-group bg-group--{{ nofo.group }}">{{ nofo.group }}</span>
+						</td>
 						<td>{{ nofo.get_status_display }}</td>
 						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>

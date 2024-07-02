@@ -78,6 +78,10 @@ details > summary > span:hover {
   width: 25%;
 }
 
+.nofo_index table .nofo-group-col {
+  width: 1%;
+}
+
 .nofo_index table tr.ready_for_adam th,
 .nofo_index table tr.ready_for_adam td {
   background: #f2e4d4;
@@ -93,6 +97,10 @@ details > summary > span:hover {
 /* Edit page */
 
 /* header widget for NOFO */
+
+.nofo_edit .usa-tag.bg-group--not-uppercase {
+  text-transform: none;
+}
 
 .nofo_edit--header,
 .subsection_edit--header {

@@ -3,23 +3,7 @@
    - https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 */
 
-/* CSS vars */
-:root {
-  --color--black: #000000;
-  --color--white: #ffffff;
-  --color--table-grey: #edf1f3;
-  --color--table-blue: #f2f6fc;
-  --color--light-grey: #dde2e8;
-  --color--med-grey: #5c5c5c;
-  --color--dark-blue: #00345e;
-  --color--med-blue: #336a90;
-  --color--vibrant-blue: #005eaa;
-  --color--cms-blue: #004a86;
-  --color--hhs-blue: #005ea2;
-  --color--light-blue: #bdd9ed;
-  --color--pale-blue: #e8f0f3;
-  --color--med-brown: #c0b0a2;
-}
+/* CSS vars are in shared.css */
 
 /* Assign named pages */
 
