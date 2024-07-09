@@ -21,6 +21,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Remove GroupAccessObjectMixin from the Detail view to allow for printing (we have other restrictions on that one)
+
 ## [1.21.0] - 2023-06-26
 
 ### Added
