@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Update Python version to 3.11.9
 - Allow 'bloom' users to change a NOFO's group
 - Add read-only group to user table
 - Add read-only group to nofo index table and nofo edit page
