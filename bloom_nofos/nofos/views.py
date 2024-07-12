@@ -17,7 +17,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
-from django.views.generic import DeleteView, DetailView, ListView, UpdateView, View
+from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 
 from bloom_nofos.utils import cast_to_boolean
 
@@ -41,7 +41,6 @@ from .forms import (
     SubsectionForm,
 )
 from .mixins import (
-    check_nofo_group_permission,
     GroupAccessObjectMixin,
     has_nofo_group_permission_func,
 )
@@ -507,49 +506,45 @@ class NofoEditStatusView(BaseNofoEditView):
     template_name = "nofos/nofo_edit_status.html"
 
 
-@check_nofo_group_permission
-def nofo_subsection_edit(request, pk, subsection_pk):
-    subsection = get_object_or_404(Subsection, pk=subsection_pk)
-    nofo = subsection.section.nofo
-    form = None
+class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
+    model = Subsection
+    form_class = SubsectionForm
+    template_name = "nofos/subsection_edit.html"
+    context_object_name = "subsection"
+    pk_url_kwarg = "subsection_pk"
 
-    if pk != nofo.id:
-        return HttpResponseBadRequest("Oops, bad NOFO id")
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo_id = kwargs.get("pk")
+        self.subsection = self.get_object()
+        self.nofo = self.subsection.section.nofo
 
-    if nofo.status == "published":
-        return HttpResponseBadRequest("Published NOFOs can’t be edited.")
+        if self.nofo.id != self.nofo_id:
+            return HttpResponseBadRequest("Oops, bad NOFO id")
+        if self.nofo.status == "published":
+            return HttpResponseBadRequest("Published NOFOs can’t be edited.")
 
-    if request.method == "POST":
-        # create a form instance and populate it with data from the request:
-        form = SubsectionForm(request.POST)
-        if form.is_valid():
-            subsection.name = form.cleaned_data["name"]
-            subsection.body = form.cleaned_data["body"]
+        return super().dispatch(request, *args, **kwargs)
 
-            html_class = form.cleaned_data["html_class"]
-            if html_class:
-                subsection.html_class = html_class if html_class != "none" else ""
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        html_class = form.cleaned_data["html_class"]
+        if html_class:
+            self.object.html_class = html_class if html_class != "none" else ""
+        self.object.save()
 
-            subsection.save()
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "Updated subsection: “<a href='#{}'>{}</a>”".format(
+                self.object.html_id, self.object.name or self.object.id
+            ),
+        )
+        return redirect("nofos:nofo_edit", pk=self.nofo.id)
 
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                "Updated subsection: “<a href='#{}'>{}</a>”".format(
-                    subsection.html_id, subsection.name or subsection.id
-                ),
-            )
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-    else:
-        form = SubsectionForm(instance=subsection)
-
-    return render(
-        request,
-        "nofos/subsection_edit.html",
-        {"subsection": subsection, "nofo": nofo, "form": form},
-    )
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo"] = self.nofo
+        return context
 
 
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
