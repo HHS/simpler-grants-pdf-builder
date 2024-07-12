@@ -14,13 +14,14 @@ def has_nofo_group_permission_func(user, nofo):
 # Note that this Mixin requires a self.get_object method
 class GroupAccessObjectMixin:
     def dispatch(self, request, *args, **kwargs):
-        # Call the base implementation first to get a self.object defined
-        response = super().dispatch(request, *args, **kwargs)
+        # Temporarily retrieve the object to check permissions before it gets deleted
+        obj = self.get_object()
 
-        if not has_nofo_group_permission_func(request.user, self.get_object()):
+        if not has_nofo_group_permission_func(request.user, obj):
             raise PermissionDenied("You don’t have permission to view this NOFO.")
 
-        return response
+        # Continue with normal processing, which will include deletion
+        return super().dispatch(request, *args, **kwargs)
 
 
 def check_nofo_group_permission(func):
