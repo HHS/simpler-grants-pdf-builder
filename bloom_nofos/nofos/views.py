@@ -547,6 +547,44 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return context
 
 
+class NofoSubsectionDeleteView(DeleteView):
+    model = Subsection
+    pk_url_kwarg = "subsection_pk"
+    template_name = "nofos/subsection_confirm_delete.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo"] = self.nofo
+        return context
+
+    def get_success_url(self):
+        nofo = self.object.section.nofo
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": nofo.id})
+
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo_id = kwargs.get("pk")
+        self.subsection = self.get_object()
+        self.nofo = self.subsection.section.nofo
+
+        if self.nofo.id != self.nofo_id:
+            return HttpResponseBadRequest("Oops, bad NOFO id")
+        if self.nofo.status != "draft":
+            return HttpResponseBadRequest(
+                "Only subsections of draft NOFOs can be deleted."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        messages.error(
+            self.request,
+            "You deleted subsection: “{}” from “{}”".format(
+                self.object.name or self.object.id, self.object.section.name
+            ),
+        )
+        return super().form_valid(form)
+
+
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 

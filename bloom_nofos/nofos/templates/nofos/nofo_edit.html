@@ -21,7 +21,7 @@ Edit “{{ nofo|nofo_name }}”
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
-{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" only %}
+{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
 
 <div class="back-link font-body-md margin-bottom-105">
   <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
