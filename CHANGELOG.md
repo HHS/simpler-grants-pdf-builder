@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Deleting a NOFO is chill now (no 404 error)
+
 ## [1.22.0] - 2023-07-12
 
 ### Added
