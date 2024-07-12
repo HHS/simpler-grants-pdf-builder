@@ -1,0 +1,27 @@
+bloom_nofos/data.json
+bloom_nofos/db.sqlite3
+bloom_nofos/debug_output.html
+CHANGELOG.md
+README.md
+TODO.md
+
+# Python stuff
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
