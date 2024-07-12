@@ -99,6 +99,11 @@ urlpatterns = [
         name="subsection_edit",
     ),
     path(
+        "<int:pk>/edit/subsection/<int:subsection_pk>/delete",
+        views.NofoSubsectionDeleteView.as_view(),
+        name="subsection_delete",
+    ),
+    path(
         "<int:pk>/check-links/",
         views.CheckNOFOLinksDetailView.as_view(),
         name="nofo_check_links",
