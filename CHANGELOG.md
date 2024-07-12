@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.22.0] - 2023-07-12
+
+### Added
+
 - Add "group" to NOFOs (represents the OpDiv the NOFO is associated with)
 - Add "group" to users (represents the OpDiv that the user comes from)
 
