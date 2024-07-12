@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Redirect logged-in users from the homepage to the index page
+
 ### Fixed
 
 - Deleting a NOFO is chill now (no 404 error)

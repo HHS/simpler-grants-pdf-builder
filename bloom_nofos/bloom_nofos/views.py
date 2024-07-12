@@ -1,6 +1,7 @@
 from constance import config
 from django.contrib.auth.views import RedirectURLMixin
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView
 
@@ -8,6 +9,10 @@ from .forms import DocraptorTestModeForm
 
 
 def index(request):
+    # Redirect logged-in users to the NOFO index page
+    if request.user.is_authenticated:
+        return redirect("nofos:nofo_index")
+
     return render(request, "index.html")
 
 
