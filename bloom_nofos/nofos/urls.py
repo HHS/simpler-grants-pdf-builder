@@ -93,6 +93,12 @@ urlpatterns = [
         views.NofoEditStatusView.as_view(),
         name="nofo_edit_status",
     ),
+    path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
+    path(
+        "<int:pk>/create/subsection",
+        views.NofoSubsectionCreateView.as_view(),
+        name="subsection_create",
+    ),
     path(
         "<int:pk>/edit/subsection/<int:subsection_pk>",
         views.NofoSubsectionEditView.as_view(),
@@ -104,13 +110,12 @@ urlpatterns = [
         name="subsection_delete",
     ),
     path(
-        "<int:pk>/check-links/",
+        "<int:pk>/check-links",
         views.CheckNOFOLinksDetailView.as_view(),
         name="nofo_check_links",
     ),
-    path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
     path(
-        "<int:nofo_id>/export_nofo_links/",
+        "<int:nofo_id>/export_nofo_links",
         views.export_nofo_links,
         name="export_nofo_links",
     ),

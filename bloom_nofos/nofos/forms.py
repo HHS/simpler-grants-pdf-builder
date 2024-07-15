@@ -73,8 +73,8 @@ class NofoMetadataForm(forms.ModelForm):
         }
 
 
-# this one needs a custom field and a custom widget so don't use the factory function
-class SubsectionForm(forms.ModelForm):
+# body needs a custom field and a custom widget so don't use the factory function
+class SubsectionEditForm(forms.ModelForm):
     body = MartorFormField(required=False)
 
     class Meta:
@@ -83,6 +83,34 @@ class SubsectionForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(),
         }
+
+
+class SubsectionCreateForm(forms.ModelForm):
+    body = MartorFormField(required=False)
+
+    class Meta:
+        model = Subsection
+        fields = ["name", "tag", "callout_box", "body"]
+        widgets = {
+            "name": forms.TextInput(),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("name")
+        body = cleaned_data.get("body")
+        tag = cleaned_data.get("tag")
+
+        if name and not tag:
+            raise forms.ValidationError("Subsection name must have a Heading level.")
+
+        if tag and not name:
+            raise forms.ValidationError("Heading level must have a Subsection name.")
+
+        if not name and not body:
+            raise forms.ValidationError(
+                "Subsection must have either a name or content."
+            )
 
 
 class InsertOrderSpaceForm(forms.Form):

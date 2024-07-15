@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static nofo_name input_type whitespaceless %}
+
+{% block title %}
+  Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}subsection_edit{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+    <div class="back-link font-body-md margin-bottom-105">
+      <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo_name_str }}”</a>
+    </div>
+    <div class="subsection_edit--header">
+      <h1 class="font-heading-xl margin-y-0">New subsection</h1>
+    </div>
+  {% endwith %}
+  
+  <p>Create a new subsection AFTER THIS ONE and BEFORE this one IN THIS SECTION.</p>
+
+  <form class="form" method="post">
+    {% csrf_token %}
+    <fieldset>
+
+      {% if form.non_field_errors %}
+        <legend class="legend--bootstrap">
+          <div class="usa-error-message">
+            Error: {{ form.non_field_errors.0 }}
+          </div>
+        </legend>
+      {% endif %}
+
+      <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
+
+      <div class="form-group">
+        <label 
+        {% whitespaceless %}
+            class="
+              usa-label
+                {% if form.non_field_errors and "have a Subsection name" in form.non_field_errors.0 or "name or content" in form.non_field_errors.0   %}
+                  text-secondary-dark
+                {% endif %}
+            "
+        {% endwhitespaceless %} for="name">Subsection name</label>
+        <input {% whitespaceless %}
+          class="
+            usa-input
+            border-2px 
+              {% if form.non_field_errors and "have a Subsection name" in form.non_field_errors.0 or "name or content" in form.non_field_errors.0   %}
+                border-secondary-dark
+              {% endif %}
+          "
+        {% endwhitespaceless %} id="name" name="name" type="text" aria-describedby="" value="{{ form.name.value|default_if_none:'' }}">
+      </div>
+      <!-- tag-->
+      <div class="form-group width-card-lg">
+        <label 
+          {% whitespaceless %}
+              class="
+                usa-label
+                  {% if form.non_field_errors and "have a Heading level" in form.non_field_errors.0 %}
+                    text-secondary-dark
+                  {% endif %}
+              "
+        {% endwhitespaceless %} for="tag">Heading level</label>
+        <div class="usa-hint" id="tag--hint-1">
+          Required if name exists
+        </div>
+        <select {% whitespaceless %}
+          class="
+                usa-select
+                border-2px 
+                  {% if form.non_field_errors and "have a Heading level" in form.non_field_errors.0 %}
+                    border-secondary-dark
+                  {% endif %}
+              "
+        {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" aria-describedby="tag--hint-1">
+          <option value="">---------</option>
+          <option value="h2" {% if form.tag.value == 'h2' %}selected{% endif %}>Heading 2</option>
+          <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
+          <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
+          <option value="h5" {% if form.tag.value == 'h5' %}selected{% endif %}>Heading 5</option>
+          <option value="h6" {% if form.tag.value == 'h6' %}selected{% endif %}>Heading 6</option>
+          <option value="h7" {% if form.tag.value == 'h7' %}selected{% endif %}>Heading 7</option>
+        </select>
+
+      </div>
+
+      <!-- callout box -->
+      <div class="form-group margin-top-4">
+        <label 
+        {% whitespaceless %}
+            class="
+              usa-label
+                {% if form.non_field_errors and "name or content" in form.non_field_errors.0   %}
+                text-secondary-dark
+                {% endif %}
+            "
+          {% endwhitespaceless %} for="body">Subsection content</label>
+        <div 
+        {% whitespaceless %}
+          class="
+                border-2px 
+                margin-top-1 
+                radius-md 
+                border-2px 
+                {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
+                  border-secondary-dark
+                {% else %}
+                  border-base-lighter
+                {% endif %}
+              "
+        {% endwhitespaceless %} id="{{ form.body.name }}" tabIndex="-1" {% if form.errors.body %}aria-describedby="body--error-message"{% endif %}>
+          {{ form.body }}
+        </div>
+      </div>
+    </fieldset>
+    <div class="form-group">
+      <button class="usa-button margin-top-3" type="submit">Save subsection</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/resizable.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
+{% endblock %}

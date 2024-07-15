@@ -223,11 +223,6 @@ details > summary > span:hover {
   white-space: pre-wrap;
 }
 
-.main-martor {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
 .nofo_edit main table.table--section {
   border-collapse: initial;
   border-spacing: 0 5px;
@@ -296,6 +291,8 @@ details > summary > span:hover {
   display: none;
 }
 
+/* Subsection edit page */
+
 .subsection_edit .hint--subsection-id {
   display: flex;
   justify-content: space-between;
@@ -317,6 +314,20 @@ details > summary > span:hover {
 
 .subsection_edit .hint--subsection-id:hover {
   color: #1b1b1b;
+}
+
+.subsection_edit .main-martor {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.subsection_edit .main-martor .icon.expand-editor {
+  display: none;
+}
+
+.subsection_edit .main-martor .resizable .resizable-b {
+  width: 100%;
+  cursor: row-resize;
 }
 
 fieldset {
