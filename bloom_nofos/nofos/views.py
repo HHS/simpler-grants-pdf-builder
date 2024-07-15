@@ -17,7 +17,13 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
-from django.views.generic import DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from bloom_nofos.utils import cast_to_boolean
 
@@ -38,12 +44,10 @@ from .forms import (
     NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeForm,
-    SubsectionForm,
+    SubsectionCreateForm,
+    SubsectionEditForm,
 )
-from .mixins import (
-    GroupAccessObjectMixin,
-    has_nofo_group_permission_func,
-)
+from .mixins import GroupAccessObjectMixin, has_nofo_group_permission_func
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_body_if_no_body,
@@ -84,7 +88,11 @@ from .nofo import (
     unwrap_empty_elements,
     unwrap_nested_lists,
 )
-from .utils import style_map_manager
+from .utils import create_subsection_html_id, style_map_manager
+
+###########################################################
+###################### NOFO VIEWS ########################
+###########################################################
 
 
 class NofosListView(ListView):
@@ -506,9 +514,126 @@ class NofoEditStatusView(BaseNofoEditView):
     template_name = "nofos/nofo_edit_status.html"
 
 
+class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
+    model = Nofo
+
+    def post(self, request, pk):
+        nofo = self.get_object()
+
+        # the absolute uri is points to the /edit page, so remove that from the path
+        nofo_url = request.build_absolute_uri(nofo.get_absolute_url()).replace(
+            "/edit", ""
+        )
+
+        if "localhost" in nofo_url:
+            return HttpResponseBadRequest(
+                "Server error printing NOFO. Can't print a NOFO on localhost."
+            )
+
+        nofo_filename = "{}.pdf".format(
+            nofo.number or nofo.short_name or nofo.title
+        ).lower()
+
+        mode = request.GET.get(
+            "mode", "attachment"
+        )  # Default to inline if not specified
+        if mode not in ["attachment", "inline"]:
+            mode = "attachment"
+
+        doc_api = docraptor.DocApi()
+        doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
+        doc_api.api_client.configuration.debug = True
+
+        try:
+            response = doc_api.create_doc(
+                {
+                    "test": config.DOCRAPTOR_TEST_MODE,  # test documents are free but watermarked
+                    "document_url": nofo_url,
+                    "document_type": "pdf",
+                    "javascript": False,
+                    "prince_options": {
+                        "media": "print",  # use print styles instead of screen styles
+                        "profile": "PDF/UA-1",
+                    },
+                },
+            )
+
+            pdf_file = io.BytesIO(response)
+
+            # Build response
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = '{}; filename="{}"'.format(
+                mode, nofo_filename
+            )
+
+            return response
+        except docraptor.rest.ApiException as error:
+            print("docraptor.rest.ApiException")
+            print(error.status)
+            print(error.reason)
+            return HttpResponseBadRequest(
+                "Server error printing NOFO. Check logs for error messages."
+            )
+
+
+###########################################################
+################### SUBSECTION VIEWS ######################
+###########################################################
+
+
+class NofoSubsectionCreateView(CreateView):
+    model = Subsection
+    form_class = SubsectionCreateForm
+    template_name = "nofos/subsection_create.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo_id = kwargs.get("pk")
+        self.nofo = get_object_or_404(Nofo, pk=self.nofo_id)
+
+        # TODO: only published can't be added to
+        if self.nofo.status != "draft":
+            return HttpResponseBadRequest(
+                "Only subsections of draft NOFOs can be created."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        section = self.nofo.sections.last()
+        form.instance.section = section
+        last_subsection = section.subsections.last()
+        form.instance.order = last_subsection.order + 1
+
+        # TODO: there should also be an id for callout boxes
+        if form.cleaned_data["name"]:
+            form.instance.html_id = create_subsection_html_id(
+                form.instance.order, form.instance
+            )
+
+        response = super().form_valid(form)
+
+        messages.success(
+            self.request,
+            "Created new subsection: “{}”".format(
+                form.instance.name or form.instance.id
+            ),
+        )
+
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection"] = self.object
+        context["nofo"] = self.nofo
+        return context
+
+
 class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
     model = Subsection
-    form_class = SubsectionForm
+    form_class = SubsectionEditForm
     template_name = "nofos/subsection_edit.html"
     context_object_name = "subsection"
     pk_url_kwarg = "subsection_pk"
@@ -585,66 +710,9 @@ class NofoSubsectionDeleteView(DeleteView):
         return super().form_valid(form)
 
 
-class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
-    model = Nofo
-
-    def post(self, request, pk):
-        nofo = self.get_object()
-
-        # the absolute uri is points to the /edit page, so remove that from the path
-        nofo_url = request.build_absolute_uri(nofo.get_absolute_url()).replace(
-            "/edit", ""
-        )
-
-        if "localhost" in nofo_url:
-            return HttpResponseBadRequest(
-                "Server error printing NOFO. Can't print a NOFO on localhost."
-            )
-
-        nofo_filename = "{}.pdf".format(
-            nofo.number or nofo.short_name or nofo.title
-        ).lower()
-
-        mode = request.GET.get(
-            "mode", "attachment"
-        )  # Default to inline if not specified
-        if mode not in ["attachment", "inline"]:
-            mode = "attachment"
-
-        doc_api = docraptor.DocApi()
-        doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
-        doc_api.api_client.configuration.debug = True
-
-        try:
-            response = doc_api.create_doc(
-                {
-                    "test": config.DOCRAPTOR_TEST_MODE,  # test documents are free but watermarked
-                    "document_url": nofo_url,
-                    "document_type": "pdf",
-                    "javascript": False,
-                    "prince_options": {
-                        "media": "print",  # use print styles instead of screen styles
-                        "profile": "PDF/UA-1",
-                    },
-                },
-            )
-
-            pdf_file = io.BytesIO(response)
-
-            # Build response
-            response = HttpResponse(pdf_file, content_type="application/pdf")
-            response["Content-Disposition"] = '{}; filename="{}"'.format(
-                mode, nofo_filename
-            )
-
-            return response
-        except docraptor.rest.ApiException as error:
-            print("docraptor.rest.ApiException")
-            print(error.status)
-            print(error.reason)
-            return HttpResponseBadRequest(
-                "Server error printing NOFO. Check logs for error messages."
-            )
+###########################################################
+###################### ADMIN VIEWS ########################
+###########################################################
 
 
 class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
