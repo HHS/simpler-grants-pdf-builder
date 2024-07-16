@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Deleting a NOFO is chill now (no 404 error)
+- Solve layout bug where buttons next to each other wouldn't be rounded
 
 ## [1.22.0] - 2023-07-12
 
