@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add a user-visible route to delete a subsection
+- Filter the available themes by a user's group
 
 ### Changed
 
