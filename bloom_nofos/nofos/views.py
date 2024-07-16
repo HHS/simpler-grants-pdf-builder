@@ -494,7 +494,18 @@ class NofoEditThemeView(BaseNofoEditView):
 
             theme_categories_dict[opdiv].append(theme)
 
-        context["theme_categories"] = theme_categories_dict
+        # Get user group, defaulting to None if user or user group does not exist
+        user = self.request.user
+        group_key = user.group.upper() if user and user.group else None
+
+        # Check if the user group exists, is not 'bloom', and is in the theme categories dictionary
+        if group_key and group_key != "BLOOM" and group_key in theme_categories_dict:
+            # Only show themes related to a user's group
+            filtered_theme_categories = {group_key: theme_categories_dict[group_key]}
+            context["theme_categories"] = filtered_theme_categories
+        else:
+            # Show all themes
+            context["theme_categories"] = theme_categories_dict
 
         return context
 
