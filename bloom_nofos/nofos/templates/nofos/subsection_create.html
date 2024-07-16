@@ -38,8 +38,6 @@
         </legend>
       {% endif %}
 
-      <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
-
       <div class="form-group">
         <label 
         {% whitespaceless %}
@@ -61,7 +59,7 @@
         {% endwhitespaceless %} id="name" name="name" type="text" aria-describedby="" value="{{ form.name.value|default_if_none:'' }}">
       </div>
       <!-- tag-->
-      <div class="form-group width-card-lg">
+      <div class="form-group width-mobile">
         <label 
           {% whitespaceless %}
               class="
@@ -95,6 +93,16 @@
       </div>
 
       <!-- callout box -->
+      <div class="form-group margin-top-4 width-mobile">
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box">
+          <label class="usa-checkbox__label" for="callout_box">Is callout box?
+            <span class="usa-checkbox__label-description">Callout boxes <span aria-hidden="true">(📦)</span> use an accent color to call attention to important content.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- body -->
       <div class="form-group margin-top-4">
         <label 
         {% whitespaceless %}
