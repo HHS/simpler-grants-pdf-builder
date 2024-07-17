@@ -611,22 +611,24 @@ class NofoSubsectionCreateView(CreateView):
 
     def form_valid(self, form):
         section = self.nofo.sections.last()
-        form.instance.section = section
-        last_subsection = section.subsections.last()
-        form.instance.order = last_subsection.order + 1
+        # create a gap in the "order" count to insert this new subsection
+        insert_order_space(section.id, form.cleaned_data["order"])
 
-        # TODO: there should also be an id for callout boxes
-        if form.cleaned_data["name"]:
-            form.instance.html_id = create_subsection_html_id(
-                form.instance.order, form.instance
-            )
+        form.instance.section = section
+        form.instance.order = form.cleaned_data["order"]
+        # TODO: this could be duplicated if people keep creating + deleting subsections
+        form.instance.html_id = create_subsection_html_id(
+            section.subsections.count(), form.instance
+        )
 
         response = super().form_valid(form)
 
         messages.success(
             self.request,
-            "Created new subsection: “{}”".format(
-                form.instance.name or form.instance.id
+            "Created new subsection: “<a href='#{}'>{}</a>” in ‘{}’".format(
+                form.instance.html_id,
+                form.instance.name or "(#{})".format(form.instance.order),
+                section.name,
             ),
         )
 
@@ -671,8 +673,10 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            "Updated subsection: “<a href='#{}'>{}</a>”".format(
-                self.object.html_id, self.object.name or self.object.id
+            "Updated subsection: “<a href='#{}'>{}</a>” in ‘{}’".format(
+                self.object.html_id,
+                self.object.name or "(#{})".format(self.object.order),
+                self.object.section.name,
             ),
         )
         return redirect("nofos:nofo_edit", pk=self.nofo.id)
