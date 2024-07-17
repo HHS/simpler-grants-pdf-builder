@@ -90,7 +90,7 @@ class SubsectionCreateForm(forms.ModelForm):
 
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "callout_box", "body"]
+        fields = ["name", "tag", "callout_box", "body", "order"]
         widgets = {
             "name": forms.TextInput(),
         }
