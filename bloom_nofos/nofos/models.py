@@ -27,6 +27,19 @@ THEME_CHOICES = [
 ]
 
 
+DESIGNER_CHOICES = [
+    ("bloom-adam", "Adam"),
+    ("bloom-emily", "Emily"),
+    ("bloom-kevin", "Kevin"),
+    ("bloom-yasmine", "Yasmine"),
+    ("hrsa-betty", "Betty"),
+    ("hrsa-doretha", "Doretha"),
+    ("hrsa-gwen", "Gwen"),
+    ("hrsa-randy", "Randy"),
+    ("hrsa-stephanie", "Stephanie"),
+]
+
+
 class Nofo(models.Model):
     title = models.TextField(
         "NOFO title",
@@ -178,13 +191,6 @@ class Nofo(models.Model):
         blank=True,
         help_text="The coach has the primary responsibility for editing this NOFO.",
     )
-
-    DESIGNER_CHOICES = [
-        ("adam", "Adam"),
-        ("kevin", "Kevin"),
-        ("emily", "Emily"),
-        ("yasmine", "Yasmine"),
-    ]
 
     designer = models.CharField(
         max_length=16,

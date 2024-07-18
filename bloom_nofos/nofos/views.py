@@ -432,6 +432,11 @@ class NofoEditCoachDesignerView(BaseNofoEditView):
     form_class = NofoCoachDesignerForm
     template_name = "nofos/nofo_edit_coach_designer.html"
 
+    def get_form_kwargs(self):
+        kwargs = super(NofoEditCoachDesignerView, self).get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class NofoEditNumberView(BaseNofoEditView):
     form_class = NofoNumberForm

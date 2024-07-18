@@ -1,7 +1,7 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import Nofo, Section, Subsection
+from .models import DESIGNER_CHOICES, Nofo, Section, Subsection
 from .utils import get_icon_path_choices
 
 
@@ -33,8 +33,6 @@ def create_nofo_form_class(field_arr, not_required_field_labels=None):
 NofoNameForm = create_nofo_form_class(
     ["title", "short_name"], not_required_field_labels=["Short name"]
 )
-NofoCoachDesignerForm = create_nofo_form_class(["coach", "designer"])
-
 NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoCoverForm = create_nofo_form_class(["cover"])
@@ -46,6 +44,37 @@ NofoSubagency2Form = create_nofo_form_class(["subagency2"])
 NofoSubagencyForm = create_nofo_form_class(["subagency"])
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
+
+
+# Nofo designer form
+class NofoCoachDesignerForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["coach", "designer"]
+
+    def __init__(self, *args, user=None, **kwargs):
+        super(NofoCoachDesignerForm, self).__init__(*args, **kwargs)
+        # Adjust designer choices based on user group
+        if user and user.group != "bloom":
+            # Filter designers by user's group prefix
+            self.fields["designer"].choices = [
+                (choice, label)
+                for choice, label in DESIGNER_CHOICES
+                if choice.startswith(user.group)
+            ]
+        else:
+            # If user is from 'bloom' or no user is provided, show all designers
+            self.fields["designer"].choices = [
+                (
+                    code,
+                    (
+                        name
+                        if "bloom" in code
+                        else "{} ({})".format(name, code.split("-")[0].upper())
+                    ),
+                )
+                for code, name in DESIGNER_CHOICES
+            ]
 
 
 # we want to change the available icon style options based on the nofo theme
