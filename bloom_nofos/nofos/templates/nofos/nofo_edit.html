@@ -353,6 +353,13 @@ Edit “{{ nofo|nofo_name }}”
         <span class="floating">
           <a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
         </span>
+        <a
+          class="usa-button usa-button--outline add-button"
+          type="button"
+          href="{% url 'nofos:subsection_create' nofo.id %}?prev_subsection={{subsection.id}}"
+        >
+          Add subsection
+        </a>
       </td>
     </tr>
     {% endfor %}
