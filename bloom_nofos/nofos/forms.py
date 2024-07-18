@@ -54,17 +54,21 @@ class NofoCoachDesignerForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super(NofoCoachDesignerForm, self).__init__(*args, **kwargs)
+
+        # Initialize choices with an empty option
+        initial_choices = [("", "---------")]
+
         # Adjust designer choices based on user group
         if user and user.group != "bloom":
             # Filter designers by user's group prefix
-            self.fields["designer"].choices = [
+            self.fields["designer"].choices = initial_choices + [
                 (choice, label)
                 for choice, label in DESIGNER_CHOICES
                 if choice.startswith(user.group)
             ]
         else:
             # If user is from 'bloom' or no user is provided, show all designers
-            self.fields["designer"].choices = [
+            self.fields["designer"].choices = initial_choices + [
                 (
                     code,
                     (
