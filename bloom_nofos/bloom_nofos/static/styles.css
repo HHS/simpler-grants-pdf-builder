@@ -230,7 +230,7 @@ details > summary > span:hover {
 
 .nofo_edit main table.table--section th,
 .nofo_edit main table.table--section td {
-  padding: calc(0.5rem - 5px) 1rem 0.5rem 1rem;
+  padding: calc(0.75rem - 5px) 1rem 0.75rem 1rem;
 }
 
 .nofo_edit main table.table--section th,
@@ -289,6 +289,40 @@ details > summary > span:hover {
   tr
   td:last-of-type {
   display: none;
+}
+
+.nofo_edit table.table--section tr {
+  position: relative;
+}
+
+.nofo_edit table.table--section tr {
+  position: relative;
+}
+
+.nofo_edit
+  table.table--section
+  .nofo-edit-table--subsection--manage
+  .add-button {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  z-index: 1;
+  /*
+  background-image: url(/static/img/usa-icons/add.svg),
+    linear-gradient(transparent, transparent);
+  background-repeat: no-repeat;
+  */
+  display: none;
+  padding: 0.55rem 0.9rem;
+  font-weight: 400;
+  font-size: 85%;
+  background-color: white;
+}
+
+.nofo_edit table.table--section tr:hover .add-button,
+.nofo_edit table.table--section tr:focus-within .add-button {
+  display: block;
 }
 
 /* Subsection edit page */

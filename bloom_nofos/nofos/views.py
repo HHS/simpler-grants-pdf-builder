@@ -601,21 +601,30 @@ class NofoSubsectionCreateView(CreateView):
         self.nofo_id = kwargs.get("pk")
         self.nofo = get_object_or_404(Nofo, pk=self.nofo_id)
 
-        # TODO: only published can't be added to
-        if self.nofo.status != "draft":
+        if self.nofo.status == "published":
             return HttpResponseBadRequest(
-                "Only subsections of draft NOFOs can be created."
+                "Subsections can’t be added to published NOFOs."
             )
+
+        # Check if prev_subsection is provided
+        self.prev_subsection_id = self.request.GET.get("prev_subsection")
+        if not self.prev_subsection_id:
+            return HttpResponseBadRequest("No subsection provided.")
+
+        # Fetch previous subsection
+        self.prev_subsection = get_object_or_404(Subsection, pk=self.prev_subsection_id)
 
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        section = self.nofo.sections.last()
+        section = self.prev_subsection.section
+        order = self.prev_subsection.order + 1
+
         # create a gap in the "order" count to insert this new subsection
-        insert_order_space(section.id, form.cleaned_data["order"])
+        insert_order_space(section.id, order)
 
         form.instance.section = section
-        form.instance.order = form.cleaned_data["order"]
+        form.instance.order = order
         # TODO: this could be duplicated if people keep creating + deleting subsections
         form.instance.html_id = create_subsection_html_id(
             section.subsections.count(), form.instance
@@ -641,6 +650,7 @@ class NofoSubsectionCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         context["subsection"] = self.object
         context["nofo"] = self.nofo
+        context["prev_subsection"] = self.prev_subsection
         return context
 
 
