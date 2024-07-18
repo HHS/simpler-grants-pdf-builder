@@ -719,8 +719,9 @@ def find_broken_links(nofo):
             or tag.get("href", "").startswith("#id.")
             or tag.get("href", "").startswith("/")
             or tag.get("href", "").startswith("https://docs.google.com")
-            or tag.get("href", "").startswith("#_heading")
-            or tag.get("href", "").startswith("#_bookmark")
+            or tag.get("href", "").startswith("#_")
+            # or tag.get("href", "").startswith("#_heading")
+            # or tag.get("href", "").startswith("#_bookmark")
             or tag.get("href", "") == "about:blank"
         )
 
