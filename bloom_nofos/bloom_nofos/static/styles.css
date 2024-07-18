@@ -312,8 +312,8 @@ details > summary > span:hover {
   background-image: url(/static/img/usa-icons/add.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
-  */
-  display: none;
+  *
+  display: none; */
   padding: 0.55rem 0.9rem;
   font-weight: 400;
   font-size: 85%;
