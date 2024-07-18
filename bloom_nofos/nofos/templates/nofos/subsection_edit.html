@@ -178,8 +178,8 @@
     <h2 class="font-heading-lg">Other actions</h2>
     <ul class="usa-button-group margin-top-2">
       <li class="usa-button-group__item">
-        <a class="usa-button" href="{% url 'nofos:subsection_create' nofo.id %}">
-          Create a new subsection
+        <a class="usa-button usa-button--accent-cool" href="{% url 'nofos:subsection_create' nofo.id %}?prev_subsection={{subsection.id}}">
+          Add subsection after this one
         </a>
       </li>
       <li class="usa-button-group__item">
