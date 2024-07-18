@@ -2638,6 +2638,14 @@ class PreserveHeadingLinksTest(TestCase):
         expected = '<h4 id="_heading=h.3rdcrjn">About priority populations</h4>'
         self.assertEqual(result, expected)
 
+    def test_empty_anchor_with_underscore_id(self):
+        html = '<h4><a id="_Deadlines"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_Deadlines">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
     def test_empty_anchor_with_heading_id_wipes_out_existing_id(self):
         html = '<h4 id="about-priority-populations"><a id="_heading=h.3rdcrjn"></a>About priority populations</h4>'
         soup = BeautifulSoup(html, "html.parser")

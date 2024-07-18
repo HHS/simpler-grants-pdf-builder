@@ -1192,13 +1192,13 @@ def preserve_heading_links(soup):
     Preserves heading links by transferring IDs from empty <a> tags to their parent elements.
     The <a> tags are presumed to be inside heading tags, although this isn't explicit in the function.
 
-    This function searches for all <a> tags with an ID that starts with "_heading". If such an <a> tag is empty (i.e., contains no text),
+    This function searches for all <a> tags with an ID that starts with "_". If such an <a> tag is empty (i.e., contains no text),
     the function transfers the ID to the parent element and removes the empty <a> tag.
 
     Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
     """
     # Find all <a> tags with an id starting with "_heading"
-    heading_id_anchors = soup.find_all("a", id=lambda x: x and x.startswith("_heading"))
+    heading_id_anchors = soup.find_all("a", id=lambda x: x and x.startswith("_"))
 
     for a in heading_id_anchors:
         # Check if the <a> tag is empty
