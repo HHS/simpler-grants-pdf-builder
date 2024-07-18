@@ -9,7 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add a user-visible route to delete a subsection
-- Filter the available themes by a user's group
+- Filter the available THEMES by a user's group
+- Filter the available NOFO DESIGNERS by a user's group
 - Admins can now clone a NOFO
 
 ### Changed
@@ -24,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Deleting a NOFO is chill now (no 404 error)
 - Solve layout bug where buttons next to each other wouldn't be rounded
+- Add empty value to nofo designers
 
 ## [1.22.0] - 2023-07-12
 
