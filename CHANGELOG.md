@@ -14,7 +14,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Redirect logged-in users from the homepage to the index page
-- "preserve_heading_links" function more inclusive about what ids it preserves
+- Import look for heading/broken links that look like `#_`
+  - "preserve_heading_links" function more inclusive about what ids it preserves
+  - "find_broken_links" function more inclusive about what ids it preserves
 
 ### Fixed
 
