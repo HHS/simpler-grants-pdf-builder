@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name input_type whitespaceless %}
+{% load static nofo_name input_type get_value_or_none whitespaceless %}
 
 {% block title %}
   Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
@@ -12,7 +12,7 @@
   <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
-{% block body_class %}subsection_edit{% endblock %}
+{% block body_class %}subsection_create{% endblock %}
 
 {% block content %}
   {% with nofo|nofo_name as nofo_name_str %}
@@ -38,6 +38,7 @@
         </legend>
       {% endif %}
 
+      <!-- name -->
       <div class="form-group">
         <label 
         {% whitespaceless %}
@@ -58,7 +59,8 @@
           "
         {% endwhitespaceless %} id="name" name="name" type="text" aria-describedby="" value="{{ form.name.value|default_if_none:'' }}">
       </div>
-      <!-- tag-->
+
+      <!-- tag -->
       <div class="form-group width-mobile">
         <label 
           {% whitespaceless %}
@@ -91,7 +93,7 @@
         </select>
       </div>
 
-      <!-- callout box -->
+      <!-- callout_box -->
       <div class="form-group margin-top-4 width-mobile">
         <div class="usa-checkbox">
           <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box">

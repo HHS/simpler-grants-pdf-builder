@@ -47,6 +47,7 @@
       <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
       <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
 
+      <!-- name -->
       <div class="form-group">
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
           {% if subsection.tag %}
@@ -84,13 +85,15 @@
             </script>
             {% endif %}
           {% else %}
-            {% include "includes/_text_input.html" with id=id label=label hint=hint value=value error=error input_type=input_type only %}
+            {% include "includes/_text_input.html" with id=id label=label hint=hint value=value error=error input_type=input_type disabled="disabled" only %}
           {% endif %}
         {% endwith %}
       </div>
+
+      <!-- html_class -->
       <div class="form-group">
         <fieldset class="usa-fieldset">
-          <legend class="usa-legend legend--bootstrap">Page break or column break</legend>
+          <legend class="usa-legend legend--bootstrap">Has page break{% if 'landscape' in nofo.theme %} or column break{% endif %}?</legend>
           {% if form.html_class.value %}
             {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
@@ -110,7 +113,7 @@
               {% endif %}
             />
             <label class="usa-radio__label" for="page-break-before">
-              Has page break
+              Add page break
             </label>
           </div>
           {% if 'landscape' in nofo.theme %}
@@ -161,6 +164,8 @@
             </label>
           </div>
       </div>
+
+      <!-- body -->
       <div class="form-group">
         <div class="border-2px border-base-lighter margin-top-4 radius-md">
           <label class="usa-label usa-sr-only" for="{{ form.body.id_for_label }}">Subsection content</label>

@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Import look for heading/broken links that look like `#_`
   - "preserve_heading_links" function more inclusive about what ids it preserves
   - "find_broken_links" function more inclusive about what ids it preserves
+- Disabled input for subsections with no subsection name
 
 ### Fixed
 
