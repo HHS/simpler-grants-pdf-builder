@@ -346,20 +346,27 @@ details > summary > span:hover {
   margin-right: 0;
 }
 
+.subsection_edit .hint--subsection-id {
+  color: #6c7073;
+}
+
 .subsection_edit .hint--subsection-id:hover {
   color: #1b1b1b;
 }
 
-.subsection_edit .main-martor {
+.subsection_edit .main-martor,
+.subsection_create .main-martor {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.subsection_edit .main-martor .icon.expand-editor {
+.subsection_edit .main-martor .icon.expand-editor,
+.subsection_create .main-martor .icon.expand-editor {
   display: none;
 }
 
-.subsection_edit .main-martor .resizable .resizable-b {
+.subsection_edit .main-martor .resizable .resizable-b,
+.subsection_create .main-martor .resizable .resizable-b {
   width: 100%;
   cursor: row-resize;
 }
