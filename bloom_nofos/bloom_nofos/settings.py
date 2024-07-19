@@ -139,6 +139,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
+# Logging
+# In production, log all errors to console
+if not DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "level": "ERROR",
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "django": {
+                "handlers": ["console"],
+                "level": "ERROR",
+                "propagate": True,
+            },
+        },
+    }
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
