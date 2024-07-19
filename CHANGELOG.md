@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Filter the available NOFO DESIGNERS by a user's group
 - Admins can now clone a NOFO
 - Show last login time for user accounts on admin screen
+- Add the error reporting form to the 500 page
 
 ### Changed
 
