@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- When replacing IDs in our "preserve_heading_ids" method on import, find and replace for old links
 - Add more stylemaps to my mammoth import config
 - Deleting a NOFO is chill now (no 404 error)
 - Solve layout bug where buttons next to each other wouldn't be rounded

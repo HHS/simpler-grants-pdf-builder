@@ -2601,6 +2601,24 @@ class PreserveBookmarkLinksTest(TestCase):
         expected = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p>'
         self.assertEqual(str(soup), expected)
 
+    def test_empty_anchor_with_matching_link_followed_by_paragraph_wipes_out_existing_id_but_changes_old_href(
+        self,
+    ):
+        html = '<div><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p id="table-1">Table 1: FFE state funding allocations</p><p><a href="#table-1">Link to table</a></p></div>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<div><p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><p class="bookmark" id="bookmark=id.2xcytpi">Table 1: FFE state funding allocations</p><p><a href="#bookmark=id.2xcytpi">Link to table</a></p></div>'
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_name_attr_with_matching_link_followed_by_paragraph_NOT_used(
+        self,
+    ):
+        html = '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p><a name="bookmark=id.2xcytpi"></a><p id="table-1">Table 1: FFE state funding allocations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_links(soup)
+        expected = '<p><a href="#__bookmark=id.2xcytpi">Bookmark link</a>.</p><a name="bookmark=id.2xcytpi"></a><p id="table-1">Table 1: FFE state funding allocations</p>'
+        self.assertEqual(str(soup), expected)
+
     def test_empty_anchor_with_matching_link_followed_by_paragraph_keeps_existing_class(
         self,
     ):
@@ -2620,7 +2638,7 @@ class PreserveBookmarkLinksTest(TestCase):
         html = '<p><a href="#bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_links(soup)
-        expected = '<p><a href="#_bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
+        expected = '<p><a href="#__bookmark=id.abc123">Bookmark link</a>.</p><a id="bookmark=id.2xcytpi"></a><p>Table 1: FFE state funding allocations</p>'
         self.assertEqual(str(soup), expected)
 
     def test_empty_anchor_with_matching_link_with_NO_subsequent_element(self):
@@ -2665,6 +2683,28 @@ class PreserveHeadingLinksTest(TestCase):
         preserve_heading_links(soup)
         result = str(soup)
         expected = '<h4 id="_heading=h.3rdcrjn">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_heading_id_wipes_out_existing_id_but_changes_old_href(
+        self,
+    ):
+        html = '<div><h4 id="about-priority-populations"><a id="_heading=h.3rdcrjn"></a>About priority populations</h4><p>Learn <a href="#about-priority-populations">about them</a></p></div>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<div><h4 id="_heading=h.3rdcrjn">About priority populations</h4><p>Learn <a href="#_heading=h.3rdcrjn">about them</a></p></div>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_name_does_not_change_heading_id(
+        self,
+    ):
+        html = '<h4><a name="_heading=h.3rdcrjn"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = (
+            '<h4><a name="_heading=h.3rdcrjn"></a>About priority populations</h4>'
+        )
         self.assertEqual(result, expected)
 
     def test_non_empty_anchor_with_heading_id(self):

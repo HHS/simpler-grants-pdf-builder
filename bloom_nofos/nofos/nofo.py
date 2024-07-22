@@ -1129,6 +1129,23 @@ def clean_heading_tags(soup):
         heading.string = text
 
 
+def _change_existing_anchor_links_to_new_id(soup, element, new_id):
+    """
+    Update all anchor links in the provided BeautifulSoup object that point to
+    the original ID of the specified element to point to new_id.
+
+    Example:
+        Given an element <div id="section1"> and a new_id "section2", all
+        links in the document with href="#section1" will be changed to
+        href="#section2".
+    """
+    old_id = element.attrs.get("id")
+    if old_id:
+        links_to_old_id = soup.find_all("a", href="#{}".format(old_id))
+        for old_link in links_to_old_id:
+            old_link["href"] = "#{}".format(new_id)
+
+
 def preserve_bookmark_links(soup):
     """
     This function mutates the soup!
@@ -1153,6 +1170,7 @@ def preserve_bookmark_links(soup):
         if a and not a.text.strip():
             next_elem = a.find_next()
             if next_elem and next_elem.name == "p":
+                _change_existing_anchor_links_to_new_id(soup, next_elem, a["id"])
                 # Transfer the id to the next paragraph element, replacing any existing id
                 next_elem["id"] = a["id"]
 
@@ -1182,8 +1200,8 @@ def preserve_bookmark_links(soup):
                 )
             )
 
-            # add an underscore so that we can identify this link later as a dead link
-            broken_link["href"] = "#_{}".format(bookmark_id)
+            # add two underscores so that we can identify this link later as a dead link
+            broken_link["href"] = "#__{}".format(bookmark_id)
 
 
 def preserve_heading_links(soup):
@@ -1206,6 +1224,7 @@ def preserve_heading_links(soup):
         if not a.text.strip():
             parent = a.parent
             if parent:
+                _change_existing_anchor_links_to_new_id(soup, parent, a["id"])
                 # Transfer the id to the parent element, replacing any existing id
                 parent["id"] = a["id"]
                 a.decompose()  # Remove the empty <a> tag
