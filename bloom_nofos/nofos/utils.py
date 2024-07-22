@@ -83,6 +83,11 @@ style_map_manager.add_style(
     note="Don't do anything: body text + a header",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='eop'] => span",
+    location_in_nofo="Spans wrapping &nbsp sequences",
+    note="Don't do anything, just whitespace",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='criteria-linked-element_data-mode=export_criteria-score'] => span.linked-element",
     location_in_nofo="Step 4 > Maximum points > 20",
     note="Don't do anything: body text",
@@ -123,6 +128,21 @@ style_map_manager.add_style(
     style_rule="p[style-name='div'] => p",
     location_in_nofo="Step 1 > Key facts > Name and number",
     note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='paragraph'] => p",
+    location_in_nofo="Step 1 > Eligibility > Who can apply",
+    note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='List Paragraph'] => p",
+    location_in_nofo="It's everywhere",
+    note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet 2'] => ul > li:fresh",
+    location_in_nofo="Step 1 > Funding policies and limitations > Policies",
+    note="These are incorrectly tagged bullets",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Main Heading'] => p",
