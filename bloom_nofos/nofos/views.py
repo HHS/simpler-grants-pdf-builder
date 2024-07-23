@@ -597,7 +597,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 
 
-class NofoSubsectionCreateView(CreateView):
+class NofoSubsectionCreateView(GroupAccessObjectMixin, CreateView):
     model = Subsection
     form_class = SubsectionCreateForm
     template_name = "nofos/subsection_create.html"
@@ -702,7 +702,7 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return context
 
 
-class NofoSubsectionDeleteView(DeleteView):
+class NofoSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
     model = Subsection
     pk_url_kwarg = "subsection_pk"
     template_name = "nofos/subsection_confirm_delete.html"

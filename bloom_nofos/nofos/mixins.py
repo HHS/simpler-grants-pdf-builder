@@ -15,10 +15,11 @@ def has_nofo_group_permission_func(user, nofo):
 # Note that this Mixin requires a self.get_object method
 class GroupAccessObjectMixin:
     def dispatch(self, request, *args, **kwargs):
-        # Temporarily retrieve the object to check permissions before it gets deleted
-        obj = self.get_object()
+        # Get the NOFO by pk since "get_object" could also be a subsection
+        pk = self.kwargs.get("pk")
+        nofo = get_object_or_404(Nofo, pk=pk)
 
-        if not has_nofo_group_permission_func(request.user, obj):
+        if not has_nofo_group_permission_func(request.user, nofo):
             raise PermissionDenied("You don’t have permission to view this NOFO.")
 
         # Continue with normal processing, which will include deletion
