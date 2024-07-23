@@ -248,7 +248,7 @@ class Nofo(models.Model):
         return reverse("nofos:nofo_edit", args=(self.id,))
 
     def get_first_subsection(self):
-        return self.sections.first().subsections.first()
+        return self.sections.first().subsections.order_by("order").first()
 
     def clean(self):
         if self.inline_css:

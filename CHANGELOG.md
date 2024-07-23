@@ -50,6 +50,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Always return the first subsection by order in the nofo template
 - Remove GroupAccessObjectMixin from the Detail view to allow for printing (we have other restrictions on that one)
 - Remove "start_server.sh" file to resolve Dockerfile warning
 
