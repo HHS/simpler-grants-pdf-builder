@@ -56,8 +56,9 @@ def get_icon_path_choices(theme):
 
 
 class StyleMapManager:
-    def __init__(self):
+    def __init__(self, styles_to_ignore=None):
         self.styles = []
+        self.styles_to_ignore = styles_to_ignore if styles_to_ignore is not None else []
 
     def add_style(self, style_rule, location_in_nofo, note=None):
         self.styles.append(
@@ -72,9 +73,13 @@ class StyleMapManager:
         # This method will now just join all the individual style rules.
         return "\n".join(style["style_rule"] for style in self.styles)
 
+    def get_styles_to_ignore(self):
+        # Returns the list of styles that are currently set to be ignored
+        return self.styles_to_ignore
 
-# Pre-instantiate StyleMapManager and add styles
-style_map_manager = StyleMapManager()
+
+# Pre-instantiate StyleMapManager with styles to ignore
+style_map_manager = StyleMapManager(["ListParagraph", "Bullet2", "FootnoteReference"])
 
 # run styles
 style_map_manager.add_style(
@@ -133,16 +138,6 @@ style_map_manager.add_style(
     style_rule="p[style-name='paragraph'] => p",
     location_in_nofo="Step 1 > Eligibility > Who can apply",
     note="Don't do anything: regular body text.",
-)
-style_map_manager.add_style(
-    style_rule="p[style-name='List Paragraph'] => p",
-    location_in_nofo="It's everywhere",
-    note="Don't do anything: regular body text.",
-)
-style_map_manager.add_style(
-    style_rule="p[style-name='Bullet 2'] => ul > li:fresh",
-    location_in_nofo="Step 1 > Funding policies and limitations > Policies",
-    note="These are incorrectly tagged bullets",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Main Heading'] => p",

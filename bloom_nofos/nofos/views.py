@@ -245,7 +245,11 @@ def nofo_import(request, pk=None):
                 warnings = [
                     m.message
                     for m in doc_to_html_result.messages
-                    if m.type == "warning" and "FootnoteReference" not in m.message
+                    if m.type == "warning"
+                    and all(
+                        style_to_ignore not in m.message
+                        for style_to_ignore in style_map_manager.get_styles_to_ignore()
+                    )
                 ]
                 if warnings:
                     warnings_str = "<ul><li>{}</li></ul>".format(
