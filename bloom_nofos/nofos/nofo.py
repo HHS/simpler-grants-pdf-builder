@@ -683,6 +683,31 @@ def remove_google_tracking_info_from_links(soup):
             a["href"] = _get_original_url(href)
 
 
+def _get_all_id_attrs_for_nofo(nofo):
+    """
+    Extracts all unique HTML 'id' attributes from a given Nofo.
+    This includes 'id' attributes defined in the 'html_id' field of sections and subsections,
+    as well as any 'id' attributes found within the HTML content of the subsection.body.
+    """
+    # Initialize a set to collect all unique ids
+    all_ids = set()
+
+    for section in nofo.sections.all():
+        all_ids.add(section.html_id)
+
+        for subsection in section.subsections.all():
+            if subsection.html_id:
+                all_ids.add(subsection.html_id)
+
+            # Use BeautifulSoup to parse the HTML body and find all ids
+            if subsection.body:
+                soup = BeautifulSoup(markdown.markdown(subsection.body), "html.parser")
+                for element in soup.find_all(id=True):
+                    all_ids.add(element["id"])
+
+    return {"#" + item for item in all_ids}
+
+
 def find_broken_links(nofo):
     """
     This function mutates the soup!
@@ -715,17 +740,14 @@ def find_broken_links(nofo):
     # Define a function that checks if an 'href' attribute starts with any of these
     def _href_starts_with_h(tag):
         return tag.name == "a" and (
-            tag.get("href", "").startswith("#h.")
-            or tag.get("href", "").startswith("#id.")
-            or tag.get("href", "").startswith("/")
+            tag.get("href", "").startswith("/")
+            or tag.get("href", "").startswith("#")
             or tag.get("href", "").startswith("https://docs.google.com")
-            or tag.get("href", "").startswith("#_")
-            # or tag.get("href", "").startswith("#_heading")
-            # or tag.get("href", "").startswith("#_bookmark")
             or tag.get("href", "") == "about:blank"
         )
 
     broken_links = []
+    all_ids = _get_all_id_attrs_for_nofo(nofo)
 
     for section in nofo.sections.all().order_by("order"):
         for subsection in section.subsections.all().order_by("order"):
@@ -733,15 +755,21 @@ def find_broken_links(nofo):
                 markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
             )
 
-            for link in soup.find_all(_href_starts_with_h):
-                broken_links.append(
-                    {
-                        "section": section,
-                        "subsection": subsection,
-                        "link_text": link.get_text(),
-                        "link_href": link["href"],
-                    }
-                )
+            all_links = soup.find_all("a")
+
+            for link in all_links:
+                if link.attrs.get("href") in all_ids:
+                    # skip all '#' ids that exist (if not, they are caught in the next step)
+                    pass
+                elif _href_starts_with_h(link):
+                    broken_links.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "link_text": link.get_text(),
+                            "link_href": link["href"],
+                        }
+                    )
 
     return broken_links
 

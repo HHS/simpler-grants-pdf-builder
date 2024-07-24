@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - "preserve_heading_links" function more inclusive about what ids it preserves
   - "find_broken_links" function more inclusive about what ids it preserves
 - Disabled input for subsections with no subsection name
+- Broken internal links widget works properly now
 
 ### Fixed
 
