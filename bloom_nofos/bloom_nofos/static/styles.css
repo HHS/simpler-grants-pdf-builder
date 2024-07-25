@@ -92,7 +92,59 @@ details > summary > span:hover {
 .nofo_index .usa-prose > table th,
 .nofo_index .usa-table td,
 .nofo_index .usa-table th {
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.6rem;
+}
+
+.nofo_index table.usa-table thead th:not(:last-of-type) {
+  padding: 0.5rem 1.5rem 0.5rem 0.6rem;
+}
+
+.nofo_index .usa-table th:last-of-type {
+  padding-right: 0;
+}
+
+.nofo_index table.usa-table thead th {
+  color: #1b1b1b;
+  background-color: #ffffff;
+  font-weight: 700;
+  position: relative;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.nofo_index table.usa-table thead th:hover {
+  background: rgba(180, 180, 180, 0.15);
+}
+
+.nofo_index table.usa-table thead th:focus {
+  z-index: 1;
+}
+
+.nofo_index .sortable thead th:not(.no-sort)::after {
+  color: inherit;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(180, 180, 180, 0.5);
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 45%;
+}
+
+.nofo_index .sortable thead th:not(.no-sort)[aria-sort="ascending"]::after {
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid black;
+}
+
+.nofo_index .sortable thead th:not(.no-sort)[aria-sort="descending"]::after {
+  border-top: 6px solid transparent;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid black;
+  top: 25%;
 }
 
 /* Edit page */

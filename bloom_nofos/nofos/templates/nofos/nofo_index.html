@@ -19,7 +19,7 @@
 	</p>
 
 	{% if nofo_list %}
-		<table class="usa-table usa-table--borderless width-full">
+		<table class="sortable usa-table usa-table--borderless width-full">
 			<caption>
 				{% if not nofo_status or nofo_status == 'unpublished' %}
 					NOFOs being worked on or in review.
@@ -33,14 +33,14 @@
 			</caption>
 			<thead>
 				<tr>
-					<th scope="col">Name</th>
-					<th scope="col">Number</th>
-					<th scope="col" class="nofo-group-col">Group</th>
-					<th scope="col">Status</th>
-					<th scope="col">Coach</th>
-					<th scope="col">Designer</th>
-					<th scope="col">Updated</th>
-					<th span class="usa-sr-only" scope="col">Preview</th>
+					<th scope="col" tabindex="0">Name</th>
+					<th scope="col" tabindex="0">Number</th>
+					<th scope="col" class="nofo-group-col" tabindex="0">Group</th>
+					<th scope="col" tabindex="0">Status</th>
+					<th scope="col" tabindex="0">Coach</th>
+					<th scope="col" tabindex="0">Designer</th>
+					<th scope="col" tabindex="0">Updated</th>
+					<th class="usa-sr-only" scope="col">Preview</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -55,10 +55,10 @@
 						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						{% timezone "America/New_York" %}
-							<td>{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %}, {{ nofo.updated|date:'H:i' }}{% endif %}</td>
+							<td data-sort="{{ nofo.updated|date:"YmdHM" }}">{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %}, {{ nofo.updated|date:'H:i' }}{% endif %}</td>
 						{% endtimezone %}
 						<td><a href="{% url 'nofos:nofo_view' nofo.id %}">View<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
-					<tr>
+					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
@@ -72,4 +72,24 @@
     Import NOFO
 		</a>
 	</p>
+{% endblock %}
+
+{% block js_footer %}
+<script src="https://cdn.jsdelivr.net/gh/tofsjonas/sortable@3/sortable.min.js"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+    // Select all table headers in the nofo index
+    const headers = document.querySelectorAll('.nofo_index table.usa-table.sortable thead th');
+
+		headers.forEach(function(header) {
+        header.addEventListener('keydown', function(event) {
+            // Check if the Enter key (key code 13) is pressed
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                header.click(); // Simulate a click on the header
+            }
+        });
+    });
+	});
+</script>>
 {% endblock %}

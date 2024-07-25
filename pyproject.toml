@@ -27,6 +27,8 @@ martor = "^1.6.37"
 django-mirror = "^0.1.13"
 mammoth = "^1.7.1"
 
+# sortable = "@3", check nofo_index.html
+
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
 freezegun = "^1.3.1"
