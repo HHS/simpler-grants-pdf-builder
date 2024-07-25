@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Admins can now clone a NOFO
 - Show last login time for user accounts on admin screen
 - Add the error reporting form to the 500 page
+- Add JS file to sort the nofo index table
+  - Added a comment in the pyptoject.toml file about it
 
 ### Changed
 
