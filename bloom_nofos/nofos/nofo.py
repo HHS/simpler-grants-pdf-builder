@@ -59,6 +59,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
             and "footnote" in first_li.attrs.get("id")
         ):
             self._remove_classes_recursive(el)
+            [li.attrs.update({"tabindex": "-1"}) for li in el.find_all("li")]
             return str(el.prettify())
 
         return super().convert_ol(el, text, convert_as_inline)
