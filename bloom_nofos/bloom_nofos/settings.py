@@ -414,6 +414,7 @@ ALLOWED_HTML_ATTRIBUTES = [
     "src",
     # "style",
     "start",
+    "tabindex",
     "title",
     "type",
     "width",

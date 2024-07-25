@@ -149,7 +149,7 @@ class TablesAndStuffInTablesConverterOLSTest(TestCase):
 
     def test_ol_for_footnotes(self):
         html = '<ol><li id="footnote-0">Item 1</li><li id="footnote-1">Item 2</li></ol>'
-        pretty_html = '<ol>\n <li id="footnote-0">\n  Item 1\n </li>\n <li id="footnote-1">\n  Item 2\n </li>\n</ol>'
+        pretty_html = '<ol>\n <li id="footnote-0" tabindex="-1">\n  Item 1\n </li>\n <li id="footnote-1" tabindex="-1">\n  Item 2\n </li>\n</ol>'
         md_body = md(html)
         self.assertEqual(md_body.strip(), pretty_html)
 
