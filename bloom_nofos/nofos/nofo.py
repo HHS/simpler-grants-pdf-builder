@@ -31,6 +31,14 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
             if el.has_attr("class"):
                 del el["class"]
 
+    def convert_a(self, el, text, convert_as_inline):
+        # keep the in-text footnote links as HTML so that the ids aren't lost
+        if el and el.attrs.get("id") and "footnote" in el.attrs.get("id"):
+            self._remove_classes_recursive(el)
+            return str(el)
+
+        return super().convert_a(el, text, convert_as_inline)
+
     def convert_ol(self, el, text, convert_as_inline):
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
@@ -42,6 +50,16 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
             if parent.name == "td":
                 self._remove_classes_recursive(el)
                 return str(el)
+
+        # save the footnote list as HTML so that the ids aren't lost
+        first_li = el.find("li")
+        if (
+            first_li
+            and first_li.attrs.get("id")
+            and "footnote" in first_li.attrs.get("id")
+        ):
+            self._remove_classes_recursive(el)
+            return str(el.prettify())
 
         return super().convert_ol(el, text, convert_as_inline)
 

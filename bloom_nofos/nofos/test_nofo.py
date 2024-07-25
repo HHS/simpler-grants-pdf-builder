@@ -56,6 +56,10 @@ from .nofo import (
 )
 from .utils import clean_string, match_view_url
 
+#########################################################
+############# MARKDOWNIFY CONVERTER TESTS ###############
+#########################################################
+
 
 class TablesAndStuffInTablesConverterTABLESTest(TestCase):
     def test_table_no_colspan_or_rowspan(self):
@@ -143,6 +147,12 @@ class TablesAndStuffInTablesConverterTABLESTest(TestCase):
 class TablesAndStuffInTablesConverterOLSTest(TestCase):
     maxDiff = None
 
+    def test_ol_for_footnotes(self):
+        html = '<ol><li id="footnote-0">Item 1</li><li id="footnote-1">Item 2</li></ol>'
+        pretty_html = '<ol>\n <li id="footnote-0">\n  Item 1\n </li>\n <li id="footnote-1">\n  Item 2\n </li>\n</ol>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
     def test_ol_start_not_one(self):
         html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
         pretty_html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
@@ -185,6 +195,50 @@ class TablesAndStuffInTablesConverterOLSTest(TestCase):
         self.assertEqual(md_body.strip(), pretty_html)
 
 
+class TablesAndStuffInTablesConverterASTest(TestCase):
+    maxDiff = None
+
+    def test_a_for_footnotes(self):
+        html = '<a id="footnote-0" href="#footnote-0">1</a>'
+        expected_html = '<a href="#footnote-0" id="footnote-0">1</a>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_a_without_footnotes(self):
+        html = '<a href="https://example.com">Example</a>'
+        expected_markdown = "[Example](https://example.com)"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_a_with_classes(self):
+        html = '<a class="link-class" href="https://example.com">Example</a>'
+        expected_markdown = "[Example](https://example.com)"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_a_footnote_with_classes(self):
+        html = '<a id="footnote-0" class="footnote-class" href="#footnote-0">1</a>'
+        expected_html = '<a href="#footnote-0" id="footnote-0">1</a>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+
+class TablesAndStuffInTablesConverterPSTest(TestCase):
+    maxDiff = None
+
+    def test_p_with_bookmark_id(self):
+        html = '<p id="bookmark-1">Bookmark Paragraph</p>'
+        expected_html = '<p id="bookmark-1">Bookmark Paragraph</p>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_regular_p(self):
+        html = "<p>Regular Paragraph</p>"
+        expected_markdown = "Regular Paragraph"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+
 class MatchUrlTests(TestCase):
     def test_match_valid_urls(self):
         """
@@ -203,6 +257,11 @@ class MatchUrlTests(TestCase):
         self.assertFalse(match_view_url("/nofos/abc"))
         self.assertFalse(match_view_url("/nofos/123/456"))
         self.assertFalse(match_view_url("/nofos/1/2"))
+
+
+#########################################################
+################### FUNCTION TESTS ######################
+#########################################################
 
 
 class TestsCleanTableCells(TestCase):
