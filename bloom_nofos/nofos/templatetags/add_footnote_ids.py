@@ -3,7 +3,6 @@ from django import template
 from django.utils.safestring import mark_safe
 
 from .utils import (
-    format_footnote_ref_docx,
     format_footnote_ref_html,
     get_footnote_type,
     is_footnote_ref,
@@ -22,8 +21,6 @@ def add_footnote_ids(html_string):
         if footnote_num and footnote_type:
             if footnote_type == "html":
                 format_footnote_ref_html(a)
-            if footnote_type == "docx":
-                format_footnote_ref_docx(a)
             if not a.get("href").startswith("#ftnt_"):
                 a.wrap(soup.new_tag("sup"))
 

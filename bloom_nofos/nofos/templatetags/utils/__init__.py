@@ -273,31 +273,3 @@ def format_footnote_ref_html(a_tag):
     else:
         a_tag["id"] = "ftnt_ref{}".format(footnote_number)
         a_tag["href"] = "#ftnt{}".format(footnote_number)
-
-
-def format_footnote_ref_docx(a_tag):
-    """
-    DOCX: Formats a footnote reference link tag to have the expected ID and href attributes
-    based on whether it is an endnote or inline footnote reference.
-
-    Inline: <a href="#footnote-0">[1]</a>
-    Endnote: <a href="#footnote-ref-0">↑</a>
-
-    Final inline: <li id="footnote-1"><p> American Lung Association. <a href="#footnote-ref-1">↑</a></p></li>
-    Final endnote: <sup><a href="#footnote-1" id="footnote-ref-1">[2]</a></sup>
-    """
-    footnote_text = a_tag.get_text().strip()
-    footnote_href = a_tag.get("href", "").strip()
-    if not footnote_href:
-        return
-
-    footnote_number = footnote_href.split("-")[-1]
-
-    if footnote_text != "↑":
-        a_tag["id"] = "footnote-ref-{}".format(footnote_number)
-    else:
-        # add the id to the li in the endnotes
-        li_tag = a_tag.find_parent("li")
-        if li_tag:
-            li_tag["id"] = "footnote-{}".format(footnote_number)
-            li_tag["tabindex"] = "-1"

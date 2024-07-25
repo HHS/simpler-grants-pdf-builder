@@ -12,7 +12,6 @@ from .templatetags.utils import (
     add_class_to_table_rows,
     convert_paragraph_to_searchable_hr,
     find_elements_with_character,
-    format_footnote_ref_docx,
     format_footnote_ref_html,
     get_footnote_type,
     get_parent_td,
@@ -631,39 +630,6 @@ class GetFootnoteTypeTest(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         a_tag = soup.find("a")
         self.assertIsNone(get_footnote_type(a_tag))
-
-
-class FormatFootnoteRefDOCXTest(TestCase):
-    def test_inline_footnote(self):
-        html = '<sup><a href="#footnote-1">[2]</a></sup>'
-        soup = BeautifulSoup(html, "html.parser")
-        a_tag = soup.find("a")
-        format_footnote_ref_docx(a_tag)
-        self.assertEqual(a_tag["id"], "footnote-ref-1")
-
-    def test_endnote_footnote(self):
-        html = '<li><p> American Lung Association. <a href="#footnote-ref-1">↑</a></p></li>'
-        soup = BeautifulSoup(html, "html.parser")
-        a_tag = soup.find("a")
-        format_footnote_ref_docx(a_tag)
-        li_tag = a_tag.find_parent("li")
-        self.assertEqual(li_tag["id"], "footnote-1")
-        self.assertEqual(li_tag["tabindex"], "-1")
-
-    def test_no_parent_li(self):
-        html = '<a href="#footnote-ref-1">↑</a>'
-        soup = BeautifulSoup(html, "html.parser")
-        a_tag = soup.find("a")
-        format_footnote_ref_docx(a_tag)
-        li_tag = a_tag.find_parent("li")
-        self.assertIsNone(li_tag)
-        self.assertNotIn("id", a_tag.attrs)
-
-    def test_no_href(self):
-        html = "<a>↑</a>"
-        soup = BeautifulSoup(html, "html.parser")
-        a_tag = soup.find("a")
-        self.assertNotIn("id", a_tag.attrs)
 
 
 class FormatFootnoteRefHTMLTest(TestCase):
