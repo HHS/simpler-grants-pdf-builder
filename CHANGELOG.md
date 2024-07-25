@@ -26,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Disabled input for subsections with no subsection name
 - Broken internal links widget works properly now
 - Footnote ids are preserved during initial HTML import for DOCX files
+- Remove "Group" from Nofo index page for non-bloom users
 
 ### Fixed
 
