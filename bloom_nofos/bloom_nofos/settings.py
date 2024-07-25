@@ -48,7 +48,7 @@ if DEBUG:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="bad-secret-key-please-change")
 
 ALLOWED_HOSTS = [
     "0.0.0.0",
