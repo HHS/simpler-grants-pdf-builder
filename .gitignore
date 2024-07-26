@@ -7,6 +7,9 @@
 .env*
 !.env.example
 data.json
+db.json
+nofos.json
+users.json
 
 # other static folder
 bloom_nofos/static

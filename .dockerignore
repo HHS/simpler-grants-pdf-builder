@@ -1,4 +1,7 @@
 bloom_nofos/data.json
+bloom_nofos/db.json
+bloom_nofos/nofos.json
+bloom_nofos/users.json
 bloom_nofos/db.sqlite3
 bloom_nofos/debug_output.html
 CHANGELOG.md
