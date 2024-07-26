@@ -37,6 +37,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add empty value to nofo designers
 - Fixed permissions issue with viewing subsections
 - Migrate old nofo.designer value in previously published nofos
+- Application checklist boxes become umlauts sometimes
 
 ## [1.22.0] - 2023-07-12
 
