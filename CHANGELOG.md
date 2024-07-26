@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.23.0] - 2023-07-26
+
+### Added
+
 - Add a user-visible route to delete a subsection
 - Filter the available THEMES by a user's group
 - Filter the available NOFO DESIGNERS by a user's group
