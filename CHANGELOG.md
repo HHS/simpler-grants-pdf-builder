@@ -38,6 +38,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fixed permissions issue with viewing subsections
 - Migrate old nofo.designer value in previously published nofos
 - Application checklist boxes become umlauts sometimes
+- Remove Normal_0 style map
 
 ## [1.22.0] - 2023-07-12
 

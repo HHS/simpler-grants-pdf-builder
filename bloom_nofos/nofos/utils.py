@@ -79,7 +79,15 @@ class StyleMapManager:
 
 
 # Pre-instantiate StyleMapManager with styles to ignore
-style_map_manager = StyleMapManager(["ListParagraph", "Bullet2", "FootnoteReference"])
+style_map_manager = StyleMapManager(
+    [
+        "ListParagraph",
+        "Bullet2",
+        "FootnoteReference",
+        "Normal_0",
+        "non-row element in table",
+    ]
+)
 
 # run styles
 style_map_manager.add_style(
@@ -108,14 +116,19 @@ style_map_manager.add_style(
     note="Bold is safe, but they might possibly be headings.",
 )
 style_map_manager.add_style(
-    style_rule="r[style-name='Heading 3 Char'] => h4:fresh",
+    style_rule="r[style-name='Heading 3 Char'] => h3:fresh",
     location_in_nofo="Step 1 > Program description > Four core functions",
-    note="This signifies an h3, which we demote to h4",
+    note="This signifies an h3",
 )
 style_map_manager.add_style(
-    style_rule="r[style-name='Heading 5 Char'] => h6:fresh",
+    style_rule="r[style-name='Heading 4 Char'] => h4:fresh",
+    location_in_nofo="Step 3 > Project narrative > Areas of emphasis",
+    note="This signifies an h4",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Heading 5 Char'] => h5:fresh",
     location_in_nofo="Step 1 > Cost-sharing commitments > Reduced Match",
-    note="This signifies an h5, which we demote to h6",
+    note="This signifies an h5",
 )
 
 # paragraph styles
@@ -125,28 +138,23 @@ style_map_manager.add_style(
     note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
 )
 style_map_manager.add_style(
-    style_rule="p[style-name='Normal (Web)'] => p",
+    style_rule="p[style-name='Normal (Web)'] => p:fresh",
     location_in_nofo="Step 4 > Risk Review > p",
     note="Don't do anything: not sure why this is formatted differently, but it's just body text.",
 )
 style_map_manager.add_style(
-    style_rule="p[style-name='div'] => p",
+    style_rule="p[style-name='div'] => p:fresh",
     location_in_nofo="Step 1 > Key facts > Name and number",
     note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
-    style_rule="p[style-name='paragraph'] => p",
+    style_rule="p[style-name='paragraph'] => p:fresh",
     location_in_nofo="Step 1 > Eligibility > Who can apply",
     note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Main Heading'] => p",
     location_in_nofo="Step 1 > Key facts > number",
-    note="Don't do anything: regular body text (may not be true for all, but let's assume).",
-)
-style_map_manager.add_style(
-    style_rule="p[style-name='Normal_0'] => p",
-    location_in_nofo="Step 3 > Budget justification narrative > Applicants are encouraged...",
     note="Don't do anything: regular body text (may not be true for all, but let's assume).",
 )
 style_map_manager.add_style(
