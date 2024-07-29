@@ -6,7 +6,6 @@ from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
-
 from .models import Nofo, Section, Subsection
 from .views import insert_order_space_view
 

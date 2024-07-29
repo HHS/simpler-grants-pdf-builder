@@ -106,6 +106,25 @@ def md(html, **options):
     return TablesAndStuffInTablesConverter(**options).convert(html)
 
 
+def replace_chars(file_content):
+    replacement_chars = [
+        # both of these are nonbreaking space
+        ("\xa0", " "),
+        ("&nbsp;", " "),
+        # from (☐) U+2610 BALLOT BOX to (◻) U+25FB WHITE MEDIUM SQUARE
+        ("\u2610", "\u25FB"),
+        # from (¨) U+00A8 DIAERESIS to (◻) U+25FB WHITE MEDIUM SQUARE
+        ("\u00A8", "\u25FB"),
+        # from () U+007F DELETE to (◻) U+25FB WHITE MEDIUM SQUARE
+        ("\u007F", "\u25FB"),
+    ]
+
+    for _from, _to in replacement_chars:
+        file_content = file_content.replace(_from, _to)
+
+    return file_content
+
+
 @transaction.atomic
 def add_headings_to_nofo(nofo):
     new_ids = []

@@ -71,6 +71,7 @@ from .nofo import (
     preserve_bookmark_links,
     preserve_heading_links,
     remove_google_tracking_info_from_links,
+    replace_chars,
     replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
@@ -230,7 +231,6 @@ def nofo_import(request, pk=None):
             uploaded_file.content_type
             == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ):
-            # TODO: refactor this
             try:
                 doc_to_html_result = mammoth.convert_to_html(
                     uploaded_file, style_map=style_map_manager.get_style_map()
@@ -272,13 +272,12 @@ def nofo_import(request, pk=None):
         else:
             print("uploaded_file.content_type", uploaded_file.content_type)
             messages.add_message(
-                request, messages.ERROR, "Yikes! Please import an HTML file"
+                request, messages.ERROR, "Yikes! Please import a .docx or HTML file"
             )
             return redirect(view_path, **kwargs)
 
-        cleaned_content = file_content.replace("\xa0", " ").replace(
-            "&nbsp;", " "
-        )  # Replace all non-breaking spaces with regular spaces on import
+        # replace problematic characters on import
+        cleaned_content = replace_chars(file_content)
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
 

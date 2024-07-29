@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Accept NOFOs with H2s as the highest-level heading
   - No longer demote headings in these NOFO documents
+- Replace weird unicodes in the application table checklist on import
+  - No longer have a list of acceptable substitutes in "replace_unicode_with_icon.py"
 
 ### Fixed
 
