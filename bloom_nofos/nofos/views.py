@@ -306,8 +306,11 @@ def nofo_import(request, pk=None):
         add_em_to_de_minimis(soup)
         unwrap_nested_lists(soup)
 
+        # if there are no h1s, then h2s are the new top
+        top_heading_level = "h1" if soup.find("h1") else "h2"
+
         # format all the data as dicts
-        sections = get_sections_from_soup(soup)
+        sections = get_sections_from_soup(soup, top_heading_level)
         if not len(sections):
             messages.add_message(
                 request,
@@ -316,7 +319,7 @@ def nofo_import(request, pk=None):
             )
             return redirect(view_path, **kwargs)
 
-        sections = get_subsections_from_sections(sections)
+        sections = get_subsections_from_sections(sections, top_heading_level)
         filename = uploaded_file.name.strip()
 
         if pk:
