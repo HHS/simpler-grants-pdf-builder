@@ -2,11 +2,7 @@ from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
-from .utils import (
-    format_footnote_ref_html,
-    get_footnote_type,
-    is_footnote_ref,
-)
+from .utils import format_footnote_ref_html, get_footnote_type, is_footnote_ref
 
 register = template.Library()
 

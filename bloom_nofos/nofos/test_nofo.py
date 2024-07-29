@@ -7,10 +7,10 @@ from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
 from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER
+from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import (
     _get_classnames_for_font_weight_bold as get_classnames_for_font_weight_bold,
 )
-from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import _get_font_size_from_cssText as get_font_size_from_cssText
 from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
@@ -38,6 +38,7 @@ from .nofo import (
     preserve_bookmark_links,
     preserve_heading_links,
     remove_google_tracking_info_from_links,
+    replace_chars,
     replace_src_for_inline_images,
     suggest_nofo_agency,
     suggest_nofo_author,
@@ -262,6 +263,48 @@ class MatchUrlTests(TestCase):
 #########################################################
 ################### FUNCTION TESTS ######################
 #########################################################
+
+
+class ReplaceCharsTests(TestCase):
+    def test_replace_nonbreaking_space(self):
+        """Test replacing nonbreaking spaces with normal spaces."""
+        self.assertEqual(
+            replace_chars("<h1>Hello\xa0World</h1>"), "<h1>Hello World</h1>"
+        )
+        self.assertEqual(
+            replace_chars("<h1>Hello&nbsp;World</h1>"), "<h1>Hello World</h1>"
+        )
+
+    def test_replace_ballot_box_with_white_square(self):
+        """Test replacing U+2610 (ballot box) with U+25FB (white medium square)."""
+        self.assertEqual(
+            replace_chars("<td><p>☐ Work plan</p></td>"), "<td><p>◻ Work plan</p></td>"
+        )
+
+    def test_replace_diaeresis_with_white_square(self):
+        """Test replacing U+00A8 (diaeresis) with U+25FB (white medium square)."""
+        self.assertEqual(
+            replace_chars("<td><p>¨ Work plan</p></td>"), "<td><p>◻ Work plan</p></td>"
+        )
+
+    def test_replace_delete_character_with_white_square(self):
+        """Test replacing U+007F (delete) with U+25FB (white medium square)."""
+        self.assertEqual(
+            replace_chars("<td><p> Work plan</p></td>"), "<td><p>◻ Work plan</p></td>"
+        )
+
+    def test_multiple_replacements(self):
+        """Test multiple replacements in a single string."""
+        test_string = "<tr><th scope='row'>Table\xa0row</th><td><p>☐ Work plan 1</p></td><td><p>¨ Work plan 2</p></td><td><p> Work plan 3</p></td></tr>"
+        expected_string = "<tr><th scope='row'>Table row</th><td><p>◻ Work plan 1</p></td><td><p>◻ Work plan 2</p></td><td><p>◻ Work plan 3</p></td></tr>"
+        self.assertEqual(replace_chars(test_string), expected_string)
+
+    def test_no_replacements_needed(self):
+        """Test a string that requires no replacements."""
+        test_string = (
+            "<tr><th scope='row'>Table row</th><td><p>◻ Work plan 1</p></td></tr>"
+        )
+        self.assertEqual(replace_chars(test_string), test_string)
 
 
 class TestsCleanTableCells(TestCase):
