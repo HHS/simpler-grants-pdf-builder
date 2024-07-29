@@ -251,13 +251,13 @@ def convert_table_with_all_ths_to_a_regular_table(table):
             new_tbody.append(row.extract())
 
 
-def get_sections_from_soup(soup):
+def get_sections_from_soup(soup, top_heading_level="h1"):
     # build a structure that looks like our model
     sections = []
     section_num = -1
 
     for tag in soup.find_all(True):
-        if tag.name == "h1":
+        if tag.name == top_heading_level:
             section_num += 1
 
         if section_num >= 0:
@@ -323,14 +323,18 @@ def is_callout_box_table(table):
     )
 
 
-def get_subsections_from_sections(sections):
-    # h1s are gone since get_sections_from_soup
-    heading_tags = ["h2", "h3", "h4", "h5", "h6"]
+def get_subsections_from_sections(sections, top_heading_level="h1"):
+    if_demote_headings = top_heading_level == "h1"
+    heading_tags = ["h3", "h4", "h5", "h6"]
 
-    def demote_tag(tag):
+    # if top_heading_level is h1, then include h2s in the list
+    if if_demote_headings:
+        heading_tags = ["h2"] + heading_tags
+
+    def _demote_tag(tag_name):
         newTags = {"h2": "h3", "h3": "h4", "h4": "h5", "h5": "h6", "h6": "h7"}
 
-        return newTags[tag.name]
+        return newTags[tag_name]
 
     def extract_first_header(td):
         for tag_name in heading_tags:
@@ -345,7 +349,11 @@ def get_subsections_from_sections(sections):
             return {
                 "name": clean_string(heading_tag.text),
                 "order": order,
-                "tag": demote_tag(heading_tag),
+                "tag": (
+                    _demote_tag(heading_tag.name)
+                    if if_demote_headings
+                    else heading_tag.name
+                ),
                 "html_id": heading_tag.get("id", ""),
                 "is_callout_box": is_callout_box,
                 "body": body or [],

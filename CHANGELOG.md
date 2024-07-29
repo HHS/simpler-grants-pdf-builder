@@ -10,6 +10,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Accept NOFOs with H2s as the highest-level heading
+  - No longer demote headings in these NOFO documents
+
 ### Fixed
 
 ## [1.23.0] - 2023-07-26
