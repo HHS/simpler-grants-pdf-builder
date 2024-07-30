@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- remove empty "absolute--right-col" wrapper for sections that don't need it
+
 ## [1.23.0] - 2023-07-26
 
 ### Added

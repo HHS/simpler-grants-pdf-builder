@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 from django.test import TestCase
 
+from .models import Nofo, Section, Subsection
 from .templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
@@ -15,6 +16,7 @@ from .templatetags.utils import (
     format_footnote_ref_html,
     get_footnote_type,
     get_parent_td,
+    is_floating_callout_box,
     is_footnote_ref,
 )
 
@@ -660,3 +662,68 @@ class FormatFootnoteRefHTMLTest(TestCase):
         format_footnote_ref_html(tag)
         self.assertEqual(tag.get("href"), "#ftnt_ref999")
         self.assertEqual(tag.get("id"), "ftnt1")
+
+
+class TestIsFloatingCalloutBox(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.nofo = Nofo.objects.create(title="Test Nofo")
+        cls.section = Section.objects.create(name="Test Section", nofo=cls.nofo)
+
+    def test_name_matches(self):
+        """Test that the subsection is identified as a floating callout box by name."""
+        names = [
+            "Key facts",
+            "Key dates",
+            "Questions?",
+            "Have questions?",
+            "**Have questions?",
+        ]
+        for index, name in enumerate(names):
+            subsection = Subsection.objects.create(
+                section=self.section,
+                name=name,
+                callout_box=True,
+                tag="h4",  # needs a tag
+                order=index + 1,
+            )
+            self.assertTrue(is_floating_callout_box(subsection))
+
+    def test_name_does_not_match(self):
+        """Test subsections are not identified as floating callout boxes with an unrelated name."""
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="Random name",
+            callout_box=True,
+            tag="h4",
+            order=1,
+        )
+        self.assertFalse(is_floating_callout_box(subsection))
+
+    def test_body_starts_with_valid_string(self):
+        """Test subsections identified as floating callout boxes by body content."""
+        valid_bodies = [
+            "Key facts about something",
+            "Key dates are important",
+            "Questions? Ask here",
+            "Have questions? We can help",
+            "**Have questions? Contact us",
+        ]
+        for index, body in enumerate(valid_bodies):
+            subsection = Subsection.objects.create(
+                section=self.section,
+                body=body,
+                callout_box=True,
+                order=index + 1,
+            )
+            self.assertTrue(is_floating_callout_box(subsection))
+
+    def test_body_does_not_start_with_valid_string(self):
+        """Test subsections are not identified as floating callout boxes with unrelated body content."""
+        subsection = Subsection.objects.create(
+            section=self.section,
+            body="The Administration on Disabilities (AoD) within...",
+            callout_box=True,
+            order=1,
+        )
+        self.assertFalse(is_floating_callout_box(subsection))

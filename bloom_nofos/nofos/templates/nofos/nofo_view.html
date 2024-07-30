@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables is_floating_callout_box split_char_and_remove add_classes_to_lists convert_paragraphs_to_hrs %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_captions_to_tables split_char_and_remove add_classes_to_lists convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section %}
 
 {% block metadata %}
   {% if nofo.author %}
@@ -323,15 +323,19 @@
         {% endif %}
 
         <!-- if in portrait mode, add callout boxes in right margin -->
-        {% if nofo_theme_orientation == 'portrait' %}
-          <div class="section--absolute--right-col">
-            {% for subsection in section.subsections.all|dictsort:"order" %}
-              {% if subsection.callout_box and subsection|is_floating_callout_box %}
-                {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
+        {% spaceless %}
+          {% if nofo_theme_orientation == 'portrait' %}
+            {% with callouts=section|get_floating_callout_boxes_from_section %}
+              {% if callouts %}
+                <div class="section--absolute--right-col">
+                  {% for subsection in callouts %}
+                    {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
+                  {% endfor %}
+                </div>
               {% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
+            {% endwith %}
+          {% endif %}
+        {% endspaceless %}
 
         <!-- loop through remaining subsections as usual -->
         {% for subsection in section.subsections.all|dictsort:"order" %}
