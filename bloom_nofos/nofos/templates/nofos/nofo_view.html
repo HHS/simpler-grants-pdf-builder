@@ -308,18 +308,20 @@
         {% endif %}
         <!-- for the very first subsection, add the nofo agency, subagency, and tagline -->
         {% if section.order == 1 %}
-          {% with first_subsection=nofo.get_first_subsection %}
-            {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
-              {% include "includes/heading.html" with tag=tag content=content id=id only %}
+          <div class="section--content--basic-information">
+            {% with first_subsection=nofo.get_first_subsection %}
+              {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
+                {% include "includes/heading.html" with tag=tag content=content id=id only %}
+              {% endwith %}
+                <div class="section--content--intro">
+                  <p><strong>{{ nofo.opdiv }}</strong></p>
+                  <p>{{ nofo.agency }}</p>
+                  {% if nofo.subagency %}<p>{{ nofo.subagency }}</p>{% endif %}
+                  {% if nofo.subagency2 %}<p>{{ nofo.subagency2 }}</p>{% endif %}
+                  {% if nofo.tagline %}<div class="nofo--tagline">{{ nofo.tagline|safe_markdown }}</div>{% endif %}
+                </div>
             {% endwith %}
-              <div class="section--content--intro">
-              <p><strong>{{ nofo.opdiv }}</strong></p>
-              <p>{{ nofo.agency }}</p>
-              {% if nofo.subagency %}<p>{{ nofo.subagency }}</p>{% endif %}
-              {% if nofo.subagency2 %}<p>{{ nofo.subagency2 }}</p>{% endif %}
-              {% if nofo.tagline %}<div class="nofo--tagline">{{ nofo.tagline|safe_markdown }}</div>{% endif %}
-            </div>
-          {% endwith %}
+          </div>
         {% endif %}
 
         <!-- if in portrait mode, add callout boxes in right margin -->
@@ -327,7 +329,7 @@
           {% if nofo_theme_orientation == 'portrait' %}
             {% with callouts=section|get_floating_callout_boxes_from_section %}
               {% if callouts %}
-                <div class="section--absolute--right-col">
+                <div class="section--content--right-col">
                   {% for subsection in callouts %}
                     {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
                   {% endfor %}

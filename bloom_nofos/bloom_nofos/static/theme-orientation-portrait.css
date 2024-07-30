@@ -225,22 +225,39 @@ section.before-you-begin {
 /* Section contents */
 
 .section--content {
-  width: 80%;
   position: relative;
 }
 
-.section--absolute--right-col {
-  position: absolute;
-  top: 0;
-  right: -58mm;
-  width: 50mm;
+.section--content > *:not(.section--content--right-col) {
+  width: 80%;
 }
 
-.section--absolute--right-col .callout-box--contents {
+.section--content > .section--content--basic-information {
+  clear: both;
+  float: left;
+}
+
+.section--content > .section--content--right-col {
+  position: initial;
+  float: right;
+  width: 15.5%;
+}
+
+.section--content > .section--content--right-col > * {
+  width: 190%;
+}
+
+.section--content > .section--content--right-col > *:first-child {
+  margin-top: 0;
+  margin-top: 46.5px;
+}
+
+/* TODO */
+.section--content--right-col .callout-box--contents {
   font-size: 10pt;
 }
 
-.section--absolute--right-col .callout-box--questions .callout-box--contents p {
+.section--content--right-col .callout-box--questions .callout-box--contents p {
   font-size: 10pt;
 }
 
