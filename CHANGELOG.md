@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Replace weird unicodes in the application table checklist on import
   - No longer have a list of acceptable substitutes in "replace_unicode_with_icon.py"
 - Fix reading order for right col callout boxes
+- Default cover page for HRSA NOFOs now the text theme
 
 ### Fixed
 
