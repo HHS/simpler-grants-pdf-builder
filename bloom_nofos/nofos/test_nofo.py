@@ -1871,10 +1871,6 @@ class HTMLSuggestThemeTests(TestCase):
 
 
 class HTMLSuggestCoverTests(TestCase):
-    def test_suggest_nofo_cover_hrsa_returns_medium(self):
-        nofo_cover = "nofo--cover-page--medium"
-        self.assertEqual(suggest_nofo_cover("portrait-hrsa-blue"), nofo_cover)
-
     def test_suggest_nofo_cover_cdc_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
         self.assertEqual(suggest_nofo_cover("portrait-cdc-blue"), nofo_cover)
@@ -1886,6 +1882,10 @@ class HTMLSuggestCoverTests(TestCase):
     def test_suggest_nofo_cover_ihs_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
         self.assertEqual(suggest_nofo_cover("portrait-ihs-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_hrsa_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
+        self.assertEqual(suggest_nofo_cover("portrait-hrsa-blue"), nofo_cover)
 
     def test_suggest_nofo_cover_acf_returns_text(self):
         nofo_cover = "nofo--cover-page--text"

@@ -552,7 +552,7 @@ def suggest_nofo_application_deadline(soup):
 
 
 def suggest_nofo_cover(nofo_theme):
-    if "acf-" in nofo_theme.lower() or "acl-" in nofo_theme.lower():
+    if any(prefix in nofo_theme.lower() for prefix in ["acf-", "acl-", "hrsa-"]):
         return "nofo--cover-page--text"
 
     return "nofo--cover-page--medium"
