@@ -626,7 +626,11 @@ def suggest_nofo_keywords(soup):
     return suggestion or ""
 
 
-def suggest_nofo_fields(nofo, soup):
+def suggest_all_nofo_fields(nofo, soup):
+    first_time_import = (
+        not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
+    )
+
     nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.application_deadline = suggest_nofo_application_deadline(
         soup
@@ -639,6 +643,18 @@ def suggest_nofo_fields(nofo, soup):
     nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
+
+    nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
+    # reset title only if there is a title and it's not the default title, or current nofo.title is empty
+    if nofo_title:
+        if not nofo.title or not nofo_title.startswith("NOFO: "):
+            nofo.title = nofo_title
+
+    # do not reset these during import
+    if first_time_import:
+        nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
+    if first_time_import:
+        nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
 
 
 ###########################################################
