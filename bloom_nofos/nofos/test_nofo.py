@@ -41,8 +41,10 @@ from .nofo import (
     replace_chars,
     replace_src_for_inline_images,
     suggest_nofo_agency,
+    suggest_nofo_application_deadline,
     suggest_nofo_author,
     suggest_nofo_cover,
+    suggest_nofo_fields,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -1828,6 +1830,55 @@ class HTMLSuggestNumberTests(TestCase):
         )
 
 
+class HTMLSuggestDeadlineTests(TestCase):
+    def setUp(self):
+        self.html_filename = "nofos/fixtures/html/nofo.html"
+        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+
+    def test_suggest_nofo_application_deadline_returns_correct_deadline(self):
+        self.assertEqual(suggest_nofo_application_deadline(self.soup), "[ ]")
+
+    def test_suggest_nofo_application_deadline_returns_default_for_bad_html(self):
+        default_deadline = "[WEEKDAY, MONTH DAY, YEAR]"
+        self.assertEqual(
+            suggest_nofo_application_deadline(
+                BeautifulSoup(
+                    "<html><title>NOFO</title><body><h1>NOFO</h1></body></html>",
+                    "html.parser",
+                )
+            ),
+            default_deadline,
+        )
+
+    def test_suggest_nofo_application_deadline_returns_correct_deadline_for_p_span(
+        self,
+    ):
+        deadline = "April 17, 1917"
+        self.assertEqual(
+            suggest_nofo_application_deadline(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c3">Application Deadline: April 17, 1917</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            deadline,
+        )
+
+    def test_suggest_nofo_application_deadline_returns_correct_deadline_for_p_span_span(
+        self,
+    ):
+        deadline = "April 17, 1917"
+        self.assertEqual(
+            suggest_nofo_application_deadline(
+                BeautifulSoup(
+                    '<html><title>THESES</title><body><h1>THESES</h1><p class="c0"><span class="c180">Application Deadline: </span><span class="c7">April 17, 1917</span><span class="c53 c7 c192">&nbsp;</span></p></body></html>',
+                    "html.parser",
+                )
+            ),
+            deadline,
+        )
+
+
 class HTMLSuggestThemeTests(TestCase):
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
@@ -2081,6 +2132,216 @@ class SuggestNofoSubjectTests(TestCase):
         )
 
 
+class SuggestNofoKeywordsTests(TestCase):
+    def test_keywords_present_in_paragraph(self):
+        html = "<div><p>Metadata Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
+
+    def test_keywords_not_present(self):
+        html = "<div><p>Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_keywords(soup), "")
+
+    def test_keywords_present_but_lowercased(self):
+        html = "<div><p>metadata keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
+
+    def test_keywords_present_broken_up_by_spans(self):
+        html = "<div><p><span>Metadata keywords: </span><span>Medicine, CDC, </span><span>Awesome,</span> Notice, Opportunity</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
+        )
+
+
+class SuggestNofoFieldsTests(TestCase):
+    def setUp(self):
+        # Create a sample Nofo object
+        self.nofo = Nofo.objects.create()
+
+        # Sample HTML content
+        self.html_content = """
+            <html>
+                <body>
+                    <p>Opportunity Number: WW-2024-YEEHAW-001</p>
+                    <p>OpDiv: Department of Wild Western Affairs (DWWA)</p>
+                    <p>Agency: Bureau of Cowpolk Initiatives (BCI)</p>
+                    <p>Subagency: Cowpolk Training and Development</p>
+                    <p>Subagency2: Wild-West Expansion Projects</p>
+                    <p>Tagline: This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.</p>
+                    <p>Application Deadline: 2024-05-31</p>
+                    <p>Metadata Author: Sheriff Adam</p>
+                    <p>Metadata Subject: Cowpolk Training and Economic Development</p>
+                    <p>Metadata Keywords: cowpolk, wild west, economic development, training, cattle ranching</p>
+                </body>
+            </html>
+        """
+        self.soup = BeautifulSoup(self.html_content, "html.parser")
+
+    def test_suggest_nofo_fields(self):
+        suggest_nofo_fields(self.nofo, self.soup)
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.application_deadline, "2024-05-31")
+        self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
+        self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
+        self.assertEqual(self.nofo.subagency, "Cowpolk Training and Development")
+        self.assertEqual(self.nofo.subagency2, "Wild-West Expansion Projects")
+        self.assertEqual(
+            self.nofo.tagline,
+            "This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.",
+        )
+        self.assertEqual(self.nofo.author, "Sheriff Adam")
+        self.assertEqual(self.nofo.subject, "Cowpolk Training and Economic Development")
+        self.assertEqual(
+            self.nofo.keywords,
+            "cowpolk, wild west, economic development, training, cattle ranching",
+        )
+
+    def test_suggest_nofo_fields_with_missing_data(self):
+        # HTML content with some missing fields
+        html_content_missing_data = """
+            <html>
+                <body>
+                    <p>Opportunity Number: WW-2024-YEEHAW-001</p>
+                    <p>OpDiv: Department of Wild Western Affairs (DWWA)</p>
+                </body>
+            </html>
+        """
+        soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
+        suggest_nofo_fields(self.nofo, soup_missing_data)
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.application_deadline, "[WEEKDAY, MONTH DAY, YEAR]")
+        self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
+        self.assertEqual(self.nofo.agency, "")
+        self.assertEqual(self.nofo.subagency, "")
+        self.assertEqual(self.nofo.subagency2, "")
+        self.assertEqual(self.nofo.tagline, "")
+        self.assertEqual(self.nofo.author, "")
+        self.assertEqual(self.nofo.subject, "")
+        self.assertEqual(self.nofo.keywords, "")
+
+    def test_suggest_nofo_fields_overwrite_empty_fields(self):
+        suggest_nofo_fields(self.nofo, self.soup)
+        self.nofo.save()
+
+        # First time, normal
+        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.application_deadline, "2024-05-31")
+        self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
+        self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
+        self.assertEqual(self.nofo.subagency, "Cowpolk Training and Development")
+        self.assertEqual(self.nofo.subagency2, "Wild-West Expansion Projects")
+        self.assertEqual(
+            self.nofo.tagline,
+            "This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.",
+        )
+        self.assertEqual(self.nofo.author, "Sheriff Adam")
+        self.assertEqual(self.nofo.subject, "Cowpolk Training and Economic Development")
+        self.assertEqual(
+            self.nofo.keywords,
+            "cowpolk, wild west, economic development, training, cattle ranching",
+        )
+
+        # Second time, change or overwrite values
+        # HTML content with some missing fields
+        html_content_missing_data = """
+            <html>
+                <body>
+                    <p>Opportunity Number: WW-2024-HOLLER-001</p>               <!-- changed -->
+                    <p>Application Deadline: 2025-01-01</p>                     <!-- changed -->
+                    <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>  <!-- changed -->
+                    <p>Agency: Bureau of Cowpolk Expansion (BCE)</p>            <!-- changed -->
+                    <p>Subagency: </p>                                          <!-- empty -->
+                    <p>Subagency2: </p>                                         <!-- empty -->
+                    <p>Tagline: This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.</p>
+                    <p>Metadata Author: Sheriff Adam</p>
+                    <p>Metadata Subject: Cowpolk Training and Ukpskilling</p>   <!-- changed -->
+                    <p>Metadata Keywords:</p>                                   <!-- empty -->
+                </body>
+            </html>
+        """
+        soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
+        suggest_nofo_fields(self.nofo, soup_missing_data)
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.number, "WW-2024-HOLLER-001")
+        self.assertEqual(self.nofo.application_deadline, "2025-01-01")
+        self.assertEqual(
+            self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
+        )
+        self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Expansion (BCE)")
+        self.assertEqual(self.nofo.subagency, "")
+        self.assertEqual(self.nofo.subagency2, "")
+        self.assertEqual(
+            self.nofo.tagline,
+            "This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.",
+        )
+        self.assertEqual(self.nofo.author, "Sheriff Adam")
+        self.assertEqual(self.nofo.subject, "Cowpolk Training and Ukpskilling")
+        self.assertEqual(self.nofo.keywords, "")
+
+    def test_suggest_nofo_fields_overwrite_missing_fields(self):
+        suggest_nofo_fields(self.nofo, self.soup)
+        self.nofo.save()
+
+        # First time, normal
+        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.application_deadline, "2024-05-31")
+        self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
+        self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
+        self.assertEqual(self.nofo.subagency, "Cowpolk Training and Development")
+        self.assertEqual(self.nofo.subagency2, "Wild-West Expansion Projects")
+        self.assertEqual(
+            self.nofo.tagline,
+            "This program aims to promote economic development in rural towns by providing training and resources for new cattle ranching projects.",
+        )
+        self.assertEqual(self.nofo.author, "Sheriff Adam")
+        self.assertEqual(self.nofo.subject, "Cowpolk Training and Economic Development")
+        self.assertEqual(
+            self.nofo.keywords,
+            "cowpolk, wild west, economic development, training, cattle ranching",
+        )
+
+        # Second time, change or overwrite values
+        # HTML content with some missing fields
+        html_content_missing_data = """
+            <html>
+                <body>
+                    <p>Opportunity Number: WW-2024-HOLLER-001</p>
+                    <p>Application Deadline: 2025-01-01</p>
+                    <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>
+                    <!-- everything below here is missing -->
+                </body>
+            </html>
+        """
+        soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
+        suggest_nofo_fields(self.nofo, soup_missing_data)
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.number, "WW-2024-HOLLER-001")
+        self.assertEqual(self.nofo.application_deadline, "2025-01-01")
+        self.assertEqual(
+            self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
+        )
+        self.assertEqual(self.nofo.agency, "")
+        self.assertEqual(self.nofo.subagency, "")
+        self.assertEqual(self.nofo.subagency2, "")
+        self.assertEqual(self.nofo.tagline, "")
+        self.assertEqual(self.nofo.author, "")
+        self.assertEqual(self.nofo.subject, "")
+        self.assertEqual(self.nofo.keywords, "")
+
+
 ###########################################################
 #################### MUTATE HTML TESTS ####################
 ###########################################################
@@ -2167,34 +2428,6 @@ class CombineLinksTestCase(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         combine_consecutive_links(soup)
         self.assertEqual(str(soup), expected_html)
-
-
-class SuggestNofoKeywordsTests(TestCase):
-    def test_keywords_present_in_paragraph(self):
-        html = "<div><p>Metadata Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
-        soup = BeautifulSoup(html, "html.parser")
-        self.assertEqual(
-            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
-        )
-
-    def test_keywords_not_present(self):
-        html = "<div><p>Keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
-        soup = BeautifulSoup(html, "html.parser")
-        self.assertEqual(suggest_nofo_keywords(soup), "")
-
-    def test_keywords_present_but_lowercased(self):
-        html = "<div><p>metadata keywords: Medicine, CDC, Awesome, Notice, Opportunity</p></div>"
-        soup = BeautifulSoup(html, "html.parser")
-        self.assertEqual(
-            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
-        )
-
-    def test_keywords_present_broken_up_by_spans(self):
-        html = "<div><p><span>Metadata keywords: </span><span>Medicine, CDC, </span><span>Awesome,</span> Notice, Opportunity</p></div>"
-        soup = BeautifulSoup(html, "html.parser")
-        self.assertEqual(
-            suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
-        )
 
 
 class TestDecomposeEmptyTags(TestCase):

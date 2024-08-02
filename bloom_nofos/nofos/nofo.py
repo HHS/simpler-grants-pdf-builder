@@ -545,7 +545,7 @@ def suggest_nofo_opportunity_number(soup):
 
 
 def suggest_nofo_application_deadline(soup):
-    nofo_application_deadline_default = "Monday, January 1, 2024"
+    nofo_application_deadline_default = "[WEEKDAY, MONTH DAY, YEAR]"
 
     suggestion = _suggest_by_startswith_string(soup, "Application Deadline:")
     return suggestion or nofo_application_deadline_default
@@ -624,6 +624,21 @@ def suggest_nofo_subject(soup):
 def suggest_nofo_keywords(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Keywords:")
     return suggestion or ""
+
+
+def suggest_nofo_fields(nofo, soup):
+    nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+    nofo.application_deadline = suggest_nofo_application_deadline(
+        soup
+    )  # guess the NOFO application deadline
+    nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
+    nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
+    nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
+    nofo.subagency2 = suggest_nofo_subagency2(soup)  # guess NOFO Subagency 2
+    nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
+    nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
+    nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
+    nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
 
 
 ###########################################################
