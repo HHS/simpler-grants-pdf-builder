@@ -40,11 +40,11 @@ from .nofo import (
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
+    suggest_all_nofo_fields,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_author,
     suggest_nofo_cover,
-    suggest_nofo_fields,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -2169,7 +2169,8 @@ class SuggestNofoFieldsTests(TestCase):
         self.html_content = """
             <html>
                 <body>
-                    <p>Opportunity Number: WW-2024-YEEHAW-001</p>
+                    <p>Opportunity Name: Cowpolk Training 2024-2025</p>
+                    <p>Opportunity Number: HRSA-2024-YEEHAW-001</p>
                     <p>OpDiv: Department of Wild Western Affairs (DWWA)</p>
                     <p>Agency: Bureau of Cowpolk Initiatives (BCI)</p>
                     <p>Subagency: Cowpolk Training and Development</p>
@@ -2184,11 +2185,12 @@ class SuggestNofoFieldsTests(TestCase):
         """
         self.soup = BeautifulSoup(self.html_content, "html.parser")
 
-    def test_suggest_nofo_fields(self):
-        suggest_nofo_fields(self.nofo, self.soup)
+    def test_suggest_all_nofo_fields(self):
+        suggest_all_nofo_fields(self.nofo, self.soup)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.title, "Cowpolk Training 2024-2025")
+        self.assertEqual(self.nofo.number, "HRSA-2024-YEEHAW-001")
         self.assertEqual(self.nofo.application_deadline, "2024-05-31")
         self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
@@ -2204,22 +2206,25 @@ class SuggestNofoFieldsTests(TestCase):
             self.nofo.keywords,
             "cowpolk, wild west, economic development, training, cattle ranching",
         )
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
-    def test_suggest_nofo_fields_with_missing_data(self):
+    def test_suggest_all_nofo_fields_with_missing_data(self):
         # HTML content with some missing fields
         html_content_missing_data = """
             <html>
                 <body>
-                    <p>Opportunity Number: WW-2024-YEEHAW-001</p>
+                    <p>Opportunity Number: HRSA-2024-YEEHAW-001</p>
                     <p>OpDiv: Department of Wild Western Affairs (DWWA)</p>
                 </body>
             </html>
         """
         soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
-        suggest_nofo_fields(self.nofo, soup_missing_data)
+        suggest_all_nofo_fields(self.nofo, soup_missing_data)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertTrue(self.nofo.title.startswith("NOFO:"))  # uses default title
+        self.assertEqual(self.nofo.number, "HRSA-2024-YEEHAW-001")
         self.assertEqual(self.nofo.application_deadline, "[WEEKDAY, MONTH DAY, YEAR]")
         self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
         self.assertEqual(self.nofo.agency, "")
@@ -2230,12 +2235,17 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.subject, "")
         self.assertEqual(self.nofo.keywords, "")
 
-    def test_suggest_nofo_fields_overwrite_empty_fields(self):
-        suggest_nofo_fields(self.nofo, self.soup)
+        # still get set
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
+
+    def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
+        suggest_all_nofo_fields(self.nofo, self.soup)
         self.nofo.save()
 
         # First time, normal
-        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.title, "Cowpolk Training 2024-2025")
+        self.assertEqual(self.nofo.number, "HRSA-2024-YEEHAW-001")
         self.assertEqual(self.nofo.application_deadline, "2024-05-31")
         self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
@@ -2257,7 +2267,8 @@ class SuggestNofoFieldsTests(TestCase):
         html_content_missing_data = """
             <html>
                 <body>
-                    <p>Opportunity Number: WW-2024-HOLLER-001</p>               <!-- changed -->
+                    <p>Opportunity Name: Ranch Grants 2024-2025</p>             <!-- changed -->
+                    <p>Opportunity Number: HRSA-2024-HOLLER-001</p>             <!-- changed -->
                     <p>Application Deadline: 2025-01-01</p>                     <!-- changed -->
                     <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>  <!-- changed -->
                     <p>Agency: Bureau of Cowpolk Expansion (BCE)</p>            <!-- changed -->
@@ -2271,10 +2282,11 @@ class SuggestNofoFieldsTests(TestCase):
             </html>
         """
         soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
-        suggest_nofo_fields(self.nofo, soup_missing_data)
+        suggest_all_nofo_fields(self.nofo, soup_missing_data)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.number, "WW-2024-HOLLER-001")
+        self.assertEqual(self.nofo.title, "Ranch Grants 2024-2025")
+        self.assertEqual(self.nofo.number, "HRSA-2024-HOLLER-001")
         self.assertEqual(self.nofo.application_deadline, "2025-01-01")
         self.assertEqual(
             self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
@@ -2290,12 +2302,13 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.subject, "Cowpolk Training and Ukpskilling")
         self.assertEqual(self.nofo.keywords, "")
 
-    def test_suggest_nofo_fields_overwrite_missing_fields(self):
-        suggest_nofo_fields(self.nofo, self.soup)
+    def test_suggest_all_nofo_fields_overwrite_missing_fields(self):
+        suggest_all_nofo_fields(self.nofo, self.soup)
         self.nofo.save()
 
         # First time, normal
-        self.assertEqual(self.nofo.number, "WW-2024-YEEHAW-001")
+        self.assertEqual(self.nofo.title, "Cowpolk Training 2024-2025")
+        self.assertEqual(self.nofo.number, "HRSA-2024-YEEHAW-001")
         self.assertEqual(self.nofo.application_deadline, "2024-05-31")
         self.assertEqual(self.nofo.opdiv, "Department of Wild Western Affairs (DWWA)")
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Initiatives (BCI)")
@@ -2317,7 +2330,8 @@ class SuggestNofoFieldsTests(TestCase):
         html_content_missing_data = """
             <html>
                 <body>
-                    <p>Opportunity Number: WW-2024-HOLLER-001</p>
+                    <p>Opportunity Name: Tarnation Appropriation 2024-2025</p>
+                    <p>Opportunity Number: HRSA-2024-HOLLER-001</p>
                     <p>Application Deadline: 2025-01-01</p>
                     <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>
                     <!-- everything below here is missing -->
@@ -2325,10 +2339,11 @@ class SuggestNofoFieldsTests(TestCase):
             </html>
         """
         soup_missing_data = BeautifulSoup(html_content_missing_data, "html.parser")
-        suggest_nofo_fields(self.nofo, soup_missing_data)
+        suggest_all_nofo_fields(self.nofo, soup_missing_data)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.number, "WW-2024-HOLLER-001")
+        self.assertEqual(self.nofo.title, "Tarnation Appropriation 2024-2025")
+        self.assertEqual(self.nofo.number, "HRSA-2024-HOLLER-001")
         self.assertEqual(self.nofo.application_deadline, "2025-01-01")
         self.assertEqual(
             self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
@@ -2340,6 +2355,92 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.author, "")
         self.assertEqual(self.nofo.subject, "")
         self.assertEqual(self.nofo.keywords, "")
+
+    def test_title_doesnt_reset_if_empty(self):
+        html_content = """
+            <html>
+                <body>
+                    <p>Opportunity Name: My Awesome NOFO</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(html_content, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.title, "My Awesome NOFO")
+
+        new_html_content = """
+            <html>
+                <body>
+                    <p>Opportunity Name:</p> <!-- empty -->
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(
+            self.nofo, BeautifulSoup(new_html_content, "html.parser")
+        )
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.title, "My Awesome NOFO")
+
+    def test_title_doesnt_reset_if_missing(self):
+        html_content = """
+            <html>
+                <body>
+                    <p>Opportunity Name: My Awesome NOFO</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(html_content, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.title, "My Awesome NOFO")
+
+        new_html_content = """
+            <html>
+                <body>
+                    <!-- No opportunity name -->
+                    <p>Opportunity Number: 123</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(
+            self.nofo, BeautifulSoup(new_html_content, "html.parser")
+        )
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.title, "My Awesome NOFO")
+
+    def test_theme_and_cover_not_changed_once_set(self):
+        nofo = Nofo.objects.create()
+        html_content = """
+            <html>
+                <body>
+                    <p>Opportunity Number: CDC-2024-1234</p>
+                </body>
+            </html>
+        """
+
+        suggest_all_nofo_fields(nofo, BeautifulSoup(html_content, "html.parser"))
+        nofo.save()
+
+        self.assertEqual(nofo.number, "CDC-2024-1234")
+        self.assertEqual(nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(nofo.cover, "nofo--cover-page--medium")
+
+        new_content = """
+            <html>
+                <body>
+                    <p>Opportunity Number: HRSA-2024-1234</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(nofo, BeautifulSoup(new_content, "html.parser"))
+        nofo.save()
+
+        self.assertEqual(nofo.number, "HRSA-2024-1234")
+        self.assertEqual(nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(nofo.cover, "nofo--cover-page--medium")
 
 
 ###########################################################

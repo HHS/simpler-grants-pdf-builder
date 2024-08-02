@@ -73,19 +73,7 @@ from .nofo import (
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
-    suggest_nofo_agency,
-    suggest_nofo_application_deadline,
-    suggest_nofo_author,
-    suggest_nofo_cover,
-    suggest_nofo_fields,
-    suggest_nofo_keywords,
-    suggest_nofo_opdiv,
-    suggest_nofo_opportunity_number,
-    suggest_nofo_subagency,
-    suggest_nofo_subagency2,
-    suggest_nofo_subject,
-    suggest_nofo_tagline,
-    suggest_nofo_theme,
+    suggest_all_nofo_fields,
     suggest_nofo_title,
     unwrap_empty_elements,
     unwrap_nested_lists,
@@ -335,7 +323,7 @@ def nofo_import(request, pk=None):
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
 
-                suggest_nofo_fields(nofo, soup)
+                suggest_all_nofo_fields(nofo, soup)
                 nofo.save()
 
             except Exception as e:
@@ -344,11 +332,9 @@ def nofo_import(request, pk=None):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                "Re-imported NOFO: <a href='/nofos/{}/edit'>{}</a>".format(
-                    nofo.id, nofo.short_name or nofo.title
-                ),
+                "Re-imported NOFO from file: {}".format(nofo.filename),
             )
-            return redirect("nofos:nofo_index")
+            return redirect("nofos:nofo_edit", pk=nofo.id)
 
         else:
             # IMPORT NEW NOFO
@@ -362,13 +348,8 @@ def nofo_import(request, pk=None):
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
-            suggest_nofo_fields(nofo, soup)
-
-            # these fields are not changed on re-import
-            nofo.group = request.user.group  # set the group to the user's group
-            nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
-            nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
-
+            nofo.group = request.user.group  # set group separately with request.user
+            suggest_all_nofo_fields(nofo, soup)
             nofo.save()
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)

@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fix reading order for right col callout boxes
 - Default cover page for HRSA NOFOs now the text theme
 - Reimporting a nofo changes all the "Nofo data" as well
+  - Set the nofo.title as well
+  - Re-importing redirects to edit page, not index page
 
 ### Fixed
 
