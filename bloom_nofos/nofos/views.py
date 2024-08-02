@@ -77,6 +77,7 @@ from .nofo import (
     suggest_nofo_application_deadline,
     suggest_nofo_author,
     suggest_nofo_cover,
+    suggest_nofo_fields,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -333,6 +334,10 @@ def nofo_import(request, pk=None):
                 nofo = overwrite_nofo(nofo, sections)
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
+
+                suggest_nofo_fields(nofo, soup)
+                nofo.save()
+
             except Exception as e:
                 return HttpResponseBadRequest("Error re-importing NOFO: {}".format(e))
 
@@ -357,21 +362,13 @@ def nofo_import(request, pk=None):
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
+            suggest_nofo_fields(nofo, soup)
+
+            # these fields are not changed on re-import
             nofo.group = request.user.group  # set the group to the user's group
-            nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
-            nofo.opdiv = suggest_nofo_opdiv(soup)  # guess the NOFO OpDiv
-            nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
-            nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
-            nofo.subagency2 = suggest_nofo_subagency2(soup)  # guess NOFO Subagency 2
-            nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
-            nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
-            nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
-            nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
-            nofo.application_deadline = suggest_nofo_application_deadline(
-                soup
-            )  # guess the NOFO application deadline
             nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
             nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
+
             nofo.save()
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
