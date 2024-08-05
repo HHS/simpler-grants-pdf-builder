@@ -678,6 +678,7 @@ class TestIsFloatingCalloutBox(TestCase):
             "Questions?",
             "Have questions?",
             "**Have questions?",
+            "**Have** **questions?**",
         ]
         for index, name in enumerate(names):
             subsection = Subsection.objects.create(
