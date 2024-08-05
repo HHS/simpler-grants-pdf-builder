@@ -61,6 +61,7 @@ from .nofo import (
     combine_consecutive_links,
     create_nofo,
     decompose_empty_tags,
+    decompose_instructions_tables,
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
@@ -278,6 +279,7 @@ def nofo_import(request, pk=None):
         #     file.write(str(soup))
 
         # mutate the HTML
+        decompose_instructions_tables(soup)
         join_nested_lists(soup)
         add_strongs_to_soup(soup)
         preserve_bookmark_links(soup)

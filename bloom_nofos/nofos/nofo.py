@@ -1353,3 +1353,18 @@ def unwrap_nested_lists(soup):
 
     for ul in soup.select("ul > ul"):
         ul.unwrap()
+
+
+def decompose_instructions_tables(soup):
+    """
+    This function mutates the soup!
+    Remove tables from a BeautifulSoup object that contain specific instructional text.
+
+    This function iterates through all the <table> elements in the BeautifulSoup object.
+    If a table contains text that starts with "Instructions for NOFO writers:",
+    it is removed from the soup object.
+    """
+    tables = soup.find_all("table")
+    for table in tables:
+        if table.get_text().lower().startswith("instructions for nofo writers:"):
+            table.decompose()

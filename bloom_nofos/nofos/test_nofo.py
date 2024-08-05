@@ -26,6 +26,7 @@ from .nofo import (
     convert_table_with_all_ths_to_a_regular_table,
     create_nofo,
     decompose_empty_tags,
+    decompose_instructions_tables,
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
@@ -4712,3 +4713,40 @@ class HTMLCalloutBoxTests(TestCase):
         ]
 
         self.assertSubsectionsMatch(subsections, subsections_assertions)
+
+
+class DecomposeInstructionsTablesTest(TestCase):
+    def test_removes_correct_tables(self):
+        """Test that tables with specific instructional text are removed."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td>Instructions for NOFO writers: This table should be removed.</td></tr></table>
+                <table><tr><td>Another table that should remain.</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        decompose_instructions_tables(soup)
+        remaining_tables = soup.find_all("table")
+        self.assertEqual(len(remaining_tables), 1)
+        self.assertNotIn(
+            "Instructions for NOFO writers:", remaining_tables[0].get_text()
+        )
+
+    def test_ignores_tables_without_instruction_text(self):
+        """Test that tables without the specific instructional text are not removed."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td>Some information.</td></tr></table>
+                <table><tr><td>More data here.</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        decompose_instructions_tables(soup)
+        remaining_tables = soup.find_all("table")
+        self.assertEqual(len(remaining_tables), 2)
+        self.assertIn("Some information.", remaining_tables[0].get_text())
+        self.assertIn("More data here.", remaining_tables[1].get_text())
