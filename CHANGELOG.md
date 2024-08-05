@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Reimporting a nofo changes all the "Nofo data" as well
   - Set the nofo.title as well
   - Re-importing redirects to edit page, not index page
+- Remove tables that start with the phrase: "Instructions for NOFO Writers:"
 
 ### Fixed
 
