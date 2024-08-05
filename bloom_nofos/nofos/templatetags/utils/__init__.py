@@ -283,6 +283,7 @@ def is_floating_callout_box(subsection):
         "Questions?",
         "Have questions?",
         "**Have questions?",
+        "**Have** **questions?**",
     ]
 
     if subsection.name:
