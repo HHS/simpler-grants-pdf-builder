@@ -23,7 +23,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- remove empty "absolute--right-col" wrapper for sections that don't need it
+- Make sure "preserve_links_in_headings" finds all links in headings
+- Remove empty "absolute--right-col" wrapper for sections that don't need it
 - One more format fix for the "Have questions?" callout box
 
 ## [1.23.0] - 2023-07-26
