@@ -160,7 +160,13 @@ def add_headings_to_nofo(nofo):
     for section in nofo.sections.all():
         for subsection in section.subsections.all():
             for ids in new_ids:
-                subsection.body = subsection.body.replace(ids["old_id"], ids["new_id"])
+                subsection.body = subsection.body.replace(
+                    "(#{})".format(ids["old_id"]), "(#{})".format(ids["new_id"])
+                )
+                subsection.body = subsection.body.replace(
+                    'href="#{}"'.format(ids["old_id"]),
+                    'href="#{}"'.format(ids["new_id"]),
+                )
 
             subsection.save()
 

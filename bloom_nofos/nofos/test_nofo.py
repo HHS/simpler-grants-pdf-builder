@@ -1279,6 +1279,44 @@ class AddHeadingsTests(TestCase):
             }
         ]
 
+        self.sections_with_overlapping_names = [
+            {
+                "name": "Program description",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Eligibility",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "_Eligibility",
+                        "body": [
+                            "<p>You can apply if you are one of the following:</p>"
+                        ],
+                    },
+                    {
+                        "name": "Other eligibility criteria",
+                        "order": 2,
+                        "tag": "h4",
+                        "html_id": "_Other__Eligibility",  # the id before is a subset of this one
+                        "body": [
+                            "<p>Your application will be deemed incomplete and not considered for funding under this notice</p>"
+                        ],
+                    },
+                    {
+                        "name": "Program requirements",
+                        "order": 3,
+                        "tag": "h3",
+                        "html_id": "_Program_requirements",
+                        "body": [
+                            '<p>You must have MOAs with at least 10 PHCs (as described in the <a href="#_Other__Eligibility">Other Eligibility Criteria</a> section) in your network throughout the period of performance.</p>'
+                        ],
+                    },
+                ],
+            }
+        ]
+
     def test_add_headings_success(self):
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
@@ -1375,24 +1413,41 @@ class AddHeadingsTests(TestCase):
             "Section 1 body with [custom link](#custom-link)", subsection_1.body
         )
 
+    def test_add_headings_with_really_long_title_replace_link(self):
+        nofo = create_nofo("Test Nofo 2", self.sections_with_overlapping_names)
+        self.assertEqual(nofo.title, "Test Nofo 2")
+
+        section = nofo.sections.first()
+        subsection_3 = nofo.sections.first().subsections.all()[2]
+        self.assertIn(
+            "[Other Eligibility Criteria](#_Other__Eligibility)", subsection_3.body
+        )
+
         ################
         # ADD HEADINGS
         ################
         add_headings_to_nofo(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
+        subsection_3 = nofo.sections.first().subsections.all()[2]
 
         # check section heading has new html_id
         self.assertEqual(section.html_id, "program-description")
-        # check subsection1 heading has new html_id
+
+        # check new html_ids
+        self.assertEqual(subsection_1.html_id, "1--program-description--eligibility")
         self.assertEqual(
-            subsection_1.html_id,
-            "1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories",
+            subsection_2.html_id, "2--program-description--other-eligibility-criteria"
         )
-        # check the body of subsection 1 link is updated to new id
+        self.assertEqual(
+            subsection_3.html_id, "3--program-description--program-requirements"
+        )
+
+        # make sure the link in the body is matching the second id, not the first
         self.assertIn(
-            "Section 1 body with [custom link](#1--program-description--this-opportunity-provides-financial-and-technical-aid-to-help-communities-monitor-behavioral-risk-factors-and-chronic-health-conditions-among-adults-in-the-united-states-and-territories)",
-            subsection_1.body,
+            "(as described in the [Other Eligibility Criteria](#2--program-description--other-eligibility-criteria)",
+            subsection_3.body,
         )
 
 
