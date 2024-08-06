@@ -24,6 +24,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Make sure "preserve_links_in_headings" finds all links in headings
+- Fix for erroneously replacing heading IDs which were subsets of other ids
 - Remove empty "absolute--right-col" wrapper for sections that don't need it
 - One more format fix for the "Have questions?" callout box
 
