@@ -1274,7 +1274,7 @@ def preserve_bookmark_links(soup):
         a = soup.find("a", id=bookmark_id)
         if a and not a.text.strip():
             next_elem = a.find_next()
-            if next_elem and next_elem.name == "p":
+            if next_elem and next_elem.name == "p" and a.attrs.get("id"):
                 _change_existing_anchor_links_to_new_id(soup, next_elem, a["id"])
                 # Transfer the id to the next paragraph element, replacing any existing id
                 next_elem["id"] = a["id"]
@@ -1313,22 +1313,36 @@ def preserve_heading_links(soup):
     """
     This function mutates the soup!
 
-    Preserves heading links by transferring IDs from empty <a> tags to their parent elements.
-    The <a> tags are presumed to be inside heading tags, although this isn't explicit in the function.
+    Preserves heading links by transferring IDs from empty <a> tags to their parent heading elements.
 
-    This function searches for all <a> tags with an ID that starts with "_". If such an <a> tag is empty (i.e., contains no text),
+    This function searches for all <a> tags that are direct children of heading tags. If such an <a> tag is empty (i.e., contains no text),
     the function transfers the ID to the parent element and removes the empty <a> tag.
 
     Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
     """
-    # Find all <a> tags with an id starting with "_heading"
-    heading_id_anchors = soup.find_all("a", id=lambda x: x and x.startswith("_"))
+    # List of all heading tags to check
+    heading_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
+
+    # Store found empty anchors
+    heading_id_anchors = []
+
+    # Check each heading tag
+    for tag in heading_tags:
+        # Find all heading tags in the document
+        headings = soup.find_all(tag)
+
+        # Check each heading
+        for heading in headings:
+            # Find direct child anchor tags that are empty
+            for a in heading.find_all("a", recursive=False):
+                if a.get_text(strip=True) == "" and not a.contents:
+                    heading_id_anchors.append(a)
 
     for a in heading_id_anchors:
         # Check if the <a> tag is empty
         if not a.text.strip():
             parent = a.parent
-            if parent:
+            if parent and a.attrs.get("id"):
                 _change_existing_anchor_links_to_new_id(soup, parent, a["id"])
                 # Transfer the id to the parent element, replacing any existing id
                 parent["id"] = a["id"]
