@@ -79,8 +79,10 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
                 return str(el)
 
         # if the paragraph has an id that includes the string "bookmark", keep the paragraph as-is
-        if el and el.attrs.get("id") and "bookmark" in el.attrs.get("id"):
-            return str(el)
+        p_id = el.attrs.get("id") if el else None
+        if p_id:
+            if "bookmark" in p_id or "table-heading" in p_id:
+                return str(el)
 
         return super().convert_p(el, text, convert_as_inline)
 
@@ -1352,6 +1354,45 @@ def preserve_heading_links(soup):
                 _change_existing_anchor_links_to_new_id(soup, parent, a["id"])
                 # Transfer the id to the parent element, replacing any existing id
                 parent["id"] = a["id"]
+                a.decompose()  # Remove the empty <a> tag
+
+
+def preserve_table_heading_links(soup):
+    """
+    This function mutates the soup!
+
+    Preserves table heading ids by transferring IDs from empty <a> tags to their parent paragraph elements.
+    A "table heading" in this function is a paragraph that immediately precedes a table.
+
+    This function searches for all <p> tags that immediately precede a table,
+    then finds all empty <a> tags (i.e., contains no text).
+    Once found, it transfers the ID to the parent <p> element and removes the empty <a> tag.
+
+    Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
+    """
+    table_id_anchors = []
+
+    # Iterate through all tables
+    tables = soup.find_all("table")
+    for table in tables:
+        # Get the previous sibling if a paragraph (or None)
+        paragraph = table.find_previous_sibling("p")
+        if paragraph:
+            # Find all empty <a> tags within the paragraph
+            for a in paragraph.find_all("a"):
+                if a.get_text(strip=True) == "" and not a.contents:
+                    table_id_anchors.append(a)
+
+    for a in table_id_anchors:
+        # Check if the <a> tag is empty
+        if not a.text.strip():
+            parent = a.parent
+            if parent and a.attrs.get("id"):
+                a_id = "table-heading--{}".format(a["id"])
+                _change_existing_anchor_links_to_new_id(soup, parent, a_id)
+                _change_existing_anchor_links_to_new_id(soup, a, a_id)
+                # Transfer the id to the parent element, replacing any existing id
+                parent["id"] = a_id
                 a.decompose()  # Remove the empty <a> tag
 
 
