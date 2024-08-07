@@ -1322,17 +1322,30 @@ def preserve_heading_links(soup):
     This function mutates the soup!
 
     Preserves heading links by transferring IDs from empty <a> tags to their parent heading elements.
+    ALSO preserves heading links by transferring IDs from empty <a> tags directly preceding headings to those heading elements.
 
-    This function searches for all <a> tags that are direct children of heading tags. If such an <a> tag is empty (i.e., contains no text),
-    the function transfers the ID to the parent element and removes the empty <a> tag.
+    This function searches for 2 kinds of <a> tags:
+    - all <a> tags that directly precede heading tags
+    - all <a> tags that are direct children of heading tags
+
+    If such an <a> tag is empty (i.e., contains no text), the function transfers the ID to the heading element and removes the empty <a> tag.
 
     Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
     """
+
+    def _transfer_id_and_decompose(heading, anchor):
+        if heading and anchor.attrs.get("id"):
+            _change_existing_anchor_links_to_new_id(soup, heading, anchor["id"])
+            # Transfer the id to the parent element, replacing any existing id
+            heading["id"] = anchor["id"]
+            anchor.decompose()  # Remove the empty <a> tag
+
     # List of all heading tags to check
     heading_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
 
     # Store found empty anchors
     heading_id_anchors = []
+    preceding_id_anchors = []
 
     # Check each heading tag
     for tag in heading_tags:
@@ -1341,20 +1354,34 @@ def preserve_heading_links(soup):
 
         # Check each heading
         for heading in headings:
+            # Find empty <a> tags immediately preceding the heading
+            previous_sibling = heading.find_previous_sibling()
+            if (
+                previous_sibling
+                and previous_sibling.name == "a"
+                and not previous_sibling.get_text(strip=True)
+                and not previous_sibling.contents
+            ):
+                preceding_id_anchors.append(previous_sibling)
+
             # Find direct child anchor tags that are empty
             for a in heading.find_all("a", recursive=False):
                 if a.get_text(strip=True) == "" and not a.contents:
                     heading_id_anchors.append(a)
 
-    for a in heading_id_anchors:
+    for preceding_anchor in preceding_id_anchors:
         # Check if the <a> tag is empty
-        if not a.text.strip():
-            parent = a.parent
-            if parent and a.attrs.get("id"):
-                _change_existing_anchor_links_to_new_id(soup, parent, a["id"])
-                # Transfer the id to the parent element, replacing any existing id
-                parent["id"] = a["id"]
-                a.decompose()  # Remove the empty <a> tag
+        if not preceding_anchor.text.strip():
+            _transfer_id_and_decompose(
+                heading=preceding_anchor.find_next_sibling(), anchor=preceding_anchor
+            )
+
+    for heading_anchor in heading_id_anchors:
+        # Check if the <a> tag is empty
+        if not heading_anchor.text.strip():
+            _transfer_id_and_decompose(
+                heading=heading_anchor.parent, anchor=heading_anchor
+            )
 
 
 def preserve_table_heading_links(soup):

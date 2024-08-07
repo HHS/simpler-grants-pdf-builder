@@ -3463,6 +3463,98 @@ class PreserveHeadingLinksTest(TestCase):
         """
         self.assertEqual(result.strip(), expected.strip())
 
+    def test_empty_anchor_preceding_heading_id(self):
+        html = '<a id="_About_Priority_Populations"></a><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = (
+            '<h4 id="_About_Priority_Populations">About priority populations</h4>'
+        )
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_preceding_heading_id_wipes_out_existing_id(self):
+        html = '<a id="_About_Priority_Populations"></a><h4 id="h4_heading">About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = (
+            '<h4 id="_About_Priority_Populations">About priority populations</h4>'
+        )
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_preceding_heading_id_wipes_out_existing_id_but_keeps_old_href(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations"></a><h4 id="h4_heading">About priority populations</h4><a href="#h4_heading">Link to h4</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_About_Priority_Populations">About priority populations</h4><a href="#_About_Priority_Populations">Link to h4</a>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_name_preceding_heading_id_does_not_change_heading_id(
+        self,
+    ):
+        html = '<a name="_About_Priority_Populations"></a><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_non_empty_anchor_preceding_heading_id_does_not_change_heading_id(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations">Title: </a><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_empty_anchor_not_preceding_heading_id(self):
+        html = '<a id="_About_Priority_Populations"></a><p>Hello</p><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_empty_anchor_wrapped_does_not_become_heading_id(self):
+        html = '<p><a id="_About_Priority_Populations"></a></p><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_two_empty_anchors_preceding_heading_id_only_uses_first_anchor(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations_1"></a><a id="_About_Priority_Populations_2"></a><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<a id="_About_Priority_Populations_1"></a><h4 id="_About_Priority_Populations_2">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_preceding_heading_id_and_inside_heading_only_uses_inside(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations_preceding"></a><h4><a id="_About_Priority_Populations_inside"></a>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_About_Priority_Populations_inside">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_preceding_heading_id_and_inside_heading_only_uses_inside_all_links_preserved(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations_preceding"></a><h4 id="_About_Priority_Populations_h4"><a id="_About_Priority_Populations_inside"></a>About priority populations</h4><a href="#_About_Priority_Populations_h4">Link to h4</a><a href="#_About_Priority_Populations_preceding">Link to preceding</a><a href="#_About_Priority_Populations_inside">Link to inside</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_About_Priority_Populations_inside">About priority populations</h4><a href="#_About_Priority_Populations_inside">Link to h4</a><a href="#_About_Priority_Populations_inside">Link to preceding</a><a href="#_About_Priority_Populations_inside">Link to inside</a>'
+        self.assertEqual(result, expected)
+
 
 class PreserveTableHeadingLinksTest(TestCase):
     def test_empty_anchor_with_table_heading_id(self):
