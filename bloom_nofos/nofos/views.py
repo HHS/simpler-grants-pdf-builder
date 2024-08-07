@@ -71,6 +71,7 @@ from .nofo import (
     overwrite_nofo,
     preserve_bookmark_links,
     preserve_heading_links,
+    preserve_table_heading_links,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
@@ -284,6 +285,7 @@ def nofo_import(request, pk=None):
         add_strongs_to_soup(soup)
         preserve_bookmark_links(soup)
         preserve_heading_links(soup)
+        preserve_table_heading_links(soup)
         clean_heading_tags(soup)
         clean_table_cells(soup)
         unwrap_empty_elements(soup)

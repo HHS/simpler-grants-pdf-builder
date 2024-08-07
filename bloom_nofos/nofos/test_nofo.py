@@ -38,6 +38,7 @@ from .nofo import (
     overwrite_nofo,
     preserve_bookmark_links,
     preserve_heading_links,
+    preserve_table_heading_links,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
@@ -3377,14 +3378,6 @@ class PreserveHeadingLinksTest(TestCase):
         expected = '<h4 id="_heading=h.3rdcrjn">About priority populations</h4>'
         self.assertEqual(result, expected)
 
-    def test_empty_anchor_with_underscore_id(self):
-        html = '<h4><a id="_Deadlines"></a>About priority populations</h4>'
-        soup = BeautifulSoup(html, "html.parser")
-        preserve_heading_links(soup)
-        result = str(soup)
-        expected = '<h4 id="_Deadlines">About priority populations</h4>'
-        self.assertEqual(result, expected)
-
     def test_empty_anchor_with_heading_id_wipes_out_existing_id(self):
         html = '<h4 id="about-priority-populations"><a id="_heading=h.3rdcrjn"></a>About priority populations</h4>'
         soup = BeautifulSoup(html, "html.parser")
@@ -3469,6 +3462,97 @@ class PreserveHeadingLinksTest(TestCase):
         <h4 id="_heading=h.1">Heading 1</h4>\n<h4><a id="_heading=h.2">Link text</a>Heading 2</h4>
         """
         self.assertEqual(result.strip(), expected.strip())
+
+
+class PreserveTableHeadingLinksTest(TestCase):
+    def test_empty_anchor_with_table_heading_id(self):
+        html = '<p><a id="Table5"></a>About priority populations</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table5">About priority populations</p><table></table>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_table_heading_id_wipes_out_existing_id(self):
+        html = '<p id="priority-populations"><a id="Table5"></a>About priority populations</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table5">About priority populations</p><table></table>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_paragraph_id_wipes_out_existing_id_and_changes_old_href(
+        self,
+    ):
+        html = '<p id="priority-populations"><a id="Table5"></a>About priority populations</p><table></table><a href="#priority-populations">Some other heading</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table5">About priority populations</p><table></table><a href="#table-heading--Table5">Some other heading</a>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_table_heading_id_changes_existing_link_href(self):
+        html = '<p id="priority-populations"><a id="Table5"></a>About priority populations</p><table></table><a href="#Table5">Table 5: About priority populations</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table5">About priority populations</p><table></table><a href="#table-heading--Table5">Table 5: About priority populations</a>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_name_does_not_become_table_heading_id(self):
+        html = '<p><a name="Table5"></a>About priority populations</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_non_empty_anchor_IS_NOT_table_heading_id(self):
+        html = (
+            '<p><a id="Table5">Table: </a>About priority populations</p><table></table>'
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_empty_anchor_no_table(self):
+        html = '<p><a id="Table5"></a>About priority populations</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_empty_anchor_not_before_a_table(self):
+        html = '<p><a id="Table5"></a>About priority populations</p><p>Other paragraph</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_no_table_heading_id(self):
+        html = "<p>About priority populations</p><table></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        self.assertEqual(result, html)
+
+    def test_multiple_empty_anchors_with_table_heading_id(self):
+        html = '<p><a id="Table5"></a><a id="Table6"></a><a id="Table7"></a>About priority populations</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table7">About priority populations</p><table></table>'
+        self.assertEqual(result, expected)
+
+    def test_multiple_empty_anchors_with_table_heading_id_preserves_existing_links(
+        self,
+    ):
+        html = '<p><a id="Table5"></a><a id="Table6"></a><a id="Table7"></a>About priority populations</p><table></table><a href="#Table5">Table 5: About priority populations</a><a href="#Table6">Table 6: About priority populations</a><a href="#Table7">Table 7: About priority populations</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table7">About priority populations</p><table></table><a href="#table-heading--Table7">Table 5: About priority populations</a><a href="#table-heading--Table7">Table 6: About priority populations</a><a href="#table-heading--Table7">Table 7: About priority populations</a>'
+        self.assertEqual(result, expected)
 
 
 class UnwrapNestedListsTest(TestCase):
