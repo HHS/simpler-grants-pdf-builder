@@ -33,7 +33,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
     def convert_a(self, el, text, convert_as_inline):
         # keep the in-text footnote links as HTML so that the ids aren't lost
-        if el and el.attrs.get("id") and "footnote" in el.attrs.get("id"):
+        if el and el.attrs.get("id", "").startswith(("footnote", "endnote")):
             self._remove_classes_recursive(el)
             return str(el)
 
@@ -53,10 +53,8 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
         # save the footnote list as HTML so that the ids aren't lost
         first_li = el.find("li")
-        if (
-            first_li
-            and first_li.attrs.get("id")
-            and "footnote" in first_li.attrs.get("id")
+        if first_li and first_li.attrs.get("id", "").startswith(
+            ("footnote", "endnote")
         ):
             self._remove_classes_recursive(el)
             [li.attrs.update({"tabindex": "-1"}) for li in el.find_all("li")]
@@ -1039,15 +1037,17 @@ def add_endnotes_header_if_exists(soup):
     If no "Endnotes" header exists, look for a list of endnotes and add a header if found.
 
     If this is the Google Docs HTML export, we look for a final <hr> without a style tag.
-        Adds a header for endnotes if final <hr> tag has no style attribute.
+    Adds a header for endnotes if final <hr> tag has no style attribute.
 
-        Checks if the last <hr> tags in the soup has no style attribute.
-        If so, takes the last <hr> tag, converts it to a <h1> tag with the text
-        "Endnotes" to add a header before the endnotes.
+    Checks if the last <hr> tags in the soup has no style attribute.
+    If so, takes the last <hr> tag, converts it to a <h1> tag with the text
+    "Endnotes" to add a header before the endnotes.
 
-    If this is a docx export, we look for a final <ol> where the first <li> has an id of "footnote-0".
-        In this case, we create a new h1 with the text "Endnotes" and
-        insert it before the ol.
+    If this is a docx export, we look for a final <ol> where the first <li> has an id that
+    starts with "footnote" or "endnote".
+
+    In this case, we create a new h1 with the text "Endnotes" and
+    insert it before the ol.
     """
 
     def _match_endnotes(tag):
@@ -1067,9 +1067,9 @@ def add_endnotes_header_if_exists(soup):
         ols = soup.find_all("ol")
         if ols:
             last_ol = ols.pop()
-            # Check if the first li in the ol contains the id "footnote-0"
+            # Check if the first li in the ol starts with the id "footnote" or "endnote"
             first_li = last_ol.find("li")
-            if first_li and first_li.get("id") == "footnote-0":
+            if first_li and first_li.get("id", "").startswith(("footnote", "endnote")):
                 return last_ol
 
         return False

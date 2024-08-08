@@ -158,6 +158,12 @@ class TablesAndStuffInTablesConverterOLSTest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), pretty_html)
 
+    def test_ol_for_endnotes(self):
+        html = '<ol><li id="endnote-2">Item 1</li><li id="endnote-3">Item 2</li></ol>'
+        pretty_html = '<ol>\n <li id="endnote-2" tabindex="-1">\n  Item 1\n </li>\n <li id="endnote-3" tabindex="-1">\n  Item 2\n </li>\n</ol>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), pretty_html)
+
     def test_ol_start_not_one(self):
         html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
         pretty_html = '<ol start="2"><li>Item 1</li><li>Item 2</li></ol>'
@@ -2833,12 +2839,21 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         )
 
     def test_basic_ol_with_footnote_li(self):
-        html_content = '<div><ol><li id="footnote-0">Item 1</li></ol></div>'
+        html_content = '<div><ol><li id="footnote-10">Item 1</li></ol></div>'
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
             str(soup),
-            '<div><h1>Endnotes</h1><ol><li id="footnote-0">Item 1</li></ol></div>',
+            '<div><h1>Endnotes</h1><ol><li id="footnote-10">Item 1</li></ol></div>',
+        )
+
+    def test_basic_ol_with_endnote_li(self):
+        html_content = '<div><ol><li id="endnote-2">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Endnotes</h1><ol><li id="endnote-2">Item 1</li></ol></div>',
         )
 
     def test_basic_ol_with_li_no_id(self):
@@ -2847,8 +2862,10 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         add_endnotes_header_if_exists(soup)
         self.assertEqual(str(soup), html_content)
 
-    def test_basic_ol_with_wrong_footnote_li(self):
-        html_content = '<div><ol><li id="footnote-1">Item 1</li></ol></div>'
+    def test_basic_ol_with_li_not_starts_with_footnote(self):
+        html_content = (
+            '<div><ol><li id="not-startswith-footnote">Item 1</li></ol></div>'
+        )
         soup = BeautifulSoup(html_content, "html.parser")
         add_endnotes_header_if_exists(soup)
         self.assertEqual(
