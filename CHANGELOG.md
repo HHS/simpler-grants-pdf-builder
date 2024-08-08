@@ -30,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Remove empty "absolute--right-col" wrapper for sections that don't need it
 - One more format fix for the "Have questions?" callout box
 - Preserve 'endnotes' as well, not just 'footnotes'
+  - Make sure that endnotes get `<sup>`-wrapped as well
 
 ## [1.23.0] - 2023-07-26
 

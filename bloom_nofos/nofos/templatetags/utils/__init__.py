@@ -243,9 +243,12 @@ def get_footnote_type(a_tag):
         return "html"
 
     # DOCX
-    # Inline footnote links look like "<a href="#footnote-1">[2]</a>"
-    # Endnote footnote links look like "<a href="#footnote-ref-1">↑</a>"
-    if href.startswith("#footnote"):
+    # Inline FOOTNOTE links look like "<a href="#footnote-1">[2]</a>"
+    # Bottom-of-doc FOOTNOTE links look like "<a href="#footnote-ref-1">↑</a>"
+
+    # Inline ENDNOTE links look like "<a href="#endnote-2" id="endnote-ref-2">[1]</a>"
+    # Bottom-of-doc ENDNOTE links look like "<a href="#endnote-ref-2">↑</a>"
+    if href.startswith(("#footnote", "#endnote")):
         return "docx"
 
     return None
