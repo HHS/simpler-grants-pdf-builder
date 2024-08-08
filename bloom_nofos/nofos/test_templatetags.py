@@ -627,6 +627,18 @@ class GetFootnoteTypeTest(TestCase):
         a_tag = soup.find("a", href="#footnote-ref-1")
         self.assertEqual(get_footnote_type(a_tag), "docx")
 
+    def test_docx_inline_endnote(self):
+        html = '<a href="#endnote-2" id="endnote-ref-2">[1]</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a")
+        self.assertEqual(get_footnote_type(a_tag), "docx")
+
+    def test_docx_endnote_footnote(self):
+        html = '<li id="footnote-1"><p> American Lung Association. <a href="https://etc">Asthma Trends and Burden</a>.  <a href="#endnote-ref-2">↑</a></p></li>'
+        soup = BeautifulSoup(html, "html.parser")
+        a_tag = soup.find("a", href="#endnote-ref-2")
+        self.assertEqual(get_footnote_type(a_tag), "docx")
+
     def test_no_footnote(self):
         html = '<a href="#some-other-link">[2]</a>'
         soup = BeautifulSoup(html, "html.parser")
