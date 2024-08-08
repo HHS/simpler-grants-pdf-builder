@@ -31,6 +31,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - One more format fix for the "Have questions?" callout box
 - Preserve 'endnotes' as well, not just 'footnotes'
   - Make sure that endnotes get `<sup>`-wrapped as well
+- Make sure that inline CSS makes it in properly
 
 ## [1.23.0] - 2023-07-26
 
