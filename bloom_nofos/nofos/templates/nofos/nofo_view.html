@@ -27,7 +27,7 @@
   {% endwith %}
 
   {% if nofo.inline_css %}
-    <style>{{ nofo.inline_css }}</style>
+    <style>{{ nofo.inline_css|safe }}</style>
   {% endif %}
 {% endblock %}
 
