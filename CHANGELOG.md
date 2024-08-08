@@ -29,6 +29,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fix for "preserve_table_headings": also include empty links preceding headings
 - Remove empty "absolute--right-col" wrapper for sections that don't need it
 - One more format fix for the "Have questions?" callout box
+- Preserve 'endnotes' as well, not just 'footnotes'
 
 ## [1.23.0] - 2023-07-26
 
