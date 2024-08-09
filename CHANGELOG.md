@@ -21,6 +21,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Re-importing redirects to edit page, not index page
 - Remove tables that start with the phrase: "Instructions for NOFO Writers:"
 - Add "br" after 'Have questions?'
+- Put subsection 'other actions' into a little accordion box
+  - We don't want people to click them accidentally
 
 ### Fixed
 

@@ -423,6 +423,20 @@ details > summary > span:hover {
   cursor: row-resize;
 }
 
+.subsection_edit details.usa-accordion .usa-accordion--heading {
+  font-size: 1.1em;
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
+.subsection_edit
+  details.usa-accordion
+  .usa-accordion__content
+  ul
+  li:not(:last-of-type) {
+  margin-bottom: 16px;
+}
+
 fieldset {
   margin: 0;
   padding: 0;
