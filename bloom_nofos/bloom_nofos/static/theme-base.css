@@ -324,7 +324,7 @@ div[role="heading"] + p,
   margin-top: 5px;
 }
 
-.section--endnotes p {
+.section--endnotes li {
   font-size: 9pt;
 }
 

@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Smaller list number sizes for endnotes
+
 ## [1.24.0] - 2023-08-09
 
 ### Added
