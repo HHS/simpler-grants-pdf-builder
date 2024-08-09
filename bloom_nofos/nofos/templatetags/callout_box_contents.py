@@ -1,4 +1,6 @@
-from bs4 import BeautifulSoup, NavigableString
+import re
+
+from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -40,5 +42,10 @@ def callout_box_contents(html_string):
         text = paragraph.get_text()
         if ":" in text:
             wrap_text_before_colon_in_strong(paragraph, soup)
+        if text.startswith("Have questions?"):
+            strong_with_questions = paragraph.find(
+                "strong", text=re.compile("questions?", flags=re.IGNORECASE)
+            )
+            strong_with_questions.insert_after(soup.new_tag("br"))
 
     return mark_safe(str(soup))
