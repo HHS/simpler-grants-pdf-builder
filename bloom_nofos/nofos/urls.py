@@ -95,17 +95,17 @@ urlpatterns = [
     ),
     path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
     path(
-        "<int:pk>/create/subsection",
+        "<int:pk>/section/<int:section_pk>/subsection/create",
         views.NofoSubsectionCreateView.as_view(),
         name="subsection_create",
     ),
     path(
-        "<int:pk>/edit/subsection/<int:subsection_pk>",
+        "<int:pk>/section/<int:section_pk>/subsection/<int:subsection_pk>/edit",
         views.NofoSubsectionEditView.as_view(),
         name="subsection_edit",
     ),
     path(
-        "<int:pk>/edit/subsection/<int:subsection_pk>/delete",
+        "<int:pk>/section/<int:section_pk>/subsection/<int:subsection_pk>/delete",
         views.NofoSubsectionDeleteView.as_view(),
         name="subsection_delete",
     ),

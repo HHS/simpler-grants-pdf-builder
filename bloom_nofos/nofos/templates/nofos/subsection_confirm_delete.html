@@ -17,7 +17,7 @@
 
   {% with "Back to Subsection: "|add:subsection.name as back_text %}
   {% with "Delete Subsection: "|add:subsection.name as title %}
-    {% url 'nofos:subsection_edit' nofo.id subsection.id as back_href %}
+    {% url 'nofos:subsection_edit' nofo.id subsection.section.id subsection.id as back_href %}
     {% include "includes/page_heading.html" with title=title back_text=back_text back_href=back_href only %}
   {% endwith %}
   {% endwith %}
@@ -34,7 +34,7 @@
         <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
       </li>
       <li class="usa-button-group__item">
-        <a href="{% url 'nofos:subsection_edit' nofo.id subsection.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this Subsection</a>
+        <a href="{% url 'nofos:subsection_edit' nofo.id subsection.section.id subsection.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this Subsection</a>
       </li>
     </ul>
   </form>

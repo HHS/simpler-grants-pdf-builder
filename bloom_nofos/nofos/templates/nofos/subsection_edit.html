@@ -190,12 +190,12 @@
     <div class="usa-accordion__content usa-prose">
       <ul class="usa-list usa-list--unstyled">
         <li>
-          <a class="usa-button usa-button--accent-cool" href="{% url 'nofos:subsection_create' nofo.id %}?prev_subsection={{subsection.id}}">
+          <a class="usa-button usa-button--accent-cool" href="{% url 'nofos:subsection_create' nofo.id subsection.section.id %}?prev_subsection={{subsection.id}}">
             Add subsection
           </a> — add a new subsection after this one
         </li>
         <li>
-          <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.id %}">
+          <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.section.id subsection.id %}">
             Delete subsection
           </a> — remove this subsection completely
         </li>
