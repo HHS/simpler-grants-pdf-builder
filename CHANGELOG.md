@@ -10,6 +10,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Changed URL patterns for subsections (include the section id as well)
+
+### Fixed
+
+## [1.24.0] - 2023-08-09
+
+### Added
+
+### Changed
+
 - Accept NOFOs with H2s as the highest-level heading
   - No longer demote headings in these NOFO documents
 - Replace weird unicodes in the application table checklist on import
