@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Set the nofo.title as well
   - Re-importing redirects to edit page, not index page
 - Remove tables that start with the phrase: "Instructions for NOFO Writers:"
+- Add "br" after 'Have questions?'
 
 ### Fixed
 
