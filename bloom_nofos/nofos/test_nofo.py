@@ -211,7 +211,7 @@ class TablesAndStuffInTablesConverterASTest(TestCase):
 
     def test_a_for_footnotes(self):
         html = '<a id="footnote-0" href="#footnote-0">1</a>'
-        expected_html = '<a href="#footnote-0" id="footnote-0">1</a>'
+        expected_html = '<sup><a href="#footnote-0" id="footnote-0">1</a></sup>'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
@@ -229,7 +229,7 @@ class TablesAndStuffInTablesConverterASTest(TestCase):
 
     def test_a_footnote_with_classes(self):
         html = '<a id="footnote-0" class="footnote-class" href="#footnote-0">1</a>'
-        expected_html = '<a href="#footnote-0" id="footnote-0">1</a>'
+        expected_html = '<sup><a href="#footnote-0" id="footnote-0">1</a></sup>'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
