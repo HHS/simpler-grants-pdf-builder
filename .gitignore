@@ -16,7 +16,3 @@ bloom_nofos/static
 
 # debug file
 debug_output.html
-
-# text fixture
-bloom_nofos/nofos/fixtures/html/nofo.html
-bloom_nofos/nofos/fixtures/html/step_one.html
