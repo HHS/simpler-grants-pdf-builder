@@ -17,5 +17,5 @@ def migrate():
 
 
 def test():
-    cmd = ["python", "manage.py", "test", "nofos"]
+    cmd = ["python", "manage.py", "test"]
     subprocess.run(cmd)
