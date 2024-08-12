@@ -35,7 +35,10 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
         # keep the in-text footnote links as HTML so that the ids aren't lost
         if el and el.attrs.get("id", "").startswith(("footnote", "endnote")):
             self._remove_classes_recursive(el)
-            return str(el)
+            # wrap these links in <sup> element
+            el.wrap(BeautifulSoup("", "html.parser").new_tag("sup"))
+            # return link AND parent (which is <sup>)
+            return str(el.parent)
 
         return super().convert_a(el, text, convert_as_inline)
 

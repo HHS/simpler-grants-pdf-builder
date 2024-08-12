@@ -14,10 +14,7 @@ def add_footnote_ids(html_string):
         footnote_num = is_footnote_ref(a)
         footnote_type = get_footnote_type(a)
 
-        if footnote_num and footnote_type:
-            if footnote_type == "html":
-                format_footnote_ref_html(a)
-            if not a.get("href").startswith("#ftnt_"):
-                a.wrap(soup.new_tag("sup"))
+        if footnote_type == "html" and footnote_num:
+            format_footnote_ref_html(a)
 
     return mark_safe(str(soup))
