@@ -13,19 +13,32 @@ Section: “{{ section.name }}”
   <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo|nofo_name }}”</a>
 </div>
 <div class="section_edit--header">
-  <h1 class="font-heading-xl margin-y-1">Section: “{{ section.name }}”</h1>
+  <h1 class="font-heading-xl margin-y-1">Add or remove subsections<span class="usa-sr-only"> for {{ section.name }}</span></h1>
+  <h2 class="font-heading-lg margin-y-1 text-base">{{ section.name }}</h2>
 </div>
 
-<p>TODO: prev section if exists</p>
-<p>TODO: next section if exists</p>
+<div class="margin-top-4">  
+  <details class="usa-accordion usa-accordion--bordered">
+    <summary class="usa-accordion__button">
+      <h3 class="usa-accordion--heading margin-top-0">
+        Other sections
+      </h3>
+    </summary>
+
+    <div class="usa-accordion__content usa-prose">
+      <div class="edit_section--other_sections">
+        <a href="/elephant" class="section_edit--previous-section">Previous section: Step 2</a>
+        <a href="/" class="section_edit--next-section">Next section: Step 3</a>
+      </div>
+    </div>
+  </details>
+</div>
 
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
   <caption>
     <div>
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-      <code class="section--html-id">#{{ section.html_id }}</code>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
