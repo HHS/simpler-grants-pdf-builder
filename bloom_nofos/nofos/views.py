@@ -581,6 +581,37 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
 
 ###########################################################
+################### SECTION VIEWS ######################
+###########################################################
+
+
+class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
+    model = Section
+    template_name = "nofos/section_detail.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo_id = kwargs.get("pk")
+        self.section = self.get_object()
+        self.nofo = self.section.nofo
+
+        if self.nofo.id != self.nofo_id:
+            return HttpResponseBadRequest("Oops, bad NOFO id")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection"] = self.object
+        context["nofo"] = self.nofo
+        return context
+
+    def get_object(self):
+        # Use section_pk to fetch the section
+        section_pk = self.kwargs.get("section_pk")
+        return get_object_or_404(Section, pk=section_pk)
+
+
+###########################################################
 ################### SUBSECTION VIEWS ######################
 ###########################################################
 
