@@ -217,19 +217,16 @@ details > summary > span:hover {
   margin-right: 15px;
 }
 
-.nofo_edit caption div .section--html-id,
-.section_edit caption div .section--html-id {
+.nofo_edit caption div .section--html-id {
   display: none;
   color: #71767a;
 }
 
-.nofo_edit caption:hover div .section--html-id,
-.section_edit caption:hover div .section--html-id {
+.nofo_edit caption:hover div .section--html-id {
   display: inline-block;
 }
 
-.nofo_edit caption span.caption--top-link,
-.section_edit caption span.caption--top-link {
+.nofo_edit caption span.caption--top-link {
   position: absolute;
   right: 8px;
   bottom: 12px;
@@ -237,8 +234,7 @@ details > summary > span:hover {
   visibility: hidden;
 }
 
-.nofo_edit caption.is-pinned span,
-.section_edit caption.is-pinned span {
+.nofo_edit caption.is-pinned span {
   visibility: visible;
 }
 
@@ -387,6 +383,45 @@ details > summary > span:hover {
   display: block;
 }
 
+/* Section edit page */
+
+.section_edit .edit_section--other_sections {
+  display: flex;
+  justify-content: space-between;
+}
+
+.section_edit .edit_section--other_sections a,
+.section_edit .edit_section--other_sections a:visited {
+  color: #0000ee;
+}
+
+.section_edit .edit_section--other_sections a::before,
+.section_edit .edit_section--other_sections a::after {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  filter: invert(12%) sepia(100%) saturate(5127%) hue-rotate(244deg)
+    brightness(79%) contrast(152%);
+}
+
+.section_edit
+  .edit_section--other_sections
+  a.section_edit--previous-section::before {
+  background-image: url("/static/img/usa-icons/arrow_back.svg");
+  height: 10px;
+  width: 18px;
+}
+
+.section_edit
+  .edit_section--other_sections
+  a.section_edit--next-section::after {
+  background-image: url("/static/img/usa-icons/arrow_forward.svg");
+  height: 10px;
+  width: 18px;
+}
+
 /* Subsection edit page */
 
 .subsection_edit .hint--subsection-id {
@@ -433,17 +468,17 @@ details > summary > span:hover {
   cursor: row-resize;
 }
 
-.subsection_edit details.usa-accordion .usa-accordion--heading {
+details.usa-accordion .usa-accordion__button {
+  box-sizing: border-box;
+}
+
+details.usa-accordion .usa-accordion--heading {
   font-size: 1.1em;
   margin-bottom: 0;
   font-weight: 700;
 }
 
-.subsection_edit
-  details.usa-accordion
-  .usa-accordion__content
-  ul
-  li:not(:last-of-type) {
+details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: 16px;
 }
 
