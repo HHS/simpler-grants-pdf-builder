@@ -1,6 +1,10 @@
 @charset "UTF-8";
 /* Custom CSS */
 
+:root {
+  --color--text-default: #1b1b1b;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -349,40 +353,6 @@ details > summary > span:hover {
   display: none;
 }
 
-.nofo_edit table.table--section tr {
-  position: relative;
-}
-
-.nofo_edit table.table--section tr {
-  position: relative;
-}
-
-.nofo_edit
-  table.table--section
-  .nofo-edit-table--subsection--manage
-  .add-button {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, 50%);
-  z-index: 1;
-  /*
-  background-image: url(/static/img/usa-icons/add.svg),
-    linear-gradient(transparent, transparent);
-  background-repeat: no-repeat;
-  *
-  display: none; */
-  padding: 0.55rem 0.9rem;
-  font-weight: 400;
-  font-size: 85%;
-  background-color: white;
-}
-
-.nofo_edit table.table--section tr:hover .add-button,
-.nofo_edit table.table--section tr:focus-within .add-button {
-  display: block;
-}
-
 /* Section edit page */
 
 .section_edit .edit_section--other_sections {
@@ -420,6 +390,55 @@ details > summary > span:hover {
   background-image: url("/static/img/usa-icons/arrow_forward.svg");
   height: 10px;
   width: 18px;
+}
+
+.section_edit .table--section tr {
+  position: relative;
+}
+
+.section_edit main table.table--section th,
+.section_edit main table.table--section td {
+  padding: calc(1.2rem - 5px) 1rem 1.2rem 1rem;
+}
+
+.section_edit .table--section td:not(:last-of-type) a {
+  color: var(--color--text-default);
+}
+
+.section_edit table.table--section .add-button {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  z-index: 1;
+  padding: 0.55rem 0.9rem 0.55rem 0.6rem;
+  font-weight: 400;
+  font-size: 90%;
+  background-color: white;
+  box-shadow: inset 0 0 0 0.75px var(--color--text-default);
+}
+
+.usa-button--outline {
+  background-color: transparent;
+  color: #005ea2;
+}
+
+.section_edit table.table--section .add-button::before {
+  background-image: url(/static/img/usa-icons/add.svg);
+  background-repeat: no-repeat;
+  content: "";
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  height: 9px;
+  width: 16px;
+  filter: invert(20%) sepia(99%) saturate(1868%) hue-rotate(190deg)
+    brightness(95%) contrast(98%);
+}
+
+.section_edit table.table--section .add-button:hover::before {
+  filter: invert(16%) sepia(92%) saturate(1493%) hue-rotate(201deg)
+    brightness(98%) contrast(88%);
 }
 
 /* Subsection edit page */

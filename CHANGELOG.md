@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add 'section_detail' page to add and remove subsections
+  - 'section_detail' page must be manually visited for now
+
 ### Changed
 
 - Changed URL patterns for subsections (include the section id as well)
