@@ -315,6 +315,14 @@ class Section(models.Model):
 
         return "({}) {}".format(nofo_id, self.name)
 
+    def get_previous_section(self):
+        return (
+            self.nofo.sections.filter(order__lt=self.order).order_by("-order").first()
+        )
+
+    def get_next_section(self):
+        return self.nofo.sections.filter(order__gt=self.order).order_by("order").first()
+
 
 class Subsection(models.Model):
     section = models.ForeignKey(

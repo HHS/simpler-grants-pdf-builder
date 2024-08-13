@@ -18,7 +18,7 @@ Section: “{{ section.name }}”
 </div>
 
 <div class="margin-top-4">  
-  <details class="usa-accordion usa-accordion--bordered">
+  <details class="usa-accordion usa-accordion--bordered" open>
     <summary class="usa-accordion__button">
       <h3 class="usa-accordion--heading margin-top-0">
         Other sections
@@ -27,8 +27,13 @@ Section: “{{ section.name }}”
 
     <div class="usa-accordion__content usa-prose">
       <div class="edit_section--other_sections">
-        <a href="/elephant" class="section_edit--previous-section">Previous section: Step 2</a>
-        <a href="/" class="section_edit--next-section">Next section: Step 3</a>
+        {% if section.get_previous_section %}
+          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_previous_section.id %}" class="section_edit--previous-section">{{ section.get_previous_section.name }}</a>
+        {% endif %}
+
+        {% if section.get_next_section %}
+          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_next_section.id %}" class="section_edit--next-section">{{ section.get_next_section.name }}</a>
+        {% endif %}
       </div>
     </div>
   </details>
