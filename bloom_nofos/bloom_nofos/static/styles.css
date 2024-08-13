@@ -160,16 +160,19 @@ details > summary > span:hover {
 }
 
 .nofo_edit--header,
+.section_edit--header,
 .subsection_edit--header {
   position: relative;
 }
 
 .nofo_edit--header h1,
+.section_edit--header h1,
 .subsection_edit--header h1 {
   width: 65%;
 }
 
 .nofo_edit--header--view,
+.section_edit--header--view,
 .subsection_edit--header--view {
   position: absolute;
   right: 0;
@@ -192,7 +195,8 @@ details > summary > span:hover {
   margin-bottom: 0.75em;
 }
 
-.nofo_edit caption {
+.nofo_edit caption,
+.section_edit caption {
   position: sticky;
   top: -1px;
   margin: 0;
@@ -200,27 +204,32 @@ details > summary > span:hover {
   z-index: 10;
 }
 
-.nofo_edit caption div {
+.nofo_edit caption div,
+.section_edit caption div {
   margin-top: 20px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ccc;
 }
 
-.nofo_edit caption div h2 {
+.nofo_edit caption div h2,
+.section_edit caption div h2 {
   display: inline;
   margin-right: 15px;
 }
 
-.nofo_edit caption div .section--html-id {
+.nofo_edit caption div .section--html-id,
+.section_edit caption div .section--html-id {
   display: none;
   color: #71767a;
 }
 
-.nofo_edit caption:hover div .section--html-id {
+.nofo_edit caption:hover div .section--html-id,
+.section_edit caption:hover div .section--html-id {
   display: inline-block;
 }
 
-.nofo_edit caption span.caption--top-link {
+.nofo_edit caption span.caption--top-link,
+.section_edit caption span.caption--top-link {
   position: absolute;
   right: 8px;
   bottom: 12px;
@@ -228,7 +237,8 @@ details > summary > span:hover {
   visibility: hidden;
 }
 
-.nofo_edit caption.is-pinned span {
+.nofo_edit caption.is-pinned span,
+.section_edit caption.is-pinned span {
   visibility: visible;
 }
 

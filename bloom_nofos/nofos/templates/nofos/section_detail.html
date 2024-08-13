@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load martortags nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+
+
+{% block title %}
+Section: “{{ section.name }}”
+{% endblock %}
+
+{% block body_class %}section_edit{% endblock %}
+
+{% block content %}
+<div class="back-link font-body-md margin-bottom-105">
+  <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo|nofo_name }}”</a>
+</div>
+<div class="section_edit--header">
+  <h1 class="font-heading-xl margin-y-1">Section: “{{ section.name }}”</h1>
+</div>
+
+<p>TODO: prev section if exists</p>
+<p>TODO: next section if exists</p>
+
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
+  <caption>
+    <div>
+      <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+      <code class="section--html-id">#{{ section.html_id }}</code>
+    </div>
+    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Heading</th>
+      <th scope="col">Is callout box</th>
+      <th scope="col">Content</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for subsection in section.subsections.all|dictsort:"order" %}
+    <tr>
+      <th scope="row"
+        class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
+        id="{{ subsection.html_id }}">
+        <span class="floating">
+          {% if subsection.name %}
+            {{ subsection.name }}
+          {% else %}
+            <span class="text-base">(#{{ subsection.order}})</span>
+          {% endif %}
+        </span>
+      </th>
+      <td class="nofo-edit-table--subsection--callout-box">
+        {% if subsection.callout_box %}
+        <span class="floating">
+          <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+        </span>
+        {% endif %}
+      </td>
+      <td class="nofo-edit-table--subsection--body">
+        {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+      </td>
+      <td class="nofo-edit-table--subsection--manage">
+        <span class="floating">
+          <a href="{% url 'nofos:subsection_edit' section.nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+        </span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
