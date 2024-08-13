@@ -3,7 +3,7 @@
 
 
 {% block title %}
-Section: “{{ section.name }}”
+  Add or remove subsections for {{ section.name }}
 {% endblock %}
 
 {% block body_class %}section_edit{% endblock %}
@@ -14,7 +14,7 @@ Section: “{{ section.name }}”
 </div>
 <div class="section_edit--header">
   <h1 class="font-heading-xl margin-y-1">Add or remove subsections<span class="usa-sr-only"> for {{ section.name }}</span></h1>
-  <h2 class="font-heading-lg margin-y-1 text-base">{{ section.name }}</h2>
+  <h2 class="font-heading-lg margin-y-1 text-base" aria-hidden="true">{{ section.name }}</h2>
 </div>
 
 <div class="margin-top-4">  
@@ -79,8 +79,14 @@ Section: “{{ section.name }}”
       </td>
       <td class="nofo-edit-table--subsection--manage">
         <span class="floating">
-          <a href="{% url 'nofos:subsection_edit' section.nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+          <a class="text-secondary-dark" href="{% url 'nofos:subsection_delete' section.nofo.id section.id subsection.id %}">
+            Delete <span class="usa-sr-only"> subsection: {{ subsection.name }}</span>
+          </a>
         </span>
+
+        <a class="usa-button usa-button--outline add-button" type="button" href="{% url 'nofos:subsection_create' section.nofo.id subsection.section.id %}?prev_subsection={{subsection.id}}">
+          Add subsection
+        </a>
       </td>
     </tr>
     {% endfor %}
