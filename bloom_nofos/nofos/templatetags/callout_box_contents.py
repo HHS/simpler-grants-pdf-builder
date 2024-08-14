@@ -46,6 +46,7 @@ def callout_box_contents(html_string):
             strong_with_questions = paragraph.find(
                 "strong", text=re.compile("questions?", flags=re.IGNORECASE)
             )
-            strong_with_questions.insert_after(soup.new_tag("br"))
+            if strong_with_questions:
+                strong_with_questions.insert_after(soup.new_tag("br"))
 
     return mark_safe(str(soup))
