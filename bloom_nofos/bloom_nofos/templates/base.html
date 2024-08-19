@@ -64,7 +64,7 @@
 {% block footer %}
   <footer class="usa-footer">
     <div class="usa-footer__primary-section">
-      <nav class="usa-footer__nav" aria-label="Footer navigation">
+      <nav class="usa-footer__nav usa-footer__nav--reverse" aria-label="Footer navigation">
         <ul class="grid-row grid-gap">
           <li
             class="
@@ -73,8 +73,8 @@
               usa-footer__primary-content
             "
           >
-            <a class="usa-footer__primary-link" href="#back-to-top"
-              >Back to top ↑</a
+            <a class="usa-footer__primary-link back-to-top" href="#back-to-top"
+              >Back to top</a
             >
           </li>
           {% if request.path == "/" %}
