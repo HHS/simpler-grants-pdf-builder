@@ -16,6 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Changed URL patterns for subsections (include the section id as well)
+- Very small update on "Before you begin" page
 
 ### Fixed
 
