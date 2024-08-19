@@ -12,11 +12,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - 'section_detail' page must be manually visited for now
 - Added mailto link to the 400 page
 - Add cover image for "cdc-eh-25-011"
+- Add cover image for "rfa-ce-25-149"
 
 ### Changed
 
 - Changed URL patterns for subsections (include the section id as well)
 - Very small update on "Before you begin" page
+- Smallen cover page title if longer and there is an image
 
 ### Fixed
 
