@@ -33,6 +33,22 @@ body > footer {
   }
 }
 
+.usa-footer__nav--reverse ul {
+  flex-direction: row-reverse;
+}
+
+.usa-footer__nav ul a.back-to-top::before {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  background-image: url("/static/img/usa-icons/arrow_upward.svg");
+  height: 12px;
+  width: 18px;
+  margin-right: 5px;
+}
+
 .usa-logo {
   display: flex;
   align-items: center;
