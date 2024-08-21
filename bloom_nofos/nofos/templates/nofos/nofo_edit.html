@@ -8,13 +8,13 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js_footer %}
 <script>
-  const els = document.querySelectorAll("caption")
+  const el = document.querySelector("#nofo_edit--header--id")
   const observer = new IntersectionObserver(
     ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
     { threshold: [1] }
   );
 
-  els.forEach(el => observer.observe(el));
+  observer.observe(el);
 </script>
 {% endblock %}
 
@@ -23,15 +23,22 @@ Edit “{{ nofo|nofo_name }}”
 {% block content %}
 {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
 
-<div class="back-link font-body-md margin-bottom-105">
+<div class="back-link font-body-md">
   <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
 </div>
-<div class="nofo_edit--header">
+<div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
   {% with nofo|nofo_name as nofo_name_str %}
-    <h1 class="font-heading-xl margin-y-1">Edit “{{ nofo_name_str }}”</h1>
+    <div class="nofo_edit--header--h1 {% if nofo_name_str|length > 40 %}nofo_edit--header--h1--smaller{% endif %}">
+      <a href="{% url 'nofos:nofo_view' nofo.id %}">
+        <h1 class="font-heading- margin-0">{{ nofo_name_str }}</h1>
+      </a>
+    </div>
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
     {% include "includes/print_button.html" %}
+  </div>
+  <div class="nofo_edit--header--back-to-top">
+    <a href="#back-to-top">Top</a>
   </div>
 </div>
 
@@ -139,7 +146,6 @@ Edit “{{ nofo|nofo_name }}”
     <div>
       <h2 class="margin-bottom-0">NOFO data</h2>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -207,7 +213,6 @@ Edit “{{ nofo|nofo_name }}”
     <div>
       <h2 class="margin-bottom-0">NOFO metadata</h2>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -240,7 +245,6 @@ Edit “{{ nofo|nofo_name }}”
     <div>
       <h2 class="margin-bottom-0">NOFO theme options</h2>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -277,7 +281,6 @@ Edit “{{ nofo|nofo_name }}”
     <div>
       <h2 class="margin-bottom-0">NOFO management options</h2>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
@@ -315,7 +318,7 @@ Edit “{{ nofo|nofo_name }}”
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
       <code class="section--html-id">#{{ section.html_id }}</code>
     </div>
-    <span class="caption--top-link"><a href="#back-to-top">Top ↑</a></span>
+    <span class="caption--top-link"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add/remove subsections</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>
