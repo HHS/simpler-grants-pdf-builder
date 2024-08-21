@@ -2813,6 +2813,24 @@ class TestAddEndnotesHeaderIfExists(TestCase):
             "<div><h1>Endnotes</h1></div>",
         )
 
+    def test_basic_ol_with_h1_heading_creates_h1(self):
+        html_content = '<div><h1>Step 1: Review the opportunity</h1><p>Review it</p><ol><li id="footnote-10">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><h1>Step 1: Review the opportunity</h1><p>Review it</p><h1>Endnotes</h1><ol><li id="footnote-10">Item 1</li></ol></div>',
+        )
+
+    def test_basic_ol_with_h2_heading_creates_h2(self):
+        html_content = '<div><h2>Step 1: Review the opportunity</h2><p>Review it</p><ol><li id="footnote-10">Item 1</li></ol></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        add_endnotes_header_if_exists(soup, top_heading_level="h2")
+        self.assertEqual(
+            str(soup),
+            '<div><h2>Step 1: Review the opportunity</h2><p>Review it</p><h2>Endnotes</h2><ol><li id="footnote-10">Item 1</li></ol></div>',
+        )
+
     def test_no_hr_tags_present(self):
         html_content = "<div><p>Some text</p></div>"
         soup = BeautifulSoup(html_content, "html.parser")
