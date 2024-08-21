@@ -106,6 +106,11 @@ style_map_manager.add_style(
     note="Don't do anything: body text",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='ui-provider'] => span:fresh",
+    location_in_nofo="Step 1 > Program requirements and expectations > p",
+    note="Don't do anything: not sure why this is formatted differently, but it's just body text.",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='Intense Reference'] => span.intense-reference",
     location_in_nofo="Step 3 > Required format",
     note="Don't do anything: it's formatted as a header already, go with that.",
