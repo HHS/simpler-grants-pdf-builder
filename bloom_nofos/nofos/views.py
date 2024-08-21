@@ -279,6 +279,9 @@ def nofo_import(request, pk=None):
         # with open(output_file_path, "w", encoding="utf-8") as file:
         #     file.write(str(soup))
 
+        # if there are no h1s, then h2s are the new top
+        top_heading_level = "h1" if soup.find("h1") else "h2"
+
         # mutate the HTML
         decompose_instructions_tables(soup)
         join_nested_lists(soup)
@@ -294,12 +297,9 @@ def nofo_import(request, pk=None):
         escape_asterisks_in_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
-        add_endnotes_header_if_exists(soup)
+        add_endnotes_header_if_exists(soup, top_heading_level)
         add_em_to_de_minimis(soup)
         unwrap_nested_lists(soup)
-
-        # if there are no h1s, then h2s are the new top
-        top_heading_level = "h1" if soup.find("h1") else "h2"
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup, top_heading_level)

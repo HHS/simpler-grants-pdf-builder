@@ -1033,7 +1033,7 @@ def replace_src_for_inline_images(soup):
                 )
 
 
-def add_endnotes_header_if_exists(soup):
+def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
     """
     This function mutates the soup!
 
@@ -1084,7 +1084,7 @@ def add_endnotes_header_if_exists(soup):
     last_hr = _find_google_doc_html_endnotes(soup)
     if last_hr:
         # Repurpose the hr element as an h1 element
-        last_hr.name = "h1"
+        last_hr.name = top_heading_level
         last_hr.string = "Endnotes"
 
     else:
@@ -1092,11 +1092,11 @@ def add_endnotes_header_if_exists(soup):
         last_ol = _find_docx_html_endnotes(soup)
         if last_ol:
             # Create the h1 element
-            h1_tag = soup.new_tag("h1")
-            h1_tag.string = "Endnotes"
+            heading_tag = soup.new_tag(top_heading_level)
+            heading_tag.string = "Endnotes"
 
             # Insert the h1 element before the ol
-            last_ol.insert_before(h1_tag)
+            last_ol.insert_before(heading_tag)
 
 
 def escape_asterisks_in_table_cells(soup):
