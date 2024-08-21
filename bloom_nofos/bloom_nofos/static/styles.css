@@ -37,6 +37,7 @@ body > footer {
   flex-direction: row-reverse;
 }
 
+.nofo_edit--header--back-to-top a::before,
 .usa-footer__nav ul a.back-to-top::before {
   content: "";
   background-repeat: no-repeat;
@@ -47,6 +48,12 @@ body > footer {
   height: 12px;
   width: 18px;
   margin-right: 5px;
+}
+
+.nofo_edit--header--back-to-top a::before {
+  margin-right: 2px;
+  filter: invert(9%) sepia(100%) saturate(7485%) hue-rotate(247deg)
+    brightness(81%) contrast(140%);
 }
 
 .usa-logo {
@@ -185,13 +192,70 @@ details > summary > span:hover {
   position: relative;
 }
 
-.nofo_edit--header h1,
+.nofo_edit--header a,
+.section_edit--header a,
+.subsection_edit--header a {
+  color: #0000ee;
+}
+
+.nofo_edit--header .nofo_edit--header--h1 a:not(:hover):not(:focus) {
+  color: var(--color--text-default);
+}
+
+.nofo_edit--header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  margin-bottom: 6px;
+  height: 58px;
+}
+
+.nofo_edit--header--sticky {
+  position: sticky;
+  top: -1px;
+  background: white;
+  z-index: 20;
+}
+
+.nofo_edit--header .nofo_edit--header--h1 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nofo_edit--header .nofo_edit--header--h1 a h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.95rem;
+  line-height: normal;
+}
+
+.nofo_edit--header .nofo_edit--header--h1--smaller a h1 {
+  font-size: 1.65rem;
+}
+
+.nofo_edit--header .nofo_edit--header--view,
+.nofo_edit--header .nofo_edit--header--back-to-top {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.nofo_edit--header .nofo_edit--header--back-to-top {
+  visibility: hidden;
+}
+
+.nofo_edit--header.is-pinned .nofo_edit--header--back-to-top {
+  visibility: visible;
+}
+
 .section_edit--header h1,
 .subsection_edit--header h1 {
   width: 65%;
 }
 
-.nofo_edit--header--view,
 .section_edit--header--view,
 .subsection_edit--header--view {
   position: absolute;
@@ -224,6 +288,10 @@ details > summary > span:hover {
   z-index: 10;
 }
 
+.nofo_edit caption {
+  top: 46px;
+}
+
 .nofo_edit caption div,
 .section_edit caption div {
   margin-top: 20px;
@@ -251,11 +319,6 @@ details > summary > span:hover {
   right: 8px;
   bottom: 12px;
   font-weight: 400;
-  visibility: hidden;
-}
-
-.nofo_edit caption.is-pinned span {
-  visibility: visible;
 }
 
 .nofo_edit ol ol {
@@ -326,7 +389,7 @@ details > summary > span:hover {
   display: inline-block;
   margin: 1em 0;
   position: sticky;
-  top: 90px;
+  top: 139px;
 }
 
 .nofo_edit main table tbody tr:first-of-type th {
