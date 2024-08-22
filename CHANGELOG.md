@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added mailto link to the 400 page
 - Add cover image for "cdc-eh-25-011"
 - Add cover image for "rfa-ce-25-149"
+- Add a command line function can return all edits per nofo or for all nofos
 
 ### Changed
 
