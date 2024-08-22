@@ -6,15 +6,30 @@ from nofos.models import Nofo, Subsection
 
 
 class Command(BaseCommand):
-    help = "Counts updates for a specific NOFO"
+    help = "Counts updates for a specific NOFO or all NOFOs"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "nofo_id", type=int, help="ID of the NOFO to count updates for"
+            "nofo_id", nargs="?", type=int, help="ID of the NOFO to count updates for"
+        )
+        parser.add_argument(
+            "--all", action="store_true", help="Count updates for all NOFOs"
         )
 
     def handle(self, *args, **options):
-        self.count_updates(options["nofo_id"])
+        if options["all"]:
+            self.count_updates_all()
+        else:
+            nofo_id = options.get("nofo_id")
+            if nofo_id is not None:
+                self.count_updates(nofo_id)
+            else:
+                self.stdout.write(self.style.ERROR("No NOFO ID provided"))
+
+    def count_updates_all(self):
+        nofos = Nofo.objects.all()
+        for nofo in nofos:
+            self.count_updates(nofo.pk)
 
     def count_updates(self, nofo_id):
         nofo = Nofo.objects.get(pk=nofo_id)
@@ -25,27 +40,28 @@ class Command(BaseCommand):
 
         events = CRUDEvent.objects.filter(
             event_type=2,
-            content_type__id__in=[7, 9],
+            content_type__model__in=["nofo", "subsection"],
             object_id__in=[nofo_id] + list(subsection_ids),
         )
 
-        count = 0
+        edit_count = 0
 
         for event in events:
             try:
                 changed_fields = json.loads(event.changed_fields)
-
                 if not changed_fields:
                     continue  # Skip this event if changed_fields is None
                 if "updated" in changed_fields and len(changed_fields) == 1:
                     continue  # Skip this event if 'updated' is the only key in changed fields
 
-                count += 1
+                edit_count += 1
             except json.JSONDecodeError:
                 # Handle cases where changed_fields is not a valid JSON string
                 self.stdout.write(self.style.ERROR("Invalid JSON in changed_fields"))
                 continue
 
         self.stdout.write(
-            self.style.SUCCESS(f"Total updates for NOFO {nofo_id}: {count}")
+            self.style.SUCCESS(
+                f"{nofo_id}\thttps://nofo.rodeo/nofos/{nofo_id}/edit\t{nofo.number}\t{nofo.status}\t{nofo.created}\t{nofo.updated}\t{edit_count}"
+            )
         )
