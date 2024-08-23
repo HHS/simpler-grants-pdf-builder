@@ -637,6 +637,7 @@ class HTMLSectionTestsH1(TestCase):
             "Glossary",
             "Endnotes",
             "References",
+            "Modifications",
         ]:
             soup = BeautifulSoup(
                 '<h1 id="section-1">{}</span></h1><p>Section 1 body</p>'.format(
@@ -707,6 +708,7 @@ class HTMLSectionTestsH2(TestCase):
             "Glossary",
             "Endnotes",
             "References",
+            "Modifications",
         ]:
             soup = BeautifulSoup(
                 '<h2 id="section-1">{}</span></h2><p>Section 1 body</p>'.format(
