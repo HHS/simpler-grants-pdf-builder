@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for "cdc-eh-25-011"
 - Add cover image for "rfa-ce-25-149"
 - Add a command line function can return all edits per nofo or for all nofos
+- Sections called "Modifications" should also not have a cover page
 
 ### Changed
 

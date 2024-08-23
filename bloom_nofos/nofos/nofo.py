@@ -301,6 +301,7 @@ def get_sections_from_soup(soup, top_heading_level="h1"):
                         "Glossary",
                         "Endnotes",
                         "References",
+                        "Modifications",
                     ]
                 )
 
