@@ -41,7 +41,7 @@
       <div class="usa-navbar">
         <div class="usa-logo" style="margin-top: 1rem;">
           <em class="usa-logo__text">
-            <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">← All NOFOs</a>
+            <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">← Edit this NOFO</a>
           </em>
           {% if user.is_authenticated %}
             <a class="inline-block usa-tag--link" href="{% url 'test_mode' %}">
@@ -57,7 +57,7 @@
       <nav aria-label="Primary navigation" class="usa-nav">
         <ul class="usa-nav__primary usa-accordion">
           <li class="usa-nav__primary-item usa-nav__primary-item__right-padding">
-            <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
+            <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">All NOFOs</a>
           </li>
         </ul>
         {% include "includes/print_button.html" %}

@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="back-link font-body-md margin-bottom-105">
-  <a href="{% url 'nofos:nofo_edit' nofo.id %}">← Edit “{{ nofo|nofo_name }}”</a>
+  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Edit “{{ nofo|nofo_name }}”</a>
 </div>
 <div class="section_edit--header">
   <h1 class="font-heading-xl margin-y-1">Add or remove subsections<span class="usa-sr-only"> for {{ section.name }}</span></h1>

@@ -459,11 +459,14 @@ details > summary > span:hover {
   justify-content: space-between;
 }
 
+main .back-link a,
+.nofo_edit caption div a:visited,
 .section_edit .edit_section--other_sections a,
 .section_edit .edit_section--other_sections a:visited {
   color: #0000ee;
 }
 
+main .back-link a::before,
 .section_edit .edit_section--other_sections a::before,
 .section_edit .edit_section--other_sections a::after {
   content: "";
@@ -475,12 +478,17 @@ details > summary > span:hover {
     brightness(79%) contrast(152%);
 }
 
+main .back-link a::before,
 .section_edit
   .edit_section--other_sections
   a.section_edit--previous-section::before {
   background-image: url("/static/img/usa-icons/arrow_back.svg");
   height: 10px;
   width: 18px;
+}
+
+main .back-link a::before {
+  margin-right: 4px;
 }
 
 .section_edit
