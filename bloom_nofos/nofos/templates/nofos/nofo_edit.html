@@ -8,13 +8,16 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js_footer %}
 <script>
-  const el = document.querySelector("#nofo_edit--header--id")
+  const els = document.querySelectorAll("caption")
   const observer = new IntersectionObserver(
     ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
-    { threshold: [1] }
+    {
+      threshold: [1],
+      rootMargin: "-48px 0px 48px 0px" // 46px top margin
+    }
   );
 
-  observer.observe(el);
+  els.forEach(el => observer.observe(el));
 </script>
 {% endblock %}
 
@@ -29,16 +32,11 @@ Edit “{{ nofo|nofo_name }}”
 <div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
   {% with nofo|nofo_name as nofo_name_str %}
     <div class="nofo_edit--header--h1 {% if nofo_name_str|length > 40 %}nofo_edit--header--h1--smaller{% endif %}">
-      <a href="{% url 'nofos:nofo_view' nofo.id %}">
-        <h1 class="font-heading- margin-0">{{ nofo_name_str }}</h1>
-      </a>
+      <h1 class="font-heading- margin-0" title="{{ nofo_name_str }}">{{ nofo_name_str }}</h1>
     </div>
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
     {% include "includes/print_button.html" %}
-  </div>
-  <div class="nofo_edit--header--back-to-top">
-    <a href="#back-to-top">Top</a>
   </div>
 </div>
 
@@ -313,12 +311,15 @@ Edit “{{ nofo|nofo_name }}”
 
 {% for section in nofo.sections.all|dictsort:"order" %}
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
-  <caption>
+  <caption aria-label="{{ section.name }}">
     <div>
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
       <code class="section--html-id">#{{ section.html_id }}</code>
+      <span><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
+      <span>
+        <a class="back-to-top" href="#back-to-top">Top</a>
+      </span>
     </div>
-    <span class="caption--top-link"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add/remove subsections</a></span>
   </caption>
   <thead class="usa-sr-only">
     <tr>

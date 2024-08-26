@@ -18,6 +18,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change the floating header on NOFO edit page
+  - Print buttons float now
+  - Added "add or remove subsections"
+  - Better little icon for the "top" button
 - Changed URL patterns for subsections (include the section id as well)
 - Very small update on "Before you begin" page
 - Smallen cover page title if longer and there is an image

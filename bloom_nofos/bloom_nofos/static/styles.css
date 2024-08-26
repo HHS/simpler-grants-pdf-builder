@@ -37,8 +37,7 @@ body > footer {
   flex-direction: row-reverse;
 }
 
-.nofo_edit--header--back-to-top a::before,
-.usa-footer__nav ul a.back-to-top::before {
+a.back-to-top::before {
   content: "";
   background-repeat: no-repeat;
   background-position: center center;
@@ -50,7 +49,7 @@ body > footer {
   margin-right: 5px;
 }
 
-.nofo_edit--header--back-to-top a::before {
+caption a.back-to-top::before {
   margin-right: 2px;
   filter: invert(9%) sepia(100%) saturate(7485%) hue-rotate(247deg)
     brightness(81%) contrast(140%);
@@ -225,7 +224,7 @@ details > summary > span:hover {
   min-width: 0;
 }
 
-.nofo_edit--header .nofo_edit--header--h1 a h1 {
+.nofo_edit--header .nofo_edit--header--h1 h1 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -233,7 +232,7 @@ details > summary > span:hover {
   line-height: normal;
 }
 
-.nofo_edit--header .nofo_edit--header--h1--smaller a h1 {
+.nofo_edit--header .nofo_edit--header--h1--smaller h1 {
   font-size: 1.65rem;
 }
 
@@ -297,28 +296,49 @@ details > summary > span:hover {
   margin-top: 20px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: baseline;
+  gap: 12px;
 }
 
-.nofo_edit caption div h2,
-.section_edit caption div h2 {
-  display: inline;
-  margin-right: 15px;
+.nofo_edit caption div > *,
+.section_edit caption div > * {
+  margin-top: 0;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-.nofo_edit caption div .section--html-id {
-  display: none;
-  color: #71767a;
-}
-
-.nofo_edit caption:hover div .section--html-id {
-  display: inline-block;
-}
-
-.nofo_edit caption span.caption--top-link {
-  position: absolute;
-  right: 8px;
-  bottom: 12px;
+.nofo_edit caption div > *:not(h2),
+.section_edit caption div > *:not(h2) {
   font-weight: 400;
+}
+
+.nofo_edit caption div > code {
+  flex-grow: 1;
+  visibility: hidden;
+  color: #71767a;
+  font-size: 85%;
+}
+
+.nofo_edit caption div a {
+  text-decoration: none;
+}
+
+.nofo_edit caption div a:hover {
+  text-decoration: underline;
+}
+
+.nofo_edit caption a.back-to-top {
+  padding-left: 8px;
+  padding-right: 16px;
+  visibility: hidden;
+}
+
+.nofo_edit caption.is-pinned a.back-to-top,
+.nofo_edit caption:hover div > code {
+  visibility: visible;
 }
 
 .nofo_edit ol ol {
