@@ -7,6 +7,11 @@
       </button>
     </form>
   </li>
+  {% if request.resolver_match.url_name != 'nofo_view' %}
+    <li class="usa-button-group__item">
+      <a href="{% url 'nofos:nofo_view' nofo.id %}" role="button" class="usa-button usa-button--outline text-normal font-sans-xs"><span class="hide-on-tablet">View </span>HTML</a>
+    </li>
+  {% endif %}
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment">
       {% csrf_token %}
