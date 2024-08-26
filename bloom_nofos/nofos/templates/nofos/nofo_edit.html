@@ -27,7 +27,7 @@ Edit “{{ nofo|nofo_name }}”
 {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
 
 <div class="back-link font-body-md">
-  <a href="{% url 'nofos:nofo_index' %}">← All NOFOs</a>
+  <a href="{% url 'nofos:nofo_index' %}">All NOFOs</a>
 </div>
 <div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
   {% with nofo|nofo_name as nofo_name_str %}
