@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.25.0] - 2023-08-27
+
+### Added
+
 - Add 'section_detail' page to add and remove subsections
   - 'section_detail' page must be manually visited for now
 - Added mailto link to the 400 page
@@ -18,6 +26,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Updated most of the libraries:
+  - Can't update markdown past 3.5 because of martor
+  - Can't update django past 5.0.8 because of django-easy-audit
 - Change the floating header on NOFO edit page
   - Print buttons float now
   - Added "add or remove subsections"
