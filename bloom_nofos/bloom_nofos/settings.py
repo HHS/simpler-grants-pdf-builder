@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import environ
+import tomli
 
 from .utils import cast_to_boolean
 
@@ -36,7 +37,11 @@ environ.Env.read_env(env_path)
 
 # Project version
 
-DJVERSION_VERSION = "1.24.0"
+DJVERSION_VERSION = None
+
+with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
+    pyproject_data = tomli.load(f)
+    DJVERSION_VERSION = pyproject_data["tool"]["poetry"]["version"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
