@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import environ
@@ -449,6 +450,12 @@ CONSTANCE_CONFIG = {
         bool,
     ),
 }
+
+# Disable migrations for constance in tests because there is a bug in their migration file
+if "test" in sys.argv or "test_coverage" in sys.argv:
+    MIGRATION_MODULES = {
+        "constance": None,
+    }
 
 # Django codemirror
 DJANGO_MIRROR_DEFAULTS = {
