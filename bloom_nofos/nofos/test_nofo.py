@@ -400,7 +400,8 @@ class TableConvertFirstRowToHeaderRowTests(TestCase):
     def setUp(self):
         self.caption_text = "Physician Assistant Training Chart"
         self.html_filename = "nofos/fixtures/html/table.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def test_table_before_convert_table_first_row_to_header_row(self):
         table = self.soup.find("table")
@@ -1036,7 +1037,8 @@ class HTMLSubsectionTestsH2(TestCase):
 class HTMLNofoFileTests(TestCase):
     def setUp(self):
         self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def test_get_sections_from_soup_html_file(self):
         sections = get_sections_from_soup(self.soup)
@@ -1804,7 +1806,8 @@ class HTMLSuggestTitleTests(TestCase):
     def setUp(self):
         self.nofo_title = "Primary Care Training and Enhancement: Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"
         self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def test_suggest_nofo_title_returns_correct_title(self):
         self.assertEqual(suggest_nofo_title(self.soup), self.nofo_title)
@@ -1851,7 +1854,8 @@ class HTMLSuggestNumberTests(TestCase):
     def setUp(self):
         self.nofo_opportunity_number = "HRSA-24-019"
         self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def test_suggest_nofo_title_returns_correct_title(self):
         self.assertEqual(
@@ -1898,7 +1902,8 @@ class HTMLSuggestNumberTests(TestCase):
 class HTMLSuggestDeadlineTests(TestCase):
     def setUp(self):
         self.html_filename = "nofos/fixtures/html/nofo.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def test_suggest_nofo_application_deadline_returns_correct_deadline(self):
         self.assertEqual(suggest_nofo_application_deadline(self.soup), "[ ]")
@@ -4622,9 +4627,10 @@ class HTMLCalloutBoxTests(TestCase):
             )
 
     def get_subsections(self, html_filename):
-        soup = BeautifulSoup(open(html_filename), "html.parser")
-        sections = get_subsections_from_sections(get_sections_from_soup(soup))
-        return sections[0].get("subsections")
+        with open(html_filename, "r", encoding="UTF-8") as file:
+            soup = BeautifulSoup(file, "html.parser")
+            sections = get_subsections_from_sections(get_sections_from_soup(soup))
+            return sections[0].get("subsections")
 
     def test_get_html_with_no_callout_boxes(self):
         subsections = self.get_subsections(

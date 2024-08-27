@@ -74,7 +74,8 @@ class AddCaptionToTableTests(TestCase):
     def setUp(self):
         self.caption_text = "Table: Physician Assistant Training Chart"
         self.html_filename = "nofos/fixtures/html/table.html"
-        self.soup = BeautifulSoup(open(self.html_filename), "html.parser")
+        with open(self.html_filename, "r", encoding="UTF-8") as file:
+            self.soup = BeautifulSoup(file, "html.parser")
 
     def _contains_table(self, tag):
         if tag.name != "p":

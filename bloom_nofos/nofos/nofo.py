@@ -1101,7 +1101,7 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
 
 
 def escape_asterisks_in_table_cells(soup):
-    """
+    r"""
     This function mutates the soup!
 
     Replaces "*" with "\*" in table cells, unless the asterisk is already preceded by a backslash.
@@ -1113,7 +1113,7 @@ def escape_asterisks_in_table_cells(soup):
     pattern = re.compile(r"(?<!\\)\*")
 
     for cell in soup.find_all(["td", "th"]):
-        for content in cell.find_all(text=True):
+        for content in cell.find_all(string=True):
             # Use the regex pattern to replace '*' with '\*' only if '*' is not already preceded by '\'
             escaped_content = pattern.sub(r"\\*", content)
             content.replace_with(escaped_content)
@@ -1211,7 +1211,7 @@ def add_em_to_de_minimis(soup):
     into <em> elements within the provided BeautifulSoup object.
     """
 
-    spans = soup.findAll("span", text=re.compile("^de minimis$", re.I))
+    spans = soup.findAll("span", string=re.compile("^de minimis$", re.I))
     for span in spans:
         span.name = "em"
 
