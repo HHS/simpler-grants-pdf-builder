@@ -1,26 +1,32 @@
 # TODO
 
-- add updated to NOFOs
 - Write ADRs
   - Why Python
 - Maybe: add Google login
-- For deployed app, maybe logging?
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
+- .docx imports
+  - Investigate images
+- Fix the Preview link colour in markdown editor
+- Contacts and support box, add padding
+- Add "copy" for section headings
+- Add "copy" for subsection headings
+- Only show Bloom nofos by default
+- Add a little message on the external links explanation
+- Default column widths for application table
+
+# DONE
+
+- For deployed app, maybe logging?
 - Add UI to reorder the NOFOs table
-- Automated tests on push
+- add updated to NOFOs
 - .docx imports
   - Productionize it
   - Fix for internal links
   - Fix for the application checklist
   - Fix for callout boxes
   - Investigate footnotes and endnotes
-  - Investigate images
-
-# DONE
-
-- [Beta] .docx imports
 - Update the README
 - No printing locally (disable buttons)
 - Add H7 heading role map to the CSS theme
