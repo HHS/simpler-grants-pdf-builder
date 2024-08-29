@@ -16,10 +16,10 @@
 - Only show Bloom nofos by default
 - Add a little message on the external links explanation
 - Default column widths for application table
-- Stop this: R\&R Application Guide.
 
 # DONE
 
+- Stop this: R\&R Application Guide.
 - Correct offset for subsection links on the edit page
 - For deployed app, maybe logging?
 - Add UI to reorder the NOFOs table

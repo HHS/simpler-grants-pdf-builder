@@ -272,13 +272,6 @@ def nofo_import(request, pk=None):
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
 
-        # # Specify the output file path
-        # output_file_path = "debug_output.html"
-
-        # # Write the HTML content to the file
-        # with open(output_file_path, "w", encoding="utf-8") as file:
-        #     file.write(str(soup))
-
         # if there are no h1s, then h2s are the new top
         top_heading_level = "h1" if soup.find("h1") else "h2"
 

@@ -204,7 +204,7 @@ def _build_nofo(nofo, sections):
             html_body = [str(tag).strip() for tag in subsection.get("body", [])]
 
             if html_body:
-                md_body = md("".join(html_body))
+                md_body = md("".join(html_body), escape_misc=False)
                 md_body = md_body.replace("\\\\", "\\")
 
             model_subsection = Subsection(
