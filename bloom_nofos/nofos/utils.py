@@ -116,6 +116,11 @@ style_map_manager.add_style(
     note="Don't do anything: it's formatted as a header already, go with that.",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='Placeholder Text'] => span.placeholder-text:fresh",
+    location_in_nofo="Located in content controls",
+    note="Print it out so we can see it, but this should not be in the document.",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='Subtle Emphasis'] => strong.subtle-emphasis",
     location_in_nofo="Step 3 > Required format > Fonts/Spacing",
     note="Bold is safe, but they might possibly be headings.",
@@ -176,4 +181,19 @@ style_map_manager.add_style(
     style_rule="p[style-name='Subhead2'] => strong.subhead",
     location_in_nofo="Step 1 > Eligility > Who can apply",
     note="Bold seems like the main thing we do here.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet Level 1'] => ul > li:fresh",
+    location_in_nofo="This represents a bullet list improperly formatted",
+    note="Convert them to li elements.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Instruction Box Heading'] => strong.instruction-box-heading:fresh",
+    location_in_nofo="Instructions for NOFO writers > Heading",
+    note="This text will be stripped out.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Instruction Boxes'] => p:fresh",
+    location_in_nofo="Instructions for NOFO writers > Body content",
+    note="This text will be stripped out.",
 )
