@@ -19,6 +19,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- "Preview" link in markdown editor has "USA Blue" link text
+
 ## [1.25.0] - 2023-08-27
 
 ### Added

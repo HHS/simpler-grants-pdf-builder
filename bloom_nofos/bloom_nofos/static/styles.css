@@ -28,7 +28,8 @@ body > footer {
   margin-top: auto;
 }
 
-a {
+a,
+a.nav-link {
   color: var(--color--usa-link);
 }
 
