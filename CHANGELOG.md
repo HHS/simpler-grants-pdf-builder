@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Uniform link colours matching the USWDS
+- Accept numbered sublists in application checklist
 
 ### Fixed
 
