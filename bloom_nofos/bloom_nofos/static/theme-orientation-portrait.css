@@ -246,16 +246,15 @@ section.before-you-begin {
 .section--content > .section--content--right-col {
   position: initial;
   float: right;
-  width: 15.5%;
+  width: 16.5%;
 }
 
 .section--content > .section--content--right-col > * {
-  width: 190%;
+  width: 180%;
 }
 
 .section--content > .section--content--right-col > *:first-child {
   margin-top: 0;
-  margin-top: 46.5px;
 }
 
 /* TODO */

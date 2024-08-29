@@ -10,6 +10,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Try to keep callout boxes all on one page
+  - Increase right padding for callout boxes
+  - Move them up
+  - Reduce vertical padding
 - Uniform link colours matching the USWDS
 - Accept numbered sublists in application checklist
 

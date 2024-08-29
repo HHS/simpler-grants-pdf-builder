@@ -968,8 +968,8 @@ section.section .section--title-page::before {
 
 .callout-box {
   border-radius: 10px;
-  padding: 20px;
-  margin: 20px 0;
+  padding: 15px 20px;
+  margin: 15px 0;
   break-inside: avoid-column;
 }
 
@@ -997,7 +997,7 @@ section.section .section--title-page::before {
 }
 
 .callout-box--icon {
-  padding: 15px;
+  padding: 10px 15px;
 }
 
 .callout-box--icon .callout-box--contents {
