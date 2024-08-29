@@ -18,16 +18,54 @@
   {% endwith %}
 
   <p>There are <strong>{{ links|length }} external links</strong> in this NOFO.</p>
-  
+
   {% if with_status %}
   <details>
     <summary><span>What does the ‘Status’ number mean?</span></summary>
+
     <div>
-      <ul class="usa-list usa-list--no-max-width">
-        <li> <strong>200 🟢 (OK):</strong> The request succeeded — all good.</li>
-        <li><strong>404 🔴 (Not Found):</strong> This page can’t be found — likely a broken link.</li>
-        <li><strong>500 🟠 (Internal server error):</strong> The server has encountered a problem — manually check if the link is working.</li>
-      </ul>
+      <table class="usa-table usa-table--borderless usa-table--font-size-1">
+        <thead>
+          <tr>
+            <th scope="col">Status number</th>
+            <th scope="col">What it means</th>
+            <th scope="col">What to do</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">200 🟢 (OK)</th>
+            <td>
+              The request succeeded.
+            </td>
+            <td>Nothing, all good.</td>
+          </tr>
+          <tr>
+            <th scope="row">403 ⛔️ (Forbidden)</th>
+            <td>
+              This page refused to load.
+            </td>
+            <td>Manually check if link is working.</td>
+          </tr>
+          <tr>
+            <th scope="row">404 🔴 (Not Found)</th>
+            <td>
+              This page can’t be found.
+            </td>
+            <td>Manually check if link is working.</td>
+          </tr>
+          <tr>
+            <th scope="row">500 🟠 (Server error)</th>
+            <td>
+              The server had a problem.
+            </td>
+            <td>Manually check if link is working.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Sometimes, links that won’t load for the NOFO Builder are fine when you click them.</p>
+      <p><strong>For this reason, <em>always</em> manually check links that are <em>not</em> 200 🟢.</strong></p>
       <p>Learn more about <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">HTTP response status codes</a>.</p>
     </div>
   </details>
@@ -58,7 +96,7 @@
           <td>{{ forloop.counter }}</td>
           <td style="width: 45%; word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
           <td>
-            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{{ link.subsection.name }}</a>
+            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{% if link.subsection.name %}{{ link.subsection.name }}{% else %}(#{{ link.subsection.order }}){% endif %}</a>
           </td>
           <td>{{ link.status }} <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% endif %}</span></td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>

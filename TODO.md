@@ -11,11 +11,11 @@
 - Add "copy" for section headings
 - Add "copy" for subsection headings
 - Only show Bloom nofos by default
-- Add a little message on the external links explanation
 - Default column widths for application table
 
 # DONE
 
+- Add a little message on the external links explanation
 - Fix the Preview link colour in markdown editor
 - Contacts and support box, add padding
 - Shrink top and bottom padding for initial callout boxes
