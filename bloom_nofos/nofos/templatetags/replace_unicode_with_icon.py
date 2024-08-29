@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup, NavigableString
 from django import template
 from django.utils.safestring import mark_safe
@@ -66,8 +68,19 @@ def is_before_sublist(td):
         first_cell = next_row.find(["td", "th"])
         if first_cell and is_list_heading(first_cell) and not has_checkbox(first_cell):
             return True
+        # if current cell is a numbered sublist next cell isn't
+        if is_numbered_sublist(td) and not is_numbered_sublist(first_cell):
+            return True
 
     return False
+
+
+def is_numbered_sublist(td):
+    td_text = td.text.replace("◻", "").strip()
+
+    # Match any td whose text starts with any integer followed by a period and whitespace ("3. ")
+    if re.match(r"^\d+\.\s", td_text):
+        return True
 
 
 def is_sublist(td):
@@ -80,7 +93,9 @@ def is_sublist(td):
         first_cell = prev_row.find(["td", "th"])
         if first_cell and is_list_heading(first_cell) and not has_checkbox(first_cell):
             return True
-        if "usa-icon__td--sublist" in first_cell.get("class", []):
+        if "usa-icon__td--sublist" in first_cell.get(
+            "class", []
+        ) and "usa-icon__td--sublist--numbered" not in first_cell.get("class", []):
             return True
 
     return False
@@ -152,6 +167,19 @@ def replace_unicode_with_icon(html_string):
                         _add_class_if_not_exists_to_tag(
                             element=parent_td,
                             classname="usa-icon__td--sublist",
+                            tag_name="td",
+                        )
+
+                    # add classnames for sublist cells which are numbered "1. Work plan"
+                    if is_numbered_sublist(parent_td):
+                        _add_class_if_not_exists_to_tag(
+                            element=parent_td,
+                            classname="usa-icon__td--sublist",
+                            tag_name="td",
+                        )
+                        _add_class_if_not_exists_to_tag(
+                            element=parent_td,
+                            classname="usa-icon__td--sublist--numbered",
                             tag_name="td",
                         )
 

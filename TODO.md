@@ -10,6 +10,7 @@
   - Investigate images
 - Fix the Preview link colour in markdown editor
 - Contacts and support box, add padding
+- Shrink top and bottom padding for initial callout boxes
 - Add "copy" for section headings
 - Add "copy" for subsection headings
 - Only show Bloom nofos by default
