@@ -215,6 +215,13 @@ class Nofo(models.Model):
         help_text="The status of this NOFO in the NOFO builder.",
     )
 
+    archived = models.DateField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Archived NOFOs are soft-deleted: they are not visible in the UI but can be recovered by superusers.",
+    )
+
     group = models.CharField(
         max_length=16,
         choices=settings.GROUP_CHOICES,
