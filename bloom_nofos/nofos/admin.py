@@ -122,6 +122,8 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "theme",
                     "cover",
                     "icon_style",
+                    "status",
+                    "archived",
                     "filename",
                 )
             },
