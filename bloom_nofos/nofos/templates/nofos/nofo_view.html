@@ -67,6 +67,10 @@
 {% endblock %}
 
 {% block content %}
+  <!-- WARNING MESSAGE FOR ARCHIVED NOFOS -->
+  {% if nofo.archived %}
+    {% include "includes/archived_alert.html" with nofo=nofo user=user only %}
+  {% endif %}
   <!-- COVER PAGE -->
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
     <div class="nofo--cover-page--header">

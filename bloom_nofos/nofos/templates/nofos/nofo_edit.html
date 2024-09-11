@@ -26,14 +26,10 @@ Edit “{{ nofo|nofo_name }}”
 {% block content %}
 {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
 
-<div class="usa-alert usa-alert--warning margin-bottom-3">
-  <div class="usa-alert__body">
-    <h4 class="usa-alert__heading">Archived NOFO</h4>
-    <p class="usa-alert__text">
-      This NOFO was deleted by (username). To un-archive this NOFO, contact Adam or Paul.
-    </p>
-  </div>
-</div>
+<!-- WARNING MESSAGE FOR ARCHIVED NOFOS -->
+{% if nofo.archived %}
+  {% include "includes/archived_alert.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+{% endif %}
 
 <div class="back-link font-body-md">
   <a href="{% url 'nofos:nofo_index' %}">All NOFOs</a>
