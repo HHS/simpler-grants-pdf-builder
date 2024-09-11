@@ -1224,7 +1224,8 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     -prince-alt-text: None;
   }
 
-  .usa-header {
+  .usa-header,
+  .usa-alert {
     display: none;
   }
 
