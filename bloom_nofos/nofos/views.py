@@ -94,6 +94,9 @@ class NofosListView(ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
+        # Exclude archived NOFOs
+        queryset = queryset.filter(archived__isnull=True)
+
         # default status: return unpublished NOFOs
         self.status = self.request.GET.get("status", "unpublished")
 
