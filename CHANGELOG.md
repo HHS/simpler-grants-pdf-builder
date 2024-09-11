@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - "Preview" link in markdown editor has "USA Blue" link text
+- Specify exact Python version in Dockerfile
 
 ## [1.25.0] - 2023-08-27
 
