@@ -154,6 +154,13 @@ def add_headings_to_nofo(nofo):
 
             if subsection.html_id:
                 new_ids.append({"old_id": subsection.html_id, "new_id": subsection_id})
+                if "&" in subsection.html_id:
+                    new_ids.append(
+                        {
+                            "old_id": subsection.html_id.replace("&", "&amp;"),
+                            "new_id": section_id,
+                        }
+                    )
 
             subsection.html_id = subsection_id
             subsection.save()
