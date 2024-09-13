@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.26.0] - 2023-09-13
+
+### Added
+
 - count_updates script can optionally show user ids for individual nofos
 - Add "archived" field to NOFOs
   - Don't show archived NOFOs on NOFO list page
