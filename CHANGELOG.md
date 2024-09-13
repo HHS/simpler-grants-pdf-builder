@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Specify exact Python version in Dockerfile
 - Fix 2 broken cover images
 - preserve_heading_links function now accounts for multiple links preceding headings
+- Fix for heading links where the HTML id includes an ampersand
 
 ## [1.25.0] - 2023-08-27
 

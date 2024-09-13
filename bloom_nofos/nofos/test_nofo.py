@@ -1328,6 +1328,33 @@ class AddHeadingsTests(TestCase):
             }
         ]
 
+        self.sections_with_ampersand_links = [
+            {
+                "name": "Program description",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Budget & Budget",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "_budget_&_budget",
+                        "body": [
+                            '<p>Subsection 1 body to <a href="#_budget_&_budget">Budget & Budget</a>.</p>'
+                        ],
+                    },
+                    {
+                        "order": 2,
+                        "html_id": "",
+                        "body": [
+                            '<p>Subsection 2 body to <a href="#_budget_&amp;_budget">Budget & Budget</a>.</p>'
+                        ],
+                    },
+                ],
+            }
+        ]
+
     def test_add_headings_success(self):
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
@@ -1459,6 +1486,32 @@ class AddHeadingsTests(TestCase):
         self.assertIn(
             "(as described in the [Other Eligibility Criteria](#2--program-description--other-eligibility-criteria)",
             subsection_3.body,
+        )
+
+    def test_add_headings_with_ampersand_links(self):
+        nofo = create_nofo("Test Nofo 3", self.sections_with_ampersand_links)
+        self.assertEqual(nofo.title, "Test Nofo 3")
+
+        ################
+        # ADD HEADINGS
+        ################
+        add_headings_to_nofo(nofo)
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
+
+        # check section heading has new html_id
+        self.assertEqual(section.html_id, "program-description")
+
+        # check new html_ids
+        self.assertEqual(subsection_1.html_id, "1--program-description--budget-budget")
+        self.assertEqual(
+            subsection_1.body,
+            "Subsection 1 body to [Budget & Budget](#1--program-description--budget-budget).\n\n",
+        )
+        self.assertEqual(
+            subsection_2.body,
+            "Subsection 2 body to [Budget & Budget](#1--program-description--budget-budget).\n\n",
         )
 
 
