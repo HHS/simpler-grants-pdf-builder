@@ -3567,14 +3567,24 @@ class PreserveHeadingLinksTest(TestCase):
         result = str(soup)
         self.assertEqual(result, html)
 
-    def test_two_empty_anchors_preceding_heading_id_only_uses_first_anchor(
+    def test_two_empty_anchors_preceding_heading_id(
         self,
     ):
-        html = '<a id="_About_Priority_Populations_1"></a><a id="_About_Priority_Populations_2"></a><h4>About priority populations</h4>'
+        html = '<a id="_About_Priority_Populations_1"></a><a id="_About_Priority_Populations_2"></a><h4>About priority populations</h4><p><a href="#_About_Priority_Populations_1">About 1</a></p><p><a href="#_About_Priority_Populations_2">About 2</a></p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_heading_links(soup)
         result = str(soup)
-        expected = '<a id="_About_Priority_Populations_1"></a><h4 id="_About_Priority_Populations_2">About priority populations</h4>'
+        expected = '<h4 id="_About_Priority_Populations_2">About priority populations</h4><p><a href="#_About_Priority_Populations_2">About 1</a></p><p><a href="#_About_Priority_Populations_2">About 2</a></p>'
+        self.assertEqual(result, expected)
+
+    def test_three_empty_anchors_preceding_heading_id(
+        self,
+    ):
+        html = '<a id="_About_Priority_Populations_1"></a><a id="_About_Priority_Populations_2"></a><a id="_About_Priority_Populations_3"></a><h4>About priority populations</h4><p><a href="#_About_Priority_Populations_1">About 1</a></p><p><a href="#_About_Priority_Populations_2">About 2</a></p><p><a href="#_About_Priority_Populations_3">About 3</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<h4 id="_About_Priority_Populations_3">About priority populations</h4><p><a href="#_About_Priority_Populations_3">About 1</a></p><p><a href="#_About_Priority_Populations_3">About 2</a></p><p><a href="#_About_Priority_Populations_3">About 3</a></p>'
         self.assertEqual(result, expected)
 
     def test_empty_anchor_preceding_heading_id_and_inside_heading_only_uses_inside(
