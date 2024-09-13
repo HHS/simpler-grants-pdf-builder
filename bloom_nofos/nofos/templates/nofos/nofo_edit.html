@@ -104,7 +104,7 @@ Edit “{{ nofo|nofo_name }}”
         {% if nofo.status == 'draft' %}
         <li>
           <p>
-            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_delete' nofo.id %}">
+            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_archive' nofo.id %}">
               Delete NOFO
             </a>— remove this NOFO completely
           </p>
