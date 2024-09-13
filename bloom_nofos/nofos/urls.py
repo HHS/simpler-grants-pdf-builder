@@ -6,7 +6,7 @@ app_name = "nofos"
 urlpatterns = [
     path("", views.NofosListView.as_view(), name="nofo_index"),
     path("import", views.nofo_import, name="nofo_import"),
-    path("<int:pk>/delete", views.NofosDeleteView.as_view(), name="nofo_delete"),
+    path("<int:pk>/delete", views.NofosArchiveView.as_view(), name="nofo_archive"),
     path("<int:pk>/import", views.nofo_import, name="nofo_import_overwrite"),
     path(
         "<int:pk>/import/title",

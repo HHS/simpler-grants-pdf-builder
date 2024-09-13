@@ -27,7 +27,7 @@
   {% endwith %}
   {% endwith %}
 
-  <form id="nofo-name--form" method="post">
+  <form id="nofo-delete--form" method="post">
     {% csrf_token %}
     <p>Are you absolutely sure you want to delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”?</p>
     {{ form }}

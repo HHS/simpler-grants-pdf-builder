@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add "archived" field to NOFOs
   - Don't show archived NOFOs on NOFO list page
   - Add warning banner for archived NOFOs to "view" and "edit" pages
+  - Deleting NOFOs now just archives them
 
 ### Changed
 

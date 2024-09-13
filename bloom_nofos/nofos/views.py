@@ -179,9 +179,11 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofosDeleteView(GroupAccessObjectMixin, DeleteView):
+class NofosArchiveView(GroupAccessObjectMixin, UpdateView):
     model = Nofo
+    fields = []  # Since we are not using the form to handle any model fields directly
     success_url = reverse_lazy("nofos:nofo_index")
+    template_name = "nofos/nofo_confirm_delete.html"
 
     def dispatch(self, request, *args, **kwargs):
         nofo = self.get_object()
@@ -191,10 +193,15 @@ class NofosDeleteView(GroupAccessObjectMixin, DeleteView):
 
     def form_valid(self, form):
         nofo = self.get_object()
+        nofo.archived = timezone.now()
+        nofo.save()
         messages.error(
-            self.request, "You deleted NOFO: “{}”".format(nofo.short_name or nofo.title)
+            self.request,
+            "You deleted NOFO: “{}”.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                nofo.short_name or nofo.title
+            ),
         )
-        return super().form_valid(form)
+        return redirect(self.get_success_url())
 
 
 def nofo_import(request, pk=None):
