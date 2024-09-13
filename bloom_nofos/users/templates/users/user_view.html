@@ -11,7 +11,10 @@
   {% include "includes/page_heading.html" with title="Your account" only %}
 
     <div class="subsection_edit--header--view font-sans-md">
-      <a href="{% url 'users:logout' %}">Logout</a>
+      <form action="{% url 'users:logout' %}" method="post">
+        {% csrf_token %}
+        <button class="usa-button--unstyled" type="submit">Logout</button>
+      </form>
     </div>
   </div>
 
