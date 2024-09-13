@@ -26,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- "Logout" link was broken, so it's fixed
 - "Preview" link in markdown editor has "USA Blue" link text
 - Specify exact Python version in Dockerfile
 - Fix 2 broken cover images
