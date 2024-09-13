@@ -5,6 +5,11 @@ from .models import Nofo
 
 
 def has_nofo_group_permission_func(user, nofo):
+    # Check if the NOFO is archived
+    if nofo.archived is not None:
+        # If archived, only 'bloom' users can access
+        return user.group == "bloom"
+
     # If not a 'bloom' user and the group doesn't match, fail
     if user.group != "bloom" and user.group != nofo.group:
         return False
