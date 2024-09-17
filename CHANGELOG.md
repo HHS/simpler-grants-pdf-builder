@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Updated column headers on NOFO index table
+
 ### Fixed
 
 ## [1.26.0] - 2023-09-13
