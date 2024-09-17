@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add uswds JavaScript files to the base theme file (not the NOFO theme file)
+  - The motivation for this is so that we can get tooltips to work
+
 ### Changed
 
 - Updated column headers on NOFO index table

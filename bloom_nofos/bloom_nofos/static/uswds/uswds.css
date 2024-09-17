@@ -5411,7 +5411,7 @@ html.usa-js-loading .usa-nav__submenu.usa-megamenu {
 }
 .usa-hero {
   line-height: 1.5;
-  background-image: url(../img/hero.jpg);
+  background-image: url(/static/img/hero.jpg);
   background-position: center;
   background-size: cover;
   color: #fff;
@@ -13562,7 +13562,7 @@ button.usa-combo-box__toggle-list[aria-disabled="true"] {
   width: 2.5rem;
 }
 .usa-file-input__preview-image.is-loading {
-  background-image: url(../img/loader.svg),
+  background-image: url(/static/img/loader.svg),
     linear-gradient(transparent, transparent);
   background-position: center center;
   background-repeat: no-repeat;
@@ -13577,27 +13577,27 @@ button.usa-combo-box__toggle-list[aria-disabled="true"] {
   background-size: 1.5rem;
 }
 .usa-file-input__preview-image--pdf {
-  background-image: url(../img/file-pdf.svg),
+  background-image: url(/static/img/file-pdf.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
 }
 .usa-file-input__preview-image--generic {
-  background-image: url(../img/file.svg),
+  background-image: url(/static/img/file.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
 }
 .usa-file-input__preview-image--word {
-  background-image: url(../img/file-word.svg),
+  background-image: url(/static/img/file-word.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
 }
 .usa-file-input__preview-image--excel {
-  background-image: url(../img/file-excel.svg),
+  background-image: url(/static/img/file-excel.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
 }
 .usa-file-input__preview-image--video {
-  background-image: url(../img/file-video.svg),
+  background-image: url(/static/img/file-video.svg),
     linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
 }

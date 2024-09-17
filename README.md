@@ -123,7 +123,7 @@ I've made a couple of tweaks so that they work in this app.
 
 - Update font paths from "../fonts" to "/static/fonts"
 - Update icon paths from "../img/usa-icons" to "/static/img/usa-icons"
-- Update checkbox icon paths from "../img/correct8.svg" to "/static/img/correct8.svg"
+- Update img paths from "../img" to "/static/img"
 
 ## Environment variables
 

@@ -17,12 +17,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Includes -->
-    <link href="{% static 'usa.css' %}" rel="stylesheet">
+    <link href="{% static 'uswds/uswds.css' %}" rel="stylesheet">
     <link href="{% static 'shared.css' %}" rel="stylesheet">
     {% block base_css %}
       <link href="{% static 'theme-base.css' %}" type="text/css" media="all" rel="stylesheet">
     {% endblock %}
+    {% block uswds_css %}{% endblock %}
     {% block css %}{% endblock %}
+    {% block uswds_js %}{% endblock %}
     {% block js %}{% endblock %}
 
     <!-- favicon -->
@@ -43,6 +45,7 @@
       </main>
     {% endblock %}
     {% block footer %}{% endblock %}
+    {% block uswds_js_footer %}{% endblock %}
     {% block js_footer %}{% endblock %}
   </body>
 </html>
