@@ -5,6 +5,11 @@
   <link href="{% static 'styles.css' %}" rel="stylesheet">
 {% endblock %}
 
+{% block uswds_js %}
+  <script src="{% static 'uswds/uswds-init.js' %}"></script>
+  <link rel="preload" href="{% static 'uswds/uswds.js' %}" as="script">
+{% endblock %}
+
 {% block header %}
   <header class="usa-header usa-header--basic">
     <div class="usa-nav-container">
@@ -88,4 +93,8 @@
       </nav>
     </div>
   </footer>
+{% endblock %}
+
+{% block uswds_js_footer %}
+  <script src="{% static 'uswds/uswds.js' %}"></script>
 {% endblock %}
