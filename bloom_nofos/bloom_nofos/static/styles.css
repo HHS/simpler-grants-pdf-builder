@@ -346,8 +346,32 @@ details > summary > span:hover {
   flex-grow: 1;
 }
 
-.nofo_edit caption div > .section--copy-button img {
+.nofo_edit .section--copy-button .usa-button-icon--copy-button {
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.nofo_edit .section--copy-button .usa-button-icon--copy-button:hover {
+  background: rgba(180, 180, 180, 0.15);
+}
+
+.nofo_edit .section--copy-button .usa-button-icon--copy-button::after {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  background-image: url("/static/img/usa-icons/content_copy.svg");
   width: 18px;
+  height: 17px;
+}
+
+.nofo_edit
+  .section--copy-button
+  .usa-button-icon--copy-button.usa-button-icon--copy-button--copied::after {
+  background-image: url("/static/img/usa-icons/check.svg");
+  filter: invert(36%) sepia(93%) saturate(2132%) hue-rotate(58deg)
+    brightness(92%) contrast(101%);
 }
 
 .nofo_edit caption div a {
@@ -523,18 +547,6 @@ main .back-link a::before,
   background-image: url("/static/img/usa-icons/arrow_forward.svg");
   height: 12px;
   width: 18px;
-  margin-left: 3px;
-}
-
-.nofo_edit .usa-button-icon--copy::after {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
-  background-image: url("/static/img/usa-icons/content_copy.svg");
-  width: 18px;
-  height: 18px;
   margin-left: 3px;
 }
 
