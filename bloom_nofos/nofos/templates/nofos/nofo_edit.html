@@ -5,21 +5,6 @@
 Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
-{% block js_footer %}
-<script>
-  const els = document.querySelectorAll("caption")
-  const observer = new IntersectionObserver(
-    ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
-    {
-      threshold: [1],
-      rootMargin: "-48px 0px 48px 0px" // 46px top margin
-    }
-  );
-
-  els.forEach(el => observer.observe(el));
-</script>
-{% endblock %}
-
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
@@ -321,13 +306,12 @@ Edit “{{ nofo|nofo_name }}”
       <span class="section--copy-button">
         <button
           type="button"
-          class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy"
+          class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
           data-position="bottom"
-          data-classes="width-full tablet:width-auto"
+          data-section-id="{{ section.html_id }}"
           title="Copy section id: {{ section.html_id }}"
         >
           <span class="usa-sr-only">Copy section id</span>
-          <!-- Hello <img class="copy-icon" src="{% static "img/usa-icons/content_copy.svg" %}" alt="Copy heading id for {{ section.name }}"  /> -->
         </button>
       </span>
       <span><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
@@ -378,4 +362,44 @@ Edit “{{ nofo|nofo_name }}”
   </tbody>
 </table>
 {% endfor %}
+{% endblock %}
+
+{% block js_footer %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.usa-button-icon--copy-button');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Copy data-section-id to clipboard
+            navigator.clipboard.writeText(this.getAttribute('data-section-id'));
+
+            // Add class to button
+            this.classList.add('usa-button-icon--copy-button--copied');
+
+            // Change the text inside the button's span
+            this.querySelector('span').textContent = 'Copied';
+
+            // Set a timer to revert changes after 1 second
+            setTimeout(() => {
+                this.classList.remove('usa-button-icon--copy-button--copied');
+                this.querySelector('span').textContent = 'Copy section id';
+            }, 1000);
+        });
+    });
+  });
+</script>
+
+<script>
+  const els = document.querySelectorAll("caption")
+  const observer = new IntersectionObserver(
+    ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
+    {
+      threshold: [1],
+      rootMargin: "-48px 0px 48px 0px" // 46px top margin
+    }
+  );
+
+  els.forEach(el => observer.observe(el));
+</script>
 {% endblock %}
