@@ -389,17 +389,4 @@ Edit “{{ nofo|nofo_name }}”
     });
   });
 </script>
-
-<script>
-  const els = document.querySelectorAll("caption")
-  const observer = new IntersectionObserver(
-    ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
-    {
-      threshold: [1],
-      rootMargin: "-48px 0px 48px 0px" // 46px top margin
-    }
-  );
-
-  els.forEach(el => observer.observe(el));
-</script>
 {% endblock %}

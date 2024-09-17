@@ -269,14 +269,6 @@ details > summary > span:hover {
   white-space: nowrap;
 }
 
-.nofo_edit--header .nofo_edit--header--back-to-top {
-  visibility: hidden;
-}
-
-.nofo_edit--header.is-pinned .nofo_edit--header--back-to-top {
-  visibility: visible;
-}
-
 .section_edit--header h1,
 .subsection_edit--header h1 {
   width: 65%;
@@ -385,11 +377,6 @@ details > summary > span:hover {
 .nofo_edit caption a.back-to-top {
   padding-left: 8px;
   padding-right: 16px;
-  visibility: hidden;
-}
-
-.nofo_edit caption.is-pinned a.back-to-top {
-  visibility: visible;
 }
 
 .nofo_edit ol ol {
