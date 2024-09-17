@@ -162,14 +162,14 @@ details > summary > span:hover {
   font-weight: 700;
   position: relative;
   border-radius: 0;
+}
+
+.nofo_index table.usa-table thead th:not(.no-sort):hover {
+  background: rgba(180, 180, 180, 0.15);
   cursor: pointer;
 }
 
-.nofo_index table.usa-table thead th:hover {
-  background: rgba(180, 180, 180, 0.15);
-}
-
-.nofo_index table.usa-table thead th:focus {
+.nofo_index table.usa-table thead th:not(.no-sort):focus {
   z-index: 1;
 }
 
