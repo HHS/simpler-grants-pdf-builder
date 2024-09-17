@@ -342,11 +342,12 @@ details > summary > span:hover {
   font-weight: 400;
 }
 
-.nofo_edit caption div > code {
+.nofo_edit caption div > .section--copy-button {
   flex-grow: 1;
-  visibility: hidden;
-  color: #71767a;
-  font-size: 85%;
+}
+
+.nofo_edit caption div > .section--copy-button img {
+  width: 18px;
 }
 
 .nofo_edit caption div a {
@@ -363,8 +364,7 @@ details > summary > span:hover {
   visibility: hidden;
 }
 
-.nofo_edit caption.is-pinned a.back-to-top,
-.nofo_edit caption:hover div > code {
+.nofo_edit caption.is-pinned a.back-to-top {
   visibility: visible;
 }
 
@@ -523,6 +523,18 @@ main .back-link a::before,
   background-image: url("/static/img/usa-icons/arrow_forward.svg");
   height: 12px;
   width: 18px;
+  margin-left: 3px;
+}
+
+.nofo_edit .usa-button-icon--copy::after {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  background-image: url("/static/img/usa-icons/content_copy.svg");
+  width: 18px;
+  height: 18px;
   margin-left: 3px;
 }
 

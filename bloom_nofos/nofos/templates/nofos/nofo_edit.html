@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load martortags nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
 
-
 {% block title %}
 Edit “{{ nofo|nofo_name }}”
 {% endblock %}
@@ -319,7 +318,18 @@ Edit “{{ nofo|nofo_name }}”
   <caption aria-label="{{ section.name }}">
     <div>
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-      <code class="section--html-id">#{{ section.html_id }}</code>
+      <span class="section--copy-button">
+        <button
+          type="button"
+          class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy"
+          data-position="bottom"
+          data-classes="width-full tablet:width-auto"
+          title="Copy section id: {{ section.html_id }}"
+        >
+          <span class="usa-sr-only">Copy section id</span>
+          <!-- Hello <img class="copy-icon" src="{% static "img/usa-icons/content_copy.svg" %}" alt="Copy heading id for {{ section.name }}"  /> -->
+        </button>
+      </span>
       <span><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
       <span>
         <a class="back-to-top" href="#back-to-top">Top</a>
