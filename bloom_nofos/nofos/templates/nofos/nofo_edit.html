@@ -309,9 +309,9 @@ Edit “{{ nofo|nofo_name }}”
           class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
           data-position="bottom"
           data-section-id="{{ section.html_id }}"
-          title="Copy section id: {{ section.html_id }}"
+          title="Copy link to this section"
         >
-          <span class="usa-sr-only">Copy section id</span>
+          <span class="usa-sr-only">Copy link to this section</span>
         </button>
       </span>
       <span><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
@@ -323,6 +323,7 @@ Edit “{{ nofo|nofo_name }}”
   <thead class="usa-sr-only">
     <tr>
       <th scope="col">Heading</th>
+      <th scope="col">Heading link</th>
       <th scope="col">Is callout box</th>
       <th scope="col">Content</th>
       <th scope="col">Manage</th>
@@ -342,6 +343,19 @@ Edit “{{ nofo|nofo_name }}”
           {% endif %}
         </span>
       </th>
+      <td class="nofo-edit-table--subsection--copy-button">
+        <span class="subsection--copy-button floating">
+          <button
+            type="button"
+            class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
+            data-position="bottom"
+            data-section-id="{{ subsection.html_id }}"
+            title="Copy link to this heading"
+          >
+            <span class="usa-sr-only">Copy link to this heading</span>
+          </button>
+        </span>
+      </td>
       <td class="nofo-edit-table--subsection--callout-box">
         {% if subsection.callout_box %}
         <span class="floating">

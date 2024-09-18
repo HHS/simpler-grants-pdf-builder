@@ -165,7 +165,7 @@ details > summary > span:hover {
 }
 
 .nofo_index table.usa-table thead th:not(.no-sort):hover {
-  background: rgba(180, 180, 180, 0.15);
+  background: rgba(180, 180, 180, 0.2);
   cursor: pointer;
 }
 
@@ -338,32 +338,49 @@ details > summary > span:hover {
   flex-grow: 1;
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button {
+.nofo_edit .section--copy-button .usa-button-icon--copy-button,
+.nofo_edit .subsection--copy-button .usa-button-icon--copy-button {
   padding: 5px;
   border-radius: 3px;
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button:hover {
-  background: rgba(180, 180, 180, 0.15);
+.nofo_edit .subsection--copy-button .usa-button-icon--copy-button {
+  padding: 4px;
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button::after {
+.nofo_edit .section--copy-button .usa-button-icon--copy-button:hover,
+.nofo_edit .subsection--copy-button .usa-button-icon--copy-button:hover {
+  background: rgba(180, 180, 180, 0.2);
+}
+
+.nofo_edit .section--copy-button .usa-button-icon--copy-button::after,
+.nofo_edit .subsection--copy-button .usa-button-icon--copy-button::after {
   content: "";
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
   display: inline-flex;
   background-image: url("/static/img/usa-icons/content_copy.svg");
+  filter: invert(0%) sepia(68%) saturate(995%) hue-rotate(19deg)
+    brightness(102%) contrast(79%);
   width: 18px;
   height: 17px;
 }
 
 .nofo_edit
   .section--copy-button
+  .usa-button-icon--copy-button.usa-button-icon--copy-button--copied::after,
+.nofo_edit
+  .subsection--copy-button
   .usa-button-icon--copy-button.usa-button-icon--copy-button--copied::after {
   background-image: url("/static/img/usa-icons/check.svg");
   filter: invert(36%) sepia(93%) saturate(2132%) hue-rotate(58deg)
     brightness(92%) contrast(101%);
+}
+
+.nofo_edit .subsection--copy-button .usa-button-icon--copy-button::after {
+  width: 15px;
+  height: 15px;
 }
 
 .nofo_edit caption div a {
@@ -440,9 +457,15 @@ details > summary > span:hover {
 }
 
 .nofo_edit main table.table--section .nofo-edit-table--subsection--name,
+.nofo_edit main table.table--section .nofo-edit-table--subsection--copy-button,
 .nofo_edit main table.table--section .nofo-edit-table--subsection--callout-box,
 .nofo_edit main table.table--section .nofo-edit-table--subsection--manage {
   vertical-align: top;
+}
+
+.nofo_edit main table.table--section .nofo-edit-table--subsection--copy-button {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .nofo_edit main table.table--section .floating {
