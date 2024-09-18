@@ -20,6 +20,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Updated column headers on NOFO index table
 - "Top" link on nofo_edit page is always visible
   - Appearing and disappearing was causing issues
+- Rename "NOFO data" to "Basic information"
+- Remove "Basic information" from "Step 1"
 
 ### Fixed
 
