@@ -131,7 +131,7 @@ Edit “{{ nofo|nofo_name }}”
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
   <caption>
     <div>
-      <h2 class="margin-bottom-0">NOFO data</h2>
+      <h2 class="margin-bottom-0">Basic information</h2>
     </div>
   </caption>
   <thead class="usa-sr-only">
@@ -331,47 +331,50 @@ Edit “{{ nofo|nofo_name }}”
   </thead>
   <tbody>
     {% for subsection in section.subsections.all|dictsort:"order" %}
-    <tr>
-      <th scope="row"
-        class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
-        id="{{ subsection.html_id }}">
-        <span class="floating">
-          {% if subsection.name %}
-            {{ subsection.name }}
-          {% else %}
-            <span class="text-base">(#{{ subsection.order}})</span>
-          {% endif %}
-        </span>
-      </th>
-      <td class="nofo-edit-table--subsection--copy-button">
-        <span class="subsection--copy-button floating">
-          <button
-            type="button"
-            class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
-            data-position="bottom"
-            data-section-id="{{ subsection.html_id }}"
-            title="Copy link to this heading"
-          >
-            <span class="usa-sr-only">Copy link to this heading</span>
-          </button>
-        </span>
-      </td>
-      <td class="nofo-edit-table--subsection--callout-box">
-        {% if subsection.callout_box %}
-        <span class="floating">
-          <span role="img" aria-label="Callout box" title="Callout box">📦</span>
-        </span>
-        {% endif %}
-      </td>
-      <td class="nofo-edit-table--subsection--body">
-        {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
-      </td>
-      <td class="nofo-edit-table--subsection--manage">
-        <span class="floating">
-          <a href="{% url 'nofos:subsection_edit' nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
-        </span>
-      </td>
-    </tr>
+    {# Ignore "Basic information" subsection #}
+      {% if subsection.name != "Basic information" %}
+        <tr>
+          <th scope="row"
+            class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
+            id="{{ subsection.html_id }}">
+            <span class="floating">
+              {% if subsection.name %}
+                {{ subsection.name }}
+              {% else %}
+                <span class="text-base">(#{{ subsection.order}})</span>
+              {% endif %}
+            </span>
+          </th>
+          <td class="nofo-edit-table--subsection--copy-button">
+            <span class="subsection--copy-button floating">
+              <button
+                type="button"
+                class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
+                data-position="bottom"
+                data-section-id="{{ subsection.html_id }}"
+                title="Copy link to this heading"
+              >
+                <span class="usa-sr-only">Copy link to this heading</span>
+              </button>
+            </span>
+          </td>
+          <td class="nofo-edit-table--subsection--callout-box">
+            {% if subsection.callout_box %}
+            <span class="floating">
+              <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+            </span>
+            {% endif %}
+          </td>
+          <td class="nofo-edit-table--subsection--body">
+            {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+          </td>
+          <td class="nofo-edit-table--subsection--manage">
+            <span class="floating">
+              <a href="{% url 'nofos:subsection_edit' nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+            </span>
+          </td>
+        </tr>
+      {% endif %}
     {% endfor %}
   </tbody>
 </table>
