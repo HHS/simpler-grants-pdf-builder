@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add little "copy" icon button that copies ids to the clipboard
   - For section ids
   - For subsection ids
+  - Add "#" to beginning of ids
 - Add uswds JavaScript files to the base theme file (not the NOFO theme file)
   - The motivation for this is so that we can get tooltips to work
 
