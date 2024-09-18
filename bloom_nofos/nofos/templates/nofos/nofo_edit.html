@@ -386,7 +386,7 @@ Edit “{{ nofo|nofo_name }}”
     buttons.forEach(button => {
         button.addEventListener('click', function() {
             // Copy data-section-id to clipboard
-            navigator.clipboard.writeText(this.getAttribute('data-section-id'));
+            navigator.clipboard.writeText(`#${this.getAttribute('data-section-id')}`);
 
             // Add class to button
             this.classList.add('usa-button-icon--copy-button--copied');
