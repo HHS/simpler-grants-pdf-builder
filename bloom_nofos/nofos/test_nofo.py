@@ -149,6 +149,53 @@ class TablesAndStuffInTablesConverterTABLESTest(TestCase):
         self.assertEqual(md_body.strip(), pretty_html)
 
 
+class TablesAndStuffInTablesConverterTHSest(TestCase):
+    def test_table_0_ths(self):
+        html = "<table><tr><td>TD 1</td><td>TD 2</td></tr><tr><td>Cell 1</td><td>Cell 2</td></th></table>"
+        expected_markdown = "| TD 1 | TD 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_1_th(self):
+        html = "<table><tr><th>TH 1</th></tr><tr><td>Cell 1</td></th></table>"
+        expected_markdown = "| TH 1 |\n| --- |\n| Cell 1 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_2_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th></tr><tr><td>Cell 1</td><td>Cell 2</td></th></table>"
+        expected_markdown = (
+            "| TH 1 {: .w-50 } | TH 2 {: .w-50 } |\n| --- | --- |\n| Cell 1 | Cell 2 |"
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_3_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></th></table>"
+        expected_markdown = "| TH 1 {: .w-33 } | TH 2 {: .w-33 } | TH 3 {: .w-33 } |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_4_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td><td>Cell 4</td></th></table>"
+        expected_markdown = "| TH 1 {: .w-25 } | TH 2 {: .w-25 } | TH 3 {: .w-25 } | TH 4 {: .w-25 } |\n| --- | --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 | Cell 4 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_5_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th><th>TH 5</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td><td>Cell 4</td><td>Cell 5</td></th></table>"
+        expected_markdown = "| TH 1 {: .w-20 } | TH 2 {: .w-20 } | TH 3 {: .w-20 } | TH 4 {: .w-20 } | TH 5 {: .w-20 } |\n| --- | --- | --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 | Cell 4 | Cell 5 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_6_ths(self):
+        # no classnames on this one
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th><th>TH 5</th><th>TH 6</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td><td>Cell 4</td><td>Cell 5</td><td>Cell 6</td></th></table>"
+        expected_markdown = "| TH 1 | TH 2 | TH 3 | TH 4 | TH 5 | TH 6 |\n| --- | --- | --- | --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 | Cell 4 | Cell 5 | Cell 6 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+
 class TablesAndStuffInTablesConverterOLSTest(TestCase):
     maxDiff = None
 
@@ -181,14 +228,6 @@ class TablesAndStuffInTablesConverterOLSTest(TestCase):
         expected_markdown = "1. Item 1\n2. Item 2"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
-
-    def test_ol_inside_td_start_not_one(self):
-        html = '<table><tr><th>Header</th></tr><tr><td><ol start="3"><li>Item 1</li><li>Item 2</li></ol></td></tr></table>'
-        pretty_html = (
-            '| Header |\n| --- |\n| <ol start="3"><li>Item 1</li><li>Item 2</li></ol> |'
-        )
-        md_body = md(html)
-        self.assertEqual(md_body.strip(), pretty_html)
 
     def test_ol_inside_td_start_not_one(self):
         html = '<table><tr><th>Header</th></tr><tr><td><ol start="3"><li>Item 1</li><li>Item 2</li></ol></td></tr></table>'
