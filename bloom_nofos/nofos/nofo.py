@@ -103,6 +103,30 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
         return super().convert_table(el, text, convert_as_inline)
 
+    def convert_th(self, el, text, convert_as_inline):
+        # automatically add width classes to table headers based on number of <th> elements
+        def _determine_width_class_from_th_siblings(th_count=0):
+            # Determine the width class based on the number of <th> elements in the first table row
+            width_class = ""
+            if th_count == 2:
+                width_class = "w-50"
+            elif th_count == 3:
+                width_class = "w-33"
+            elif th_count == 4:
+                width_class = "w-25"
+            elif th_count == 5:
+                width_class = "w-20"
+
+            return width_class
+
+        th_count = len(el.parent.find_all("th"))
+        # Add the class to the text if a class was determined
+        width_class = _determine_width_class_from_th_siblings(th_count)
+        if width_class:
+            text = f"{text.strip()} {{: .{width_class} }}"
+
+        return super().convert_th(el, text, convert_as_inline)
+
 
 # Create shorthand method for conversion
 def md(html, **options):

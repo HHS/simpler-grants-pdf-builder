@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Add default width classes to markdown tables with 2-5 cols
 - Updated column headers on NOFO index table
 - "Top" link on nofo_edit page is always visible
   - Appearing and disappearing was causing issues
