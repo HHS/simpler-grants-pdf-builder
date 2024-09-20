@@ -984,6 +984,10 @@ section.section .section--title-page::before {
   font-size: 10pt;
 }
 
+.callout-box .callout-box--contents ul {
+  padding-left: 14px;
+}
+
 .section--absolute--right-col .callout-box--contents strong {
   display: block;
 }

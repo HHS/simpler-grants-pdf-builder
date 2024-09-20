@@ -266,7 +266,7 @@ section.before-you-begin {
   font-size: 10pt;
 }
 
-table.table--large {
+.section--content table.table--large {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }
 
