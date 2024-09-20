@@ -27,6 +27,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Reduce left-hand spacing for bullets in callout boxes
+- Make sure large tables have full-width table styles applied
+
 ## [1.26.0] - 2023-09-13
 
 ### Added
