@@ -164,9 +164,7 @@ class TablesAndStuffInTablesConverterTHSest(TestCase):
 
     def test_table_2_ths(self):
         html = "<table><tr><th>TH 1</th><th>TH 2</th></tr><tr><td>Cell 1</td><td>Cell 2</td></th></table>"
-        expected_markdown = (
-            "| TH 1 {: .w-50 } | TH 2 {: .w-50 } |\n| --- | --- |\n| Cell 1 | Cell 2 |"
-        )
+        expected_markdown = "| TH 1 | TH 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 

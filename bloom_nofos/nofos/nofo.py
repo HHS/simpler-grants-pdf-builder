@@ -108,9 +108,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
         def _determine_width_class_from_th_siblings(th_count=0):
             # Determine the width class based on the number of <th> elements in the first table row
             width_class = ""
-            if th_count == 2:
-                width_class = "w-50"
-            elif th_count == 3:
+            if th_count == 3:
                 width_class = "w-33"
             elif th_count == 4:
                 width_class = "w-25"
