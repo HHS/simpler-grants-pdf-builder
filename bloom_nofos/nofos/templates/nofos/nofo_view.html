@@ -94,7 +94,16 @@
       <div class="nofo--cover-page--header--intro">
         <span>Notice of Funding Opportunity</span>
         <br>
-        <span>Application due {{ nofo.application_deadline }}</span>
+        {% if "|" in nofo.application_deadline %}
+          <span>Applications are due by 11:59 p.m. ET</span>
+          <ul class="usa-nav__submenu-list">
+          {% for application_deadline in nofo.application_deadline|split_char_to_list %}
+            <li>{{ application_deadline }}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <span>Application due {{ nofo.application_deadline }}</span>
+        {% endif %}
       </div>
     </div>
     <div class="nofo--cover-page--hero-image">
@@ -216,8 +225,17 @@
       <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
       <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
 
-      <p class="section--before-you-begin--psuedo-header">Apply by {{ nofo.application_deadline|split_char_and_remove:"-" }}</p>
-      <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+      <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
+      {% if "|" in nofo.application_deadline %}
+        <p>Applications are due by 11:59 p.m. Eastern Time:</p>
+        <ul>
+        {% for application_deadline in nofo.application_deadline|split_char_to_list %}
+          <li>{{ application_deadline }}</li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+      {% endif %}
 
       {# Show "Adobe Reader" callout box in this section on non-HRSA 014 NOFOs #}
       {% if nofo.number|lower != 'hrsa-24-014' %}

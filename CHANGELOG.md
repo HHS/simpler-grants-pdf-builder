@@ -23,6 +23,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Appearing and disappearing was causing issues
 - Rename "NOFO data" to "Basic information"
 - Remove "Basic information" from "Step 1"
+- More if/else logic to support 2 application dates 😖
 
 ### Fixed
 
