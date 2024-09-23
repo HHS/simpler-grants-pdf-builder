@@ -2,7 +2,7 @@
 {% load tz %}
 
 {% block title %}
-	All NOFOs
+	{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
 {% endblock %}
 
 {% block body_class %}nofo_index{% endblock %}
@@ -10,13 +10,23 @@
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
-	<h1 class="font-heading-xl margin-y-0">All{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
+	<h1 class="font-heading-xl margin-y-0">{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
 
 	<p class="nofo_index--filter">
-		<a href="{% url 'nofos:nofo_index' %}?status=all" {% if nofo_status == 'all' %}aria-current="page"{% endif %}>All NOFOs</a> | 
-		<a href="{% url 'nofos:nofo_index' %}" {% if not nofo_status or nofo_status == 'unpublished' %}aria-current="page"{% endif %}>All unpublished NOFOs</a> | 
-		<a href="{% url 'nofos:nofo_index' %}?status=published" {% if nofo_status == 'published' %}aria-current="page"{% endif %}>All published NOFOs</a>
+		<a href="{% url 'nofos:nofo_index' %}?status=all&group={{ nofo_group }}" {% if nofo_status == 'all' %}aria-current="page"{% endif %}>{{ nofo_group|title }} NOFOs</a> | 
+		<a href="{% url 'nofos:nofo_index' %}?group={{ nofo_group }}" {% if not nofo_status or nofo_status == 'unpublished' %}aria-current="page"{% endif %}>{{ nofo_group|title }} unpublished NOFOs</a> | 
+		<a href="{% url 'nofos:nofo_index' %}?status=published&group={{ nofo_group }}" {% if nofo_status == 'published' %}aria-current="page"{% endif %}>All{% if nofo_group != 'all' %} {{ nofo_group|title }}{% endif %} published NOFOs</a>
 	</p>
+
+	{% if user.group == 'bloom' %}
+    <p class="nofo_index--filter">
+				<label class="usa-label display-inline-block font-sans-md margin-top-0" for="group-filter">Nofo Group:</label>
+				<select class="usa-select border-2px width-auto display-inline-block margin-top-0" name="group-filter" id="group-filter" onchange="location = this.value;">
+					<option value="{% url 'nofos:nofo_index' %}?status={{ nofo_status }}&group=bloom" {% if nofo_group == 'bloom' %}selected{% endif %}>Bloom</option>
+					<option value="{% url 'nofos:nofo_index' %}?status={{ nofo_status }}&group=all" {% if nofo_group == 'all' %}selected{% endif %}>All</option>
+				</select>
+    </p>
+	{% endif %}
 
 	{% if nofo_list %}
 		<table class="sortable usa-table usa-table--borderless width-full">

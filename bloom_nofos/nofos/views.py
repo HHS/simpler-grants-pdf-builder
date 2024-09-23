@@ -99,6 +99,10 @@ class NofosListView(ListView):
 
         # default status: return unpublished NOFOs
         self.status = self.request.GET.get("status", "unpublished")
+        # default group: 'all' nofos unless a bloom user. if bloom user, default to 'bloom'
+        self.group = self.request.GET.get(
+            "group", "bloom" if self.request.user.group == "bloom" else "all"
+        )
 
         if self.status:
             if self.status == "unpublished":
@@ -107,6 +111,12 @@ class NofosListView(ListView):
                 pass
             else:
                 queryset = queryset.filter(status=self.status)
+
+        # Apply group filter for Bloom users, doesn't apply to anyone else
+        if self.request.user.group == "bloom":
+            # Only "bloom" is actually used to filter
+            if self.group == "bloom":
+                queryset = queryset.filter(group="bloom")
 
         # Filter NOFOs by the user's group unless they are 'bloom' users
         user_group = self.request.user.group
@@ -118,7 +128,8 @@ class NofosListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["today_m_j"] = dateformat.format(timezone.now(), "M j")
-        context["nofo_status"] = self.status  # Add the status to the context
+        context["nofo_status"] = self.status
+        context["nofo_group"] = self.group
         return context
 
 
