@@ -30,6 +30,7 @@ from .nofo import (
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
+    find_same_heading_levels_consecutive,
     get_sections_from_soup,
     get_subsections_from_sections,
     is_callout_box_table,
@@ -1675,6 +1676,110 @@ class TestGetAllIdAttrsForNofo(TestCase):
         self.assertEqual(result, expected_ids)
 
 
+###########################################################
+######### FIND THINGS IN THE NOFO DOCUMENT TESTS ##########
+###########################################################
+
+
+class TestFindSameHeadingLevelsConsecutive(TestCase):
+    def test_find_same_heading_levels_consecutive_h3s(self):
+        sections_h3s = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", sections_h3s)
+        first_section = nofo.sections.first()
+
+        headings = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(
+            headings,
+            [
+                {
+                    "subsection": first_section.subsections.all().order_by("order")[1],
+                    "error": "Repeated heading level",
+                }
+            ],
+        )
+
+
+# doesn't work if body
+# doesn't work if section in between
+# doesn't work h1s
+# does it work with h2s?
+
+
+class TestFindExternalLinks(TestCase):
+    def setUp(self):
+        self.sections = _get_sections_dict()
+
+    def test_find_external_links_with_one_link_in_subsections(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+
+    def test_find_external_links_ignore_nofo_rodeo(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://nofo.rodeo/nofos/">All Nofos</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_with_two_links_in_subsections(self):
+        self_sections = self.sections
+        # add external links to subsections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
+        ]
+        self_sections[0]["subsections"][1]["body"] = [
+            '<p>Section 2 body with link to <a href="https://canada-holidays.ca">Canada Holidays</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections)
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+        self.assertEqual(links[1]["url"], "https://canada-holidays.ca")
+
+    def test_find_external_links_no_link_in_subsection(self):
+        # no links in the original subsections
+        nofo = create_nofo("Test Nofo", self.sections)
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+
 class TestFindBrokenLinks(TestCase):
     def setUp(self):
         # Set up a Nofo instance and related Sections and Subsections
@@ -1832,59 +1937,6 @@ class TestUpdateLinkStatuses(TestCase):
         all_links = [{"url": "https://example.com", "status": ""}]
         update_link_statuses(all_links)
         self.assertIn("Error: Connection error", all_links[0]["error"])
-
-
-class TestFindExternalLinks(TestCase):
-    def setUp(self):
-        self.sections = _get_sections_dict()
-
-    def test_find_external_links_with_one_link_in_subsections(self):
-        self_sections = self.sections
-        # add external links to subsections
-        self_sections[0]["subsections"][0]["body"] = [
-            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
-        ]
-
-        nofo = create_nofo("Test Nofo", self_sections)
-        links = find_external_links(nofo, with_status=False)
-
-        self.assertEqual(len(links), 1)
-        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
-
-    def test_find_external_links_ignore_nofo_rodeo(self):
-        self_sections = self.sections
-        # add external links to subsections
-        self_sections[0]["subsections"][0]["body"] = [
-            '<p>Section 1 body with link to <a href="https://nofo.rodeo/nofos/">All Nofos</a></p>'
-        ]
-
-        nofo = create_nofo("Test Nofo", self_sections)
-        links = find_external_links(nofo, with_status=False)
-        self.assertEqual(len(links), 0)
-
-    def test_find_external_links_with_two_links_in_subsections(self):
-        self_sections = self.sections
-        # add external links to subsections
-        self_sections[0]["subsections"][0]["body"] = [
-            '<p>Section 1 body with link to <a href="https://groundhog-day.com">Groundhog Day</a></p>'
-        ]
-        self_sections[0]["subsections"][1]["body"] = [
-            '<p>Section 2 body with link to <a href="https://canada-holidays.ca">Canada Holidays</a></p>'
-        ]
-
-        nofo = create_nofo("Test Nofo", self_sections)
-        links = find_external_links(nofo, with_status=False)
-
-        self.assertEqual(len(links), 2)
-        self.assertEqual(links[0]["url"], "https://groundhog-day.com")
-        self.assertEqual(links[1]["url"], "https://canada-holidays.ca")
-
-    def test_find_external_links_no_link_in_subsection(self):
-        # no links in the original subsections
-        nofo = create_nofo("Test Nofo", self.sections)
-        links = find_external_links(nofo, with_status=False)
-
-        self.assertEqual(len(links), 0)
 
 
 #########################################################

@@ -65,6 +65,7 @@ from .nofo import (
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
+    find_same_heading_levels_consecutive,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
