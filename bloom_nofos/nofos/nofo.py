@@ -518,7 +518,62 @@ def _update_link_statuses(all_links):
                 print(f"Error checking link {link['url']}: {e}")
 
 
+###########################################################
+############ FIND THINGS IN THE NOFO DOCUMENT #############
+###########################################################
+
+
+def find_same_heading_levels_consecutive(nofo):
+    """
+    This function will identify any headings that immediately follow each other (no subsection.body) and are the same level
+    """
+    same_heading_levels = []
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+            # check if no body
+            if not subsection.body.strip():
+                # Query for the next subsection with a higher order value
+                next_subsection = (
+                    section.subsections.filter(order__gt=subsection.order)
+                    .order_by("order")
+                    .first()
+                )
+                if next_subsection:
+                    if (
+                        subsection.name
+                        and next_subsection.name
+                        and subsection.tag == next_subsection.tag
+                    ):
+                        same_heading_levels.append(
+                            {
+                                "subsection": next_subsection,
+                                "error": "Repeated heading level",
+                            }
+                        )
+
+    return same_heading_levels
+
+
 def find_external_links(nofo, with_status=False):
+    """
+    Returns a list of external hyperlink references found within the markdown content of a NOFO.
+
+    This function processes the markdown content of each subsection, converts it to HTML using BeautifulSoup and markdown libraries, and searches for all 'a' tags (hyperlinks). It then filters these links to include only those that are external (not part of the 'nofo.rodeo' domain).
+
+    Parameters:
+        nofo (Nofo instance): The NOFO object whose sections and subsections are to be scanned for external links.
+        with_status (bool): A flag indicating whether to update the status of each link (e.g., check if the link is live, if it redirects, etc.) by calling the `_update_link_statuses` function.
+
+    Returns:
+        list: A list of dictionaries. Each dictionary represents an external link and contains the following keys:
+            - 'url' (str): The URL of the link.
+            - 'domain' (str): The hostname extracted from the URL.
+            - 'section' (Section instance): The section object where the link was found.
+            - 'subsection' (Subsection instance): The subsection object where the link was found.
+            - 'status' (str): A placeholder for the status of the link; it remains empty unless updated externally.
+            - 'error' (str): A placeholder for any error associated with the link; it remains empty unless updated externally.
+            - 'redirect_url' (str): A placeholder for the URL where the link redirects; it remains empty unless updated externally.
+    """
     all_links = []
 
     sections = nofo.sections.all().order_by("order")
@@ -552,6 +607,71 @@ def find_external_links(nofo, with_status=False):
         _update_link_statuses(all_links)
 
     return all_links
+
+
+def find_broken_links(nofo):
+    """
+    Identifies and returns a list of broken links within a given Nofo.
+
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/", "https://docs.google.com", "#_heading", or "_bookmark".
+    This means that someone created an internal link to a header, and then later the header was deleted or otherwise
+    modified so the original link doesn't point anywhere.
+
+    Args:
+        nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
+                     to be in markdown format.
+
+    Returns:
+        list of dict: A list of dictionaries, where each dictionary contains information about a broken link,
+                      including the section and subsection it was found in, the text of the link, and the `href`
+                      attribute of the link. The structure is as follows:
+                      [
+                          {
+                              "section": <Section object>,
+                              "subsection": <Subsection object>,
+                              "link_text": "text of the link",
+                              "link_href": "href of the link"
+                          },
+                          ...
+                      ]
+    """
+
+    # Define a function that checks if an 'href' attribute starts with any of these
+    def _href_starts_with_h(tag):
+        return tag.name == "a" and (
+            tag.get("href", "").startswith("/")
+            or tag.get("href", "").startswith("#")
+            or tag.get("href", "").startswith("https://docs.google.com")
+            or tag.get("href", "") == "about:blank"
+        )
+
+    broken_links = []
+    all_ids = _get_all_id_attrs_for_nofo(nofo)
+
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+
+            soup = BeautifulSoup(
+                markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
+            )
+
+            all_links = soup.find_all("a")
+
+            for link in all_links:
+                if link.attrs.get("href") in all_ids:
+                    # skip all '#' ids that exist (if not, they are caught in the next step)
+                    pass
+                elif _href_starts_with_h(link):
+                    broken_links.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "link_text": link.get_text(),
+                            "link_href": link["href"],
+                        }
+                    )
+
+    return broken_links
 
 
 ###########################################################
@@ -822,72 +942,6 @@ def _get_all_id_attrs_for_nofo(nofo):
                     all_ids.add(element["id"])
 
     return {"#" + item for item in all_ids}
-
-
-def find_broken_links(nofo):
-    """
-    This function mutates the soup!
-
-    Identifies and returns a list of broken links within a given Nofo.
-
-    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/", "https://docs.google.com", "#_heading", or "_bookmark".
-    This means that someone created an internal link to a header, and then later the header was deleted or otherwise
-    modified so the original link doesn't point anywhere.
-
-    Args:
-        nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
-                     to be in markdown format.
-
-    Returns:
-        list of dict: A list of dictionaries, where each dictionary contains information about a broken link,
-                      including the section and subsection it was found in, the text of the link, and the `href`
-                      attribute of the link. The structure is as follows:
-                      [
-                          {
-                              "section": <Section object>,
-                              "subsection": <Subsection object>,
-                              "link_text": "text of the link",
-                              "link_href": "href of the link"
-                          },
-                          ...
-                      ]
-    """
-
-    # Define a function that checks if an 'href' attribute starts with any of these
-    def _href_starts_with_h(tag):
-        return tag.name == "a" and (
-            tag.get("href", "").startswith("/")
-            or tag.get("href", "").startswith("#")
-            or tag.get("href", "").startswith("https://docs.google.com")
-            or tag.get("href", "") == "about:blank"
-        )
-
-    broken_links = []
-    all_ids = _get_all_id_attrs_for_nofo(nofo)
-
-    for section in nofo.sections.all().order_by("order"):
-        for subsection in section.subsections.all().order_by("order"):
-            soup = BeautifulSoup(
-                markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
-            )
-
-            all_links = soup.find_all("a")
-
-            for link in all_links:
-                if link.attrs.get("href") in all_ids:
-                    # skip all '#' ids that exist (if not, they are caught in the next step)
-                    pass
-                elif _href_starts_with_h(link):
-                    broken_links.append(
-                        {
-                            "section": section,
-                            "subsection": subsection,
-                            "link_text": link.get_text(),
-                            "link_href": link["href"],
-                        }
-                    )
-
-    return broken_links
 
 
 def combine_consecutive_links(soup):
