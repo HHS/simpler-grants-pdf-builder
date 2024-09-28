@@ -1683,7 +1683,7 @@ class TestGetAllIdAttrsForNofo(TestCase):
 
 class TestFindSameHeadingLevelsConsecutive(TestCase):
     def test_find_same_heading_levels_consecutive_h3s(self):
-        sections_h3s = [
+        nofo_obj = [
             {
                 "name": "Section 1",
                 "order": 1,
@@ -1706,7 +1706,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
             }
         ]
 
-        nofo = create_nofo("Test Nofo", sections_h3s)
+        nofo = create_nofo("Test Nofo", nofo_obj)
         first_section = nofo.sections.first()
 
         headings = find_same_heading_levels_consecutive(nofo)
@@ -1720,11 +1720,130 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
             ],
         )
 
+    def test_find_same_heading_levels_consecutive_h3s_trailing_body(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h3",
+                        "body": ["<p>Hello, Subsection 2</p>"],
+                    },
+                ],
+            }
+        ]
 
-# doesn't work if body
-# doesn't work if section in between
-# doesn't work h1s
-# does it work with h2s?
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        first_section = nofo.sections.first()
+
+        headings = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(
+            headings,
+            [
+                {
+                    "subsection": first_section.subsections.all().order_by("order")[1],
+                    "error": "Repeated heading level",
+                }
+            ],
+        )
+
+    def test_find_same_heading_levels_with_body(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": ["<p>Hello, Subsection 1</p>"],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        headings = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(headings, [])
+
+    def test_find_same_heading_levels_subsections_in_sections(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    }
+                ],
+            },
+            {
+                "name": "Section 2",
+                "order": 2,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 2",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            },
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        headings = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(headings, [])
+
+
+def test_find_same_heading_levels_empty_sections(self):
+    nofo_obj = [
+        {
+            "name": "Section 1",
+            "order": 1,
+            "html_id": "",
+            "has_section_page": True,
+            "subsections": [],
+        },
+        {
+            "name": "Section 2",
+            "order": 2,
+            "html_id": "",
+            "has_section_page": True,
+            "subsections": [],
+        },
+    ]
+
+    nofo = create_nofo("Test Nofo", nofo_obj)
+    headings = find_same_heading_levels_consecutive(nofo)
+    self.assertEqual(headings, [])
 
 
 class TestFindExternalLinks(TestCase):
