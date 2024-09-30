@@ -554,6 +554,47 @@ def find_same_heading_levels_consecutive(nofo):
     return same_heading_levels
 
 
+def find_incorrectly_nested_heading_levels(nofo):
+    """
+    This function will identify any headings that are incorrectly nested (ie, that skip 1 or more levels (eg, "h3" and then "h5", which skips "h4"))
+    """
+    incorrect_levels = {
+        "h2": ["h4", "h5", "h6", "h7"],
+        "h3": ["h5", "h6", "h7"],
+        "h4": ["h6", "h7"],
+        "h5": ["h7"],
+        "h6": [],
+        "h7": [],
+    }
+
+    incorrectly_nested_heading_levels = []
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+
+            # Query for the next subsection with a higher order value
+            next_subsection = (
+                section.subsections.filter(order__gt=subsection.order)
+                .order_by("order")
+                .first()
+            )
+            if next_subsection:
+                if (
+                    subsection.name
+                    and next_subsection.name
+                    and next_subsection.tag in incorrect_levels[subsection.tag]
+                ):
+                    incorrectly_nested_heading_levels.append(
+                        {
+                            "subsection": next_subsection,
+                            "error": "Incorrectly nested heading level. {} followed by a {}".format(
+                                subsection.tag, next_subsection.tag
+                            ),
+                        }
+                    )
+
+    return incorrectly_nested_heading_levels
+
+
 def find_external_links(nofo, with_status=False):
     """
     Returns a list of external hyperlink references found within the markdown content of a NOFO.
