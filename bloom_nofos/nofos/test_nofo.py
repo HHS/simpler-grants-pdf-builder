@@ -30,6 +30,7 @@ from .nofo import (
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
+    find_incorrectly_nested_heading_levels,
     find_same_heading_levels_consecutive,
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -1709,12 +1710,13 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         nofo = create_nofo("Test Nofo", nofo_obj)
         first_section = nofo.sections.first()
 
-        headings = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_heading_levels_consecutive(nofo)
         self.assertEqual(
-            headings,
+            error_messages,
             [
                 {
                     "subsection": first_section.subsections.all().order_by("order")[1],
+                    "name": "Subsection 2",
                     "error": "Repeated heading level",
                 }
             ],
@@ -1747,12 +1749,13 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         nofo = create_nofo("Test Nofo", nofo_obj)
         first_section = nofo.sections.first()
 
-        headings = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_heading_levels_consecutive(nofo)
         self.assertEqual(
-            headings,
+            error_messages,
             [
                 {
                     "subsection": first_section.subsections.all().order_by("order")[1],
+                    "name": "Subsection 2",
                     "error": "Repeated heading level",
                 }
             ],
@@ -1783,8 +1786,8 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        headings = find_same_heading_levels_consecutive(nofo)
-        self.assertEqual(headings, [])
+        error_messages = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_subsections_in_sections(self):
         nofo_obj = [
@@ -1819,31 +1822,333 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        headings = find_same_heading_levels_consecutive(nofo)
-        self.assertEqual(headings, [])
+        error_messages = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
+
+    def test_find_same_heading_levels_empty_sections(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [],
+            },
+            {
+                "name": "Section 2",
+                "order": 2,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [],
+            },
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        error_messages = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
+
+    def test_find_same_heading_levels_section_and_subsection(self):
+        # even though the subsection is an h2, this does NOT find it
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 2",
+                        "order": 1,
+                        "tag": "h2",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        error_messages = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
+
+    def test_find_same_heading_levels_with_incorrectly_nested_levels(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h6",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        error_messages = find_same_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
 
 
-def test_find_same_heading_levels_empty_sections(self):
-    nofo_obj = [
-        {
-            "name": "Section 1",
-            "order": 1,
-            "html_id": "",
-            "has_section_page": True,
-            "subsections": [],
-        },
-        {
-            "name": "Section 2",
-            "order": 2,
-            "html_id": "",
-            "has_section_page": True,
-            "subsections": [],
-        },
-    ]
+class TestFindIncorrectlyNestedHeadingLevels(TestCase):
+    def test_find_incorrectly_nested_heading_levels(self):
 
-    nofo = create_nofo("Test Nofo", nofo_obj)
-    headings = find_same_heading_levels_consecutive(nofo)
-    self.assertEqual(headings, [])
+        # Tuple of tag pairs to test
+        tag_pairs = [
+            ("h3", "h5"),
+            ("h3", "h6"),
+            ("h3", "h7"),
+            ("h4", "h6"),
+            ("h4", "h7"),
+            ("h5", "h7"),
+        ]
+
+        for parent_tag, child_tag in tag_pairs:
+            with self.subTest(parent_tag=parent_tag, child_tag=child_tag):
+                nofo_obj = [
+                    {
+                        "name": "Section 1",
+                        "order": 1,
+                        "html_id": "",
+                        "has_section_page": True,
+                        "subsections": [
+                            {
+                                "name": "Subsection 1",
+                                "order": 1,
+                                "tag": "h3",
+                                "body": [""],
+                            },
+                            {
+                                "name": "Subsection 2",
+                                "order": 2,
+                                "tag": "h4",
+                                "body": [""],
+                            },
+                            {
+                                "name": "Subsection 3",
+                                "order": 3,
+                                "tag": parent_tag,
+                                "body": [""],
+                            },
+                            {
+                                "name": "Subsection 4",
+                                "order": 4,
+                                "tag": child_tag,
+                                "body": [""],
+                            },
+                        ],
+                    }
+                ]
+
+                nofo = create_nofo("Test Nofo", nofo_obj)
+                first_section = nofo.sections.first()
+
+                error_messages = find_incorrectly_nested_heading_levels(nofo)
+                self.assertEqual(
+                    error_messages,
+                    [
+                        {
+                            "subsection": first_section.subsections.all().order_by(
+                                "order"
+                            )[3],
+                            "name": "Subsection 4",
+                            "error": "Incorrectly nested heading level. {} followed by an {}".format(
+                                parent_tag, child_tag
+                            ),
+                        }
+                    ],
+                )
+
+    def test_find_incorrectly_nested_heading_levels_section_subsection(self):
+        # sections are always h2, so h4 should throw an error
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h4",
+                        "body": [""],
+                    }
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        first_section = nofo.sections.first()
+
+        error_messages = find_incorrectly_nested_heading_levels(nofo)
+        self.assertEqual(
+            error_messages,
+            [
+                {
+                    "subsection": first_section.subsections.all().order_by("order")[0],
+                    "name": "Subsection 1",
+                    "error": "Incorrectly nested heading level. h2 (Section 1) followed by an h4",
+                }
+            ],
+        )
+
+    def test_find_incorrectly_nested_heading_levels_callout_box_in_between_subsections(
+        self,
+    ):
+        # sections are always h2, so h4 should throw an error
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "",
+                        "order": 2,
+                        "tag": "",
+                        "html_id": "callout-box",
+                        "callout_box": True,
+                        "body": ["<p>Callout box</p>"],
+                    },
+                    {
+                        "name": "Subsection 3",
+                        "order": 3,
+                        "tag": "h5",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        first_section = nofo.sections.first()
+
+        error_messages = find_incorrectly_nested_heading_levels(nofo)
+        self.assertEqual(
+            error_messages,
+            [
+                {
+                    "subsection": first_section.subsections.all().order_by("order")[2],
+                    "name": "Subsection 3",
+                    "error": "Incorrectly nested heading level. h3 followed by an h5",
+                }
+            ],
+        )
+
+    def test_find_incorrectly_nested_heading_levels_all_levels(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h4",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 3",
+                        "order": 3,
+                        "tag": "h5",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 4",
+                        "order": 4,
+                        "tag": "h6",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 5",
+                        "order": 5,
+                        "tag": "h7",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+
+        error_messages = find_incorrectly_nested_heading_levels(nofo)
+        self.assertEqual(error_messages, [])
+
+    def test_find_incorrectly_nested_heading_levels_empty_sections(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [],
+            },
+            {
+                "name": "Section 2",
+                "order": 2,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [],
+            },
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        error_messages = find_incorrectly_nested_heading_levels(nofo)
+        self.assertEqual(error_messages, [])
+
+    def test_find_incorrectly_nested_heading_levels_consecutive_h3s(self):
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+
+        error_messages = find_incorrectly_nested_heading_levels(nofo)
+        self.assertEqual(error_messages, [])
 
 
 class TestFindExternalLinks(TestCase):
