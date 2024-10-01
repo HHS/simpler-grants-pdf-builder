@@ -523,6 +523,27 @@ def _update_link_statuses(all_links):
 ###########################################################
 
 
+def _get_next_subsection(section, subsection, with_tag=False):
+    """
+    Recursively find the next subsection in the given section based on the order.
+    Optionally requires that the subsection has a non-empty tag.
+
+    Returns:
+        Subsection or None: The next subsection that meets the criteria or None if no such subsection exists.
+    """
+    next_subsection = (
+        section.subsections.filter(order__gt=subsection.order).order_by("order").first()
+    )
+
+    if not next_subsection:
+        return None
+
+    if with_tag and not next_subsection.tag:
+        return _get_next_subsection(section, next_subsection, with_tag=True)
+    else:
+        return next_subsection
+
+
 def find_same_heading_levels_consecutive(nofo):
     """
     This function will identify any headings that immediately follow each other (no subsection.body) and are the same level
@@ -532,12 +553,8 @@ def find_same_heading_levels_consecutive(nofo):
         for subsection in section.subsections.all().order_by("order"):
             # check if no body
             if not subsection.body.strip():
-                # Query for the next subsection with a higher order value
-                next_subsection = (
-                    section.subsections.filter(order__gt=subsection.order)
-                    .order_by("order")
-                    .first()
-                )
+                next_subsection = _get_next_subsection(section, subsection)
+
                 if next_subsection:
                     if (
                         subsection.name
@@ -569,28 +586,43 @@ def find_incorrectly_nested_heading_levels(nofo):
 
     incorrectly_nested_heading_levels = []
     for section in nofo.sections.all().order_by("order"):
-        for subsection in section.subsections.all().order_by("order"):
+        subsections = section.subsections.all().order_by("order")
 
-            # Query for the next subsection with a higher order value
-            next_subsection = (
-                section.subsections.filter(order__gt=subsection.order)
-                .order_by("order")
-                .first()
-            )
-            if next_subsection:
-                if (
-                    subsection.name
-                    and next_subsection.name
-                    and next_subsection.tag in incorrect_levels[subsection.tag]
-                ):
-                    incorrectly_nested_heading_levels.append(
-                        {
-                            "subsection": next_subsection,
-                            "error": "Incorrectly nested heading level. {} followed by a {}".format(
-                                subsection.tag, next_subsection.tag
-                            ),
-                        }
-                    )
+        if subsections:
+            # check that first subsection is not incorrectly nested
+            first_subsection = subsections.first()
+            if first_subsection and first_subsection.tag in incorrect_levels["h2"]:
+                incorrectly_nested_heading_levels.append(
+                    {
+                        "subsection": first_subsection,
+                        "name": first_subsection.name,
+                        "error": "Incorrectly nested heading level. h2 ({}) followed by {}".format(
+                            section.name, first_subsection.tag
+                        ),
+                    }
+                )
+
+            # check the rest of the subsections
+            for subsection in subsections:
+                next_subsection = _get_next_subsection(
+                    section, subsection, with_tag=True
+                )
+
+                if next_subsection:
+                    if (
+                        subsection.name
+                        and next_subsection.name
+                        and next_subsection.tag in incorrect_levels[subsection.tag]
+                    ):
+                        incorrectly_nested_heading_levels.append(
+                            {
+                                "subsection": next_subsection,
+                                "name": next_subsection.name,
+                                "error": "Incorrectly nested heading level. {} followed by a {}".format(
+                                    subsection.tag, next_subsection.tag
+                                ),
+                            }
+                        )
 
     return incorrectly_nested_heading_levels
 

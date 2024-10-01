@@ -142,6 +142,7 @@ style_map_manager.add_style(
 )
 
 # paragraph styles
+# TODO: <p class="MsoHeading7">, should we convert these to h7s?
 style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",
