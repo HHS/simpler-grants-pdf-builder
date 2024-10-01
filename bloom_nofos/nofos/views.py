@@ -65,6 +65,7 @@ from .nofo import (
     escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
+    find_incorrectly_nested_heading_levels,
     find_same_heading_levels_consecutive,
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -185,6 +186,12 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
+        context["formatting_errors"] = find_same_heading_levels_consecutive(self.object)
+        context["formatting_errors_2"] = find_incorrectly_nested_heading_levels(
+            self.object
+        )
+        # TODO: these aren't being used
+        print(context["broken_links"])
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 

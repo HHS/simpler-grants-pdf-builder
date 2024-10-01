@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Highlight broken links on the "nofo_edit" page
+  - Color them red, add a light red background, add a tooltip
 - Add little "copy" icon button that copies ids to the clipboard
   - For section ids
   - For subsection ids

@@ -19,6 +19,7 @@ from .templatetags.utils import (
     is_floating_callout_box,
     is_footnote_ref,
 )
+from .templatetags.add_classes_to_links import add_classes_to_broken_links
 
 
 class TestAddClassIfNotExists(TestCase):
@@ -741,3 +742,42 @@ class TestIsFloatingCalloutBox(TestCase):
             order=1,
         )
         self.assertFalse(is_floating_callout_box(subsection))
+
+
+class TestAddClassesToBrokenLinks(TestCase):
+
+    def test_no_broken_links(self):
+        html = '<div><a href="http://groundhog-day.com">Link</a></div>'
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        self.assertIsNone(soup.find("a", {"class": "nofo_edit--broken-link"}))
+
+    def test_some_broken_links(self):
+        html = '<div><a href="http://groundhog-day.com">Example</a><a href="#Appendix_A:__List_of_Eligible_Applicants">Broken Appendix Link</a></div>'
+        broken_links = [{"link_href": "#Appendix_A:__List_of_Eligible_Applicants"}]
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        self.assertIn(
+            "nofo_edit--broken-link",
+            soup.find("a", {"href": "#Appendix_A:__List_of_Eligible_Applicants"}).get(
+                "class"
+            ),
+        )
+
+    def test_all_links_broken(self):
+        html = '<div><a href="#Appendix_A:__List_of_Eligible_Applicants">Broken Appendix Link</a><a href="#_Purpose">Broken Purpose Link</a></div>'
+        broken_links = [
+            {"link_href": "#Appendix_A:__List_of_Eligible_Applicants"},
+            {"link_href": "#_Purpose"},
+        ]
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        self.assertEqual(len(soup.find_all("a", class_="nofo_edit--broken-link")), 2)
+
+    def test_no_links_in_html(self):
+        html = "<div>No links at all!</div>"
+        broken_links = [{"link_href": "#_Purpose"}]
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        self.assertIsNone(soup.find("a"))

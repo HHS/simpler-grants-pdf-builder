@@ -5,6 +5,8 @@
   --color--text-default: #1b1b1b;
   --color--usa-link: #005ea2;
   --color--usa-link-visited: #54278f;
+  --color--usa-error-message: #b50909;
+  --color--usa-error-bg: #f3e1e4;
 }
 
 html {
@@ -434,6 +436,11 @@ details > summary > span:hover {
 .section_edit .nofo-edit-table--subsection--body,
 .nofo_edit .nofo-edit-table--subsection--body {
   word-break: break-word;
+}
+
+.nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link {
+  color: var(--color--usa-error-message);
+  background-color: var(--color--usa-error-bg);
 }
 
 .section_edit .nofo-edit-table--subsection--body pre,
