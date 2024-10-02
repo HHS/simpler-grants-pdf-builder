@@ -186,12 +186,10 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
-        context["formatting_errors"] = find_same_heading_levels_consecutive(self.object)
+        context["heading_errors"] = find_same_heading_levels_consecutive(self.object)
         context["formatting_errors_2"] = find_incorrectly_nested_heading_levels(
             self.object
         )
-        # TODO: these aren't being used
-        print(context["broken_links"])
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
