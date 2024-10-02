@@ -24,3 +24,9 @@ def add_classes_to_tables(html_string):
                 _add_class_if_not_exists_to_tag(table_row, table_row_class, "tr")
 
     return mark_safe(str(soup))
+
+
+@register.filter(name="has_heading_error")
+def has_heading_error(subsection, heading_errors):
+    heading_errors_ids = [error["subsection"].html_id for error in heading_errors]
+    return subsection.html_id in heading_errors_ids

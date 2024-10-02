@@ -129,7 +129,7 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 
 {% if heading_errors|length %}
-<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--heading-errors" aria-label="Site alert">
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--heading-errors" aria-label="Alert: {{ heading_errors|length }} heading errors.">
   <div class="usa-alert">
     <div class="usa-alert__body">
       <h3 class="usa-alert__heading">Warning: review headings for accessibility</h3>
@@ -363,9 +363,9 @@ Edit “{{ nofo|nofo_name }}”
       {% if subsection.name != "Basic information" %}
         <tr>
           <th scope="row"
-            class="nofo-edit-table--subsection--name {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}"
+            class="nofo-edit-table--subsection--name{% if subsection|has_heading_error:heading_errors %} nofo_edit--heading-error{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}"
             id="{{ subsection.html_id }}">
-            <span class="floating">
+            <span class="floating{% if subsection|has_heading_error:heading_errors %} usa-tooltip{% endif %}" {% if subsection|has_heading_error:heading_errors %}data-position="top" title="Heading error"{% endif %}>
               {% if subsection.name %}
                 {{ subsection.name }}
               {% else %}
