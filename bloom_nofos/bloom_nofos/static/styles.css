@@ -6,7 +6,8 @@
   --color--usa-link: #005ea2;
   --color--usa-link-visited: #54278f;
   --color--usa-error-message: #b50909;
-  --color--usa-error-bg: #f3e1e4;
+  --color--usa-error-bg-light: #f3e1e4;
+  --color--usa-error-bg-dark: #8b0a03;
 }
 
 html {
@@ -296,7 +297,16 @@ details > summary > span:hover {
   margin-bottom: 0;
 }
 
-.nofo_edit .usa-site-alert--broken-links a {
+.nofo_edit .usa-site-alert--heading-errors .usa-alert {
+  border-left-color: var(--color--usa-error-bg-dark);
+}
+
+.nofo_edit .usa-site-alert--heading-errors .usa-alert__body {
+  background-color: var(--color--usa-error-bg-dark);
+}
+
+.nofo_edit .usa-site-alert--broken-links a,
+.nofo_edit .usa-site-alert--heading-errors a {
   color: var(--color--white);
 }
 
@@ -445,7 +455,7 @@ details > summary > span:hover {
 
 .nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link {
   color: var(--color--usa-error-message);
-  background-color: var(--color--usa-error-bg);
+  background-color: var(--color--usa-error-bg-light);
 }
 
 .section_edit .nofo-edit-table--subsection--body pre,

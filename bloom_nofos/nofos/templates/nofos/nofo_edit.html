@@ -101,7 +101,7 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 
 {% if broken_links|length %}
-<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Site alert">
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Alert: {{ broken_links|length }} broken links.">
   <div class="usa-alert">
     <div class="usa-alert__body">
       <h3 class="usa-alert__heading">Warning: some internal links are no bueno</h3>
@@ -118,6 +118,34 @@ Edit “{{ nofo|nofo_name }}”
             <ol class="usa-list usa-list--no-max-width">
               {% for broken_link in broken_links %}
               <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
+              {% endfor %}
+            </ol>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if heading_errors|length %}
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--heading-errors" aria-label="Site alert">
+  <div class="usa-alert">
+    <div class="usa-alert__body">
+      <h3 class="usa-alert__heading">Warning: review headings for accessibility</h3>
+      <div>
+        <details>
+          <summary>
+            {% if heading_errors|length == 1 %}
+            <span>There is 1 heading error</span>
+            {% else %}
+            <span>There are {{ heading_errors|length }} heading errors</span>
+            {% endif %}
+          </summary>
+          <div>
+            <ol class="usa-list usa-list--no-max-width">
+              {% for heading_error in heading_errors %}
+              <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.name }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
               {% endfor %}
             </ol>
           </div>

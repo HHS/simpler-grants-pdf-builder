@@ -565,7 +565,9 @@ def find_same_heading_levels_consecutive(nofo):
                             {
                                 "subsection": next_subsection,
                                 "name": next_subsection.name,
-                                "error": "Repeated heading level",
+                                "error": "Repeated heading level: two {} headings in a row.".format(
+                                    next_subsection.tag
+                                ),
                             }
                         )
 
@@ -597,7 +599,7 @@ def find_incorrectly_nested_heading_levels(nofo):
                     {
                         "subsection": first_subsection,
                         "name": first_subsection.name,
-                        "error": "Incorrectly nested heading level. h2 ({}) followed by an {}".format(
+                        "error": "Incorrectly nested heading level: h2 ({}) followed by an {}.".format(
                             section.name, first_subsection.tag
                         ),
                     }
@@ -619,7 +621,7 @@ def find_incorrectly_nested_heading_levels(nofo):
                             {
                                 "subsection": next_subsection,
                                 "name": next_subsection.name,
-                                "error": "Incorrectly nested heading level. {} followed by an {}".format(
+                                "error": "Incorrectly nested heading level: {} followed by an {}.".format(
                                     subsection.tag, next_subsection.tag
                                 ),
                             }

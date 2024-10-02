@@ -1717,7 +1717,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
                 {
                     "subsection": first_section.subsections.all().order_by("order")[1],
                     "name": "Subsection 2",
-                    "error": "Repeated heading level",
+                    "error": "Repeated heading level: two h3 headings in a row.",
                 }
             ],
         )
@@ -1733,13 +1733,13 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
                     {
                         "name": "Subsection 1",
                         "order": 1,
-                        "tag": "h3",
+                        "tag": "h4",
                         "body": [""],
                     },
                     {
                         "name": "Subsection 2",
                         "order": 2,
-                        "tag": "h3",
+                        "tag": "h4",
                         "body": ["<p>Hello, Subsection 2</p>"],
                     },
                 ],
@@ -1756,7 +1756,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
                 {
                     "subsection": first_section.subsections.all().order_by("order")[1],
                     "name": "Subsection 2",
-                    "error": "Repeated heading level",
+                    "error": "Repeated heading level: two h4 headings in a row.",
                 }
             ],
         )
@@ -1961,7 +1961,7 @@ class TestFindIncorrectlyNestedHeadingLevels(TestCase):
                                 "order"
                             )[3],
                             "name": "Subsection 4",
-                            "error": "Incorrectly nested heading level. {} followed by an {}".format(
+                            "error": "Incorrectly nested heading level: {} followed by an {}.".format(
                                 parent_tag, child_tag
                             ),
                         }
@@ -1997,7 +1997,7 @@ class TestFindIncorrectlyNestedHeadingLevels(TestCase):
                 {
                     "subsection": first_section.subsections.all().order_by("order")[0],
                     "name": "Subsection 1",
-                    "error": "Incorrectly nested heading level. h2 (Section 1) followed by an h4",
+                    "error": "Incorrectly nested heading level: h2 (Section 1) followed by an h4.",
                 }
             ],
         )
@@ -2047,7 +2047,7 @@ class TestFindIncorrectlyNestedHeadingLevels(TestCase):
                 {
                     "subsection": first_section.subsections.all().order_by("order")[2],
                     "name": "Subsection 3",
-                    "error": "Incorrectly nested heading level. h3 followed by an h5",
+                    "error": "Incorrectly nested heading level: h3 followed by an h5.",
                 }
             ],
         )
