@@ -453,9 +453,18 @@ details > summary > span:hover {
   word-break: break-word;
 }
 
-.nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link {
+.nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link,
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating {
   color: var(--color--usa-error-message);
   background-color: var(--color--usa-error-bg-light);
+}
+
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating {
+  cursor: default;
 }
 
 .section_edit .nofo-edit-table--subsection--body pre,
