@@ -30,6 +30,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Fix outline for back link on nofo_edit page
 - Reduce left-hand spacing for bullets in callout boxes
 - Make sure large tables have full-width table styles applied
 

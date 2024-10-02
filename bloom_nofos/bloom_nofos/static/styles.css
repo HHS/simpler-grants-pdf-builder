@@ -111,6 +111,11 @@ details > summary > span:hover {
   text-decoration: underline;
 }
 
+.back-link {
+  position: relative;
+  z-index: 25;
+}
+
 .back-link a:not(:hover) {
   text-decoration: none;
 }
