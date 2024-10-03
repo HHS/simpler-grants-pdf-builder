@@ -310,7 +310,8 @@ details > summary > span:hover {
   color: var(--color--white);
 }
 
-.nofo_edit .usa-site-alert--broken-links li {
+.nofo_edit .usa-site-alert--broken-links li,
+.nofo_edit .usa-site-alert--heading-errors li {
   margin-bottom: 0.75em;
 }
 
