@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.27.0] - 2023-10-03
+
+### Added
+
 - Highlight improperly nested headings on the "nofo_edit" page
   - Test for:
     - Consecutive headings at the same level, no text between
