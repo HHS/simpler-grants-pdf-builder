@@ -30,3 +30,13 @@ def add_classes_to_tables(html_string):
 def has_heading_error(subsection, heading_errors):
     heading_errors_ids = [error["subsection"].html_id for error in heading_errors]
     return subsection.html_id in heading_errors_ids
+
+
+@register.filter(name="get_heading_error")
+def get_heading_error(subsection, heading_errors):
+    heading_error = next(
+        he for he in heading_errors if he["subsection"].html_id == subsection.html_id
+    )
+    if heading_error:
+        return heading_error["error"]
+    return ""

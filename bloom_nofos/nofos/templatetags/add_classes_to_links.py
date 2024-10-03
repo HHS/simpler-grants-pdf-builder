@@ -31,7 +31,7 @@ def add_classes_to_broken_links(html_string, broken_links):
                 "nofo_edit--broken-link",
                 "usa-tooltip",
             ]
-            link["data-position"] = "top"
+            link["data-position"] = "bottom"
             link["title"] = "Broken link"
 
     return mark_safe(str(soup))
