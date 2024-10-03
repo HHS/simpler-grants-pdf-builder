@@ -40,6 +40,10 @@ a:visited {
   color: var(--color--usa-link-visited);
 }
 
+footer .usa-footer__primary-link:visited {
+  color: var(--color--text-default);
+}
+
 /* Make sure header is evenly spaced */
 @media (min-width: 64em) {
   .usa-logo {
