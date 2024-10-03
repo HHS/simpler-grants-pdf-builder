@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Link in the footer to CHANGELOG so latest changes are visible
+
 ### Changed
 
 ### Fixed
