@@ -31,7 +31,7 @@ from .nofo import (
     find_broken_links,
     find_external_links,
     find_incorrectly_nested_heading_levels,
-    find_same_heading_levels_consecutive,
+    find_same_or_higher_heading_levels_consecutive,
     get_sections_from_soup,
     get_subsections_from_sections,
     is_callout_box_table,
@@ -1682,8 +1682,8 @@ class TestGetAllIdAttrsForNofo(TestCase):
 ###########################################################
 
 
-class TestFindSameHeadingLevelsConsecutive(TestCase):
-    def test_find_same_heading_levels_consecutive_h3s(self):
+class TestFindSameOrHigherHeadingLevelsConsecutive(TestCase):
+    def test_find_same_or_higher_heading_levels_consecutive_h3s(self):
         nofo_obj = [
             {
                 "name": "Section 1",
@@ -1710,7 +1710,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         nofo = create_nofo("Test Nofo", nofo_obj)
         first_section = nofo.sections.first()
 
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(
             error_messages,
             [
@@ -1722,7 +1722,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
             ],
         )
 
-    def test_find_same_heading_levels_consecutive_h3s_trailing_body(self):
+    def test_find_same_or_higher_heading_levels_consecutive_h3s_trailing_body(self):
         nofo_obj = [
             {
                 "name": "Section 1",
@@ -1749,7 +1749,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         nofo = create_nofo("Test Nofo", nofo_obj)
         first_section = nofo.sections.first()
 
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(
             error_messages,
             [
@@ -1760,6 +1760,88 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
                 }
             ],
         )
+
+    def test_find_lower_heading_level_followed_by_higher_heading_level(self):
+        # error with subsection 3 since subsection 2 has no body and immediately is followed by a higher heading level
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h4",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 3",
+                        "order": 3,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+        first_section = nofo.sections.first()
+
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
+        self.assertEqual(
+            error_messages,
+            [
+                {
+                    "subsection": first_section.subsections.all().order_by("order")[2],
+                    "name": "Subsection 3",
+                    "error": "Incorrectly nested heading level: h4 immediately followed by a larger h3.",
+                }
+            ],
+        )
+
+    def test_find_lower_heading_level_with_body_followed_by_higher_heading_level(self):
+        # since subsection 2 has a body, there is no problem.
+        nofo_obj = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                    {
+                        "name": "Subsection 2",
+                        "order": 2,
+                        "tag": "h4",
+                        "body": ["<p>Hello</p>"],
+                    },
+                    {
+                        "name": "Subsection 3",
+                        "order": 3,
+                        "tag": "h3",
+                        "body": [""],
+                    },
+                ],
+            }
+        ]
+
+        nofo = create_nofo("Test Nofo", nofo_obj)
+
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
+        self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_with_body(self):
         nofo_obj = [
@@ -1786,7 +1868,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_subsections_in_sections(self):
@@ -1822,7 +1904,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_empty_sections(self):
@@ -1844,7 +1926,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_section_and_subsection(self):
@@ -1867,7 +1949,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(error_messages, [])
 
     def test_find_same_heading_levels_with_incorrectly_nested_levels(self):
@@ -1895,7 +1977,7 @@ class TestFindSameHeadingLevelsConsecutive(TestCase):
         ]
 
         nofo = create_nofo("Test Nofo", nofo_obj)
-        error_messages = find_same_heading_levels_consecutive(nofo)
+        error_messages = find_same_or_higher_heading_levels_consecutive(nofo)
         self.assertEqual(error_messages, [])
 
 
