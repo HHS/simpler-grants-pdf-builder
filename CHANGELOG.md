@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Highlight improperly nested headings on the "nofo_edit" page
   - Test for:
     - Consecutive headings at the same level, no text between
+    - Consecutive headings where second is larger, no text between
     - Subsequent headings that skip levels, with text between
   - Color them red, add a light red background, add a tooltip with error message
 - Highlight broken links on the "nofo_edit" page

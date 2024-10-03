@@ -544,24 +544,24 @@ def _get_next_subsection(section, subsection, with_tag=False):
         return next_subsection
 
 
-def find_same_heading_levels_consecutive(nofo):
+def find_same_or_higher_heading_levels_consecutive(nofo):
     """
     This function will identify any headings that immediately follow each other (no subsection.body) and are the same level
     """
-    same_heading_levels = []
+    same_or_higher_heading_levels = []
     for section in nofo.sections.all().order_by("order"):
         for subsection in section.subsections.all().order_by("order"):
             # check if no body
             if not subsection.body.strip():
                 next_subsection = _get_next_subsection(section, subsection)
 
-                if next_subsection:
-                    if (
-                        subsection.name
-                        and next_subsection.name
-                        and subsection.tag == next_subsection.tag
-                    ):
-                        same_heading_levels.append(
+                if next_subsection and subsection.name and next_subsection.name:
+                    # Checking tag levels
+                    current_level = int(subsection.tag[1])  # Convert 'h3' to 3
+                    next_level = int(next_subsection.tag[1])  # Convert 'h4' to 4
+
+                    if current_level == next_level:
+                        same_or_higher_heading_levels.append(
                             {
                                 "subsection": next_subsection,
                                 "name": next_subsection.name,
@@ -571,7 +571,18 @@ def find_same_heading_levels_consecutive(nofo):
                             }
                         )
 
-    return same_heading_levels
+                    elif current_level > next_level:
+                        same_or_higher_heading_levels.append(
+                            {
+                                "subsection": next_subsection,
+                                "name": next_subsection.name,
+                                "error": "Incorrectly nested heading level: {} immediately followed by a larger {}.".format(
+                                    subsection.tag, next_subsection.tag
+                                ),
+                            }
+                        )
+
+    return same_or_higher_heading_levels
 
 
 def find_incorrectly_nested_heading_levels(nofo):
