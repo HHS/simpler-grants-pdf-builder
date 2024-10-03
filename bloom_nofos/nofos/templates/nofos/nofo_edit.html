@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs %}
+{% load static martortags nofo_name get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs split_char_and_remove %}
 
 {% block title %}
 Edit “{{ nofo|nofo_name }}”
@@ -104,7 +104,7 @@ Edit “{{ nofo|nofo_name }}”
 <section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Alert: {{ broken_links|length }} broken links.">
   <div class="usa-alert">
     <div class="usa-alert__body">
-      <h3 class="usa-alert__heading">Warning: some internal links are no bueno</h3>
+      <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
       <div>
         <details>
           <summary>
@@ -115,6 +115,7 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
           </summary>
           <div>
+            <p>We recommend fixing these errors in the NOFO Word doc and <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">re-importing</a>.</p>
             <ol class="usa-list usa-list--no-max-width">
               {% for broken_link in broken_links %}
               <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
@@ -143,6 +144,7 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
           </summary>
           <div>
+            <p>We recommend fixing these errors in the NOFO Word doc and <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">re-importing</a>.</p>
             <ol class="usa-list usa-list--no-max-width">
               {% for heading_error in heading_errors %}
               <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.name }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
@@ -365,9 +367,11 @@ Edit “{{ nofo|nofo_name }}”
           <th scope="row"
             class="nofo-edit-table--subsection--name{% if subsection|has_heading_error:heading_errors %} nofo_edit--heading-error{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}"
             id="{{ subsection.html_id }}">
-            <span class="floating{% if subsection|has_heading_error:heading_errors %} usa-tooltip{% endif %}" {% if subsection|has_heading_error:heading_errors %}data-position="top" title="Heading error"{% endif %}>
+            <span class="floating">
               {% if subsection.name %}
-                {{ subsection.name }}
+                <span {% if subsection|has_heading_error:heading_errors %}class="usa-tooltip" data-position="bottom" title="{{ subsection|get_heading_error:heading_errors|split_char_and_remove:":" }}. Fix in Word and reimport."{% endif %}>
+                  {{ subsection.name }}
+                </span>
               {% else %}
                 <span class="text-base">(#{{ subsection.order}})</span>
               {% endif %}

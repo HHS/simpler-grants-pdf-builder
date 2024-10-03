@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Highlight improperly nested headings on the "nofo_edit" page
+  - Color them red, add a light red background, add a tooltip with error message
 - Highlight broken links on the "nofo_edit" page
   - Color them red, add a light red background, add a tooltip
 - Add little "copy" icon button that copies ids to the clipboard
@@ -20,6 +22,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Added "re-import to fix" instruction to alert boxes
+- No bueno was not bueno
 - Add default width classes to markdown tables with 3,4,5 cols
 - Updated column headers on NOFO index table
 - "Top" link on nofo_edit page is always visible
