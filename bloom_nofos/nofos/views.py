@@ -792,9 +792,7 @@ class NofoSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 
 class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
     model = Nofo
-    template_name = (
-        "nofos/nofo_check_links.html"  # Replace with your actual template name
-    )
+    template_name = "nofos/nofo_check_links.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
