@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static martortags nofo_name get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs split_char_and_remove %}
+{% load static martortags nofo_name subsection_name_or_order get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs split_char_and_remove %}
 
 {% block title %}
 Edit “{{ nofo|nofo_name }}”
@@ -118,7 +118,7 @@ Edit “{{ nofo|nofo_name }}”
             <p>We recommend fixing these errors in the NOFO Word doc and <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">re-importing</a>.</p>
             <ol class="usa-list usa-list--no-max-width">
               {% for broken_link in broken_links %}
-              <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection.name }})</li>
+              <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
               {% endfor %}
             </ol>
           </div>

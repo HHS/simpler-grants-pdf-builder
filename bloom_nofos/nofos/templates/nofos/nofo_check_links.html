@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name get_value_or_none add_classes_to_tables %}
+{% load martortags nofo_name subsection_name_or_order get_value_or_none add_classes_to_tables %}
 
 {% block title %}
   All links for “{{ nofo|nofo_name }}”
@@ -96,7 +96,7 @@
           <td>{{ forloop.counter }}</td>
           <td style="width: 45%; word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
           <td>
-            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{% if link.subsection.name %}{{ link.subsection.name }}{% else %}(#{{ link.subsection.order }}){% endif %}</a>
+            {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{{ link.subsection|subsection_name_or_order }}</a>
           </td>
           <td>{{ link.status }} <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% endif %}</span></td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>
