@@ -493,8 +493,15 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
 def _update_link_statuses(all_links):
     def check_link_status(link):
+        # Use Firefox user agent
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
+        }
+
         try:
-            response = requests.head(link["url"], timeout=5, allow_redirects=True)
+            response = requests.head(
+                link["url"], timeout=5, allow_redirects=True, headers=headers
+            )
             link["status"] = response.status_code
             if len(response.history):
                 link["redirect_url"] = response.url
