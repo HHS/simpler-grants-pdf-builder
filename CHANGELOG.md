@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Fixed: Wrap all text that says "de minimis" with `<em>` tags
+
 ## [1.27.0] - 2023-10-03
 
 ### Added

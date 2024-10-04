@@ -1374,16 +1374,22 @@ def add_strongs_to_soup(soup):
 
 
 def add_em_to_de_minimis(soup):
-    """
-    This function mutates the soup!
+    def _replace_de_minimis(match):
+        # Check if the matched string is already inside an <em> tag
+        if match.group(0).startswith("<em>") and match.group(0).endswith("</em>"):
+            return match.group(0)  # return the match unchanged
+        return f"<em>{match.group(0)}</em>"  # Wrap in <em> tags if not already wrapped
 
-    Transforms all <span> elements containing the exact text 'de minimis' (case insensitive)
-    into <em> elements within the provided BeautifulSoup object.
-    """
+    # Correct the regex to prevent changing already wrapped instances
+    new_html = re.sub(
+        r"(?<!<em>)de minimis(?!<\/em>)",
+        _replace_de_minimis,
+        str(soup),
+        flags=re.IGNORECASE,
+    )
 
-    spans = soup.findAll("span", string=re.compile("^de minimis$", re.I))
-    for span in spans:
-        span.name = "em"
+    # Return soup object
+    return BeautifulSoup(new_html, "html.parser")
 
 
 def clean_heading_tags(soup):

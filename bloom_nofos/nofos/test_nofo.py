@@ -3896,41 +3896,44 @@ class TestAddStrongsToSoup(TestCase):
 class TestAddEmToDeMinimis(TestCase):
     def test_transforms_de_minimis_spans_to_em(self):
         html = "<p>Some text <span>de minimis</span> rate and <span>De Minimis</span> threshold.</p>"
-        expected_html = "<p>Some text <em>de minimis</em> rate and <em>De Minimis</em> threshold.</p>"
+        expected_html = "<p>Some text <span><em>de minimis</em></span> rate and <span><em>De Minimis</em></span> threshold.</p>"
         soup = BeautifulSoup(html, "html.parser")
-        add_em_to_de_minimis(soup)
+        soup = add_em_to_de_minimis(soup)
         self.assertEqual(str(soup), expected_html)
 
     def test_ignores_non_matching_spans(self):
         html = "<p><span>not de minimis</span> example <span>DE MINIMUS</span>.</p>"
-        expected_html = (
-            "<p><span>not de minimis</span> example <span>DE MINIMUS</span>.</p>"
-        )
+        expected_html = "<p><span>not <em>de minimis</em></span> example <span>DE MINIMUS</span>.</p>"
         soup = BeautifulSoup(html, "html.parser")
-        add_em_to_de_minimis(soup)
+        soup = add_em_to_de_minimis(soup)
         self.assertEqual(str(soup), expected_html)
 
     def test_handles_empty_spans(self):
         html = "<p><span></span> <span>De Minimis</span></p>"
-        expected_html = "<p><span></span> <em>De Minimis</em></p>"
+        expected_html = "<p><span></span> <span><em>De Minimis</em></span></p>"
         soup = BeautifulSoup(html, "html.parser")
-        add_em_to_de_minimis(soup)
+        soup = add_em_to_de_minimis(soup)
         self.assertEqual(str(soup), expected_html)
 
     def test_case_insensitive_matching(self):
         html = "<p><span>de minimis</span> <span>De Minimis</span> <span>dE mInImIs</span></p>"
-        expected_html = (
-            "<p><em>de minimis</em> <em>De Minimis</em> <em>dE mInImIs</em></p>"
-        )
+        expected_html = "<p><span><em>de minimis</em></span> <span><em>De Minimis</em></span> <span><em>dE mInImIs</em></span></p>"
         soup = BeautifulSoup(html, "html.parser")
-        add_em_to_de_minimis(soup)
+        soup = add_em_to_de_minimis(soup)
         self.assertEqual(str(soup), expected_html)
 
-    def test_classnames_are_prereserved(self):
+    def test_classnames_are_preserved(self):
         html = '<p><strong><span class="c7">Method 2—</span></strong><strong><span class="c7 c67">De minimis</span></strong><strong><span class="c7"> rate.</span></strong><span> Per </span><a class="c6" href="https://www.ecfr.gov/current/title-45/part-75#p-75.414(f)">45 CFR 75.414(f)</a><span>, if you have never received a negotiated indirect cost rate, you may elect to charge a </span><span class="c67">de minimis</span><span> rate. If you are awaiting approval of an indirect cost proposal, you may also use the </span><span class="c67">de minimis</span><span class="c0"> rate. If you choose this method, costs included in the indirect cost pool must not be charged as direct costs. </span>I am <em>an emphasized element</em></p>'
-        expected_html = '<p><strong><span class="c7">Method 2—</span></strong><strong><em class="c7 c67">De minimis</em></strong><strong><span class="c7"> rate.</span></strong><span> Per </span><a class="c6" href="https://www.ecfr.gov/current/title-45/part-75#p-75.414(f)">45 CFR 75.414(f)</a><span>, if you have never received a negotiated indirect cost rate, you may elect to charge a </span><em class="c67">de minimis</em><span> rate. If you are awaiting approval of an indirect cost proposal, you may also use the </span><em class="c67">de minimis</em><span class="c0"> rate. If you choose this method, costs included in the indirect cost pool must not be charged as direct costs. </span>I am <em>an emphasized element</em></p>'
+        expected_html = '<p><strong><span class="c7">Method 2—</span></strong><strong><span class="c7 c67"><em>De minimis</em></span></strong><strong><span class="c7"> rate.</span></strong><span> Per </span><a class="c6" href="https://www.ecfr.gov/current/title-45/part-75#p-75.414(f)">45 CFR 75.414(f)</a><span>, if you have never received a negotiated indirect cost rate, you may elect to charge a </span><span class="c67"><em>de minimis</em></span><span> rate. If you are awaiting approval of an indirect cost proposal, you may also use the </span><span class="c67"><em>de minimis</em></span><span class="c0"> rate. If you choose this method, costs included in the indirect cost pool must not be charged as direct costs. </span>I am <em>an emphasized element</em></p>'
         soup = BeautifulSoup(html, "html.parser")
-        add_em_to_de_minimis(soup)
+        soup = add_em_to_de_minimis(soup)
+        self.assertEqual(str(soup), expected_html)
+
+    def test_doesnt_double_wrap_em_tags(self):
+        html = '<p><strong>Method 2 — <em>De minimis</em> rate</strong>. Per <a href="https://www.ecfr.gov/current/title-45/part-75#p-75.414(f)">45 CFR 75.414(f)</a>, if you have never received a negotiated indirect cost rate, you may elect to charge a de minimis rate. If you are awaiting approval of an indirect cost proposal, you may also use the <strong>de minimis</strong> rate. If you choose this method, costs included in the indirect cost pool must not be charged as direct costs.</p>'
+        expected_html = '<p><strong>Method 2 — <em>De minimis</em> rate</strong>. Per <a href="https://www.ecfr.gov/current/title-45/part-75#p-75.414(f)">45 CFR 75.414(f)</a>, if you have never received a negotiated indirect cost rate, you may elect to charge a <em>de minimis</em> rate. If you are awaiting approval of an indirect cost proposal, you may also use the <strong><em>de minimis</em></strong> rate. If you choose this method, costs included in the indirect cost pool must not be charged as direct costs.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        soup = add_em_to_de_minimis(soup)
         self.assertEqual(str(soup), expected_html)
 
 

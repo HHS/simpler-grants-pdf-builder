@@ -324,8 +324,8 @@ def nofo_import(request, pk=None):
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup, top_heading_level)
-        add_em_to_de_minimis(soup)
         unwrap_nested_lists(soup)
+        soup = add_em_to_de_minimis(soup)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup, top_heading_level)
