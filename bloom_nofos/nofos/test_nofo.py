@@ -1394,6 +1394,33 @@ class AddHeadingsTests(TestCase):
             }
         ]
 
+        self.sections_with_case_insensitive_links = [
+            {
+                "name": "Program description",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Contacts and Support",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "_Contacts_and_support",
+                        "body": [
+                            '<p>Subsection 1 body to <a href="#_Contacts_and_Support">Contacts and Support</a>.</p>'
+                        ],
+                    },
+                    {
+                        "order": 2,
+                        "html_id": "",
+                        "body": [
+                            '<p>Subsection 2 body to <a href="#_CONTACTS_AND_SUPPORT">Contacts and Support</a>.</p>'
+                        ],
+                    },
+                ],
+            }
+        ]
+
     def test_add_headings_success(self):
         nofo = create_nofo("Test Nofo", self.sections)
         self.assertEqual(nofo.title, "Test Nofo")
@@ -1551,6 +1578,34 @@ class AddHeadingsTests(TestCase):
         self.assertEqual(
             subsection_2.body,
             "Subsection 2 body to [Budget & Budget](#1--program-description--budget-budget).\n\n",
+        )
+
+    def test_add_headings_with_case_insensitive_links(self):
+        nofo = create_nofo("Test Nofo 4", self.sections_with_case_insensitive_links)
+        self.assertEqual(nofo.title, "Test Nofo 4")
+
+        ################
+        # ADD HEADINGS
+        ################
+        add_headings_to_nofo(nofo)
+        section = nofo.sections.first()
+        subsection_1 = nofo.sections.first().subsections.all()[0]
+        subsection_2 = nofo.sections.first().subsections.all()[1]
+
+        # check section heading has new html_id
+        self.assertEqual(section.html_id, "program-description")
+
+        # check new html_ids
+        self.assertEqual(
+            subsection_1.html_id, "1--program-description--contacts-and-support"
+        )
+        self.assertEqual(
+            subsection_1.body,
+            "Subsection 1 body to [Contacts and Support](#1--program-description--contacts-and-support).\n\n",
+        )
+        self.assertEqual(
+            subsection_2.body,
+            "Subsection 2 body to [Contacts and Support](#1--program-description--contacts-and-support).\n\n",
         )
 
 

@@ -192,12 +192,21 @@ def add_headings_to_nofo(nofo):
     for section in nofo.sections.all():
         for subsection in section.subsections.all():
             for ids in new_ids:
-                subsection.body = subsection.body.replace(
-                    "(#{})".format(ids["old_id"]), "(#{})".format(ids["new_id"])
+                href_pattern = re.compile(
+                    r'href="#{}"'.format(re.escape(ids["old_id"])), re.IGNORECASE
                 )
-                subsection.body = subsection.body.replace(
-                    'href="#{}"'.format(ids["old_id"]),
-                    'href="#{}"'.format(ids["new_id"]),
+                # Case-insensitive match to replace old_id value with new_id in hrefs
+                subsection.body = href_pattern.sub(
+                    'href="#{}"'.format(ids["new_id"]), subsection.body
+                )
+
+                # Pattern to match old_id in hash links (like anchor links) case insensitively
+                hash_pattern = re.compile(
+                    r"\(#{}\)".format(re.escape(ids["old_id"])), re.IGNORECASE
+                )
+                # Replace old_id with new_id in hash links
+                subsection.body = hash_pattern.sub(
+                    "(#{})".format(ids["new_id"]), subsection.body
                 )
 
             subsection.save()
