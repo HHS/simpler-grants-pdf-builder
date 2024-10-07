@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from django.test import TestCase
 
 from .models import Nofo, Section, Subsection
+from .templatetags.add_classes_to_links import add_classes_to_broken_links
 from .templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
@@ -19,7 +20,6 @@ from .templatetags.utils import (
     is_floating_callout_box,
     is_footnote_ref,
 )
-from .templatetags.add_classes_to_links import add_classes_to_broken_links
 
 
 class TestAddClassIfNotExists(TestCase):

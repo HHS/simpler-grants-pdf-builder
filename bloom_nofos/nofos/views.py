@@ -10,6 +10,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F
@@ -24,6 +26,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from easyaudit.models import CRUDEvent
 
 from bloom_nofos.utils import cast_to_boolean
 
@@ -594,6 +597,20 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             response = HttpResponse(pdf_file, content_type="application/pdf")
             response["Content-Disposition"] = '{}; filename="{}"'.format(
                 mode, nofo_filename
+            )
+
+            # Audit event for a printed NOFO
+            now = timezone.now()
+            CRUDEvent.objects.create(
+                event_type=CRUDEvent.UPDATE,
+                object_id=nofo.pk,
+                content_type=ContentType.objects.get_for_model(nofo),
+                object_repr=str(nofo),
+                object_json_repr=serializers.serialize("json", [nofo]),
+                changed_fields="PRINT: NOFO (ID #{}) at {}".format(nofo.id, now),
+                user=request.user if request.user else None,
+                user_pk_as_string=str(request.user.pk) if request.user else "",
+                datetime=now,
             )
 
             return response
