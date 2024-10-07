@@ -8,7 +8,7 @@
   --color--med-grey: #5c5c5c;
   --color--dark-blue: #00345e;
   --color--med-blue: #336a90;
-  --color--vibrant-blue: #005eaa;
+  --color--cdc-blue: #0057b7;
   --color--hhs-blue: #005ea2;
   --color--light-blue: #bdd9ed;
   --color--pale-blue: #e8f0f3;
@@ -40,7 +40,7 @@
 }
 
 .bg-group--cdc {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 }
 
 .bg-group--cms {

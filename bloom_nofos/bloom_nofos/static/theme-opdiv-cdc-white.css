@@ -13,11 +13,11 @@
 .nofo--cover-page--header--intro,
 .nofo--cover-page--title h1,
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .nofo--cover-page--header--logo svg .cls-6 {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Cover page: medium image */
@@ -28,14 +28,14 @@
 }
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 /* Cover page: hero image */
 /* Note that there is no "white" version of the hero cover page */
 
 .nofo--cover-page--hero .nofo--cover-page--header {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-6 {
@@ -58,12 +58,12 @@
 /* Table of contents */
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--white);
-  fill: var(--color--vibrant-blue);
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--icons--border
@@ -72,14 +72,14 @@
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Before you begin */
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--vibrant-blue);
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--icons--border
@@ -87,11 +87,11 @@
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 /* Section title page */
@@ -107,11 +107,11 @@
 }
 
 .section--title-page--header-nav li a[aria-current] {
-  border-top: 4px solid var(--color--vibrant-blue);
+  border-top: 4px solid var(--color--cdc-blue);
 }
 
 .section--title-page--name {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .section--title-page--toc,
@@ -121,17 +121,17 @@
 
 .nofo--icons--border .section--title-page--icon svg {
   color: var(--color--white);
-  fill: var(--color--vibrant-blue);
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--icons--border .section--title-page--icon svg circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Section contents */
 
 .nofo--tagline {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .callout-box {
@@ -150,7 +150,7 @@
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
   border-top: 2px solid var(--color--light-grey);
   border-bottom: 2px solid var(--color--light-grey);
   border-left: 2px solid var(--color--light-grey);

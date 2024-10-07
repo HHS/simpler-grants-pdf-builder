@@ -11,11 +11,11 @@
 }
 
 @page cover {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 }
 
 @page title {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 
   @bottom-left {
     border-top: 1px solid var(--color--white);
@@ -38,7 +38,7 @@ h1 {
 
 .nofo--cover-page--header,
 .nofo--cover-page--title {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 }
 
 .nofo--cover-page--header--logo--subheading,
@@ -69,11 +69,11 @@ h1 {
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--header--logo--subheading,
 .portrait .nofo--cover-page--medium .nofo--cover-page--header--intro {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .portrait .nofo--cover-page--footer {
-  background: var(--color--vibrant-blue);
+  background: var(--color--cdc-blue);
 }
 
 /* Cover page: text */
@@ -85,11 +85,11 @@ h1 {
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .nofo--cover-page--medium .nofo--cover-page--header--logo svg .cls-6 {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Cover page: hero image */
@@ -101,16 +101,16 @@ h1 {
 /* Table of contents */
 
 .toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
-  background: var(--color--vibrant-blue);
+  background: var(--color--cdc-blue);
 }
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--white);
-  fill: var(--color--vibrant-blue);
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--icons--border
@@ -119,13 +119,13 @@ h1 {
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
   fill: var(--color--white);
 }
 
@@ -134,12 +134,12 @@ h1 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--vibrant-blue);
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--icons--border
@@ -147,7 +147,7 @@ h1 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--vibrant-blue);
+  stroke: var(--color--cdc-blue);
 }
 
 /* Section title page */
@@ -158,7 +158,7 @@ h1 {
 }
 
 .section--title-page {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
 }
 
 .section--title-page--header-nav {
@@ -166,7 +166,7 @@ h1 {
 }
 
 .nofo--icons--solid .section--title-page--icon svg {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
   fill: var(--color--white);
 }
 
@@ -177,11 +177,11 @@ h1 {
 /* Section contents */
 
 .nofo--tagline {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .callout-box {
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
   color: var(--color--white);
 }
 
@@ -204,7 +204,7 @@ h1 {
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
   border: 2px solid var(--color--white);
 }
 
@@ -214,7 +214,7 @@ table td {
 }
 
 table td a {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 /* Application checklist table */

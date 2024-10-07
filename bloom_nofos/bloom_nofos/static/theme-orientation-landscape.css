@@ -141,11 +141,11 @@ body[class^="landscape"] .grid-container {
 }
 
 .before-you-begin h2 {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 .section--before-you-begin--psuedo-header {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 /* Section title page */
@@ -176,8 +176,8 @@ body[class^="landscape"] .grid-container {
 }
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--vibrant-blue);
-  color: var(--color--vibrant-blue);
+  border-top: 4px solid var(--color--cdc-blue);
+  color: var(--color--cdc-blue);
 }
 
 .section--content table td {

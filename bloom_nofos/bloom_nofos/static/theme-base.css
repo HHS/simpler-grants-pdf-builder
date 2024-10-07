@@ -396,7 +396,7 @@ table th.header-row-empty[colspan] {
 }
 
 table td a {
-  color: var(--color--vibrant-blue);
+  color: var(--color--cdc-blue);
 }
 
 table thead th,
@@ -853,7 +853,7 @@ section.section .section--title-page::before {
   right: 0px;
   bottom: 0px;
   left: 0px;
-  background-color: var(--color--vibrant-blue);
+  background-color: var(--color--cdc-blue);
   opacity: 0;
   z-index: -1;
 }
