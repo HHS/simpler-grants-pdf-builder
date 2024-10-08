@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fixed: Wrap all text that says "de minimis" with `<em>` tags
 - Show order number of subsection with no name in alert boxes for broken links
 - Case-insensitive match when looking for hrefs to convert to new header ids
+- Preserve line breaks in table heading cells
 
 ## [1.27.0] - 2023-10-03
 

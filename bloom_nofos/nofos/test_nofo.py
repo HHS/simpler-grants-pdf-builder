@@ -176,6 +176,12 @@ class TablesAndStuffInTablesConverterTHSest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
+    def test_table_3_ths_with_paragraphs(self):
+        html = "<table><tr><th><p>TH 1.1</p><p>TH 1.2</p></th><th>TH 2</th><th>TH 3</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></th></table>"
+        expected_markdown = "| <p>TH 1.1</p><p>TH 1.2</p> {: .w-33 } | TH 2 {: .w-33 } | TH 3 {: .w-33 } |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
     def test_table_4_ths(self):
         html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th></tr><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td><td>Cell 4</td></th></table>"
         expected_markdown = "| TH 1 {: .w-25 } | TH 2 {: .w-25 } | TH 3 {: .w-25 } | TH 4 {: .w-25 } |\n| --- | --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 | Cell 4 |"
@@ -285,6 +291,30 @@ class TablesAndStuffInTablesConverterPSTest(TestCase):
     def test_regular_p(self):
         html = "<p>Regular Paragraph</p>"
         expected_markdown = "Regular Paragraph"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_regular_p_in_td(self):
+        html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content</p></td></tr></table>"
+        expected_markdown = "| Header |\n| --- |\n| Content |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_two_ps_in_th(self):
+        html = "<table><tr><th><p>Header 1</p><p>Header 2</p></th></tr><tr><td><p>Content</p></td></tr></table>"
+        expected_markdown = "| <p>Header 1</p><p>Header 2</p> |\n| --- |\n| Content |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_two_ps_in_td(self):
+        html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content 1</p><p>Content 2</p></td></tr></table>"
+        expected_markdown = "| Header |\n| --- |\n| <p>Content 1</p><p>Content 2</p> |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_two_ps_in_th_and_td(self):
+        html = "<table><tr><th><p>Header 1</p><p>Header 2</p></th></tr><tr><td><p>Content 1</p><p>Content 2</p></td></tr></table>"
+        expected_markdown = "| <p>Header 1</p><p>Header 2</p> |\n| --- |\n| <p>Content 1</p><p>Content 2</p> |"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
