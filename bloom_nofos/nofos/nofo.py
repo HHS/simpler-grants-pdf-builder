@@ -75,7 +75,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
     def convert_p(self, el, text, convert_as_inline):
         # if we are in a table cell, and that table cell contains multiple children, return the string
-        if el.parent.name == "td":
+        if el.parent.name == "td" or el.parent.name == "th":
             if len(list(el.parent.children)) > 1:
                 return str(el)
 

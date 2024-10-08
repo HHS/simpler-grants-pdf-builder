@@ -407,6 +407,17 @@ table tbody tr:first-of-type th {
   text-align: left;
 }
 
+table thead th > p,
+table tbody tr:first-of-type th > p {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+table thead th > p:last-of-type,
+table tbody tr:first-of-type th > p:last-of-type {
+  margin-bottom: 0;
+}
+
 table thead th a,
 table tbody tr:first-of-type th a {
   color: currentColor;
