@@ -35,6 +35,7 @@ from .forms import (
     NofoApplicationDeadlineForm,
     NofoCoachDesignerForm,
     NofoCoverForm,
+    NofoCoverImageForm,
     NofoGroupForm,
     NofoIconStyleForm,
     NofoMetadataForm,
@@ -171,7 +172,6 @@ class NofosDetailView(DetailView):
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
         context["nofo_cover_image"] = get_cover_image(self.object)
-        print('context["nofo_cover_image"]', context["nofo_cover_image"])
 
         return context
 
@@ -530,6 +530,16 @@ class NofoEditThemeView(BaseNofoEditView):
 class NofoEditCoverView(BaseNofoEditView):
     form_class = NofoCoverForm
     template_name = "nofos/nofo_edit_cover.html"
+
+
+class NofoEditCoverImageView(BaseNofoEditView):
+    form_class = NofoCoverImageForm
+    template_name = "nofos/nofo_edit_cover_image.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo_cover_image"] = get_cover_image(self.object)
+        return context
 
 
 class NofoEditIconStyleView(BaseNofoEditView):
