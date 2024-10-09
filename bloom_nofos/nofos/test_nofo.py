@@ -1746,8 +1746,13 @@ class NofoCoverImageTests(TestCase):
 
     def test_image_path_full_http_url(self):
         """Test cover image paths that are full URLs"""
-        nofo = Nofo(cover_image="https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg")
-        self.assertEqual(get_cover_image(nofo), "https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg")
+        nofo = Nofo(
+            cover_image="https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg"
+        )
+        self.assertEqual(
+            get_cover_image(nofo),
+            "https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg",
+        )
 
     def test_image_path_default(self):
         """Test default cover image when no image is set"""

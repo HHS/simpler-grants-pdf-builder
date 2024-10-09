@@ -1,6 +1,5 @@
 import csv
 import io
-import os
 
 import docraptor
 import mammoth
