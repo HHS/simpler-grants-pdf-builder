@@ -70,6 +70,7 @@ from .nofo import (
     find_external_links,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
+    get_cover_image,
     get_sections_from_soup,
     get_subsections_from_sections,
     join_nested_lists,
@@ -170,13 +171,8 @@ class NofosDetailView(DetailView):
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
-        # add cover image filepath to the context
-        cover_img = "img/cover-img/{}/cover.jpg".format(self.object.number.lower())
-        if not os.path.exists(os.path.join(settings.STATIC_ROOT, cover_img)):
-            # if the path doesn't exist, set a default path
-            cover_img = "img/cover.jpg"
-
-        context["nofo_cover_img"] = cover_img
+        context["nofo_cover_image"] = get_cover_image(self.object)
+        print('context["nofo_cover_image"]', context["nofo_cover_image"])
 
         return context
 
