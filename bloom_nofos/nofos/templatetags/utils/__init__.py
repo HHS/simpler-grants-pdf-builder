@@ -80,9 +80,18 @@ def add_class_to_table(table):
     """
     Adds a size class to a BeautifulSoup table based on column and row count.
 
-    Counts the columns in the first row and the number of rows:
-     - "table--small": 3 columns or less
-     - "table--large": 4 columns or more
+    First checks if the table is a "callout box" using the `is_callout_box_table_markdown` function.
+     - "table--callout-box": this table is a callout box
+
+    Secondly, checks for content of table headings:
+    - "table--large": th found with "Recommended For"
+    - "table--small": th found with "Criterion"
+
+    Finally, look at columns and word count:
+    - "table--small": fewer than 4 columns and no words
+    - "table--large": total word count exceeds 120 words
+    - "table--small" for 2 columns or less
+    - "table--large" for 3 columns or more
     """
 
     def _get_table_class(num_cols):
@@ -99,6 +108,9 @@ def add_class_to_table(table):
 
     if table.find("th", string="Recommended For"):
         return "table--large"
+
+    if table.find("th", string="Criterion"):
+        return "table--small"
 
     word_count = _get_total_word_count(table.find_all("td"))
 
