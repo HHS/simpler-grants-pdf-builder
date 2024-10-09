@@ -15,6 +15,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add default column widths for application checklist
   - Col 1: 45%, col 2: 40%, col 3: 15%
 - Add link to submit a support ticket for HRSA users
+- Add cover_image and cover_image_alt_text fields
+  - If there is a cover image, then the 'alt text' field shows up on nofo_edit page
 
 ### Changed
 

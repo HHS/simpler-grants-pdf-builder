@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static nofo_name %}
+
+{% block title %}
+  NOFO cover image alt text
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO cover image alt text" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>You can’t change the image, but you can add alternate text.</p>
+  <p>Good alt text concisely describes the image’s content, providing context and meaning for users who can’t see it.</p>
+
+  <details>
+    <summary><span>Expand to see cover image</span></summary>
+    <div class="margin-top-1 width-tablet-lg">
+      {% spaceless%}
+        {% if nofo_cover_image|slice:":4" == "img/" %}
+          <img class="border-05 radius-md" alt="{{ nofo.cover_image_alt_text }}" title="{{nofo.cover_image_alt_text}}" src="{% static nofo_cover_image %}">
+        {% else %}
+          <img class="border-05 radius-md" alt="{{ nofo.cover_image_alt_text }}" title="{{nofo.cover_image_alt_text}}" src="{{ nofo_cover_image }}">
+        {% endif %}
+      {% endspaceless %}
+    </div>
+  </details>
+
+  <form id="nofo-cover-image--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Save cover image alt text</button>
+  </form>
+{% endblock %}
