@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
@@ -8,6 +9,7 @@ import cssutils
 import markdown
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
+from django.conf import settings
 from django.db import transaction
 from markdownify import MarkdownConverter
 from slugify import slugify
@@ -933,12 +935,22 @@ def suggest_nofo_keywords(soup):
     return suggestion or ""
 
 
+def suggest_nofo_cover_image(nofo_number):
+    # add cover image filepath to the context
+    cover_img = "img/cover-img/{}.jpg".format(nofo_number.lower())
+    if os.path.exists(os.path.join(settings.STATIC_ROOT, cover_img)):
+        return cover_img
+
+    return ""
+
+
 def suggest_all_nofo_fields(nofo, soup):
     first_time_import = (
         not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
     )
 
-    nofo.number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+    nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
+    nofo.number = nofo_number
     nofo.application_deadline = suggest_nofo_application_deadline(
         soup
     )  # guess the NOFO application deadline
@@ -950,6 +962,7 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
+    nofo.cover_image = suggest_nofo_cover_image(nofo_number)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
     # reset title only if there is a title and it's not the default title, or current nofo.title is empty
