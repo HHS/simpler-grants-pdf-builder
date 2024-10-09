@@ -32,6 +32,7 @@ from .nofo import (
     find_external_links,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
+    get_cover_image,
     get_sections_from_soup,
     get_subsections_from_sections,
     is_callout_box_table,
@@ -1725,6 +1726,38 @@ class AddPageBreaksToHeadingsTests(TestCase):
             self.assertEqual(
                 section.subsections.get(order=5).html_class, "page-break-before"
             )
+
+
+class NofoCoverImageTests(TestCase):
+    def test_image_path_with_static_prefix(self):
+        """Test cover image paths that start with '/static/img/'"""
+        nofo = Nofo(cover_image="/static/img/cover1.jpg")
+        self.assertEqual(get_cover_image(nofo), "img/cover1.jpg")
+
+    def test_image_path_with_img_prefix(self):
+        """Test cover image paths that start with '/img/'"""
+        nofo = Nofo(cover_image="/img/cover2.jpg")
+        self.assertEqual(get_cover_image(nofo), "img/cover2.jpg")
+
+    def test_image_path_filename_only(self):
+        """Test cover image paths that are just filenames"""
+        nofo = Nofo(cover_image="cover3.jpg")
+        self.assertEqual(get_cover_image(nofo), "img/cover-img/cover3.jpg")
+
+    def test_image_path_full_http_url(self):
+        """Test cover image paths that are full URLs"""
+        nofo = Nofo(cover_image="https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg")
+        self.assertEqual(get_cover_image(nofo), "https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg")
+
+    def test_image_path_default(self):
+        """Test default cover image when no image is set"""
+        nofo = Nofo(cover_image="")
+        self.assertEqual(get_cover_image(nofo), "img/cover.jpg")
+
+    def test_image_path_returns_unmodified_if_none_of_conditions_met(self):
+        """Test paths that do not meet any specific condition are returned as is"""
+        nofo = Nofo(cover_image="/some/other/path/cover5.jpg")
+        self.assertEqual(get_cover_image(nofo), "/some/other/path/cover5.jpg")
 
 
 class TestGetAllIdAttrsForNofo(TestCase):

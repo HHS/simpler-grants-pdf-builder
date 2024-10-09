@@ -107,7 +107,13 @@
       </div>
     </div>
     <div class="nofo--cover-page--hero-image">
-      <img alt="" src="{% static nofo_cover_img %}">
+      {% spaceless%}
+        {% if nofo_cover_image|slice:":4" == "img/" %}
+          <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
+        {% else %}
+          <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
+        {% endif %}
+      {% endspaceless %}
     </div>
     <div class="nofo--cover-page--title">
       <div class="nofo--cover-page--title--block">
@@ -151,7 +157,13 @@
         <span>Application due {{ nofo.application_deadline }}</span>
       </div>
       <div class="nofo--cover-page--footer--image">
-        <img alt="" src="{% static nofo_cover_img %}">
+        {% spaceless%}
+          {% if nofo_cover_image|slice:":4" == "img/" %}
+            <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
+          {% else %}
+            <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
+          {% endif %}
+        {% endspaceless %}
       </div>
     </div>
   </section>

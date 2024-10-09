@@ -519,6 +519,32 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
     return sections
 
 
+def get_cover_image(nofo):
+    """
+    Returns a cover_image string based on specific conditions to ensure it is correctly formatted for web display or template rendering:
+
+    1. If the image path starts with "/static/img/", it removes the "/static/" prefix, adjusting paths set with static files in mind.
+    2. If the image path starts with "/img/", it corrects it to start with "img/".
+    3. If the image path contains no slashes, it is assumed to be a filename only, and is prefixed with "img/cover-img/" to point to a default storage location.
+    4. If the image path starts with "http", or "img/", it is returned unchanged, as these are already correct URLs or relative paths.
+    5. If the path does not meet any of the above conditions but has a value, it returns the path as is.
+
+    If no cover image is set (i.e., `nofo.cover_image` is None or empty), it defaults to "img/cover.jpg".
+    """
+    if nofo.cover_image:
+        if nofo.cover_image.startswith("/static/img/"):
+            return nofo.cover_image.replace("/static/", "")
+        if nofo.cover_image.startswith("/img/"):
+            return nofo.cover_image.replace("/img/", "img/")
+        if "/" not in nofo.cover_image:
+            return "img/cover-img/{}".format(nofo.cover_image)
+        if nofo.cover_image.startswith("http") or nofo.cover_image.startswith("img/"):
+            return nofo.cover_image
+        return nofo.cover_image
+
+    return "img/cover.jpg"
+
+
 def _update_link_statuses(all_links):
     def check_link_status(link):
         # Use Firefox user agent
