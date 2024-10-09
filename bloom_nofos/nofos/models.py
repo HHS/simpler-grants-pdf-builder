@@ -155,6 +155,22 @@ class Nofo(models.Model):
         help_text="The cover style for the NOFO.",
     )
 
+    cover_image = models.CharField(
+        "Cover image",
+        max_length=511,
+        blank=True,
+        default="",
+        help_text="Optional URL or path to the cover image.",
+    )
+
+    cover_image_alt_text = models.CharField(
+        "Cover image alt text",
+        max_length=511,
+        blank=True,
+        default="",
+        help_text="Alternative text for the cover image.",
+    )
+
     ICON_STYLE_CHOICES = [
         ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
         (
