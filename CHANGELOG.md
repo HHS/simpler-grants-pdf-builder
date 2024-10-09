@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Link in the footer to CHANGELOG so latest changes are visible
 - Manually add audit event when printing a NOFO
 - Add image for HRSA-25-67
+- Add image for HRSA-25-63
 
 ### Changed
 
