@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Use Firefox user agent for the "check links" page
 - Essential change to favicon
 - Change CDC blue to `0057b7` instead of `005eaa`
+- Tables with "Criterion" header are table--small
 
 ### Fixed
 
