@@ -117,9 +117,28 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
             return width_class
 
+        def _determine_width_class_if_application_checklist_th(el):
+            # grab the text and lowercase please
+            th_text = el.get_text(strip=True).lower()
+
+            # Applying specific rules based on the header content
+            if th_text == "component":
+                return "w-45"
+            if th_text.startswith(("how to upload", "how to submit")):
+                return "w-40"
+            if "page limit" in th_text:
+                return "w-15"
+
+            # default to w-33
+            return "w-33"
+
         th_count = len(el.parent.find_all("th"))
         # Add the class to the text if a class was determined
         width_class = _determine_width_class_from_th_siblings(th_count)
+
+        if th_count == 3:
+            width_class = _determine_width_class_if_application_checklist_th(el)
+
         if width_class:
             text = f"{text.strip()} {{: .{width_class} }}"
 

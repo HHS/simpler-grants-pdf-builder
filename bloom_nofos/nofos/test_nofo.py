@@ -201,6 +201,24 @@ class TablesAndStuffInTablesConverterTHSest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
+    def test_application_checklist_table(self):
+        html = "<table><tr><th><p><strong>Component</strong></p></th><th><p><strong>How to upload </strong></p></th><th><p><strong>Page limit </strong></p></th></tr><tr><td><p>◻ <a href='  # _Project_abstract'><strong>Project abstract</strong></a> </p></td><td><p>Use the Project Abstract Summary Form. </p></td><td><p>1 page </p></td></tr></tbody></table>"
+        expected_markdown = "| **Component** {: .w-45 } | **How to upload** {: .w-40 } | **Page limit** {: .w-15 } |\n| --- | --- | --- |\n| ◻ [**Project abstract**](  # _Project_abstract) | Use the Project Abstract Summary Form. | 1 page |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_application_checklist_table_variant(self):
+        html = "<table><tr><th><p><strong>Component</strong></p></th><th><p><strong>How to Submit in Grants.gov </strong></p></th><th><p><strong>Included in the page limit? </strong></p></th></tr><tr><td><p>◻ <a href='  # _Project_abstract'><strong>Project abstract</strong></a> </p></td><td><p>Use the Project Abstract Summary Form. </p></td><td><p>1 page </p></td></tr></tbody></table>"
+        expected_markdown = "| **Component** {: .w-45 } | **How to Submit in Grants.gov** {: .w-40 } | **Included in the page limit?** {: .w-15 } |\n| --- | --- | --- |\n| ◻ [**Project abstract**](  # _Project_abstract) | Use the Project Abstract Summary Form. | 1 page |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_application_checklist_table_with_colspan(self):
+        html = "<table><tr><th colspan='2'><p><strong>Component</strong></p></th><th><p><strong>How to upload </strong></p></th><th><p><strong>Page limit </strong></p></th></tr><tr><td colspan='2'><p>◻ <a href='  # _Project_abstract'><strong>Project abstract</strong></a> </p></td><td><p>Use the Project Abstract Summary Form. </p></td><td><p>1 page </p></td></tr></tbody></table>"
+        expected_html = '<table>\n <tr>\n  <th colspan="2">\n   <p>\n    <strong>\n     Component\n    </strong>\n   </p>\n  </th>\n  <th>\n   <p>\n    <strong>\n     How to upload\n    </strong>\n   </p>\n  </th>\n  <th>\n   <p>\n    <strong>\n     Page limit\n    </strong>\n   </p>\n  </th>\n </tr>\n <tr>\n  <td colspan="2">\n   <p>\n    ◻\n    <a href="  # _Project_abstract">\n     <strong>\n      Project abstract\n     </strong>\n    </a>\n   </p>\n  </td>\n  <td>\n   <p>\n    Use the Project Abstract Summary Form.\n   </p>\n  </td>\n  <td>\n   <p>\n    1 page\n   </p>\n  </td>\n </tr>\n</table>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
 
 class TablesAndStuffInTablesConverterOLSTest(TestCase):
     maxDiff = None

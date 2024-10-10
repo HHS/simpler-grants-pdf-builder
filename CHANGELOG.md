@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Manually add audit event when printing a NOFO
 - Add image for HRSA-25-67
 - Add image for HRSA-25-63
+- Add default column widths for application checklist
+  - Col 1: 45%, col 2: 40%, col 3: 15%
 
 ### Changed
 
