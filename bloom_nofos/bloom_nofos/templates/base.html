@@ -87,6 +87,13 @@
               Latest updates
             </a>
           </li>
+          {% if user.group == 'hrsa' %}
+            <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
+              <a class="usa-footer__primary-link" href="https://airtable.com/appdaa5AqUwI8jdOo/pagpyAKIEOyLofFCw/form" target="_blank">
+                Submit a support ticket <span aria-hidden="true">🎟️</span>
+              </a>
+            </li>
+          {% endif %}
           {% if request.path == "/" %}
             <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
               <a class="usa-footer__primary-link" href="https://bloomworks.digital/" target="_blank">
