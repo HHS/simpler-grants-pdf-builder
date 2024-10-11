@@ -8,13 +8,13 @@
 - Refac: short section names for breadcrumbs means we can loop
 - .docx imports
   - Investigate images
-- Add "copy" for section headings
-- Add "copy" for subsection headings
-- Only show Bloom nofos by default
-- Default column widths for application table
 
 # DONE
 
+- Default column widths for application table
+- Only show Bloom nofos by default
+- Add "copy" for section headings
+- Add "copy" for subsection headings
 - Add a little message on the external links explanation
 - Fix the Preview link colour in markdown editor
 - Contacts and support box, add padding
