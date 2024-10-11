@@ -281,7 +281,7 @@ Edit “{{ nofo|nofo_name }}”
       <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
       <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
     </tr>
-    {% if nofo.cover_image %}
+    {% if nofo.cover_image and nofo.cover != 'nofo--cover-page--text' %}
       <tr>
         <th scope="row">Cover alt text</th>
         <td>{% if nofo.cover_image_alt_text %}“{% endif%}{{ nofo.cover_image_alt_text|get_value_or_none:"alt text" }}{% if nofo.cover_image_alt_text %}”{% endif %}</td>

@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Hide "alt text" row when cover style is text only
+
 ## [1.28.0] - 2023-10-11
 
 ### Added
