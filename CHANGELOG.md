@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Update DocRaptor env var
+- Fix CDC logo text for all backgrounds in portrait mode
 - Hide "alt text" row when cover style is text only
 
 ## [1.28.0] - 2023-10-11
