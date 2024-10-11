@@ -92,8 +92,8 @@ h6 {
 }
 
 .nofo--cover-page--header--logo svg .cls-6 {
-  fill: var(--color--cdc-blue);
-  stroke: var(--color--white);
+  fill: var(--color--white);
+  stroke: var(--color--cdc-blue);
 }
 
 .portrait .nofo--cover-page--medium .nofo--cover-page--title {

@@ -89,7 +89,8 @@ h1 {
 }
 
 .nofo--cover-page--medium .nofo--cover-page--header--logo svg .cls-6 {
-  stroke: var(--color--cdc-blue);
+  stroke: var(--color--white);
+  fill: var(--color--cdc-blue);
 }
 
 /* Cover page: hero image */
