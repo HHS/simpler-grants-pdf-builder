@@ -3,6 +3,7 @@ import io
 
 import docraptor
 import mammoth
+import requests
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -819,6 +820,17 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
+
+        # TODO: make this a standalone route
+        # page = "https://hdsbpc.cdc.gov/s/"
+        # sess = requests.session()
+        # headers = {
+        #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
+        # }
+        # response = sess.get(page, headers=headers)
+        # open("link.html", "wb").write(response.text.encode())
+        # print("page: ", page)
+        # print("done", response.status_code)
 
         context["links"] = find_external_links(self.object, with_status)
         context["with_status"] = with_status
