@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Add "TEST" to the audit event for a printed NOFO if we are in test mode
+
 ### Fixed
 
 - Update DocRaptor env var

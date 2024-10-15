@@ -607,13 +607,16 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
             # Audit event for a printed NOFO
             now = timezone.now()
+            event_string = "PRINT (TEST)" if config.DOCRAPTOR_TEST_MODE else "PRINT"
             CRUDEvent.objects.create(
                 event_type=CRUDEvent.UPDATE,
                 object_id=nofo.pk,
                 content_type=ContentType.objects.get_for_model(nofo),
                 object_repr=str(nofo),
                 object_json_repr=serializers.serialize("json", [nofo]),
-                changed_fields="PRINT: NOFO (ID #{}) at {}".format(nofo.id, now),
+                changed_fields="{}: NOFO (ID #{}) at {}".format(
+                    event_string, nofo.id, now
+                ),
                 user=request.user if request.user else None,
                 user_pk_as_string=str(request.user.pk) if request.user else "",
                 datetime=now,
