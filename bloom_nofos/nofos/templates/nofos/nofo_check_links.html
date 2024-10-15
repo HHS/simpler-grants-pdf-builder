@@ -98,7 +98,13 @@
           <td>
             {{ link.section.name }}<br> — <a href="{% url 'nofos:nofo_edit' object.id %}#{{ link.subsection.html_id }}" target="_blank">{{ link.subsection|subsection_name_or_order }}</a>
           </td>
-          <td>{{ link.status }} <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% endif %}</span></td>
+          <td>
+            {% if link.error %}
+              <span title="500: Exception">500</span>
+            {% else %}
+              {{ link.status }}
+            {% endif%}
+            <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% elif link.error %}🟠{% endif %}</span></td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>
         </tr>
       {% endfor %}

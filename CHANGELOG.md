@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Update DocRaptor env var
 - Fix CDC logo text for all backgrounds in portrait mode
 - Hide "alt text" row when cover style is text only
+- Manually return a 500 response when an exception is raised by requests lib
 
 ## [1.28.0] - 2023-10-11
 
