@@ -548,6 +548,11 @@ def get_cover_image(nofo):
 
 
 def _update_link_statuses(all_links):
+    logging.basicConfig(
+        level=logging.WARNING
+    )  # You can adjust the level to DEBUG, ERROR, etc.
+    logger = logging.getLogger(__name__)
+
     def check_link_status(link):
         # Use Firefox user agent
         headers = {
@@ -563,6 +568,10 @@ def _update_link_statuses(all_links):
                 link["redirect_url"] = response.url
         except requests.RequestException as e:
             link["error"] = "Error: " + str(e)
+            logger.warning(
+                "Request failed for URL: {} - {}".format(link["url"], link["error"])
+            )
+
         return link
 
     with ThreadPoolExecutor(max_workers=8) as executor:
