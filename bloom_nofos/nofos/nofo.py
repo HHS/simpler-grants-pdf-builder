@@ -1720,5 +1720,9 @@ def decompose_instructions_tables(soup):
     """
     tables = soup.find_all("table")
     for table in tables:
-        if table.get_text().lower().startswith("instructions for nofo writers:"):
-            table.decompose()
+        cells = table.find_all("td")
+        if len(cells) == 1:
+            if table.get_text().lower().startswith(
+                "instructions for nofo writers:"
+            ) or re.match(r".+-specific instructions", table.get_text().lower()):
+                table.decompose()

@@ -5817,6 +5817,41 @@ class DecomposeInstructionsTablesTest(TestCase):
             "Instructions for NOFO writers:", remaining_tables[0].get_text()
         )
 
+    def test_removes_correct_tables_instructions_1(self):
+        """Test that tables with specific instructional text are removed."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td>DGHT-SPECIFIC INSTRUCTIONS: This table should be removed.</td></tr></table>
+                <table><tr><td>PAUL-SPECIFIC INSTRUCTIONS: This table should be removed.</td></tr></table>
+                <table><tr><td>SPECIFIC INSTRUCTIONS: This table should remain.</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        decompose_instructions_tables(soup)
+        remaining_tables = soup.find_all("table")
+        self.assertEqual(len(remaining_tables), 1)
+        self.assertNotIn("-SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
+        self.assertIn("SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
+
+    def test_ignores_tables_with_2_cells(self):
+        """Test that tables with specific instructional text are removed."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td>DGHT-SPECIFIC INSTRUCTIONS: This table should not be removed.</td><td>Because it has 2 cells</td></tr></table>
+                <table><tr><td>Instructions for NOFO writers: This table should be removed.</td></tr><tr><td>Because it has 2 rows and 2 cells</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        decompose_instructions_tables(soup)
+        remaining_tables = soup.find_all("table")
+        self.assertEqual(len(remaining_tables), 2)
+        self.assertIn("-SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
+        self.assertIn("Instructions for NOFO writers:", remaining_tables[1].get_text())
+
     def test_ignores_tables_without_instruction_text(self):
         """Test that tables without the specific instructional text are not removed."""
         html_content = """

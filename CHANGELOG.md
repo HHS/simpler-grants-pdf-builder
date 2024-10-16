@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Ignore single-celled tables that include the phrase "-specific instructions"
+  - These are new instructions boxes
+
 ### Changed
 
 - Add "TEST" to the audit event for a printed NOFO if we are in test mode
