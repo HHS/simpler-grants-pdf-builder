@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import re
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
@@ -568,9 +569,11 @@ def _update_link_statuses(all_links):
                 link["redirect_url"] = response.url
         except requests.RequestException as e:
             link["error"] = "Error: " + str(e)
-            logger.warning(
-                "Request failed for URL: {} - {}".format(link["url"], link["error"])
-            )
+            # print out warning to console if not running tests
+            if not "test" in sys.argv:
+                logger.warning(
+                    "Request failed for URL: {} - {}".format(link["url"], link["error"])
+                )
 
         return link
 
