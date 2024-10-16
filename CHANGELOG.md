@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Ignore single-celled tables that include the phrase "-specific instructions"
   - These are new instructions boxes
+- Add cover image for CDC-RFA-DP-25-0012
 
 ### Changed
 
