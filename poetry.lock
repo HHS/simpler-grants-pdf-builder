@@ -311,18 +311,17 @@ redis = ["redis"]
 
 [[package]]
 name = "django-easy-audit"
-version = "1.3.6"
+version = "1.3.7"
 description = "Yet another Django audit log app, hopefully the simplest one."
 optional = false
-python-versions = ">=3.8"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "django-easy-audit-1.3.6.tar.gz", hash = "sha256:f633e090d7298fbe4d77a568cc4f747411d4b4e420c7344958b00b206fcb2c42"},
-    {file = "django_easy_audit-1.3.6-py3-none-any.whl", hash = "sha256:802f6223db5ccc894f7abe203e748a2761977a1aaa991f67043424fb868ebd8f"},
+    {file = "django_easy_audit-1.3.7-py3-none-any.whl", hash = "sha256:467f575fe495d53f12babe4ca06272d8039e61980af4fff8c7242daebe8597aa"},
+    {file = "django_easy_audit-1.3.7.tar.gz", hash = "sha256:0ecee3f43631d6294697ca741708442fc59a6e2230b7a8e78c69f71e09a30742"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = "*"
-django = ">=3.2"
+django = ">=4.2,<6.0"
 
 [[package]]
 name = "django-environ"
