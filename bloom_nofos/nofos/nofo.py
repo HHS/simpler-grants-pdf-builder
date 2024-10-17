@@ -805,6 +805,7 @@ def find_broken_links(nofo):
             or tag.get("href", "").startswith("#")
             or tag.get("href", "").startswith("https://docs.google.com")
             or tag.get("href", "") == "about:blank"
+            or tag.get("href", "").startswith("bookmark")
         )
 
     broken_links = []

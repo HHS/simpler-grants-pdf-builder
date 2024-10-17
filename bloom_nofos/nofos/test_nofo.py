@@ -2498,11 +2498,18 @@ class TestFindBrokenLinks(TestCase):
             order=8,
         )
 
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a Bookmark link",
+            tag="h3",
+            body='This is a <a href="bookmark://_Collaborations">Collaborations</a> bookmark link.',
+            order=9,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 7)
-        self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
+        self.assertEqual(len(broken_links), 8)
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
         self.assertEqual(broken_links[2]["link_href"], "/contacts")
         self.assertEqual(
@@ -2521,6 +2528,10 @@ class TestFindBrokenLinks(TestCase):
             broken_links[6]["link_href"],
             "#fake",
         )
+        self.assertEqual(
+            broken_links[7]["link_href"],
+            "bookmark://_Collaborations",
+        )
 
     def test_find_broken_links_ignores_valid_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
@@ -2536,6 +2547,7 @@ class TestFindBrokenLinks(TestCase):
                 or link["link_href"].startswith("about:blank")
                 or link["link_href"].startswith("#_")
                 or link["link_href"].startswith("#fake")
+                or link["link_href"].startswith("bookmark")
             )
         ]
         self.assertEqual(len(valid_links), 0)
