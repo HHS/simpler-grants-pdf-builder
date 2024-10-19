@@ -8,7 +8,9 @@ register = template.Library()
 @register.filter()
 def add_classes_to_broken_links(html_string, broken_links):
     """
-    Adds "nofo_edit--broken-link" class to links with href matching my broken links array. Also adds a tooltip for broken links.
+    Adds "nofo_edit--broken-link" class to links with href matching my broken links array, and a tooltip for broken links.
+    Also adds "nofo_edit--broken-link" class to links with NO href, as these are broken bookmark links.
+    Broken bookmark links get a more specific pop-up message.
 
     Args:
         html_string (str): The HTML content of a subsection as a string.
@@ -32,5 +34,15 @@ def add_classes_to_broken_links(html_string, broken_links):
             ]
             link["data-position"] = "bottom"
             link["title"] = "Broken link"
+
+    # bookmark links show up with no href because of martor
+    # add the same classes, but a different popup message
+    for link2 in soup.find_all("a", href=False):
+        link2["class"] = link2.get("class", []) + [
+            "nofo_edit--broken-link",
+            "usa-tooltip",
+        ]
+        link2["data-position"] = "bottom"
+        link2["title"] = "Broken bookmark link"
 
     return mark_safe(str(soup))
