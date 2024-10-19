@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.29.0] - 2023-10-19
+
+### Added
+
 - Ignore single-celled tables that include the phrase "-specific instructions"
   - These are new instructions boxes
 - Add cover image for CDC-RFA-DP-25-0012
@@ -18,6 +26,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Add broken bookmark links to alert box
+  - Add styling for broken bookmark links
 - Update DocRaptor env var
 - Fix CDC logo text for all backgrounds in portrait mode
 - Hide "alt text" row when cover style is text only
