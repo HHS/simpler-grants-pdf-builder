@@ -140,9 +140,23 @@ style_map_manager.add_style(
     location_in_nofo="Step 1 > Cost-sharing commitments > Reduced Match",
     note="This signifies an h5",
 )
+style_map_manager.add_style(
+    style_rule="r[style-name='cf01'] => span",
+    location_in_nofo="It's just in body text",
+    note="Just plain body text",
+)
 
 # paragraph styles
-# TODO: <p class="MsoHeading7">, should we convert these to h7s?
+style_map_manager.add_style(
+    style_rule="p[style-name='heading 7'] => div[role='heading'][aria-level='7']",
+    location_in_nofo="Step 1 > Summary > Funding Strategy > Component Funding > Overview",
+    note="This is how we represent H7s",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Default'] => p",
+    location_in_nofo="Step 6 > Reporting > All content in table",
+    note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
+)
 style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",
