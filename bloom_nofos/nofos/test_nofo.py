@@ -338,6 +338,60 @@ class TablesAndStuffInTablesConverterPSTest(TestCase):
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
 
+class TablesAndStuffInTablesConverterDIVSTest(TestCase):
+    maxDiff = None
+
+    def test_div_role_heading(self):
+        html = '<h6>Component funding</h6><div><div aria-level="7" role="heading">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
+        expected_html = '###### Component funding\n\n<div aria-level="7" role="heading">Overview</div>We fund all cooperative agreements using component funding.'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_div_no_role_heading(self):
+        html = "<h6>Component funding</h6><div>Overview</div><p>We fund all cooperative agreements using component funding.</p>"
+        expected_html = "###### Component funding\n\nOverviewWe fund all cooperative agreements using component funding."
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_div_role_heading_with_nested_elements(self):
+        html = (
+            '<div role="heading"><span>Overview</span><strong>Important</strong></div>'
+        )
+        expected_html = (
+            '<div role="heading"><span>Overview</span><strong>Important</strong></div>'
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_div_no_role_heading_with_nested_elements(self):
+        html = "<div><span>Overview</span><strong>Important</strong></div>"
+        expected_html = "Overview**Important**"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_combination_of_divs(self):
+        html = """
+        <div role="heading">Heading One</div><div>This is just a regular div.</div><p>Some paragraph text.</p>
+        """
+        expected_html = '<div role="heading">Heading One</div>This is just a regular div.Some paragraph text.'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_nested_div_with_role_heading(self):
+        html = """
+        <div><div><div role="heading">Nested Heading</div><p>Nested paragraph inside div.</p></div><p>Another paragraph.</p></div>
+        """
+        expected_html = '<div role="heading">Nested Heading</div>Nested paragraph inside div.\n\nAnother paragraph.'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+    def test_div_with_attributes_no_role_heading(self):
+        html = '<div class="some-class" id="div1" aria-level="7" role="main">This is a test div</div>'
+        expected_html = 'This is a test div'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html)
+
+
 class MatchUrlTests(TestCase):
     def test_match_valid_urls(self):
         """

@@ -45,6 +45,14 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
 
         return super().convert_a(el, text, convert_as_inline)
 
+    def convert_div(self, el, text, convert_as_inline):
+        # Output raw HTML if the div has role="heading" attribute
+        if el.get("role") == "heading":
+            return str(el)
+
+        # Else, return text, which is what process_text would return
+        return text
+
     def convert_ol(self, el, text, convert_as_inline):
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
