@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Convert 'Heading 7' styles from Word
+
 ### Changed
 
 ### Fixed
