@@ -178,6 +178,16 @@ style_map_manager.add_style(
     note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
+    style_rule="p[style-name='Body Text'] => p:fresh",
+    location_in_nofo="Step 1 > Program description > Overview",
+    note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='pf0'] => p:fresh",
+    location_in_nofo="Step 1 > Program description > Overview",
+    note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
     style_rule="p[style-name='Main Heading'] => p",
     location_in_nofo="Step 1 > Key facts > number",
     note="Don't do anything: regular body text (may not be true for all, but let's assume).",
