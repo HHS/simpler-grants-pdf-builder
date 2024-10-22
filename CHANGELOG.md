@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Convert 'Heading 7' styles from Word
 - Add cover image for CDC-RFA-DD-25-0157
+- Add cover image for CDC-RFA-DP-25-0024
 
 ### Changed
 
