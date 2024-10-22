@@ -101,9 +101,39 @@ style_map_manager.add_style(
     note="Don't do anything, just whitespace",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='contentcontrolboundarysink'] => span",
+    location_in_nofo="Step 6 > Post-award requirements and administration > Reporting",
+    note="Don't do anything, just whitespace",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='criteria-linked-element_data-mode=export_criteria-score'] => span.linked-element",
     location_in_nofo="Step 4 > Maximum points > 20",
     note="Don't do anything: body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='cf01'] => span",
+    location_in_nofo="It's just in body text",
+    note="Just plain body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='cf11'] => span",
+    location_in_nofo="It's just in body text",
+    note="Just plain body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='scxw144559721'] => span",
+    location_in_nofo="It's just in body text",
+    note="Just plain body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Style6 Char'] => span",
+    location_in_nofo="Step 1 > Program description > Purpose",
+    note="Just plain body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='url'] => span",
+    location_in_nofo="It's a url in the footnotes body text",
+    note="It's a URL but it should be formatted as body text",
 )
 style_map_manager.add_style(
     style_rule="r[style-name='ui-provider'] => span:fresh",
@@ -126,6 +156,11 @@ style_map_manager.add_style(
     note="Bold is safe, but they might possibly be headings.",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='Heading 1 Char'] => span",
+    location_in_nofo="Step 1 > Program description > Core Component approach > Core Component strategies and activities",
+    note="Do nothing, it's whitespace",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='Heading 3 Char'] => h3:fresh",
     location_in_nofo="Step 1 > Program description > Four core functions",
     note="This signifies an h3",
@@ -139,11 +174,6 @@ style_map_manager.add_style(
     style_rule="r[style-name='Heading 5 Char'] => h5:fresh",
     location_in_nofo="Step 1 > Cost-sharing commitments > Reduced Match",
     note="This signifies an h5",
-)
-style_map_manager.add_style(
-    style_rule="r[style-name='cf01'] => span",
-    location_in_nofo="It's just in body text",
-    note="Just plain body text",
 )
 
 # paragraph styles
