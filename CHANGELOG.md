@@ -8,6 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add button to copy list of broken links on nofo_edit page
 - Convert 'Heading 7' styles from Word
 - Add cover image for CDC-RFA-DD-25-0157
 - Add cover image for CDC-RFA-DP-25-0024
@@ -16,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 ### Fixed
+
+- Added more known styles for the mammoth style map
 
 ## [1.29.0] - 2023-10-19
 
