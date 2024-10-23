@@ -301,6 +301,14 @@ details > summary > span:hover {
   margin-bottom: 0;
 }
 
+.nofo_edit .usa-site-alert .usa-button-icon--copy-button {
+  padding: 0.75rem 1rem 0.75rem 0.9rem;
+  position: absolute;
+  right: 0;
+  top: 2rem;
+  margin-right: 4rem; /* match the padding on usa-alert__body */
+}
+
 .nofo_edit .usa-site-alert--heading-errors .usa-alert {
   border-left-color: var(--color--usa-error-bg-dark);
 }
@@ -387,6 +395,20 @@ details > summary > span:hover {
     brightness(102%) contrast(79%);
   width: 18px;
   height: 17px;
+}
+
+.nofo_edit .usa-alert__body .usa-button-icon--copy-button::before {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+  background-image: url("/static/img/usa-icons/content_copy.svg");
+  filter: invert(99%) sepia(100%) saturate(207%) hue-rotate(194deg)
+    brightness(111%) contrast(100%);
+  width: 13px;
+  height: 12px;
+  margin-right: 4px;
 }
 
 .nofo_edit
