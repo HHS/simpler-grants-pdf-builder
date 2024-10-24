@@ -45,7 +45,7 @@ Once a NOFO is reviewed and approved, our anticipated workflow is:
 
 This project uses Python >=3.10.
 
-### [Install `poetry`](https://www.npmjs.com/get-npm)
+### [Install `poetry`](https://python-poetry.org/docs/)
 
 `poetry` is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you.
 
