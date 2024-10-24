@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- ids inserted using markdaown attributes should not show up as 'broken links'
+
 ## [1.29.0] - 2023-10-19
 
 ### Added
