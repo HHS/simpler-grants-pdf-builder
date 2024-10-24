@@ -43,9 +43,11 @@ Once a NOFO is reviewed and approved, our anticipated workflow is:
 
 `python` is a high-level, general-purpose programming language, popular for programming web applications.
 
-This project uses Python >=3.10.
+This project uses Python >=3.11.
 
-### [Install `poetry`](https://www.npmjs.com/get-npm)
+You can find the exact version of python that is being used by referencing the [Dockerfile](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/Dockerfile#L1). If you want to change your Python version, I would recommend [pyenv](https://github.com/pyenv/pyenv).
+
+### [Install `poetry`](https://python-poetry.org/docs/)
 
 `poetry` is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you.
 
