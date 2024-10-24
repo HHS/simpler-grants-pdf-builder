@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for CDC-RFA-DD-25-0157
 - Add cover image for CDC-RFA-DP-25-0024
 - Add cover image for HRSA-25-068
+- Add cover image for HRSA-25-025
 
 ### Changed
 
