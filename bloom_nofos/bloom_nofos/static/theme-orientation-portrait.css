@@ -291,7 +291,7 @@ body.portrait.cdc
   .section--step-4-learn-about-review-and-award
   .section--content
   p
-  + table:not(.table--small) {
+  + table:not(.table--criterion) {
   width: calc(
     216mm - 40mm
   ); /* large tables in section 4 should be full-width */
