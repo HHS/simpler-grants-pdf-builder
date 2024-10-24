@@ -300,7 +300,7 @@ class HTMLTableClassTests(TestCase):
         table_html = "<table><thead><tr><th>Criterion</th><th>Heading 2</th><th>Heading 3</th></tr></thead><tbody><tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></tr></tbody></table>"
         soup = BeautifulSoup(table_html, "html.parser")
 
-        self.assertEqual(add_class_to_table(soup.find("table")), "table--small")
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--criterion")
 
 
 class TestAddClassToTableRows(TestCase):

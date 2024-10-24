@@ -85,7 +85,7 @@ def add_class_to_table(table):
 
     Secondly, checks for content of table headings:
     - "table--large": th found with "Recommended For"
-    - "table--small": th found with "Criterion"
+    - "table--criterion": th found with "Criterion"
 
     Finally, look at columns and word count:
     - "table--small": fewer than 4 columns and no words
@@ -110,7 +110,7 @@ def add_class_to_table(table):
         return "table--large"
 
     if table.find("th", string="Criterion"):
-        return "table--small"
+        return "table--criterion"
 
     word_count = _get_total_word_count(table.find_all("td"))
 
