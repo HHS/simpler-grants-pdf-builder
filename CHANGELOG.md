@@ -33,6 +33,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
   - Remove the border under "Attachments"
+- ids inserted using markdown attributes should not show up as 'broken links'
 
 ## [1.29.0] - 2023-10-19
 

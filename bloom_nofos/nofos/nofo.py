@@ -1122,7 +1122,10 @@ def _get_all_id_attrs_for_nofo(nofo):
 
             # Use BeautifulSoup to parse the HTML body and find all ids
             if subsection.body:
-                soup = BeautifulSoup(markdown.markdown(subsection.body), "html.parser")
+                soup = BeautifulSoup(
+                    markdown.markdown(subsection.body, extensions=["extra"]),
+                    "html.parser",
+                )
                 for element in soup.find_all(id=True):
                     all_ids.add(element["id"])
 
