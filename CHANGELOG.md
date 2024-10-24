@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- HRSA tagline is now HRSA blue!
+
 ### Fixed
 
 - 'Criterion' tables are always small
