@@ -128,3 +128,7 @@ h6 {
 /* Section title page */
 
 /* Section contents */
+
+.nofo--tagline {
+  color: var(--color--hrsa-blue);
+}
