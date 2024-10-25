@@ -85,9 +85,9 @@
         <div class="nofo--cover-page--header--logo--subheading">
           {% if nofo.cover == 'nofo--cover-page--text' %}
             <p>{{ nofo.agency }}</p>
-            <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
+            <p>{% if nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
-            <p>{% if nofo.subagency2 %}{{ nofo.subagency2 }}{% elif nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
+            <p>{% if nofo.subagency %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
           {% endif %}
         </div>
       </div>
