@@ -17,6 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Allow users to remove subagency and subagency 2
 - HRSA tagline is now HRSA blue!
 - Show subagency under the logo on the small image page, not subagency 2
 - Reimporting a NOFO that already has a cover image won't replace the image
