@@ -983,7 +983,10 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
-    nofo.cover_image = suggest_nofo_cover_image(nofo_number)  # guess NOFO cover image
+    if not nofo.cover_image:
+        nofo.cover_image = suggest_nofo_cover_image(
+            nofo_number
+        )  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
     # reset title only if there is a title and it's not the default title, or current nofo.title is empty
