@@ -17,12 +17,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - HRSA tagline is now HRSA blue!
+- Show subagency under the logo on the small image page, not subagency 2
 
 ### Fixed
 
 - Restructure HTML in the Application Checklists for better styling
   - Previously, I was using a CSS hack because I didn't have enough elements to style
 - 'Criterion' tables are always small
+- Find ranges for numbered sublists
+  - Match for "8-15.", "8 - 15.", "8 through 15."
 
 ## [1.29.0] - 2023-10-19
 
