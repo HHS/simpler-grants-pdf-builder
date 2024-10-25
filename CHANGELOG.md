@@ -28,6 +28,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - 'Criterion' tables are always small
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
+  - Remove the border under "Attachments"
 
 ## [1.29.0] - 2023-10-19
 
