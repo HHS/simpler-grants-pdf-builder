@@ -153,6 +153,15 @@ table td a {
   border-bottom-color: var(--color--white);
 }
 
+.section--step-5-submit-your-application table tr td.usa-icon__td--list-heading,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--list-heading
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+}
+
 .section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
 .section--step-5-submit-your-application
   table

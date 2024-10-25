@@ -66,11 +66,12 @@ def is_before_sublist(td):
     next_row = parent_row.find_next_sibling("tr")
     if next_row:
         first_cell = next_row.find(["td", "th"])
-        if first_cell and is_list_heading(first_cell) and not has_checkbox(first_cell):
-            return True
-        # if current cell is a numbered sublist next cell isn't
-        if is_numbered_sublist(td) and not is_numbered_sublist(first_cell):
-            return True
+        if first_cell:
+            if is_list_heading(first_cell) and not has_checkbox(first_cell):
+                return True
+            # if current cell is a numbered sublist next cell isn't
+            if is_numbered_sublist(td) and not is_numbered_sublist(first_cell):
+                return True
 
     return False
 
@@ -203,6 +204,14 @@ def replace_unicode_with_icon(html_string):
                     _add_class_if_not_exists_to_tag(
                         element=parent_td, classname="usa-icon__td", tag_name="td"
                     )
+
+                    # add classname for cells which don't have rows with a link above them
+                    if is_list_heading(parent_td):
+                        _add_class_if_not_exists_to_tag(
+                            element=parent_td,
+                            classname="usa-icon__td--list-heading",
+                            tag_name="td",
+                        )
 
                     # add classname for cells which don't have rows with a link above them
                     if is_sublist(parent_td):
