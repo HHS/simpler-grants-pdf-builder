@@ -78,9 +78,17 @@ def is_before_sublist(td):
 def is_numbered_sublist(td):
     td_text = td.text.replace("◻", "").strip()
 
-    # Match any td whose text starts with any integer followed by a period and whitespace ("3. ")
-    if re.match(r"^\d+\.\s", td_text):
+    # Match patterns like:
+    # - "1. "
+    # - "8-15."
+    # - "16 - 21."
+    # - "22 through 25."
+    pattern = r"^\d+(\s?-\s?\d+|\sthrough\s\d+)?\.\s"
+
+    # Check if the text matches any of the sublist numbering patterns
+    if re.match(pattern, td_text):
         return True
+    return False
 
 
 def is_sublist(td):
