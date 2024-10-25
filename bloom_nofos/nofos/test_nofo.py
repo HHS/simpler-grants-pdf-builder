@@ -387,7 +387,7 @@ class TablesAndStuffInTablesConverterDIVSTest(TestCase):
 
     def test_div_with_attributes_no_role_heading(self):
         html = '<div class="some-class" id="div1" aria-level="7" role="main">This is a test div</div>'
-        expected_html = 'This is a test div'
+        expected_html = "This is a test div"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
