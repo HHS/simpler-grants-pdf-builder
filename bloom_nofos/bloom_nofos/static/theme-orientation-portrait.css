@@ -270,23 +270,6 @@ section.before-you-begin {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }
 
-table tr td.usa-icon__td--sublist {
-  position: relative;
-  padding-left: 44px;
-  z-index: -1;
-}
-
-table tr td.usa-icon__td--sublist img.usa-icon {
-  position: absolute;
-  top: 7px;
-  left: 22px;
-}
-
-table tr td.usa-icon__td--sublist li.usa-icon__list-element img.usa-icon {
-  left: -22px;
-  top: 0;
-}
-
 body.portrait.cdc
   .section--step-4-learn-about-review-and-award
   .section--content
@@ -295,4 +278,8 @@ body.portrait.cdc
   width: calc(
     216mm - 40mm
   ); /* large tables in section 4 should be full-width */
+}
+
+table tr td.usa-icon__td--sublist {
+  padding-left: 30px;
 }

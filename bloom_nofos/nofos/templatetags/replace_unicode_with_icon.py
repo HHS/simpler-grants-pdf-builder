@@ -119,6 +119,40 @@ def replace_unicode_with_svg(root_element, icon, svg_html):
         root_element.insert(0, svg_soup)
 
 
+def wrap_text_in_span(td):
+    soup = BeautifulSoup("", "html.parser")
+
+    img = td.find("img")
+    if img and img.next_sibling and isinstance(img.next_sibling, NavigableString):
+        # Get the text after the image
+        text = img.next_sibling.strip()
+
+        if text:
+            # Create a new span element with the text
+            text_wrapped_with_span = soup.new_tag("span")
+            text_wrapped_with_span.string = text
+            img.next_sibling.replace_with(text_wrapped_with_span)
+
+
+def wrap_td_contents_in_div(td):
+    first_child = td.contents[0] if td.contents else None
+    if first_child and first_child.name == "div":
+        return  # If the first child is a div, do nothing
+
+    soup = BeautifulSoup("", "html.parser")
+
+    # Create a new div element
+    new_div = soup.new_tag("div")
+
+    # Move all the contents of td into the new div by iterating over a copy of td.contents
+    for content in list(td.contents):
+        new_div.append(content)
+
+    # Clear the original contents of td and add the new div
+    td.clear()
+    td.append(new_div)
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -197,5 +231,8 @@ def replace_unicode_with_icon(html_string):
                             classname="usa-icon__td--link",
                             tag_name="td",
                         )
+
+                    wrap_text_in_span(parent_td)
+                    wrap_td_contents_in_div(parent_td)
 
     return mark_safe(str(soup))

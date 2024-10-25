@@ -20,6 +20,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Restructure HTML in the Application Checklists for better styling
+  - Previously, I was using a CSS hack because I didn't have enough elements to style
 - 'Criterion' tables are always small
 
 ## [1.29.0] - 2023-10-19
