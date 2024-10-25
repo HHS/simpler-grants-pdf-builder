@@ -55,7 +55,7 @@ def is_list_heading(td):
     if td.find("strong") and ":" in td.get_text():
         return True
 
-    if td.text.lower() == "other required forms":
+    if td.text.lower() == "other required forms" or td.text.lower() == "attachments":
         return True
 
     return False
