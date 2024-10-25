@@ -193,11 +193,11 @@ table td {
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td:not(.usa-icon__td--sublist),
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading),
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td:not(.usa-icon__td--sublist)
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading)
   ~ td {
   border-bottom: 2px solid var(--color--light-grey);
 }
