@@ -40,8 +40,12 @@ NofoGroupForm = create_nofo_form_class(["group"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoStatusForm = create_nofo_form_class(["status"])
-NofoSubagency2Form = create_nofo_form_class(["subagency2"])
-NofoSubagencyForm = create_nofo_form_class(["subagency"])
+NofoSubagencyForm = create_nofo_form_class(
+    ["subagency"], not_required_field_labels=["Subagency"]
+)
+NofoSubagency2Form = create_nofo_form_class(
+    ["subagency2"], not_required_field_labels=["Subagency 2"]
+)
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
 
