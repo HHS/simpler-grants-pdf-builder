@@ -447,6 +447,18 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
 }
 
+.section--step-5-submit-your-application table tr td.usa-icon__td div {
+  display: flex;
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td {
+  vertical-align: top;
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td span {
+  line-height: 1.25;
+}
+
 ul,
 ol {
   margin-bottom: 12px;
@@ -477,7 +489,6 @@ ol ol ol {
 img.usa-icon--check_box_outline_blank {
   height: 17px;
   width: 17px;
-  margin-bottom: -3px;
   margin-right: 5px;
 }
 
