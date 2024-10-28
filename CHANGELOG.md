@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Remove stroke on CDC logo svg
+
 ### Fixed
 
 ## [1.30.0] - 2023-10-28
