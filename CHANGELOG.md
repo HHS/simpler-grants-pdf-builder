@@ -11,10 +11,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Remove stroke on CDC logo svg
+- Add CSS class to add bullets to lists
 
 ### Fixed
 
 - More left padding on callout box lists that are NOT in the right hand column
+- More specific CSS selector for application table divs
 
 ## [1.30.0] - 2023-10-28
 

@@ -447,7 +447,7 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   box-shadow: inset 0px 0px 5px 3px var(--color--table-blue);
 }
 
-.section--step-5-submit-your-application table tr td.usa-icon__td div {
+.section--step-5-submit-your-application table tr td.usa-icon__td > div {
   display: flex;
 }
 
@@ -495,6 +495,13 @@ img.usa-icon--check_box_outline_blank {
 td.usa-icon__td ul,
 td.usa-icon__td ol {
   list-style: none;
+}
+
+ul.disc,
+ol.disc,
+td.usa-icon__td ul.disc,
+td.usa-icon__td ol.disc {
+  list-style: disc;
 }
 
 td.usa-icon__td p + ul,
