@@ -1006,7 +1006,13 @@ section.section .section--title-page::before {
   font-size: 10pt;
 }
 
-.callout-box .callout-box--contents ul {
+.callout-box .callout-box--contents ul,
+.callout-box .callout-box--contents ol {
+  padding-left: 24px;
+}
+
+.section--absolute--right-col .callout-box .callout-box--contents ul,
+.section--absolute--right-col .callout-box .callout-box--contents ol {
   padding-left: 14px;
 }
 

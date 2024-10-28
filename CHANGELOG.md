@@ -14,6 +14,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- More left padding on callout box lists that are NOT in the right hand column
+
 ## [1.30.0] - 2023-10-28
 
 ### Added
