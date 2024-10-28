@@ -17,7 +17,6 @@
 }
 
 .nofo--cover-page--header--logo svg .cls-6 {
-  stroke: var(--color--white);
   fill: var(--color--cdc-blue);
 }
 
@@ -40,7 +39,6 @@
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-6 {
-  stroke: var(--color--cdc-blue);
   fill: var(--color--white);
 }
 
