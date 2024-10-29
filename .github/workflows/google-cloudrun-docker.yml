@@ -32,16 +32,16 @@ name: "Build and Deploy to Cloud Run"
 on:
   push:
     branches:
-      - '"main"'
-      - '"ga-autodeploy"'
+      - main
+      - ga-autodeploy
   pull_request:
     branches:
-      - '"ga-autodeploy"'
+      - main
 
 env:
-  PROJECT_ID: "${{ secrets.GCP_PROJECT_ID }}"
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: "us-central1"
-  SERVICE: "${{ secrets.GCP_SERVICE_ID }}"
+  SERVICE: ${{ secrets.GCP_SERVICE_ID }}
 
 jobs:
   deploy:
@@ -60,12 +60,16 @@ jobs:
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v2"
         with:
-          credentials_json: "${{ secrets.GCP_IAM_SA_CREDENTIALS }}" # Replace with the name of your GitHub Actions secret
+          credentials_json: ${{ secrets.GCP_IAM_SA_CREDENTIALS }} # Replace with the name of your GitHub Actions secret
 
       # BEGIN - Docker auth and build
       - name: "Docker Auth"
         uses: "docker/login-action@v3"
         with:
           username: "oauth2accesstoken"
-          password: "${{ steps.auth.outputs.auth_token }}"
+          password: ${{ steps.auth.outputs.auth_token }}
           registry: "${{ env.REGION }}-docker.pkg.dev"
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, we are logged into both services
