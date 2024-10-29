@@ -34,14 +34,12 @@ on:
     branches:
       - main
       - ga-autodeploy
-  pull_request:
-    branches:
-      - main
 
 env:
+  AR_REGION: "us"
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: "us-central1"
   SERVICE: ${{ secrets.GCP_SERVICE_ID }}
+  SERVICE_REGION: "us-central1"
 
 jobs:
   deploy:
@@ -68,7 +66,7 @@ jobs:
         with:
           username: "oauth2accesstoken"
           password: ${{ steps.auth.outputs.auth_token }}
-          registry: "${{ env.REGION }}-docker.pkg.dev"
+          registry: "${{ env.AR_REGION }}-docker.pkg.dev"
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
