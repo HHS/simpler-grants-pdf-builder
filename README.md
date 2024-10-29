@@ -80,7 +80,7 @@ poetry install
 cd ./bloom_nofos
 
 # run migrations (needed when first booting up the app)
-poetry run migrations
+poetry run migrate
 
 # run application in 'dev' mode
 # (ie, the server restarts when you save a file)
