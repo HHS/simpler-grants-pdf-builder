@@ -32,11 +32,11 @@ name: "Build and Deploy to Cloud Run"
 on:
   push:
     branches:
-      - '"main"'
-      - '"ga-autodeploy"'
+      - main
+      - ga-autodeploy
   pull_request:
     branches:
-      - '"main"'
+      - main
 
 env:
   PROJECT_ID: "${{ secrets.GCP_PROJECT_ID }}"
