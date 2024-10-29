@@ -1,0 +1,71 @@
+# This workflow build and push a Docker container to Google Artifact Registry
+# and deploy it on Cloud Run when a commit is pushed to the "main"
+# branch.
+#
+# To configure this workflow:
+#
+# 1. Enable the following Google Cloud APIs:
+#
+#    - Artifact Registry (artifactregistry.googleapis.com)
+#    - Cloud Run (run.googleapis.com)
+#    - IAM Credentials API (iamcredentials.googleapis.com)
+#
+#    You can learn more about enabling APIs at
+#    https://support.google.com/googleapi/answer/6158841.
+#
+# 2. Create and configure a Workload Identity Provider for GitHub:
+#    https://github.com/google-github-actions/auth#preferred-direct-workload-identity-federation.
+#
+#    Depending on how you authenticate, you will need to grant an IAM principal
+#    permissions on Google Cloud:
+#
+#    - Artifact Registry Administrator (roles/artifactregistry.admin)
+#    - Cloud Run Developer (roles/run.developer)
+#
+#    You can learn more about setting IAM permissions at
+#    https://cloud.google.com/iam/docs/manage-access-other-resources
+#
+# 3. Change the values in the "env" block to match your values.
+
+name: "Build and Deploy to Cloud Run"
+
+on:
+  push:
+    branches:
+      - '"main"'
+      - '"ga-autodeploy"'
+  pull_request:
+    branches:
+      - '"ga-autodeploy"'
+
+env:
+  PROJECT_ID: "${{ secrets.GCP_PROJECT_ID }}"
+  REGION: "us-central1"
+  SERVICE: "${{ secrets.GCP_SERVICE_ID }}"
+
+jobs:
+  deploy:
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      # Configure auth with Service Account with permissions to build and deploy on Google Cloud
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.GCP_IAM_SA_CREDENTIALS }}" # Replace with the name of your GitHub Actions secret
+
+      # BEGIN - Docker auth and build
+      - name: "Docker Auth"
+        uses: "docker/login-action@v3"
+        with:
+          username: "oauth2accesstoken"
+          password: "${{ steps.auth.outputs.auth_token }}"
+          registry: "${{ env.REGION }}-docker.pkg.dev"
