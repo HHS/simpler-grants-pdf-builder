@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add new coaches and designers
+  - Remove a couple of retired coaches
+
 ### Changed
 
 - Remove stroke on CDC logo svg

@@ -9,6 +9,44 @@ from martor.models import MartorField
 
 from .utils import create_subsection_html_id
 
+COACH_CHOICES = [
+    ("aarti", "Aarti"),
+    ("alex", "Alex"),
+    ("emily", "Emily"),
+    ("hannah", "Hannah"),
+    ("idit", "Idit"),
+    ("julie", "Julie"),
+    ("july", "July"),
+    ("moira", "Moira"),
+    ("morgan", "Morgan"),
+    ("shane", "Shane"),
+]
+
+DESIGNER_CHOICES = [
+    ("bloom-abbey", "Abbey"),
+    ("bloom-adam", "Adam"),
+    ("bloom-emily-b", "Emily B"),
+    ("bloom-emily-i", "Emily I"),
+    ("bloom-jackie", "Jackie"),
+    ("bloom-kevin", "Kevin"),
+    ("bloom-yasmine", "Yasmine"),
+    ("hrsa-betty", "Betty"),
+    ("hrsa-doretha", "Doretha"),
+    ("hrsa-gwen", "Gwen"),
+    ("hrsa-randy", "Randy"),
+    ("hrsa-stephanie", "Stephanie"),
+]
+
+
+STATUS_CHOICES = [
+    ("draft", "Draft"),
+    ("active", "Active"),
+    ("ready-for-adam", "👀 Adam"),
+    ("review", "In review"),
+    ("published", "Published"),
+]
+
+
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
     ("landscape-cdc-white", "CDC Landscape (Light)"),
@@ -24,19 +62,6 @@ THEME_CHOICES = [
     ("portrait-hrsa-blue", "HRSA (Default)"),
     ("portrait-hrsa-white", "HRSA (Light)"),
     ("portrait-ihs-white", "IHS (Light)"),
-]
-
-
-DESIGNER_CHOICES = [
-    ("bloom-adam", "Adam"),
-    ("bloom-emily", "Emily"),
-    ("bloom-kevin", "Kevin"),
-    ("bloom-yasmine", "Yasmine"),
-    ("hrsa-betty", "Betty"),
-    ("hrsa-doretha", "Doretha"),
-    ("hrsa-gwen", "Gwen"),
-    ("hrsa-randy", "Randy"),
-    ("hrsa-stephanie", "Stephanie"),
 ]
 
 
@@ -191,16 +216,6 @@ class Nofo(models.Model):
         help_text="Defines the icon style on section cover pages.",
     )
 
-    COACH_CHOICES = [
-        ("emily", "Emily"),
-        ("hannah", "Hannah"),
-        ("julie", "Julie"),
-        ("july", "July"),
-        ("laura", "Laura"),
-        ("moira", "Moira"),
-        ("morgan", "Morgan"),
-    ]
-
     coach = models.CharField(
         max_length=16,
         choices=COACH_CHOICES,
@@ -214,14 +229,6 @@ class Nofo(models.Model):
         blank=True,
         help_text="The designer is responsible for the layout of this NOFO.",
     )
-
-    STATUS_CHOICES = [
-        ("draft", "Draft"),
-        ("active", "Active"),
-        ("ready_for_adam", "👀 Adam"),
-        ("review", "In review"),
-        ("published", "Published"),
-    ]
 
     status = models.CharField(
         max_length=32,
