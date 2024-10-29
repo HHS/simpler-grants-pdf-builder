@@ -38,7 +38,8 @@ on:
 env:
   AR_REGION: "us"
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE: ${{ secrets.GCP_SERVICE_ID }}
+  REPOSITORY: ${{ secrets.GCP_AR_REPO_NAME }}
+  SERVICE: ${{ secrets.GCP_SERVICE_NAME }}
   SERVICE_REGION: "us-central1"
 
 jobs:
@@ -58,7 +59,7 @@ jobs:
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v2"
         with:
-          credentials_json: ${{ secrets.GCP_IAM_SA_CREDENTIALS }} # Replace with the name of your GitHub Actions secret
+          credentials_json: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
 
       # BEGIN - Docker auth and build
       - name: "Docker Auth"
@@ -68,9 +69,9 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
 
-      - name: Verify Docker Login
-        run: docker info
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, we are logged into both services
+      - name: "Build and Push Container"
+        run: |-
+          DOCKER_TAG="${{ env.AR_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
+          echo $DOCKER_TAG
+          docker build --tag "${DOCKER_TAG}" .
+          docker push "${DOCKER_TAG}"
