@@ -27,7 +27,6 @@ from .nofo import (
     create_nofo,
     decompose_empty_tags,
     decompose_instructions_tables,
-    escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
     find_incorrectly_nested_heading_levels,
@@ -3833,62 +3832,6 @@ class TestAddEndnotesHeaderIfExists(TestCase):
             str(soup),
             '<div><ol><li id="footnote-0">Item 1</li></ol><hr/><h2>Endnotes</h2></div>',
         )
-
-
-class TestEscapeAsterisksInTableCells(TestCase):
-    def test_asterisk_escaped_in_table_cells(self):
-        html = "<table><tr><td>Test* Text</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"Test\* Text", soup.td.text)
-
-    def test_already_escaped_asterisk_not_doubly_escaped(self):
-        html = "<table><tr><td>Test\\* Text</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"Test\* Text", soup.td.text)
-        self.assertNotIn(r"Test\\* Text", soup.td.text)
-
-    def test_multiple_asterisks_escaped(self):
-        html = "<table><tr><td>*Test* Text*</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"\*Test\* Text\*", soup.td.text)
-
-    def test_no_asterisks_unmodified(self):
-        html = "<table><tr><td>No asterisks here</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        original_text = soup.td.text
-        escape_asterisks_in_table_cells(soup)
-        self.assertEqual(original_text, soup.td.text)
-
-    def test_asterisk_in_nested_tags_preserved(self):
-        html = "<table><tr><td>Before <span>Test* Text</span> After</td></tr></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"Test\* Text", soup.span.text)
-
-    def test_asterisk_outside_of_table_not_modified(self):
-        html = "<div><p>Test*</p><table><tr><td>Test* Text</td></tr></table></div>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(
-            str(soup),
-            "<div><p>Test*</p><table><tr><td>Test\\* Text</td></tr></table></div>",
-        )
-
-    def test_asterisk_escaped_in_table_headings(self):
-        html = "<table><thead><tr><th>Test* Text</th></tr></thead></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"Test\* Text", soup.th.text)
-
-    def test_already_escaped_asterisk_not_doubly_escaped_in_table_headings(self):
-        html = "<table><thead><tr><th>Test\\* Text</th></tr></thead></table>"
-        soup = BeautifulSoup(html, "html.parser")
-        escape_asterisks_in_table_cells(soup)
-        self.assertIn(r"Test\* Text", soup.th.text)
-        self.assertNotIn(r"Test\\* Text", soup.th.text)
 
 
 class TestGetFontSizeFromCssText(TestCase):
