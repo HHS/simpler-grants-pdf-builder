@@ -63,7 +63,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
         for parent in el.parents:
             if parent.name == "td":
                 self._remove_classes_recursive(el)
-                return str(el)
+                return str(el).replace("*", "&ast;")
 
         # save the footnote list as HTML so that the ids aren't lost
         first_li = el.find("li")
@@ -80,7 +80,7 @@ class TablesAndStuffInTablesConverter(MarkdownConverter):
         for parent in el.parents:
             if parent.name == "td":
                 self._remove_classes_recursive(el)
-                return str(el)
+                return str(el).replace("*", "&ast;")
 
         return super().convert_ul(el, text, convert_as_inline)
 
