@@ -357,8 +357,10 @@ table.table--with-caption caption {
   break-inside: avoid-column;
 }
 
-table tr.table-row--light-blue-bg td {
-  background-color: #c5d7f1;
+table tr.light-blue-bg td,
+table tr td.light-blue-bg,
+table tr td.light-blue-bg ~ td {
+  background-color: var(--color--light-table-blue);
 }
 
 table th,
