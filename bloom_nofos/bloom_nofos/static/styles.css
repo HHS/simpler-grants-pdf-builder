@@ -148,8 +148,8 @@ details > summary > span:hover {
   width: 1%;
 }
 
-.nofo_index table tr.ready_for_adam th,
-.nofo_index table tr.ready_for_adam td {
+.nofo_index table tr.ready-for-adam th,
+.nofo_index table tr.ready-for-adam td {
   background: #f2e4d4;
 }
 
