@@ -22,6 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - More left padding on callout box lists that are NOT in the right hand column
 - More specific CSS selector for application table divs
 - Application list checkbox cells that are not sublists have bottom borders
+- "Adam 👀" status needs yellow highlight background
 
 ## [1.30.0] - 2023-10-28
 
