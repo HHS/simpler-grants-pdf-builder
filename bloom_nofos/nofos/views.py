@@ -66,7 +66,6 @@ from .nofo import (
     create_nofo,
     decompose_empty_tags,
     decompose_instructions_tables,
-    escape_asterisks_in_table_cells,
     find_broken_links,
     find_external_links,
     find_incorrectly_nested_heading_levels,
@@ -297,12 +296,12 @@ def nofo_import(request, pk=None):
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
 
-        # Specify the output file path
-        output_file_path = "debug_output.html"
+        # # Specify the output file path
+        # output_file_path = "debug_output.html"
 
-        # Write the HTML content to the file
-        with open(output_file_path, "w", encoding="utf-8") as file:
-            file.write(str(soup))
+        # # Write the HTML content to the file
+        # with open(output_file_path, "w", encoding="utf-8") as file:
+        #     file.write(str(soup))
 
         # if there are no h1s, then h2s are the new top
         top_heading_level = "h1" if soup.find("h1") else "h2"
@@ -319,7 +318,6 @@ def nofo_import(request, pk=None):
         unwrap_empty_elements(soup)
         decompose_empty_tags(soup)
         combine_consecutive_links(soup)
-        escape_asterisks_in_table_cells(soup)
         remove_google_tracking_info_from_links(soup)
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup, top_heading_level)

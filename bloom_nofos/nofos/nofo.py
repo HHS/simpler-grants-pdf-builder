@@ -273,7 +273,6 @@ def _build_nofo(nofo, sections):
 
             if html_body:
                 md_body = md("".join(html_body), escape_misc=False)
-                md_body = md_body.replace("\\\\", "\\")
 
             model_subsection = Subsection(
                 name=subsection.get("name", ""),
@@ -478,6 +477,7 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
         ]
 
         for tag in body_descendents:
+            # handle callout boxes
             if tag.name == "table" and is_callout_box_table(tag):
                 # Grab the first td or th
                 cell = tag.find("td")
@@ -1369,25 +1369,6 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
 
             # Insert the h1 element before the ol
             last_ol.insert_before(heading_tag)
-
-
-def escape_asterisks_in_table_cells(soup):
-    r"""
-    This function mutates the soup!
-
-    Replaces "*" with "\*" in table cells, unless the asterisk is already preceded by a backslash.
-
-    This is to solve the problem where "required" elements in tables end up becoming <em> elements by accident.
-    """
-
-    # Match asterisks not preceded by a backslash
-    pattern = re.compile(r"(?<!\\)\*")
-
-    for cell in soup.find_all(["td", "th"]):
-        for content in cell.find_all(string=True):
-            # Use the regex pattern to replace '*' with '\*' only if '*' is not already preceded by '\'
-            escaped_content = pattern.sub(r"\\*", content)
-            content.replace_with(escaped_content)
 
 
 def _get_font_size_from_cssText(cssText):
