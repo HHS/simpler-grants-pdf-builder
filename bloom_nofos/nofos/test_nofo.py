@@ -268,6 +268,52 @@ class TablesAndStuffInTablesConverterOLSTest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), pretty_html)
 
+    def test_ol_start_one(self):
+        html = '<ol start="1"><li>Item 1</li><li>Item 2</li></ol>'
+        expected_markdown = "1. Item 1\n2. Item 2"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ol_asterisk_list(self):
+        html = '<ol start="2"><li>Item 1*</li><li>Item 2</li></ol>'
+        expected_markdown = '<ol start="2"><li>Item 1*</li><li>Item 2</li></ol>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ol_asterisk_table(self):
+        html = "<table><tr><th>Header 1</th><th>Header 2</th></tr><tr><td><ol><li>Item 1*</li><li>Item 2</li></ol></td><td>Cell 2</td></tr></table>"
+        expected_markdown = "| Header 1 | Header 2 |\n| --- | --- |\n| <ol><li>Item 1&ast;</li><li>Item 2</li></ol> | Cell 2 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ol_asterisk_table_colspan(self):
+        html = '<table><tr><th colspan="2">Header 1</th></tr><tr><td><ol><li>Item 1*</li><li>Item 2</li></ol></td><td>Cell 2</td></tr></table>'
+        expected_markdown = '<table>\n <tr>\n  <th colspan="2">\n   Header 1\n  </th>\n </tr>\n <tr>\n  <td>\n   <ol>\n    <li>\n     Item 1*\n    </li>\n    <li>\n     Item 2\n    </li>\n   </ol>\n  </td>\n  <td>\n   Cell 2\n  </td>\n </tr>\n</table>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+
+class TablesAndStuffInTablesConverterULSTest(TestCase):
+    maxDiff = None
+
+    def test_ul_asterisk_list(self):
+        html = "<ul><li>Item 1*</li><li>Item 2</li></ul>"
+        expected_markdown = "* Item 1\\*\n* Item 2"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ul_asterisk_table(self):
+        html = "<table><tr><th>Header 1</th><th>Header 2</th></tr><tr><td><ul><li>Item 1*</li><li>Item 2</li></ul></td><td>Cell 2</td></tr></table>"
+        expected_markdown = "| Header 1 | Header 2 |\n| --- | --- |\n| <ul><li>Item 1&ast;</li><li>Item 2</li></ul> | Cell 2 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_ul_asterisk_table_colspan(self):
+        html = '<table><tr><th colspan="2">Header 1</th></tr><tr><td><ul><li>Item 1*</li><li>Item 2</li></ul></td><td>Cell 2</td></tr></table>'
+        expected_markdown = '<table>\n <tr>\n  <th colspan="2">\n   Header 1\n  </th>\n </tr>\n <tr>\n  <td>\n   <ul>\n    <li>\n     Item 1*\n    </li>\n    <li>\n     Item 2\n    </li>\n   </ul>\n  </td>\n  <td>\n   Cell 2\n  </td>\n </tr>\n</table>'
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
 
 class TablesAndStuffInTablesConverterASTest(TestCase):
     maxDiff = None
