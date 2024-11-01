@@ -182,11 +182,11 @@ style_map_manager.add_style(
     location_in_nofo="Step 1 > Summary > Funding Strategy > Component Funding > Overview",
     note="This is how we represent H7s",
 )
-style_map_manager.add_style(
-    style_rule="p[style-name='Default'] => p",
-    location_in_nofo="Step 6 > Reporting > All content in table",
-    note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
-)
+# style_map_manager.add_style(
+#     style_rule="p[style-name='Default'] => p",
+#     location_in_nofo="Step 6 > Reporting > All content in table",
+#     note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
+# )
 style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",
