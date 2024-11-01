@@ -13,7 +13,7 @@ from .utils import (
 
 register = template.Library()
 
-uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--arrow_upward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend 123">'
+uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--arrow_upward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend">'
 uswds_arrow_downward_icon = '<img class="usa-icon usa-icon--arrow_downward" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/arrow_downward.svg" alt="Report downward trend">'
 uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="https://bn-ptzepiewjq-uc.a.run.app/static/img/usa-icons/check_box_outline_blank.svg" alt="Checkbox">'
 
