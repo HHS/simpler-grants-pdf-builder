@@ -1,11 +1,84 @@
-from django.test import TestCase
+import json
 
+from constance.test import override_config
+from django.test import TestCase
+from easyaudit.models import CRUDEvent
+from users.models import BloomUser as User
+
+from .models import Nofo
 from .utils import (
     StyleMapManager,
     clean_string,
+    create_nofo_audit_event,
     create_subsection_html_id,
     get_icon_path_choices,
 )
+
+
+class CreateNofoAuditEventTests(TestCase):
+
+    def setUp(self):
+        # Set up a user and a NOFO object to pass into the function
+        self.user = User.objects.create(email="takumi@speed-stars.com")
+        self.nofo = Nofo.objects.create(title="Akina Pass NOFO")
+
+    def test_audit_event_exists(self):
+        create_nofo_audit_event("nofo_print", self.nofo, self.user)
+
+        event = CRUDEvent.objects.last()
+        self.assertEqual(event.event_type, CRUDEvent.UPDATE)
+        self.assertEqual(event.object_id, str(self.nofo.id))
+        self.assertEqual(event.user, self.user)
+
+    def test_valid_event_type_nofo_print_test(self):
+        with override_config(DOCRAPTOR_TEST_MODE=True):
+            create_nofo_audit_event("nofo_print", self.nofo, self.user)
+
+        event = CRUDEvent.objects.last()
+        # Check changed_fields JSON structure for "nofo_print" with "test" mode
+        changed_fields = json.loads(event.changed_fields)
+        self.assertEqual(changed_fields["action"], "nofo_print")
+        self.assertEqual(changed_fields["print_mode"], ["test"])
+        self.assertTrue("updated" in changed_fields)
+
+    def test_valid_event_type_nofo_print_live(self):
+        with override_config(DOCRAPTOR_TEST_MODE=False):
+            create_nofo_audit_event("nofo_print", self.nofo, self.user)
+
+        event = CRUDEvent.objects.last()
+        # Check changed_fields JSON structure for "nofo_print" with "live" mode
+        changed_fields = json.loads(event.changed_fields)
+        self.assertEqual(changed_fields["action"], "nofo_print")
+        self.assertEqual(changed_fields["print_mode"], ["live"])
+        self.assertTrue("updated" in changed_fields)
+
+    def test_valid_event_type_nofo_import(self):
+        create_nofo_audit_event("nofo_import", self.nofo, self.user)
+
+        event = CRUDEvent.objects.last()
+        changed_fields = json.loads(event.changed_fields)
+        self.assertEqual(changed_fields["action"], "nofo_import")
+        self.assertNotIn("print_mode", changed_fields)
+        self.assertTrue("updated" in changed_fields)
+
+    def test_valid_event_type_nofo_reimport(self):
+        create_nofo_audit_event("nofo_reimport", self.nofo, self.user)
+
+        event = CRUDEvent.objects.last()
+        changed_fields = json.loads(event.changed_fields)
+        self.assertEqual(changed_fields["action"], "nofo_reimport")
+        self.assertNotIn("print_mode", changed_fields)
+        self.assertTrue("updated" in changed_fields)
+
+    def test_invalid_event_type_raises_error(self):
+        # Test with an invalid event_type
+        with self.assertRaises(ValueError) as context:
+            create_nofo_audit_event("nofo_deleted", self.nofo, self.user)
+
+        self.assertEqual(
+            str(context.exception),
+            "Invalid event_type 'nofo_deleted'. Allowed values are: nofo_import, nofo_print, nofo_reimport",
+        )
 
 
 class TestGetIconPathChoices(TestCase):

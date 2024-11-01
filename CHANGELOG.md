@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add button to copy list of broken links on nofo_edit page
 - Add new coaches and designers
   - Remove a couple of retired coaches
+- Add audit events for printing, importing or reimporting a NOFO
 
 ### Changed
 
