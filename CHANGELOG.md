@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Add migration to fix previous "PRINT..." audit events that were not JSON formatted
 - Convert literal asterisks to `&ast;` inside of HTML lists in table cells
 - More left padding on callout box lists that are NOT in the right hand column
 - More specific CSS selector for application table divs
