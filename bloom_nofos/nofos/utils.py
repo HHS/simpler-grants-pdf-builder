@@ -1,27 +1,54 @@
+import json
 import re
 
+from constance import config
+from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
+from django.utils import timezone
+from easyaudit.models import CRUDEvent
 from slugify import slugify
-
-
-def match_view_url(url):
-    """
-    Check if the given URL matches the pattern "/nofos/{integer}".
-
-    Args:
-    url (str): The URL to be checked.
-
-    Returns:
-    bool: True if the URL matches the pattern, False otherwise.
-    """
-    # Regular expression to match the specified pattern
-    pattern = r"^/nofos/\d+$"
-
-    return bool(re.match(pattern, url))
 
 
 def clean_string(string):
     """Cleans the given string by removing extra whitespace."""
     return re.sub(r"\s+", " ", string.strip())
+
+
+def create_nofo_audit_event(event_type, nofo, user):
+    # Define allowed event types
+    allowed_event_types = ["nofo_import", "nofo_print", "nofo_reimport"]
+
+    # Check if event_type is valid
+    if event_type not in allowed_event_types:
+        raise ValueError(
+            f"Invalid event_type '{event_type}'. Allowed values are: {', '.join(allowed_event_types)}"
+        )
+
+    # Get current time
+    now = timezone.now()
+    changed_fields_json = {
+        "action": event_type,
+        "updated": [str(now.strftime("%Y-%m-%d %H:%M:%S.%f"))],
+    }
+
+    # Add print_mode if the event_type involves printing
+    if event_type == "nofo_print":
+        changed_fields_json["print_mode"] = [
+            "test" if config.DOCRAPTOR_TEST_MODE else "live"
+        ]
+
+    # Create the audit log event
+    CRUDEvent.objects.create(
+        event_type=CRUDEvent.UPDATE,
+        object_id=nofo.pk,
+        content_type=ContentType.objects.get_for_model(nofo),
+        object_repr=str(nofo),
+        object_json_repr=serializers.serialize("json", [nofo]),
+        changed_fields=json.dumps(changed_fields_json),
+        user=user if user else None,
+        user_pk_as_string=str(user.pk) if user else "",
+        datetime=now,
+    )
 
 
 def create_subsection_html_id(counter, subsection):
@@ -53,6 +80,22 @@ def get_icon_path_choices(theme):
             "(Standard) White background, color icon, color outline",
         ),
     ]
+
+
+def match_view_url(url):
+    """
+    Check if the given URL matches the pattern "/nofos/{integer}".
+
+    Args:
+    url (str): The URL to be checked.
+
+    Returns:
+    bool: True if the URL matches the pattern, False otherwise.
+    """
+    # Regular expression to match the specified pattern
+    pattern = r"^/nofos/\d+$"
+
+    return bool(re.match(pattern, url))
 
 
 class StyleMapManager:

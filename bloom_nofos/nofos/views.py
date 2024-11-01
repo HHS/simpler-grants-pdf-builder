@@ -86,7 +86,7 @@ from .nofo import (
     unwrap_empty_elements,
     unwrap_nested_lists,
 )
-from .utils import create_subsection_html_id, style_map_manager
+from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
 
 ###########################################################
 ###################### NOFO VIEWS ########################
@@ -361,6 +361,12 @@ def nofo_import(request, pk=None):
                 messages.SUCCESS,
                 "Re-imported NOFO from file: {}".format(nofo.filename),
             )
+
+            # Create audit event for reimporting a nofo
+            create_nofo_audit_event(
+                event_type="nofo_reimport", nofo=nofo, user=request.user
+            )
+
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
         else:
@@ -378,6 +384,11 @@ def nofo_import(request, pk=None):
             nofo.group = request.user.group  # set group separately with request.user
             suggest_all_nofo_fields(nofo, soup)
             nofo.save()
+
+            # Create audit event for importing a nofo
+            create_nofo_audit_event(
+                event_type="nofo_import", nofo=nofo, user=request.user
+            )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
@@ -554,6 +565,10 @@ class NofoEditStatusView(BaseNofoEditView):
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
+    # def get(self, request, pk):
+    #     nofo = self.get_object()
+    #     return HttpResponse("hello, {}".format(nofo.id))
+
     def post(self, request, pk):
         nofo = self.get_object()
 
@@ -603,21 +618,9 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 mode, nofo_filename
             )
 
-            # Audit event for a printed NOFO
-            now = timezone.now()
-            event_string = "PRINT (TEST)" if config.DOCRAPTOR_TEST_MODE else "PRINT"
-            CRUDEvent.objects.create(
-                event_type=CRUDEvent.UPDATE,
-                object_id=nofo.pk,
-                content_type=ContentType.objects.get_for_model(nofo),
-                object_repr=str(nofo),
-                object_json_repr=serializers.serialize("json", [nofo]),
-                changed_fields="{}: NOFO (ID #{}) at {}".format(
-                    event_string, nofo.id, now
-                ),
-                user=request.user if request.user else None,
-                user_pk_as_string=str(request.user.pk) if request.user else "",
-                datetime=now,
+            # Create audit event for printing a nofo
+            create_nofo_audit_event(
+                event_type="nofo_print", nofo=nofo, user=request.user
             )
 
             return response
