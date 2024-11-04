@@ -167,9 +167,9 @@ class Nofo(models.Model):
     )
 
     COVER_CHOICES = [
-        ("nofo--cover-page--hero", "Hero (large) image"),
-        ("nofo--cover-page--medium", "Small image"),
-        ("nofo--cover-page--text", "No image, large text"),
+        ("nofo--cover-page--hero", "Full coverage with image"),
+        ("nofo--cover-page--medium", "Standard image"),
+        ("nofo--cover-page--text", "Text only"),
     ]
 
     cover = models.CharField(
@@ -200,7 +200,7 @@ class Nofo(models.Model):
         ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
         (
             "nofo--icons--solid",
-            "(Standard) White background, color icon, color outline",
+            "(Outlined) White background, color icon, color outline",
         ),
         (
             "nofo--icons--thin",

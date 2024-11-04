@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add CSS class to add bullets to lists
 - "Adam 👀" is now "Ready for QA"
   - We are cleaning up our act, to my enormous disappointment
+- Change the string values for the cover image names
 
 ### Fixed
 
