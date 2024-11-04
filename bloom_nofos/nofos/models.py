@@ -41,7 +41,7 @@ DESIGNER_CHOICES = [
 STATUS_CHOICES = [
     ("draft", "Draft"),
     ("active", "Active"),
-    ("ready-for-adam", "👀 Adam"),
+    ("ready-for-qa", "Ready for QA"),
     ("review", "In review"),
     ("published", "Published"),
 ]
