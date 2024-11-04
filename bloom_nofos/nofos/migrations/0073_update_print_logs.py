@@ -22,28 +22,20 @@ def update_print_logs(apps, schema_editor):
             match = re.match(test_pattern, log.changed_fields)
             timestamp = match.group(2)
 
-            # TODO remove after running migration
-            print("\n-- test log: {}".format(log.changed_fields))
             # Construct JSON for 'test' print log
             log.changed_fields = json.dumps(
                 {"action": "nofo_print", "print_mode": ["test"], "updated": [timestamp]}
             )
-            # TODO remove after running migration
-            print("-- changed test log: {}".format(log.changed_fields))
 
         elif re.match(live_pattern, log.changed_fields):
             # Handle 'LIVE' print logs
             match = re.match(live_pattern, log.changed_fields)
             timestamp = match.group(2)
 
-            # TODO remove after running migration
-            print("\n-- live log: {}".format(log.changed_fields))
             # Construct JSON for 'live' print log
             log.changed_fields = json.dumps(
                 {"action": "nofo_print", "print_mode": ["live"], "updated": [timestamp]}
             )
-            # TODO remove after running migration
-            print("-- changed live log: {}".format(log.changed_fields))
 
         # Save the updated log entry
         log.save()
