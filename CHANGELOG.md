@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Remove stroke on CDC logo svg
 - Add CSS class to add bullets to lists
+- "Adam 👀" is now "Ready for QA"
+  - We are cleaning up our act, to my enormous disappointment
 
 ### Fixed
 
