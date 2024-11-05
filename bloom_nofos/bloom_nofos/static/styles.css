@@ -125,6 +125,17 @@ details > summary > span:hover {
   text-decoration: none;
 }
 
+/* Link check page */
+
+.pre--code-box {
+  background-color: #f0f0f0;
+  box-shadow: inset 1px 1px 15px 5px #a9aeb1;
+  border-radius: 8px;
+  border: 2px solid #71767a;
+  padding: 20px;
+  overflow-y: auto;
+}
+
 /* List page */
 
 .nofo_index .nofo_index--filter a {

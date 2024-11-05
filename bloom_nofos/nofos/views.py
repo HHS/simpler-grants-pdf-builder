@@ -3,7 +3,6 @@ import io
 
 import docraptor
 import mammoth
-import requests
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -23,6 +22,7 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
+    FormView,
     ListView,
     UpdateView,
 )
@@ -31,6 +31,7 @@ from easyaudit.models import CRUDEvent
 from bloom_nofos.utils import cast_to_boolean
 
 from .forms import (
+    CheckNOFOLinkSingleForm,
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
@@ -67,6 +68,7 @@ from .nofo import (
     decompose_empty_tags,
     decompose_instructions_tables,
     find_broken_links,
+    find_external_link,
     find_external_links,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
@@ -817,6 +819,25 @@ class NofoSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 ###########################################################
 
 
+class CheckNOFOLinkSingleView(FormView):
+    template_name = "nofos/nofo_check_link_single.html"
+    form_class = CheckNOFOLinkSingleForm
+
+    def form_valid(self, form):
+        url = form.cleaned_data["url"]
+        response_data = find_external_link(url)
+
+        if "error" in response_data:
+            context = self.get_context_data(form=form)
+            context.update({"error": response_data["error"]})
+            return self.render_to_response(context)
+
+        # Add information to the context
+        context = self.get_context_data(form=form)
+        context.update(response_data)
+        return self.render_to_response(context)
+
+
 class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_check_links.html"
@@ -824,18 +845,6 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
-
-        # TODO: make this a standalone route
-        # page = "https://hdsbpc.cdc.gov/s/"
-        # sess = requests.session()
-        # headers = {
-        #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
-        # }
-        # response = sess.get(page, headers=headers)
-        # open("link.html", "wb").write(response.text.encode())
-        # print("page: ", page)
-        # print("done", response.status_code)
-
         context["links"] = find_external_links(self.object, with_status)
         context["with_status"] = with_status
         return context

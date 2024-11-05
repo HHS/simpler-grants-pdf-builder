@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Check a link TODO add link if link
+{% endblock %}
+
+{% block body_class %}nofo_link{% endblock %}
+
+{% block content %}
+  {% url 'nofos:nofo_edit' nofo.id as back_href %}
+  {% include "includes/page_heading.html" with title="Check a link" back_text="Back to all NOFOs" back_href=back_href only %}
+
+  <form id="nofo-check-link-single--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Check link</button>
+  </form>
+
+  {% if error %}
+    <br>
+    <hr>
+    <h2 class="font-heading-lg">HTTP error</h2>
+    <pre>{{ error }}</pre>
+  {% endif %}
+
+  {% if url %}
+    <br>
+    <hr>
+    <h2 class="font-heading-lg">HTTP response</h2>
+    <table class="usa-table usa-table--font-size-1">
+      <thead class="usa-sr-only">
+        <tr>
+          <th scope="col">Key</th>
+          <th scope="col">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><strong>URL</strong></th>
+          <td>
+            {{ url }}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Title</strong></th>
+          <td>
+            {{ title }}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Status code</strong></th>
+          <td>
+            {{ status_code }} <span aria-hidden="true">{% if status_code < 300 %}🟢{% elif status_code < 400 %}🔵{% elif status_code < 500 %}⛔️{% elif status_code < 600 %}🟠{% endif %}</span>
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+
+    <details>
+      <summary><span class="text-bold font-sans-md">Page content</span></summary>
+      <div>
+        <pre class="pre--code-box">{{ content }}</pre>
+      </div>
+    </details>
+  {% endif %}
+{% endblock %}
