@@ -12,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 from django.conf import settings
 from django.db import transaction
+from django.utils.html import escape
 from markdownify import MarkdownConverter
 from slugify import slugify
 
@@ -19,6 +20,10 @@ from .models import Nofo, Section, Subsection
 from .utils import clean_string, create_subsection_html_id
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
+# Use Firefox user agent
+REQUEST_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
+}
 
 
 class TablesAndStuffInTablesConverter(MarkdownConverter):
@@ -556,51 +561,6 @@ def get_cover_image(nofo):
     return "img/cover.jpg"
 
 
-def _update_link_statuses(all_links):
-    logging.basicConfig(
-        level=logging.WARNING
-    )  # You can adjust the level to DEBUG, ERROR, etc.
-    logger = logging.getLogger(__name__)
-
-    def check_link_status(link):
-        # Use Firefox user agent
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
-        }
-
-        try:
-            response = requests.head(
-                link["url"], timeout=5, allow_redirects=True, headers=headers
-            )
-            link["status"] = response.status_code
-            if len(response.history):
-                link["redirect_url"] = response.url
-        except requests.RequestException as e:
-            link["error"] = "Error: " + str(e)
-            # print out warning to console if not running tests
-            if not "test" in sys.argv:
-                logger.warning(
-                    "Request failed for URL: {} - {}".format(link["url"], link["error"])
-                )
-
-        return link
-
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        # Submit all tasks and create a dictionary to track future to link mapping
-        future_to_link = {
-            executor.submit(check_link_status, link): link for link in all_links
-        }
-
-        for future in as_completed(future_to_link):
-            link = future_to_link[future]
-            try:
-                result = future.result()
-                # Update the link in all_links with the result
-                link.update(result)
-            except Exception as e:
-                print(f"Error checking link {link['url']}: {e}")
-
-
 ###########################################################
 ############ FIND THINGS IN THE NOFO DOCUMENT #############
 ###########################################################
@@ -722,6 +682,103 @@ def find_incorrectly_nested_heading_levels(nofo):
                         )
 
     return incorrectly_nested_heading_levels
+
+
+def _update_link_statuses(all_links):
+    logging.basicConfig(
+        level=logging.WARNING
+    )  # You can adjust the level to DEBUG, ERROR, etc.
+    logger = logging.getLogger(__name__)
+
+    def check_link_status(link):
+        try:
+            response = requests.head(
+                link["url"], timeout=5, allow_redirects=True, headers=REQUEST_HEADERS
+            )
+            link["status"] = response.status_code
+            if len(response.history):
+                link["redirect_url"] = response.url
+        except requests.RequestException as e:
+            link["error"] = "Error: " + str(e)
+            # print out warning to console if not running tests
+            if not "test" in sys.argv:
+                logger.warning(
+                    "Request failed for URL: {} - {}".format(link["url"], link["error"])
+                )
+
+        return link
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        # Submit all tasks and create a dictionary to track future to link mapping
+        future_to_link = {
+            executor.submit(check_link_status, link): link for link in all_links
+        }
+
+        for future in as_completed(future_to_link):
+            link = future_to_link[future]
+            try:
+                result = future.result()
+                # Update the link in all_links with the result
+                link.update(result)
+            except Exception as e:
+                print(f"Error checking link {link['url']}: {e}")
+
+
+def find_external_link(url):
+    """
+    Fetches the content of a given URL and returns relevant information, including the HTML title, status code, and escaped HTML content.
+
+    Parameters:
+        url (str): The URL to be fetched.
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - 'url' (str): The original URL that was fetched.
+            - 'status_code' (int): The HTTP status code returned by the server.
+            - 'title' (str): The title of the HTML page, or 'No Title Found' if no title is present.
+            - 'content' (str): The escaped HTML content of the page.
+            or
+            - 'error' (str): If an exception occurs, the error message is returned instead of other fields.
+
+    This function sends a GET request to the provided URL, extracts and returns key metadata such as the page title,
+    and HTML content. If the request fails, it returns an error message with details.
+    The HTML content is escaped to prevent XSS vulnerabilities when used in an unsafe context.
+    """
+
+    def _extract_title(html):
+        """
+        Extracts the <title> from the HTML content.
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        title_tag = soup.find("title")
+        return title_tag.string if title_tag else "No Title Found"
+
+    logging.basicConfig(
+        level=logging.WARNING
+    )  # You can adjust the level to DEBUG, ERROR, etc.
+    logger = logging.getLogger(__name__)
+
+    try:
+        sess = requests.session()
+        response = sess.get(url, headers=REQUEST_HEADERS)
+        response.raise_for_status()
+        # Safely escape the content to prevent XSS
+        content = escape(response.text)
+        title = _extract_title(response.text)
+        return {
+            "url": url,
+            "status_code": response.status_code,
+            "title": title,
+            "content": content,
+        }
+
+    except requests.RequestException as e:
+        error_string = "Error: " + str(e)
+        # print out warning to console if not running tests
+        if not "test" in sys.argv:
+            logger.warning("Request failed for URL: {} - {}".format(url, error_string))
+
+        return {"error": error_string}
 
 
 def find_external_links(nofo, with_status=False):

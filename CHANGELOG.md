@@ -8,6 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add new view to verify individual external URL responses
 - Add button to copy list of broken links on nofo_edit page
 - Add new coaches and designers
   - Remove a couple of retired coaches
