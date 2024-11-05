@@ -9,8 +9,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.contenttypes.models import ContentType
-from django.core import serializers
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F
@@ -26,7 +24,6 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from easyaudit.models import CRUDEvent
 
 from bloom_nofos.utils import cast_to_boolean
 
@@ -52,7 +49,11 @@ from .forms import (
     SubsectionCreateForm,
     SubsectionEditForm,
 )
-from .mixins import GroupAccessObjectMixin, has_nofo_group_permission_func
+from .mixins import (
+    GroupAccessObjectMixin,
+    SuperuserRequiredMixin,
+    has_nofo_group_permission_func,
+)
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_body_if_no_body,
@@ -819,7 +820,7 @@ class NofoSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 ###########################################################
 
 
-class CheckNOFOLinkSingleView(FormView):
+class CheckNOFOLinkSingleView(SuperuserRequiredMixin, FormView):
     template_name = "nofos/nofo_check_link_single.html"
     form_class = CheckNOFOLinkSingleForm
 
@@ -827,14 +828,10 @@ class CheckNOFOLinkSingleView(FormView):
         url = form.cleaned_data["url"]
         response_data = find_external_link(url)
 
-        if "error" in response_data:
-            context = self.get_context_data(form=form)
-            context.update({"error": response_data["error"]})
-            return self.render_to_response(context)
-
         # Add information to the context
         context = self.get_context_data(form=form)
         context.update(response_data)
+
         return self.render_to_response(context)
 
 
