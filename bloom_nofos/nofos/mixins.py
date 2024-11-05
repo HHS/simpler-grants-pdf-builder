@@ -29,3 +29,11 @@ class GroupAccessObjectMixin:
 
         # Continue with normal processing, which will include deletion
         return super().dispatch(request, *args, **kwargs)
+
+
+class SuperuserRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied("You don’t have permission to view this page.")
+
+        return super().dispatch(request, *args, **kwargs)
