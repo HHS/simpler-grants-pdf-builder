@@ -738,6 +738,7 @@ def find_external_link(url):
             - 'title' (str): The title of the HTML page, or 'No Title Found' if no title is present.
             - 'content' (str): The escaped HTML content of the page.
             or
+            - 'url' (str): The original URL that was fetched.
             - 'error' (str): If an exception occurs, the error message is returned instead of other fields.
 
     This function sends a GET request to the provided URL, extracts and returns key metadata such as the page title,
@@ -778,7 +779,7 @@ def find_external_link(url):
         if not "test" in sys.argv:
             logger.warning("Request failed for URL: {} - {}".format(url, error_string))
 
-        return {"error": error_string}
+        return {"url": url, "error": error_string}
 
 
 def find_external_links(nofo, with_status=False):
