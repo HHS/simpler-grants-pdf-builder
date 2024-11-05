@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Check a link TODO add link if link
+  Check a link: {{ url }}
 {% endblock %}
 
 {% block body_class %}nofo_link{% endblock %}
@@ -25,7 +25,7 @@
     <code>{{ error }}</code>
   {% endif %}
 
-  {% if url %}
+  {% if content %}
     <br>
     <hr>
     <h2 class="font-heading-lg">HTTP response</h2>
