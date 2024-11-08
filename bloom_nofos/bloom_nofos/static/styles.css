@@ -491,6 +491,11 @@ details > summary > span:hover {
   word-break: break-word;
 }
 
+.nofo-edit-table--subsection--body table thead th p,
+.nofo-edit-table--subsection--body table tbody tr:first-of-type th p {
+  font-weight: 400;
+}
+
 .nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link,
 .nofo_edit
   .nofo-edit-table--subsection--name.nofo_edit--heading-error

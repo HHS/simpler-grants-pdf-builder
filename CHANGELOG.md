@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Un-bold paragraphs in table headings
+  - Means that multi-line table headings are unbolded by default
 - Remove stroke on CDC logo svg
 - Add CSS class to add bullets to lists
 - "Adam 👀" is now "Ready for QA"
@@ -24,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- H7 elements are properly recognized as subsections
 - Add migration to fix previous "PRINT..." audit events that were not JSON formatted
 - Convert literal asterisks to `&ast;` inside of HTML lists in table cells
 - More left padding on callout box lists that are NOT in the right hand column
