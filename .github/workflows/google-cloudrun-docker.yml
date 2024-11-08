@@ -52,10 +52,6 @@ jobs:
           docker push "${DOCKER_TAG}"
         # END - Docker auth and build
 
-      - name: "Verify Build SHA"
-        run: |
-          docker run --rm "${{ env.AR_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" env | grep GITHUB_SHA
-
       - name: "Deploy to Cloud Run"
         uses: "google-github-actions/deploy-cloudrun@v2"
         with:
