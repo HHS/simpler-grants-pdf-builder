@@ -1085,6 +1085,30 @@ class HTMLSubsectionTestsH1(TestCase):
         subsection = sections[0].get("subsections")[0]
         self.assertEqual(subsection.get("tag"), "h7")
 
+    def test_get_subsections_from_soup_section_heading_true_h6(self):
+        # starts with h2, so the h6 does not get demoted
+        soup = BeautifulSoup(
+            '<h2>Section 1</h2><h6 id="subsection-1">Subsection 1</h6><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"), top_heading_level="h2"
+        )
+        subsection = sections[0].get("subsections")[0]
+        self.assertEqual(subsection.get("tag"), "h6")
+
+    def test_get_subsections_from_soup_section_heading_h7(self):
+        # starts with h2, so the h7 does not get demoted
+        soup = BeautifulSoup(
+            '<h2>Section 1</h2><div aria-level="7" role="heading">Subsection 1</div><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"), top_heading_level="h2"
+        )
+        subsection = sections[0].get("subsections")[0]
+        self.assertEqual(subsection.get("tag"), "h7")
+
     def test_get_subsections_from_soup_with_whitespace(self):
         soup = BeautifulSoup(
             "<h1><span>Section 1 </span></h1><h2><span>Subsection 1 </span> </h2><p>Section 1 body</p>",
