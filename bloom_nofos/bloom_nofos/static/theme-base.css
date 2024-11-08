@@ -409,6 +409,11 @@ table tbody tr:first-of-type th {
   text-align: left;
 }
 
+table thead th p,
+table tbody tr:first-of-type th p {
+  font-weight: 400;
+}
+
 table thead th > p,
 table tbody tr:first-of-type th > p {
   margin-top: 0;
