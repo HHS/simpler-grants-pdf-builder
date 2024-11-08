@@ -286,6 +286,11 @@ style_map_manager.add_style(
     note="Convert them to li elements.",
 )
 style_map_manager.add_style(
+    style_rule="p[style-name='No Spacing'] => span",
+    location_in_nofo="This represents a non-breaking space",
+    note="Convert to a non-breaking space.",
+)
+style_map_manager.add_style(
     style_rule="p[style-name='Instruction Box Heading'] => strong.instruction-box-heading:fresh",
     location_in_nofo="Instructions for NOFO writers > Heading",
     note="This text will be stripped out.",
