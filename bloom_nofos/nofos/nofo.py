@@ -437,6 +437,16 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
         return newTags[tag_name]
 
+    def is_h7(tag):
+        if (
+            tag.name == "div"
+            and tag.get("role") == "heading"
+            and tag.has_attr("aria-level")
+        ):
+            return True
+
+        return False
+
     def extract_first_header(td):
         for tag_name in heading_tags:
             header_element = td.find(tag_name)
@@ -447,14 +457,18 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
     def get_subsection_dict(heading_tag, order, is_callout_box, body=None):
         if heading_tag:
+            tag_name = (
+                _demote_tag(heading_tag.name)
+                if if_demote_headings
+                else heading_tag.name
+            )
+            if tag_name == "div" and is_h7(heading_tag):
+                tag_name = "h7"
+
             return {
                 "name": clean_string(heading_tag.text),
                 "order": order,
-                "tag": (
-                    _demote_tag(heading_tag.name)
-                    if if_demote_headings
-                    else heading_tag.name
-                ),
+                "tag": tag_name,
                 "html_id": heading_tag.get("id", ""),
                 "is_callout_box": is_callout_box,
                 "body": body or [],
@@ -499,7 +513,7 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
                 )
                 section["subsections"].append(callout_box_subsection)
 
-            elif tag.name in heading_tags:
+            elif tag.name in heading_tags or is_h7(tag):
                 # create new subsection
                 heading_subsection = get_subsection_dict(
                     heading_tag=tag,
