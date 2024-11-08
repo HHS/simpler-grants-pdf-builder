@@ -66,6 +66,11 @@ allowed_domain = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
 if allowed_domain:
     ALLOWED_HOSTS.extend(allowed_domain.split(","))
 
+
+print("=====")
+print("ALLOWED_HOSTS: {}".format(ALLOWED_HOSTS))
+print("=====")
+
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
 SESSION_COOKIE_SECURE = is_prod
