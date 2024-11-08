@@ -1095,10 +1095,10 @@ def join_nested_lists(soup):
     """
 
     def _get_list_classname(tag):
-        for classname in tag.get("class"):
-            if classname.startswith("lst-"):
-                return classname
-
+        if tag.get("class"):
+            for classname in tag.get("class"):
+                if classname.startswith("lst-"):
+                    return classname
         return None
 
     def _get_previous_element(tag):
