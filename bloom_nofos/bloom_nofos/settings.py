@@ -43,6 +43,9 @@ with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
     pyproject_data = tomli.load(f)
     DJVERSION_VERSION = pyproject_data["tool"]["poetry"]["version"]
 
+# Github SHA
+GITHUB_SHA = os.getenv("GITHUB_SHA", None)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 if DEBUG:

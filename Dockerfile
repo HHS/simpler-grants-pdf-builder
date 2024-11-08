@@ -13,6 +13,10 @@ ENV PORT=8000
 ENV IS_DOCKER=1
 ENV IS_PROD=${IS_PROD_ARG}
 
+# Add git SHA to environment
+ARG GITHUB_SHA_ARG
+ENV GITHUB_SHA=$GITHUB_SHA_ARG
+
 # install linux dependencies
 RUN apk update && apk upgrade && \
   apk add gcc g++ musl-dev curl libffi-dev postgresql-dev && \
