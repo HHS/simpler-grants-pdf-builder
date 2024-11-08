@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialise environment variables
 env_file = ".env"
+
 is_docker = cast_to_boolean(os.environ.get("IS_DOCKER", False))
 if is_docker:
     env_file = ".env.docker"
@@ -33,7 +34,13 @@ if is_prod:
 
 env = environ.Env()
 env_path = os.path.join(BASE_DIR, "bloom_nofos", env_file)
-environ.Env.read_env(env_path)
+
+# Check if the env_path exists before reading
+if os.path.exists(env_path):
+    environ.Env.read_env(env_path)
+else:
+    print("=====")
+    print("Environment file not found at {}".format(env_path))
 
 # Project version
 
@@ -45,11 +52,11 @@ with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
+print("=====")
+print("DEBUG: {}".format(DEBUG))
 if DEBUG:
     print("=====")
-    print("DEBUG: {}".format(DEBUG))
     print("Using env vars from: {}".format(env_file))
-    print("=====")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -62,9 +69,10 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 
-allowed_domain = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
-if allowed_domain:
-    ALLOWED_HOSTS.extend(allowed_domain.split(","))
+allowed_domain_string = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
+if allowed_domain_string:
+    ALLOWED_HOSTS.extend(allowed_domain_string.split(","))
+
 
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
@@ -183,11 +191,6 @@ DATABASES = {"default": env.db_url_config(database_url)}
 if not is_prod and DATABASES["default"]["HOST"].startswith("/cloudsql"):
     DATABASES["default"]["HOST"] = "127.0.0.1"
     DATABASES["default"]["PORT"] = 5432
-
-if DEBUG:
-    print("===== DATABASES")
-    print(DATABASES)
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
