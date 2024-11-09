@@ -24,8 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Initialise environment variables
 env_file = ".env"
 
-is_docker = cast_to_boolean(os.environ.get("IS_DOCKER", False))
-if is_docker:
+if cast_to_boolean(os.environ.get("IS_DOCKER", False)):
     env_file = ".env.docker"
 
 is_prod = cast_to_boolean(os.environ.get("IS_PROD", False))
@@ -35,12 +34,20 @@ if is_prod:
 env = environ.Env()
 env_path = os.path.join(BASE_DIR, "bloom_nofos", env_file)
 
-# Check if the env_path exists before reading
-if os.path.exists(env_path):
+env_exists = os.path.exists(env_path)
+if env_exists:
     environ.Env.read_env(env_path)
-else:
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
+print("=====")
+print("DEBUG: {}".format(DEBUG))
+if DEBUG:
     print("=====")
-    print("Environment file not found at {}".format(env_path))
+    if env_exists:
+        print(".env file: {}".format(env_file))
+    else:
+        print("No .env file found at {}".format(env_path))
 
 # Project version
 
@@ -53,14 +60,6 @@ with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
 # GitHub SHA
 
 GITHUB_SHA = os.getenv("GITHUB_SHA", None)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
-print("=====")
-print("DEBUG: {}".format(DEBUG))
-if DEBUG:
-    print("=====")
-    print("Using env vars from: {}".format(env_file))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
