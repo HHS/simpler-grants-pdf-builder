@@ -32,7 +32,7 @@ RUN /root/.local/bin/poetry config virtualenvs.in-project true && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
 # collect static files
-RUN /root/.local/bin/poetry run python bloom_nofos/manage.py collectstatic --noinput
+RUN /root/.local/bin/poetry run python bloom_nofos/manage.py collectstatic --noinput --verbosity 0
 
 EXPOSE $PORT
 
