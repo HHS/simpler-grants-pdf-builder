@@ -16,6 +16,9 @@ ENV IS_PROD=${IS_PROD_ARG}
 ARG GITHUB_SHA_ARG
 ENV GITHUB_SHA=${GITHUB_SHA_ARG}
 
+# copy project
+COPY . .
+
 # install linux dependencies
 RUN apk update && apk upgrade && \
   apk add gcc g++ musl-dev curl libffi-dev postgresql-dev && \
@@ -27,9 +30,6 @@ COPY ./poetry.lock .
 RUN /root/.local/bin/poetry config virtualenvs.in-project true && \
   /root/.local/bin/poetry install --without dev && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
-
-# copy project
-COPY . .
 
 # collect static files
 RUN /root/.local/bin/poetry run python bloom_nofos/manage.py collectstatic --noinput
