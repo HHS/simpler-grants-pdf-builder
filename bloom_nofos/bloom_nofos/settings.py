@@ -50,6 +50,10 @@ with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
     pyproject_data = tomli.load(f)
     DJVERSION_VERSION = pyproject_data["tool"]["poetry"]["version"]
 
+# GitHub SHA
+
+GITHUB_SHA = os.getenv("GITHUB_SHA", None)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 print("=====")
@@ -146,6 +150,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "djversion.context_processors.version",
                 "bloom_nofos.context_processors.add_docraptor_test_mode",
+                "bloom_nofos.context_processors.add_github_sha",
             ],
         },
     },

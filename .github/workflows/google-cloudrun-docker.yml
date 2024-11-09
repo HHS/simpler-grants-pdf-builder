@@ -48,7 +48,7 @@ jobs:
         run: |-
           DOCKER_TAG="${{ env.AR_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
           echo $DOCKER_TAG
-          docker build --tag "${DOCKER_TAG}" --build-arg IS_PROD_ARG=1 .
+          docker build --tag "${DOCKER_TAG}" --build-arg IS_PROD_ARG=1 --build-arg GITHUB_SHA_ARG="${{ github.sha }}" .
           docker push "${DOCKER_TAG}"
         # END - Docker auth and build
 
