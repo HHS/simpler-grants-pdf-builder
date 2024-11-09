@@ -6,7 +6,7 @@
 
 ## About
 
-The NOFO Builder is a Word-2-PDF pipeline that ingests Word files (or HTML files) and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is an internal tool for NOFO coaches to use to build publishable PDFs from reviewed and finalized NOFO documents.
+The NOFO Builder is a Word-2-PDF pipeline that ingests Word files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. It is a tool to build publishable PDFs from reviewed and finalized NOFO documents.
 
 The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
@@ -20,20 +20,19 @@ NOFOs are typically very long, very plain documents without much in the way of f
 
 The SimplerNOFOs project relies on NOFOs that have been written using content guides: essentially, templated starter documents that ensure NOFOs are structured in similar ways.
 
-Once the NOFO documents have been finalized, the NOFO Builder imports these documents as .docx files (or as .html files exported from Google Docs) to generate publishable PDFs that are better structured and easier to read.
+Once the NOFO documents have been finalized, the NOFO Builder imports these documents as .docx files to generate publishable PDFs that are better structured and easier to read.
 
 ## Workflow
 
 NOFOs are written by HHS’ Operating Divisions (OpDivs), and peer-edited by Bloom editing coaches, before proceeding through internal reviews. The writing and editing happens using ‘content guides:’ template-like Word documents that provide a starting point for new NOFOs. Content guides use tagged headings, lists, and tables, and structure the flow of content for a NOFO.
 
-Once a NOFO is reviewed and approved, our anticipated workflow is:
+Once a NOFO is reviewed and approved, our workflow is:
 
 1. NOFO is approved to be published
-2. A Bloom coach receives the finalized .docx file
-3. The Bloom coach logs into the NOFO builder
-4. The Bloom coach uploads the .docx file to create an HTML representation of the NOFO
-   - optional: The Bloom coach can also use an .html exported from Google Docs
-5. The Bloom coach can view and make edits to the uploaded NOFO
+2. A NOFO designer receives the finalized .docx file
+3. The NOFO designer logs into the NOFO builder
+4. The NOFO designer uploads the .docx file to create an HTML representation of the NOFO
+5. The NOFO designer can view and make edits to the uploaded NOFO
 6. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
 7. Done!
 
@@ -131,7 +130,7 @@ I've made a couple of tweaks so that they work in this app.
 
 No additional environment variables are needed to run the application in dev mode, but to run in production, several are needed.
 
-To deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.production`.
+To manually deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.production`.
 
 - `DEBUG=false`: Never run in production with debug mode turned on.
 
