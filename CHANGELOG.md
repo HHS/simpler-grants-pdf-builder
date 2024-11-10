@@ -12,6 +12,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+## [1.32.0] - 2023-11-09
+
+### Changed
+
+- Autodeploys from GH Actions
+
 ## [1.31.0] - 2023-11-08
 
 ### Added
