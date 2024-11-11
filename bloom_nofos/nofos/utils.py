@@ -124,11 +124,13 @@ class StyleMapManager:
 # Pre-instantiate StyleMapManager with styles to ignore
 style_map_manager = StyleMapManager(
     [
-        "ListParagraph",
         "Bullet2",
+        "customXmlDelRange",
+        "Default",
         "FootnoteReference",
-        "Normal_0",
+        "ListParagraph",
         "non-row element in table",
+        "Normal_0",
     ]
 )
 
@@ -167,6 +169,11 @@ style_map_manager.add_style(
     style_rule="r[style-name='scxw144559721'] => span",
     location_in_nofo="It's just in body text",
     note="Just plain body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Body Text Char'] => span",
+    location_in_nofo="It's just in body text",
+    note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
     style_rule="r[style-name='Style6 Char'] => span",
