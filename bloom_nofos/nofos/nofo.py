@@ -917,6 +917,30 @@ def find_broken_links(nofo):
     return broken_links
 
 
+def find_h7_headers(nofo):
+    """
+    Identifies and returns a list of H7 headings
+
+    Note that it doesn't work if H7s are created within body text, they have to be subsections.
+    """
+
+    h7_headers = []
+
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+            if subsection.tag == "h7":
+                h7_headers.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "name": subsection.name,
+                        "html_id": subsection.html_id,
+                    }
+                )
+
+    return h7_headers
+
+
 ###########################################################
 #################### SUGGEST VAR FUNCS ####################
 ###########################################################
