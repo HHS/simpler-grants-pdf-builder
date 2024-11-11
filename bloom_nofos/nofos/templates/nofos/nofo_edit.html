@@ -100,8 +100,9 @@ Edit “{{ nofo|nofo_name }}”
 </div>
 {% endif %}
 
+<!-- WARNING MESSAGE FOR BROKEN LINKS -->
 {% if broken_links|length %}
-<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Alert: {{ broken_links|length }} broken links.">
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--broken-links" aria-label="Warning: {{ broken_links|length }} broken links.">
   <div class="usa-alert">
     <div class="usa-alert__body">
       <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
@@ -130,8 +131,9 @@ Edit “{{ nofo|nofo_name }}”
 </section>
 {% endif %}
 
+<!-- WARNING MESSAGE FOR HEADING ERRORS -->
 {% if heading_errors|length %}
-<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--heading-errors" aria-label="Alert: {{ heading_errors|length }} heading errors.">
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--heading-errors" aria-label="Warning: {{ heading_errors|length }} heading errors.">
   <div class="usa-alert">
     <div class="usa-alert__body">
       <h3 class="usa-alert__heading">Warning: review headings for accessibility</h3>
@@ -159,22 +161,24 @@ Edit “{{ nofo|nofo_name }}”
 </section>
 {% endif %}
 
+<!-- WARNING MESSAGE LISTING H7 HEADERS -->
 {% if h7_headers|length %}
-<section class="usa-site-alert usa-site-alert--info usa-site-alert--h7-headers" aria-label="Alert: {{ h7_headers|length }} h7s in this NOFO.">
+<section class="usa-site-alert usa-site-alert--emergency usa-site-alert--h7-headers" aria-label="Warning: {{ h7_headers|length }} H7 headings in this NOFO.">
   <div class="usa-alert">
     <div class="usa-alert__body">
-      <h3 class="usa-alert__heading">H7s in this NOFO</h3>
+      <h3 class="usa-alert__heading">Warning: This document contains H7 headings</h3>
       <div>
         <details>
           <summary>
             {% if h7_headers|length == 1 %}
-            <span>There is 1 H7 in this NOFO</span>
+            <span>There is 1 H7 heading in this NOFO</span>
             {% else %}
-            <span>There are {{ h7_headers|length }} H7s in this NOFO</span>
+            <span>There are {{ h7_headers|length }} H7 headings in this NOFO</span>
             {% endif %}
           </summary>
           <div>
-            <p>You should fix them pls k thanks.</p>
+            <p>Level 7 Headings are <strong>not</strong> recognized by default in PDFs, and must be changed from <code>&lt;P&gt;</code> to <code>&lt;H7&gt;</code> manually using the Accessibility Tags panel in Adobe Acrobat.</p>
+            <p>Use this list to help you identify which headings to change.</p>
             <ol class="usa-list usa-list--no-max-width">
               {% for h7 in h7_headers %}
                 <li><a href="#{{ h7.html_id }}">{{ h7.name }}</a> ({{ h7.section.name }}, {{ h7.subsection|subsection_name_or_order }})</li>

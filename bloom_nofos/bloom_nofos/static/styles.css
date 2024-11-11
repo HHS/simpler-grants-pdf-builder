@@ -8,6 +8,7 @@
   --color--usa-error-message: #b50909;
   --color--usa-error-bg-light: #f3e1e4;
   --color--usa-error-bg-dark: #8b0a03;
+  --color--usa-error-bg-darker: #775540;
 }
 
 html {
@@ -320,6 +321,18 @@ details > summary > span:hover {
   margin-right: 4rem; /* match the padding on usa-alert__body */
 }
 
+.nofo_edit .usa-site-alert--broken-links a,
+.nofo_edit .usa-site-alert--heading-errors a,
+.nofo_edit .usa-site-alert--h7-headers a {
+  color: var(--color--white);
+}
+
+.nofo_edit .usa-site-alert--broken-links li,
+.nofo_edit .usa-site-alert--heading-errors li,
+.nofo_edit .usa-site-alert--h7-headers li {
+  margin-bottom: 0.75em;
+}
+
 .nofo_edit .usa-site-alert--heading-errors .usa-alert {
   border-left-color: var(--color--usa-error-bg-dark);
 }
@@ -328,14 +341,12 @@ details > summary > span:hover {
   background-color: var(--color--usa-error-bg-dark);
 }
 
-.nofo_edit .usa-site-alert--broken-links a,
-.nofo_edit .usa-site-alert--heading-errors a {
-  color: var(--color--white);
+.nofo_edit .usa-site-alert--h7-headers .usa-alert {
+  border-left-color: var(--color--usa-error-bg-darker);
 }
 
-.nofo_edit .usa-site-alert--broken-links li,
-.nofo_edit .usa-site-alert--heading-errors li {
-  margin-bottom: 0.75em;
+.nofo_edit .usa-site-alert--h7-headers .usa-alert__body {
+  background-color: var(--color--usa-error-bg-darker);
 }
 
 .nofo_edit caption,
