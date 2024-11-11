@@ -51,7 +51,7 @@
       <div class="form-group">
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
           {% if subsection.tag %}
-            {% include "includes/_text_input.html" with id=id label=label hint="Heading level: "|add:subsection.tag value=value error=error input_type=input_type only %}
+            {% include "includes/_text_input.html" with id=id label=label hint_prefix="Heading level:" hint=subsection.tag|upper value=value error=error input_type=input_type safe_hint=True only %}
             {% if subsection.html_id %}
             <div class="usa-hint margin-top-05 hint--subsection-id" id="{{ id }}--hint-2">
               <span id="subsection-html_id">{{ "#"|add:subsection.html_id  }}</span>

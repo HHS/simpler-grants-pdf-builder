@@ -3,6 +3,7 @@
 
 :root {
   --color--text-default: #1b1b1b;
+  --color--text-grey: #71767a;
   --color--usa-link: #005ea2;
   --color--usa-link-visited: #54278f;
   --color--usa-error-message: #b50909;
@@ -136,7 +137,7 @@ details > summary > span:hover {
   background-color: #f0f0f0;
   box-shadow: inset 1px 1px 15px 5px #a9aeb1;
   border-radius: 8px;
-  border: 2px solid #71767a;
+  border: 2px solid var(--color--text-grey);
   padding: 20px;
   overflow-y: auto;
 }
@@ -574,7 +575,7 @@ details > summary > span:hover {
   main
   table.table--section
   .nofo-edit-table--subsection--heading-level {
-  color: #71767a;
+  color: var(--color--text-grey);
 }
 
 .nofo_edit main table.table--section .floating {
@@ -739,12 +740,20 @@ main .back-link a::before,
   margin-right: 0;
 }
 
+.subsection_edit #name--hint-1 {
+  font-variant: small-caps;
+}
+
+.subsection_edit #name--hint-1 span {
+  font-variant: none;
+}
+
 .subsection_edit .hint--subsection-id {
-  color: #6c7073;
+  color: var(--color--text-grey);
 }
 
 .subsection_edit .hint--subsection-id:hover {
-  color: #1b1b1b;
+  color: var(--color--text-default);
 }
 
 .subsection_edit .main-martor,
