@@ -71,6 +71,7 @@ from .nofo import (
     find_broken_links,
     find_external_link,
     find_external_links,
+    find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
@@ -190,6 +191,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
+        context["h7_headers"] = find_h7_headers(self.object)
 
         context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
 
