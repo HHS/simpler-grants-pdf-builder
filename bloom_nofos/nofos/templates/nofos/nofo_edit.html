@@ -166,14 +166,14 @@ Edit “{{ nofo|nofo_name }}”
 <section class="usa-site-alert usa-site-alert--emergency usa-site-alert--h7-headers" aria-label="Warning: {{ h7_headers|length }} H7 headings in this NOFO.">
   <div class="usa-alert">
     <div class="usa-alert__body">
-      <h3 class="usa-alert__heading">Warning: This document contains H7 headings</h3>
+      <h3 class="usa-alert__heading">Warning: This document contains <span class="small-caps">H7</span> headings</h3>
       <div>
         <details>
           <summary>
             {% if h7_headers|length == 1 %}
-            <span>There is 1 H7 heading in this NOFO</span>
+            <span>There is 1 <span class="small-caps">H7</span> heading in this NOFO</span>
             {% else %}
-            <span>There are {{ h7_headers|length }} H7 headings in this NOFO</span>
+            <span>There are {{ h7_headers|length }} <span class="small-caps">H7</span> headings in this NOFO</span>
             {% endif %}
           </summary>
           <div>
@@ -395,6 +395,7 @@ Edit “{{ nofo|nofo_name }}”
     <tr>
       <th scope="col">Heading</th>
       <th scope="col">Heading link</th>
+      <th scope="col">Heading level</th>
       <th scope="col">Is callout box</th>
       <th scope="col">Content</th>
       <th scope="col">Manage</th>
@@ -411,7 +412,7 @@ Edit “{{ nofo|nofo_name }}”
             <span class="floating">
               {% if subsection.name %}
                 <span {% if subsection|has_heading_error:heading_errors %}class="usa-tooltip" data-position="bottom" title="{{ subsection|get_heading_error:heading_errors|split_char_and_remove:":" }}. Fix in Word and reimport."{% endif %}>
-                  {{ subsection.name }} {% if subsection.tag == 'h7' %}(h7){% endif %}
+                  {{ subsection.name }}
                 </span>
               {% else %}
                 <span class="text-base">(#{{ subsection.order}})</span>
@@ -431,11 +432,18 @@ Edit “{{ nofo|nofo_name }}”
               </button>
             </span>
           </td>
+          <td class="nofo-edit-table--subsection--heading-level">
+            {% if subsection.tag %}
+              <span class="floating small-caps">
+                {{ subsection.tag|upper }}
+              </span>
+            {% endif %}
+          </td>
           <td class="nofo-edit-table--subsection--callout-box">
             {% if subsection.callout_box %}
-            <span class="floating">
-              <span role="img" aria-label="Callout box" title="Callout box">📦</span>
-            </span>
+              <span class="floating">
+                <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+              </span>
             {% endif %}
           </td>
           <td class="nofo-edit-table--subsection--body">

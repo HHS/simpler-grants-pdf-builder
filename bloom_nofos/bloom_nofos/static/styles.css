@@ -45,6 +45,10 @@ footer .usa-footer__primary-link:visited {
   color: var(--color--text-default);
 }
 
+.small-caps {
+  font-variant: small-caps;
+}
+
 /* Make sure header is evenly spaced */
 @media (min-width: 64em) {
   .usa-logo {
@@ -542,6 +546,10 @@ details > summary > span:hover {
 }
 
 .nofo_edit main table.table--section .nofo-edit-table--subsection--name,
+.nofo_edit
+  main
+  table.table--section
+  .nofo-edit-table--subsection--heading-level,
 .nofo_edit main table.table--section .nofo-edit-table--subsection--copy-button,
 .nofo_edit main table.table--section .nofo-edit-table--subsection--callout-box,
 .nofo_edit main table.table--section .nofo-edit-table--subsection--manage {
@@ -551,6 +559,22 @@ details > summary > span:hover {
 .nofo_edit main table.table--section .nofo-edit-table--subsection--copy-button {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
+}
+
+.nofo_edit
+  main
+  table.table--section
+  .nofo-edit-table--subsection--heading-level,
+.nofo_edit main table.table--section .nofo-edit-table--subsection--callout-box {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.nofo_edit
+  main
+  table.table--section
+  .nofo-edit-table--subsection--heading-level {
+  color: #71767a;
 }
 
 .nofo_edit main table.table--section .floating {
