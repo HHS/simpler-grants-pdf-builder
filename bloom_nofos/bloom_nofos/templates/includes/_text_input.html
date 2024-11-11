@@ -1,7 +1,7 @@
 <label class="usa-label" for="{{ id }}">{{ label }}</label>
 {% if hint %}
 <div class="usa-hint" id="{{ id }}--hint-1">
-  {{ hint }}
+  {% if hint_prefix %}<span class="hint-prefix">{{ hint_prefix }}</span>{% endif %} {{ hint }}
 </div>
 {% endif %}
 {% if error %}
