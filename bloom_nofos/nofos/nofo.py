@@ -919,9 +919,22 @@ def find_broken_links(nofo):
 
 def find_h7_headers(nofo):
     """
-    Identifies and returns a list of H7 headings
+    Identifies and returns a list of H7 subsections from a given NOFO.
 
-    Note that it doesn't work if H7s are created within body text, they have to be subsections.
+    This function iterates through all sections and subsections of a NOFO object,
+    identifying subsections tagged as "h7".
+
+    Note:
+    - H7 tags must be directly defined as subsections. H7s created within
+      the body text of a subsection are not identified.
+
+    Returns:
+        list: A list of dictionaries, each containing details of subsections
+              tagged as "h7". Each dictionary includes the following keys:
+                - "section": The parent section object of the H7 subsection.
+                - "subsection": The subsection object tagged as "h7".
+                - "name": The name of the H7 subsection.
+                - "html_id": The HTML ID associated with the H7 subsection.
     """
 
     h7_headers = []

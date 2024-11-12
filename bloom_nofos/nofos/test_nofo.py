@@ -29,6 +29,7 @@ from .nofo import (
     decompose_instructions_tables,
     find_broken_links,
     find_external_links,
+    find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
@@ -2685,6 +2686,73 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+
+class TestFindH7Headers(TestCase):
+    def setUp(self):
+        self.sections = [
+            {
+                "name": "New Section H7",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "New Subsection H7",
+                        "order": 1,
+                        "tag": "h7",
+                        "body": ["<p>New Section H7 body</p>"],
+                    },
+                    {
+                        "name": "New Subsection H6",
+                        "order": 2,
+                        "tag": "h6",
+                        "body": ["<p>New Section H6 body</p>"],
+                    },
+                    {
+                        "name": "New Subsection H5",
+                        "order": 3,
+                        "tag": "h5",
+                        "body": [
+                            "<p>New Section H5 body</p><h7>This h7 will not be recognized</h7>"
+                        ],
+                    },
+                    {
+                        "name": "New Subsection H4",
+                        "order": 4,
+                        "tag": "h4",
+                        "body": [
+                            '<p>New Section H4 body</p><div role="heading" aria-level="7">This shimmed h7 will not be recognized</div>'
+                        ],
+                    },
+                ],
+            }
+        ]
+
+    def test_find_h7_headers_find_all_h7s(self):
+        """
+        Test finding the h7 in a nofo object successfully
+        """
+        nofo = create_nofo("Test Nofo", self.sections)
+        self.assertEqual(nofo.title, "Test Nofo")
+        self.assertEqual(nofo.number, "NOFO #999")
+        self.assertEqual(nofo.sections.first().name, "New Section H7")
+
+        subsections = list(nofo.sections.first().subsections.all().order_by("order"))
+
+        self.assertEqual(len(subsections), 4)
+        self.assertEqual(subsections[0].name, "New Subsection H7")
+        self.assertEqual(subsections[1].name, "New Subsection H6")
+        self.assertEqual(subsections[2].name, "New Subsection H5")
+        self.assertEqual(subsections[3].name, "New Subsection H4")
+
+        h7_headers = find_h7_headers(nofo)
+        self.assertEqual(len(h7_headers), 1)
+        self.assertEqual(h7_headers[0]["name"], "New Subsection H7")
+        self.assertEqual(
+            h7_headers[0]["html_id"], "1--new-section-h7--new-subsection-h7"
+        )
+        self.assertEqual(h7_headers[0]["section"], nofo.sections.first())
 
 
 class TestUpdateLinkStatuses(TestCase):

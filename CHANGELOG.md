@@ -8,6 +8,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- New alert box for NOFOs that have H7 headings
+  - H7 headings need to be manually fixed in the PDF
+- New column for the heading level in the nofo_edit view
+  - Slight change to subsection_edit page to match new heading tag styling
+
 ### Changed
 
 ### Fixed
