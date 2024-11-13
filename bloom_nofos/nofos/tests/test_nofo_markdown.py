@@ -296,9 +296,27 @@ class NofoMarkdownConverterPTest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
+    def test_regular_p_asterisk(self):
+        html = "<p>Regular Paragraph with asterisk *</p>"
+        expected_markdown = "Regular Paragraph with asterisk \*"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
     def test_regular_p_in_td(self):
         html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content</p></td></tr></table>"
         expected_markdown = "| Header |\n| --- |\n| Content |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_regular_p_asterisk_in_td(self):
+        html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content *</p></td></tr></table>"
+        expected_markdown = "| Header |\n| --- |\n| Content \* |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_regular_p_asterisk_in_th(self):
+        html = "<table><tr><th><p>Header *</p></th></tr><tr><td><p>Content</p></td></tr></table>"
+        expected_markdown = "| Header \* |\n| --- |\n| Content |"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
@@ -308,9 +326,25 @@ class NofoMarkdownConverterPTest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
+    def test_two_ps_in_th_asterisk(self):
+        html = "<table><tr><th><p>Header 1</p><p>Header 2 *</p></th></tr><tr><td><p>Content</p></td></tr></table>"
+        expected_markdown = (
+            "| <p>Header 1</p><p>Header 2 &ast;</p> |\n| --- |\n| Content |"
+        )
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
     def test_two_ps_in_td(self):
         html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content 1</p><p>Content 2</p></td></tr></table>"
         expected_markdown = "| Header |\n| --- |\n| <p>Content 1</p><p>Content 2</p> |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_two_ps_in_td_asterisk(self):
+        html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content 1</p><p>Content 2 *</p></td></tr></table>"
+        expected_markdown = (
+            "| Header |\n| --- |\n| <p>Content 1</p><p>Content 2 &ast;</p> |"
+        )
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
