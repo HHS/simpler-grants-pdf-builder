@@ -3,16 +3,16 @@ import json
 from constance.test import override_config
 from django.test import TestCase
 from easyaudit.models import CRUDEvent
-from users.models import BloomUser as User
-
-from .models import Nofo
-from .utils import (
+from nofos.models import Nofo
+from nofos.utils import (
     StyleMapManager,
     clean_string,
     create_nofo_audit_event,
     create_subsection_html_id,
     get_icon_path_choices,
+    match_view_url,
 )
+from users.models import BloomUser as User
 
 
 class CreateNofoAuditEventTests(TestCase):
@@ -170,26 +170,39 @@ class TestCreateSubsectionHtmlId(TestCase):
         self.assertEqual(result, expected_id)
 
 
-class TestCleanString(TestCase):
-    def test_clean_string_simple(self):
-        """Test that the function removes extra spaces and trims the string."""
-        result = clean_string("  Hello   World!  ")
-        self.assertEqual(result, "Hello World!")
+class CleanStringTests(TestCase):
+    def test_trim_leading_and_trailing_spaces(self):
+        self.assertEqual(clean_string("  test string  "), "test string")
 
-    def test_clean_string_newlines_tabs(self):
-        """Test that newlines and tabs are replaced with a single space."""
-        result = clean_string("\nHello\tWorld!\t \n")
-        self.assertEqual(result, "Hello World!")
+    def test_replace_newlines(self):
+        self.assertEqual(clean_string("test\nstring"), "test string")
 
-    def test_clean_string_no_extra_spaces(self):
-        """Test strings that do not have extra spaces to begin with."""
-        result = clean_string("Hello World!")
-        self.assertEqual(result, "Hello World!")
+    def test_replace_carriage_returns(self):
+        self.assertEqual(clean_string("test\rstring"), "test string")
 
-    def test_clean_string_empty_string(self):
-        """Test that an empty string is handled correctly."""
-        result = clean_string("   ")
-        self.assertEqual(result, "")
+    def test_replace_tabs(self):
+        self.assertEqual(clean_string("test\tstring"), "test string")
+
+    def test_replace_multiple_spaces(self):
+        self.assertEqual(clean_string("test  string"), "test string")
+
+    def test_replace_mixed_whitespace(self):
+        self.assertEqual(clean_string("test \t\n\r string"), "test string")
+
+    def test_replace_leading_weird_space(self):
+        self.assertEqual(clean_string(" test \t\n\r string"), "test string")
+
+    def test_replace_trailing_weird_space(self):
+        self.assertEqual(clean_string("test \t\n\r string "), "test string")
+
+    def test_no_whitespace_change(self):
+        self.assertEqual(clean_string("test string"), "test string")
+
+    def test_empty_string(self):
+        self.assertEqual(clean_string(""), "")
+
+    def test_only_whitespace(self):
+        self.assertEqual(clean_string(" \t\r\n "), "")
 
     def test_clean_string_complex_whitespace(self):
         """Test a string with complex whitespace scenarios."""
@@ -250,3 +263,23 @@ class StyleMapManagerTests(TestCase):
         """Test the output of get_style_map method when no styles have been added."""
         manager = StyleMapManager()
         self.assertEqual(manager.get_style_map(), "")
+
+
+class MatchUrlTests(TestCase):
+    def test_match_valid_urls(self):
+        """
+        Test the match_url function with valid URLs.
+        """
+        self.assertTrue(match_view_url("/nofos/123"))
+        self.assertTrue(match_view_url("/nofos/1"))
+        self.assertTrue(match_view_url("/nofos/0"))
+
+    def test_match_invalid_urls(self):
+        """
+        Test the match_url function with invalid URLs.
+        """
+        self.assertFalse(match_view_url("/nofos"))
+        self.assertFalse(match_view_url("/nofos/"))
+        self.assertFalse(match_view_url("/nofos/abc"))
+        self.assertFalse(match_view_url("/nofos/123/456"))
+        self.assertFalse(match_view_url("/nofos/1/2"))

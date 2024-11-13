@@ -1,7 +1,6 @@
 from django.test import TestCase
 from nofos.nofo_markdown import md
 
-
 #########################################################
 ############# MARKDOWNIFY CONVERTER TESTS ###############
 #########################################################
