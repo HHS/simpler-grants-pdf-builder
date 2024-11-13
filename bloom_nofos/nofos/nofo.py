@@ -1550,6 +1550,21 @@ def preserve_bookmark_links(soup):
 
 
 def preserve_bookmark_targets(soup):
+    """
+    This function mutates the soup!
+
+    Adjusts empty bookmark links in an HTML document to preserve their target IDs while cleaning up the document structure.
+
+    This function processes all empty <a> tags in the provided BeautifulSoup object that meet the following criteria:
+    - Have an 'id' attribute (which does not start with an underscore)
+    - Do not contain an 'href' or any text content
+
+    For each matching <a> tag:
+    1. The function prepends "nb_bookmark_" to the <a> tag's 'id'.
+    2. It searches for any other <a> tags in the document with an 'href' attribute pointing to the original 'id' and updates their 'href' to the new prefixed 'id'.
+    3. If the parent of the empty <a> tag does not have an 'id', the new prefixed 'id' is copied to the parent element.
+    4. The original empty <a> tag is then removed from the document.
+    """
     empty_links = soup.find_all(
         "a", id=True, href=False, text=lambda t: not t or not t.strip()
     )
