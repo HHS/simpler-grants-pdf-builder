@@ -19,6 +19,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Convert literal asterisks to `&ast;` inside of HTML PARAGRAPHS in table cells
+  - We did this for lists already but paragraphs need the same treatment
+
 ## [1.32.0] - 2023-11-09
 
 ### Changed

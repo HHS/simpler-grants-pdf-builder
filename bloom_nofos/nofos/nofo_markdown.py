@@ -69,7 +69,7 @@ class NofoMarkdownConverter(MarkdownConverter):
         # if we are in a table cell, and that table cell contains multiple children, return the string
         if el.parent.name == "td" or el.parent.name == "th":
             if len(list(el.parent.children)) > 1:
-                return str(el)
+                return str(el).replace("*", "&ast;")
 
         # if the paragraph has an id that includes the string "bookmark", keep the paragraph as-is
         p_id = el.attrs.get("id") if el else None
