@@ -2,10 +2,9 @@ import re
 
 from bs4 import BeautifulSoup
 from django.test import TestCase
-
-from .models import Nofo, Section, Subsection
-from .templatetags.add_classes_to_links import add_classes_to_broken_links
-from .templatetags.utils import (
+from nofos.models import Nofo, Section, Subsection
+from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
+from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
     add_caption_to_table,

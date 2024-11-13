@@ -61,28 +61,6 @@ from .nofo import (
     unwrap_empty_elements,
     unwrap_nested_lists,
 )
-from .utils import clean_string, match_view_url
-
-
-class MatchUrlTests(TestCase):
-    def test_match_valid_urls(self):
-        """
-        Test the match_url function with valid URLs.
-        """
-        self.assertTrue(match_view_url("/nofos/123"))
-        self.assertTrue(match_view_url("/nofos/1"))
-        self.assertTrue(match_view_url("/nofos/0"))
-
-    def test_match_invalid_urls(self):
-        """
-        Test the match_url function with invalid URLs.
-        """
-        self.assertFalse(match_view_url("/nofos"))
-        self.assertFalse(match_view_url("/nofos/"))
-        self.assertFalse(match_view_url("/nofos/abc"))
-        self.assertFalse(match_view_url("/nofos/123/456"))
-        self.assertFalse(match_view_url("/nofos/1/2"))
-
 
 #########################################################
 ################### FUNCTION TESTS ######################
@@ -173,41 +151,6 @@ class TestsCleanTableCells(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertEqual(soup.td.text, "FirstSecond")
-
-
-class CleanStringTests(TestCase):
-    def test_trim_leading_and_trailing_spaces(self):
-        self.assertEqual(clean_string("  test string  "), "test string")
-
-    def test_replace_newlines(self):
-        self.assertEqual(clean_string("test\nstring"), "test string")
-
-    def test_replace_carriage_returns(self):
-        self.assertEqual(clean_string("test\rstring"), "test string")
-
-    def test_replace_tabs(self):
-        self.assertEqual(clean_string("test\tstring"), "test string")
-
-    def test_replace_multiple_spaces(self):
-        self.assertEqual(clean_string("test  string"), "test string")
-
-    def test_replace_mixed_whitespace(self):
-        self.assertEqual(clean_string("test \t\n\r string"), "test string")
-
-    def test_replace_leading_weird_space(self):
-        self.assertEqual(clean_string(" test \t\n\r string"), "test string")
-
-    def test_replace_trailing_weird_space(self):
-        self.assertEqual(clean_string("test \t\n\r string "), "test string")
-
-    def test_no_whitespace_change(self):
-        self.assertEqual(clean_string("test string"), "test string")
-
-    def test_empty_string(self):
-        self.assertEqual(clean_string(""), "")
-
-    def test_only_whitespace(self):
-        self.assertEqual(clean_string(" \t\r\n "), "")
 
 
 class TableConvertFirstRowToHeaderRowTests(TestCase):
