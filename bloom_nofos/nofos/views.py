@@ -80,6 +80,7 @@ from .nofo import (
     join_nested_lists,
     overwrite_nofo,
     preserve_bookmark_links,
+    preserve_bookmark_targets,
     preserve_heading_links,
     preserve_table_heading_links,
     remove_google_tracking_info_from_links,
@@ -327,6 +328,7 @@ def nofo_import(request, pk=None):
         replace_src_for_inline_images(soup)
         add_endnotes_header_if_exists(soup, top_heading_level)
         unwrap_nested_lists(soup)
+        preserve_bookmark_targets(soup)
         soup = add_em_to_de_minimis(soup)
 
         # format all the data as dicts
