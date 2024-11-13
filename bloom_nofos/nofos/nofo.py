@@ -1549,6 +1549,29 @@ def preserve_bookmark_links(soup):
             broken_link["href"] = "#__{}".format(bookmark_id)
 
 
+def preserve_bookmark_targets(soup):
+    empty_links = soup.find_all(
+        "a", id=True, href=False, text=lambda t: not t or not t.strip()
+    )
+    for link in empty_links:
+        if not link.get("id", "").startswith("_"):
+            original_id = link.get("id", "")
+            new_id = "nb_bookmark_{}".format(original_id)
+
+            link["id"] = new_id  # Update the id of the empty <a> tag
+
+            matching_links = soup.find_all("a", href="#{}".format(original_id))
+            for matching_link in matching_links:
+                # replace hrefs of existing links to new id
+                matching_link["href"] = "#{}".format(new_id)
+
+            if link.parent and not link.parent.get("id", None):
+                # Copy the id from the <a> tag to the parent
+                link.parent["id"] = new_id
+                # Remove the <a> tag from the document
+                link.decompose()
+
+
 def preserve_heading_links(soup):
     """
     This function mutates the soup!
