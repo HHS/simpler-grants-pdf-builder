@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - H7 headings need to be manually fixed in the PDF
 - New column for the heading level in the nofo_edit view
   - Slight change to subsection_edit page to match new heading tag styling
+- Add image for CDC 0047
+  - Add alt image for CDC 0047
 
 ### Changed
 
