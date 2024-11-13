@@ -129,8 +129,11 @@ style_map_manager = StyleMapManager(
         "Default",
         "FootnoteReference",
         "ListParagraph",
+        "Listpara2",
         "non-row element in table",
         "Normal_0",
+        "v:",
+        "office-word:",
     ]
 )
 
