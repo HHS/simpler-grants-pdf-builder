@@ -39,6 +39,7 @@ from .nofo import (
     join_nested_lists,
     overwrite_nofo,
     preserve_bookmark_links,
+    preserve_bookmark_targets,
     preserve_heading_links,
     preserve_table_heading_links,
     remove_google_tracking_info_from_links,
@@ -3928,6 +3929,55 @@ class PreserveBookmarkLinksTest(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_links(soup)
         self.assertEqual(str(soup), html)
+
+
+class PreserveBookmarkTargetsTest(TestCase):
+    def test_empty_anchor_with_id_transfers_to_parent(self):
+        html = '<p>This is a paragraph with an empty <a id="bookmark1"></a> link.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = (
+            '<p id="nb_bookmark_bookmark1">This is a paragraph with an empty  link.</p>'
+        )
+        self.assertEqual(str(soup), expected)
+
+    def test_empty_anchor_with_matching_href(self):
+        html = '<p>Some text and a <a id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = '<p id="nb_bookmark_bookmark1">Some text and a  link.</p><a href="#nb_bookmark_bookmark1">Reference link</a>'
+        self.assertEqual(str(soup), expected)
+
+    def test_ignore_anchor_with_underscore_prefix(self):
+        html = '<p>Paragraph with <a id="_internal"></a> internal bookmark.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        # No changes expected since the id starts with an underscore
+        expected = '<p>Paragraph with <a id="_internal"></a> internal bookmark.</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_parent_already_has_id(self):
+        html = '<p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        # Expect that the id is not copied to the parent, and the <a> tag is removed
+        expected = '<p id="existing-id">Paragraph with <a id="nb_bookmark_bookmark2"></a> an empty link.</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_parent_already_has_id_but_links_are_changed(self):
+        html = '<p>Text with a <a href="#bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        # Expect that the href changes as does the original id, but the id of the parent p element does not change
+        expected = '<p>Text with a <a href="#nb_bookmark_bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="nb_bookmark_bookmark2"></a> an empty link.</p>'
+        self.assertEqual(str(soup), expected)
+
+    def test_multiple_empty_anchors(self):
+        html = '<p><a id="bookmark1"></a> First bookmark.</p><p><a id="bookmark2"></a> Second bookmark.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = '<p id="nb_bookmark_bookmark1"> First bookmark.</p><p id="nb_bookmark_bookmark2"> Second bookmark.</p>'
+        self.assertEqual(str(soup), expected)
 
 
 class PreserveHeadingLinksTest(TestCase):

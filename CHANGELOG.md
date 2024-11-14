@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Preserve bookmark targets that have been getting stripped out
 - Convert literal asterisks to `&ast;` inside of HTML PARAGRAPHS in table cells
   - We did this for lists already but paragraphs need the same treatment
 
