@@ -14,7 +14,7 @@ def add_classes_to_headings(html_string):
 
 @register.filter()
 def add_classes_to_nofo_title(nofo_title):
-    if len(nofo_title) > 190:
+    if len(nofo_title) > 170:
         return "nofo--cover-page--title--h1--very-smol"
 
     if len(nofo_title) > 120:
