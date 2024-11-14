@@ -17,7 +17,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Smallen the font size (again) for NOFOs with very long titles (> 190 chars)
+- Smallen the font size (again) for NOFOs with very long titles (> 170 chars)
 
 ### Fixed
 
@@ -92,7 +92,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
   - Remove the border under "Attachments"
-- # ids inserted using markdown attributes should not show up as 'broken links'
+- ids inserted using markdown attributes should not show up as 'broken links'
 - Added more known styles for the mammoth style map
   > > > > > > > 6592cc6 (Add button to copy broken links on nofo_edit page)
 
