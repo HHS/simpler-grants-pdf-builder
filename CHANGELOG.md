@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Smallen the font size (again) for NOFOs with very long titles (> 190 chars)
+
 ### Fixed
 
 - Preserve bookmark targets that have been getting stripped out
