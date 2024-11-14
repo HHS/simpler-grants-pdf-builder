@@ -925,11 +925,13 @@ def suggest_nofo_keywords(soup):
     return suggestion or ""
 
 
-def suggest_nofo_cover_image(nofo_number):
-    # add cover image filepath to the context
-    cover_img = "img/cover-img/{}.jpg".format(nofo_number.lower())
+def suggest_nofo_cover_image(nofo):
+    cover_img = "img/cover-img/{}.jpg".format(nofo.number.lower())
     if os.path.exists(os.path.join(settings.STATIC_ROOT, cover_img)):
         return cover_img
+
+    if "pepfar" in nofo.title.lower():
+        return "img/cover-img/cdc-pepfar.jpg"
 
     return ""
 
@@ -953,9 +955,7 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
     if not nofo.cover_image:
-        nofo.cover_image = suggest_nofo_cover_image(
-            nofo_number
-        )  # guess NOFO cover image
+        nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
     # reset title only if there is a title and it's not the default title, or current nofo.title is empty
