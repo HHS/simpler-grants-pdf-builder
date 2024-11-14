@@ -108,6 +108,12 @@ section.nofo--cover-page.nofo--cover-page--text {
   font-size: 28pt;
 }
 
+.nofo--cover-page--medium
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--very-smol {
+  font-size: 24pt;
+}
+
 .nofo--cover-page--text .nofo--cover-page--hero-image,
 .nofo--cover-page--text .nofo--cover-page--title .nofo--cover-page--title--logo,
 .nofo--cover-page--text
