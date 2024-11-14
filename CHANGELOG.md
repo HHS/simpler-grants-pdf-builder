@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Slight change to subsection_edit page to match new heading tag styling
 - Add image for CDC 0047
   - Add alt image for CDC 0047
+- Automatically assign all new PEPFAR NOFOs to cdc-pepfar.jpg
 
 ### Changed
 
