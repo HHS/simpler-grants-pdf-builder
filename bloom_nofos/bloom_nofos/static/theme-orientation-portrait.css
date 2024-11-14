@@ -276,10 +276,20 @@ section.before-you-begin {
   width: calc(216mm - 40mm); /* large tables should be full-width */
 }
 
-body.portrait.cdc
+body.portrait
   .section--step-4-learn-about-review-and-award
   .section--content
   p
+  + table:not(.table--criterion),
+body.portrait
+  .section--step-4-learn-about-review-and-award
+  .section--content
+  div.page-break--hr--container
+  + table:not(.table--criterion),
+body.portrait
+  .section--step-4-learn-about-review-and-award
+  .section--content
+  table
   + table:not(.table--criterion) {
   width: calc(
     216mm - 40mm
