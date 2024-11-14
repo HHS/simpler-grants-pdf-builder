@@ -1211,10 +1211,11 @@ def unwrap_empty_elements(soup):
 
     Unwraps empty span, strong, sup, a, and em tags from the BeautifulSoup `soup`.
     """
-    elements = soup.find_all(["em", "span", "strong", "sup"])
+    elements = soup.find_all(
+        ["em", "span", "strong", "sup"], text=lambda t: not t or not t.strip()
+    )
     for el in elements:
-        if not el.get_text().strip():
-            el.unwrap()
+        el.unwrap()
 
 
 def clean_table_cells(soup):
@@ -1676,8 +1677,8 @@ def preserve_table_heading_links(soup):
         paragraph = table.find_previous_sibling("p")
         if paragraph:
             # Find all empty <a> tags within the paragraph
-            for a in paragraph.find_all("a"):
-                if a.get_text(strip=True) == "" and not a.contents:
+            for a in paragraph.find_all("a", text=lambda t: not t or not t.strip()):
+                if not a.contents:
                     table_id_anchors.append(a)
 
     for a in table_id_anchors:
