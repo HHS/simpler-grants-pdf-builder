@@ -10,6 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -905,27 +906,25 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         nofo = context["nofo"]
 
-        # Building the JSON structure
-        data = {
-            "id": nofo.id,
-            "title": nofo.title,
-            "sections": [
-                {
-                    "id": section.id,
-                    "name": section.name,
-                    "order": section.order,
-                    "subsections": [
-                        {
-                            "id": subsection.id,
-                            "name": subsection.name,
-                            "order": subsection.order,
-                            "content": subsection.body,
-                        }
-                        for subsection in section.subsections.order_by("order")
-                    ],
-                }
-                for section in nofo.sections.order_by("order")
-            ],
-        }
+        # Helper function to replace None values with empty strings
+        def _replace_none_values(item):
+            return {
+                key: (value if value is not None else "") for key, value in item.items()
+            }
+
+        # Convert Nofo instance to dictionary with all fields, replacing None values
+        data = _replace_none_values(model_to_dict(nofo))
+
+        # Convert related sections and subsections, including all fields with replaced None values
+        data["sections"] = [
+            {
+                **_replace_none_values(model_to_dict(section)),  # Section fields
+                "subsections": [
+                    _replace_none_values(model_to_dict(subsection))  # Subsection fields
+                    for subsection in section.subsections.order_by("order")
+                ],
+            }
+            for section in nofo.sections.order_by("order")
+        ]
 
         return JsonResponse(data, json_dumps_params={"indent": 2})
