@@ -10,7 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
@@ -895,3 +895,37 @@ def insert_order_space_view(request, section_id):
 
     context = {"form": form, "title": "Insert Order Space", "section": section}
     return render(request, "admin/insert_order_space.html", context)
+
+
+class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
+    model = Nofo
+    context_object_name = "nofo"
+    pk_url_kwarg = "nofo_id"
+
+    def render_to_response(self, context, **response_kwargs):
+        nofo = context["nofo"]
+
+        # Building the JSON structure
+        data = {
+            "id": nofo.id,
+            "title": nofo.title,
+            "sections": [
+                {
+                    "id": section.id,
+                    "name": section.name,
+                    "order": section.order,
+                    "subsections": [
+                        {
+                            "id": subsection.id,
+                            "name": subsection.name,
+                            "order": subsection.order,
+                            "content": subsection.body,
+                        }
+                        for subsection in section.subsections.order_by("order")
+                    ],
+                }
+                for section in nofo.sections.order_by("order")
+            ],
+        }
+
+        return JsonResponse(data, json_dumps_params={"indent": 2})

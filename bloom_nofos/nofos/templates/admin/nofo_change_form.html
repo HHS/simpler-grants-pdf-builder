@@ -1,5 +1,8 @@
 {% extends "admin/change_form.html" %}
 
 {% block object-tools-items %}
+    <li>
+        <a href="{% url 'nofos:export_nofo_json' original.id %}" target="_blank">Export JSON</a>
+    </li>
     {{ block.super }}
 {% endblock %}
