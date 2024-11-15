@@ -129,4 +129,9 @@ urlpatterns = [
         views.CheckNOFOLinkSingleView.as_view(),
         name="nofo_check_link_single",
     ),
+    path(
+        "<int:nofo_id>/export",
+        views.NofoExportJsonView.as_view(),
+        name="export_nofo_json",
+    ),
 ]
