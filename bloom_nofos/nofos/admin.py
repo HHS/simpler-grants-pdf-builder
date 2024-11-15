@@ -105,6 +105,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
     actions = ["duplicate_nofo"]
+
     list_display = [
         "title",
         "id",
