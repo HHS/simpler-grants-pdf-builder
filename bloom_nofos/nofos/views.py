@@ -1,4 +1,5 @@
 import io
+import json
 
 import docraptor
 import mammoth
@@ -7,13 +8,13 @@ from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import dateformat, timezone
 from django.views.generic import (
     CreateView,
@@ -22,6 +23,7 @@ from django.views.generic import (
     FormView,
     ListView,
     UpdateView,
+    View,
 )
 
 from bloom_nofos.utils import cast_to_boolean
@@ -928,3 +930,88 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
         ]
 
         return JsonResponse(data, json_dumps_params={"indent": 2})
+
+
+class NofoImportJsonView(View):
+    template_name = "nofos/nofo_import_json.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    # empty NOFO: error
+    # no sections: error
+    # no subsections: error
+    def post(self, request, *args, **kwargs):
+        # Check if a file was uploaded
+        json_file = request.FILES.get("nofo-import-json")
+        if not json_file:
+            messages.error(request, "Please upload a JSON file.")
+            return render(request, self.template_name)
+
+        try:
+            # Parse the uploaded JSON file
+            data = json.load(json_file)
+
+            if not len(data):
+                messages.error(request, "Empty NOFO file.")
+                return render(request, self.template_name)
+
+            if not data.get("sections"):
+                messages.error(request, "NOFO must contain sections.")
+                return render(request, self.template_name)
+
+            for section in data.get("sections"):
+                if not section.get("subsections"):
+                    messages.error(request, "Sections must contain subsections.")
+                    return render(request, self.template_name)
+
+            # Validate and create NOFO object
+            nofo = Nofo(
+                **{key: value for key, value in data.items() if key != "sections"}
+            )
+
+            # TODO: validate title and/or number
+            nofo.full_clean()  # Validate the NOFO fields
+
+            # Validate and create Sections and Subsections
+            sections = []
+            for section_data in data.get("sections", []):
+                section = Section(
+                    **{
+                        key: value
+                        for key, value in section_data.items()
+                        if key != "subsections"
+                    },
+                    nofo=nofo,
+                )
+                section.full_clean()  # Validate the Section fields
+
+                # Validate Subsections
+                subsections = []
+                for subsection_data in section_data.get("subsections", []):
+                    subsection = Subsection(**subsection_data, section=section)
+                    subsection.full_clean()  # Validate the Subsection fields
+                    subsections.append(subsection)
+                section.subsections_to_create = (
+                    subsections  # Temporarily store subsections
+                )
+                sections.append(section)
+
+            # If all validations pass, save the NOFO, Sections, and Subsections
+            nofo.save()
+            for section in sections:
+                section.save()
+                for subsection in section.subsections_to_create:
+                    subsection.save()
+
+            messages.success(request, f"Successfully imported NOFO: {nofo.title}")
+            return redirect(reverse("nofos:nofo_index"))
+
+        except json.JSONDecodeError:
+            messages.error(request, "Invalid JSON file.")
+        except ValidationError as e:
+            messages.error(request, f"Validation error: {e}")
+        except Exception as e:
+            messages.error(request, f"An unexpected error occurred: {e}")
+
+        return render(request, self.template_name)
