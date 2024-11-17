@@ -130,8 +130,13 @@ urlpatterns = [
         name="nofo_check_link_single",
     ),
     path(
-        "<int:nofo_id>/export",
+        "<int:nofo_id>/json/export",
         views.NofoExportJsonView.as_view(),
         name="export_nofo_json",
+    ),
+    path(
+        "json/import",
+        views.NofoImportJsonView.as_view(),
+        name="import_nofo_json",
     ),
 ]
