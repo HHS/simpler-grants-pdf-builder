@@ -18,6 +18,6 @@
     type="file"
     name="{{ id }}"
     aria-describedby="{% if hint %}{{ id }}--hint{% endif %}{% if error %} {{ id }}--error{% endif %}"
-    accept=".html,.docx,.json"
+    accept="{% if accept %}{{ accept }}{% else %}.docx{% endif %}"
   />
 </div>
