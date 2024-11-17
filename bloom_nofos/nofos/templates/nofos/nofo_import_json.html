@@ -10,13 +10,13 @@
 
   <form id="nofo-import-json--form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {% with id="nofo-import-json" label="Select NOFO file" hint="Accepts .json files only." value=title %}
+    {% with id="nofo-import-json" label="Select NOFO file" hint="Accepts .json files only." accept=".json" value=title %}
       {% for message in messages %}
         {% if "error" in message.tags %}
-          {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
+          {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message only %}
         {% endif %}
       {% empty %}
-        {% include "includes/file_input.html" with id=id label=label hint=hint only %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept only %}
       {% endfor %}
     {% endwith %}
 
