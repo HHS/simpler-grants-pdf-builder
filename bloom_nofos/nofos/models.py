@@ -69,7 +69,7 @@ class Nofo(models.Model):
     title = models.TextField(
         "NOFO title",
         blank=True,
-        help_text="This will be publicly visible when the NOFO is published.",
+        help_text="The official name for this NOFO. It will be public when the NOFO is published.",
     )
 
     filename = models.CharField(
@@ -81,14 +81,14 @@ class Nofo(models.Model):
     short_name = models.CharField(
         max_length=511,
         blank=True,
-        help_text="A name to make it easier to see this NOFO in a list. It won’t be public.",
+        help_text="A name that makes it easier to find this NOFO in a list. It won’t be public.",
     )
 
     number = models.CharField(
         "Opportunity number",
         max_length=200,
         blank=True,
-        help_text="The official opportunity number for this NOFO. It will be public.",
+        help_text="The official opportunity number for this NOFO.",
     )
 
     group = models.CharField(
@@ -235,7 +235,7 @@ class Nofo(models.Model):
         choices=STATUS_CHOICES,
         blank=False,
         default="draft",
-        help_text="The status of this NOFO in the NOFO builder.",
+        help_text="The status of this NOFO in the NOFO Builder.",
     )
 
     archived = models.DateField(
