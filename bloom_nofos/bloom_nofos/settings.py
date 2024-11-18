@@ -157,6 +157,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
+# login backend
+
+AUTHENTICATION_BACKENDS = [
+    "users.backends.CaseInsensitiveEmailBackend",  # Custom backend to lowercase emails
+    "django.contrib.auth.backends.ModelBackend",  # Default Django backend
+]
+
 # Logging
 # In production, log all errors to console
 if not DEBUG:
