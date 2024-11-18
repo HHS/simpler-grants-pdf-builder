@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added (small) cover image for HRSA-25-026
+
 ### Changed
 
 ### Fixed
