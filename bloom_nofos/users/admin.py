@@ -14,9 +14,9 @@ class BloomUserAdmin(UserAdmin):
         "email",
         "full_name",
         "group",
+        "is_superuser_status",
         "is_staff_status",
         "is_active",
-        "is_superuser_status",
         "formatted_last_login",
     )
 
@@ -47,15 +47,25 @@ class BloomUserAdmin(UserAdmin):
 
     list_filter = ()
     fieldsets = (
-        (None, {"fields": ("email", "full_name", "group", "password")}),
+        (
+            None,
+            {
+                "fields": (
+                    "email",
+                    "full_name",
+                    "group",
+                    "password",
+                    "force_password_reset",
+                )
+            },
+        ),
         (
             "Permissions",
             {
                 "fields": (
-                    "is_staff",
                     "is_superuser",
+                    "is_staff",
                     "is_active",
-                    "force_password_reset",
                 )
             },
         ),
@@ -71,10 +81,17 @@ class BloomUserAdmin(UserAdmin):
                     "group",
                     "password1",
                     "password2",
+                    "force_password_reset",
+                ),
+            },
+        ),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_superuser",
                     "is_staff",
                     "is_active",
-                    "is_superuser",
-                    "force_password_reset",
                 ),
             },
         ),

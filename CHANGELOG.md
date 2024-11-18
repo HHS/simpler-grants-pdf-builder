@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Always show user permissions in the same order on the admin screens
+
 ### Fixed
 
 ## [1.33.0] - 2023-11-18
