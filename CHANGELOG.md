@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Smallen the font size (even more) for NOFOs with very, very long titles (> 230 chars)
+
 ### Fixed
 
 ## [1.34.0] - 2023-11-18
