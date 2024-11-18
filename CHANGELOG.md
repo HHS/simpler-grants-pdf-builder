@@ -8,16 +8,25 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.34.0] - 2023-11-18
+
+### Added
+
 - Added (small) cover image for HRSA-25-026
 
 ### Changed
 
 - Always show user permissions in the same order on the admin screens
 - Force emails to lowercase when new users are created
-- Default "force reset password" field to True for new users
 - Automatically lowercase email addresses during login attempts
 
-### Fixed
+### Migrations
+
+- Default "force reset password" field to True for new users
 
 ## [1.33.0] - 2023-11-18
 
