@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Always show user permissions in the same order on the admin screens
 - Force emails to lowercase when new users are created
 - Default "force reset password" field to True for new users
+- Automatically lowercase email addresses during login attempts
 
 ### Fixed
 
