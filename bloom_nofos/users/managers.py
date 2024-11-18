@@ -14,7 +14,7 @@ class BloomUserManager(BaseUserManager):
         """
         if not email:
             raise ValueError(_("Email is required"))
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).lower()
 
         group = extra_fields.get("group", "")
         if not group:
