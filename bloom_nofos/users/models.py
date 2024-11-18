@@ -30,9 +30,16 @@ class BloomUser(AbstractUser):
     objects = BloomUserManager()
 
     def __str__(self):
-        return self.email
+        if not self.full_name:
+            return self.email
+
+        return "{} ({})".format(self.email, self.full_name)
 
     def save(self, *args, **kwargs):
+        # Ensure the email is stored in lowercase
+        if self.email:
+            self.email = self.email.lower()
+
         if (self.is_superuser or self.is_staff) and self.group != "bloom":
             raise ValidationError(
                 "Only users in the 'bloom' group can be staff or superusers."
