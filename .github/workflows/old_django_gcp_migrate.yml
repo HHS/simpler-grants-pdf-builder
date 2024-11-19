@@ -3,8 +3,8 @@ name: "Migrate Django database in Cloud Run"
 on:
   push:
     branches:
-      - main
-      - auto-migrate-and-auto-deploy
+      - main-1
+      - auto-migrate-and-auto-deploy-1
 
 env:
   AR_REGION: "us"
