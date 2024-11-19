@@ -17,6 +17,7 @@ COACH_CHOICES = [
     ("idit", "Idit"),
     ("julie", "Julie"),
     ("july", "July"),
+    ("mick", "Mick"),
     ("moira", "Moira"),
     ("morgan", "Morgan"),
     ("shane", "Shane"),
@@ -33,6 +34,8 @@ DESIGNER_CHOICES = [
     ("hrsa-betty", "Betty"),
     ("hrsa-doretha", "Doretha"),
     ("hrsa-gwen", "Gwen"),
+    ("hrsa-ericka", "Ericka"),
+    ("hrsa-jene", "Jene"),
     ("hrsa-randy", "Randy"),
     ("hrsa-stephanie", "Stephanie"),
 ]
