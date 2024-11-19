@@ -1,0 +1,18 @@
+# main.yml
+name: Orchestrator Workflow
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+  push:
+    branches:
+      - main
+
+jobs:
+  run-ci:
+    uses: ./.github/workflows/django_ci.yml # Call the CI workflow
+    with:
+      branch: ${{ github.ref_name }}
+    secrets: inherit
