@@ -10,9 +10,29 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+### Fixed
+
+## [1.35.0] - 2023-11-18
+
+### Added
+
+- Added a new "migrate" step to migrate the database before deploying the app
+  - migrate waits for the tests to pass
+  - deploy waits for migrate to pass
+
+### Changed
+
 - Smallen the font size (even more) for NOFOs with very, very long titles (> 230 chars)
+- Add bold font-weight to the first paragraph in a table heading
 
 ### Fixed
+
+- Only deploy the app if the "test" job finishes successfully
+  - Previously, it would always deploy
+
+### Migrations
+
+- Update some of the field descriptions on the NOFO object
 
 ## [1.34.0] - 2023-11-18
 
