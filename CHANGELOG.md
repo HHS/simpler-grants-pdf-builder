@@ -14,6 +14,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+## [1.36.0] - 2023-11-19
+
+### Added
+
+- 2 new HRSA designers, and 1 new Bloom Coach
+
+### Migrations
+
+- (Same) 2 new HRSA designers, and 1 new Bloom Coach
+
 ## [1.35.0] - 2023-11-18
 
 ### Added
