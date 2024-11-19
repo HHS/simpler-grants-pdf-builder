@@ -8,12 +8,11 @@
 - Refac: short section names for breadcrumbs means we can loop
 - .docx imports
   - Investigate images
-- Autodeploy from Github Actions
-  - Migrations!!
 
 # DONE
 
 - Autodeploy from Github Actions
+  - Migrations!!
 - Default column widths for application table
 - Only show Bloom nofos by default
 - Add "copy" for section headings
