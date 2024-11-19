@@ -7,7 +7,7 @@ name: "Build and Deploy to Cloud Run"
 on:
   push:
     branches:
-      - main
+      - main-1
 
 env:
   AR_REGION: "us"
