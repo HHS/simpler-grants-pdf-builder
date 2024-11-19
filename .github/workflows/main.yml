@@ -11,15 +11,6 @@ on:
       - main
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug event
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "ref_name: ${{ github.ref_name }}"
-          echo "ref: ${{ github.ref }}"
-
   ci:
     uses: ./.github/workflows/django_ci.yml # Call the CI workflow
     with:
@@ -27,8 +18,7 @@ jobs:
     secrets: inherit
 
   migrate:
-    # if: github.event_name == 'push' && github.ref_name == 'main'
-    if: github.event_name == 'pull_request' && github.ref_name == '52/merge'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     needs: ci
     uses: ./.github/workflows/django_gcp_migrate.yml
     secrets:
@@ -37,8 +27,8 @@ jobs:
       GCP_IAM_SA_CREDENTIALS: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
 
   deploy:
-    if: github.event_name == 'pull_request' && github.ref_name == '52/merge'
-    needs: ci
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    needs: migrate
     uses: ./.github/workflows/django_gcp_deploy.yml # Call the Deploy workflow
     with:
       github_sha: ${{ github.sha }}
