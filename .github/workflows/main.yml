@@ -11,8 +11,16 @@ on:
       - main
 
 jobs:
-  run-ci:
+  ci:
     uses: ./.github/workflows/django_ci.yml # Call the CI workflow
     with:
       branch: ${{ github.ref_name }}
     secrets: inherit
+
+  migrate:
+    needs: ci
+    uses: ./.github/workflows/django_gcp_migrate.yml
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GCP_CLOUD_CONNECTION_NAME: ${{ secrets.GCP_CLOUD_CONNECTION_NAME }}
+      GCP_IAM_SA_CREDENTIALS: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
