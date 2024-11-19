@@ -1,0 +1,39 @@
+name: Django CI
+
+on:
+  pull_request: # Run on every PR
+    branches:
+      - main
+      - "**"
+
+  workflow_call: # Allow this workflow to be called by other workflows
+    inputs:
+      branch:
+        description: "Branch to run CI on"
+        required: false
+        default: "main"
+        type: "string"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./bloom_nofos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.9"
+      - uses: Gr1N/setup-poetry@v8
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+      - run: poetry --version
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        run: poetry run python manage.py test
