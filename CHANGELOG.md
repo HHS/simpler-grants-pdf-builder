@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- 2 new HRSA designers, and 1 new Bloom Coach
+
 ### Changed
 
 ### Fixed
