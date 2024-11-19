@@ -1,17 +1,14 @@
 name: "Migrate Django database in Cloud Run"
 
 on:
-  push:
-    branches:
-      - main-1
-      - auto-migrate-and-auto-deploy-1
-
-env:
-  AR_REGION: "us"
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REPOSITORY: ${{ secrets.GCP_AR_REPO_NAME }}
-  SERVICE: ${{ secrets.GCP_SERVICE_NAME }}
-  SERVICE_REGION: "us-central1"
+  workflow_call: # Allow this workflow to be called by other workflows
+    secrets:
+      DATABASE_URL:
+        required: true
+      GCP_CLOUD_CONNECTION_NAME:
+        required: true
+      GCP_IAM_SA_CREDENTIALS:
+        required: true
 
 jobs:
   migrate:
@@ -43,6 +40,9 @@ jobs:
 
       - run: poetry --version
 
+      - name: Install poetry dependencies
+        run: poetry install
+
       # Configure auth with Service Account with permissions to build and deploy on Google Cloud
       - id: "auth"
         name: "Authenticate to Google Cloud"
@@ -57,9 +57,6 @@ jobs:
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.0/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
           ./cloud-sql-proxy ${{ secrets.GCP_CLOUD_CONNECTION_NAME }} &
-
-      - name: Install poetry dependencies
-        run: poetry install
 
       - name: Run migration
         env:
