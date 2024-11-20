@@ -17,6 +17,7 @@ from nofos.templatetags.utils import (
     format_footnote_ref_html,
     get_footnote_type,
     get_parent_td,
+    is_callout_box_table_markdown,
     is_floating_callout_box,
     is_footnote_ref,
 )
@@ -265,6 +266,75 @@ class AddClassToNofoTitleTest(TestCase):
         title = "x" * 226
         result = add_class_to_nofo_title(title)
         self.assertEqual(result, "nofo--cover-page--title--h1--very-very-smol")
+
+
+class IsCalloutBoxTableMarkdownTest(TestCase):
+    def test_valid_callout_box_table(self):
+        # A table with 1 column, 2 rows, and 1 empty cell
+        html = """
+        <table>
+            <tr><th>Header</th></tr>
+            <tr><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertTrue(is_callout_box_table_markdown(table))
+
+    def test_invalid_multiple_columns(self):
+        # A table with more than 1 column
+        html = """
+        <table>
+            <tr><th>Header 1</th><th>Header 2</th></tr>
+            <tr><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table_markdown(table))
+
+    def test_invalid_multiple_rows(self):
+        # A table with more than 2 rows
+        html = """
+        <table>
+            <tr><th>Header</th></tr>
+            <tr><td></td></tr>
+            <tr><td></td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table_markdown(table))
+
+    def test_invalid_non_empty_cell(self):
+        # A table with a non-empty cell
+        html = """
+        <table>
+            <tr><th>Header</th></tr>
+            <tr><td>Non-empty</td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table_markdown(table))
+
+    def test_invalid_no_cell(self):
+        # A table with no <td> cells
+        html = """
+        <table>
+            <tr><th>Header</th></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table_markdown(table))
+
+    def test_invalid_no_rows(self):
+        # An empty table with no rows
+        html = "<table>Hello</table>"
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
+        self.assertFalse(is_callout_box_table_markdown(table))
 
 
 class HTMLTableClassTests(TestCase):
