@@ -2,6 +2,8 @@ from django import template
 
 register = template.Library()
 
+from .utils import add_class_to_nofo_title
+
 
 @register.filter()
 def add_classes_to_headings(html_string):
@@ -14,13 +16,4 @@ def add_classes_to_headings(html_string):
 
 @register.filter()
 def add_classes_to_nofo_title(nofo_title):
-    if len(nofo_title) > 230:
-        return "nofo--cover-page--title--h1--very-very-smol"
-
-    if len(nofo_title) > 170:
-        return "nofo--cover-page--title--h1--very-smol"
-
-    if len(nofo_title) > 120:
-        return "nofo--cover-page--title--h1--smaller"
-
-    return "nofo--cover-page--title--h1--normal"
+    return add_class_to_nofo_title(nofo_title)
