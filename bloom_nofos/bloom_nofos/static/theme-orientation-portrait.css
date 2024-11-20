@@ -274,6 +274,19 @@ section.before-you-begin {
   font-size: 10pt;
 }
 
+.section--content--right-col.section--content--right-col--smaller
+  .callout-box--questions
+  .callout-box--contents
+  p,
+.section--content--right-col.section--content--right-col--smaller
+  .callout-box--contents {
+  font-size: 9.5pt;
+}
+
+.section--content--right-col .callout-box--contents p {
+  padding-right: 5px;
+}
+
 .section--content--right-col .callout-box--questions .callout-box--contents p {
   font-size: 10pt;
 }
