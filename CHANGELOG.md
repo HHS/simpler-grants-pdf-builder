@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Do not bold paragraph in th that follows a strong
+
 ## [1.36.0] - 2023-11-19
 
 ### Added
