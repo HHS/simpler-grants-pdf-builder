@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Make text in right hand callout box smaller if too many words
+
 ### Fixed
 
 ## [1.36.0] - 2023-11-19
