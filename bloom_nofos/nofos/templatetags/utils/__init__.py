@@ -64,6 +64,19 @@ def add_class_to_list(html_list):
             )
 
 
+def add_class_to_nofo_title(nofo_title):
+    if len(nofo_title) > 225:
+        return "nofo--cover-page--title--h1--very-very-smol"
+
+    if len(nofo_title) > 165:
+        return "nofo--cover-page--title--h1--very-smol"
+
+    if len(nofo_title) > 120:
+        return "nofo--cover-page--title--h1--smaller"
+
+    return "nofo--cover-page--title--h1--normal"
+
+
 def _get_total_word_count(table_cells):
     word_count = 0
 

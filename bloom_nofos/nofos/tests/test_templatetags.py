@@ -9,6 +9,7 @@ from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tags,
     add_caption_to_table,
     add_class_to_list,
+    add_class_to_nofo_title,
     add_class_to_table,
     add_class_to_table_rows,
     convert_paragraph_to_searchable_hr,
@@ -212,6 +213,58 @@ class AddClassToListsTests(TestCase):
         soup = BeautifulSoup(html_content, "html.parser")
         add_class_to_list(soup.ul)
         self.assertEqual(soup.find_all("li")[-1]["class"], ["avoid-page-break-before"])
+
+
+class AddClassToNofoTitleTest(TestCase):
+    def test_normal_title_length(self):
+        title = "Tribal Management Grant (TMG) Program"
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--normal")
+
+    def test_smaller_title_length(self):
+        title = "Improving quality of care and health outcomes through innovative systems and technologies in Malawi under the President’s Emergency Plan for AIDS Relief (PEPFAR)"
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--smaller")
+
+    def test_very_smol_title_length(self):
+        title = "Strengthening economic analysis and capacity in support of program management for HIV, TB, and related health threats in South Africa (SA) under the President's Emergency Plan for AIDS Relief (PEPFAR)"
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--very-smol")
+
+    def test_very_very_smol_title_length(self):
+        title = "Strengthening the Botswana Ministry of Health (MOH) laboratory and health systems through technical assistance (TA) to effectively manage and sustain a quality HIV/TB program in Botswana under the President’s Emergency Plan for AIDS Relief (PEPFAR)"
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--very-very-smol")
+
+    def test_edge_case_exact_120(self):
+        title = "x" * 120
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--normal")
+
+    def test_edge_case_just_over_120(self):
+        title = "x" * 121
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--smaller")
+
+    def test_edge_case_exact_165(self):
+        title = "x" * 165
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--smaller")
+
+    def test_edge_case_just_over_165(self):
+        title = "x" * 166
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--very-smol")
+
+    def test_edge_case_exact_225(self):
+        title = "x" * 225
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--very-smol")
+
+    def test_edge_case_just_over_225(self):
+        title = "x" * 226
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--very-very-smol")
 
 
 class HTMLTableClassTests(TestCase):

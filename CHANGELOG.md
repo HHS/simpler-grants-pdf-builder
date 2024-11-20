@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Make text in right hand callout box smaller if too many words
+- Titles with 166 chars or more now get the smaller classname
 
 ### Fixed
 
