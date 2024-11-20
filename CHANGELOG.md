@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Do not bold paragraph in th that follows a strong
 - Add 33% and 66% width classes
+- Tables with no rows no longer crash the app
 
 ## [1.36.0] - 2023-11-19
 
