@@ -414,8 +414,8 @@ table tbody tr:first-of-type th p {
   font-weight: 400;
 }
 
-table thead th p:first-of-type,
-table tbody tr:first-of-type th p:first-of-type {
+table thead th p:first-child,
+table tbody tr:first-of-type th p:first-child {
   font-weight: 600;
 }
 
@@ -423,6 +423,11 @@ table thead th > p,
 table tbody tr:first-of-type th > p {
   margin-top: 0;
   margin-bottom: 8px;
+}
+
+table thead th > strong + p:first-of-type,
+table tbody tr:first-of-type th > strong + p:first-of-type {
+  margin-top: 8px;
 }
 
 table thead th > p:last-of-type,
