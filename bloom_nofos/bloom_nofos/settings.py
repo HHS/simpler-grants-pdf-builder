@@ -344,6 +344,7 @@ MARTOR_MARKDOWN_BASE_EMOJI_URL = ""  # Completely disables the endpoint
 
 # URL schemes that are allowed within links
 ALLOWED_URL_SCHEMES = [
+    "data",  # allow images like "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD"
     "file",
     "ftp",
     "ftps",

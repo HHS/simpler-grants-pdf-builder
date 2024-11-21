@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - 2 new HRSA designers, and 1 new Bloom Coach
 - 2 new images, for HRSA-25-70, HRSA-25-76
+- Support src="data:..." images in the NOFO Builder 🖼️
 
 ### Changed
 
