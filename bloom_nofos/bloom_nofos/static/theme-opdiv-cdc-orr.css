@@ -244,12 +244,12 @@ section.nofo--cover-page.nofo--cover-page--hero {
 table th {
   color: var(--color--white);
   background-color: var(--color--orr-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td {
   background-color: var(--color--table-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td a {

@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Make text in right hand callout box smaller if too many words
 - Titles with 166 chars or more now get the smaller classname
+- White table borders are now 3px instead of 2px
+  - More emphasis on the line, basically
 
 ### Fixed
 
