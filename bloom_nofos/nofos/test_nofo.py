@@ -3382,6 +3382,18 @@ class TestReplaceSrcForInlineImages(TestCase):
         replace_src_for_inline_images(soup)
         self.assertIsNone(soup.find("img").get("src"))
 
+    @patch("nofos.nofo.suggest_nofo_opportunity_number")
+    def test_ignore_img_with_a_data_url(self, mock_suggest_nofo):
+        mock_suggest_nofo.return_value = "hrsa-24-017"
+        html = "<img src='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2Q==' />"
+        soup = BeautifulSoup(html, "html.parser")
+
+        replace_src_for_inline_images(soup)
+        self.assertEqual(
+            soup.find("img")["src"],
+            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2Q==",
+        )
+
 
 class TestAddEndnotesHeaderIfExists(TestCase):
     def test_basic_with_hr_without_style(self):

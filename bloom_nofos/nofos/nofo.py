@@ -1197,7 +1197,9 @@ def decompose_empty_tags(soup):
 
     def _decompose_empty_elements(element):
         if not element.get_text().strip():
-            element.decompose()
+            children = element.find_all(recursive=False)  # Get children
+            if not any(child.name == "img" for child in children):
+                element.decompose()
 
     # remove all list items and paragraphs that are empty
     elements = soup.find_all(["li", "p"])
@@ -1267,13 +1269,12 @@ def replace_src_for_inline_images(soup):
     if nofo_number and nofo_number != DEFAULT_NOFO_OPPORTUNITY_NUMBER:
         for img in soup.find_all("img"):
             if img.get("src"):
-                img_src = img["src"]
-                img_filename = img_src.split(
-                    "/"
-                ).pop()  # get the last part of the filename
-                img["src"] = "/static/img/inline/{}/{}".format(
-                    nofo_number.lower(), img_filename
-                )
+                if ";base64" not in img.get("src")[:40]:
+                    img_src = img["src"]
+                    img_filename = img_src.split("/").pop()  # pop the filepath
+                    img["src"] = "/static/img/inline/{}/{}".format(
+                        nofo_number.lower(), img_filename
+                    )
 
 
 def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
