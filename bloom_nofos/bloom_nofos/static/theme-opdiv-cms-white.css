@@ -130,12 +130,12 @@ section.before-you-begin h2 {
 table th {
   color: var(--color--white);
   background-color: var(--color--cms-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td {
   background-color: var(--color--table-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td a {

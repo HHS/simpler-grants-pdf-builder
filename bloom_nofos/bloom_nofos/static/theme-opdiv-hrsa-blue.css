@@ -185,12 +185,12 @@ h4 {
 table th {
   color: var(--color--white);
   background-color: var(--color--dark-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td {
   background-color: var(--color--table-blue);
-  border: 2px solid var(--color--white);
+  border: 3px solid var(--color--white);
 }
 
 table td a {
