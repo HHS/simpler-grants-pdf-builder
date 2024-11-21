@@ -117,22 +117,25 @@ def add_class_to_table(table):
         return "table--callout-box"
 
     rows = table.find_all("tr")
-    cols = rows[0].find_all("th") + rows[0].find_all("td")
+    if rows:
+        cols = rows[0].find_all("th") + rows[0].find_all("td")
 
-    if table.find("th", string="Recommended For"):
-        return "table--large"
+        if table.find("th", string="Recommended For"):
+            return "table--large"
 
-    if table.find("th", string="Criterion"):
-        return "table--criterion"
+        if table.find("th", string="Criterion"):
+            return "table--criterion"
 
-    word_count = _get_total_word_count(table.find_all("td"))
+        word_count = _get_total_word_count(table.find_all("td"))
 
-    if word_count == 0 and len(cols) < 4:
-        return "table--small"
-    elif word_count > 120:
-        return "table--large"
+        if word_count == 0 and len(cols) < 4:
+            return "table--small"
+        elif word_count > 120:
+            return "table--large"
 
-    return _get_table_class(len(cols))
+        return _get_table_class(len(cols))
+
+    return "table--invalid"
 
 
 def add_class_to_table_rows(table_row):

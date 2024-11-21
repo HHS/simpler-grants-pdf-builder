@@ -424,6 +424,12 @@ class HTMLTableClassTests(TestCase):
 
         self.assertEqual(add_class_to_table(soup.find("table")), "table--criterion")
 
+    def test_invalid_table(self):
+        table_html = "<table>Hello</table>"
+        soup = BeautifulSoup(table_html, "html.parser")
+
+        self.assertEqual(add_class_to_table(soup.find("table")), "table--invalid")
+
 
 class TestAddClassToTableRows(TestCase):
     def test_all_empty_rows(self):
