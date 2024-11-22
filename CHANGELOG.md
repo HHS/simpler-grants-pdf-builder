@@ -12,6 +12,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Replace "www.grants.gov/web/grants/search-grants.html" with "grants.gov/search-grants"
+- Replace "www.grants.gov/web/grants/forms/sf-424-family.html" with "grants.gov/forms/forms-repository/sf-424-family"
+- Replace "www.cdc.gov/grants/dictionary/index.html" with "www.cdc.gov/grants/dictionary/index.html"
+
 ## [1.37.0] - 2023-11-21
 
 ### Added
