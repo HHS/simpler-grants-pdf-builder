@@ -882,6 +882,19 @@ div[role="heading"] {
   font-weight: 600;
 }
 
+.before-you-begin--sole-source .section--before-you-begin--psuedo-header {
+  font-size: 14pt;
+}
+
+.before-you-begin--sole-source
+  .section--before-you-begin--psuedo-header:first-of-type {
+  margin-bottom: 20px;
+}
+
+.before-you-begin--sole-source .callout-box--keyboard {
+  margin-top: 30px;
+}
+
 /* Section title page */
 
 .section--title-page {

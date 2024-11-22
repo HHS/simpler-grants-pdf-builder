@@ -12,6 +12,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Condense Before You Begin page for NOFO: CDC-RFA-PS-25-0008
+  - This will be a sole-source thing, but for now it's just for this one
+
 ### Removed
 
 - Remove admin-only view to export all NOFO links
