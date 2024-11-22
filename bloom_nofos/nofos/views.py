@@ -85,6 +85,7 @@ from .nofo import (
     preserve_table_heading_links,
     remove_google_tracking_info_from_links,
     replace_chars,
+    replace_links,
     replace_src_for_inline_images,
     suggest_all_nofo_fields,
     suggest_nofo_title,
@@ -297,8 +298,10 @@ def nofo_import(request, pk=None):
             )
             return redirect(view_path, **kwargs)
 
-        # replace problematic characters on import
+        # replace problematic characters/links on import
         cleaned_content = replace_chars(file_content)
+        cleaned_content = replace_links(file_content)
+
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
 

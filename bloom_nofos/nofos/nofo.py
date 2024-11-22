@@ -45,6 +45,29 @@ def replace_chars(file_content):
     return file_content
 
 
+def replace_links(file_content):
+    # grants.gov/web links are broken and don't redirect _and_ say they are 200 🙄
+    replacement_chars = [
+        (
+            "www.grants.gov/web/grants/search-grants.html",
+            "grants.gov/search-grants",
+        ),
+        (
+            "www.grants.gov/web/grants/forms/sf-424-family.html",
+            "grants.gov/forms/forms-repository/sf-424-family",
+        ),
+        (
+            "www.cdc.gov/grants/dictionary/index.html",
+            "www.cdc.gov/grants/dictionary-of-terms/",
+        ),
+    ]
+
+    for _from, _to in replacement_chars:
+        file_content = file_content.replace(_from, _to)
+
+    return file_content
+
+
 @transaction.atomic
 def add_headings_to_nofo(nofo):
     new_ids = []
