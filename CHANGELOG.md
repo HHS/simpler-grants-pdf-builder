@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.37.0] - 2023-11-21
+
+### Added
+
 - 2 new HRSA designers, and 1 new Bloom Coach
 - 2 new images, for HRSA-25-70, HRSA-25-76
 - Support src="data:..." images in the NOFO Builder 🖼️
@@ -29,6 +37,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Do not bold paragraph in th that follows a strong
 - Add 33% and 66% width classes
 - Tables with no rows no longer crash the app
+
+### Migrations
+
+- "Stephanie V" instead of "Stephanie" for HRSA
 
 ## [1.36.0] - 2023-11-19
 
