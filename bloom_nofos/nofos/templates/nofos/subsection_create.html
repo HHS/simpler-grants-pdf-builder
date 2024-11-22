@@ -40,51 +40,31 @@
 
       <!-- name -->
       <div class="form-group">
-        <label 
-        {% whitespaceless %}
-            class="
-              usa-label
-                {% if form.non_field_errors and "have a Subsection name" in form.non_field_errors.0 or "name or content" in form.non_field_errors.0   %}
-                  text-secondary-dark
-                {% endif %}
-            "
-        {% endwhitespaceless %} for="name">Subsection name</label>
-        <input {% whitespaceless %}
-          class="
-            usa-input
-            border-2px 
-              {% if form.non_field_errors and "have a Subsection name" in form.non_field_errors.0 or "name or content" in form.non_field_errors.0   %}
-                border-secondary-dark
-              {% endif %}
-          "
-        {% endwhitespaceless %} id="name" name="name" type="text" aria-describedby="" value="{{ form.name.value|default_if_none:'' }}">
-      </div>
+        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
+          {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
+        {% endwith %}
 
       <!-- tag -->
       <div class="form-group width-mobile">
-        <label 
-          {% whitespaceless %}
-              class="
-                usa-label
-                  {% if form.non_field_errors and "have a Heading level" in form.non_field_errors.0 %}
-                    text-secondary-dark
-                  {% endif %}
-              "
-        {% endwhitespaceless %} for="tag">Heading level</label>
+        <label class="usa-label" for="tag">Heading level</label>
         <div class="usa-hint" id="tag--hint-1">
           Required if name exists
         </div>
+        {% if form.errors.tag %}
+          <div class="usa-error-message" id="tag--error">
+            {{ form.errors.tag.0 }}
+          </div>
+        {% endif %}
         <select {% whitespaceless %}
           class="
                 usa-select
-                border-2px 
-                  {% if form.non_field_errors and "have a Heading level" in form.non_field_errors.0 %}
+                border-2px
+                  {% if form.errors.tag %}
                     border-secondary-dark
                   {% endif %}
               "
         {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" aria-describedby="tag--hint-1">
           <option value="">---------</option>
-          <option value="h2" {% if form.tag.value == 'h2' %}selected{% endif %}>Heading 2</option>
           <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
           <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
           <option value="h5" {% if form.tag.value == 'h5' %}selected{% endif %}>Heading 5</option>
@@ -120,7 +100,6 @@
                 border-2px 
                 margin-top-1 
                 radius-md 
-                border-2px 
                 {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
                   border-secondary-dark
                 {% else %}
