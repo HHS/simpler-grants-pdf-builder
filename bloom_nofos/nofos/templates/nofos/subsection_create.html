@@ -24,7 +24,7 @@
     </div>
   {% endwith %}
   
-  <p>Create a new subsection AFTER THIS ONE and BEFORE this one IN THIS SECTION.</p>
+  <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
 
   <form class="form" method="post">
     {% csrf_token %}

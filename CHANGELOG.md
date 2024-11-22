@@ -25,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Mention the name of the preceding subsection on the 'New subsection' page
 - Do not bold paragraph in th that follows a strong
 - Add 33% and 66% width classes
 - Tables with no rows no longer crash the app
