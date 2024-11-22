@@ -18,7 +18,8 @@ html {
 
 /* Make sure footer sits on the bottom */
 body,
-body.subsection_edit {
+body.subsection_edit,
+body.subsection_create {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -48,6 +49,13 @@ footer .usa-footer__primary-link:visited {
 
 .small-caps {
   font-variant: small-caps;
+}
+
+.usa-combo-box__input,
+.usa-input,
+.usa-input-group,
+.usa-select {
+  height: 2.6rem;
 }
 
 /* Make sure header is evenly spaced */
@@ -738,14 +746,6 @@ main .back-link a::before,
   font-size: 90%;
   padding: 8px 12px;
   margin-right: 0;
-}
-
-.subsection_edit #name--hint-1 {
-  font-variant: small-caps;
-}
-
-.subsection_edit #name--hint-1 span {
-  font-variant: none;
 }
 
 .subsection_edit .hint--subsection-id {
