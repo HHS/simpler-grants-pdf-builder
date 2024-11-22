@@ -1,4 +1,3 @@
-import csv
 import io
 
 import docraptor
@@ -8,7 +7,6 @@ from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F
@@ -897,22 +895,3 @@ def insert_order_space_view(request, section_id):
 
     context = {"form": form, "title": "Insert Order Space", "section": section}
     return render(request, "admin/insert_order_space.html", context)
-
-
-@user_passes_test(lambda u: u.is_superuser)
-def export_nofo_links(request, nofo_id):
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="nofo_{nofo_id}_links.csv"'
-
-    writer = csv.writer(response)
-
-    writer.writerow(["url", "section_name", "nofo_number"])
-
-    nofo = get_object_or_404(Nofo, id=nofo_id)
-
-    urls = find_external_links(nofo)
-    for url in urls:
-        writer.writerow([url.get("url"), url.get("section").name, nofo.number])
-
-    return response

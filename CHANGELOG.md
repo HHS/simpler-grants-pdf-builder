@@ -12,6 +12,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+### Removed
+
+- Remove admin-only view to export all NOFO links
+  - We used this once ever
+
 ### Fixed
 
 - Replace "www.grants.gov/web/grants/search-grants.html" with "grants.gov/search-grants"
