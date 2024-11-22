@@ -16,3 +16,6 @@ bloom_nofos/static
 
 # debug file
 debug_output.html
+
+# export file
+export_links.csv
