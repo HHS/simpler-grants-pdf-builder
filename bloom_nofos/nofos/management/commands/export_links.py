@@ -18,7 +18,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--output",
             type=str,
-            default="nofo_links.csv",
+            default="export_links.csv",
             help="Output file name for the CSV (default: nofo_links.csv)",
         )
         parser.add_argument(
@@ -55,6 +55,7 @@ class Command(BaseCommand):
                 [
                     "nofo_id",
                     "nofo_number",
+                    "nofo_status",
                     "url",
                     "section_name",
                     "subsection_name",
@@ -62,7 +63,15 @@ class Command(BaseCommand):
                 ]
             )
 
-            for nofo in nofos:
+            print("---")
+            print("All nofos: {}".format(len(nofos)))
+            print(
+                "All non-archived nofos: {}".format(
+                    len(nofos.exclude(archived__isnull=False))
+                )
+            )
+
+            for nofo in nofos.exclude(archived__isnull=False):
                 print("---")
                 print("NOFO: {}".format(nofo.number))
                 links = find_external_links(nofo)
@@ -74,6 +83,7 @@ class Command(BaseCommand):
                         [
                             nofo.id,
                             nofo.number,
+                            nofo.status,
                             link["url"],
                             (
                                 link["section"].name if link["section"] else ""
