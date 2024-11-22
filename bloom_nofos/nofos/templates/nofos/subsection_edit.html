@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name input_type %}
+{% load static nofo_name input_type whitespaceless %}
 
 {% block title %}
   Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
@@ -44,14 +44,13 @@
         </legend>
       {% endif %}
 
-      <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
       <input type="hidden" name="{{ form.callout_box.name }}" id="{{ form.callout_box.id_for_label }}" value="{{ subsection.callout_box }}">
 
       <!-- name -->
       <div class="form-group">
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
           {% if subsection.tag %}
-            {% include "includes/_text_input.html" with id=id label=label hint_prefix="Heading level:" hint=subsection.tag|upper value=value error=error input_type=input_type safe_hint=True only %}
+            {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
             {% if subsection.html_id %}
             <div class="usa-hint margin-top-05 hint--subsection-id" id="{{ id }}--hint-2">
               <span id="subsection-html_id">{{ "#"|add:subsection.html_id  }}</span>
@@ -85,17 +84,58 @@
             </script>
             {% endif %}
           {% else %}
-            {% include "includes/_text_input.html" with id=id label=label hint=hint value=value error=error input_type=input_type disabled="disabled" only %}
+            {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type disabled="disabled" only %}
           {% endif %}
         {% endwith %}
       </div>
+
+      <!-- tag -->
+      {% if not form.tag.value %}
+
+        {# if there is no tag, make this a hidden field #}
+        <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
+
+      {% else %}
+
+        <div class="form-group width-mobile">
+          <label 
+            {% whitespaceless %}
+                class="
+                  usa-label
+                    {% if form.errors.tag %}
+                      text-secondary-dark
+                    {% endif %}
+                "
+          {% endwhitespaceless %} for="tag">Heading level</label>
+          {% if form.errors.tag %}
+            <div class="usa-error-message" id="tag--error">
+              {{ form.errors.tag.0 }}
+            </div>
+          {% endif %}
+          <select {% whitespaceless %}
+            class="
+                  usa-select
+                  border-2px 
+                    {% if form.errors.tag %}
+                      border-secondary-dark
+                    {% endif %}
+                "
+          {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" {% if form.errors.tag %}aria-describedby="tag--error"{% endif %}>
+            <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
+            <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
+            <option value="h5" {% if form.tag.value == 'h5' %}selected{% endif %}>Heading 5</option>
+            <option value="h6" {% if form.tag.value == 'h6' %}selected{% endif %}>Heading 6</option>
+            <option value="h7" {% if form.tag.value == 'h7' %}selected{% endif %}>Heading 7</option>
+          </select>
+        </div>
+      {% endif %}
 
       <!-- html_class -->
       <div class="form-group">
         <fieldset class="usa-fieldset">
           <legend class="usa-legend legend--bootstrap">Has page break{% if 'landscape' in nofo.theme %} or column break{% endif %}?</legend>
           {% if form.html_class.value %}
-            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' %}
+            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' and form.html_class.value != 'none' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
                 <span aria-hidden="true">⚠️</span> Warning! This heading’s class is ‘{{ form.html_class.value }}’. If you select a value, the existing class will be overwritten.
               </div>
@@ -155,7 +195,7 @@
               type="radio"
               name="html_class"
               value="none"
-              {% if not form.html_class.value %}
+              {% if not form.html_class.value or form.html_class.value == 'none'  %}
                 checked="checked"
               {% endif %}
             />

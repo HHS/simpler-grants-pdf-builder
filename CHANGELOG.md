@@ -11,6 +11,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - 2 new HRSA designers, and 1 new Bloom Coach
 - 2 new images, for HRSA-25-70, HRSA-25-76
 - Support src="data:..." images in the NOFO Builder 🖼️
+- Add "Heading level" `<select>` to subsection edit page
+  - Remove Heading level hint text from Subsection name label
+  - Remove "h2" from the options from heading level
+    - H2s are for Sections, not Subsections
 
 ### Changed
 

@@ -139,6 +139,16 @@ class SubsectionEditForm(forms.ModelForm):
             "name": forms.TextInput(),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("name")
+        tag = cleaned_data.get("tag")
+
+        if tag and not name:
+            self.add_error("name", "Subsection name can’t be empty.")
+
+        return cleaned_data
+
 
 class SubsectionCreateForm(forms.ModelForm):
     body = MartorFormField(required=False)
@@ -157,15 +167,17 @@ class SubsectionCreateForm(forms.ModelForm):
         tag = cleaned_data.get("tag")
 
         if name and not tag:
-            raise forms.ValidationError("Subsection name must have a Heading level.")
+            self.add_error("tag", "Subsections with a name must have a Heading level.")
 
         if tag and not name:
-            raise forms.ValidationError("Heading level must have a Subsection name.")
+            self.add_error("name", "Subsections with a heading level must have a name.")
 
-        if not name and not body:
+        if not name and not body and not tag:
             raise forms.ValidationError(
                 "Subsection must have either a name or content."
             )
+
+        return cleaned_data
 
 
 # Simple form for URL input
