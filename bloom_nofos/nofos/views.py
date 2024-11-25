@@ -954,16 +954,16 @@ class NofoImportJsonView(View):
 
             if not len(data):
                 messages.error(request, "Empty NOFO file.")
-                return render(request, self.template_name)
+                return render(request, self.template_name, status=400)
 
             if not data.get("sections"):
                 messages.error(request, "NOFO must contain sections.")
-                return render(request, self.template_name)
+                return render(request, self.template_name, status=400)
 
             for section in data.get("sections"):
                 if not section.get("subsections"):
                     messages.error(request, "Sections must contain subsections.")
-                    return render(request, self.template_name)
+                    return render(request, self.template_name, status=400)
 
             # Validate and create NOFO object
             nofo = Nofo(
@@ -1008,10 +1008,10 @@ class NofoImportJsonView(View):
             return redirect(reverse("nofos:nofo_index"))
 
         except json.JSONDecodeError:
-            messages.error(request, "Invalid JSON file.")
+            messages.error(request, "Invalid JSON file.", status=400)
         except ValidationError as e:
-            messages.error(request, f"Validation error: {e}")
+            messages.error(request, f"Validation error: {e}", status=400)
         except Exception as e:
-            messages.error(request, f"An unexpected error occurred: {e}")
+            messages.error(request, f"An unexpected error occurred: {e}", status=400)
 
         return render(request, self.template_name)
