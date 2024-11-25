@@ -2,11 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from users.models import BloomUser as User
 from nofos.models import Nofo, Section, Subsection
-from django.test.utils import override_settings
-from unittest.mock import patch
 
 
-import unittest
 import logging
 
 
@@ -18,12 +15,18 @@ class NofoExportJsonViewTest(TestCase):
 
         # Create a superuser
         self.superuser = User.objects.create_superuser(
-            email="admin@groundhog-day.com", password="superpassword", group="bloom"
+            email="admin@groundhog-day.com",
+            password="superpassword",
+            group="bloom",
+            force_password_reset=False,
         )
 
         # Create a regular user
         self.regular_user = User.objects.create_user(
-            email="regular@groundhog-day.com", password="password", group="bloom"
+            email="regular@groundhog-day.com",
+            password="password",
+            group="bloom",
+            force_password_reset=False,
         )
 
         # Create test NOFO object
