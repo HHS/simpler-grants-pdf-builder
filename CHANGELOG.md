@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add script to pull links from all non-archived NOFOs
 - Add inline image for CDC-RFA-JG-25-0055
 - New cover images for HRSA-25-036, HRSA-25-080
+- Add dash (⁃) as bullet for all quadruple nested bullets
 
 ### Changed
 
