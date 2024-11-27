@@ -535,6 +535,16 @@ ol ol ol {
   list-style-type: lower-roman;
 }
 
+ul ul ul ul {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+ul ul ul ul > li:before {
+  content: "⁃";
+  margin-right: 5px;
+}
+
 img.usa-icon--check_box_outline_blank {
   height: 17px;
   width: 17px;
