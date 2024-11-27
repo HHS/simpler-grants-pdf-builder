@@ -16,6 +16,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Condense Before You Begin page for NOFO: CDC-RFA-PS-25-0008
   - This will be a sole-source thing, but for now it's just for this one
+- Tighter line-lengths for `<a>` tags in the application checklist table
+  - Helps to visually distinguish several multi-line anchor tags in the same cell
 
 ### Removed
 
