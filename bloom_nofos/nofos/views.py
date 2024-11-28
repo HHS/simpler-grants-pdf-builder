@@ -57,6 +57,7 @@ from .mixins import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
+    _build_nofo,
     add_body_if_no_body,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
@@ -905,6 +906,7 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
     context_object_name = "nofo"
     pk_url_kwarg = "nofo_id"
 
+    # TODO: remove data we don't/can't use
     def render_to_response(self, context, **response_kwargs):
         nofo = context["nofo"]
 
@@ -938,9 +940,6 @@ class NofoImportJsonView(View):
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name)
 
-    # empty NOFO: error
-    # no sections: error
-    # no subsections: error
     def post(self, request, *args, **kwargs):
         # Check if a file was uploaded
         json_file = request.FILES.get("nofo-import-json")
@@ -965,6 +964,10 @@ class NofoImportJsonView(View):
                     messages.error(request, "Sections must contain subsections.")
                     return render(request, self.template_name, status=400)
 
+            # Remove id, archived
+            data.pop("id", None)
+            data.pop("archived", None)
+
             # Validate and create NOFO object
             nofo = Nofo(
                 **{key: value for key, value in data.items() if key != "sections"}
@@ -972,46 +975,22 @@ class NofoImportJsonView(View):
 
             # TODO: validate title and/or number
             nofo.full_clean()  # Validate the NOFO fields
+            nofo.save()  # save first to create the NOFO object
 
-            # Validate and create Sections and Subsections
-            sections = []
-            for section_data in data.get("sections", []):
-                section = Section(
-                    **{
-                        key: value
-                        for key, value in section_data.items()
-                        if key != "subsections"
-                    },
-                    nofo=nofo,
-                )
-                section.full_clean()  # Validate the Section fields
+            _build_nofo(nofo, data.get("sections"))
+            nofo.save()  # save after sections and subsections are added
 
-                # Validate Subsections
-                subsections = []
-                for subsection_data in section_data.get("subsections", []):
-                    subsection = Subsection(**subsection_data, section=section)
-                    subsection.full_clean()  # Validate the Subsection fields
-                    subsections.append(subsection)
-                section.subsections_to_create = (
-                    subsections  # Temporarily store subsections
-                )
-                sections.append(section)
-
-            # If all validations pass, save the NOFO, Sections, and Subsections
-            nofo.save()
-            for section in sections:
-                section.save()
-                for subsection in section.subsections_to_create:
-                    subsection.save()
-
-            messages.success(request, f"Successfully imported NOFO: {nofo.title}")
+            messages.success(
+                request, "Successfully imported NOFO: {}".format(nofo.title)
+            )
             return redirect(reverse("nofos:nofo_index"))
 
         except json.JSONDecodeError:
-            messages.error(request, "Invalid JSON file.", status=400)
+            messages.error(request, "Invalid JSON file.")
         except ValidationError as e:
-            messages.error(request, f"Validation error: {e}", status=400)
+            print(e)
+            messages.error(request, f"Validation error: {e}")
         except Exception as e:
-            messages.error(request, f"An unexpected error occurred: {e}", status=400)
+            messages.error(request, f"An unexpected error occurred: {e}")
 
         return render(request, self.template_name)
