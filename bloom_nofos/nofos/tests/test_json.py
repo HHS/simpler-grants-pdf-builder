@@ -96,6 +96,7 @@ class NofoExportJsonViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+# TODO: Import a real file
 class NofoImportJsonViewTest(TestCase):
 
     def setUp(self):
