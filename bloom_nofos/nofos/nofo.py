@@ -157,17 +157,26 @@ def _build_nofo(nofo, sections):
 
         for subsection in section.get("subsections", []):
             md_body = ""
-            html_body = [str(tag).strip() for tag in subsection.get("body", [])]
+            subsection_body = subsection.get("body", [])
 
-            if html_body:
-                md_body = md("".join(html_body), escape_misc=False)
+            # if subsection body is a string, it's not HTML
+            if isinstance(subsection_body, str):
+                md_body = subsection_body
+
+            else:
+                html_body = [str(tag).strip() for tag in subsection_body]
+                if html_body:
+                    md_body = md("".join(html_body), escape_misc=False)
 
             model_subsection = Subsection(
                 name=subsection.get("name", ""),
                 order=subsection.get("order", ""),
                 tag=subsection.get("tag", ""),
                 html_id=subsection.get("html_id"),
-                callout_box=subsection.get("is_callout_box", False),
+                callout_box=subsection.get(
+                    "is_callout_box", subsection.get("callout_box", False)
+                ),
+                html_class=subsection.get("html_class", ""),
                 body=md_body,  # body can be empty
                 section=model_section,
             )
