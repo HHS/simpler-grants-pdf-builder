@@ -161,6 +161,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                 new_nofo.id = None  # Clear the id to create a new instance
                 new_nofo.title += " (copy)"  # Append " (copy)" to title and short_name
                 new_nofo.short_name += " (copy)"
+                new_nofo.status = "draft"
                 new_nofo.save()
 
                 # Clone each section
