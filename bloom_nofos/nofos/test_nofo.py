@@ -62,6 +62,7 @@ from .nofo import (
     unwrap_empty_elements,
     unwrap_nested_lists,
 )
+from .nofo_markdown import md
 
 #########################################################
 ################### FUNCTION TESTS ######################
@@ -958,6 +959,41 @@ class CreateNOFOTests(TestCase):
         nofo = create_nofo("", [])
         self.assertEqual(nofo.title, "")
         self.assertEqual(len(nofo.sections.all()), 0)
+
+    def test_create_nofo_subsection_body_is_markdown(self):
+        """
+        Test creating a nofo object with markdown strings (not HTML) as body
+        """
+        sections = self.sections
+
+        subsection_1_body = [
+            "<p>Subsection 1 body with <strong>strong tag</strong></p>"
+        ]
+        subsection_2_body = [
+            "<p>Subsection 2 body with list</p>",
+            "<ul><li>Item 1</li><li>Item 2</li></ul>",
+        ]
+
+        sections[0]["subsections"][0]["body"] = md(
+            "".join(subsection_1_body), escape_misc=False
+        )
+        sections[0]["subsections"][1]["body"] = md(
+            "".join(subsection_2_body), escape_misc=False
+        )
+
+        nofo = create_nofo("Test Nofo", self.sections)
+        self.assertEqual(nofo.title, "Test Nofo")
+        self.assertEqual(len(nofo.sections.all()), 1)
+        self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
+
+        self.assertEqual(
+            nofo.sections.first().subsections.all()[0].body,
+            "Subsection 1 body with **strong tag**\n\n",
+        )
+        self.assertEqual(
+            nofo.sections.first().subsections.all()[1].body,
+            "Subsection 2 body with list\n\n* Item 1\n* Item 2\n",
+        )
 
 
 class OverwriteNOFOTests(TestCase):
