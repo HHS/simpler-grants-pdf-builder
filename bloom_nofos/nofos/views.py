@@ -923,7 +923,9 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
             }
 
         # Convert Nofo instance to dictionary with all fields, replacing None values
-        data = _replace_none_values(model_to_dict(nofo))
+        data = _filter_keys(
+            _replace_none_values(model_to_dict(nofo)), exclude_keys=["archived"]
+        )
 
         # Convert related sections and subsections, including all fields with replaced None values
         data["sections"] = [
