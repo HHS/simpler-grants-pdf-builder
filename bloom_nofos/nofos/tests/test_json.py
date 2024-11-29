@@ -1,11 +1,13 @@
+import json
+import logging
+import os
+
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from users.models import BloomUser as User
 from nofos.models import Nofo, Section, Subsection
-
-
-import logging
+from users.models import BloomUser as User
 
 
 class NofoExportJsonViewTest(TestCase):
@@ -109,7 +111,6 @@ class NofoExportJsonViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-# TODO: Import a real file
 class NofoImportJsonViewTest(TestCase):
 
     def setUp(self):
@@ -190,3 +191,65 @@ class NofoImportJsonViewTest(TestCase):
         self.assertContains(
             response, "Sections must contain subsections.", status_code=400
         )
+
+    def test_import_valid_nofo_json_file(self):
+        self.client.login(email="admin@groundhog-day.com", password="superpassword")
+
+        # Get the absolute path to the JSON fixture file
+        json_file_path = os.path.join(
+            settings.BASE_DIR, "nofos", "fixtures", "json", "cms-u2u-25-001.json"
+        )
+
+        # Load the file content as a Python dictionary
+        with open(json_file_path, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+
+        # Read the file content for upload
+        with open(json_file_path, "rb") as f:
+            file_content = f.read()
+
+        # Upload the valid JSON file
+        valid_json = SimpleUploadedFile(
+            "cms-u2u-25-001.json",
+            file_content,
+            content_type="application/json",
+        )
+
+        response = self.client.post(
+            self.import_url,
+            {"nofo-import-json": valid_json},
+        )
+
+        # Redirect on successful import
+        self.assertEqual(response.status_code, 302)
+
+        # Check that the NOFO was created in the database
+        nofo = Nofo.objects.get(number="CMS-2U2-25-001")
+        self.assertEqual(
+            nofo.title,
+            "EHB-Benchmark Plan Modernization Grant for States with a Federally-facilitated Exchange",
+        )
+        self.assertEqual(nofo.number, "CMS-2U2-25-001")
+
+        # Check name of first section
+        self.assertEqual(
+            nofo.sections.first().name,
+            "Step 1: Review the Opportunity",
+        )
+
+        # Check name of first subsection
+        self.assertEqual(
+            nofo.sections.first().subsections.all()[0].name,
+            "Basic information",
+        )
+
+        # Check equal number of sections in json data vs imported NOFO
+        sections = Section.objects.filter(nofo=nofo)
+        self.assertEqual(len(json_data["sections"]), len(sections))
+
+        # Check equal number of sections in json data vs imported NOFO
+        subsection_count = sum(
+            len(section["subsections"]) for section in json_data["sections"]
+        )
+        subsections = Subsection.objects.filter(section__nofo=nofo)
+        self.assertEqual(subsection_count, len(subsections))
