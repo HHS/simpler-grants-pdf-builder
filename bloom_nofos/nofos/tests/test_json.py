@@ -54,7 +54,6 @@ class NofoExportJsonViewTest(TestCase):
         logging.disable(logging.NOTSET)
 
     def test_superuser_can_export_nofo(self):
-        # Log in as superuser
         self.client.login(email="admin@groundhog-day.com", password="superpassword")
 
         # Make request to export NOFO
@@ -86,13 +85,27 @@ class NofoExportJsonViewTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_export_nonexistent_nofo(self):
-        # Log in as superuser
         self.client.login(email="admin@groundhog-day.com", password="superpassword")
 
         # Make request to export a NOFO that doesn't exist
         response = self.client.get(reverse("nofos:export_nofo_json", args=[9999]))
 
         # Assert 404 response
+        self.assertEqual(response.status_code, 404)
+
+    def test_archived_nofo_returns_404(self):
+        self.client.login(email="admin@groundhog-day.com", password="superpassword")
+
+        # Archive the NOFO
+        self.nofo.archived = "2024-01-01"
+        self.nofo.save()
+
+        # Attempt to export the NOFO
+        response = self.client.get(
+            reverse("nofos:export_nofo_json", args=[self.nofo.id])
+        )
+
+        # Assert that a 404 is returned
         self.assertEqual(response.status_code, 404)
 
 
