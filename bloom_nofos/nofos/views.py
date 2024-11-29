@@ -12,9 +12,9 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, timezone
 from django.views.generic import (
     CreateView,
@@ -905,6 +905,16 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
     model = Nofo
     context_object_name = "nofo"
     pk_url_kwarg = "nofo_id"
+
+    def get_object(self, queryset=None):
+        # Fetch the NOFO object
+        nofo = super().get_object(queryset)
+
+        # Check if the NOFO is archived
+        if nofo.archived:
+            raise Http404()
+
+        return nofo
 
     # TODO: remove data we don't/can't use
     def render_to_response(self, context, **response_kwargs):
