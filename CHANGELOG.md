@@ -8,6 +8,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.38.0] - 2023-11-29
+
+### Added
+
+- Added ability to export and import NOFOs as JSON
+  - Only superusers can do this!
 - Add script to pull links from all non-archived NOFOs
 - Add inline image for CDC-RFA-JG-25-0055
 - New cover images for HRSA-25-036, HRSA-25-080
@@ -15,6 +25,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Cloned NOFO statuses automatically set to "draft", regardless of original status
 - Condense Before You Begin page for NOFO: CDC-RFA-PS-25-0008
   - This will be a sole-source thing, but for now it's just for this one
 - Tighter line-lengths for `<a>` tags in the application checklist table
