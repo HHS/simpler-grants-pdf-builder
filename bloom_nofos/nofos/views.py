@@ -916,7 +916,6 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
 
         return nofo
 
-    # TODO: remove data we don't/can't use
     def render_to_response(self, context, **response_kwargs):
         nofo = context["nofo"]
 
@@ -960,7 +959,7 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
         return JsonResponse(data, json_dumps_params={"indent": 2})
 
 
-class NofoImportJsonView(View):
+class NofoImportJsonView(SuperuserRequiredMixin, View):
     template_name = "nofos/nofo_import_json.html"
 
     def get(self, request, *args, **kwargs):
@@ -993,11 +992,16 @@ class NofoImportJsonView(View):
             # Remove id, archived
             data.pop("id", None)
             data.pop("archived", None)
+            data.pop("status", None)
+            data.pop("coach", None)
+            data.pop("designer", None)
+            data.pop("group", None)
 
             # Validate and create NOFO object
             nofo = Nofo(
                 **{key: value for key, value in data.items() if key != "sections"}
             )
+            nofo.group = request.user.group  # set group separately with request.user
 
             # TODO: validate title and/or number
             nofo.full_clean()  # Validate the NOFO fields
