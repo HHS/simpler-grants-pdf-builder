@@ -916,19 +916,33 @@ class NofoExportJsonView(SuperuserRequiredMixin, DetailView):
                 key: (value if value is not None else "") for key, value in item.items()
             }
 
+        # Filters out keys from a dictionary that match the specified exclude_keys.
+        def _filter_keys(data, exclude_keys=[]):
+            return {
+                key: value for key, value in data.items() if key not in exclude_keys
+            }
+
         # Convert Nofo instance to dictionary with all fields, replacing None values
         data = _replace_none_values(model_to_dict(nofo))
 
         # Convert related sections and subsections, including all fields with replaced None values
         data["sections"] = [
             {
-                **_replace_none_values(model_to_dict(section)),  # Section fields
+                **_filter_keys(
+                    _replace_none_values(model_to_dict(section)),
+                    exclude_keys=["nofo", "id"],
+                ),  # Section fields
                 "subsections": [
-                    _replace_none_values(model_to_dict(subsection))  # Subsection fields
+                    _filter_keys(
+                        _replace_none_values(model_to_dict(subsection)),
+                        exclude_keys=["section", "id"],
+                    )  # Subsection fields
                     for subsection in section.subsections.order_by("order")
                 ],
             }
-            for section in nofo.sections.order_by("order")
+            for section in nofo.sections.order_by(
+                "order",
+            )
         ]
 
         return JsonResponse(data, json_dumps_params={"indent": 2})
