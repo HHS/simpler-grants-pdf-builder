@@ -136,6 +136,33 @@ class NofoImportJsonViewTest(TestCase):
         # enable logging again
         logging.disable(logging.NOTSET)
 
+    def _load_json_fixture(self, file_name):
+        """
+        Internal helper method to load JSON fixtures.
+        Returns a tuple: (json_data, uploaded_json_file).
+        """
+        # Get the absolute path to the JSON fixture file
+        json_file_path = os.path.join(
+            settings.BASE_DIR, "nofos", "fixtures", "json", file_name
+        )
+
+        # Load the file content as a Python dictionary
+        with open(json_file_path, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+
+        # Read the file content for upload
+        with open(json_file_path, "rb") as f:
+            file_content = f.read()
+
+        # Create the uploaded file object
+        uploaded_json_file = SimpleUploadedFile(
+            file_name,
+            file_content,
+            content_type="application/json",
+        )
+
+        return json_data, uploaded_json_file
+
     def test_import_empty_json_file(self):
         self.client.login(email="admin@groundhog-day.com", password="superpassword")
 
@@ -195,29 +222,10 @@ class NofoImportJsonViewTest(TestCase):
     def test_import_valid_nofo_json_file(self):
         self.client.login(email="admin@groundhog-day.com", password="superpassword")
 
-        # Get the absolute path to the JSON fixture file
-        json_file_path = os.path.join(
-            settings.BASE_DIR, "nofos", "fixtures", "json", "cms-u2u-25-001.json"
-        )
-
-        # Load the file content as a Python dictionary
-        with open(json_file_path, "r", encoding="utf-8") as f:
-            json_data = json.load(f)
-
-        # Read the file content for upload
-        with open(json_file_path, "rb") as f:
-            file_content = f.read()
-
-        # Upload the valid JSON file
-        valid_json = SimpleUploadedFile(
-            "cms-u2u-25-001.json",
-            file_content,
-            content_type="application/json",
-        )
-
+        json_data, uploaded_json_file = self._load_json_fixture("cms-u2u-25-001.json")
         response = self.client.post(
             self.import_url,
-            {"nofo-import-json": valid_json},
+            {"nofo-import-json": uploaded_json_file},
         )
 
         # Redirect on successful import
@@ -253,3 +261,61 @@ class NofoImportJsonViewTest(TestCase):
         )
         subsections = Subsection.objects.filter(section__nofo=nofo)
         self.assertEqual(subsection_count, len(subsections))
+
+    def test_import_valid_nofo_json_file_with_published_coach_designer(self):
+        self.client.login(email="admin@groundhog-day.com", password="superpassword")
+
+        json_data, uploaded_json_file = self._load_json_fixture(
+            "published-cms-u2u-25-001.json"
+        )
+        response = self.client.post(
+            self.import_url,
+            {"nofo-import-json": uploaded_json_file},
+        )
+
+        # Redirect on successful import
+        self.assertEqual(response.status_code, 302)
+
+        # Check that the NOFO was created in the database
+        nofo = Nofo.objects.get(number="CMS-2U2-25-001")
+
+        # check that status is "published" in JSON, "draft" in object
+        self.assertEqual(json_data["status"], "published")
+        self.assertEqual(nofo.status, "draft")
+
+        # check coach is "aarti" in JSON, empty string in object
+        self.assertEqual(json_data["coach"], "aarti")
+        self.assertEqual(nofo.coach, "")
+
+        # check designer is "abbey" in JSON, empty string in object
+        self.assertEqual(json_data["designer"], "bloom-abbey")
+        self.assertEqual(nofo.designer, "")
+
+    def test_import_valid_nofo_json_file_with_hrsa_active_designer(self):
+        self.client.login(email="admin@groundhog-day.com", password="superpassword")
+
+        json_data, uploaded_json_file = self._load_json_fixture(
+            "hrsa-cms-u2u-25-001.json"
+        )
+        response = self.client.post(
+            self.import_url,
+            {"nofo-import-json": uploaded_json_file},
+        )
+
+        # Redirect on successful import
+        self.assertEqual(response.status_code, 302)
+
+        # Check that the NOFO was created in the database
+        nofo = Nofo.objects.get(number="CMS-2U2-25-001")
+
+        # check that status is "active" in JSON, "draft" in object
+        self.assertEqual(json_data["status"], "active")
+        self.assertEqual(nofo.status, "draft")
+
+        # check designer is "betty" in JSON, empty string in object
+        self.assertEqual(json_data["designer"], "hrsa-betty")
+        self.assertEqual(nofo.designer, "")
+
+        # check group is "hrsa" in JSON, empty string in object
+        self.assertEqual(json_data["group"], "hrsa")
+        self.assertEqual(nofo.group, "bloom")
