@@ -1011,7 +1011,10 @@ class NofoImportJsonView(SuperuserRequiredMixin, View):
             nofo.save()  # save after sections and subsections are added
 
             messages.success(
-                request, "Successfully imported NOFO: {}".format(nofo.title)
+                request,
+                "View NOFO: <a href='/nofos/{}/edit'>{}</a>".format(
+                    nofo.id, nofo.short_name or nofo.title
+                ),
             )
             return redirect(reverse("nofos:nofo_index"))
 
