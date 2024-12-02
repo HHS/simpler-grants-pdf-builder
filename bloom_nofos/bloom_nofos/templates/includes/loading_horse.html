@@ -1,0 +1,24 @@
+{% load static %}
+
+<div class="loading-horse--container">
+  <img class="loading-horse" src="{% static 'img/loading-horse.gif' %}" alt="Importing document…" />
+  <p id="loading-message" class="usa-sr-only" aria-live="polite" role="status">Importing document, please wait…</p>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector(".form-import--loading");
+    const button = form.querySelector(".submit-button");
+    const loadingGif = form.querySelector(".loading-horse--container");
+
+    form.addEventListener("submit", function () {
+      // Disable the button and change its text
+      button.disabled = true;
+      button.textContent = "Importing…";
+
+      setTimeout(() => {
+        loadingGif.classList.add("visible");
+      }, 50);
+    });
+  });
+</script>

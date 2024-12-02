@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add loading state to 'import' pages with little galloping horse gif
+  - Import doc files and import JSON files
+
 ### Changed
 
 ### Fixed
