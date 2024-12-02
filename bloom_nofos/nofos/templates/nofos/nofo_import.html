@@ -4,6 +4,8 @@
   Import a new NOFO 
 {% endblock %}
 
+{% block body_class %}nofo_import{% endblock %}
+
 {% block content %}
   {% if WORD_IMPORT_STRICT_MODE %}
   <div class="usa-alert usa-alert--warning margin-bottom-3">
@@ -24,7 +26,7 @@
   {% url 'nofos:nofo_index' as back_href %}
   {% include "includes/page_heading.html" with title="Import a new NOFO" back_text="All NOFOs" back_href=back_href only %}
 
-  <form id="nofo-import--form" method="post" enctype="multipart/form-data">
+  <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." accept=".html,.docx" value=title %}
       {% for message in messages %}
@@ -36,6 +38,8 @@
       {% endfor %}
     {% endwith %}
 
-    <button class="usa-button margin-top-3" type="submit">Import</button>
+    {% include "includes/loading_horse.html" %}
+
+    <button class="usa-button margin-top-3 submit-button" type="submit">Import</button>
   </form>
 {% endblock %}
