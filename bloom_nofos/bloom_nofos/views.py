@@ -2,6 +2,7 @@ from constance import config
 from django.contrib.auth.views import RedirectURLMixin
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.timezone import now, timedelta
 from django.views.generic import TemplateView
 
 from .forms import DocraptorTestModeForm
@@ -29,9 +30,19 @@ class TestModeView(RedirectURLMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         form = DocraptorTestModeForm(request.POST)
         if form.is_valid():
-            setattr(
-                config, "DOCRAPTOR_TEST_MODE", form.cleaned_data["docraptor_test_mode"]
-            )
+
+            # If TEST MODE is TRUE, set an expired timestamp
+            if form.cleaned_data["docraptor_test_mode"]:
+                # Set the timestamp to 5 minutes and 1 second in the past
+                setattr(
+                    config,
+                    "DOCRAPTOR_TEST_MODE",
+                    now() - timedelta(minutes=5, seconds=1),
+                )
+            # If TEST MODE is False, set it to LIVE MODE with now()
+            else:
+                # Set the timestamp to the current time
+                setattr(config, "DOCRAPTOR_TEST_MODE", now())
 
             next_url = request.GET.get("next")
             if next_url and url_has_allowed_host_and_scheme(

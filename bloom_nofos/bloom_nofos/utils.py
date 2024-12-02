@@ -1,3 +1,6 @@
+from django.utils.timezone import now, timedelta
+
+
 def cast_to_boolean(value_str):
     """
     Cast a string value to a boolean.
@@ -21,3 +24,11 @@ def cast_to_boolean(value_str):
         return False
     else:
         raise ValueError(f"Value '{value_str}' is not a valid boolean string")
+
+
+def is_docraptor_test_mode_active(last_updated):
+    # Check if the timestamp is more than 5 minutes old
+    if last_updated and now() - last_updated < timedelta(minutes=5):
+        return False
+
+    return True
