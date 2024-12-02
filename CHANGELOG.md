@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Reduce horizontal hit area for radio buttons (was previously full-width)
 - Link to NOFO in success message for JSON import
 
 ## [1.38.0] - 2023-11-29

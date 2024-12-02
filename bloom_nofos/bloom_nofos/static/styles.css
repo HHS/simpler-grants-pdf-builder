@@ -43,12 +43,20 @@ a:visited {
   color: var(--color--usa-link-visited);
 }
 
-footer .usa-footer__primary-link:visited {
-  color: var(--color--text-default);
+/* Util classes */
+
+.inline-block {
+  display: inline-block;
 }
 
 .small-caps {
   font-variant: small-caps;
+}
+
+/* General USDS CSS */
+
+footer .usa-footer__primary-link:visited {
+  color: var(--color--text-default);
 }
 
 .usa-combo-box__input,
@@ -835,14 +843,18 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: 16px;
 }
 
-fieldset {
+.subsection_edit fieldset {
   margin: 0;
   padding: 0;
   border: none;
 }
 
-fieldset legend:not(.legend--bootstrap) {
+.subsection_edit fieldset legend:not(.legend--bootstrap) {
   margin-bottom: -0.5rem;
+}
+
+.subsection_edit fieldset .usa-legend.legend--bootstrap {
+  margin-bottom: 0.85rem;
 }
 
 .table--callout-box {
