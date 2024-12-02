@@ -12,10 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import environ
 import tomli
+from django.utils.timezone import now
 
 from .utils import cast_to_boolean
 
@@ -460,9 +462,9 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
     "DOCRAPTOR_TEST_MODE": (
-        True,
-        "Whether to print PDFs with watermarks. If True, documents will be watermarked.",
-        bool,
+        now(),
+        "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
+        datetime,
     ),
     "WORD_IMPORT_STRICT_MODE": (
         False,
