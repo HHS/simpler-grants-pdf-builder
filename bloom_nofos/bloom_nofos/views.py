@@ -6,6 +6,7 @@ from django.utils.timezone import now, timedelta
 from django.views.generic import TemplateView
 
 from .forms import DocraptorTestModeForm
+from .utils import get_timedelta_for_docraptor_live_mode
 
 
 def index(request):
@@ -33,16 +34,14 @@ class TestModeView(RedirectURLMixin, TemplateView):
 
             # If LIVE MODE is TRUE, set the timestamp to the current time
             if form.cleaned_data["docraptor_live_mode"]:
-                # Set the timestamp to 5 minutes and 1 second in the past
                 setattr(config, "DOCRAPTOR_LIVE_MODE", now())
 
-            # If LIVE MODE is False, set the timestamp to 2 mins and 1 second
+            # If LIVE MODE is False, set the timestamp to current time minus the timedelta
             else:
-                # Set the timestamp to the current time
                 setattr(
                     config,
                     "DOCRAPTOR_LIVE_MODE",
-                    now() - timedelta(minutes=2, seconds=1),
+                    now() - get_timedelta_for_docraptor_live_mode(),
                 )
 
             next_url = request.GET.get("next")

@@ -463,7 +463,7 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_CONFIG = {
     "DOCRAPTOR_LIVE_MODE": (
         now(),
-        "Whether to print PDFs with watermarks. If timestamp is older than 2 mins, documents will be watermarked.",
+        "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
         datetime,
     ),
     "WORD_IMPORT_STRICT_MODE": (

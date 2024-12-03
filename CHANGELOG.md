@@ -13,6 +13,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Setting "Live" mode is only good for 5 minutes
+  - After 5 minutes have gone by, it will revert to "Test" mode again
+
 ### Fixed
 
 - Reduce horizontal hit area for radio buttons (was previously full-width)
