@@ -8,6 +8,8 @@ from django.utils import timezone
 from easyaudit.models import CRUDEvent
 from slugify import slugify
 
+from bloom_nofos.utils import is_docraptor_live_mode_active
+
 
 def clean_string(string):
     """Cleans the given string by removing extra whitespace."""
@@ -34,7 +36,11 @@ def create_nofo_audit_event(event_type, nofo, user):
     # Add print_mode if the event_type involves printing
     if event_type == "nofo_print":
         changed_fields_json["print_mode"] = [
-            "live" if config.DOCRAPTOR_LIVE_MODE else "test"
+            (
+                "live"
+                if is_docraptor_live_mode_active(config.DOCRAPTOR_LIVE_MODE)
+                else "test"
+            )
         ]
 
     # Create the audit log event
