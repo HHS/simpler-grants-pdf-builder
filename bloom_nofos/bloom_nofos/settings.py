@@ -150,7 +150,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "djversion.context_processors.version",
-                "bloom_nofos.context_processors.add_docraptor_test_mode",
+                "bloom_nofos.context_processors.add_docraptor_live_mode",
                 "bloom_nofos.context_processors.add_github_sha",
             ],
         },
@@ -455,15 +455,15 @@ if is_prod:
 # Document IPs for our PDF generating app
 DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
 DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
-DOCRAPTOR_TEST_MODE = True
+DOCRAPTOR_LIVE_MODE = True
 
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
-    "DOCRAPTOR_TEST_MODE": (
+    "DOCRAPTOR_LIVE_MODE": (
         now(),
-        "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
+        "Whether to print PDFs with watermarks. If timestamp is older than 2 mins, documents will be watermarked.",
         datetime,
     ),
     "WORD_IMPORT_STRICT_MODE": (

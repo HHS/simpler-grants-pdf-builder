@@ -6,13 +6,13 @@
 
 {% block content %}
   <h1 class="font-heading-xl margin-y-0">Docraptor test mode</h1>
-  <p class="font-sans-md">Currently, test mode is <strong>{% if DOCRAPTOR_TEST_MODE %}ON{% else %}OFF{% endif %}</strong>.</p>
-  {% if DOCRAPTOR_TEST_MODE %}
+  <p class="font-sans-md">Currently, test mode is <strong>{% if DOCRAPTOR_LIVE_MODE %}OFF{% else %}ON{% endif %}</strong>.</p>
+  {% if DOCRAPTOR_LIVE_MODE %}
+    <p>In “Live” mode, PDFs are not watermarked, but there is a limit of <a href="https://app.docraptor.com/signup">1,250 a month</a>.</p>
+    <p>Use “Live” mode when you have a good-copy PDF ready to send back to our OpDivs.</p>
+  {% else %}
     <p>In “Test” mode, PDFs are watermarked with a DocRaptor banner.</p>
     <p>Test PDFs are free, so we recommend using test mode until you are ready to send.</p>
-  {% else %}
-    <p>In “Live” mode, PDFs are not watermarked, but there is a limit of <a href="https://app.docraptor.com/signup">325 a month</a>.</p>
-    <p>Use “Live” mode when you have a good-copy PDF ready to send back to our OpDivs.</p>
   {% endif %}
   
   <br />
@@ -25,27 +25,27 @@
       <div class="usa-radio">
         <input
           class="usa-radio__input"
-          id="docraptor_test_mode--true"
+          id="docraptor_live_mode--true"
           type="radio"
-          name="docraptor_test_mode"
+          name="docraptor_live_mode"
           value="true"
-          {% if DOCRAPTOR_TEST_MODE %}checked="checked"{% endif %}
+          {% if DOCRAPTOR_LIVE_MODE %}checked="checked"{% endif %}
         />
-        <label class="usa-radio__label" for="docraptor_test_mode--true"
-          >Test mode</label
+        <label class="usa-radio__label" for="docraptor_live_mode--true"
+          >Live mode</label
         >
       </div>
       <div class="usa-radio">
         <input
           class="usa-radio__input"
-          id="docraptor_test_mode--false"
+          id="docraptor_live_mode--false"
           type="radio"
-          name="docraptor_test_mode"
+          name="docraptor_live_mode"
           value="false"
-          {% if not DOCRAPTOR_TEST_MODE %}checked="checked"{% endif %}
+          {% if not DOCRAPTOR_LIVE_MODE %}checked="checked"{% endif %}
         />
-        <label class="usa-radio__label" for="docraptor_test_mode--false"
-          >Live mode</label
+        <label class="usa-radio__label" for="docraptor_live_mode--false"
+          >Test mode</label
         >
       </div>
     
