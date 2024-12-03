@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Creating superusers from the terminal doesn't set the 'force_password_reset' flag
 - Reduce horizontal hit area for radio buttons (was previously full-width)
 - Link to NOFO in success message for JSON import
 

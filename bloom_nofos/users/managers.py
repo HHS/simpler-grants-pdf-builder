@@ -36,6 +36,9 @@ class BloomUserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("group", "bloom")
+        extra_fields.setdefault(
+            "force_password_reset", False
+        )  # Default to False for superusers
 
         if extra_fields.get("group") != "bloom":
             raise ValueError(_("Superuser must have group=Bloomworks."))
