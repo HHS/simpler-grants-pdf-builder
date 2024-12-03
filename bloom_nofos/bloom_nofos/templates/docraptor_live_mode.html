@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    NOFO Contstance
+    PDF print mode
 {% endblock %}
 
 {% block content %}
-  <h1 class="font-heading-xl margin-y-0">Docraptor test mode</h1>
-  <p class="font-sans-md">Currently, test mode is <strong>{% if DOCRAPTOR_LIVE_MODE %}OFF{% else %}ON{% endif %}</strong>.</p>
+  <h1 class="font-heading-xl margin-y-0">PDF print mode</h1>
+  <p class="font-sans-md">Currently, the NOFO Builder is in <strong>{% if DOCRAPTOR_LIVE_MODE %}“Live” mode{% else %}“Test” mode{% endif %}</strong>.</p>
   {% if DOCRAPTOR_LIVE_MODE %}
-    <p>In “Live” mode, PDFs are not watermarked, but there is a limit of <a href="https://app.docraptor.com/signup">1,250 a month</a>.</p>
     <p>Use “Live” mode when you have a good-copy PDF ready to send back to our OpDivs.</p>
+    <p>In “Live” mode, PDFs are not watermarked, but there is a limit of <a href="https://app.docraptor.com/signup">1,250 a month</a>.</p>
+    <p>“Live” mode lasts for <strong>5 minutes</strong>, then it flips back to “Test” mode.</p>
   {% else %}
     <p>In “Test” mode, PDFs are watermarked with a DocRaptor banner.</p>
-    <p>Test PDFs are free, so we recommend using test mode until you are ready to send.</p>
+    <p>Generating Test PDFs is unlimited, so we recommend using test mode until you are ready to send.</p>
   {% endif %}
   
   <br />
