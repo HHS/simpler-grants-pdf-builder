@@ -28,7 +28,11 @@ def cast_to_boolean(value_str):
 
 def is_docraptor_live_mode_active(last_updated):
     # Check if the timestamp is more than 2 minutes old
-    if last_updated and now() - last_updated < timedelta(minutes=2):
+    if last_updated and now() - last_updated < get_timedelta_for_docraptor_live_mode():
         return True
 
     return False
+
+
+def get_timedelta_for_docraptor_live_mode():
+    return timedelta(minutes=5)
