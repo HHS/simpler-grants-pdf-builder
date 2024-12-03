@@ -25,24 +25,25 @@ def server_error(request, exception=None):
 
 
 class TestModeView(RedirectURLMixin, TemplateView):
-    template_name = "docraptor_test_mode.html"
+    template_name = "docraptor_live_mode.html"
 
     def post(self, request, *args, **kwargs):
         form = DocraptorTestModeForm(request.POST)
         if form.is_valid():
 
-            # If TEST MODE is TRUE, set an expired timestamp
-            if form.cleaned_data["docraptor_test_mode"]:
+            # If LIVE MODE is TRUE, set the timestamp to the current time
+            if form.cleaned_data["docraptor_live_mode"]:
                 # Set the timestamp to 5 minutes and 1 second in the past
-                setattr(
-                    config,
-                    "DOCRAPTOR_TEST_MODE",
-                    now() - timedelta(minutes=5, seconds=1),
-                )
-            # If TEST MODE is False, set it to LIVE MODE with now()
+                setattr(config, "DOCRAPTOR_LIVE_MODE", now())
+
+            # If LIVE MODE is False, set the timestamp to 2 mins and 1 second
             else:
                 # Set the timestamp to the current time
-                setattr(config, "DOCRAPTOR_TEST_MODE", now())
+                setattr(
+                    config,
+                    "DOCRAPTOR_LIVE_MODE",
+                    now() - timedelta(minutes=2, seconds=1),
+                )
 
             next_url = request.GET.get("next")
             if next_url and url_has_allowed_host_and_scheme(

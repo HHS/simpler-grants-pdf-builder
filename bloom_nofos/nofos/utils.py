@@ -34,7 +34,7 @@ def create_nofo_audit_event(event_type, nofo, user):
     # Add print_mode if the event_type involves printing
     if event_type == "nofo_print":
         changed_fields_json["print_mode"] = [
-            "test" if config.DOCRAPTOR_TEST_MODE else "live"
+            "live" if config.DOCRAPTOR_LIVE_MODE else "test"
         ]
 
     # Create the audit log event
