@@ -843,12 +843,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: 16px;
 }
 
-.subsection_edit fieldset {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
 .subsection_edit fieldset legend:not(.legend--bootstrap) {
   margin-bottom: -0.5rem;
 }
