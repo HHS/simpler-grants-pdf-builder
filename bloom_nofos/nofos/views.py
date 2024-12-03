@@ -26,7 +26,7 @@ from django.views.generic import (
     View,
 )
 
-from bloom_nofos.utils import cast_to_boolean
+from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 
 from .forms import (
     CheckNOFOLinkSingleForm,
@@ -177,7 +177,9 @@ class NofosDetailView(DetailView):
         # get the orientation (eg, "landscape" or "portrait")
         context["nofo_theme_orientation"] = orientation
 
-        context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
+        context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
+            config.DOCRAPTOR_LIVE_MODE
+        )
 
         context["nofo_cover_image"] = get_cover_image(self.object)
 
@@ -197,7 +199,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         ) + find_incorrectly_nested_heading_levels(self.object)
         context["h7_headers"] = find_h7_headers(self.object)
 
-        context["DOCRAPTOR_TEST_MODE"] = config.DOCRAPTOR_TEST_MODE
+        context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
+            config.DOCRAPTOR_LIVE_MODE
+        )
 
         return context
 
@@ -611,7 +615,9 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         try:
             response = doc_api.create_doc(
                 {
-                    "test": config.DOCRAPTOR_TEST_MODE,  # test documents are free but watermarked
+                    "test": not is_docraptor_live_mode_active(
+                        config.DOCRAPTOR_LIVE_MODE
+                    ),  # test documents are free but watermarked
                     "document_url": nofo_url,
                     "document_type": "pdf",
                     "javascript": False,
