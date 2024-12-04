@@ -581,8 +581,10 @@ class NofoEditStatusView(BaseNofoEditView):
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
+    # This lets us test the "print" audit event locally, which happens occasionally
     # def get(self, request, pk):
     #     nofo = self.get_object()
+    #     create_nofo_audit_event(event_type="nofo_print", nofo=nofo, user=request.user)
     #     return HttpResponse("hello, {}".format(nofo.id))
 
     def post(self, request, pk):
