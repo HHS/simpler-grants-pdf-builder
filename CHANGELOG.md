@@ -8,8 +8,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.39.0] - 2023-12-04
+
+### Added
+
 - Add loading state to 'import' pages with little galloping horse gif
   - Import doc files and import JSON files
+- Add new command for downloading all 'print' audit events
 
 ### Changed
 
@@ -22,6 +31,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Reduce horizontal hit area for radio buttons (was previously full-width)
 - Link to NOFO in success message for JSON import
 - Remove borders and left padding from `<fieldset>` elements by default
+
+### Migrations
+
+- Migrate some audit events with string values for "changed_fields" to valid JSON
 
 ## [1.38.0] - 2023-11-29
 
