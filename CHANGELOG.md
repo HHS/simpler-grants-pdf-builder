@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add new command for downloading NOFOs with published times
+- Add inline image for CDC-RFA-25-0061
+
 ### Changed
 
 ### Fixed
