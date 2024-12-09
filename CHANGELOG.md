@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add new command for downloading NOFOs with published times
 - Add inline image for CDC-RFA-25-0061
+- Add a new NOFO subsection to step 3 of all imported NOFOs
+  - Specifically, it looks for a section called "Step 3: {Prepare|Write} Your Application"
 
 ### Changed
 
