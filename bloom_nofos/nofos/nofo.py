@@ -1764,3 +1764,67 @@ def decompose_instructions_tables(soup):
                 "instructions for nofo writers:"
             ) or re.match(r".+-specific instructions", table.get_text().lower()):
                 table.decompose()
+
+
+###########################################################
+#################### ADD TO HTML FUNCS ####################
+###########################################################
+
+PUBLIC_INFORMATION_SUBSECTION = {
+    "name": "Important: public information",
+    "order": None,  # This will be dynamically set
+    "tag": "h5",
+    "html_id": "",
+    "is_callout_box": True,
+    "body": """
+When filling out your SF-424 form, pay attention to Box 15: Descriptive Title of Applicant's Project.
+
+We share what you put there with [USAspending](https://www.usaspending.gov). This is where the public goes to learn how the federal government spends their money.
+
+Instead of just a title, insert a short description of your project and what it will do.
+""",
+}
+
+
+def add_final_subsection_to_step_3(sections):
+    """
+    This function looks for a section named either "Step 3: Prepare Your Application"
+    or "Step 3: Write Your Application" (case-insensitive). If found, it adds a
+    new subsection as the last subsection in the section's "subsections" list.
+
+    Args:
+        sections (list of dict): A list of section dictionaries, where each section may
+            contain a "name" (str) and a "subsections" (list of dict) key.
+
+    Side Effects:
+        - Modifies the `sections` list in-place by adding a new subsection to the
+          matching "Step 3" section.
+
+    Note:
+        This function stops searching after finding and modifying the first matching
+        "Step 3" section.
+    """
+
+    # The target section names to search for
+    step_3_names = [
+        "Step 3: Prepare Your Application",
+        "Step 3: Write Your Application",
+    ]
+
+    for section in sections:
+        # case insensitive match
+        if section.get("name", "").lower() in [name.lower() for name in step_3_names]:
+            # Get the subsections array
+            subsections = section.get("subsections", [])
+
+            # Calculate the new order
+            last_order = max((sub.get("order", 0) for sub in subsections), default=0)
+
+            new_public_information_subsection = PUBLIC_INFORMATION_SUBSECTION.copy()
+            new_public_information_subsection["order"] = last_order + 1
+            subsections.append(new_public_information_subsection)
+
+            section["subsections"] = subsections
+
+            # Exit after adding new subsection
+            break

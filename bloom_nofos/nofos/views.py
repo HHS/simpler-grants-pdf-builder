@@ -61,6 +61,7 @@ from .nofo import (
     add_body_if_no_body,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
+    add_final_subsection_to_step_3,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
@@ -352,6 +353,9 @@ def nofo_import(request, pk=None):
 
         sections = get_subsections_from_sections(sections, top_heading_level)
         filename = uploaded_file.name.strip()
+
+        # add new subsections
+        add_final_subsection_to_step_3(sections)
 
         if pk:
             # RE-IMPORT NOFO
