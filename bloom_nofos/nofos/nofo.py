@@ -2223,6 +2223,24 @@ Instead of just a title, insert a short description of your project and what it 
 
 
 def add_final_subsection_to_step_3(sections):
+    """
+    This function looks for a section named either "Step 3: Prepare Your Application"
+    or "Step 3: Write Your Application" (case-insensitive). If found, it adds a
+    new subsection as the last subsection in the section's "subsections" list.
+
+    Args:
+        sections (list of dict): A list of section dictionaries, where each section may
+            contain a "name" (str) and a "subsections" (list of dict) key.
+
+    Side Effects:
+        - Modifies the `sections` list in-place by adding a new subsection to the
+          matching "Step 3" section.
+
+    Note:
+        This function stops searching after finding and modifying the first matching
+        "Step 3" section.
+    """
+
     # The target section names to search for
     step_3_names = [
         "Step 3: Prepare Your Application",
