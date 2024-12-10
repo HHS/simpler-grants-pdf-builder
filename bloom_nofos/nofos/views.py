@@ -408,6 +408,7 @@ def nofo_import(request, pk=None):
                                 "<p>This document contains a heading that is too long.</p>"
                                 "<p>This usually means that a paragraph has been incorrectly styled as a heading. "
                                 "Please check your document's heading styles and try again.</p>"
+                                "<p>Headings have a character limit of 511 characters</p>"
                             ),
                             "status": 422,
                         },
