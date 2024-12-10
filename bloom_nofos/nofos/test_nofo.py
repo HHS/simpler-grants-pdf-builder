@@ -7,7 +7,11 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
-from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER, REQUEST_HEADERS
+from .nofo import (
+    DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    REQUEST_HEADERS,
+    PUBLIC_INFORMATION_SUBSECTION,
+)
 from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import (
     _get_classnames_for_font_weight_bold as get_classnames_for_font_weight_bold,
@@ -17,6 +21,7 @@ from .nofo import _update_link_statuses as update_link_statuses
 from .nofo import (
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
+    add_final_subsection_to_step_3,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
@@ -950,7 +955,6 @@ def _get_sections_dict():
     ]
 
 
-# TODO: CreateNOFOTests with body strings (markdown)
 class CreateNOFOTests(TestCase):
     def setUp(self):
         self.sections = _get_sections_dict()
@@ -1089,6 +1093,115 @@ class OverwriteNOFOTests(TestCase):
             nofo = overwrite_nofo(nofo, [])
 
         self.assertIn("NOFO must have at least one section", str(context.exception))
+
+
+class AddFinalSubsectionTests(TestCase):
+    def _get_sections_1_2_3(self, section_3_name="Step 3: Prepare Your Application"):
+        return [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "order": 1,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1.1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": ["<p>Section 1, subsection 1 body.</p>"],
+                    }
+                ],
+            },
+            {
+                "name": "Step 2: Get Ready to Apply",
+                "order": 2,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 2.1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": ["<p>Section 2, subsection 1 body.</p>"],
+                    }
+                ],
+            },
+            {
+                "name": section_3_name,
+                "order": 3,
+                "html_id": "",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 3.1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": ["<p>Section 3, subsection 1 body.</p>"],
+                    }
+                ],
+            },
+        ]
+
+    def test_add_section_to_step_3(self):
+        sections = self._get_sections_1_2_3()
+        add_final_subsection_to_step_3(sections)
+
+        self.assertEqual(len(sections[0].get("subsections")), 1)
+        self.assertEqual(len(sections[1].get("subsections")), 1)
+        self.assertEqual(len(sections[2].get("subsections")), 2)
+
+        # get final subsection in final section
+        final_subsection = sections[-1].get("subsections", [])[-1]
+        self.assertEqual(
+            final_subsection.get("name"), PUBLIC_INFORMATION_SUBSECTION.get("name")
+        )
+        self.assertEqual(
+            final_subsection.get("body"), PUBLIC_INFORMATION_SUBSECTION.get("body")
+        )
+        self.assertEqual(final_subsection.get("tag"), "h5")
+        self.assertEqual(
+            final_subsection.get("order"), len(sections[2].get("subsections"))
+        )  # order is same as length, as it is the last subsection
+
+    def test_add_section_to_step_3_write_your_application(self):
+        sections = self._get_sections_1_2_3(
+            section_3_name="step 3: write your application"
+        )
+        add_final_subsection_to_step_3(sections)
+
+        self.assertEqual(len(sections[0].get("subsections")), 1)
+        self.assertEqual(len(sections[1].get("subsections")), 1)
+        self.assertEqual(len(sections[2].get("subsections")), 2)
+
+        # get final subsection in final section
+        final_subsection = sections[-1].get("subsections", [])[-1]
+        self.assertEqual(
+            final_subsection.get("name"), PUBLIC_INFORMATION_SUBSECTION.get("name")
+        )
+        self.assertEqual(
+            final_subsection.get("body"), PUBLIC_INFORMATION_SUBSECTION.get("body")
+        )
+        self.assertEqual(final_subsection.get("tag"), "h5")
+        self.assertEqual(
+            final_subsection.get("order"), len(sections[2].get("subsections"))
+        )  # order is same as length, as it is the last subsection
+
+    def test_NO_add_section_to_step_3(self):
+        sections = self._get_sections_1_2_3(
+            section_3_name="Step 3: Learn about Review and Award"
+        )
+        add_final_subsection_to_step_3(sections)
+
+        self.assertEqual(len(sections[0].get("subsections")), 1)
+        self.assertEqual(len(sections[1].get("subsections")), 1)
+        self.assertEqual(len(sections[2].get("subsections")), 1)
+
+        # get final subsection in final section
+        final_subsection = sections[-1].get("subsections", [])[-1]
+        self.assertEqual(final_subsection.get("name"), "Subsection 3.1")
 
 
 class AddHeadingsTests(TestCase):
