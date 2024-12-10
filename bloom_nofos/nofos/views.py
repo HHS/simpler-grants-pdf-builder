@@ -394,6 +394,25 @@ def nofo_import(request, pk=None):
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
                 nofo.filename = filename
+            except ValidationError as e:
+                # Check if this is an html_id length error
+                if "html_id" in e.message_dict and any(
+                    "characters" in msg for msg in e.message_dict["html_id"]
+                ):
+                    return render(
+                        request,
+                        "400.html",
+                        status=422,
+                        context={
+                            "error_message_html": (
+                                "<p>This document contains a heading that is too long.</p>"
+                                "<p>This usually means that a paragraph has been incorrectly styled as a heading. "
+                                "Please check your document's heading styles and try again.</p>"
+                            ),
+                            "status": 422,
+                        },
+                    )
+                return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
