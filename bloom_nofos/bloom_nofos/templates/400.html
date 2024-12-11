@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	{% if status %}{{ status }}{% else %}400{% endif %} bruv, oops — Bad request
+	{% if status %}{{ status }}{% else %}400{% endif %} - Bad Request
 {% endblock %}
 
 
 {% block content %}
-	<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} bruv, oops</h1>
+	<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} Error</h1>
 	{% if error_message %}
 		<p><strong>{{ error_message }}</strong></p>
 	{% elif error_message_html %}

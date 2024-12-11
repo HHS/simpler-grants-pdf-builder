@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	500 fam, yikes — Server error
+	500 - Server Error
 {% endblock %}
 
 
 {% block content %}
-	<h1 class="font-heading-xl margin-y-0">500 error, yikes</h1>
-  <p>Well dang, buckaroo, you’ve stumbled upon a brand new kinda trouble!</p>
-  <p>If you’re in a fix and want to report it, <a href="https://airtable.com/appdaa5AqUwI8jdOo/pagpyAKIEOyLofFCw/form" target="_blank">fill out a support ticket</a> and we’ll be in touch about it pronto.</p>
-	<p>Why not mosey on back to:</p>
+	<h1 class="font-heading-xl margin-y-0">500 Error - Server Error</h1>
+	<p>Sorry, something went wrong on our end. Our team has been notified of this issue.</p>
+	<p>If you'd like to report this error, please <a href="https://airtable.com/appdaa5AqUwI8jdOo/pagpyAKIEOyLofFCw/form" target="_blank">submit a support ticket</a> and we'll investigate the issue.</p>
+	<p>You may want to visit:</p>
 	<ul class="usa-list">
 		<li><a href="{% url 'index' %}">homepage</a></li>
 		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
