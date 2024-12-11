@@ -13,6 +13,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Decompose instructions boxes that start with "Instructions for new nofo team"
+
 ### Fixed
 
 ## [1.39.0] - 2023-12-04
