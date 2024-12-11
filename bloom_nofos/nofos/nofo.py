@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
+from django.forms import ValidationError
 import markdown
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -189,7 +190,11 @@ def create_nofo(title, sections):
     nofo = Nofo(title=title)
     nofo.number = "NOFO #999"
     nofo.save()
-    return _build_nofo(nofo, sections)
+    try:
+        return _build_nofo(nofo, sections)
+    except ValidationError as e:
+        e.nofo = nofo
+        raise e
 
 
 def overwrite_nofo(nofo, sections):
