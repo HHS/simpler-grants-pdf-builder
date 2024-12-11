@@ -394,6 +394,34 @@ def nofo_import(request, pk=None):
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
                 nofo.filename = filename
+            except ValidationError as e:
+                # Check if this is an html_id length error
+                if "html_id" in e.message_dict and any(
+                    "characters" in msg for msg in e.message_dict["html_id"]
+                ):
+                    # Get the last successfully created subsection
+                    last_subsection = (
+                        Subsection.objects.filter(section__nofo=e.nofo)
+                        .order_by("-order")
+                        .first()
+                    )
+                    #  TODO: dynamically pull in heading character limit from models.py _or_ error message
+                    return render(
+                        request,
+                        "400.html",
+                        status=422,
+                        context={
+                            "error_message_html": (
+                                f'<p>Your document ("<a href="/nofos/{e.nofo.id}/edit">{e.nofo.short_name or e.nofo.title}</a>") '
+                                "contains a heading that is too long. Headings have a character limit of 511 characters.</p>"
+                                "<p>This usually means that a paragraph has been incorrectly styled as a heading. "
+                                f'The last valid heading was "{last_subsection.name if last_subsection else "none"}", '
+                                "so the incorrectly tagged paragraph is most likely after this heading.</p>"
+                            ),
+                            "status": 422,
+                        },
+                    )
+                return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
             except Exception as e:
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 

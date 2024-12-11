@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	404 dawg, sorry — Page not found
+	404 - Page Not Found
 {% endblock %}
 
 
 {% block content %}
-	<h1 class="font-heading-xl margin-y-0">404 dawg, sorry</h1>
-	<p>No fos here or anything else.</p>
-	<p>Maybe go look at:</p>
+	<h1 class="font-heading-xl margin-y-0">404 Error - Page Not Found</h1>
+	<p>The page you are looking for could not be found. Please check the URL and try again.</p>
+	<p>You may want to visit:</p>
 	<ul class="usa-list">
 		<li><a href="{% url 'index' %}">homepage</a></li>
 		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
