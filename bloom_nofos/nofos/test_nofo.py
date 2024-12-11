@@ -5630,7 +5630,7 @@ class DecomposeInstructionsTablesTest(TestCase):
         html_content = """
         <html>
             <body>
-                <table><tr><td>Instructions for NOFO writers: This table should be removed.</td></tr></table>
+                <table><tr><td><span>Instructions for NOFO writers</span><p>This table should be removed</p></td></tr></table>
                 <table><tr><td>Another table that should remain.</td></tr></table>
             </body>
         </html>
@@ -5640,7 +5640,25 @@ class DecomposeInstructionsTablesTest(TestCase):
         remaining_tables = soup.find_all("table")
         self.assertEqual(len(remaining_tables), 1)
         self.assertNotIn(
-            "Instructions for NOFO writers:", remaining_tables[0].get_text()
+            "Instructions for NOFO writers", remaining_tables[0].get_text()
+        )
+
+    def test_removes_correct_tables_nofo_team(self):
+        """Test that tables with specific instructional text are removed."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td><strong class="instruction-box-heading"><span>INSTRUCTIONS FOR NEW NOFO TEAM</span></strong><span>DGHP New NOFO Team: Below are three metadata fields.</span></td></tr></table>
+                <table><tr><td>Another table that should remain.</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        decompose_instructions_tables(soup)
+        remaining_tables = soup.find_all("table")
+        self.assertEqual(len(remaining_tables), 1)
+        self.assertNotIn(
+            "INSTRUCTIONS FOR NEW NOFO TEAM", remaining_tables[0].get_text()
         )
 
     def test_removes_correct_tables_instructions_1(self):
