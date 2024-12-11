@@ -1765,7 +1765,10 @@ def decompose_instructions_tables(soup):
     for table in tables:
         cells = table.find_all("td")
         if len(cells) == 1:
-            if table.get_text().lower().startswith(
-                "instructions for nofo writers:"
-            ) or re.match(r".+-specific instructions", table.get_text().lower()):
+            table_text_lowercase = table.get_text().lower()
+            if (
+                table_text_lowercase.startswith("instructions for nofo writers")
+                or table_text_lowercase.startswith("instructions for new nofo team")
+                or re.match(r".+-specific instructions", table_text_lowercase)
+            ):
                 table.decompose()
