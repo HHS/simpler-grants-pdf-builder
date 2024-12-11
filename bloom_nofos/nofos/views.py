@@ -405,6 +405,11 @@ def nofo_import(request, pk=None):
                         .order_by("-order")
                         .first()
                     )
+
+                    # Set the NOFO's group to match the user's group
+                    e.nofo.group = request.user.group
+                    e.nofo.save()
+
                     #  TODO: dynamically pull in heading character limit from models.py _or_ error message
                     return render(
                         request,
@@ -415,7 +420,8 @@ def nofo_import(request, pk=None):
                                 f'<p>Your document ("<a href="/nofos/{e.nofo.id}/edit">{e.nofo.short_name or e.nofo.title}</a>") '
                                 "contains a heading that is too long. Headings have a character limit of 511 characters.</p>"
                                 "<p>This usually means that a paragraph has been incorrectly styled as a heading. "
-                                f'The last valid heading was "{last_subsection.name if last_subsection else "none"}", '
+                                f'The last valid heading was "{last_subsection.name if last_subsection else "none"}" '
+                                f'in "{last_subsection.section.name if last_subsection else "none"}", '
                                 "so the incorrectly tagged paragraph is most likely after this heading.</p>"
                             ),
                             "status": 422,
