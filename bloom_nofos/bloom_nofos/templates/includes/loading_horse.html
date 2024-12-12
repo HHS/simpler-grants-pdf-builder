@@ -12,10 +12,21 @@
     const loadingGif = form.querySelector(".loading-horse--container");
 
     form.addEventListener("submit", function () {
-      // Disable the button and change its text
+      // Disable the button, change its text, add classname
       button.disabled = true;
-      button.textContent = "Importing…";
+      button.textContent = "Importing";
+      button.classList.add("submit-button--loading");
+      button.setAttribute("aria-label", "Importing…");
 
+      let dotCount = 0; // Tracks the number of dots (0 to 3)
+
+      // Start an interval to cycle through the dots
+      intervalId = setInterval(() => {
+        dotCount = (dotCount + 1) % 4; // Cycle between 0, 1, 2, 3
+        button.textContent = `Importing${".".repeat(dotCount)}`;
+      }, 330);
+
+      // show the horse gif
       setTimeout(() => {
         loadingGif.classList.add("visible");
       }, 50);
