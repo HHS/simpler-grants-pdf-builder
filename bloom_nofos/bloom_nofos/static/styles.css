@@ -293,6 +293,14 @@ details > summary > span:hover {
   padding: 8px 0;
 }
 
+.nofo_import .submit-button {
+  width: 132px;
+}
+
+.nofo_import .submit-button.submit-button--loading {
+  text-align: left;
+}
+
 /* Edit page */
 
 /* header widget for NOFO */
