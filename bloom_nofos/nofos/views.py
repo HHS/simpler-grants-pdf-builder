@@ -305,8 +305,7 @@ def nofo_import(request, pk=None):
             return redirect(view_path, **kwargs)
 
         # replace problematic characters/links on import
-        cleaned_content = replace_chars(file_content)
-        cleaned_content = replace_links(file_content)
+        cleaned_content = replace_links(replace_chars(file_content))
 
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
         soup = add_body_if_no_body(soup)
