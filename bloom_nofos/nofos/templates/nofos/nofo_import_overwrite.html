@@ -5,6 +5,8 @@
   Re-import “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
 {% endblock %}
 
+{% block body_class %}nofo_import nofo_import--reimport{% endblock %}
+
 {% block content %}
   <div class="usa-alert usa-alert--warning margin-bottom-3">
     <div class="usa-alert__body">
@@ -25,7 +27,7 @@
     {% endwith %}
   {% endwith %}
 
-  <form id="nofo-import--form" method="post" enctype="multipart/form-data">
+  <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." value=title %}
       {% for message in messages %}
@@ -37,6 +39,8 @@
       {% endfor %}
     {% endwith %}
 
-    <button class="usa-button margin-top-3" type="submit">Re-import</button>
+    {% include "includes/loading_horse.html" %}
+
+    <button class="usa-button margin-top-3 submit-button" type="submit">Re-import</button>
   </form>
 {% endblock %}
