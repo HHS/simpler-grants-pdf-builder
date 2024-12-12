@@ -17,6 +17,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- bug: since adding replace_links, replace_chars was not being applied
+
 ## [1.39.0] - 2023-12-04
 
 ### Added
