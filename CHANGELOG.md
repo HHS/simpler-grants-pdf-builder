@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add new command for downloading NOFOs with published times
 - Add new command to count all section name lengths and subsection name lengths
 - Add inline image for CDC-RFA-25-0061
+- Add cover image for HRSA-25-019
 
 ### Changed
 
