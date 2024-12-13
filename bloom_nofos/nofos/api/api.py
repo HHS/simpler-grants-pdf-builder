@@ -1,10 +1,9 @@
 from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
-from ninja.errors import HttpError
 from django.core.exceptions import ValidationError
 from .schemas import NofoSchema, ErrorSchema, SuccessSchema
 from nofos.models import Nofo
-from nofos.views import _build_nofo  # reusing the existing build function
+from nofos.views import _build_nofo
 
 
 class BearerAuth(HttpBearer):
@@ -18,17 +17,8 @@ class BearerAuth(HttpBearer):
 api = NinjaAPI(
     auth=BearerAuth(),
     urls_namespace="api",
-    docs_url="/docs",  # API documentation at /api/docs
+    docs_url="/docs",
 )
-
-
-class TestSchema(Schema):
-    message: str
-
-
-@api.post("/test")
-def test_post(request, data: TestSchema):
-    return {"received": data.message}
 
 
 @api.post("/nofo/import", response={201: SuccessSchema, 400: ErrorSchema})
@@ -51,3 +41,13 @@ def import_nofo(request, payload: NofoSchema):
         return 400, {"message": "Validation error", "details": e.message_dict}
     except Exception as e:
         return 400, {"message": str(e)}
+
+
+@api.get("/nofo/{nofo_id}", response={200: NofoSchema, 404: ErrorSchema})
+def export_nofo(request, nofo_id: int):
+    """Export a NOFO by ID"""
+    try:
+        nofo = Nofo.objects.get(id=nofo_id)
+        return 200, nofo
+    except Nofo.DoesNotExist:
+        return 404, {"message": "NOFO not found"}
