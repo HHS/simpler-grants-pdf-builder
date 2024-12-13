@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     "easyaudit",
     "djversion",
     "django_mirror",
+    "ninja",
 ]
 
 MIDDLEWARE = [
