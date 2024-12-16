@@ -1257,6 +1257,42 @@ def unwrap_empty_elements(soup):
         el.unwrap()
 
 
+def _convert_single_item_lists_to_paragraphs(soup, cell):
+    """
+    This function mutates the soup!
+
+    Converts single-item lists in a table cell to paragraphs for improved accessibility.
+
+    This function checks if a given table cell (`<td>` or `<th>`) contains exactly one child,
+    which must be a list (`<ul>` or `<ol>`) with only one list item (`<li>`). If such a list
+    is found, it is replaced with a `<p>` tag containing the same text content as the list item.
+
+    Modifies:
+        The `cell` object is modified in place. If a matching single-item list is found,
+        it is replaced with a paragraph (`<p>`).
+
+    Example:
+        Input:
+        <td><ul><li>List item</li></ul></td>
+
+        Output:
+        <td><p>List item</p></td>
+    """
+    cell_children = list(cell.children)
+    if (
+        len(cell_children) == 1
+        and cell_children[0].name in ["ul", "ol"]
+        and len(cell_children[0].find_all("li")) == 1
+    ):
+        # Extract the text content of the single list item
+        text = cell_children[0].get_text(strip=True)
+        # Remove the list and replace with a paragraph
+        cell_children[0].decompose()
+        new_paragraph = soup.new_tag("p")
+        new_paragraph.string = text
+        cell.append(new_paragraph)
+
+
 def clean_table_cells(soup):
     """
     This function mutates the soup!
@@ -1286,6 +1322,8 @@ def clean_table_cells(soup):
         # strip spans but keep their content
         for span in cell.find_all("span"):
             span.unwrap()
+
+        _convert_single_item_lists_to_paragraphs(soup, cell)
 
 
 def replace_src_for_inline_images(soup):
