@@ -111,7 +111,7 @@ class ReplaceCharsTests(TestCase):
         self.assertEqual(replace_chars(test_string), test_string)
 
 
-class TestsCleanTableCells(TestCase):
+class TestsCleanTableCellsSpans(TestCase):
     def test_remove_span_keep_content(self):
         html = "<table><tr><td><span>Content</span> and more <span>content</span></td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
@@ -153,6 +153,66 @@ class TestsCleanTableCells(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         clean_table_cells(soup)
         self.assertEqual(soup.td.text, "FirstSecond")
+
+
+class TestsCleanTableCellsLists(TestCase):
+    def test_replace_single_item_ul_in_table_cell(self):
+        html = "<table><tr><td><ul><li>UL list item 1</li></ul></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(
+            str(soup), "<table><tr><td><p>UL list item 1</p></td></tr></table>"
+        )
+
+    def test_replace_single_item_ol_in_table_cell(self):
+        html = "<table><tr><td><ol><li>OL list item 1</li></ol></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(
+            str(soup), "<table><tr><td><p>OL list item 1</p></td></tr></table>"
+        )
+
+    def test_NO_replace_multiple_item_ul_in_table_cell(self):
+        html = "<table><tr><td><ul><li>UL list item 1</li><li>UL list item 2</li></ul></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_multiple_item_ol_in_table_cell(self):
+        html = "<table><tr><td><ol><li>OL list item 1</li><li>OL list item 2</li></ol></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_single_item_ul_in_table_cell_if_element_before(self):
+        html = "<table><tr><td><p>Paragraph 1 before ul</p><ul><li>UL list item 1</li></ul></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_single_item_ul_in_table_cell_if_element_after(self):
+        html = "<table><tr><td><ul><li>UL list item 1</li></ul><p>Paragraph 1 after ul</p></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_2_single_item_uls_in_table_cell(self):
+        html = "<table><tr><td><ul><li>UL list 1 item 1</li></ul><ul><li>UL list 2 item 1</li></ul></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_2_single_item_ols_in_table_cell(self):
+        html = "<table><tr><td><ol><li>OL list 1 item 1</li></ol><ol><li>OL list 2 item 1</li></ol></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_NO_replace_single_item_ul_and_single_item_ol_in_table_cell(self):
+        html = "<table><tr><td><ul><li>UL list 1 item 1</li></ul><ol><li>OL list 1 item 1</li></ol></td></tr></table>"
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(str(soup), html)
 
 
 class TableConvertFirstRowToHeaderRowTests(TestCase):

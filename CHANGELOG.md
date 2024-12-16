@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Convert single-item lists to paragraphs inside of table cells
+
 ### Fixed
 
 ## [1.40.0] - 2023-12-16
