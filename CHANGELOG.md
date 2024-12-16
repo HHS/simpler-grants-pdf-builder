@@ -25,6 +25,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Loading gif also used on re-import page
 - bug: since adding replace_links, replace_chars was not being applied
 
+### Migrations
+
+- Add one new coach ("Sara") and 1 new HRSA designer ("KieuMy")
+
 ## [1.39.0] - 2023-12-04
 
 ### Added
