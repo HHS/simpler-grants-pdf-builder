@@ -12,7 +12,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Convert single-item lists to paragraphs inside of table cells
 - Find ranges for numbered sublists: include "8 to 15." and "8 — 15." (emdash)
+- Adds API endpoints for JSON import and export
 
 ### Fixed
 
