@@ -74,7 +74,7 @@ class NofoAPITest(TestCase):
         """Test importing a valid NOFO using fixture data"""
         # Prepare fixture data by removing fields we don't want
         import_data = self.fixture_data.copy()
-        excluded_fields = ["id", "archived", "status", "coach", "designer", "group"]
+        excluded_fields = ["id", "archived", "status", "group"]
         for field in excluded_fields:
             import_data.pop(field, None)
 
@@ -121,7 +121,7 @@ class NofoAPITest(TestCase):
         import_data["id"] = 999
 
         # Remove fields we don't want
-        excluded_fields = ["archived", "status", "coach", "designer", "group"]
+        excluded_fields = ["archived", "status", "group"]
         for field in excluded_fields:
             import_data.pop(field, None)
 
