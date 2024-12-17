@@ -26,9 +26,7 @@ class SectionSchema(ModelSchema):
         model_fields = ["name", "html_id", "order", "has_section_page"]
 
 
-class NofoSchema(ModelSchema):
-    sections: List[SectionSchema]
-
+class NofoBaseSchema(ModelSchema):
     class Config:
         model = Nofo
         model_fields = [
@@ -64,6 +62,10 @@ class NofoSchema(ModelSchema):
             "cover_image_alt_text",
             "inline_css",
         ]
+
+
+class NofoSchema(NofoBaseSchema):
+    sections: List[SectionSchema]
 
 
 class ErrorSchema(Schema):
