@@ -8,9 +8,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add cover images for HSRA-25-032, HSRA-25-075
+
 ### Changed
 
 - Convert single-item lists to paragraphs inside of table cells
+- Find ranges for numbered sublists: include "8 to 15." and "8 — 15." (emdash)
+- Adds API endpoints for JSON import and export
 
 ### Fixed
 
@@ -256,13 +260,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Restructure HTML in the Application Checklists for better styling
   - Previously, I was using a CSS hack because I didn't have enough elements to style
 - 'Criterion' tables are always small
-  <<<<<<< HEAD
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
   - Remove the border under "Attachments"
 - ids inserted using markdown attributes should not show up as 'broken links'
 - Added more known styles for the mammoth style map
-  > > > > > > > 6592cc6 (Add button to copy broken links on nofo_edit page)
 
 ## [1.29.0] - 2023-10-19
 

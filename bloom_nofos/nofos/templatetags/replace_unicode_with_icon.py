@@ -1,5 +1,3 @@
-import re
-
 from bs4 import BeautifulSoup, NavigableString
 from django import template
 from django.utils.safestring import mark_safe
@@ -9,6 +7,7 @@ from .utils import (
     _add_class_if_not_exists_to_tags,
     find_elements_with_character,
     get_parent_td,
+    match_numbered_sublist,
 )
 
 register = template.Library()
@@ -81,18 +80,7 @@ def is_before_sublist(td):
 
 def is_numbered_sublist(td):
     td_text = td.text.replace("◻", "").strip()
-
-    # Match patterns like:
-    # - "1. "
-    # - "8-15."
-    # - "16 - 21."
-    # - "22 through 25."
-    pattern = r"^\d+(\s?-\s?\d+|\sthrough\s\d+)?\.\s"
-
-    # Check if the text matches any of the sublist numbering patterns
-    if re.match(pattern, td_text):
-        return True
-    return False
+    return match_numbered_sublist(td_text)
 
 
 def is_sublist(td):
