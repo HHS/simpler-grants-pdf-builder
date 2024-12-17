@@ -68,6 +68,8 @@ GITHUB_SHA = os.getenv("GITHUB_SHA", None)
 
 SECRET_KEY = env("SECRET_KEY", default="bad-secret-key-please-change")
 
+API_TOKEN = env("API_TOKEN", default=None)
+
 ALLOWED_HOSTS = [
     "0.0.0.0",
     "127.0.0.1",

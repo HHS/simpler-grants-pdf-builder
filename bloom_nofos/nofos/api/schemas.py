@@ -32,6 +32,7 @@ class NofoSchema(ModelSchema):
     class Config:
         model = Nofo
         model_fields = [
+            "id",
             "title",
             "filename",
             "short_name",

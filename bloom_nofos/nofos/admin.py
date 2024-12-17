@@ -80,7 +80,6 @@ class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionLinkInline]
     model = Section
     list_display = ["id", "nofo_number", "name"]
-    change_form_template = "admin/section_change_form.html"
 
     @admin.display(ordering="nofo__number")
     def nofo_number(self, obj):
@@ -101,7 +100,6 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
-    change_form_template = "admin/nofo_change_form.html"
     form = NofoModelForm
     inlines = [SectionLinkInline]
     actions = ["duplicate_nofo"]
