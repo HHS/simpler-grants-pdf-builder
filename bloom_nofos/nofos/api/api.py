@@ -4,12 +4,12 @@ from django.core.exceptions import ValidationError
 from .schemas import NofoSchema, ErrorSchema, SuccessSchema
 from nofos.models import Nofo
 from nofos.views import _build_nofo
+from django.conf import settings
 
 
 class BearerAuth(HttpBearer):
     def authenticate(self, request, token):
-        # For testing purposes accept any token that starts with "secret"
-        if token and token.startswith("secret"):
+        if token and settings.API_TOKEN and token == settings.API_TOKEN:
             return token
         return None
 
@@ -27,9 +27,14 @@ def import_nofo(request, payload: NofoSchema):
         data = payload.dict()
         sections = data.pop("sections", [])
 
+        # Remove fields we dont want set on import
+        excluded_fields = ["id", "archived", "status", "group"]
+        for field in excluded_fields:
+            data.pop(field, None)
+
         # Create NOFO
         nofo = Nofo(**data)
-        nofo.group = "bloom"  # TODO: Get from auth token
+        nofo.group = "bloom"
         nofo.full_clean()
         nofo.save()
 
@@ -38,7 +43,7 @@ def import_nofo(request, payload: NofoSchema):
 
         return 201, {"message": f"NOFO {nofo.number} imported successfully"}
     except ValidationError as e:
-        return 400, {"message": "Validation error", "details": e.message_dict}
+        return 400, {"message": "Model validation error", "details": e.message_dict}
     except Exception as e:
         return 400, {"message": str(e)}
 
@@ -47,7 +52,7 @@ def import_nofo(request, payload: NofoSchema):
 def export_nofo(request, nofo_id: int):
     """Export a NOFO by ID"""
     try:
-        nofo = Nofo.objects.get(id=nofo_id)
+        nofo = Nofo.objects.get(id=nofo_id, archived__isnull=True)
         return 200, nofo
     except Nofo.DoesNotExist:
         return 404, {"message": "NOFO not found"}
