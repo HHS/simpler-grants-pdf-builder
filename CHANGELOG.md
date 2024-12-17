@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Find ranges for numbered sublists: include "8 to 15." and "8 — 15." (emdash)
+- H7 styling in ACF now bold and slightly smaller (12.5pt)
 
 ### Fixed
 
