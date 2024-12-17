@@ -1265,7 +1265,7 @@ def _convert_single_item_lists_to_paragraphs(soup, cell):
 
     This function checks if a given table cell (`<td>` or `<th>`) contains exactly one child,
     which must be a list (`<ul>` or `<ol>`) with only one list item (`<li>`). If such a list
-    is found, it is replaced with a `<p>` tag containing the same text content as the list item.
+    is found, it is replaced with a `<p>` tag containing the same HTML content as the list item.
 
     Modifies:
         The `cell` object is modified in place. If a matching single-item list is found,
@@ -1273,10 +1273,10 @@ def _convert_single_item_lists_to_paragraphs(soup, cell):
 
     Example:
         Input:
-        <td><ul><li>List item</li></ul></td>
+        <td><ul><li><strong>Bold</strong> list item</li></ul></td>
 
         Output:
-        <td><p>List item</p></td>
+        <td><p><strong>Bold</strong> list item</p></td>
     """
     cell_children = list(cell.children)
     if (
@@ -1285,12 +1285,13 @@ def _convert_single_item_lists_to_paragraphs(soup, cell):
         and len(cell_children[0].find_all("li")) == 1
     ):
         # Extract the text content of the single list item
-        text = cell_children[0].get_text(strip=True)
-        # Remove the list and replace with a paragraph
-        cell_children[0].decompose()
+        li = cell_children[0].find("li", recursive=False)
+
+        # Replace with a paragraph, then remove the list
         new_paragraph = soup.new_tag("p")
-        new_paragraph.string = text
+        new_paragraph.extend(li.contents)
         cell.append(new_paragraph)
+        cell_children[0].decompose()
 
 
 def clean_table_cells(soup):

@@ -164,6 +164,15 @@ class TestsCleanTableCellsLists(TestCase):
             str(soup), "<table><tr><td><p>UL list item 1</p></td></tr></table>"
         )
 
+    def test_replace_single_item_ul_in_table_cell_with_other_tags(self):
+        html = '<table><tr><td><ul><li>UL list item 1 with <a href="https://google.com">a link</a> and <strong>bold formatting</strong></li></ul></td></tr></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        clean_table_cells(soup)
+        self.assertEqual(
+            str(soup),
+            '<table><tr><td><p>UL list item 1 with <a href="https://google.com">a link</a> and <strong>bold formatting</strong></p></td></tr></table>',
+        )
+
     def test_replace_single_item_ol_in_table_cell(self):
         html = "<table><tr><td><ol><li>OL list item 1</li></ol></td></tr></table>"
         soup = BeautifulSoup(html, "html.parser")
