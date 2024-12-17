@@ -70,7 +70,8 @@ h6 {
 
 /* this functions as an h7 */
 div[role="heading"] {
-  font-size: 13pt;
+  font-size: 12.5pt;
+  font-weight: 600;
 }
 
 /* Cover page */
