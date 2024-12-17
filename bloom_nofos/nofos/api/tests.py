@@ -1,13 +1,14 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.conf import settings
 from nofos.models import Nofo, Section, Subsection
 import json
 import os
 
 
+@override_settings(API_TOKEN="test-token-for-ci")
 class NofoAPITest(TestCase):
     def setUp(self):
-        self.valid_token = settings.API_TOKEN
+        self.valid_token = "test-token-for-ci"
         self.headers = {
             "HTTP_AUTHORIZATION": f"Bearer {self.valid_token}",
         }
