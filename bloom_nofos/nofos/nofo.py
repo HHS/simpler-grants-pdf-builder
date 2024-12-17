@@ -7,12 +7,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
-from django.forms import ValidationError
 import markdown
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 from django.conf import settings
 from django.db import transaction
+from django.forms import ValidationError
 from django.utils.html import escape
 from slugify import slugify
 

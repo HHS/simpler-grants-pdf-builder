@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Find ranges for numbered sublists: include "8 to 15." and "8 — 15." (emdash)
+
 ### Fixed
 
 ## [1.40.0] - 2023-12-16
@@ -256,13 +258,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Restructure HTML in the Application Checklists for better styling
   - Previously, I was using a CSS hack because I didn't have enough elements to style
 - 'Criterion' tables are always small
-  <<<<<<< HEAD
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
   - Remove the border under "Attachments"
 - ids inserted using markdown attributes should not show up as 'broken links'
 - Added more known styles for the mammoth style map
-  > > > > > > > 6592cc6 (Add button to copy broken links on nofo_edit page)
 
 ## [1.29.0] - 2023-10-19
 

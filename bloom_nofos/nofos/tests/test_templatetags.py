@@ -20,6 +20,7 @@ from nofos.templatetags.utils import (
     is_callout_box_table_markdown,
     is_floating_callout_box,
     is_footnote_ref,
+    match_numbered_sublist,
 )
 
 
@@ -916,3 +917,42 @@ class TestAddClassesToBrokenLinks(TestCase):
         modified_html = add_classes_to_broken_links(html, broken_links)
         soup = BeautifulSoup(str(modified_html), "html.parser")
         self.assertIsNone(soup.find("a"))
+
+
+class MatchNumberedSublistTest(TestCase):
+
+    def test_single_number(self):
+        self.assertTrue(match_numbered_sublist("1. This is a list item."))
+
+    def test_range_with_hyphen(self):
+        self.assertTrue(match_numbered_sublist("8-15. This is a range."))
+
+    def test_range_with_spaces_and_hyphen(self):
+        self.assertTrue(match_numbered_sublist("16 - 21. Another range."))
+
+    def test_range_with_through(self):
+        self.assertTrue(match_numbered_sublist("22 through 25. With words."))
+
+    def test_range_with_to(self):
+        self.assertTrue(match_numbered_sublist("30 to 40. Another delimiter."))
+
+    def test_range_with_emdash(self):
+        self.assertTrue(match_numbered_sublist("45—50. Using emdash."))
+
+    def test_range_with_spaces_and_emdash(self):
+        self.assertTrue(match_numbered_sublist("1 — 1000. Using emdash and spaces."))
+
+    def test_non_matching_text(self):
+        self.assertFalse(match_numbered_sublist("Not a match."))
+
+    def test_missing_period(self):
+        self.assertFalse(match_numbered_sublist("1 This is invalid"))
+
+    def test_no_space_after_period(self):
+        self.assertFalse(match_numbered_sublist("1.This is invalid"))
+
+    def test_invalid_number_format(self):
+        self.assertFalse(match_numbered_sublist("abc123. Not valid"))
+
+    def test_empty_string(self):
+        self.assertFalse(match_numbered_sublist(""))
