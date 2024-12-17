@@ -8,7 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
-- Add cover image for HSRA-25-032
+- Add cover images for HSRA-25-032, HSRA-25-075
 
 ### Changed
 
