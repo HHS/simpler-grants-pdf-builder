@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup, NavigableString
 
 # HTML tables
@@ -328,3 +330,17 @@ def is_floating_callout_box(subsection):
             return True
 
     return False
+
+
+def match_numbered_sublist(text):
+    # Match patterns like:
+    # - "1. "
+    # - "8-15."
+    # - "16 - 21."
+    # - "22 through 25."
+    # - "30 to 40. "
+    # - "45—50. "
+    pattern = r"^\d+(\s?(-|—|to|through)\s?\d+)?\.\s"
+
+    # Check if the text matches any of the sublist numbering patterns
+    return re.match(pattern, text)
