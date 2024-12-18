@@ -57,6 +57,7 @@ THEME_CHOICES = [
     ("landscape-cdc-white", "CDC Landscape (Light)"),
     ("portrait-cdc-dop", "CDC Portrait (DOP)"),
     ("portrait-cdc-orr", "CDC Portrait (ORR)"),
+    ("portrait-cdc-iod", "CDC Portrait (IOD)"),
     ("portrait-cdc-blue", "CDC Portrait (Default)"),
     ("portrait-cdc-white", "CDC Portrait (Light)"),
     ("portrait-acf-white", "ACF (Light)"),
