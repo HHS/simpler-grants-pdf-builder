@@ -50,6 +50,12 @@ h2 {
 
 /* Cover page */
 
+.nofo--cover-page--header,
+.nofo--cover-page--footer {
+  background-color: var(--color--cms-blue);
+  color: var(--color--white);
+}
+
 .nofo--cover-page--header--logo--subheading {
   color: var(--color--cms-blue);
 }
@@ -77,20 +83,7 @@ h2 {
 
 /* Cover page: text */
 
-.nofo--cover-page--text .nofo--cover-page--header {
-  background-color: var(--color--cms-blue);
-  color: var(--color--white);
-}
-
-.nofo--cover-page--text .nofo--cover-page--footer {
-  background-color: var(--color--cms-blue);
-}
-
 /* Cover page: medium image */
-
-.nofo--cover-page--medium .nofo--cover-page--header {
-  background-color: var(--color--white);
-}
 
 /* Cover page: hero image */
 
@@ -104,7 +97,7 @@ h2 {
 /* Table of contents */
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--cms-yellow);
+  color: var(--color--cms-blue);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
@@ -137,7 +130,7 @@ h2 {
 }
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--cms-yellow);
+  color: var(--color--cms-blue);
 }
 
 section.before-you-begin h2 {

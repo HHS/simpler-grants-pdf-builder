@@ -61,6 +61,7 @@ h5 {
     Arial, sans-serif;
   color: var(--color--black);
   font-weight: 500;
+  line-height: 1.35;
 }
 
 h6 {
@@ -69,6 +70,12 @@ h6 {
   color: var(--color--black);
   font-weight: 500;
   font-size: 13pt;
+}
+
+/* this functions as an h7 */
+div[role="heading"] {
+  font-size: 12pt;
+  font-weight: 700;
 }
 
 /* Running header */
