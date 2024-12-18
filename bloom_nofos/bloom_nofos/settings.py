@@ -502,4 +502,5 @@ GROUP_CHOICES = [
     ("cms", "CMS: Centers for Medicare & Medicaid Services"),
     ("hrsa", "HRSA: Health Resources and Services Administration"),
     ("ihs", "IHS: Indian Health Service"),
+    ("staging", "Staging environment"),
 ]
