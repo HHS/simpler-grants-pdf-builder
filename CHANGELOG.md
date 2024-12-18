@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Add cover images for HSRA-25-032, HSRA-25-075, CMS-3Y3-25-001
+- Add a new custom CDC theme: CDC (IOD)
 
 ### Changed
 
