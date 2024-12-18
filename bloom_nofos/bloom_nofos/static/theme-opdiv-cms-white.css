@@ -138,10 +138,6 @@ table td {
   border: 3px solid var(--color--white);
 }
 
-table td a {
-  color: var(--color--cms-blue);
-}
-
 /* Application checklist table */
 
 .section--step-5-submit-your-application table tr td {
