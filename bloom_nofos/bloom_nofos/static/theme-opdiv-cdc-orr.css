@@ -38,9 +38,6 @@
 }
 
 /* Regular CSS */
-a {
-  color: var(--color--orr-blue);
-}
 
 img.usa-icon--check_box_outline_blank {
   background: var(--color--white);
@@ -250,10 +247,6 @@ table th {
 table td {
   background-color: var(--color--table-blue);
   border: 3px solid var(--color--white);
-}
-
-table td a {
-  color: var(--color--orr-blue);
 }
 
 /* Application checklist table */

@@ -30,10 +30,6 @@ html {
     Roboto, Arial, sans-serif;
 }
 
-a {
-  color: var(--color--cms-blue);
-}
-
 /* Headings */
 
 h1 {
