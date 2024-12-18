@@ -21,8 +21,8 @@ api = NinjaAPI(
 )
 
 
-@api.post("/nofo/import", response={201: SuccessSchema, 400: ErrorSchema})
-def import_nofo(request, payload: NofoSchema):
+@api.post("/nofos", response={201: SuccessSchema, 400: ErrorSchema})
+def create_nofo(request, payload: NofoSchema):
     try:
         data = payload.dict()
         sections = data.pop("sections", [])
@@ -41,15 +41,20 @@ def import_nofo(request, payload: NofoSchema):
         _build_nofo(nofo, sections)
         nofo.save()
 
-        return 201, {"message": f"NOFO {nofo.number} imported successfully"}
+        return 201, {
+            "message": f"NOFO {nofo.id} imported successfully",
+            "Location": f"/api/nofos/{nofo.id}",
+            "nofo": nofo,
+        }
+
     except ValidationError as e:
         return 400, {"message": "Model validation error", "details": e.message_dict}
     except Exception as e:
         return 400, {"message": str(e)}
 
 
-@api.get("/nofo/{nofo_id}", response={200: NofoSchema, 404: ErrorSchema})
-def export_nofo(request, nofo_id: int):
+@api.get("/nofos/{nofo_id}", response={200: NofoSchema, 404: ErrorSchema})
+def get_nofo(request, nofo_id: int):
     """Export a NOFO by ID"""
     try:
         nofo = Nofo.objects.get(id=nofo_id, archived__isnull=True)

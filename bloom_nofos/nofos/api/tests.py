@@ -40,7 +40,7 @@ class NofoAPITest(TestCase):
 
     def test_export_nofo(self):
         """Test exporting a NOFO via API"""
-        response = self.client.get(f"/api/nofo/{self.nofo.id}", **self.headers)
+        response = self.client.get(f"/api/nofos/{self.nofo.id}", **self.headers)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -56,31 +56,32 @@ class NofoAPITest(TestCase):
         self.nofo.archived = "2024-01-01"
         self.nofo.save()
 
-        response = self.client.get(f"/api/nofo/{self.nofo.id}", **self.headers)
+        response = self.client.get(f"/api/nofos/{self.nofo.id}", **self.headers)
 
         self.assertEqual(response.status_code, 404)
 
     def test_export_nonexistent_nofo(self):
         """Test exporting a non-existent NOFO"""
-        response = self.client.get("/api/nofo/99999", **self.headers)
+        response = self.client.get("/api/nofos/99999", **self.headers)
 
         self.assertEqual(response.status_code, 404)
 
     def test_unauthorized_export(self):
         """Test exporting without authorization"""
-        response = self.client.get(f"/api/nofo/{self.nofo.id}")
+        response = self.client.get(f"/api/nofos/{self.nofo.id}")
         self.assertEqual(response.status_code, 401)
 
     def test_import_nofo(self):
         """Test importing a valid NOFO using fixture data"""
-        # Prepare fixture data by removing fields we don't want
+
         import_data = self.fixture_data.copy()
-        excluded_fields = ["id", "archived", "status", "group"]
-        for field in excluded_fields:
-            import_data.pop(field, None)
+        import_data["id"] = 99999
+        import_data["status"] = "published"
+        import_data["group"] = "different-group"
+        import_data["archived"] = "2024-01-01"
 
         response = self.client.post(
-            "/api/nofo/import",
+            "/api/nofos",
             data=json.dumps(import_data),
             content_type="application/json",
             **self.headers,
@@ -90,11 +91,11 @@ class NofoAPITest(TestCase):
 
         # Verify NOFO was created with correct data
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
-        self.assertEqual(
-            nofo.title,
-            "EHB-Benchmark Plan Modernization Grant for States with a Federally-facilitated Exchange",
-        )
+
+        self.assertNotEqual(nofo.id, 99999)
+        self.assertEqual(nofo.status, "draft")
         self.assertEqual(nofo.group, "bloom")
+        self.assertIsNone(nofo.archived)
 
         # Verify sections and subsections
         self.assertEqual(len(nofo.sections.all()), len(self.fixture_data["sections"]))
@@ -107,7 +108,7 @@ class NofoAPITest(TestCase):
         payload = {"title": "No Sections NOFO", "number": "TEST-002", "sections": []}
 
         response = self.client.post(
-            "/api/nofo/import",
+            "/api/nofos",
             data=json.dumps(payload),
             content_type="application/json",
             **self.headers,
@@ -127,7 +128,7 @@ class NofoAPITest(TestCase):
             import_data.pop(field, None)
 
         response = self.client.post(
-            "/api/nofo/import",
+            "/api/nofos",
             data=json.dumps(import_data),
             content_type="application/json",
             **self.headers,
