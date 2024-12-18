@@ -8,9 +8,18 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.41.0] - 2023-12-18
+
+### Added
+
 - Add cover images for HSRA-25-032, HSRA-25-075, CMS-3Y3-25-001
 - Add a new custom CDC theme: CDC (IOD)
 - Add new "staging" group for users to test NOFO Builder safely
+- Add new API endpoints for importing and exporting NOFOs
 
 ### Changed
 
@@ -18,7 +27,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - H7 styling in ACF now bold and slightly smaller (12.5pt)
 - Add links are CMS blue (no more links in the theme colour)
 
-### Fixed
+### Migrations
+
+- Add new user group: "staging"
+- Add new theme: "portrait-cdc-iod"
+- Make some fields nullable: "filename", "inline_css", "subagency2"
 
 ## [1.40.0] - 2023-12-16
 
@@ -30,7 +43,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for HRSA-25-019
 - Add cover image for HHS-2025-ACF-ECD-TH-0106
 - Add cover image for HSRA-25-071
-- Add new API endpoints for importing and exporting NOFOs
 
 ### Changed
 
@@ -42,7 +54,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Loading gif also used on re-import page
 - bug: since adding replace_links, replace_chars was not being applied
 
-## [1.40.0] - 2023-12-04
+### Migrations
+
+- Add one new coach ("Sara") and 1 new HRSA designer ("KieuMy")
+
+## [1.39.0] - 2023-12-04
 
 ### Added
 
