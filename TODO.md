@@ -2,15 +2,15 @@
 
 - Write ADRs
   - Why Python
-- Maybe: add Google login
+- Add Login.gov
 - Password reset flow on command line
 - Password reset flow exists
 - Refac: short section names for breadcrumbs means we can loop
-- .docx imports
-  - Investigate images
 
 # DONE
 
+- .docx imports
+  - Investigate images
 - Autodeploy from Github Actions
   - Migrations!!
 - Default column widths for application table
