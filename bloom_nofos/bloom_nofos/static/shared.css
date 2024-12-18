@@ -21,6 +21,7 @@
   --color--cms-blue: #004a86;
   --color--hrsa-blue: #006699;
   --color--ihs-blue: #012f52;
+  --color--staging-coral: #f08080;
 }
 
 .bg-group--bloom {
@@ -53,6 +54,10 @@
 
 .bg-group--ihs {
   background-color: var(--color--ihs-blue);
+}
+
+.bg-group--staging {
+  background-color: var(--color--staging-coral);
 }
 
 .usa-table--font-size-1 {
