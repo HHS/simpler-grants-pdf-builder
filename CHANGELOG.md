@@ -10,6 +10,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Updates to CMS theme:
+  - Fix background and text colour for cover page
+  - "Standard" icons are blue
+  - Tighter line-height for h5s
+  - Smaller, bolder h7s
+
 ### Fixed
 
 ## [1.41.0] - 2023-12-18
