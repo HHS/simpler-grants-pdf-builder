@@ -26,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for HRSA-25-019
 - Add cover image for HHS-2025-ACF-ECD-TH-0106
 - Add cover image for HSRA-25-071
+- Add new API endpoints for importing and exporting NOFOs
 
 ### Changed
 
@@ -37,11 +38,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Loading gif also used on re-import page
 - bug: since adding replace_links, replace_chars was not being applied
 
-### Migrations
-
-- Add one new coach ("Sara") and 1 new HRSA designer ("KieuMy")
-
-## [1.39.0] - 2023-12-04
+## [1.40.0] - 2023-12-04
 
 ### Added
 
