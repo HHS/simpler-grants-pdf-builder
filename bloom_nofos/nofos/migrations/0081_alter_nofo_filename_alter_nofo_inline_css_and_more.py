@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("nofos", "0079_cleanup_update_print_logs"),
+        ("nofos", "0080_alter_nofo_coach_alter_nofo_designer"),
     ]
 
     operations = [
