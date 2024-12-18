@@ -76,6 +76,4 @@ class ErrorSchema(Schema):
 
 
 class SuccessSchema(Schema):
-    message: str
-    Location: str
     nofo: NofoSchema
