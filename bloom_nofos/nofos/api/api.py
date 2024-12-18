@@ -41,11 +41,10 @@ def create_nofo(request, payload: NofoSchema):
         _build_nofo(nofo, sections)
         nofo.save()
 
-        return 201, {
-            "message": f"NOFO {nofo.id} imported successfully",
-            "Location": f"/api/nofos/{nofo.id}",
-            "nofo": nofo,
-        }
+        serialized_nofo = NofoSchema.from_orm(nofo)
+        return_response = api.create_response(request, serialized_nofo, status=201)
+        return_response.headers["Location"] = f"/api/nofos/{nofo.id}"
+        return return_response
 
     except ValidationError as e:
         return 400, {"message": "Model validation error", "details": e.message_dict}
