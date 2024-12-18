@@ -15,10 +15,6 @@ html {
   line-height: 1.5;
 }
 
-a {
-  color: var(--color--aspr-blue);
-}
-
 /* Headings */
 
 h1 {

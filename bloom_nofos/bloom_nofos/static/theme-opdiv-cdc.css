@@ -29,10 +29,6 @@ html {
   line-height: 1.5;
 }
 
-a {
-  color: var(--color--cdc-blue);
-}
-
 /* Headings */
 
 h1 {

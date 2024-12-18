@@ -130,7 +130,3 @@ table th {
 table td {
   border: 2px solid var(--color--ihs-grey);
 }
-
-table td a {
-  color: var(--color--ihs-blue);
-}

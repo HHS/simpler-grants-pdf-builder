@@ -326,6 +326,11 @@ p + p {
   margin-top: 10px;
 }
 
+a,
+table td a {
+  color: var(--color--cdc-blue);
+}
+
 .section--before-you-begin--psuedo-header + p,
 div[role="heading"] + p,
 .section--content--intro p + p {
@@ -403,10 +408,6 @@ table tr.table-row--empty {
 table th.header-row-empty[colspan] {
   height: 31px;
   background-color: var(--color--table-blue);
-}
-
-table td a {
-  color: var(--color--cdc-blue);
 }
 
 table thead th,

@@ -31,10 +31,6 @@ body {
   color: var(--color--ihs-black);
 }
 
-a {
-  color: var(--color--ihs-blue);
-}
-
 /* Headings */
 
 h1 {
