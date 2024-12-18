@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add cover images for HSRA-25-032, HSRA-25-075, CMS-3Y3-25-001
 - Add a new custom CDC theme: CDC (IOD)
+- Add new "staging" group for users to test NOFO Builder safely
 
 ### Changed
 
