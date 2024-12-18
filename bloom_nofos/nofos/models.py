@@ -80,6 +80,7 @@ class Nofo(models.Model):
     filename = models.CharField(
         max_length=511,
         blank=True,
+        null=True,
         help_text="The filename used to import this NOFO. If re-imported, this value is the most recent filename.",
     )
 
@@ -129,6 +130,7 @@ class Nofo(models.Model):
         "Subagency 2",
         max_length=511,
         blank=True,
+        null=True,
         help_text="Another subagency within the agency (eg, Division of Medicine and Dentistry) collaborating on this NOFO",
     )
 
@@ -261,6 +263,7 @@ class Nofo(models.Model):
     inline_css = models.TextField(
         "Inline CSS",
         blank=True,
+        null=True,
         help_text="Extra CSS to include for this specific NOFO.",
     )
 

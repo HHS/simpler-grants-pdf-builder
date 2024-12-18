@@ -18,12 +18,14 @@ class SubsectionSchema(ModelSchema):
         model_fields_optional = ["html_class"]  # Fields that should have defaults
 
 
-class SectionSchema(ModelSchema):
-    subsections: List[SubsectionSchema]
-
+class SectionBaseSchema(ModelSchema):
     class Config:
         model = Section
         model_fields = ["name", "html_id", "order", "has_section_page"]
+
+
+class SectionSchema(SectionBaseSchema):
+    subsections: List[SubsectionSchema]
 
 
 class NofoBaseSchema(ModelSchema):
@@ -75,3 +77,5 @@ class ErrorSchema(Schema):
 
 class SuccessSchema(Schema):
     message: str
+    Location: str
+    nofo: NofoSchema
