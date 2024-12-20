@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add cover image for CMS-2V2-25-001
+
 ### Changed
 
 - Updates to CMS theme:
