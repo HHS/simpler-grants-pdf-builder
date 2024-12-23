@@ -8,6 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add cover image for CDC-RFA-IP-25-0007
 - Add cover image for CMS-2V2-25-001
   - Also add inline images
 
