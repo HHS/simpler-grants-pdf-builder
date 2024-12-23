@@ -1,5 +1,6 @@
 import io
 import json
+import time
 
 import docraptor
 import mammoth
@@ -95,6 +96,16 @@ from .nofo import (
     unwrap_nested_lists,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
+
+
+def benchmark(start_time, description):
+    """
+    Prints the elapsed time since start_time with a description.
+    """
+    elapsed_time = time.time() - start_time
+    print(f"{description} took {elapsed_time:.6f} seconds")
+    return time.time()  # Return the new start time for the next benchmark
+
 
 ###########################################################
 ###################### NOFO VIEWS ########################
@@ -232,6 +243,9 @@ class NofosArchiveView(GroupAccessObjectMixin, UpdateView):
 
 
 def nofo_import(request, pk=None):
+    start_time = time.time()  # Initialize the timer
+    start_time_original = start_time
+
     view_path = "nofos:nofo_import"
     kwargs = {}
     if pk:
@@ -240,7 +254,10 @@ def nofo_import(request, pk=None):
         kwargs = {"pk": nofo.id}
 
     if request.method == "POST":
+        start_time = benchmark(start_time, "256")
+
         uploaded_file = request.FILES.get("nofo-import", None)
+        start_time = benchmark(start_time, "259")
 
         if not uploaded_file:
             messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
@@ -259,10 +276,14 @@ def nofo_import(request, pk=None):
             uploaded_file.content_type
             == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ):
+            start_time = benchmark(start_time, "278")
+
             try:
                 doc_to_html_result = mammoth.convert_to_html(
                     uploaded_file, style_map=style_map_manager.get_style_map()
                 )
+                start_time = benchmark(start_time, "284")
+
             except Exception as e:
                 return HttpResponseBadRequest(
                     "Error importing .docx file: {}".format(e)
@@ -304,11 +325,17 @@ def nofo_import(request, pk=None):
             )
             return redirect(view_path, **kwargs)
 
+        start_time = benchmark(start_time, "327")
+
         # replace problematic characters/links on import
         cleaned_content = replace_links(replace_chars(file_content))
+        start_time = benchmark(start_time, "331")
 
         soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
+        start_time = benchmark(start_time, "334")
+
         soup = add_body_if_no_body(soup)
+        start_time = benchmark(start_time, "337")
 
         # # Specify the output file path
         # output_file_path = "debug_output.html"
@@ -321,26 +348,45 @@ def nofo_import(request, pk=None):
         top_heading_level = "h1" if soup.find("h1") else "h2"
 
         # mutate the HTML
+        start_time = benchmark(start_time, "350")
         decompose_instructions_tables(soup)
+        start_time = benchmark(start_time, "352")
         join_nested_lists(soup)
+        start_time = benchmark(start_time, "354")
         add_strongs_to_soup(soup)
+        start_time = benchmark(start_time, "356")
         preserve_bookmark_links(soup)
+        start_time = benchmark(start_time, "358")
         preserve_heading_links(soup)
+        start_time = benchmark(start_time, "360")
         preserve_table_heading_links(soup)
+        start_time = benchmark(start_time, "362")
         clean_heading_tags(soup)
+        start_time = benchmark(start_time, "364")
         clean_table_cells(soup)
+        start_time = benchmark(start_time, "366")
         unwrap_empty_elements(soup)
+        start_time = benchmark(start_time, "368")
         decompose_empty_tags(soup)
+        start_time = benchmark(start_time, "370")
         combine_consecutive_links(soup)
+        start_time = benchmark(start_time, "372")
         remove_google_tracking_info_from_links(soup)
+        start_time = benchmark(start_time, "374")
         replace_src_for_inline_images(soup)
+        start_time = benchmark(start_time, "376")
         add_endnotes_header_if_exists(soup, top_heading_level)
+        start_time = benchmark(start_time, "378")
         unwrap_nested_lists(soup)
+        start_time = benchmark(start_time, "380")
         preserve_bookmark_targets(soup)
+        start_time = benchmark(start_time, "382")
         soup = add_em_to_de_minimis(soup)
+        start_time = benchmark(start_time, "384")
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup, top_heading_level)
+        start_time = benchmark(start_time, "388")
         if not len(sections):
             messages.add_message(
                 request,
@@ -350,6 +396,7 @@ def nofo_import(request, pk=None):
             return redirect(view_path, **kwargs)
 
         sections = get_subsections_from_sections(sections, top_heading_level)
+        start_time = benchmark(start_time, "398")
         filename = uploaded_file.name.strip()
 
         if pk:
@@ -389,9 +436,13 @@ def nofo_import(request, pk=None):
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
 
             try:
+                start_time = benchmark(start_time, "439")
                 nofo = create_nofo(nofo_title, sections)
+                start_time = benchmark(start_time, "441")
                 add_headings_to_nofo(nofo)
+                start_time = benchmark(start_time, "443")
                 add_page_breaks_to_headings(nofo)
+                start_time = benchmark(start_time, "445")
                 nofo.filename = filename
             except ValidationError as e:
                 # Check if this is an html_id length error
@@ -431,13 +482,17 @@ def nofo_import(request, pk=None):
                 return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
 
             nofo.group = request.user.group  # set group separately with request.user
+            start_time = benchmark(start_time, "485")
             suggest_all_nofo_fields(nofo, soup)
             nofo.save()
+            start_time = benchmark(start_time, "488")
 
             # Create audit event for importing a nofo
             create_nofo_audit_event(
                 event_type="nofo_import", nofo=nofo, user=request.user
             )
+            start_time = benchmark(start_time, "494")
+            benchmark(start_time_original, "completed NOFO import")
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
