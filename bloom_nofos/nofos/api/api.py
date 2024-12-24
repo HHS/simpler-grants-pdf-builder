@@ -1,10 +1,11 @@
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
-from django.core.exceptions import ValidationError
-from .schemas import NofoSchema, ErrorSchema, SuccessSchema
 from nofos.models import Nofo
 from nofos.views import _build_nofo
-from django.conf import settings
+
+from .schemas import ErrorSchema, NofoSchema, SuccessSchema
 
 
 class BearerAuth(HttpBearer):

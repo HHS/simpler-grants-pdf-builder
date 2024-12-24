@@ -96,7 +96,6 @@ from .nofo import (
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
 
-
 ###########################################################
 ###################### NOFO VIEWS ########################
 ###########################################################

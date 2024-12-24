@@ -1,8 +1,9 @@
-from django.test import TestCase, override_settings
-from django.conf import settings
-from nofos.models import Nofo, Section, Subsection
 import json
 import os
+
+from django.conf import settings
+from django.test import TestCase, override_settings
+from nofos.models import Nofo, Section, Subsection
 
 
 @override_settings(API_TOKEN="test-token-for-ci")
