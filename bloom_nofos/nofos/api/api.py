@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from ninja import NinjaAPI, Schema
+from ninja import NinjaAPI
 from ninja.security import HttpBearer
 from nofos.models import Nofo
-from nofos.views import _build_nofo
+from nofos.nofo import _build_nofo
 
 from .schemas import ErrorSchema, NofoSchema, SuccessSchema
 

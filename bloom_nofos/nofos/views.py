@@ -1,5 +1,4 @@
 import io
-import json
 
 import docraptor
 import mammoth
@@ -11,10 +10,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F
-from django.forms.models import model_to_dict
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
 from django.views.generic import (
     CreateView,
@@ -23,7 +21,6 @@ from django.views.generic import (
     FormView,
     ListView,
     UpdateView,
-    View,
 )
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
@@ -57,7 +54,6 @@ from .mixins import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
-    _build_nofo,
     add_body_if_no_body,
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
@@ -232,9 +228,6 @@ class NofosArchiveView(GroupAccessObjectMixin, UpdateView):
 
 
 def nofo_import(request, pk=None):
-    start_time = time.time()  # Initialize the timer
-    start_time_original = start_time
-
     view_path = "nofos:nofo_import"
     kwargs = {}
     if pk:
