@@ -36,4 +36,4 @@ RUN /root/.local/bin/poetry run python bloom_nofos/manage.py collectstatic --noi
 
 EXPOSE $PORT
 
-CMD ["sh", "-c", "/root/.local/bin/poetry run gunicorn --workers 8 --timeout 179 --chdir bloom_nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]
+CMD ["sh", "-c", "/root/.local/bin/poetry run gunicorn --workers 8 --timeout 89 --chdir bloom_nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]
