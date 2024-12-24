@@ -12,7 +12,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for CMS-2V2-25-001
   - Also add inline images
 - Add utility classes for different list counters
-- TEMP: add benchmarking numbers so that we can test speed of imports
 
 ### Changed
 
