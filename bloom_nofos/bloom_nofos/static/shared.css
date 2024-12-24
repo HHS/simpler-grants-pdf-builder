@@ -24,6 +24,8 @@
   --color--staging-coral: #f08080;
 }
 
+/* Utility classes */
+
 .bg-group--bloom {
   background-color: var(--color--bloom-green);
 }
@@ -58,6 +60,22 @@
 
 .bg-group--staging {
   background-color: var(--color--staging-coral);
+}
+
+.list-lower-roman {
+  list-style-type: lower-roman;
+}
+
+.list-upper-roman {
+  list-style-type: upper-roman;
+}
+
+.list-lower-alpha {
+  list-style-type: lower-alpha;
+}
+
+.list-upper-alpha {
+  list-style-type: upper-alpha;
 }
 
 .usa-table--font-size-1 {
