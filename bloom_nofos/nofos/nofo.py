@@ -72,6 +72,9 @@ def replace_links(file_content):
 @transaction.atomic
 def add_headings_to_nofo(nofo):
     new_ids = []
+    # collect sections and subsections in arrays to facilitate bulk updating
+    sections_to_update = []
+    subsections_to_update = []
     # add counter because subheading titles can repeat, resulting in duplicate IDs
     counter = 1
 
@@ -87,7 +90,7 @@ def add_headings_to_nofo(nofo):
         if not section.html_id or len(section.html_id) == 0:
             raise ValueError("html_id blank for section: {}".format(section.name))
 
-        section.save()
+        sections_to_update.append(section)
 
         # add ids to all subsection headings
         for subsection in section.subsections.all():
@@ -104,8 +107,14 @@ def add_headings_to_nofo(nofo):
                     )
 
             subsection.html_id = subsection_id
-            subsection.save()
+            subsections_to_update.append(subsection)
             counter += 1
+
+    # Bulk update sections and subsections
+    Section.objects.bulk_update(sections_to_update, ["html_id"])
+    Subsection.objects.bulk_update(subsections_to_update, ["html_id"])
+    # Reset the subsections list to avoid duplication
+    subsections_to_update = []
 
     # Precompile regex patterns for all new_ids
     compiled_patterns = [
@@ -135,7 +144,9 @@ def add_headings_to_nofo(nofo):
                     "(#{})".format(patterns["new_id"]), subsection.body
                 )
 
-            subsection.save()
+            subsections_to_update.append(subsection)
+
+    Subsection.objects.bulk_update(subsections_to_update, ["body"])
 
 
 def add_page_breaks_to_headings(nofo):
