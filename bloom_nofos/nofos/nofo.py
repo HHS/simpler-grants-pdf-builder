@@ -107,25 +107,32 @@ def add_headings_to_nofo(nofo):
             subsection.save()
             counter += 1
 
+    # Precompile regex patterns for all new_ids
+    compiled_patterns = [
+        {
+            # Case-insensitive match to replace old_id value with new_id in hrefs
+            "href_pattern": re.compile(
+                r'href="#{}"'.format(re.escape(ids["old_id"])), re.IGNORECASE
+            ),
+            # Pattern to match old_id in hash links (like anchor links) case insensitively
+            "hash_pattern": re.compile(
+                r"\(#{}\)".format(re.escape(ids["old_id"])), re.IGNORECASE
+            ),
+            "new_id": ids["new_id"],
+        }
+        for ids in new_ids
+    ]
+
     # replace all old ids with new ids
     for section in nofo.sections.all():
         for subsection in section.subsections.all():
-            for ids in new_ids:
-                href_pattern = re.compile(
-                    r'href="#{}"'.format(re.escape(ids["old_id"])), re.IGNORECASE
+            for patterns in compiled_patterns:
+                # Use precompiled patterns
+                subsection.body = patterns["href_pattern"].sub(
+                    'href="#{}"'.format(patterns["new_id"]), subsection.body
                 )
-                # Case-insensitive match to replace old_id value with new_id in hrefs
-                subsection.body = href_pattern.sub(
-                    'href="#{}"'.format(ids["new_id"]), subsection.body
-                )
-
-                # Pattern to match old_id in hash links (like anchor links) case insensitively
-                hash_pattern = re.compile(
-                    r"\(#{}\)".format(re.escape(ids["old_id"])), re.IGNORECASE
-                )
-                # Replace old_id with new_id in hash links
-                subsection.body = hash_pattern.sub(
-                    "(#{})".format(ids["new_id"]), subsection.body
+                subsection.body = patterns["hash_pattern"].sub(
+                    "(#{})".format(patterns["new_id"]), subsection.body
                 )
 
             subsection.save()
