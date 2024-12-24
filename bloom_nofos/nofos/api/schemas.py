@@ -1,5 +1,6 @@
-from ninja import ModelSchema, Schema
 from typing import List, Optional
+
+from ninja import ModelSchema, Schema
 from nofos.models import Nofo, Section, Subsection
 
 
