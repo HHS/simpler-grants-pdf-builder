@@ -22,6 +22,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Don't demote h7s, since there is no lower heading level
+
 ## [1.41.0] - 2023-12-18
 
 ### Added

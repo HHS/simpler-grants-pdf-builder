@@ -816,6 +816,39 @@ class HTMLSubsectionTestsH2(TestCase):
         self.assertEqual(section.get("subsections")[3].get("name"), "Subsection h6")
         self.assertEqual(section.get("subsections")[3].get("html_id"), "subsection--h6")
 
+    def test_get_subsections_from_soup_h1_section_headings_demoted(self):
+        soup = BeautifulSoup(
+            '<h1>Section h1</h1><h2>Subsection h2</h2><h3>Subsection h3</h3><h4>Subsection h4</h4><h5>Subsection h5</h5><h6>Subsection h6</h6>><div role="heading" aria-level="7">Subsection h7</div><p>Section 1 body</p>',
+            "html.parser",
+        )
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h1"), top_heading_level="h1"
+        )
+        self.assertEqual(len(sections), 1)
+
+        section = sections[0]
+        self.assertEqual(section.get("name"), "Section h1")
+
+        self.assertEqual(len(section.get("subsections")), 6)
+
+        self.assertEqual(section.get("subsections")[0].get("name"), "Subsection h2")
+        self.assertEqual(section.get("subsections")[0].get("tag"), "h3")
+
+        self.assertEqual(section.get("subsections")[1].get("name"), "Subsection h3")
+        self.assertEqual(section.get("subsections")[1].get("tag"), "h4")
+
+        self.assertEqual(section.get("subsections")[2].get("name"), "Subsection h4")
+        self.assertEqual(section.get("subsections")[2].get("tag"), "h5")
+
+        self.assertEqual(section.get("subsections")[3].get("name"), "Subsection h5")
+        self.assertEqual(section.get("subsections")[3].get("tag"), "h6")
+
+        self.assertEqual(section.get("subsections")[4].get("name"), "Subsection h6")
+        self.assertEqual(section.get("subsections")[4].get("tag"), "h7")
+
+        self.assertEqual(section.get("subsections")[5].get("name"), "Subsection h7")
+        self.assertEqual(section.get("subsections")[5].get("tag"), "h7")
+
 
 class HTMLNofoFileTests(TestCase):
     def setUp(self):
