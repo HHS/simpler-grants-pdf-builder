@@ -23,7 +23,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Smaller, bolder h7s
 - TEMP: Double the app's timeout time
   - TODO: Remove once import bottleneck is improved
-- Precompile regex patterns for heading ID substitution in "add_headings_to_nofo" function
+- Speed up "add_headings_to_nofo" function
+  - Precompile regex patterns for heading ID substitution
+  - Batch update sections and subsections
 
 ### Fixed
 
