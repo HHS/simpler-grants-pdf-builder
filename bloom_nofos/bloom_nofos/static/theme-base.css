@@ -147,6 +147,22 @@ h2 {
 
 /* Utility classes */
 
+.list-lower-roman {
+  list-style-type: lower-roman;
+}
+
+.list-upper-roman {
+  list-style-type: upper-roman;
+}
+
+.list-lower-alpha {
+  list-style-type: lower-alpha;
+}
+
+.list-upper-alpha {
+  list-style-type: upper-alpha;
+}
+
 .w-100,
 .w-full {
   width: 100%;
