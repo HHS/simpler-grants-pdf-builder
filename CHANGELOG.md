@@ -19,6 +19,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - "Standard" icons are blue
   - Tighter line-height for h5s
   - Smaller, bolder h7s
+- TEMP: Double the app's timeout time
+  - TODO: Remove once import bottleneck is improved
 
 ### Fixed
 
