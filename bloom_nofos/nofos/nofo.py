@@ -164,15 +164,29 @@ def add_page_breaks_to_headings(nofo):
 
 
 def _build_nofo(nofo, sections):
+    sections_to_create = []
+    subsections_to_create = []
+
     for section in sections:
-        model_section = Section(
-            name=section.get("name", "Section X"),
-            order=section.get("order", ""),
-            html_id=section.get("html_id", None),
-            has_section_page=section.get("has_section_page"),
-            nofo=nofo,
+        sections_to_create.append(
+            Section(
+                name=section.get("name", "Section X"),
+                order=section.get("order", ""),
+                html_id=section.get("html_id", None),
+                has_section_page=section.get("has_section_page"),
+                nofo=nofo,
+            )
         )
-        model_section.save()
+
+    # Bulk create sections and retrieve them
+    created_sections = Section.objects.bulk_create(sections_to_create)
+    # Map created sections to their names for subsection linking
+    section_mapping = {section.name: section for section in created_sections}
+
+    for section in sections:
+        model_section = section_mapping.get(section.get("name", "Section X"))
+        if not model_section:
+            continue
 
         for subsection in section.get("subsections", []):
             md_body = ""
@@ -187,7 +201,7 @@ def _build_nofo(nofo, sections):
                 if html_body:
                     md_body = md("".join(html_body), escape_misc=False)
 
-            model_subsection = Subsection(
+            subsection_obj = Subsection(
                 name=subsection.get("name", ""),
                 order=subsection.get("order", ""),
                 tag=subsection.get("tag", ""),
@@ -201,10 +215,11 @@ def _build_nofo(nofo, sections):
             )
 
             # Ensure `subsection.html_id` is assigned if not already set
-            add_html_id_to_subsection(model_subsection)
+            add_html_id_to_subsection(subsection_obj)
 
-            model_subsection.save()
+            subsections_to_create.append(subsection_obj)
 
+    Subsection.objects.bulk_create(subsections_to_create)
     return nofo
 
 
