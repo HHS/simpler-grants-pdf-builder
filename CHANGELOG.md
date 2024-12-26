@@ -13,6 +13,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - All tables in appendices are full-width
+- Speed up "create_nofo" function
+  - Batch create sections and subsections in "\_build_nofo"
 
 ### Fixed
 
