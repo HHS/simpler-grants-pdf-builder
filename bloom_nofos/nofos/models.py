@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from martor.models import MartorField
 
-from .utils import create_subsection_html_id
+from .utils import add_html_id_to_subsection
 
 COACH_CHOICES = [
     ("aarti", "Aarti"),
@@ -414,9 +414,7 @@ class Subsection(models.Model):
             raise ValidationError("Tag is required when 'name' is present.")
 
     def save(self, *args, **kwargs):
-        if self.name and not self.html_id:
-            counter = self.pk or self.order
-            self.html_id = create_subsection_html_id(counter, self)
+        add_html_id_to_subsection(self)
 
         self.full_clean()  # Call the clean method for validation
         super().save(*args, **kwargs)

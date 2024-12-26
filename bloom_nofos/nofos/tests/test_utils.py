@@ -8,12 +8,15 @@ from easyaudit.models import CRUDEvent
 from nofos.models import Nofo
 from nofos.utils import (
     StyleMapManager,
+    add_html_id_to_subsection,
     clean_string,
     create_nofo_audit_event,
     create_subsection_html_id,
     get_icon_path_choices,
     match_view_url,
 )
+from ..models import Nofo, Section, Subsection
+
 from users.models import BloomUser as User
 
 
@@ -174,6 +177,65 @@ class TestCreateSubsectionHtmlId(TestCase):
         result = create_subsection_html_id(5, subsection)
         expected_id = "5----"
         self.assertEqual(result, expected_id)
+
+
+class TestAddHtmlIdToSubsection(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO",
+            number="1234",
+        )
+        # Mock section for use in tests
+        self.section = Section(name="Sample Section", order=1, nofo=self.nofo)
+        self.section.save()
+
+    def test_add_html_id_to_subsection_with_empty_html_id(self):
+        """Test that a subsection without an HTML ID gets assigned one."""
+        subsection = Subsection(
+            name="Sample Subsection", order=1, section=self.section, html_id=""
+        )
+        add_html_id_to_subsection(subsection)
+        self.assertEqual(subsection.html_id, "1--sample-section--sample-subsection")
+
+    def test_add_html_id_to_subsection_with_existing_html_id(self):
+        """Test that a subsection with an existing HTML ID does not get overwritten."""
+        subsection = Subsection(
+            name="Sample Subsection",
+            order=1,
+            section=self.section,
+            html_id="existing-html-id",
+        )
+        add_html_id_to_subsection(subsection)
+        # Ensure the HTML ID remains the same
+        self.assertEqual(subsection.html_id, "existing-html-id")
+
+    def test_add_html_id_to_subsection_with_empty_name(self):
+        """Test that a subsection without a name does not get an HTML ID."""
+        subsection = Subsection(name="", order=1, section=self.section, html_id="")
+        add_html_id_to_subsection(subsection)
+        # Ensure no HTML ID is generated
+        self.assertEqual(subsection.html_id, "")
+
+    def test_add_html_id_to_subsection_with_none_html_id(self):
+        """Test that a subsection with a None HTML ID gets assigned one."""
+        subsection = Subsection(
+            name="Another Subsection", order=2, section=self.section, html_id=None
+        )
+        add_html_id_to_subsection(subsection)
+        self.assertEqual(subsection.html_id, "2--sample-section--another-subsection")
+
+    def test_add_html_id_to_subsection_with_pk(self):
+        """Test that a subsection with a primary key uses it to generate the HTML ID."""
+        subsection = Subsection(
+            name="PK-based Subsection",
+            tag="h3",
+            order=1,
+            section=self.section,
+            html_id=None,
+        )
+        subsection.save()  # Assign a primary key
+        add_html_id_to_subsection(subsection)
+        self.assertEqual(subsection.html_id, "1--sample-section--pk-based-subsection")
 
 
 class CleanStringTests(TestCase):
