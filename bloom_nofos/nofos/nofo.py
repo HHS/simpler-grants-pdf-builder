@@ -18,7 +18,7 @@ from slugify import slugify
 
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import md
-from .utils import clean_string, create_subsection_html_id
+from .utils import add_html_id_to_subsection, clean_string, create_subsection_html_id
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 # Use Firefox user agent
@@ -199,6 +199,10 @@ def _build_nofo(nofo, sections):
                 body=md_body,  # body can be empty
                 section=model_section,
             )
+
+            # Ensure `subsection.html_id` is assigned if not already set
+            add_html_id_to_subsection(model_subsection)
+
             model_subsection.save()
 
     return nofo

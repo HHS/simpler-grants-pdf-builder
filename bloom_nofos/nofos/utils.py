@@ -62,6 +62,17 @@ def create_subsection_html_id(counter, subsection):
     return "{}--{}--{}".format(counter, slugify(section_name), slugify(subsection.name))
 
 
+def add_html_id_to_subsection(subsection):
+    """
+    Assigns an `html_id` to a Subsection if not already set.
+    The `html_id` is based on the subsection's order or primary key (if present).
+    """
+    if subsection.name and not subsection.html_id:
+        # Use the primary key if available; otherwise, fall back to the order field
+        counter = subsection.pk or subsection.order
+        subsection.html_id = create_subsection_html_id(counter, subsection)
+
+
 def get_icon_path_choices(theme):
     if theme == "portrait-acf-white":
         return [
