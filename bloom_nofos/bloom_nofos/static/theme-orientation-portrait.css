@@ -310,9 +310,11 @@ body.portrait
   .section--content
   table
   + table:not(.table--criterion) {
-  width: calc(
-    216mm - 40mm
-  ); /* large tables in section 4 should be full-width */
+  width: calc(216mm - 40mm); /* tables in section 4 should be full-width */
+}
+
+section.section--appendix > .section--content > table {
+  width: calc(216mm - 40mm); /* tables in the appendix should be full-width */
 }
 
 table tr td.usa-icon__td--sublist {
