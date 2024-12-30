@@ -539,12 +539,25 @@ ol ol ol {
 
 ul ul ul ul {
   list-style-type: none;
-  padding-left: 20px;
 }
 
 ul ul ul ul > li:before {
   content: "⁃";
-  margin-right: 5px;
+  margin-left: -14px;
+  margin-right: 8px;
+}
+
+ul ul ul ul ul {
+  list-style-type: disc;
+}
+
+ul ul ul ul ul > li:before {
+  content: none;
+  margin-right: 0;
+}
+
+ul ul ul ul ul ul {
+  list-style-type: circle;
 }
 
 img.usa-icon--check_box_outline_blank {
