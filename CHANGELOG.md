@@ -8,7 +8,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add list style for quint nested lis
+
 ### Changed
+
+- All tables in appendices are full-width
 
 ### Fixed
 
