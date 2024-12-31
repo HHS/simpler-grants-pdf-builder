@@ -1,0 +1,151 @@
+from django.test import TestCase
+from django.core.exceptions import ValidationError
+from django.conf import settings
+import os
+import json
+
+from nofos.models import Nofo, Section, Subsection
+
+
+class NofoModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Load fixture data directly
+        fixture_path = os.path.join(
+            settings.BASE_DIR, "nofos", "fixtures", "json", "cms-u2u-25-001.json"
+        )
+        with open(fixture_path, "r") as f:
+            cls.fixture_data = json.load(f)
+
+        # Create NOFO from fixture data
+        cls.valid_nofo_data = {
+            "title": cls.fixture_data["title"],
+            "filename": cls.fixture_data["filename"],
+            "short_name": cls.fixture_data["short_name"],
+            "number": cls.fixture_data["number"],
+            "opdiv": cls.fixture_data["opdiv"],
+            "agency": cls.fixture_data["agency"],
+            "subagency": cls.fixture_data["subagency"],
+            "subagency2": cls.fixture_data["subagency2"],
+            "application_deadline": cls.fixture_data["application_deadline"],
+            "tagline": cls.fixture_data["tagline"],
+            "author": cls.fixture_data["author"],
+            "subject": cls.fixture_data["subject"],
+            "keywords": cls.fixture_data["keywords"],
+        }
+
+    def test_nofo_requires_opdiv(self):
+        """Test that a NOFO requires an Operating Division"""
+        nofo_data = self.valid_nofo_data.copy()
+        nofo_data.pop("opdiv")  # Remove opdiv
+        nofo = Nofo(**nofo_data)
+
+        with self.assertRaises(ValidationError) as context:
+            nofo.full_clean()
+        self.assertIn("opdiv", context.exception.message_dict)
+
+    def test_nofo_requires_title_or_number(self):
+        """Test that a NOFO requires either a title or number"""
+        nofo_data = self.valid_nofo_data.copy()
+        nofo_data.pop("title")
+        nofo_data.pop("number")
+        nofo = Nofo(**nofo_data)
+
+        with self.assertRaises(ValidationError) as context:
+            nofo.full_clean()
+        self.assertIn("title", context.exception.message_dict)
+        self.assertIn("number", context.exception.message_dict)
+
+    def test_nofo_title_max_length(self):
+        """Test that a NOFO title cannot exceed 250 characters"""
+        nofo_data = self.valid_nofo_data.copy()
+        nofo_data["title"] = "a" * 251  # One character too long
+        nofo = Nofo(**nofo_data)
+
+        with self.assertRaises(ValidationError) as context:
+            nofo.full_clean()
+        self.assertIn("title", context.exception.message_dict)
+
+    def test_valid_nofo_data(self):
+        """Test that our fixture data is valid"""
+        nofo = Nofo(**self.valid_nofo_data)
+        try:
+            nofo.full_clean()
+        except ValidationError as e:
+            self.fail(f"Valid NOFO data raised ValidationError: {e}")
+
+
+class SectionModelTest(TestCase):
+    def setUp(self):
+        # Create a NOFO instance first
+        self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
+
+        # Update valid_section_data to use NOFO instance
+        self.valid_section_data = {
+            "name": "Test Section",
+            "order": 1,
+            "nofo": self.nofo,  # Use NOFO instance instead of ID
+        }
+
+    def test_section_name_max_length(self):
+        section_data = self.valid_section_data.copy()
+        section_data["name"] = "x" * 251  # One character more than max_length
+        section = Section(**section_data)
+        with self.assertRaises(ValidationError):
+            section.full_clean()
+
+    def test_section_requires_subsection(self):
+        section = Section.objects.create(**self.valid_section_data)
+        with self.assertRaises(ValidationError):
+            section.full_clean()
+
+    def test_valid_section_with_subsection(self):
+        section = Section.objects.create(**self.valid_section_data)
+        subsection = Subsection.objects.create(
+            name="Test Subsection",
+            order=1,
+            section=section,  # Use section instance
+            tag="h2",
+        )
+        section.full_clean()  # Should not raise ValidationError
+
+
+class SubsectionModelTest(TestCase):
+    def setUp(self):
+        # Create required parent objects
+        self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
+        self.section = Section.objects.create(
+            name="Test Section", order=1, nofo=self.nofo
+        )
+
+        # Update valid_subsection_data to use Section instance
+        self.valid_subsection_data = {
+            "name": "Test Subsection",
+            "order": 1,
+            "section": self.section,  # Use section instance instead of ID
+            "tag": "h2",
+        }
+
+    def test_subsection_name_max_length(self):
+        subsection_data = self.valid_subsection_data.copy()
+        subsection_data["name"] = "x" * 401  # One character more than max_length
+        subsection = Subsection(**subsection_data)
+        with self.assertRaises(ValidationError) as context:
+            subsection.full_clean()
+
+        # If the above doesn't raise, let's see what's happening
+        field = Subsection._meta.get_field("name")
+        print(f"Field max_length: {field.max_length}")
+        print(f"Actual length: {len(subsection_data['name'])}")
+        print(f"Field validators: {field.validators}")
+
+    def test_subsection_tag_required_with_name(self):
+        subsection_data = self.valid_subsection_data.copy()
+        subsection_data.pop("tag")  # Remove tag
+        subsection = Subsection(**subsection_data)
+        with self.assertRaises(ValidationError):
+            subsection.full_clean()
+
+    def test_valid_subsection_data(self):
+        subsection = Subsection(**self.valid_subsection_data)
+        subsection.full_clean()  # Should not raise ValidationError
