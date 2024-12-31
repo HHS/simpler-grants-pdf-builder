@@ -818,7 +818,7 @@ class FormatFootnoteRefHTMLTest(TestCase):
 class TestIsFloatingCalloutBox(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.nofo = Nofo.objects.create(title="Test Nofo")
+        cls.nofo = Nofo.objects.create(title="Test Nofo", opdiv="Test OpDiv")
         cls.section = Section.objects.create(name="Test Section", nofo=cls.nofo)
 
     def test_name_matches(self):
