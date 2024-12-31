@@ -145,6 +145,15 @@ h2 {
     format("woff2");
 }
 
+/* Add source sans pro */
+@font-face {
+  font-family: "Source Sans Pro Web";
+  font-style: normal;
+  font-weight: 600;
+  font-display: fallback;
+  src: url(/static/fonts/source-sans-pro/sourcesanspro-semibold-webfont.woff2) format("woff2");
+}
+
 /* Utility classes */
 
 .w-100,
