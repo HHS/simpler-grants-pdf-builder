@@ -86,6 +86,7 @@ from .nofo import (
     replace_links,
     replace_src_for_inline_images,
     suggest_all_nofo_fields,
+    suggest_nofo_opdiv,
     suggest_nofo_title,
     unwrap_empty_elements,
     unwrap_nested_lists,
@@ -382,9 +383,9 @@ def nofo_import(request, pk=None):
         else:
             # IMPORT NEW NOFO
             nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
-
+            opdiv = suggest_nofo_opdiv(soup)
             try:
-                nofo = create_nofo(nofo_title, sections)
+                nofo = create_nofo(nofo_title, sections, opdiv)
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
                 nofo.filename = filename

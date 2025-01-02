@@ -21,6 +21,7 @@ class NofoAPITest(TestCase):
             tagline="Test me via API!",
             theme="landscape-cdc-blue",
             group="bloom",
+            opdiv="Test OpDiv",
         )
         self.section = Section.objects.create(
             nofo=self.nofo, name="API Test NOFO: Section 1", order=1
@@ -106,7 +107,12 @@ class NofoAPITest(TestCase):
 
     def test_import_nofo_without_sections(self):
         """Test importing a NOFO without sections"""
-        payload = {"title": "No Sections NOFO", "number": "TEST-002", "sections": []}
+        payload = {
+            "title": "No Sections NOFO",
+            "number": "TEST-002",
+            "sections": [],
+            "opdiv": "Test OpDiv",
+        }
 
         response = self.client.post(
             "/api/nofos",

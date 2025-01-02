@@ -25,7 +25,7 @@ class CreateNofoAuditEventTests(TestCase):
     def setUp(self):
         # Set up a user and a NOFO object to pass into the function
         self.user = User.objects.create(email="takumi@speed-stars.com")
-        self.nofo = Nofo.objects.create(title="Akina Pass NOFO")
+        self.nofo = Nofo.objects.create(title="Akina Pass NOFO", opdiv="Test OpDiv")
 
     def test_audit_event_exists(self):
         create_nofo_audit_event("nofo_print", self.nofo, self.user)

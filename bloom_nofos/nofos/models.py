@@ -6,6 +6,7 @@ from django.forms import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 from martor.models import MartorField
+from django.core.validators import MaxLengthValidator
 
 from .utils import add_html_id_to_subsection
 
@@ -74,12 +75,15 @@ THEME_CHOICES = [
 class Nofo(models.Model):
     title = models.TextField(
         "NOFO title",
+        max_length=250,
+        validators=[MaxLengthValidator(250)],
         blank=True,
         help_text="The official name for this NOFO. It will be public when the NOFO is published.",
     )
 
     filename = models.CharField(
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         null=True,
         help_text="The filename used to import this NOFO. If re-imported, this value is the most recent filename.",
@@ -87,19 +91,22 @@ class Nofo(models.Model):
 
     short_name = models.CharField(
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
-        help_text="A name that makes it easier to find this NOFO in a list. It won’t be public.",
+        help_text="A name that makes it easier to find this NOFO in a list. It won't be public.",
     )
 
     number = models.CharField(
         "Opportunity number",
         max_length=200,
+        validators=[MaxLengthValidator(200)],
         blank=True,
         help_text="The official opportunity number for this NOFO.",
     )
 
     group = models.CharField(
         max_length=16,
+        validators=[MaxLengthValidator(16)],
         choices=settings.GROUP_CHOICES,
         blank=False,
         default="bloom",
@@ -109,13 +116,15 @@ class Nofo(models.Model):
     opdiv = models.CharField(
         "Operating Division",
         max_length=511,
-        blank=True,
+        validators=[MaxLengthValidator(511)],
+        blank=False,
         help_text="The HHS operating division (eg, HRSA, CDC)",
     )
 
     agency = models.CharField(
         "Agency",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         help_text="The agency within the operating division (eg, Bureau of Health Workforce)",
     )
@@ -123,6 +132,7 @@ class Nofo(models.Model):
     subagency = models.CharField(
         "Subagency",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         help_text="The subagency within the agency (eg, Division of Medicine and Dentistry)",
     )
@@ -130,6 +140,7 @@ class Nofo(models.Model):
     subagency2 = models.CharField(
         "Subagency 2",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         null=True,
         help_text="Another subagency within the agency (eg, Division of Medicine and Dentistry) collaborating on this NOFO",
@@ -138,6 +149,7 @@ class Nofo(models.Model):
     application_deadline = models.CharField(
         "Application deadline",
         max_length=200,
+        validators=[MaxLengthValidator(200)],
         blank=True,
         help_text="The date that applications for this NOFO must be submitted.",
     )
@@ -168,6 +180,7 @@ class Nofo(models.Model):
 
     theme = models.CharField(
         max_length=32,
+        validators=[MaxLengthValidator(32)],
         choices=THEME_CHOICES,
         blank=False,
         default="portrait-hrsa-blue",
@@ -182,6 +195,7 @@ class Nofo(models.Model):
 
     cover = models.CharField(
         max_length=32,
+        validators=[MaxLengthValidator(32)],
         choices=COVER_CHOICES,
         blank=False,
         default="nofo--cover-page--medium",
@@ -191,6 +205,7 @@ class Nofo(models.Model):
     cover_image = models.CharField(
         "Cover image",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         default="",
         help_text="Optional URL or path to the cover image.",
@@ -199,6 +214,7 @@ class Nofo(models.Model):
     cover_image_alt_text = models.CharField(
         "Cover image alt text",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
         default="",
         help_text="Alternative text for the cover image.",
@@ -218,6 +234,7 @@ class Nofo(models.Model):
 
     icon_style = models.CharField(
         max_length=32,
+        validators=[MaxLengthValidator(32)],
         choices=ICON_STYLE_CHOICES,
         blank=False,
         default="nofo--icons--border",
@@ -226,6 +243,7 @@ class Nofo(models.Model):
 
     coach = models.CharField(
         max_length=16,
+        validators=[MaxLengthValidator(16)],
         choices=COACH_CHOICES,
         blank=True,
         help_text="The coach has the primary responsibility for editing this NOFO.",
@@ -233,6 +251,7 @@ class Nofo(models.Model):
 
     designer = models.CharField(
         max_length=16,
+        validators=[MaxLengthValidator(16)],
         choices=DESIGNER_CHOICES,
         blank=True,
         help_text="The designer is responsible for the layout of this NOFO.",
@@ -240,6 +259,7 @@ class Nofo(models.Model):
 
     status = models.CharField(
         max_length=32,
+        validators=[MaxLengthValidator(32)],
         choices=STATUS_CHOICES,
         blank=False,
         default="draft",
@@ -290,6 +310,21 @@ class Nofo(models.Model):
         return self.sections.first().subsections.order_by("order").first()
 
     def clean(self):
+        super().clean()
+        errors = {}
+
+        # Validate title or number is present
+        if not self.title and not self.number:
+            errors["title"] = "Either title or number must be provided"
+            errors["number"] = "Either title or number must be provided"
+
+        # Validate at least one section exists (only for existing NOFOs)
+        if self.pk and not self.sections.exists():
+            errors["__all__"] = "NOFO must have at least one section"
+
+        if errors:
+            raise ValidationError(errors)
+
         if self.inline_css:
             # Parse the CSS to check for errors
             parser = cssutils.CSSParser(raiseExceptions=True)
@@ -320,9 +355,14 @@ class Nofo(models.Model):
 
 class Section(models.Model):
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
-    name = models.TextField("Section name")
+    name = models.TextField(
+        "Section name",
+        max_length=250,
+        validators=[MaxLengthValidator(250)],
+    )
     html_id = models.CharField(
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
     )
     order = models.IntegerField(null=True)
@@ -362,22 +402,40 @@ class Section(models.Model):
     def get_next_section(self):
         return self.nofo.sections.filter(order__gt=self.order).order_by("order").first()
 
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        # Validate at least one subsection exists (only for existing sections)
+        if self.pk and not self.subsections.exists():
+            errors["__all__"] = "Section must have at least one subsection"
+
+        if errors:
+            raise ValidationError(errors)
+
 
 class Subsection(models.Model):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
-    name = models.TextField("Subsection name", blank=True)
+    name = models.TextField(
+        "Subsection name",
+        max_length=400,
+        validators=[MaxLengthValidator(400)],
+        blank=True,
+    )
 
     html_id = models.CharField(
         "HTML id attribute",
         max_length=511,
+        validators=[MaxLengthValidator(511)],
         blank=True,
     )
 
     html_class = models.CharField(
         "HTML class attribute",
         max_length=1023,
+        validators=[MaxLengthValidator(1023)],
         blank=True,
     )
 
@@ -395,7 +453,12 @@ class Subsection(models.Model):
         ("h7", "Heading 7"),
     ]
 
-    tag = models.CharField(max_length=2, choices=TAG_CHOICES, blank=True)
+    tag = models.CharField(
+        max_length=2,
+        validators=[MaxLengthValidator(2)],
+        choices=TAG_CHOICES,
+        blank=True,
+    )
 
     callout_box = models.BooleanField(
         "Callout box",

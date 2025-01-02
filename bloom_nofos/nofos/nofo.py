@@ -223,9 +223,10 @@ def _build_nofo(nofo, sections):
     return nofo
 
 
-def create_nofo(title, sections):
+def create_nofo(title, sections, opdiv):
     nofo = Nofo(title=title)
     nofo.number = "NOFO #999"
+    nofo.opdiv = opdiv
     nofo.save()
     try:
         return _build_nofo(nofo, sections)
@@ -236,8 +237,9 @@ def create_nofo(title, sections):
 
 def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
-    nofo.save()
-    return _build_nofo(nofo, sections)
+    nofo = _build_nofo(nofo, sections)
+    nofo.save()  # Save after sections are added
+    return nofo
 
 
 def convert_table_first_row_to_header_row(table):
