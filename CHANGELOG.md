@@ -13,6 +13,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change how sublist headings are identified in application checklist
+  - headings with links must also not have a checkbox
+  - cells with "Narratives" are headings now
 - All tables in appendices are full-width
 - Speed up "create_nofo" function
   - Batch create sections and subsections in "\_build_nofo"
