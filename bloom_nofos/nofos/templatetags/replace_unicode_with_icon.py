@@ -48,13 +48,17 @@ def has_checkbox(td):
 
 
 def is_list_heading(td):
-    if td.find("a"):
+    if td.find("a") and not has_checkbox(td):
         return True
 
     if td.find("strong") and ":" in td.get_text():
         return True
 
-    if td.text.lower() == "other required forms" or td.text.lower() == "attachments":
+    if (
+        td.text.lower() == "other required forms"
+        or td.text.lower() == "attachments"
+        or td.text.lower() == "narratives"
+    ):
         return True
 
     return False
