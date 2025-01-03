@@ -363,7 +363,7 @@ def nofo_import(request, pk=None):
                     preserved_metadata,
                     (callout_count, callout_items),
                     (html_class_count, html_class_items),
-                ) = preserve_subsection_metadata(nofo)
+                ) = preserve_subsection_metadata(nofo, sections)
 
                 nofo = overwrite_nofo(nofo, sections)
                 nofo = restore_subsection_metadata(nofo, preserved_metadata)
@@ -372,13 +372,6 @@ def nofo_import(request, pk=None):
                 add_page_breaks_to_headings(nofo)
                 suggest_all_nofo_fields(nofo, soup)
                 nofo.save()
-
-                # Unpack the preserved counts and items
-                (
-                    preserved_metadata,
-                    (callout_count, callout_items),
-                    (html_class_count, html_class_items),
-                ) = preserve_subsection_metadata(nofo)
 
                 # Build success message starting with the basic info
                 success_msg = (
