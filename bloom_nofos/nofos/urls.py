@@ -8,6 +8,7 @@ urlpatterns = [
     path("import", views.nofo_import, name="nofo_import"),
     path("<int:pk>/delete", views.NofosArchiveView.as_view(), name="nofo_archive"),
     path("<int:pk>/import", views.nofo_import, name="nofo_import_overwrite"),
+    path("<int:pk>/compare", views.nofo_compare, name="nofo_compare"),
     path(
         "<int:pk>/import/title",
         views.NofoImportTitleView.as_view(),
