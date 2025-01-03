@@ -1,4 +1,6 @@
 import io
+from difflib import SequenceMatcher
+
 
 import docraptor
 import mammoth
@@ -448,6 +450,211 @@ def nofo_import(request, pk=None):
             "nofos/nofo_import.html",
             {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE},
         )
+
+
+def html_diff(original, new):
+    matcher = SequenceMatcher(None, original, new)
+    result = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "replace":
+            result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
+            result.append(f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>')
+        elif tag == "delete":
+            result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
+        elif tag == "insert":
+            result.append(f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>')
+        elif tag == "equal":
+            result.append(original[i1:i2])
+
+    return "".join(result)
+
+
+def nofo_compare(request, pk):
+    view_path = "nofos:nofo_compare"
+    kwargs = {}
+
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("nofo-import", None)
+
+        if not uploaded_file:
+            messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
+            return redirect(view_path, **kwargs)
+
+        file_content = ""
+
+        # html file
+        if uploaded_file.content_type == "text/html":
+            file_content = uploaded_file.read().decode(
+                "utf-8"
+            )  # Decode bytes to a string
+
+        # Word document
+        elif (
+            uploaded_file.content_type
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ):
+            try:
+                doc_to_html_result = mammoth.convert_to_html(
+                    uploaded_file, style_map=style_map_manager.get_style_map()
+                )
+            except Exception as e:
+                return HttpResponseBadRequest(
+                    "Error importing .docx file: {}".format(e)
+                )
+
+            if config.WORD_IMPORT_STRICT_MODE:
+                # if strict mode, throw an error if there are warning messages
+                warnings = [
+                    m.message
+                    for m in doc_to_html_result.messages
+                    if m.type == "warning"
+                    and all(
+                        style_to_ignore not in m.message
+                        for style_to_ignore in style_map_manager.get_styles_to_ignore()
+                    )
+                ]
+                if warnings:
+                    warnings_str = "<ul><li>{}</li></ul>".format(
+                        "</li><li>".join(warnings)
+                    )
+                    return render(
+                        request,
+                        "400.html",
+                        status=422,
+                        context={
+                            "error_message_html": "<p>Warning: not implemented for .docx file:</p> {}".format(
+                                warnings_str
+                            ),
+                            "status": 422,
+                        },
+                    )
+
+            file_content = doc_to_html_result.value
+
+        else:
+            print("uploaded_file.content_type", uploaded_file.content_type)
+            messages.add_message(
+                request, messages.ERROR, "Yikes! Please import a .docx or HTML file"
+            )
+            return redirect(view_path, **kwargs)
+
+        # replace problematic characters/links on import
+        cleaned_content = replace_links(replace_chars(file_content))
+        soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
+        soup = add_body_if_no_body(soup)
+
+        # # Specify the output file path
+        # output_file_path = "debug_output.html"
+
+        # # Write the HTML content to the file
+        # with open(output_file_path, "w", encoding="utf-8") as file:
+        #     file.write(str(soup))
+
+        # if there are no h1s, then h2s are the new top
+        top_heading_level = "h1" if soup.find("h1") else "h2"
+
+        # mutate the HTML
+        decompose_instructions_tables(soup)
+        join_nested_lists(soup)
+        add_strongs_to_soup(soup)
+        preserve_bookmark_links(soup)
+        preserve_heading_links(soup)
+        preserve_table_heading_links(soup)
+        clean_heading_tags(soup)
+        clean_table_cells(soup)
+        unwrap_empty_elements(soup)
+        decompose_empty_tags(soup)
+        combine_consecutive_links(soup)
+        remove_google_tracking_info_from_links(soup)
+        replace_src_for_inline_images(soup)
+        add_endnotes_header_if_exists(soup, top_heading_level)
+        unwrap_nested_lists(soup)
+        preserve_bookmark_targets(soup)
+        soup = add_em_to_de_minimis(soup)
+
+        # format all the data as dicts
+        sections = get_sections_from_soup(soup, top_heading_level)
+        if not len(sections):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                "Sorry, that file doesn’t contain a NOFO.",
+            )
+            return redirect(view_path, **kwargs)
+
+        sections = get_subsections_from_sections(sections, top_heading_level)
+        filename = uploaded_file.name.strip()
+
+        # IMPORT NEW NOFO
+        nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
+
+        try:
+            new_nofo = create_nofo(nofo_title, sections)
+            add_headings_to_nofo(new_nofo)
+            add_page_breaks_to_headings(new_nofo)
+            new_nofo.filename = filename
+
+        except Exception as e:
+            return HttpResponseBadRequest("Error importing NOFO: {}".format(e))
+
+        new_nofo.group = request.user.group  # set group separately with request.user
+        suggest_all_nofo_fields(new_nofo, soup)
+        new_nofo.save()
+
+        # Build the comparison object
+        nofo_comparison = []
+        for section in nofo.sections.all():
+            new_section = new_nofo.sections.filter(name=section.name).first()
+            if new_section:
+                section_comparison = {
+                    "name": section.name,
+                    "subsections": [],
+                }
+                for subsection in section.subsections.all():
+                    new_subsection = new_section.subsections.filter(
+                        name=subsection.name
+                    ).first()
+                    if new_subsection and subsection.body != new_subsection.body:
+                        section_comparison["subsections"].append(
+                            {
+                                "name": subsection.name,
+                                "original_body": subsection.body,
+                                "new_body": new_subsection.body,
+                                "diff_body": html_diff(
+                                    subsection.body, new_subsection.body
+                                ),
+                            }
+                        )
+                if section_comparison["subsections"]:
+                    nofo_comparison.append(section_comparison)
+
+        # Calculate the total number of changed sections
+        num_changed_sections = len(nofo_comparison)
+        # Calculate the total number of changed subsections
+        num_changed_subsections = sum(
+            len(section["subsections"]) for section in nofo_comparison
+        )
+
+        return render(
+            request,
+            "nofos/nofo_compare.html",
+            {
+                "nofo": nofo,
+                "new_nofo": new_nofo,
+                "nofo_comparison": nofo_comparison,
+                "num_changed_sections": num_changed_sections,
+                "num_changed_subsections": num_changed_subsections,
+            },
+        )
+
+    return render(
+        request,
+        "nofos/nofo_compare.html",
+        {"nofo": nofo},
+    )
 
 
 class BaseNofoEditView(GroupAccessObjectMixin, UpdateView):

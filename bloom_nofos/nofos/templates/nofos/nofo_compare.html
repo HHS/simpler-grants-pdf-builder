@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  Compare “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+{% endblock %}
+
+{% block body_class %}nofo_import nofo_import--compare{% endblock %}
+
+{% block content %}
+
+  {% with nofo|nofo_name as nofo_name_str %}
+    {% with "Edit  “"|add:nofo_name_str|add:"”" as back_text %}
+      {% url 'nofos:nofo_edit' nofo.id as back_href %}
+      {% include "includes/page_heading.html" with title="Compare “"|add:nofo_name_str|add:"” to a new document" back_text=back_text back_href=back_href only %}
+    {% endwith %}
+  {% endwith %}
+
+  <p>Upload a NOFO file to compare with to “{{nofo|nofo_name}}”</p>
+  <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." value=title %}
+      {% for message in messages %}
+        {% if "error" in message.tags %}
+          {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
+        {% endif %}
+      {% empty %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint only %}
+      {% endfor %}
+    {% endwith %}
+
+    {% include "includes/loading_horse.html" %}
+
+    <button class="usa-button margin-top-3 submit-button" type="submit">Compare NOFOs</button>
+  </form>
+
+  {% if nofo_comparison %}
+    <form id="comparison-form" class="usa-form margin-top-4 comparison-form">
+      <h2>Accept or Reject Changes</h2>
+
+      <p>
+        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
+      </p>
+
+      <ul>
+        {% for section in nofo_comparison %}
+          <li>
+            <h3>Section: {{ section.name }}</h3>
+            <ul class="comparison-form--subsection-list">
+              {% for subsection in section.subsections %}
+                <li>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="subsections"
+                      value="{{ subsection.name }}"
+                      class="subsection-checkbox"
+                    />
+                    <details>
+                      <summary>{{ subsection.name }}</summary>
+                      <div class="diff">{{ subsection.diff_body|safe }}</div>
+                    </details>
+                  </label>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <div class="button-group margin-bottom-2">
+        <button type="button" class="usa-button usa-button--outline" id="select-all">Select All</button>
+        <button type="button" class="usa-button usa-button--outline" id="deselect-all">Deselect All</button>
+      </div>
+
+      <button type="submit" class="usa-button margin-top-3">Submit Changes</button>
+    </form>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const selectAllButton = document.getElementById("select-all");
+        const deselectAllButton = document.getElementById("deselect-all");
+        const checkboxes = document.querySelectorAll(".subsection-checkbox");
+    
+        selectAllButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          checkboxes.forEach((checkbox) => (checkbox.checked = true));
+        });
+    
+        deselectAllButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          checkboxes.forEach((checkbox) => (checkbox.checked = false));
+        });
+      });
+    </script>
+  {% endif %}
+{% endblock %}
