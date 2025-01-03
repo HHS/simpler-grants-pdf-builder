@@ -250,8 +250,6 @@ def preserve_subsection_metadata(nofo, new_sections):
                 continue
 
             key = f"{section_name}|{subsection.get('name')}"
-            print(f"\nNew section data for {key}:")
-            print(f"Raw subsection data: {subsection}")
             new_section_lookup[key] = {
                 "html_class": subsection.get("html_class", ""),
                 "callout_box": subsection.get("is_callout_box", False),
@@ -268,9 +266,6 @@ def preserve_subsection_metadata(nofo, new_sections):
 
             new_metadata = new_section_lookup.get(name_key)
             if new_metadata:
-                print(f"\nComparing {name_key}:")
-                print(f"Existing html_class: '{sub.html_class}'")
-                print(f"New html_class: '{new_metadata['html_class']}'")
                 has_changes = False
                 metadata = {
                     "html_class": sub.html_class,
