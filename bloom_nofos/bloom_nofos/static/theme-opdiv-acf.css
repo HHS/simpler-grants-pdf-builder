@@ -53,10 +53,8 @@ h3 {
 }
 
 h4 {
-  color: var(--color--cdc-blue);
   font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
     sans-serif;
-  font-size: 20pt;
   font-weight: 600;
 }
 
@@ -74,8 +72,8 @@ h6 {
 
 /* this functions as an h7 */
 div[role="heading"] {
-  font-size: 11.5pt !important;
-  font-weight: 600 !important;
+  font-size: 11.5pt;
+  font-weight: 600;
   color: var(--color--acf-blue);
 }
 
