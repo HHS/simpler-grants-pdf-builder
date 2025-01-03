@@ -13,6 +13,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Change ACF heading styles
+  - h1s: 36 pt, 700
+  - h4s: 600
+  - h7s: 11.5pt, 600, #264a64
 - Change how sublist headings are identified in application checklist
   - headings with links must also not have a checkbox
   - cells with "Narratives" are headings now
