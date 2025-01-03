@@ -236,18 +236,33 @@ def create_nofo(title, sections):
 
 def preserve_subsection_metadata(nofo):
     preserved_metadata = {}
+    callout_count = 0
+    html_class_count = 0
+    callout_items = []
+    html_class_items = []
+
     for section in nofo.sections.all():
         for sub in section.subsections.all():
+            # Track callout_box and html_class
+            if sub.callout_box:
+                callout_count += 1
+                callout_items.append(f"{section.name} > {sub.name}")
+            if sub.html_class:
+                html_class_count += 1
+                html_class_items.append(f"{section.name} > {sub.name}")
+
             name_key = f"{section.name}|{sub.name}"
             id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
-
             metadata = {"html_class": sub.html_class, "callout_box": sub.callout_box}
-
             preserved_metadata[name_key] = metadata
             if id_key:
                 preserved_metadata[id_key] = metadata
 
-    return preserved_metadata
+    return (
+        preserved_metadata,
+        (callout_count, callout_items),
+        (html_class_count, html_class_items),
+    )
 
 
 def restore_subsection_metadata(nofo, preserved_metadata):
