@@ -80,11 +80,13 @@ from .nofo import (
     preserve_bookmark_links,
     preserve_bookmark_targets,
     preserve_heading_links,
+    preserve_subsection_metadata,
     preserve_table_heading_links,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_links,
     replace_src_for_inline_images,
+    restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_title,
     unwrap_empty_elements,
@@ -356,10 +358,13 @@ def nofo_import(request, pk=None):
 
             try:
                 nofo.filename = filename
+
+                preserved_metadata = preserve_subsection_metadata(nofo)
                 nofo = overwrite_nofo(nofo, sections)
+                nofo = restore_subsection_metadata(nofo, preserved_metadata)
+
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
-
                 suggest_all_nofo_fields(nofo, soup)
                 nofo.save()
 

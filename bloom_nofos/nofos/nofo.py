@@ -234,6 +234,40 @@ def create_nofo(title, sections):
         raise e
 
 
+def preserve_subsection_metadata(nofo):
+    preserved_metadata = {}
+    for section in nofo.sections.all():
+        for sub in section.subsections.all():
+            name_key = f"{section.name}|{sub.name}"
+            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
+
+            metadata = {"html_class": sub.html_class, "callout_box": sub.callout_box}
+
+            preserved_metadata[name_key] = metadata
+            if id_key:
+                preserved_metadata[id_key] = metadata
+
+    return preserved_metadata
+
+
+def restore_subsection_metadata(nofo, preserved_metadata):
+    for section in nofo.sections.all():
+        for sub in section.subsections.all():
+            name_key = f"{section.name}|{sub.name}"
+            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
+
+            metadata = preserved_metadata.get(name_key) or preserved_metadata.get(
+                id_key
+            )
+
+            if metadata:
+                sub.html_class = metadata["html_class"]
+                sub.callout_box = metadata["callout_box"]
+                sub.save()
+
+    return nofo
+
+
 def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
     nofo.save()
