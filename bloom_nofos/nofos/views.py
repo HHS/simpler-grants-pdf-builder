@@ -80,11 +80,13 @@ from .nofo import (
     preserve_bookmark_links,
     preserve_bookmark_targets,
     preserve_heading_links,
+    preserve_subsection_metadata,
     preserve_table_heading_links,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_links,
     replace_src_for_inline_images,
+    restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_title,
     unwrap_empty_elements,
@@ -356,21 +358,43 @@ def nofo_import(request, pk=None):
 
             try:
                 nofo.filename = filename
+
+                (
+                    preserved_metadata,
+                    (callout_count, callout_items),
+                    (html_class_count, html_class_items),
+                ) = preserve_subsection_metadata(nofo, sections)
+
                 nofo = overwrite_nofo(nofo, sections)
+                nofo = restore_subsection_metadata(nofo, preserved_metadata)
+
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
-
                 suggest_all_nofo_fields(nofo, soup)
                 nofo.save()
 
+                # Build success message starting with the basic info
+                success_msg = (
+                    f"NOFO saved successfully<br>Re-imported NOFO from file: {filename}"
+                )
+
+                # Add preservation info if any exists
+                if callout_count > 0:
+                    success_msg += (
+                        f"<br><br>Preserved {callout_count} section settings for callout boxes:<br>• "
+                        + "<br>• ".join(callout_items)
+                    )
+
+                if html_class_count > 0:
+                    success_msg += (
+                        f"<br><br>Preserved {html_class_count} section settings for HTML classes:<br>• "
+                        + "<br>• ".join(html_class_items)
+                    )
+
+                messages.success(request, success_msg)
+
             except Exception as e:
                 return HttpResponseBadRequest("Error re-importing NOFO: {}".format(e))
-
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                "Re-imported NOFO from file: {}".format(nofo.filename),
-            )
 
             # Create audit event for reimporting a nofo
             create_nofo_audit_event(

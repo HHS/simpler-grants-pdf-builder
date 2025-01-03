@@ -234,6 +234,84 @@ def create_nofo(title, sections):
         raise e
 
 
+def preserve_subsection_metadata(nofo, new_sections):
+    preserved_metadata = {}
+    callout_count = 0
+    html_class_count = 0
+    callout_items = []
+    html_class_items = []
+
+    # Create lookup dict for new sections
+    new_section_lookup = {}
+    for section in new_sections:
+        section_name = section.get("name", "")
+        for subsection in section.get("subsections", []):
+            if not subsection.get("name"):
+                continue
+
+            key = f"{section_name}|{subsection.get('name')}"
+            new_section_lookup[key] = {
+                "html_class": subsection.get("html_class", ""),
+                "callout_box": subsection.get("is_callout_box", False),
+            }
+
+    # Compare existing sections with new ones
+    for section in nofo.sections.all():
+        for sub in section.subsections.all():
+            if not sub.name:
+                continue
+
+            name_key = f"{section.name}|{sub.name}"
+            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
+
+            new_metadata = new_section_lookup.get(name_key)
+            if new_metadata:
+                has_changes = False
+                metadata = {
+                    "html_class": sub.html_class,
+                    "callout_box": sub.callout_box,
+                }
+
+                if bool(sub.callout_box) != bool(new_metadata["callout_box"]):
+                    callout_count += 1
+                    callout_items.append(f"{section.name} > {sub.name}")
+                    has_changes = True
+
+                if sub.html_class != new_metadata["html_class"]:
+                    html_class_count += 1
+                    html_class_items.append(f"{section.name} > {sub.name}")
+                    has_changes = True
+
+                if has_changes:
+                    preserved_metadata[name_key] = metadata
+                    if id_key:
+                        preserved_metadata[id_key] = metadata
+
+    return (
+        preserved_metadata,
+        (callout_count, callout_items),
+        (html_class_count, html_class_items),
+    )
+
+
+def restore_subsection_metadata(nofo, preserved_metadata):
+    for section in nofo.sections.all():
+        for sub in section.subsections.all():
+            name_key = f"{section.name}|{sub.name}"
+            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
+
+            metadata = preserved_metadata.get(name_key) or preserved_metadata.get(
+                id_key
+            )
+
+            if metadata:
+                sub.html_class = metadata["html_class"]
+                sub.callout_box = metadata["callout_box"]
+                sub.save()
+
+    return nofo
+
+
 def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
     nofo.save()
