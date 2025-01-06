@@ -8,11 +8,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Add heading styles for H7s in edit and preview modes
 - Add cover image for HRSA-25-007
 - Add list style for quint nested lis
 
 ### Changed
 
+- Change heading sizes in edit mode
 - Change ACF heading styles
   - h1s: 36 pt, 700
   - h4s: 600
