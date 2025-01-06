@@ -411,7 +411,7 @@ Edit “{{ nofo|nofo_name }}”
             id="{{ subsection.html_id }}">
             <span class="floating">
               {% if subsection.name %}
-                <span {% if subsection|has_heading_error:heading_errors %}class="usa-tooltip" data-position="bottom" title="{{ subsection|get_heading_error:heading_errors|split_char_and_remove:":" }}. Fix in Word and reimport."{% endif %}>
+                <span {% if subsection|has_heading_error:heading_errors %}class="usa-tooltip" data-position="bottom" title="{{ subsection|get_heading_error:heading_errors|split_char_and_remove:":" }}."{% endif %}>
                   {{ subsection.name }}
                 </span>
               {% else %}

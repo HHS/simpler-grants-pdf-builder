@@ -15,6 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Changed
 
 - Change heading sizes in edit mode
+- Remove "Fix in Word and reimport." note in warning message
 - Change ACF heading styles
   - h1s: 36 pt, 700
   - h4s: 600
