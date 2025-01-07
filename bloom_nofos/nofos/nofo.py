@@ -188,6 +188,14 @@ def _build_nofo(nofo, sections):
         if not model_section:
             continue
 
+        # if no subsections, raise error
+        if not section.get("subsections"):
+            e = ValidationError(
+                {"subsections": "Section must have at least one subsection"}
+            )
+            e.nofo = nofo
+            raise e
+
         for subsection in section.get("subsections", []):
             md_body = ""
             subsection_body = subsection.get("body", [])
@@ -216,8 +224,12 @@ def _build_nofo(nofo, sections):
 
             # Ensure `subsection.html_id` is assigned if not already set
             add_html_id_to_subsection(subsection_obj)
-
-            subsections_to_create.append(subsection_obj)
+            try:
+                subsection_obj.full_clean()
+                subsections_to_create.append(subsection_obj)
+            except ValidationError as e:
+                e.nofo = nofo
+                raise e
 
     Subsection.objects.bulk_create(subsections_to_create)
     return nofo
