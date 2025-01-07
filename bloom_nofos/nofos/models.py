@@ -93,7 +93,7 @@ class Nofo(models.Model):
         max_length=511,
         validators=[MaxLengthValidator(511)],
         blank=True,
-        help_text="A name that makes it easier to find this NOFO in a list. It won't be public.",
+        help_text="A name that makes it easier to find this NOFO in a list. It won’t be public.",
     )
 
     number = models.CharField(

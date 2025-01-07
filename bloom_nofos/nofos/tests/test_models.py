@@ -130,14 +130,9 @@ class SubsectionModelTest(TestCase):
         subsection_data = self.valid_subsection_data.copy()
         subsection_data["name"] = "x" * 401  # One character more than max_length
         subsection = Subsection(**subsection_data)
-        with self.assertRaises(ValidationError) as context:
-            subsection.full_clean()
 
-        # If the above doesn't raise, let's see what's happening
-        field = Subsection._meta.get_field("name")
-        print(f"Field max_length: {field.max_length}")
-        print(f"Actual length: {len(subsection_data['name'])}")
-        print(f"Field validators: {field.validators}")
+        with self.assertRaises(ValidationError):
+            subsection.full_clean()
 
     def test_subsection_tag_required_with_name(self):
         subsection_data = self.valid_subsection_data.copy()

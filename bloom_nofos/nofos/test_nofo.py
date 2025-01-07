@@ -3008,7 +3008,7 @@ class SuggestNofoFieldsTests(TestCase):
                     <p>Opportunity Name: Ranch Grants 2024-2025</p>             <!-- changed -->
                     <p>Opportunity Number: HRSA-2024-HOLLER-001</p>             <!-- changed -->
                     <p>Application Deadline: 2025-01-01</p>                     <!-- changed -->
-                    <p>OpDiv: Department of Hootin' Tootin' Affairs (DHTA)</p>  <!-- changed -->
+                    <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>  <!-- changed -->
                     <p>Agency: Bureau of Cowpolk Expansion (BCE)</p>            <!-- changed -->
                     <p>Subagency: </p>                                          <!-- empty -->
                     <p>Subagency2: </p>                                         <!-- empty -->
