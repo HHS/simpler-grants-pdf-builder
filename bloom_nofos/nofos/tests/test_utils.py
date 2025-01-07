@@ -184,6 +184,7 @@ class TestAddHtmlIdToSubsection(TestCase):
         self.nofo = Nofo.objects.create(
             title="Test NOFO",
             number="1234",
+            opdiv="Test OpDiv",
         )
         # Mock section for use in tests
         self.section = Section(name="Sample Section", order=1, nofo=self.nofo)
