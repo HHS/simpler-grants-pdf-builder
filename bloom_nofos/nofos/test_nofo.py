@@ -1841,14 +1841,32 @@ class TestFindSameOrHigherHeadingLevelsConsecutive(TestCase):
                 "order": 1,
                 "html_id": "",
                 "has_section_page": True,
-                "subsections": [],
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": "",
+                        "callout_box": False,
+                    }
+                ],
             },
             {
                 "name": "Section 2",
                 "order": 2,
                 "html_id": "",
                 "has_section_page": True,
-                "subsections": [],
+                "subsections": [
+                    {
+                        "name": "Subsection 2",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": "",
+                        "callout_box": False,
+                    }
+                ],
             },
         ]
 
@@ -2115,14 +2133,32 @@ class TestFindIncorrectlyNestedHeadingLevels(TestCase):
                 "order": 1,
                 "html_id": "",
                 "has_section_page": True,
-                "subsections": [],
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": "",
+                        "callout_box": False,
+                    }
+                ],
             },
             {
                 "name": "Section 2",
                 "order": 2,
                 "html_id": "",
                 "has_section_page": True,
-                "subsections": [],
+                "subsections": [
+                    {
+                        "name": "Subsection 2",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "",
+                        "body": "",
+                        "callout_box": False,
+                    }
+                ],
             },
         ]
 
@@ -3027,7 +3063,7 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.number, "HRSA-2024-HOLLER-001")
         self.assertEqual(self.nofo.application_deadline, "2025-01-01")
         self.assertEqual(
-            self.nofo.opdiv, "Department of Hootin' Tootin' Affairs (DHTA)"
+            self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
         )
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Expansion (BCE)")
         self.assertEqual(self.nofo.subagency, "")
