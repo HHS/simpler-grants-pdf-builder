@@ -21,6 +21,7 @@ from nofos.templatetags.utils import (
     is_floating_callout_box,
     is_footnote_ref,
     match_numbered_sublist,
+    wrap_text_before_colon_in_strong,
 )
 
 
@@ -956,3 +957,73 @@ class MatchNumberedSublistTest(TestCase):
 
     def test_empty_string(self):
         self.assertFalse(match_numbered_sublist(""))
+
+
+class WrapTextBeforeColonInStrongTests(TestCase):
+    def test_simple_paragraph(self):
+        """Test a basic paragraph with text before and after the colon."""
+        html = "<p>Label: Value</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = "<p><strong>Label: </strong><span> Value</span></p>"
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_paragraph_with_link(self):
+        """Test a paragraph with a link after the colon."""
+        html = '<p>Link: <a href="https://example.com">Example</a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = '<p><strong>Link: </strong><span> <a href="https://example.com">Example</a></span></p>'
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_no_colon(self):
+        """Test a paragraph with no colon."""
+        html = "<p>No colon here</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        # In practice, we only call this func if there is a colon in the text string.
+        expected_html = "<p>No colon here</p>"
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_multiple_colons(self):
+        """Test a paragraph with multiple colons."""
+        html = "<p>First: Second: Third</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        # Only the first colon should be handled
+        expected_html = "<p><strong>First: </strong><span> Second: Third</span></p>"
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_nested_elements(self):
+        """Test a paragraph with nested elements before and after the colon."""
+        html = '<p><span>Nested</span>: <ul><li><a href="https://example.com">Example</a></li></ul></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = '<p><strong><span>Nested</span>: </strong><span> <ul><li><a href="https://example.com">Example</a></li></ul></span></p>'
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_only_colon(self):
+        """Test a paragraph with just a colon."""
+        html = "<p>:</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = "<p><strong>: </strong><span></span></p>"
+        self.assertEqual(str(paragraph), expected_html)

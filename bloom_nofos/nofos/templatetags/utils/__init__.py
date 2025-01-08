@@ -344,3 +344,37 @@ def match_numbered_sublist(text):
 
     # Check if the text matches any of the sublist numbering patterns
     return re.match(pattern, text)
+
+
+def wrap_text_before_colon_in_strong(p, soup):
+    if not ":" in p.get_text():
+        return p
+
+    # Initialize a flag to track when the colon is found
+    found_colon = False
+    # Create a strong tag
+    strong_tag = soup.new_tag("strong")
+    span_tag = soup.new_tag("span")
+
+    # Iterate over contents, moving elements before the colon to the strong tag
+    for content in p.contents[:]:
+        if found_colon:
+            span_tag.append(content.extract())
+        else:
+            if isinstance(content, str) and ":" in content:
+                before_colon, after_colon = content.split(":", 1)
+                strong_tag.append(before_colon + ":")
+                # Replace the original content with what's after the colon
+                span_tag.append(after_colon)
+                found_colon = True  # Mark colon as found
+            else:
+                # Move content to strong tag if colon not yet found
+                strong_tag.append(content.extract())
+
+    # insert an extra space after the colon in the strong tag
+    strong_tag.append(" ")
+
+    # Insert the strong tag at the beginning of the paragraph
+    p.clear()
+    p.append(strong_tag)
+    p.append(span_tag)
