@@ -29,6 +29,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- Fix for links after colons in callout boxes
+  - Visually, they would look like "Key:Link", now they look like "Key: Link"
+
 ## [1.42.0] - 2023-12-24
 
 ### Added
