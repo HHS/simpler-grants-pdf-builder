@@ -217,10 +217,6 @@ h4 {
   color: var(--color--black);
 }
 
-.callout-box--contents a {
-  color: var(--color--black);
-}
-
 .callout-box--icon {
   background-color: var(--color--dop-blue);
   color: var(--color--white);

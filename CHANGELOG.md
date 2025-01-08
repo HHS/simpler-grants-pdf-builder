@@ -26,6 +26,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - All tables in appendices are full-width
 - Speed up "create_nofo" function
   - Batch create sections and subsections in "\_build_nofo"
+- All links are blue now, not black
+- White background in svg circle in HRSA light
 
 ### Fixed
 
