@@ -142,6 +142,7 @@ class StyleMapManager:
 style_map_manager = StyleMapManager(
     [
         "Bullet2",
+        "BulletLevel2",
         "customXmlDelRange",
         "FootnoteReference",
         "ListParagraph",
@@ -213,6 +214,21 @@ style_map_manager.add_style(
     style_rule="r[style-name='eop'] => span",
     location_in_nofo="Spans wrapping &nbsp sequences",
     note="Don't do anything, just whitespace",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='findhit'] => span",
+    location_in_nofo="Step 4 > Criteria > Budget and budget justification",
+    note="Don't do anything: body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='cf21'] => span",
+    location_in_nofo="Step 1 > Data, monitoring, and evaluation > Indirect costs",
+    note="Don't do anything: body text",
+)
+style_map_manager.add_style(
+    style_rule="r[style-name='Default'] => span",
+    location_in_nofo="Contacts and Support > Agency contacts > phone number",
+    note="Don't do anything: body text",
 )
 style_map_manager.add_style(
     style_rule="r[style-name='contentcontrolboundarysink'] => span",
@@ -310,6 +326,21 @@ style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",
     note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Table Paragraph'] => p",
+    location_in_nofo="Step 1 > Approach > Table: strategies and outcomes > All paragraphs in table cells",
+    note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Table Head'] => span",
+    location_in_nofo="Step 4 > Critera > table headings",
+    note="This is the paragraph _inside of a_ table heading.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Do not use main'] => p:fresh",
+    location_in_nofo="Step 1 > Empty paragraph between Have questions? and Key Dates",
+    note="Don't do anything: just an empty return.",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Normal (Web)'] => p:fresh",
