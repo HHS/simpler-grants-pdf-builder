@@ -120,7 +120,7 @@ class StyleMapManager:
         self.styles = []
         self.styles_to_ignore = styles_to_ignore if styles_to_ignore is not None else []
 
-    def add_style(self, style_rule, location_in_nofo, note=None):
+    def add_style(self, style_rule, location_in_nofo=None, note=None):
         self.styles.append(
             {
                 "style_rule": style_rule,
@@ -143,7 +143,6 @@ style_map_manager = StyleMapManager(
     [
         "Bullet2",
         "customXmlDelRange",
-        "Default",
         "FootnoteReference",
         "ListParagraph",
         "Listpara2",
@@ -152,6 +151,56 @@ style_map_manager = StyleMapManager(
         "v:",
         "office-word:",
     ]
+)
+
+# list styles
+style_map_manager.add_style(
+    style_rule="p:unordered-list(1) => ul > li:fresh",
+    note="Bullet list 1",
+)
+style_map_manager.add_style(
+    style_rule="p:unordered-list(2) => ul|ol > li > ul > li:fresh",
+    note="Bullet list 2",
+)
+style_map_manager.add_style(
+    style_rule="p:unordered-list(3) => ul|ol > li > ul|ol > li > ul > li:fresh",
+    note="Bullet list 3",
+)
+style_map_manager.add_style(
+    style_rule="p:unordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh",
+    note="Bullet list 4",
+)
+style_map_manager.add_style(
+    style_rule="p:unordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh",
+    note="Bullet list 5",
+)
+style_map_manager.add_style(
+    style_rule="p:unordered-list(6) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh",
+    note="Bullet list 6",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(1) => ol > li:fresh",
+    note="Numbered list 1",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(2) => ul|ol > li > ol > li:fresh",
+    note="Numbered list 2",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(3) => ul|ol > li > ul|ol > li > ol > li:fresh",
+    note="Numbered list 3",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh",
+    note="Numbered list 4",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh",
+    note="Numbered list 5",
+)
+style_map_manager.add_style(
+    style_rule="p:ordered-list(6) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh",
+    note="Numbered list 6",
 )
 
 # run styles
@@ -252,11 +301,11 @@ style_map_manager.add_style(
     location_in_nofo="Step 1 > Summary > Funding Strategy > Component Funding > Overview",
     note="This is how we represent H7s",
 )
-# style_map_manager.add_style(
-#     style_rule="p[style-name='Default'] => p",
-#     location_in_nofo="Step 6 > Reporting > All content in table",
-#     note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
-# )
+style_map_manager.add_style(
+    style_rule="p[style-name='Default'] => p",
+    location_in_nofo="Step 6 > Reporting > All content in table",
+    note="Don't do anything: this is being applied to paragraphs in a table and we don't need special styling for them.",
+)
 style_map_manager.add_style(
     style_rule="p[style-name='Table'] => p",
     location_in_nofo="Step 3 > Other required forms > All table cells",

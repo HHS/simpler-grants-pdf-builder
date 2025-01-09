@@ -288,12 +288,22 @@ class StyleMapManagerTests(TestCase):
             location_in_nofo="Step 2 > Grants.gov > Need Help?",
             note="Just bold the entire sentence",
         )
+        # No note
         style_map_manager.add_style(
             style_rule="p[style-name='Table'] => p",
             location_in_nofo="Step 3 > Other required forms > All table cells",
         )
+        # No location_in_nofo
+        style_map_manager.add_style(
+            style_rule="p:unordered-list(1) => ul > li:fresh",
+            note="Bullet list 1",
+        )
+        # No note or location_in_nofo
+        style_map_manager.add_style(
+            style_rule="p:unordered-list(2) => ul|ol > li > ul > li:fresh",
+        )
 
-        self.assertEqual(len(style_map_manager.styles), 2)
+        self.assertEqual(len(style_map_manager.styles), 4)
         self.assertIn(
             {
                 "style_rule": "p[style-name='Emphasis A'] => strong",
@@ -307,6 +317,22 @@ class StyleMapManagerTests(TestCase):
                 "style_rule": "p[style-name='Table'] => p",
                 "location_in_nofo": "Step 3 > Other required forms > All table cells",
                 "note": None,
+            },
+            style_map_manager.styles,
+        )
+        self.assertIn(
+            {
+                "style_rule": "p:unordered-list(1) => ul > li:fresh",
+                "note": "Bullet list 1",
+                "location_in_nofo": None,
+            },
+            style_map_manager.styles,
+        )
+        self.assertIn(
+            {
+                "style_rule": "p:unordered-list(2) => ul|ol > li > ul > li:fresh",
+                "note": None,
+                "location_in_nofo": None,
             },
             style_map_manager.styles,
         )
