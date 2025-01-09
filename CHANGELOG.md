@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add heading styles for H7s in edit and preview modes
 - Add cover image for HRSA-25-007, HRSA-25-042
+- Add 2 inline images for HRSA-25-066
 - Add list style for quint nested lis
 
 ### Changed
