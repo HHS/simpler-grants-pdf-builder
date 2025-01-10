@@ -168,15 +168,24 @@ def _build_nofo(nofo, sections):
     subsections_to_create = []
 
     for section in sections:
-        sections_to_create.append(
-            Section(
-                name=section.get("name", "Section X"),
-                order=section.get("order", ""),
-                html_id=section.get("html_id", None),
-                has_section_page=section.get("has_section_page"),
-                nofo=nofo,
-            )
+        # Generate a default html_id based on section name and order
+        section_name = section.get("name", "Section X")
+        section_order = section.get("order", "")
+        default_html_id = f"{section_order}--{slugify(section_name)}"
+
+        section_obj = Section(
+            name=section_name,
+            order=section_order,
+            html_id=section.get("html_id") or default_html_id,
+            has_section_page=section.get("has_section_page"),
+            nofo=nofo,
         )
+        try:
+            section_obj.full_clean()
+        except ValidationError as e:
+            e.nofo = nofo
+            raise e
+        sections_to_create.append(section_obj)
 
     # Bulk create sections and retrieve them
     created_sections = Section.objects.bulk_create(sections_to_create)
@@ -226,10 +235,10 @@ def _build_nofo(nofo, sections):
             add_html_id_to_subsection(subsection_obj)
             try:
                 subsection_obj.full_clean()
-                subsections_to_create.append(subsection_obj)
             except ValidationError as e:
                 e.nofo = nofo
                 raise e
+            subsections_to_create.append(subsection_obj)
 
     Subsection.objects.bulk_create(subsections_to_create)
     return nofo
