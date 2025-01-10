@@ -51,6 +51,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+<<<<<<< HEAD
+
 - Fix for links after colons in callout boxes
   - Visually, they would look like "Key:Link", now they look like "Key: Link"
 
@@ -60,6 +62,10 @@ Versioning since version 1.0.0.
 - "nofo.title" 250 chars or less
 - "section.title" 250 chars or less
 - "subsection.title" 400 chars or less
+
+=======
+
+> > > > > > > d2d105f (Changelog and migration added)
 
 ## [1.42.0] - 2023-12-24
 
