@@ -15,6 +15,10 @@ Versioning since version 1.0.0.
 
 ## [2.1.0] - 2025-01-01
 
+### Added
+
+- Add cover image for HRSA-25-044, HRSA-25-066
+
 ### Migrations
 
 - Add "Jana", our new NOFO Designer
