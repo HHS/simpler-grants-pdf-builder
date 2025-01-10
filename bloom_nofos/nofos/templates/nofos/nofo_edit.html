@@ -150,7 +150,7 @@ Edit “{{ nofo|nofo_name }}”
             <p>We recommend fixing these errors in the NOFO Word doc and <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">re-importing</a>.</p>
             <ol class="usa-list usa-list--no-max-width">
               {% for heading_error in heading_errors %}
-              <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.name }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
+              <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.subsection|subsection_name_or_order }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
               {% endfor %}
             </ol>
           </div>

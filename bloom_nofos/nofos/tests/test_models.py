@@ -4,7 +4,7 @@ from django.conf import settings
 import os
 import json
 
-from nofos.models import Nofo, Section, Subsection
+from nofos.models import Nofo, Section, Subsection, HeadingValidationError
 
 
 class NofoModelTest(TestCase):
@@ -85,6 +85,7 @@ class SectionModelTest(TestCase):
             "name": "Test Section",
             "order": 1,
             "nofo": self.nofo,  # Use NOFO instance instead of ID
+            "html_id": "1--test-section",  # Add default html_id
         }
 
     def test_section_name_max_length(self):
@@ -106,6 +107,7 @@ class SectionModelTest(TestCase):
             order=1,
             section=section,  # Use section instance
             tag="h2",
+            html_id="1--test-section--test-subsection",
         )
         section.full_clean()  # Should not raise ValidationError
 
@@ -131,8 +133,16 @@ class SubsectionModelTest(TestCase):
         subsection_data["name"] = "x" * 401  # One character more than max_length
         subsection = Subsection(**subsection_data)
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(HeadingValidationError) as cm:
             subsection.full_clean()
+
+        expected_message = (
+            "Heading too long: Found a heading exceeding 400 characters in the "
+            "'Test Section' section (subsection #1).\n\n"
+            "This often means a paragraph was incorrectly styled as a heading. "
+            "Please check this section and ensure only actual headings are marked as headings."
+        )
+        self.assertEqual(str(cm.exception), expected_message)
 
     def test_subsection_tag_required_with_name(self):
         subsection_data = self.valid_subsection_data.copy()

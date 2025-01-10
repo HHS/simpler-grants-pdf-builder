@@ -359,11 +359,14 @@ class Section(models.Model):
         "Section name",
         max_length=250,
         validators=[MaxLengthValidator(250)],
+        blank=False,
+        null=False,
     )
     html_id = models.CharField(
         max_length=511,
         validators=[MaxLengthValidator(511)],
-        blank=True,
+        blank=False,
+        null=False,
     )
     order = models.IntegerField(null=True)
 
@@ -414,6 +417,11 @@ class Section(models.Model):
             raise ValidationError(errors)
 
 
+# Custom exception for heading validation errors
+class HeadingValidationError(Exception):
+    pass
+
+
 class Subsection(models.Model):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
@@ -421,7 +429,6 @@ class Subsection(models.Model):
     name = models.TextField(
         "Subsection name",
         max_length=400,
-        validators=[MaxLengthValidator(400)],
         blank=True,
     )
 
@@ -475,6 +482,15 @@ class Subsection(models.Model):
         # Enforce 'tag' when 'name' is False
         if self.name and not self.tag:
             raise ValidationError("Tag is required when 'name' is present.")
+
+        # Check name length with additional context
+        if self.name and len(self.name) > 400:
+            raise HeadingValidationError(
+                "Heading too long: Found a heading exceeding 400 characters in the "
+                f"'{self.section.name}' section (subsection #{self.order}).\n\n"
+                "This often means a paragraph was incorrectly styled as a heading. "
+                "Please check this section and ensure only actual headings are marked as headings."
+            )
 
     def save(self, *args, **kwargs):
         add_html_id_to_subsection(self)

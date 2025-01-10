@@ -2,9 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on Keep a Changelog, and this project adheres to Semantic Versioning since version 1.0.0.
+The format is based on Keep a Changelog, and this project adheres to Semantic
+Versioning since version 1.0.0.
 
 ## Unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
+## [2.00.0] - 2025-01-01
 
 ### Added
 
@@ -12,9 +21,19 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Add cover image for HRSA-25-007, HRSA-25-042
 - Add 2 inline images for HRSA-25-066
 - Add list style for quint nested lis
+- Add new error messaging for NOFO validation
+- Added validation rules for NOFO models
 
 ### Changed
 
+- Improve validation and error handling for section titles and subsections
+  - [BREAKING] Make Section model's name and html_id fields required
+  - [BREAKING] OpDiv: required in NOFO document, or else they won't import
+  - [BREAKING] Nofos must have a section
+  - [BREAKING] Sections must have a subsection
+  - Add custom HeadingValidationError class for clearer error messages
+  - Add data migration to populate empty fields with valid values
+  - Update tests to handle new validation requirements
 - Change heading sizes in edit mode
 - Remove "Fix in Word and reimport." note in warning message
 - Change ACF heading styles
@@ -34,6 +53,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Fix for links after colons in callout boxes
   - Visually, they would look like "Key:Link", now they look like "Key: Link"
+
+### Migrations
+
+- Require "name" and "html_id" for section
+- "nofo.title" 250 chars or less
+- "section.title" 250 chars or less
+- "subsection.title" 400 chars or less
 
 ## [1.42.0] - 2023-12-24
 
@@ -120,14 +146,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- Creating superusers from the terminal doesn't set the 'force_password_reset' flag
+- Creating superusers from the terminal doesn't set the 'force_password_reset'
+  flag
 - Reduce horizontal hit area for radio buttons (was previously full-width)
 - Link to NOFO in success message for JSON import
 - Remove borders and left padding from `<fieldset>` elements by default
 
 ### Migrations
 
-- Migrate some audit events with string values for "changed_fields" to valid JSON
+- Migrate some audit events with string values for "changed_fields" to valid
+  JSON
 
 ## [1.38.0] - 2023-11-29
 
@@ -142,11 +170,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Cloned NOFO statuses automatically set to "draft", regardless of original status
+- Cloned NOFO statuses automatically set to "draft", regardless of original
+  status
 - Condense Before You Begin page for NOFO: CDC-RFA-PS-25-0008
   - This will be a sole-source thing, but for now it's just for this one
 - Tighter line-lengths for `<a>` tags in the application checklist table
-  - Helps to visually distinguish several multi-line anchor tags in the same cell
+  - Helps to visually distinguish several multi-line anchor tags in the same
+    cell
 
 ### Removed
 
@@ -155,9 +185,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- Replace "www.grants.gov/web/grants/search-grants.html" with "grants.gov/search-grants"
-- Replace "www.grants.gov/web/grants/forms/sf-424-family.html" with "grants.gov/forms/forms-repository/sf-424-family"
-- Replace "www.cdc.gov/grants/dictionary/index.html" with "www.cdc.gov/grants/dictionary/index.html"
+- Replace "www.grants.gov/web/grants/search-grants.html" with
+  "grants.gov/search-grants"
+- Replace "www.grants.gov/web/grants/forms/sf-424-family.html" with
+  "grants.gov/forms/forms-repository/sf-424-family"
+- Replace "www.cdc.gov/grants/dictionary/index.html" with
+  "www.cdc.gov/grants/dictionary/index.html"
 
 ## [1.37.0] - 2023-11-21
 
@@ -209,7 +242,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Smallen the font size (even more) for NOFOs with very, very long titles (> 230 chars)
+- Smallen the font size (even more) for NOFOs with very, very long titles (> 230
+  chars)
 - Add bold font-weight to the first paragraph in a table heading
 
 ### Fixed
@@ -258,7 +292,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Preserve bookmark targets that have been getting stripped out
 - Convert literal asterisks to `&ast;` inside of HTML PARAGRAPHS in table cells
   - We did this for lists already but paragraphs need the same treatment
-- Criteria tables with a page break or table in front of them should also be full-width
+- Criteria tables with a page break or table in front of them should also be
+  full-width
 
 ## [1.32.0] - 2023-11-09
 
@@ -289,7 +324,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - H7 elements are properly recognized as subsections
-- Add migration to fix previous "PRINT..." audit events that were not JSON formatted
+- Add migration to fix previous "PRINT..." audit events that were not JSON
+  formatted
 - Convert literal asterisks to `&ast;` inside of HTML lists in table cells
 - More left padding on callout box lists that are NOT in the right hand column
 - More specific CSS selector for application table divs
@@ -315,12 +351,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - For HRSA, show the agency, not the subagency
 - Reimporting a NOFO that already has a cover image won't replace the image
 - Change heading links on NOFO view page
-- "Other required forms" and "attachments" are sublist headings in application table
+- "Other required forms" and "attachments" are sublist headings in application
+  table
 
 ### Fixed
 
 - Restructure HTML in the Application Checklists for better styling
-  - Previously, I was using a CSS hack because I didn't have enough elements to style
+  - Previously, I was using a CSS hack because I didn't have enough elements to
+    style
 - 'Criterion' tables are always small
 - Find ranges for numbered sublists
   - Match for "8-15.", "8 - 15.", "8 through 15."
@@ -361,7 +399,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Col 1: 45%, col 2: 40%, col 3: 15%
 - Add link to submit a support ticket for HRSA users
 - Add cover_image and cover_image_alt_text fields
-  - If there is a cover image, then the 'alt text' field shows up on nofo_edit page
+  - If there is a cover image, then the 'alt text' field shows up on nofo_edit
+    page
 
 ### Changed
 
@@ -442,7 +481,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - "Preview" link in markdown editor has "USA Blue" link text
 - Specify exact Python version in Dockerfile
 - Fix 2 broken cover images
-- preserve_heading_links function now accounts for multiple links preceding headings
+- preserve_heading_links function now accounts for multiple links preceding
+  headings
 - Fix for heading links where the HTML id includes an ampersand
 
 ## [1.25.0] - 2023-08-27
@@ -473,7 +513,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- Automatic Endnotes "h1" heading would mess up documents where h2s are the highest heading level
+- Automatic Endnotes "h1" heading would mess up documents where h2s are the
+  highest heading level
 - Fix an if condition that was broken for callout boxes
 - Make sure footnote/endnote in-text refs are <sup>-wrapped
   - This means that footnote will work for callout boxes and on the "edit" page
@@ -488,7 +529,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Accept NOFOs with H2s as the highest-level heading
   - No longer demote headings in these NOFO documents
 - Replace weird unicodes in the application table checklist on import
-  - No longer have a list of acceptable substitutes in "replace_unicode_with_icon.py"
+  - No longer have a list of acceptable substitutes in
+    "replace_unicode_with_icon.py"
 - Fix reading order for right col callout boxes
 - Default cover page for HRSA NOFOs now the text theme
 - Reimporting a nofo changes all the "Nofo data" as well
@@ -537,7 +579,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- When replacing IDs in our "preserve_heading_ids" method on import, find and replace for old links
+- When replacing IDs in our "preserve_heading_ids" method on import, find and
+  replace for old links
 - Add more stylemaps to my mammoth import config
 - Deleting a NOFO is chill now (no 404 error)
 - Solve layout bug where buttons next to each other wouldn't be rounded
@@ -566,18 +609,22 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Revert mammoth style maps for bullets
-  - Mammoth actually converts them properly, so I am ignoring ListParagraphs explicitly
+  - Mammoth actually converts them properly, so I am ignoring ListParagraphs
+    explicitly
 - Always return the first subsection by order in the nofo template
-- Remove GroupAccessObjectMixin from the Detail view to allow for printing (we have other restrictions on that one)
+- Remove GroupAccessObjectMixin from the Detail view to allow for printing (we
+  have other restrictions on that one)
 - Remove "start_server.sh" file to resolve Dockerfile warning
 
 ## [1.21.0] - 2023-06-26
 
 ### Added
 
-- Major release: Uploading .docx files are (mostly) equivalent to the .html imports
+- Major release: Uploading .docx files are (mostly) equivalent to the .html
+  imports
 - Add admin-only route to export all external links from a NOFO
-- Add CSS class for light blue table backgrounds (previously this was an inline fix)
+- Add CSS class for light blue table backgrounds (previously this was an inline
+  fix)
 - Add new theme: CMS blue
   - Works in no-text mode or hero image mode
 - Reconstruct footnotes for the .docx imports
@@ -597,7 +644,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
-- Change on-screen text around file importing to refer to .docx files before .html
+- Change on-screen text around file importing to refer to .docx files before
+  .html
 - Wrap soup in a body tag if there isn't one.
 - Remove classes in HTML uls and ols
 - Catch broken links that look like "about:blank"
@@ -605,11 +653,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Do not add an Endnotes header if one already exists
 - Fix asterisks causing unintentional italics
 - Do not swap out icons if table cells contain multiple instances
-- Fix for weird lists that look like this: `<ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>`
+- Fix for weird lists that look like this:
+  `<ul><li><ul><li><ul><li><ul><li>Item</li></ul></li></ul></li></ul></li></ul>`
   - We were seeing them in docx imports
 - Add tbody tags to tables imported from .docx files
-  - Previously all the cells became `<th>` elements, in a huge `<thead>` (with no tbody)
-- Unwrap empty `<sup>` tags, which are lying around in Word exports for some reason
+  - Previously all the cells became `<th>` elements, in a huge `<thead>` (with
+    no tbody)
+- Unwrap empty `<sup>` tags, which are lying around in Word exports for some
+  reason
   - Also unwrap empty `<em>` tags
 - Broken heading/bookmark links from docx files show up on the edit page
 - Bookmark links followed by a paragraph are preserved
@@ -626,7 +677,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Allow .docx imports
   - Using a library called mammoth to covert .docx files to HTML
-  - Created a new constance-configurable variable called "strict mode" for .docx imports
+  - Created a new constance-configurable variable called "strict mode" for .docx
+    imports
   - Added a list of known styles for the mammoth style map
 - Add a Prince role mapping to the CSS theme
   - Basically, we are mapping `div[role="heading"]` to a paragraph tag
@@ -654,7 +706,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
   - Only visible for NOFOs using the ACF theme
 - Added new button group for "View PDF | View HTML | Download PDF"
 - Allow images as background of section pages
-  - Don't actually add the image in CSS, we will do that using inline CSS for now
+  - Don't actually add the image in CSS, we will do that using inline CSS for
+    now
 - Wrap all text that says "de minimis" with `<em>` tags
 - Cover image for CDC-RFA-DP-24-0025
 - Add section page background images for 0025
@@ -674,7 +727,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Fixed
 
 - Menu doesn't disappear until ~680px now, not 1024px like before
-- Application checklist borders weren't computing properly for ballot boxes, hmmm
+- Application checklist borders weren't computing properly for ballot boxes,
+  hmmm
 - Unwrap "empty" spans instead of decomposing them
   - Spaces were getting missed sometimes, now they aren't
 - "combine multiple links" function now joins 3 or more links in a row if needed
@@ -697,7 +751,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Longer timeout time in gunicorn
 - Changed NOFO number for ACF 0039
-- Lengthen final list items that don't need the avoid-page-break class to 85 chars
+- Lengthen final list items that don't need the avoid-page-break class to 85
+  chars
 
 ### Fixed
 
@@ -735,10 +790,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Add subsection order number to page title if there is no subsection name
 - Update the date on the little callout box for HRSA 14
-- Move the CMS logo down so that it aligns better with text baseline on cover page
+- Move the CMS logo down so that it aligns better with text baseline on cover
+  page
 - Clean up cover page for ACF medium image
 - Show the right heading level for callout boxes with headings
-- Never show "Contacts and support" sublinks in ToC, no matter the capitalization
+- Never show "Contacts and support" sublinks in ToC, no matter the
+  capitalization
 
 ## [1.16.0] - 2023-03-25
 
@@ -749,7 +806,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Use "Write" in the running nav for section 3 if the section name inclues "Write"
+- Use "Write" in the running nav for section 3 if the section name inclues
+  "Write"
 - Change ACL line-height to 1.4
 - Bigger logo for CDC all-text
 - Use SVG icons instead of img icons for table of contents
@@ -861,9 +919,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- For ACF Nofos, move the "Adobe Reader" annoucement to the Before you Begin page
+- For ACF Nofos, move the "Adobe Reader" annoucement to the Before you Begin
+  page
   - For all Nofos except HRSA
-- Two more href patterns for the "broken links" widget: "/" links and google docs domains
+- Two more href patterns for the "broken links" widget: "/" links and google
+  docs domains
 - Extra margin above running footer
 
 ### Fixed
@@ -1048,7 +1108,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Empty tables are 100% still and have 25px height rows
 - Pale blue background on cover page footer in landscape mode
   - Still on cover page header in portrait mode
-- Tables which are 4 columns or over will now always be large, even if they are empty
+- Tables which are 4 columns or over will now always be large, even if they are
+  empty
 - Remove single column layout for Step 4
   - But make sure "criteria" tables are col-span: all
 - In landscape mode, small tables without captions are 100% width
@@ -1138,7 +1199,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - Added "add_section_page" attribute to sections
-  - Sections without section pages are not in the ToC and don't have custom section title pages
+  - Sections without section pages are not in the ToC and don't have custom
+    section title pages
   - Add "no section page" sections to ToC
 - Add Endnotes to the imported HTML
   - Decided to manually fix the weird endnotes
@@ -1169,8 +1231,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Split text for apply-by date on cover page
 - Add "status" key to NOFOs
   - Status is now shown on NOFO index rather than coach
-- Paragraph elements containing "page-break-before" function as manual page breaks
-  - also: paragraph elements containing "page-break-after" function as manual page breaks
+- Paragraph elements containing "page-break-before" function as manual page
+  breaks
+  - also: paragraph elements containing "page-break-after" function as manual
+    page breaks
 - Add page break checkbox to subsection headings
 - Handle inline images
   - Add HRSA 017 images to the repo
@@ -1224,7 +1288,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Change body heading sizes to match typescale
   - Larger for h3, h4, h5
 - CDC white theme uses vibrant blue everywhere in place of dark blue
-- Even in the white theme, the "hero" cover page uses blue background and white text
+- Even in the white theme, the "hero" cover page uses blue background and white
+  text
 - Use 50% width for section 4 (other than tables)
   - Same with "Before you begin" page
 - Tables with 3 cols are "large", and have grey top bar
@@ -1310,7 +1375,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
-- Use `pt` sizing for all font-sizes, which means a bunch of things shifted around
+- Use `pt` sizing for all font-sizes, which means a bunch of things shifted
+  around
 
 ## [0.0.10] - 2023-01-11
 
