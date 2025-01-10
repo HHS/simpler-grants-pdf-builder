@@ -1242,8 +1242,8 @@ class AddHeadingsTests(TestCase):
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
 
-        # check section heading has no id
-        self.assertEqual(section.html_id, "")
+        # check section heading has default id
+        self.assertEqual(section.html_id, "1--section-1")
         # check first subsection heading has no html_id
         self.assertEqual(subsection_1.html_id, "1--section-1--subsection-1")
         # check second subsection heading has html_id
@@ -1271,8 +1271,8 @@ class AddHeadingsTests(TestCase):
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
 
-        # check section 1 heading has no id
-        self.assertEqual(section.html_id, "")
+        # check section 1 heading has default id
+        self.assertEqual(section.html_id, "1--section-1")
         # check subsection 1 heading has html_id
         self.assertEqual(subsection_1.html_id, "custom-link")
         # check the body of subsection 1 includes link

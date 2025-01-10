@@ -52,7 +52,7 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_nofo_group_permission_func,
 )
-from .models import THEME_CHOICES, Nofo, Section, Subsection
+from .models import THEME_CHOICES, Nofo, Section, Subsection, HeadingValidationError
 from .nofo import (
     add_body_if_no_body,
     add_em_to_de_minimis,
@@ -364,8 +364,16 @@ def nofo_import(request, pk=None):
                 suggest_all_nofo_fields(nofo, soup)
                 nofo.save()
 
+            except ValidationError as e:
+                # Format validation errors with line breaks for readability
+                error_str = str(e)
+                if len(error_str) > 100:  # Add line breaks for long messages
+                    error_str = error_str.replace('["', '[\n\n"').replace(
+                        '"]', '"\n\n]'
+                    )
+                return HttpResponseBadRequest(f"Error re-importing NOFO: {error_str}")
             except Exception as e:
-                return HttpResponseBadRequest("Error re-importing NOFO: {}".format(e))
+                return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
 
             messages.add_message(
                 request,
@@ -389,42 +397,12 @@ def nofo_import(request, pk=None):
                 add_headings_to_nofo(nofo)
                 add_page_breaks_to_headings(nofo)
                 nofo.filename = filename
+            except HeadingValidationError as e:
+                return HttpResponseBadRequest(f"Error creating NOFO:\n\n{str(e)}")
             except ValidationError as e:
-                # Check if this is an html_id length error
-                if "html_id" in e.message_dict and any(
-                    "characters" in msg for msg in e.message_dict["html_id"]
-                ):
-                    # Get the last successfully created subsection
-                    last_subsection = (
-                        Subsection.objects.filter(section__nofo=e.nofo)
-                        .order_by("-order")
-                        .first()
-                    )
-
-                    # Set the NOFO's group to match the user's group
-                    e.nofo.group = request.user.group
-                    e.nofo.save()
-
-                    #  TODO: dynamically pull in heading character limit from models.py _or_ error message
-                    return render(
-                        request,
-                        "400.html",
-                        status=422,
-                        context={
-                            "error_message_html": (
-                                f'<p>Your document ("<a href="/nofos/{e.nofo.id}/edit">{e.nofo.short_name or e.nofo.title}</a>") '
-                                "contains a heading that is too long. Headings have a character limit of 511 characters.</p>"
-                                "<p>This usually means that a paragraph has been incorrectly styled as a heading. "
-                                f'The last valid heading was "{last_subsection.name if last_subsection else "none"}" '
-                                f'in "{last_subsection.section.name if last_subsection else "none"}", '
-                                "so the incorrectly tagged paragraph is most likely after this heading.</p>"
-                            ),
-                            "status": 422,
-                        },
-                    )
-                return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
+                return HttpResponseBadRequest(f"Error creating NOFO: {e}")
             except Exception as e:
-                return HttpResponseBadRequest("Error creating NOFO: {}".format(e))
+                return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
             nofo.group = request.user.group  # set group separately with request.user
             suggest_all_nofo_fields(nofo, soup)
