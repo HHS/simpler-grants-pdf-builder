@@ -31,16 +31,19 @@ DESIGNER_CHOICES = [
     ("bloom-emily-b", "Emily B"),
     ("bloom-emily-i", "Emily I"),
     ("bloom-jackie", "Jackie"),
+    ("bloom-jana", "Jana"),
     ("bloom-kevin", "Kevin"),
     ("bloom-yasmine", "Yasmine"),
     ("hrsa-betty", "Betty"),
     ("hrsa-doretha", "Doretha"),
-    ("hrsa-gwen", "Gwen"),
     ("hrsa-ericka", "Ericka"),
+    ("hrsa-gwen", "Gwen"),
     ("hrsa-jene", "Jene"),
-    ("hrsa-randy", "Randy"),
-    ("hrsa-stephanie", "Stephanie V"),
     ("hrsa-kieumy", "KieuMy"),
+    ("hrsa-lynda", "Lynda"),
+    ("hrsa-randy", "Randy"),
+    ("hrsa-shonda", "Shonda"),
+    ("hrsa-stephanie", "Stephanie V"),
 ]
 
 
