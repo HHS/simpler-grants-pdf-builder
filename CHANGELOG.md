@@ -14,6 +14,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Style maps are better at handling lists when importing .docx files
+
 ### Fixed
 
 ## [2.1.0] - 2025-01-01
