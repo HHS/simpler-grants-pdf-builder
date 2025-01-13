@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 user_email = "Unknown"
 
             self.stdout.write(
-                f"{nofo.id}\thttps://nofo.rodeo/nofos/{nofo.id}/edit\t{nofo.number}\t{nofo.status}\t{nofo.created}\t{nofo.updated}\t{user_email}"
+                f"{nofo.id}\thttps://nofo.rodeo/nofos/{nofo.id}/edit\t{nofo.number}\t{nofo.status}\t{nofo.created}\t{nofo.updated}\t{user_email}\t{event.datetime}"
             )
 
         # Summary for the NOFO
