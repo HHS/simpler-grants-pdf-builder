@@ -54,6 +54,7 @@ class NofoBaseSchema(ModelSchema):
             "cover_image",
             "cover_image_alt_text",
             "inline_css",
+            "sole_source_justification",
         ]
         model_fields_optional = [
             "subagency",
@@ -64,6 +65,7 @@ class NofoBaseSchema(ModelSchema):
             "cover_image",
             "cover_image_alt_text",
             "inline_css",
+            "sole_source_justification",
         ]
 
 
