@@ -217,7 +217,7 @@
     {% endspaceless %}
   </section>
 
-  <section id="section--before-you-begin" class="before-you-begin{% if nofo.number|lower == 'cdc-rfa-ps-25-0008' %} before-you-begin--sole-source{% endif %}">
+  <section id="section--before-you-begin" class="before-you-begin{% if nofo.sole_source_justification %} before-you-begin--sole-source{% endif %}">
     <div class="section--before-you-begin--icon">
       {% if "thin" in nofo.icon_style %}
         {% include "includes/icons/thin/0-before.svg" %}
@@ -228,7 +228,7 @@
     <h2 id="section--before-you-begin--heading">Before you begin</h2>
     <div class="before-you-begin--content">
 
-      {% if nofo.number|lower == 'cdc-rfa-ps-25-0008' %}
+      {% if nofo.sole_source_justification %}
         <p class="section--before-you-begin--psuedo-header">Make sure you are an approved applicant for this funding opportunity.</p>
       {% else %}
         <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.</p>
