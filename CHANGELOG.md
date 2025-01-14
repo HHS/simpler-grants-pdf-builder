@@ -27,6 +27,7 @@ Versioning since version 1.0.0.
 
 - Styling changes to external links page for acommodate more cols
 - Style maps are better at handling lists when importing .docx files
+- Before You Begin page uses 'sole_source_justification' to show alternate version, not a specific NOFO ID
 
 ### Fixed
 
@@ -34,6 +35,10 @@ Versioning since version 1.0.0.
 - Links starting with "file:///" should be flagged as broken links
 - Hotfix to make viewing content tables easier in edit view
 - Return sections by "order" for nofo.get_first_subsection()
+
+### Migrations
+
+- Add 'sole_source_justification' boolean field to Nofo objects
 
 ## [2.1.0] - 2025-01-01
 

@@ -291,6 +291,12 @@ class Nofo(models.Model):
         help_text="Extra CSS to include for this specific NOFO.",
     )
 
+    sole_source_justification = models.BooleanField(
+        "Sole source justification",
+        default=False,
+        help_text="An SSJ NOFO is intended for only 1 applicant.",
+    )
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
 
