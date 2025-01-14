@@ -10,7 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add script for exporting reimport audit events
-- Add cover image for HRSA-25-082
+- Add cover image for HRSA-25-082, HRSA-25-033
 
 ### Changed
 
