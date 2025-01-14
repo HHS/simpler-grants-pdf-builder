@@ -320,11 +320,10 @@ def nofo_import(request, pk=None):
             try:
                 nofo.filename = filename
 
-                (
-                    preserved_metadata,
-                    (callout_count, callout_items),
-                    (html_class_count, html_class_items),
-                ) = preserve_subsection_metadata(nofo, sections)
+                preserved_metadata = {}
+                # Only preserve metadata if checkbox is checked
+                if request.POST.get("preserve_page_breaks", "on") == "on":
+                    preserved_metadata = preserve_subsection_metadata(nofo, sections)
 
                 nofo = overwrite_nofo(nofo, sections)
                 nofo = restore_subsection_metadata(nofo, preserved_metadata)
@@ -335,24 +334,11 @@ def nofo_import(request, pk=None):
                 nofo.save()
 
                 # Build success message starting with the basic info
-                success_msg = (
-                    f"NOFO saved successfully<br>Re-imported NOFO from file: {filename}"
+                messages.add_message(
+                    request,
+                    messages.SUCCESS,
+                    "Re-imported NOFO from file: {}".format(nofo.filename),
                 )
-
-                # Add preservation info if any exists
-                if callout_count > 0:
-                    success_msg += (
-                        f"<br><br>Preserved {callout_count} section settings for callout boxes:<br>• "
-                        + "<br>• ".join(callout_items)
-                    )
-
-                if html_class_count > 0:
-                    success_msg += (
-                        f"<br><br>Preserved {html_class_count} section settings for HTML classes:<br>• "
-                        + "<br>• ".join(html_class_items)
-                    )
-
-                messages.success(request, success_msg)
 
                 # Create audit event for reimporting a nofo
                 create_nofo_audit_event(
