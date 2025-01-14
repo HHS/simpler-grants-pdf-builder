@@ -12,6 +12,7 @@ Versioning since version 1.0.0.
 - Add script for exporting reimport audit events
 - Add cover image for HRSA-25-082, HRSA-25-033
 - Add "highlight-strong" class to shared CSS
+- Add more style map rules for bullets
 
 ### Changed
 
