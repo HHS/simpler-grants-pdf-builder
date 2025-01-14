@@ -388,8 +388,18 @@ style_map_manager.add_style(
     note="Bold seems like the main thing we do here.",
 )
 style_map_manager.add_style(
+    style_rule="p[style-name='Bullet'] => ul > li:fresh",
+    location_in_nofo="This represents a bullet list improperly formatted",
+    note="Convert them to li elements.",
+)
+style_map_manager.add_style(
     style_rule="p[style-name='Bullet Level 1'] => ul > li:fresh",
     location_in_nofo="This represents a bullet list improperly formatted",
+    note="Convert them to li elements.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet 3'] => ul|ol > li > ul|ol > li > ul > li:fresh",
+    location_in_nofo="This represents a double nested bullet list improperly formatted",
     note="Convert them to li elements.",
 )
 style_map_manager.add_style(
