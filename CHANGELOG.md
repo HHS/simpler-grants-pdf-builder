@@ -9,6 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.2.0] - 2025-01-14
+
+### Added
+
 - Add script for exporting reimport audit events
 - Add cover images for:
   - CDC-RFA-CE-25-0114
@@ -35,12 +43,13 @@ Versioning since version 1.0.0.
 - Links starting with "file:///" should be flagged as broken links
 - Hotfix to make viewing content tables easier in edit view
 - Return sections by "order" for nofo.get_first_subsection()
+- Return sections and subsections by "order" in the API response
 
 ### Migrations
 
 - Add 'sole_source_justification' boolean field to Nofo objects
 
-## [2.1.0] - 2025-01-01
+## [2.1.0] - 2025-01-10
 
 ### Added
 
@@ -51,7 +60,7 @@ Versioning since version 1.0.0.
 - Add "Jana", our new NOFO Designer
 - Add "Shonda" and "Lynda" as HRSA Designers
 
-## [2.0.0] - 2025-01-01
+## [2.0.0] - 2025-01-10
 
 ### Added
 
