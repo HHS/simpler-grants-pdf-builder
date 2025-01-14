@@ -20,6 +20,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Links starting with "file:///" should be flagged as broken links
+
 ## [2.1.0] - 2025-01-01
 
 ### Added
