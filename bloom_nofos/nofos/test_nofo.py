@@ -54,6 +54,7 @@ from .nofo import (
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
+    suggest_nofo_sole_source_justification,
     suggest_nofo_subagency,
     suggest_nofo_subagency2,
     suggest_nofo_subject,
@@ -3244,6 +3245,38 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(nofo.number, "HRSA-2024-1234")
         self.assertEqual(nofo.theme, "portrait-hrsa-blue")
         self.assertEqual(nofo.cover, "nofo--cover-page--text")
+
+
+class SuggestNofoSoleSourceJustificationTests(TestCase):
+    def test_valid_nofo_number_exact_match(self):
+        nofo_number = "CDC-RFA-PS-25-0008"
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertTrue(result)
+
+    def test_valid_nofo_number_case_insensitive_match(self):
+        nofo_number = "cdc-rfa-ps-25-0008"
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertTrue(result)
+
+    def test_invalid_nofo_number(self):
+        nofo_number = "INVALID-NOFO-1234"
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertFalse(result)
+
+    def test_partial_match_nofo_number(self):
+        nofo_number = "CDC-RFA-PS-25-000"
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertFalse(result)
+
+    def test_empty_nofo_number(self):
+        nofo_number = ""
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertFalse(result)
+
+    def test_none_nofo_number(self):
+        nofo_number = None
+        result = suggest_nofo_sole_source_justification(nofo_number)
+        self.assertFalse(result)
 
 
 ###########################################################

@@ -1042,6 +1042,43 @@ def suggest_nofo_cover_image(nofo):
     return ""
 
 
+def suggest_nofo_sole_source_justification(nofo_number):
+    if not nofo_number:
+        return False
+
+    ssj_ids = [
+        "CDC-RFA-PS-25-0008",
+        "CDC-RFA-JG-25-0046",
+        "CDC-RFA-JG-25-0051",
+        "CDC-RFA-JG-25-0052",
+        "CDC-RFA-JG-25-0053",
+        "CDC-RFA-JG-25-0054",
+        "CDC-RFA-JG-25-0058",
+        "CDC-RFA-JG-25-0063",
+        "CDC-RFA-JG-25-0064",
+        "CDC-RFA-JG-25-0066",
+        "CDC-RFA-JG-25-0068",
+        "CDC-RFA-JG-25-0070",
+        "CDC-RFA-JG-25-0075",
+        "CDC-RFA-JG-25-0076",
+        "CDC-RFA-JG-25-0077",
+        "CDC-RFA-JG-25-0080",
+        "CDC-RFA-JG-25-0085",
+        "CDC-RFA-JG-25-0086",
+        "CDC-RFA-JG-25-0087",
+        "CDC-RFA-JG-25-0089",
+        "CDC-RFA-JG-25-0090",
+        "CDC-RFA-JG-25-0091",
+        "CDC-RFA-JG-25-0096",
+        "CDC-RFA-JG-25-0098",
+        "CDC-RFA-JG-25-0100",
+        "CDC-RFA-JG-25-0130",
+    ]
+
+    nofo_number_lower = nofo_number.lower()
+    return any(nofo_number_lower == ssj_id.lower() for ssj_id in ssj_ids)
+
+
 def suggest_all_nofo_fields(nofo, soup):
     first_time_import = (
         not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
@@ -1060,6 +1097,11 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
+
+    nofo.sole_source_justification = suggest_nofo_sole_source_justification(
+        nofo.number
+    )  # guess sole_source_justification based on known SSJ ids
+
     if not nofo.cover_image:
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
