@@ -230,13 +230,13 @@ class TestAddHtmlIdToSubsection(TestCase):
         subsection = Subsection(
             name="PK-based Subsection",
             tag="h3",
-            order=1,
+            order=2,
             section=self.section,
             html_id=None,
         )
         subsection.save()  # Assign a primary key
         add_html_id_to_subsection(subsection)
-        self.assertEqual(subsection.html_id, "1--sample-section--pk-based-subsection")
+        self.assertEqual(subsection.html_id, "2--sample-section--pk-based-subsection")
 
 
 class CleanStringTests(TestCase):
