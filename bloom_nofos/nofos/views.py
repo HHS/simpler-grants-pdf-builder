@@ -320,12 +320,20 @@ def nofo_import(request, pk=None):
             try:
                 nofo.filename = filename
 
-                preserved_metadata = {}
-                # Only preserve metadata if checkbox is checked
-                if request.POST.get("preserve_page_breaks", "on") == "on":
-                    preserved_metadata = preserve_subsection_metadata(nofo, sections)
-
+                # Always preserve metadata, but filter page breaks if checkbox is unchecked
+                preserved_metadata = preserve_subsection_metadata(nofo, sections)
                 nofo = overwrite_nofo(nofo, sections)
+
+                # If preserve_page_breaks is not checked, remove page break classes from preserved metadata
+                if request.POST.get("preserve_page_breaks") != "on":
+                    for key in preserved_metadata:
+                        if "html_class" in preserved_metadata[key]:
+                            classes = preserved_metadata[key]["html_class"].split()
+                            classes = [
+                                c for c in classes if not c.startswith("page-break")
+                            ]
+                            preserved_metadata[key]["html_class"] = " ".join(classes)
+
                 nofo = restore_subsection_metadata(nofo, preserved_metadata)
 
                 add_headings_to_nofo(nofo)
