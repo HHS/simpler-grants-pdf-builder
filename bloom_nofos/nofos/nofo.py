@@ -328,116 +328,75 @@ def create_nofo(title, sections, opdiv):
 
 
 def preserve_subsection_metadata(nofo, new_sections):
+    """
+    Preserves metadata from existing subsections that should be carried over to new subsections.
+    Currently only preserves html_class values.
+
+    Args:
+        nofo: The NOFO being reimported
+        new_sections: The reimported sections to replace existing sections
+
+    Returns:
+        dict: Mapping of section+subsection names to their preserved metadata
+    """
     preserved_metadata = {}
 
-    # Create lookup dict for new sections
+    # Create lookup dict for new sections to verify subsections still exist
     new_section_lookup = {}
     for section in new_sections:
         section_name = section.get("name", "")
         for subsection in section.get("subsections", []):
-            # Get subsection name or first line of body content as fallback
             subsection_name = subsection.get("name", "")
-            if not subsection_name:
-                body_content = subsection.get("body", "")
-                if body_content:
-                    # Convert body content to string based on its type
-                    if isinstance(body_content, list):
-                        # For list of Tags, join their string representations
-                        body_text = "".join(
-                            (
-                                tag.get_text()
-                                if hasattr(tag, "get_text")
-                                else str(tag or "")
-                            )
-                            for tag in body_content
-                        )
-                    else:
-                        # For single Tag or string, get text content
-                        body_text = (
-                            body_content.get_text()
-                            if hasattr(body_content, "get_text")
-                            else str(body_content)
-                        )
+            if not subsection_name and subsection.get("body"):
+                # If no name, use first line of body as fallback
+                body_text = subsection.get("body", "")
+                if isinstance(body_text, list):
+                    body_text = "".join(str(item) for item in body_text)
+                subsection_name = body_text.split("\n")[0].strip()
 
-                    # Get first line for subsection name
-                    subsection_name = body_text.split("\n")[0].strip()
+            if section_name and subsection_name:
+                new_section_lookup[f"{section_name}|{subsection_name}"] = True
 
-            key = f"{section_name}|{subsection_name}"
-            new_section_lookup[key] = {
-                "html_class": subsection.get("html_class", ""),
-            }
-
-    # Compare existing sections with new ones
+    # Store metadata from existing sections if they exist in new sections
     for section in nofo.sections.all():
-        for sub in section.subsections.all():
-            if not sub.name:
+        for subsection in section.subsections.all():
+            if not subsection.name:
                 continue
 
-            name_key = f"{section.name}|{sub.name}"
-            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
-
-            new_metadata = new_section_lookup.get(name_key)
-            if new_metadata:
-                # Only preserve page breaks
-                if sub.html_class in [
-                    "page-break-before",
-                    "page-break-after",
-                    "page-break",
-                ]:
-                    metadata = {
-                        "html_class": sub.html_class,
-                    }
-                    preserved_metadata[name_key] = metadata
-                    if id_key:
-                        preserved_metadata[id_key] = metadata
+            name_key = f"{section.name}|{subsection.name}"
+            if subsection.html_class and name_key in new_section_lookup:
+                preserved_metadata[name_key] = {
+                    "html_class": subsection.html_class,
+                }
 
     return preserved_metadata
 
 
 def restore_subsection_metadata(nofo, preserved_metadata):
+    """
+    Restores preserved metadata to the new subsections after reimport.
+    This is only called when preserve_page_breaks is checked, so we restore all classes.
+
+    Args:
+        nofo: The NOFO being reimported
+        preserved_metadata: The metadata preserved from preserve_subsection_metadata()
+
+    Returns:
+        nofo: The updated NOFO object
+    """
     subsections_to_update = []
 
     for section in nofo.sections.all():
-        for sub in section.subsections.all():
-            # Get subsection name or first line of body content as fallback
-            subsection_name = sub.name
-            if not subsection_name and sub.body:
-                # Use same logic as preserve_subsection_metadata
-                body_text = sub.body
-                subsection_name = body_text.split("\n")[0].strip()
+        for subsection in section.subsections.all():
+            if not subsection.name:
+                continue
 
-            name_key = f"{section.name}|{subsection_name}"
-            id_key = sub.html_id.split("--", 1)[-1] if sub.html_id else None
+            name_key = f"{section.name}|{subsection.name}"
+            metadata = preserved_metadata.get(name_key)
 
-            metadata = preserved_metadata.get(name_key) or preserved_metadata.get(
-                id_key
-            )
-
-            # If we have preserved metadata, restore it
-            if metadata:
-                sub.html_class = metadata["html_class"]
-                subsections_to_update.append(sub)
-            # If we don't have preserved metadata and the subsection has a page break class, remove just the page break classes
-            elif any(
-                pb in sub.html_class
-                for pb in ["page-break-before", "page-break-after", "page-break"]
-            ):
-                # Split classes into a list, filter out page break classes, and join back
-                classes = sub.html_class.split()
-                classes = [
-                    c
-                    for c in classes
-                    if not any(
-                        pb in c
-                        for pb in [
-                            "page-break-before",
-                            "page-break-after",
-                            "page-break",
-                        ]
-                    )
-                ]
-                sub.html_class = " ".join(classes)
-                subsections_to_update.append(sub)
+            if metadata and metadata.get("html_class"):
+                subsection.html_class = metadata["html_class"]
+                subsections_to_update.append(subsection)
 
     # Bulk update all modified subsections
     if subsections_to_update:
