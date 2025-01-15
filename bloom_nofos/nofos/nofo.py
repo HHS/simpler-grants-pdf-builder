@@ -793,14 +793,15 @@ def find_external_links(nofo, with_status=False):
             )
             links = soup.find_all("a")
             for link in links:
-                link_text = link.get("href", "#")
+                url = link.get("href", "#")
 
-                if link_text.startswith("http"):
-                    if not "nofo.rodeo" in link_text:
+                if url.startswith("http"):
+                    if not "nofo.rodeo" in url:
                         all_links.append(
                             {
-                                "url": link_text,
-                                "domain": urlparse(link_text).hostname,
+                                "url": url,
+                                "link_text": link.get_text(),
+                                "domain": urlparse(url).hostname,
                                 "section": section,
                                 "subsection": subsection,
                                 "status": "",
