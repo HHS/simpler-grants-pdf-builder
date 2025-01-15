@@ -382,10 +382,24 @@ class Section(models.Model):
     class Meta:
         unique_together = ("nofo", "order")
 
+    @classmethod
+    def get_next_order(cls, nofo):
+        """Get the next available order number for a section in this NOFO"""
+        last_section = nofo.sections.order_by("-order").first()
+        return (last_section.order + 1) if last_section else 1
+
     def save(self, *args, **kwargs):
+        if not self.pk and not self.order:
+            self.order = self.get_next_order(self.nofo)
+
+        # Save the section first (necessary for creating a default subsection)
         super().save(*args, **kwargs)
 
-        # set "updated" field on Nofo
+        # If this is a new section, create a default subsection with only required fields
+        if not self.subsections.exists():
+            Subsection.objects.create(section=self, order=1)
+
+        # Update NOFO's updated timestamp
         if self.nofo:
             self.nofo.updated = timezone.now()
             self.nofo.save()
@@ -412,7 +426,8 @@ class Section(models.Model):
         super().clean()
         errors = {}
 
-        # Validate at least one subsection exists (only for existing sections)
+        # Validate that sections have at least one subsection
+        # Note: New sections will automatically get a default subsection on save
         if self.pk and not self.subsections.exists():
             errors["__all__"] = "Section must have at least one subsection"
 
