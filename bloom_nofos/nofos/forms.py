@@ -182,7 +182,7 @@ class SubsectionCreateForm(forms.ModelForm):
 
 # Simple form for URL input
 class CheckNOFOLinkSingleForm(forms.Form):
-    url = forms.URLField(label="Check this URL", max_length=512, required=True)
+    url = forms.URLField(label="Check this URL", max_length=2048, required=True)
 
 
 class InsertOrderSpaceForm(forms.Form):
