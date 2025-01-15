@@ -14,6 +14,7 @@ Versioning since version 1.0.0.
 - Add "highlight-strong" class to shared CSS
 - Add more style map rules for bullets
 - Added "Link text" to the external links page
+- Added default subsection and order behavior to Section model
 
 ### Changed
 
