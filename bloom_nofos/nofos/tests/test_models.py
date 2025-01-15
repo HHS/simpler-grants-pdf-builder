@@ -1,9 +1,11 @@
+import os
+import json
+from django.urls import reverse
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.conf import settings
-import os
-import json
 
+from users.models import BloomUser
 from nofos.models import Nofo, Section, Subsection, HeadingValidationError
 
 
@@ -154,3 +156,51 @@ class SubsectionModelTest(TestCase):
     def test_valid_subsection_data(self):
         subsection = Subsection(**self.valid_subsection_data)
         subsection.full_clean()  # Should not raise ValidationError
+
+
+class NofoArchiveTest(TestCase):
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", opdiv="Test OpDiv", status="draft"
+        )
+
+    def test_can_archive_nofo_without_sections(self):
+        """Test that a NOFO can be archived even when it has no sections (which would normally fail validation)"""
+        self.client.force_login(self.user)
+
+        # Verify the NOFO has no sections
+        self.assertEqual(self.nofo.sections.count(), 0)
+
+        response = self.client.post(
+            reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("nofos:nofo_index"))
+
+        # Verify the NOFO was archived
+        self.nofo.refresh_from_db()
+        self.assertIsNotNone(self.nofo.archived)
+
+    def test_cannot_archive_published_nofo(self):
+        """Test that a published NOFO cannot be archived"""
+        self.client.force_login(self.user)
+
+        # Set NOFO to published using update() to bypass validation
+        Nofo.objects.filter(pk=self.nofo.pk).update(status="published")
+
+        response = self.client.post(
+            reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        # Verify the NOFO was not archived
+        self.nofo.refresh_from_db()
+        self.assertIsNone(self.nofo.archived)
