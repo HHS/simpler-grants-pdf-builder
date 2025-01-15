@@ -23,6 +23,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fixes issue where archiving a NOFO would fail due to validation checks requiring at least one section
 - Links starting with "file:///" should be flagged as broken links
 
 ## [2.1.0] - 2025-01-01
