@@ -10,7 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, timezone
@@ -21,6 +21,7 @@ from django.views.generic import (
     FormView,
     ListView,
     UpdateView,
+    View,
 )
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
@@ -203,29 +204,31 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofosArchiveView(GroupAccessObjectMixin, UpdateView):
-    model = Nofo
-    fields = []  # Since we are not using the form to handle any model fields directly
-    success_url = reverse_lazy("nofos:nofo_index")
+class NofosArchiveView(GroupAccessObjectMixin, View):
     template_name = "nofos/nofo_confirm_delete.html"
+    success_url = reverse_lazy("nofos:nofo_index")
 
     def dispatch(self, request, *args, **kwargs):
-        nofo = self.get_object()
+        # Get NOFO directly from database to bypass validation
+        pk = kwargs.get("pk")
+        nofo = Nofo.objects.filter(pk=pk).first()
+        if not nofo:
+            raise Http404("No NOFO found matching the query")
         if nofo.status != "draft":
             return HttpResponseBadRequest("Only draft NOFOs can be deleted.")
-        return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
-        nofo = self.get_object()
-        nofo.archived = timezone.now()
-        nofo.save()
-        messages.error(
-            self.request,
-            "You deleted NOFO: “{}”.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
-                nofo.short_name or nofo.title
-            ),
-        )
-        return redirect(self.get_success_url())
+        if request.method == "POST":
+            # Update directly without triggering save()
+            Nofo.objects.filter(pk=pk).update(archived=timezone.now())
+            messages.error(
+                request,
+                "You deleted NOFO: '{}'.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                    nofo.short_name or nofo.title
+                ),
+            )
+            return redirect(self.success_url)
+
+        return render(request, self.template_name, {"nofo": nofo})
 
 
 def nofo_import(request, pk=None):
