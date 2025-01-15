@@ -13,9 +13,11 @@ Versioning since version 1.0.0.
 - Add cover image for HRSA-25-082, HRSA-25-033
 - Add "highlight-strong" class to shared CSS
 - Add more style map rules for bullets
+- Added "Link text" to the external links page
 
 ### Changed
 
+- Styling changes to external links page for acommodate more cols
 - Style maps are better at handling lists when importing .docx files
 
 ### Fixed

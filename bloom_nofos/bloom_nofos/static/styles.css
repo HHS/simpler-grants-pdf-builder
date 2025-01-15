@@ -882,6 +882,24 @@ main .back-link a::before,
   font-variant: small-caps;
 }
 
+/* NOFO external links page */
+
+.nofo_links .usa-table td,
+.nofo_links .usa-table th {
+  padding: 0.5rem 0.75rem;
+  vertical-align: baseline;
+}
+
+.nofo_links .usa-table .nofo_links--location span.link-wrapper {
+  display: inline-block;
+  padding-left: 20px;
+}
+
+.nofo_links .usa-table .nofo_links--location span.link-wrapper::before {
+  content: "—";
+  margin-left: -20px;
+}
+
 details.usa-accordion .usa-accordion__button {
   box-sizing: border-box;
 }
