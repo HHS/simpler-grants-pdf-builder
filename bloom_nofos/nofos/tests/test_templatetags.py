@@ -837,7 +837,8 @@ class TestIsFloatingCalloutBox(TestCase):
                 name=name,
                 callout_box=True,
                 tag="h4",  # needs a tag
-                order=index + 1,
+                order=index
+                + 2,  # Start from 2 since order=1 is taken by default subsection
             )
             self.assertTrue(is_floating_callout_box(subsection))
 
@@ -848,7 +849,7 @@ class TestIsFloatingCalloutBox(TestCase):
             name="Random name",
             callout_box=True,
             tag="h4",
-            order=1,
+            order=2,  # Use order=2 since order=1 is taken by default subsection
         )
         self.assertFalse(is_floating_callout_box(subsection))
 
@@ -866,7 +867,8 @@ class TestIsFloatingCalloutBox(TestCase):
                 section=self.section,
                 body=body,
                 callout_box=True,
-                order=index + 1,
+                order=index
+                + 2,  # Start from 2 since order=1 is taken by default subsection
             )
             self.assertTrue(is_floating_callout_box(subsection))
 
@@ -876,7 +878,7 @@ class TestIsFloatingCalloutBox(TestCase):
             section=self.section,
             body="The Administration on Disabilities (AoD) within...",
             callout_box=True,
-            order=1,
+            order=2,  # Use order=2 since order=1 is taken by default subsection
         )
         self.assertFalse(is_floating_callout_box(subsection))
 

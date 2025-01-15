@@ -99,6 +99,8 @@ class SectionModelTest(TestCase):
 
     def test_section_requires_subsection(self):
         section = Section.objects.create(**self.valid_section_data)
+        self.assertEqual(section.subsections.count(), 1)
+        section.subsections.all().delete()
         with self.assertRaises(ValidationError):
             section.full_clean()
 
@@ -106,27 +108,72 @@ class SectionModelTest(TestCase):
         section = Section.objects.create(**self.valid_section_data)
         subsection = Subsection.objects.create(
             name="Test Subsection",
-            order=1,
-            section=section,  # Use section instance
+            order=2,
+            section=section,
             tag="h2",
             html_id="1--test-section--test-subsection",
         )
+        section.full_clean()
+
+    def test_automatic_order_assignment(self):
+        # Create first section without order
+        section1_data = self.valid_section_data.copy()
+        section1_data.pop("order")
+        section1 = Section.objects.create(**section1_data)
+        self.assertEqual(section1.order, 1)
+
+        # Create second section without order
+        section2_data = self.valid_section_data.copy()
+        section2_data.pop("order")
+        section2_data["name"] = "Second Section"
+        section2_data["html_id"] = "2--second-section"
+        section2 = Section.objects.create(**section2_data)
+        self.assertEqual(section2.order, 2)
+
+    def test_automatic_subsection_creation(self):
+        # Create section without subsection
+        section_data = self.valid_section_data.copy()
+        section = Section.objects.create(**section_data)
+
+        # Verify a default subsection was created
+        self.assertEqual(section.subsections.count(), 1)
+        default_subsection = section.subsections.first()
+        self.assertEqual(default_subsection.order, 1)
+
+        # Verify section passes validation
         section.full_clean()  # Should not raise ValidationError
+
+    def test_order_preserved_with_explicit_value(self):
+        # Create section with explicit order
+        section = Section.objects.create(**self.valid_section_data)
+        self.assertEqual(section.order, 1)  # Should keep the explicit order value
+
+    def test_get_next_order_with_no_sections(self):
+        # Test get_next_order when no sections exist
+        next_order = Section.get_next_order(self.nofo)
+        self.assertEqual(next_order, 1)
+
+    def test_get_next_order_with_existing_sections(self):
+        # Create a section with order=5
+        section_data = self.valid_section_data.copy()
+        section_data["order"] = 5
+        Section.objects.create(**section_data)
+
+        # Next order should be 6
+        next_order = Section.get_next_order(self.nofo)
+        self.assertEqual(next_order, 6)
 
 
 class SubsectionModelTest(TestCase):
     def setUp(self):
-        # Create required parent objects
         self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
         self.section = Section.objects.create(
-            name="Test Section", order=1, nofo=self.nofo
+            name="Test Section", order=1, nofo=self.nofo, html_id="1--test-section"
         )
-
-        # Update valid_subsection_data to use Section instance
         self.valid_subsection_data = {
             "name": "Test Subsection",
-            "order": 1,
-            "section": self.section,  # Use section instance instead of ID
+            "order": 2,
+            "section": self.section,
             "tag": "h2",
         }
 
@@ -140,7 +187,7 @@ class SubsectionModelTest(TestCase):
 
         expected_message = (
             "Heading too long: Found a heading exceeding 400 characters in the "
-            "'Test Section' section (subsection #1).\n\n"
+            "'Test Section' section (subsection #2).\n\n"
             "This often means a paragraph was incorrectly styled as a heading. "
             "Please check this section and ensure only actual headings are marked as headings."
         )

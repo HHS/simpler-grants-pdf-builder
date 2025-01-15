@@ -26,12 +26,12 @@ class NofoAPITest(TestCase):
         self.section = Section.objects.create(
             nofo=self.nofo, name="API Test NOFO: Section 1", order=1
         )
-        self.subsection = Subsection.objects.create(
-            section=self.section,
-            name="API Test NOFO: Subsection 1",
-            order=1,
-            tag="h3",
-        )
+
+        # Get the default subsection and update it
+        self.default_subsection = self.section.subsections.get(order=1)
+        self.default_subsection.name = "API Test NOFO: Subsection 1"
+        self.default_subsection.tag = "h3"
+        self.default_subsection.save()
 
         # Load fixture data for import tests
         fixture_path = os.path.join(
@@ -50,7 +50,7 @@ class NofoAPITest(TestCase):
         self.assertEqual(data["title"], self.nofo.title)
         self.assertEqual(data["sections"][0]["name"], self.section.name)
         self.assertEqual(
-            data["sections"][0]["subsections"][0]["name"], self.subsection.name
+            data["sections"][0]["subsections"][0]["name"], self.default_subsection.name
         )
 
     def test_export_archived_nofo_returns_404(self):
