@@ -2212,6 +2212,7 @@ class TestFindExternalLinks(TestCase):
 
         self.assertEqual(len(links), 1)
         self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+        self.assertEqual(links[0]["link_text"], "Groundhog Day")
 
     def test_find_external_links_ignore_nofo_rodeo(self):
         self_sections = self.sections
@@ -2239,7 +2240,10 @@ class TestFindExternalLinks(TestCase):
 
         self.assertEqual(len(links), 2)
         self.assertEqual(links[0]["url"], "https://groundhog-day.com")
+        self.assertEqual(links[0]["link_text"], "Groundhog Day")
+
         self.assertEqual(links[1]["url"], "https://canada-holidays.ca")
+        self.assertEqual(links[1]["link_text"], "Canada Holidays")
 
     def test_find_external_links_no_link_in_subsection(self):
         # no links in the original subsections
