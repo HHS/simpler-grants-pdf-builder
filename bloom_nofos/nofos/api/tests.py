@@ -146,3 +146,57 @@ class NofoAPITest(TestCase):
         # Verify NOFO was created with a different ID
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
         self.assertNotEqual(nofo.id, 999)
+
+    def test_export_nofo_ordering(self):
+        """Test that sections and subsections are returned in order"""
+
+        import_data = self.fixture_data.copy()
+        for field in ["archived", "status", "group"]:
+            import_data.pop(field, None)
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(import_data),
+            content_type="application/json",
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 201)
+
+        nofo = Nofo.objects.get(number="CMS-2U2-25-001")
+
+        # Get sections in reverse order
+        sections = list(nofo.sections.order_by("-order"))
+        self.assertGreater(len(sections), 0, "Need at least one section for this test")
+
+        # Verify sections are actually in reverse order
+        section_orders = [s.order for s in sections]
+        self.assertEqual(
+            section_orders,
+            sorted(section_orders, reverse=True),
+            "Test data sections should be in reverse order",
+        )
+
+        subsections = list(sections[0].subsections.order_by("-order"))
+        self.assertGreater(
+            len(subsections), 0, "Need at least one subsection for this test"
+        )
+
+        # Verify subsections are actually in reverse order
+        subsection_orders = [s.order for s in subsections]
+        self.assertEqual(
+            subsection_orders,
+            sorted(subsection_orders, reverse=True),
+            "Test data subsections should be in reverse order",
+        )
+
+        # Verify API returns them in ascending order
+        response = self.client.get(f"/api/nofos/{nofo.id}", **self.headers)
+        data = response.json()
+
+        # Returns sections in ascending order
+        api_section_orders = [s["order"] for s in data["sections"]]
+        self.assertEqual(api_section_orders, sorted(api_section_orders))
+
+        # Returns subsections in ascending order
+        api_subsection_orders = [s["order"] for s in data["sections"][0]["subsections"]]
+        self.assertEqual(api_subsection_orders, sorted(api_subsection_orders))

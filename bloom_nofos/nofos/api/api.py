@@ -58,6 +58,19 @@ def get_nofo(request, nofo_id: int):
     """Export a NOFO by ID"""
     try:
         nofo = Nofo.objects.get(id=nofo_id, archived__isnull=True)
-        return 200, nofo
+
+        # Use a dictionary representation of the NOFO to sort
+        nofo_dict = NofoSchema.from_orm(nofo).dict()
+
+        # Sort sections
+        nofo_dict["sections"] = sorted(nofo_dict["sections"], key=lambda x: x["order"])
+
+        # Sort subsections
+        for section in nofo_dict["sections"]:
+            section["subsections"] = sorted(
+                section["subsections"], key=lambda x: x["order"]
+            )
+
+        return 200, nofo_dict
     except Nofo.DoesNotExist:
         return 404, {"message": "NOFO not found"}
