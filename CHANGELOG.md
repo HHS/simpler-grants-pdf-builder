@@ -31,6 +31,7 @@ Versioning since version 1.0.0.
 
 - Fixes issue where archiving a NOFO would fail due to validation checks requiring at least one section
 - Links starting with "file:///" should be flagged as broken links
+- Hotfix to make viewing content tables easier in edit view
 
 ## [2.1.0] - 2025-01-01
 
