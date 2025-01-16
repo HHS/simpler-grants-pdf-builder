@@ -10,7 +10,13 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add script for exporting reimport audit events
-- Add cover image for HRSA-25-082, HRSA-25-033, CDC-RFA-CE-25-0114, HHS-2025-ACF-IOAS-OTIP-ZV-0002, HRSA-25-029
+- Add cover images for:
+  - CDC-RFA-CE-25-0114
+  - HHS-2025-ACF-IOAS-OTIP-ZV-0002
+  - HRSA-25-021
+  - HRSA-25-029
+  - HRSA-25-033
+  - HRSA-25-082
 - Add "highlight-strong" class to shared CSS
 - Add more style map rules for bullets
 - Added "Link text" to the external links page
