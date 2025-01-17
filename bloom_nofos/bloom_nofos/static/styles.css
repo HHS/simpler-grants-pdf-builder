@@ -735,16 +735,6 @@ details > summary > span:hover {
   display: none;
 }
 
-.nofo_edit main .nofo-edit-table--subsection--body table tr.table--first-row th,
-.nofo_edit
-  main
-  .nofo-edit-table--subsection--body
-  table
-  tr.table--first-row
-  td {
-  width: 15%;
-}
-
 /* Section edit page */
 
 .section_edit .edit_section--other_sections {
@@ -890,6 +880,22 @@ main .back-link a::before,
   font-size: 12.5px;
   font-weight: 600;
   font-variant: small-caps;
+}
+
+.subsection_edit div.martor-preview table thead th > p,
+.subsection_edit div.martor-preview table tbody tr:first-of-type th p {
+  font-weight: 400;
+}
+
+.subsection_edit div.martor-preview table thead th p:first-child,
+.subsection_edit
+  div.martor-preview
+  table
+  tbody
+  tr:first-of-type
+  th
+  p:first-child {
+  font-weight: 600;
 }
 
 /* NOFO external links page */
