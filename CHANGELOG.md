@@ -13,6 +13,17 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [2.3.0] - 2025-01-17
+
+### Fixed
+
+- NCIPC Teal theme link colour is now darker to meet AAA contrast
+
+### Migrations
+
+- New theme: NCIPC Blue
+- Rename previous theme: DOP → NCIPC Teal
+
 ## [2.2.0] - 2025-01-14
 
 ### Added
