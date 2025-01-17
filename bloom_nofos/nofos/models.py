@@ -59,6 +59,7 @@ STATUS_CHOICES = [
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
     ("landscape-cdc-white", "CDC Landscape (Light)"),
+    ("portrait-cdc-ncipc1", "CDC Portrait (NCIPC Blue)"),
     ("portrait-cdc-dop", "CDC Portrait (DOP)"),
     ("portrait-cdc-orr", "CDC Portrait (ORR)"),
     ("portrait-cdc-iod", "CDC Portrait (IOD)"),
