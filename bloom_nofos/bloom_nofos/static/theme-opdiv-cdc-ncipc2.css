@@ -1,30 +1,30 @@
 /* CSS vars */
 
 :root {
-  --color--dop-teal: #004c52;
-  --color--dop-blue: #1a3b66;
-  --color--dop-yellow: #dba826;
-  --color--dop-seafoam: #51a3a1;
+  --color--ncipc-teal: #004c52;
+  --color--ncipc-blue: #1a3b66;
+  --color--ncipc-yellow: #dba826;
+  --color--ncipc-seafoam: #51a3a1;
 }
 
 /* Page rules */
 
 @page {
   @bottom-left {
-    color: var(--color--dop-teal);
+    color: var(--color--ncipc-teal);
   }
 
   @bottom-right {
-    color: var(--color--dop-teal);
+    color: var(--color--ncipc-teal);
   }
 }
 
 @page cover {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 }
 
 @page title {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 
   @bottom-left {
     border-top: 1px solid var(--color--white);
@@ -49,11 +49,11 @@ h1 {
 }
 
 h3 {
-  color: var(--color--dop-blue);
+  color: var(--color--ncipc-blue);
 }
 
 h4 {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 /* Cover page */
@@ -63,12 +63,12 @@ h4 {
 }
 
 .nofo--cover-page--title {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 }
 
 .nofo--cover-page--header--logo--subheading,
 .nofo--cover-page--header--intro {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .nofo--cover-page--title {
@@ -80,7 +80,7 @@ h4 {
 }
 
 .portrait .nofo--cover-page--footer {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 }
 
 /* Cover page: medium image */
@@ -92,7 +92,7 @@ h4 {
 /* Cover page: hero image */
 
 .nofo--cover-page--hero .nofo--cover-page--title {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-5 {
@@ -102,24 +102,24 @@ h4 {
 /* Table of contents */
 
 .toc h2 {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .toc .toc--section-name .toc--section-name--a {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
-  background: var(--color--dop-teal);
+  background: var(--color--ncipc-teal);
 }
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--white);
-  fill: var(--color--dop-teal);
+  fill: var(--color--ncipc-teal);
 }
 
 .nofo--icons--border
@@ -128,13 +128,13 @@ h4 {
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--dop-teal);
+  stroke: var(--color--ncipc-teal);
 }
 
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
   fill: var(--color--white);
 }
 
@@ -143,12 +143,12 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--dop-teal);
+  stroke: var(--color--ncipc-teal);
 }
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--dop-teal);
+  fill: var(--color--ncipc-teal);
 }
 
 .nofo--icons--border
@@ -156,16 +156,16 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--dop-teal);
+  stroke: var(--color--ncipc-teal);
 }
 
 .before-you-begin h2 {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .before-you-begin .callout-box--icon .callout-box--contents svg {
   fill: var(--color--white);
-  color: var(--color--dop-blue);
+  color: var(--color--ncipc-blue);
 }
 
 .before-you-begin .callout-box--icon .callout-box--contents svg circle {
@@ -180,20 +180,20 @@ h4 {
 }
 
 .section--title-page--header-nav li a[aria-current] {
-  border-top: 4px solid var(--color--dop-yellow);
-  color: var(--color--dop-yellow);
+  border-top: 4px solid var(--color--ncipc-yellow);
+  color: var(--color--ncipc-yellow);
 }
 
 .section--title-page {
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
 }
 
 .section--title-page--header-nav {
-  background-color: var(--color--dop-blue);
+  background-color: var(--color--ncipc-blue);
 }
 
 .nofo--icons--solid .section--title-page--icon svg {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
   fill: var(--color--white);
 }
 
@@ -204,21 +204,21 @@ h4 {
 /* Section contents */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--dop-yellow);
+  border-top: 4px solid var(--color--ncipc-yellow);
   color: var(--color--black);
 }
 
 .nofo--tagline {
-  color: var(--color--dop-teal);
+  color: var(--color--ncipc-teal);
 }
 
 .callout-box {
-  background-color: var(--color--dop-yellow);
+  background-color: var(--color--ncipc-yellow);
   color: var(--color--black);
 }
 
 .callout-box--icon {
-  background-color: var(--color--dop-blue);
+  background-color: var(--color--ncipc-blue);
   color: var(--color--white);
 }
 
@@ -228,7 +228,7 @@ h4 {
 
 .callout-box--icon .callout-box--contents svg {
   fill: var(--color--white);
-  color: var(--color--dop-blue);
+  color: var(--color--ncipc-blue);
 }
 
 .callout-box--icon .callout-box--contents svg circle {
@@ -237,7 +237,7 @@ h4 {
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--dop-teal);
+  background-color: var(--color--ncipc-teal);
   border-top: 2px solid var(--color--light-grey);
   border-bottom: 2px solid var(--color--light-grey);
   border-left: 2px solid var(--color--light-grey);
