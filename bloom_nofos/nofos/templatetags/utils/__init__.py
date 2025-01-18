@@ -160,6 +160,7 @@ def convert_paragraph_to_searchable_hr(p):
         )
 
     if p.name == "p" and p.string in [
+        "page-break",
         "page-break-before",
         "page-break-after",
         "column-break-before",
@@ -168,7 +169,7 @@ def convert_paragraph_to_searchable_hr(p):
         # Change the tag name from 'p' to 'div'
         p.name = "div"
 
-        if p.string == "page-break-before":
+        if p.string == "page-break" or p.string == "page-break-before":
             p["class"] = "page-break--hr--container page-break-before--container"
             hr, span = _create_hr_and_span("page-break-before", "[ ↓ page-break ↓ ]")
 

@@ -14,6 +14,7 @@ def convert_paragraphs_to_hrs(html_string):
         "p",
         string=lambda text: text
         in [
+            "page-break",
             "page-break-before",
             "page-break-after",
             "column-break-before",
