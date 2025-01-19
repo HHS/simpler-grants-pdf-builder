@@ -209,6 +209,37 @@ def find_elements_with_character(element, container, character="~"):
             find_elements_with_character(child, container, character)
 
 
+def filter_breadcrumb_sections(sections):
+    return [
+        section
+        for section in sections
+        if section.name.lower().startswith(("step", "contacts", "learn"))
+    ]
+
+
+def get_breadcrumb_text(section_name):
+    # Map section names to their breadcrumb link text
+    name_map = {
+        "review the opportunity": "Review",
+        "ready": "Get Ready",
+        "write your application": "Write",
+        "understand review": "Understand",
+        "prepare your application": "Prepare",
+        "learn about review": "Learn",
+        "submit": "Submit",
+        "learn what happens": "Award",
+        "contacts": "Contacts",
+    }
+
+    # Find a match in name_map
+    for key, value in name_map.items():
+        if key in section_name.lower():
+            return value
+
+    # Default case
+    return "⚠️ TODO ⚠️"
+
+
 def get_parent_td(element):
     """
     Gets the parent <td> element for a given element, which may include itself.

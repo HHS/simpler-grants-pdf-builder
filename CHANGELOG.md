@@ -16,6 +16,8 @@ Versioning since version 1.0.0.
 - All page break visuals say "page-break" now, dropped the "-before", "-after"
 - In the nofo section editor, page breaks added to a section now say "page-break"
   - Previously, it was just a dashed line, but nobody knew what that meant
+- Loop through sections to create breadcrumbs
+  - Support "Understand Review, Selection, and Award" as a new section name
 
 ### Fixed
 

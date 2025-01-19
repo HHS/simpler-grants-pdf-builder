@@ -5,10 +5,10 @@
 - Add Login.gov
 - Password reset flow on command line
 - Password reset flow exists
-- Refac: short section names for breadcrumbs means we can loop
 
 # DONE
 
+- Loop the sections to create breadcrumbs
 - .docx imports
   - Investigate images
 - Autodeploy from Github Actions
