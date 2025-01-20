@@ -787,6 +787,10 @@ div[role="heading"] {
   margin-bottom: 10px;
 }
 
+.toc > ol > li:last-of-type {
+  padding-bottom: 0;
+}
+
 .toc > ol > li:not(:last-of-type) {
   border-bottom: 1px solid var(--color--light-grey);
 }
@@ -810,6 +814,7 @@ div[role="heading"] {
   text-decoration: underline;
 }
 
+.toc .toc--section-name.toc--no-icon a,
 .toc .toc--subsection-name a {
   font-size: 11pt;
 }
@@ -838,8 +843,7 @@ div[role="heading"] {
 }
 
 .toc ol li.toc--no-icon {
-  margin-top: -10px;
-  padding-left: 30px;
+  padding-left: 40px;
 }
 
 /* Before you begin page */

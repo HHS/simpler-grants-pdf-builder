@@ -21,6 +21,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fix: Remove unneeded nested lists "li > ul > li" for BYB page and appendices
 - Fix: page breaks were not possible to add to subsections without a heading
 
 ## [2.3.0] - 2025-01-17
