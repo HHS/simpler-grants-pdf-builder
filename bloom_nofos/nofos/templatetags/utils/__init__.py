@@ -170,21 +170,21 @@ def convert_paragraph_to_searchable_hr(p):
         p.name = "div"
 
         if p.string == "page-break" or p.string == "page-break-before":
-            p["class"] = "page-break--hr--container page-break-before--container"
+            p["class"] = "page-break--hr--container"
             hr, span = _create_hr_and_span("page-break-before", "[ ↓ page-break ↓ ]")
 
         if p.string == "page-break-after":
-            p["class"] = "page-break--hr--container page-break-after--container"
+            p["class"] = "page-break--hr--container"
             hr, span = _create_hr_and_span("page-break-after", "[ ↓ page-break ↓ ]")
 
         if p.string == "column-break-before":
-            p["class"] = "page-break--hr--container column-break-before--container"
+            p["class"] = "page-break--hr--container"
             hr, span = _create_hr_and_span(
                 "column-break-before", "[ ← column-break-before ← ]"
             )
 
         if p.string == "column-break-after":
-            p["class"] = "page-break--hr--container column-break-after--container"
+            p["class"] = "page-break--hr--container"
             hr, span = _create_hr_and_span(
                 "column-break-after", "[ → column-break-after → ]"
             )
