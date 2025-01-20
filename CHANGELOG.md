@@ -9,9 +9,17 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Can use 'page-break' to add a page-break in markdown body
+
 ### Changed
 
+- All page break visuals say "page-break" now, dropped the "-before", "-after"
+- In the nofo section editor, page breaks added to a section now say "page-break"
+  - Previously, it was just a dashed line, but nobody knew what that meant
+
 ### Fixed
+
+- Fix: page breaks were not possible to add to subsections without a heading
 
 ## [2.3.0] - 2025-01-17
 
