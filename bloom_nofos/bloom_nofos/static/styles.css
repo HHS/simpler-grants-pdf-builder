@@ -563,17 +563,6 @@ details > summary > span:hover {
   border-bottom: 1px dotted #5c5c5c;
 }
 
-.nofo_edit .page-break--hr--container .page-break--hr--text {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translate(-50%);
-  background: white;
-  color: #5c5c5c;
-  font-family: monospace;
-  font-size: 12px;
-}
-
 .section_edit .nofo-edit-table--subsection--body h1,
 .nofo_edit .nofo-edit-table--subsection--body h1 {
   font-size: 2.202rem;
@@ -643,7 +632,7 @@ details > summary > span:hover {
 
 .nofo_edit main table.table--section {
   border-collapse: initial;
-  border-spacing: 0 5px;
+  border-spacing: 0 8px;
 }
 
 .nofo_edit main table.table--section th,
@@ -706,6 +695,21 @@ details > summary > span:hover {
 .nofo_edit table th.nofo-edit-table--subsection--name.page-break-before,
 .nofo_edit table th.nofo-edit-table--subsection--name.page-break-before ~ td {
   border-top: 2px dashed #5c5c5c;
+}
+
+.nofo_edit .page-break--hr--container .page-break--hr--text,
+.nofo_edit
+  table
+  th.nofo-edit-table--subsection--name.page-break-before::before {
+  content: "[ ↓ page-break ↓ ]";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translate(-50%);
+  background: white;
+  color: #5c5c5c;
+  font-family: monospace;
+  font-size: 12px;
 }
 
 .nofo_edit table th.nofo-edit-table--subsection--name.column-break-before,
@@ -780,6 +784,7 @@ main .back-link a::before,
   margin-left: 3px;
 }
 
+.nofo_edit .table--section tr,
 .section_edit .table--section tr {
   position: relative;
 }

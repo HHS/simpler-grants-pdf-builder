@@ -391,6 +391,11 @@
             {% endif %}
           {% else %}
             {% if subsection.name|lower != 'basic information' %}
+              {% spaceless %}
+              {% if 'page-break-before' in subsection.html_class %}
+                {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
+              {% endif %}
+              {% endspaceless %}
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                 {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
               {% endwith %}
