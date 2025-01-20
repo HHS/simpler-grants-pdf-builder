@@ -179,11 +179,7 @@
     <ol class="usa-list usa-list--unstyled">
 
       <li class="toc--section-name toc--no-icon toc--before-you-begin">
-        <div class="toc--section-name--wrapper">
-          <ol class="usa-list usa-list--unstyled">
-            <li class="toc--subsection-name"><a href="#section--before-you-begin">Before you begin</a></li>
-          </ol>
-        </div>
+        <a href="#section--before-you-begin">Before you begin</a>
       </li>
 
       {% for section in nofo.sections.all|dictsort:"order" %}
@@ -210,11 +206,7 @@
           </li>
         {% else %}
           <li class="toc--section-name toc--no-icon toc--{{ section.html_id }}">
-            <div class="toc--section-name--wrapper">
-              <ol class="usa-list usa-list--unstyled">
-                <li class="toc--subsection-name"><a href="#section--{{ section.html_id }}">{{ section.name }}</a></li>
-              </ol>
-            </div>
+            <a href="#section--{{ section.html_id }}">{{ section.name }}</a>
           </li>
         {% endif%}
       {% endfor %}
