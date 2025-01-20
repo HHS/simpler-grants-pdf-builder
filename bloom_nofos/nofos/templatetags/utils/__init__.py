@@ -210,6 +210,10 @@ def find_elements_with_character(element, container, character="~"):
 
 
 def filter_breadcrumb_sections(sections):
+    """
+    Filters a list of section objects to include only those whose names
+    start with specific keywords: "step", "contacts", or "learn" (case-insensitive).
+    """
     return [
         section
         for section in sections
@@ -218,9 +222,20 @@ def filter_breadcrumb_sections(sections):
 
 
 def get_breadcrumb_text(section_name):
-    # Map section names to their breadcrumb link text
-    name_map = {
+    """
+    Maps a section name to its corresponding breadcrumb link text.
+
+    This function uses a predefined mapping to convert longer section names
+    into concise breadcrumb link text. If no match is found, it returns a default
+    placeholder ("⚠️ TODO ⚠️").
+
+    Notes:
+        - The mapping is case-insensitive.
+        - Partial matches are used, so "Get Ready to Apply" will match "ready".
+    """
+    breadcrumb_text_map = {
         "review the opportunity": "Review",
+        "review the funding opportunity": "Review",
         "ready": "Get Ready",
         "write your application": "Write",
         "understand review": "Understand",
@@ -232,7 +247,7 @@ def get_breadcrumb_text(section_name):
     }
 
     # Find a match in name_map
-    for key, value in name_map.items():
+    for key, value in breadcrumb_text_map.items():
         if key in section_name.lower():
             return value
 

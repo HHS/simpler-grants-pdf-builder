@@ -14,7 +14,9 @@ from nofos.templatetags.utils import (
     add_class_to_table_rows,
     convert_paragraph_to_searchable_hr,
     find_elements_with_character,
+    filter_breadcrumb_sections,
     format_footnote_ref_html,
+    get_breadcrumb_text,
     get_footnote_type,
     get_parent_td,
     is_callout_box_table_markdown,
@@ -23,6 +25,11 @@ from nofos.templatetags.utils import (
     match_numbered_sublist,
     wrap_text_before_colon_in_strong,
 )
+
+
+class MockSection:
+    def __init__(self, name):
+        self.name = name
 
 
 class TestAddClassIfNotExists(TestCase):
@@ -708,6 +715,103 @@ class TestFindElementsWithChar(TestCase):
         container = []
         find_elements_with_character(soup, container, "~")
         self.assertEqual(len(container), 0)
+
+
+class FilterBreadcrumbSectionsTests(TestCase):
+
+    def setUp(self):
+        # Mock sections as objects with a `name` attribute
+        self.sections = [
+            MockSection("Appendix: RESEP Outcomes Reporting System"),
+            MockSection("Appendix B: Sample Attachment Templates"),
+            MockSection("Appendix A: List of Eligible Applicants"),
+            MockSection("Step 6. Learn What Happens After Award"),
+            MockSection("Step 1: Review the Funding Opportunity"),
+            MockSection("Appendix A: Additional Activity Detail"),
+            MockSection("Step 4: Learn About Review and Award"),
+            MockSection("Step 4: Learn About Review & Award"),
+            MockSection("Step 3: Prepare Your Application"),
+            MockSection("Appendix C: Glossary"),
+            MockSection("Contacts and Support"),
+            MockSection("Contacts & Support"),
+        ]
+
+    def test_filter_breadcrumb_sections(self):
+        # Expected filtered sections
+        expected_sections = [
+            "Step 6. Learn What Happens After Award",
+            "Step 1: Review the Funding Opportunity",
+            "Step 4: Learn About Review and Award",
+            "Step 4: Learn About Review & Award",
+            "Step 3: Prepare Your Application",
+            "Contacts and Support",
+            "Contacts & Support",
+        ]
+
+        filtered_sections = filter_breadcrumb_sections(self.sections)
+
+        # Extract names for comparison
+        filtered_section_names = [section.name for section in filtered_sections]
+        self.assertEqual(filtered_section_names, expected_sections)
+
+    def test_empty_list_of_sections(self):
+        filtered_sections = filter_breadcrumb_sections([])
+        self.assertEqual(filtered_sections, [])
+
+    def test_no_matching_sections(self):
+        no_matching_sections = [
+            MockSection("Appendix: Additional Notes"),
+            MockSection("Glossary: Key Terms"),
+            MockSection("Overview of Funding Opportunity"),
+            MockSection("Appendix C: Glossary"),
+        ]
+        filtered_sections = filter_breadcrumb_sections(no_matching_sections)
+        self.assertEqual(filtered_sections, [])
+
+
+class GetBreadcrumbTextTests(TestCase):
+
+    def test_get_breadcrumb_text(self):
+        sections = [
+            MockSection("Step 1: Review the Funding Opportunity"),
+            MockSection("Step 3: Prepare Your Application"),
+            MockSection("Step 3: Understand Review, Selection, and Award"),
+            MockSection("Step 5: Learn What Happens After the Award"),
+            MockSection("Step 5: Submit Your Application"),
+            MockSection("Step 6: Learn What Happens After Award"),
+            MockSection("Contacts and Support"),
+            MockSection("Contacts & Support"),
+            MockSection("Appendix A: List of Eligible Applicants"),
+        ]
+
+        expected_results = [
+            ("Step 1: Review the Funding Opportunity", "Review"),
+            ("Step 3: Prepare Your Application", "Prepare"),
+            ("Step 3: Understand Review, Selection, and Award", "Understand"),
+            ("Step 5: Learn What Happens After the Award", "Award"),
+            ("Step 5: Submit Your Application", "Submit"),
+            ("Step 6: Learn What Happens After Award", "Award"),
+            ("Contacts and Support", "Contacts"),
+            ("Contacts & Support", "Contacts"),
+            ("Appendix A: List of Eligible Applicants", "⚠️ TODO ⚠️"),
+        ]
+
+        for section, expected in expected_results:
+            with self.subTest(section=section):
+                self.assertEqual(get_breadcrumb_text(section), expected)
+
+    def test_case_insensitivity(self):
+        self.assertEqual(
+            get_breadcrumb_text("step 3: prepare your application"), "Prepare"
+        )
+        self.assertEqual(
+            get_breadcrumb_text("STEP 3: PREPARE YOUR APPLICATION"), "Prepare"
+        )
+
+    def test_unmapped_section(self):
+        self.assertEqual(
+            get_breadcrumb_text("Appendix Z: Future Considerations"), "⚠️ TODO ⚠️"
+        )
 
 
 class TestGetParentTd(TestCase):
