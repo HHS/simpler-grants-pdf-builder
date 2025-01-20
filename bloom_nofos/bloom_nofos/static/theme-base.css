@@ -1225,13 +1225,13 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
 
   /* Page break rules */
-  .page-break-before--container .page-break-before,
+  .page-break--hr--container .page-break-before,
   .page-break-before--heading {
     break-before: page !important;
     page-break-before: always !important;
   }
 
-  .page-break-before--container .page-break-after,
+  .page-break--hr--container .page-break-after,
   .page-break-after--heading {
     break-after: page !important;
     page-break-after: always !important;
