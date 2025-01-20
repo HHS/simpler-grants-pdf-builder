@@ -497,7 +497,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break</p>"
-        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -522,7 +522,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break</p><p>page-break</p>"
-        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         for p in soup.find_all("p"):
             convert_paragraph_to_searchable_hr(p)
@@ -533,7 +533,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break-before</p>"
-        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -542,7 +542,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<div><p>page-break</p></div>"
-        expected_html = '<div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
+        expected_html = '<div><div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -561,7 +561,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break-before</p><p>page-break-before</p>"
-        expected_html = '<div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         for p in soup.find_all("p"):
             convert_paragraph_to_searchable_hr(p)
@@ -571,7 +571,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<div><p>page-break-before</p></div>"
-        expected_html = '<div><div class="page-break--hr--container page-break-before--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
+        expected_html = '<div><div class="page-break--hr--container"><hr class="page-break-before page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -581,7 +581,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break-after</p>"
-        expected_html = '<div class="page-break--hr--container page-break-after--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -600,7 +600,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>page-break-after</p><p>page-break-after</p>"
-        expected_html = '<div class="page-break--hr--container page-break-after--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container page-break-after--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div><div class="page-break--hr--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         for p in soup.find_all("p"):
             convert_paragraph_to_searchable_hr(p)
@@ -608,7 +608,7 @@ class ModifyHtmlTests(TestCase):
 
     def test_convert_paragraph_to_searchable_hr_with_nested_tags_page_break_after(self):
         original_html = "<div><p>page-break-after</p></div>"
-        expected_html = '<div><div class="page-break--hr--container page-break-after--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
+        expected_html = '<div><div class="page-break--hr--container"><hr class="page-break-after page-break--hr"/><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -618,7 +618,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>column-break-before</p>"
-        expected_html = '<div class="page-break--hr--container column-break-before--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -637,7 +637,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>column-break-before</p><p>column-break-before</p>"
-        expected_html = '<div class="page-break--hr--container column-break-before--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div><div class="page-break--hr--container column-break-before--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div><div class="page-break--hr--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         for p in soup.find_all("p"):
             convert_paragraph_to_searchable_hr(p)
@@ -647,7 +647,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<div><p>column-break-before</p></div>"
-        expected_html = '<div><div class="page-break--hr--container column-break-before--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div></div>'
+        expected_html = '<div><div class="page-break--hr--container"><hr class="column-break-before page-break--hr"/><span class="page-break--hr--text">[ ← column-break-before ← ]</span></div></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -657,7 +657,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>column-break-after</p>"
-        expected_html = '<div class="page-break--hr--container column-break-after--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
@@ -676,7 +676,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<p>column-break-after</p><p>column-break-after</p>"
-        expected_html = '<div class="page-break--hr--container column-break-after--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div><div class="page-break--hr--container column-break-after--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div>'
+        expected_html = '<div class="page-break--hr--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div><div class="page-break--hr--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         for p in soup.find_all("p"):
             convert_paragraph_to_searchable_hr(p)
@@ -686,7 +686,7 @@ class ModifyHtmlTests(TestCase):
         self,
     ):
         original_html = "<div><p>column-break-after</p></div>"
-        expected_html = '<div><div class="page-break--hr--container column-break-after--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div></div>'
+        expected_html = '<div><div class="page-break--hr--container"><hr class="column-break-after page-break--hr"/><span class="page-break--hr--text">[ → column-break-after → ]</span></div></div>'
         soup = BeautifulSoup(original_html, "html.parser")
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
