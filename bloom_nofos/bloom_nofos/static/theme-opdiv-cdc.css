@@ -137,10 +137,6 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--cdc-blue);
 }
 
-.toc ol ol li a {
-  color: var(--color--black);
-}
-
 /* Before you begin page */
 
 .before-you-begin h2 {

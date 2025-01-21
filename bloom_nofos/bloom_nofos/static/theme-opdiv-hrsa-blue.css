@@ -68,10 +68,6 @@ h4 {
   color: var(--color--hrsa-blue);
 }
 
-.toc ol li a {
-  color: var(--color--black);
-}
-
 .toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
   background: var(--color--hrsa-blue);
 }
