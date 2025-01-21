@@ -90,6 +90,7 @@ div[role="heading"] {
   color: var(--color--ihs-blue);
 }
 
+.toc .toc--section-name.toc--no-icon a,
 .toc .toc--subsection-name a {
   color: var(--color--ihs-black);
 }
