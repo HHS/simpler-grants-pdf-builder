@@ -9,6 +9,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add 2 new images for CDC-RFA-CE-25-0114-b
 - Can use 'page-break' to add a page-break in markdown body
 
 ### Changed
