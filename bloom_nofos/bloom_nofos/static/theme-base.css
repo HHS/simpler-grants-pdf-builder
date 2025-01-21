@@ -799,6 +799,10 @@ div[role="heading"] {
   margin-top: 8px;
 }
 
+.toc.toc--small ol li {
+  margin-top: 5px;
+}
+
 .toc a {
   display: inline-block;
   position: relative;
