@@ -817,6 +817,7 @@ div[role="heading"] {
 .toc .toc--section-name.toc--no-icon a,
 .toc .toc--subsection-name a {
   font-size: 11pt;
+  color: var(--color--black);
 }
 
 .toc .toc--section-name .toc--section-name--a {

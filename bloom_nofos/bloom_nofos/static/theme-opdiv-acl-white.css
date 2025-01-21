@@ -45,10 +45,6 @@ h3 {
   color: var(--color--acl-blue);
 }
 
-.toc ol li a {
-  color: var(--color--black);
-}
-
 .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--acl-blue);
 }

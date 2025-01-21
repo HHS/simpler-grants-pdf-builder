@@ -48,10 +48,6 @@ h4 {
 
 /* Table of contents */
 
-.toc ol li a {
-  color: var(--color--black);
-}
-
 .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--hrsa-blue);
 }
