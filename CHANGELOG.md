@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add classes to Table of Contents based on number of items
+  - The idea is to shrink the table of contents a bit if lots of items show up
 - Add a new icon for "award" (only for 2 CDC NOFOs for now)
 - Add 2 new images for CDC-RFA-CE-25-0114-b
 - Add cover image for CDC-RFA-CK-25-0125

@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_classes_to_lists add_classes_to_headings add_captions_to_tables split_char_and_remove get_breadcrumb convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_classes_to_lists add_classes_to_headings add_classes_to_toc add_captions_to_tables split_char_and_remove get_breadcrumb convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section %}
 
 {% block metadata %}
   {% if nofo.author %}
@@ -173,7 +173,8 @@
     </div>
   </section>
 
-  <section id="section--toc" class="toc">
+  <!-- TABLE OF CONTENTS -->
+  <section id="section--toc" class="toc {{ nofo|add_classes_to_toc }}">
     <h2 id="section--toc--heading">Contents</h2>
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
@@ -214,6 +215,7 @@
     {% endspaceless %}
   </section>
 
+  <!-- BEFORE YOU BEGIN PAGE -->
   <section id="section--before-you-begin" class="before-you-begin{% if nofo.sole_source_justification %} before-you-begin--sole-source{% endif %}">
     <div class="section--before-you-begin--icon">
       {% if "thin" in nofo.icon_style %}
