@@ -6,7 +6,6 @@ from django.utils.safestring import mark_safe
 
 from .utils import wrap_text_before_colon_in_strong
 
-
 register = template.Library()
 
 
