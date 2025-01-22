@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
-from django.forms import ValidationError
 import requests
 from bs4 import BeautifulSoup
+from django.forms import ValidationError
 from django.test import TestCase
 from freezegun import freeze_time
 
@@ -1437,7 +1437,9 @@ class AddPageBreaksToHeadingsTests(TestCase):
         self.nofo = Nofo.objects.create(
             title="Test Nofo AddPageBreaksToHeadingsTests", opdiv="Test opdiv"
         )
-        self.section = Section.objects.create(nofo=self.nofo, name="Test Section", order=1)
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Test Section", order=1
+        )
 
         # Get the default subsection that was automatically created
         self.default_subsection = self.section.subsections.get(order=1)

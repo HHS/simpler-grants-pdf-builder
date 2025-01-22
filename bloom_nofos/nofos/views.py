@@ -53,7 +53,7 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_nofo_group_permission_func,
 )
-from .models import THEME_CHOICES, Nofo, Section, Subsection, HeadingValidationError
+from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
 from .nofo import (
     add_body_if_no_body,
     add_em_to_de_minimis,

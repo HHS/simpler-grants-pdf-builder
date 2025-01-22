@@ -1,10 +1,7 @@
 from django import template
 
-from .utils import (
-    filter_breadcrumb_sections as _filter_breadcrumb_sections,
-    get_breadcrumb_text,
-)
-
+from .utils import filter_breadcrumb_sections as _filter_breadcrumb_sections
+from .utils import get_breadcrumb_text
 
 register = template.Library()
 

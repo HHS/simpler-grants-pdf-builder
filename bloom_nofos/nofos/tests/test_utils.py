@@ -15,9 +15,9 @@ from nofos.utils import (
     get_icon_path_choices,
     match_view_url,
 )
-from ..models import Nofo, Section, Subsection
-
 from users.models import BloomUser as User
+
+from ..models import Nofo, Section, Subsection
 
 
 class CreateNofoAuditEventTests(TestCase):
