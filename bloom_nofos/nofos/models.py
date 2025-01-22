@@ -1,12 +1,12 @@
 import cssutils
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 from martor.models import MartorField
-from django.core.validators import MaxLengthValidator
 
 from .utils import add_html_id_to_subsection
 
