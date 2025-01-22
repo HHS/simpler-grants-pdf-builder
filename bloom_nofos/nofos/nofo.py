@@ -7,9 +7,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
+import mammoth
 import markdown
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
+from constance import config
 from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
@@ -18,13 +20,77 @@ from slugify import slugify
 
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import md
-from .utils import add_html_id_to_subsection, clean_string, create_subsection_html_id
+from .utils import (
+    add_html_id_to_subsection,
+    clean_string,
+    create_subsection_html_id,
+    style_map_manager,
+)
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 # Use Firefox user agent
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
 }
+
+
+###########################################################
+#################### NOFO IMPORT FUNCS ####################
+###########################################################
+
+
+def parse_uploaded_file_as_html_string(uploaded_file):
+    """
+    Given an uploaded file, return raw HTML as a string.
+    Raise a ValidationError if invalid or missing.
+    """
+    if not uploaded_file:
+        raise ValidationError("Oops! No fos uploaded.")
+
+    content_type = uploaded_file.content_type
+
+    if content_type == "text/html":
+        # Decode the HTML file
+        return uploaded_file.read().decode("utf-8")
+
+    elif (
+        content_type
+        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ):
+        # Convert DOCX to HTML
+        try:
+            doc_to_html_result = mammoth.convert_to_html(
+                uploaded_file, style_map=style_map_manager.get_style_map()
+            )
+        except Exception as e:
+            raise ValidationError(f"Error importing .docx file: {e}")
+
+        # If strict mode, check for warnings
+        if config.WORD_IMPORT_STRICT_MODE:
+            warnings = [
+                m.message
+                for m in doc_to_html_result.messages
+                if m.type == "warning"
+                and all(
+                    style_ignore not in m.message
+                    for style_ignore in style_map_manager.get_styles_to_ignore()
+                )
+            ]
+            if warnings:
+                warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
+                raise ValidationError(
+                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}"
+                )
+
+        return doc_to_html_result.value
+
+    else:
+        raise ValidationError("Please import a .docx or HTML file.")
+
+
+###########################################################
+#################### UTILITY FUNCS ####################
+###########################################################
 
 
 def replace_chars(file_content):
@@ -67,6 +133,11 @@ def replace_links(file_content):
         file_content = file_content.replace(_from, _to)
 
     return file_content
+
+
+###########################################################
+##################### BUILD THE NOFO ######################
+###########################################################
 
 
 @transaction.atomic

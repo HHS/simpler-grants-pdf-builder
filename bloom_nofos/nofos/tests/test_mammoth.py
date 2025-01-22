@@ -1,7 +1,8 @@
 import os
-from django.test import TestCase
-from bs4 import BeautifulSoup
+
 import mammoth
+from bs4 import BeautifulSoup
+from django.test import TestCase
 from nofos.utils import style_map_manager
 
 
