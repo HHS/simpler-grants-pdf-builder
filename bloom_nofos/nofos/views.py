@@ -78,6 +78,7 @@ from .nofo import (
     get_subsections_from_sections,
     join_nested_lists,
     overwrite_nofo,
+    parse_uploaded_file_as_html_string,
     preserve_bookmark_links,
     preserve_bookmark_targets,
     preserve_heading_links,
@@ -242,67 +243,23 @@ def nofo_import(request, pk=None):
     if request.method == "POST":
         uploaded_file = request.FILES.get("nofo-import", None)
 
-        if not uploaded_file:
-            messages.add_message(request, messages.ERROR, "Oops! No fos uploaded")
-            return redirect(view_path, **kwargs)
+        try:
+            file_content = parse_uploaded_file_as_html_string(uploaded_file)
+        except ValidationError as e:
+            error_message = ",".join(e.messages)
 
-        file_content = ""
-
-        # html file
-        if uploaded_file.content_type == "text/html":
-            file_content = uploaded_file.read().decode(
-                "utf-8"
-            )  # Decode bytes to a string
-
-        # Word document
-        elif (
-            uploaded_file.content_type
-            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ):
-            try:
-                doc_to_html_result = mammoth.convert_to_html(
-                    uploaded_file, style_map=style_map_manager.get_style_map()
-                )
-            except Exception as e:
-                return HttpResponseBadRequest(
-                    "Error importing .docx file: {}".format(e)
+            # Render a distinct error page for mammoth style map warnings
+            if "Mammoth" in error_message:
+                return render(
+                    request,
+                    "400.html",
+                    status=422,
+                    context={"error_message_html": error_message, "status": 422},
                 )
 
-            if config.WORD_IMPORT_STRICT_MODE:
-                # if strict mode, throw an error if there are warning messages
-                warnings = [
-                    m.message
-                    for m in doc_to_html_result.messages
-                    if m.type == "warning"
-                    and all(
-                        style_to_ignore not in m.message
-                        for style_to_ignore in style_map_manager.get_styles_to_ignore()
-                    )
-                ]
-                if warnings:
-                    warnings_str = "<ul><li>{}</li></ul>".format(
-                        "</li><li>".join(warnings)
-                    )
-                    return render(
-                        request,
-                        "400.html",
-                        status=422,
-                        context={
-                            "error_message_html": "<p>Warning: not implemented for .docx file:</p> {}".format(
-                                warnings_str
-                            ),
-                            "status": 422,
-                        },
-                    )
-
-            file_content = doc_to_html_result.value
-
-        else:
-            print("uploaded_file.content_type", uploaded_file.content_type)
-            messages.add_message(
-                request, messages.ERROR, "Yikes! Please import a .docx or HTML file"
-            )
-            return redirect(view_path, **kwargs)
+            # These errors show up as inline validation errors
+            messages.error(request, error_message)
+            return redirect("nofos:nofo_import")
 
         # replace problematic characters/links on import
         cleaned_content = replace_links(replace_chars(file_content))
