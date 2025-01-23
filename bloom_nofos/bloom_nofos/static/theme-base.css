@@ -18,7 +18,8 @@ div.section--title-page {
 /* Assign page breaks */
 
 div.title-page,
-section {
+section,
+.callout-box.page-break-before {
   page-break-before: always;
 }
 
@@ -1231,7 +1232,8 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
   /* Page break rules */
   .page-break--hr--container .page-break-before,
-  .page-break-before--heading {
+  .page-break-before--heading,
+  .callout-box.page-break-before {
     break-before: page !important;
     page-break-before: always !important;
   }
