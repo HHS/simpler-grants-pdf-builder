@@ -29,6 +29,7 @@ django-mirror = "^0.1.13"
 mammoth = "^1.7.1"
 tomli = "^2.0.2"
 django-ninja = "^1.3.0"
+pyjwt = "^2.8.0"
 
 # sortable = "@3", check nofo_index.html
 
