@@ -88,6 +88,45 @@ def parse_uploaded_file_as_html_string(uploaded_file):
         raise ValidationError("Please import a .docx or HTML file.")
 
 
+def process_nofo_html(soup, top_heading_level):
+    """
+    Takes a soup object, cleans it up and mutates it, and returns a modified soup object.
+    """
+    soup = add_body_if_no_body(soup)
+
+    # When DEBUG is True, write out the soup to a local debug file
+    if settings.DEBUG:
+        # Build a path to your _temp folder in fixtures (create if needed)
+        debug_dir = os.path.join(settings.BASE_DIR, "nofos", "fixtures", "_temp")
+        # create dir if not exists
+        os.makedirs(debug_dir, exist_ok=True)
+
+        output_file_path = os.path.join(debug_dir, "debug_output.html")
+        with open(output_file_path, "w", encoding="utf-8") as file:
+            file.write(str(soup))
+
+    decompose_instructions_tables(soup)
+    join_nested_lists(soup)
+    add_strongs_to_soup(soup)
+    preserve_bookmark_links(soup)
+    preserve_heading_links(soup)
+    preserve_table_heading_links(soup)
+    clean_heading_tags(soup)
+    clean_table_cells(soup)
+    unwrap_empty_elements(soup)
+    decompose_empty_tags(soup)
+    combine_consecutive_links(soup)
+    remove_google_tracking_info_from_links(soup)
+    replace_src_for_inline_images(soup)
+    add_endnotes_header_if_exists(soup, top_heading_level)
+    unwrap_nested_lists(soup)
+    preserve_bookmark_targets(soup)
+
+    soup = add_em_to_de_minimis(soup)
+
+    return soup, top_heading_level
+
+
 ###########################################################
 #################### UTILITY FUNCS ####################
 ###########################################################
