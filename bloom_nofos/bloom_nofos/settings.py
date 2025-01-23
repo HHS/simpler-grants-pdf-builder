@@ -508,3 +508,25 @@ GROUP_CHOICES = [
     ("ihs", "IHS: Indian Health Service"),
     ("staging", "Staging environment"),
 ]
+
+# Login.gov Configuration
+LOGIN_GOV = {
+    "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
+    "OIDC_URL": env(
+        "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
+    ),
+    "PRIVATE_KEY": env("LOGIN_GOV_PRIVATE_KEY", default=""),
+    "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
+    "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
+}
+
+# Add Login.gov authentication backend
+AUTHENTICATION_BACKENDS = [
+    "users.auth.backend.LoginGovBackend",
+    "django.contrib.auth.backends.ModelBackend",  # Keep default backend as fallback
+]
+
+# Login/Logout URLs
+LOGIN_URL = "login"  # URL name for the login view
+LOGIN_REDIRECT_URL = "/"  # Where to redirect after successful login
+LOGOUT_REDIRECT_URL = "/"  # Where to redirect after logout
