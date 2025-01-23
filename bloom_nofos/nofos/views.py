@@ -84,6 +84,7 @@ from .nofo import (
     preserve_heading_links,
     preserve_subsection_metadata,
     preserve_table_heading_links,
+    process_nofo_html,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_links,
@@ -265,37 +266,12 @@ def nofo_import(request, pk=None):
 
         # replace problematic characters/links on import
         cleaned_content = replace_links(replace_chars(file_content))
-        soup = BeautifulSoup(cleaned_content, "html.parser")  # Parse the cleaned HTML
-        soup = add_body_if_no_body(soup)
-
-        # # Specify the output file path
-        # output_file_path = "debug_output.html"
-
-        # # Write the HTML content to the file
-        # with open(output_file_path, "w", encoding="utf-8") as file:
-        #     file.write(str(soup))
-
-        # if there are no h1s, then h2s are the new top
+        # Create a 'soup' object from our HTML string
+        soup = BeautifulSoup(cleaned_content, "html.parser")
+        # if there are no h1s, then h2s are the top heading level
         top_heading_level = "h1" if soup.find("h1") else "h2"
 
-        # mutate the HTML
-        decompose_instructions_tables(soup)
-        join_nested_lists(soup)
-        add_strongs_to_soup(soup)
-        preserve_bookmark_links(soup)
-        preserve_heading_links(soup)
-        preserve_table_heading_links(soup)
-        clean_heading_tags(soup)
-        clean_table_cells(soup)
-        unwrap_empty_elements(soup)
-        decompose_empty_tags(soup)
-        combine_consecutive_links(soup)
-        remove_google_tracking_info_from_links(soup)
-        replace_src_for_inline_images(soup)
-        add_endnotes_header_if_exists(soup, top_heading_level)
-        unwrap_nested_lists(soup)
-        preserve_bookmark_targets(soup)
-        soup = add_em_to_de_minimis(soup)
+        process_nofo_html(soup, top_heading_level)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup, top_heading_level)
