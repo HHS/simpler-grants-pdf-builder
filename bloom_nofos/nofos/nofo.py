@@ -124,7 +124,7 @@ def process_nofo_html(soup, top_heading_level):
 
     soup = add_em_to_de_minimis(soup)
 
-    return soup, top_heading_level
+    return soup
 
 
 ###########################################################
