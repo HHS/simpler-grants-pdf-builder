@@ -271,7 +271,7 @@ def nofo_import(request, pk=None):
         # if there are no h1s, then h2s are the top heading level
         top_heading_level = "h1" if soup.find("h1") else "h2"
 
-        process_nofo_html(soup, top_heading_level)
+        soup = process_nofo_html(soup, top_heading_level)
 
         # format all the data as dicts
         sections = get_sections_from_soup(soup, top_heading_level)
