@@ -2,10 +2,13 @@ import json
 import jwt
 import time
 import uuid
+import logging
 from urllib.parse import urlencode
 import requests
 from django.conf import settings
 from django.urls import reverse
+
+logger = logging.getLogger(__name__)
 
 
 class LoginGovClient:
@@ -13,10 +16,15 @@ class LoginGovClient:
 
     def __init__(self):
         self.client_id = settings.LOGIN_GOV["CLIENT_ID"]
-        self.oidc_url = settings.LOGIN_GOV["OIDC_URL"].rstrip("/")
+        # Strip any whitespace from the URL
+        self.oidc_url = settings.LOGIN_GOV["OIDC_URL"].strip().rstrip("/")
         self.private_key = settings.LOGIN_GOV["PRIVATE_KEY"]
-        self.redirect_uri = settings.LOGIN_GOV["REDIRECT_URI"]
+        self.redirect_uri = settings.LOGIN_GOV["REDIRECT_URI"].strip()
         self.acr_values = settings.LOGIN_GOV["ACR_VALUES"]
+
+        logger.debug(f"Initialized LoginGovClient with OIDC URL: {self.oidc_url}")
+        logger.debug(f"Redirect URI: {self.redirect_uri}")
+        logger.debug(f"Client ID: {self.client_id}")
 
     def get_authorization_url(self, state=None):
         """Generate the Login.gov authorization URL for the initial redirect."""
@@ -33,7 +41,10 @@ class LoginGovClient:
             "nonce": nonce,
         }
 
-        return f"{self.oidc_url}/authorize?{urlencode(params)}", state, nonce
+        auth_url = f"{self.oidc_url}/authorize?{urlencode(params)}"
+        logger.debug(f"Generated authorization URL: {auth_url}")
+
+        return auth_url, state, nonce
 
     def get_token(self, code):
         """Exchange authorization code for tokens."""
