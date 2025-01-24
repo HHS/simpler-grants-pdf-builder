@@ -18,8 +18,7 @@ div.section--title-page {
 /* Assign page breaks */
 
 div.title-page,
-section,
-.callout-box.page-break-before {
+section {
   page-break-before: always;
 }
 

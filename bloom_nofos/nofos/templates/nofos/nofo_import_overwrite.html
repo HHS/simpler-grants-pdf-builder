@@ -29,6 +29,19 @@
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
+
+    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." value=title %}
+      {% for message in messages %}
+        {% if "error" in message.tags %}
+          {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
+        {% endif %}
+      {% empty %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint only %}
+      {% endfor %}
+    {% endwith %}
+
+    {% include "includes/loading_horse.html" %}
+
     <div class="usa-form-group">
       <div class="usa-checkbox">
         <input
@@ -43,17 +56,6 @@
         </label>
       </div>
     </div>
-    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." value=title %}
-      {% for message in messages %}
-        {% if "error" in message.tags %}
-          {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
-        {% endif %}
-      {% empty %}
-        {% include "includes/file_input.html" with id=id label=label hint=hint only %}
-      {% endfor %}
-    {% endwith %}
-
-    {% include "includes/loading_horse.html" %}
 
     <button class="usa-button margin-top-3 submit-button" type="submit">Re-import</button>
   </form>
