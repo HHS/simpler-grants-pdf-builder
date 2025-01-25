@@ -310,6 +310,11 @@ style_map_manager.add_style(
     location_in_nofo="Step 1 > Cost-sharing commitments > Reduced Match",
     note="This signifies an h5",
 )
+style_map_manager.add_style(
+    style_rule="r[style-name='Heading 6 Char'] => h6:fresh",
+    location_in_nofo="Step 1 > Purpose > Strategies and activities >  Strategy 1:",
+    note="This signifies an h6",
+)
 
 # paragraph styles
 style_map_manager.add_style(
@@ -368,6 +373,11 @@ style_map_manager.add_style(
     note="Don't do anything: regular body text.",
 )
 style_map_manager.add_style(
+    style_rule="p[style-name='p_0'] => p:fresh",
+    location_in_nofo="Step 1 > Work plan > Text inside of a table",
+    note="Don't do anything: regular body text.",
+)
+style_map_manager.add_style(
     style_rule="p[style-name='Main Heading'] => p",
     location_in_nofo="Step 1 > Key facts > number",
     note="Don't do anything: regular body text (may not be true for all, but let's assume).",
@@ -406,6 +416,11 @@ style_map_manager.add_style(
     style_rule="p[style-name='No Spacing'] => span",
     location_in_nofo="This represents a non-breaking space",
     note="Convert to a non-breaking space.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Instructions'] => p:fresh",
+    location_in_nofo="Step 1 > Program description > Background overview > List items",
+    note="These are lists in the document we have seen, but the p:list rules above will catch them first",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Instruction Box Heading'] => strong.instruction-box-heading:fresh",
