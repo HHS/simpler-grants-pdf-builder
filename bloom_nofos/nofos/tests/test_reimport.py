@@ -1,9 +1,9 @@
-from django.test import TransactionTestCase, Client
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.messages import get_messages
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TransactionTestCase
+from django.urls import reverse
 from nofos.models import Nofo, Section, Subsection
 from users.models import BloomUser
-from django.urls import reverse
 
 
 class NofoReimportTests(TransactionTestCase):
