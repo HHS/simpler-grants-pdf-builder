@@ -5,9 +5,13 @@ from . import views
 app_name = "nofos"
 urlpatterns = [
     path("", views.NofosListView.as_view(), name="nofo_index"),
-    path("import", views.nofo_import_new, name="nofo_import"),
+    path("import", views.NofosImportNewView.as_view(), name="nofo_import"),
     path("<int:pk>/delete", views.NofosArchiveView.as_view(), name="nofo_archive"),
-    path("<int:pk>/import", views.nofo_import_overwrite, name="nofo_import_overwrite"),
+    path(
+        "<int:pk>/import",
+        views.NofosImportOverwriteView.as_view(),
+        name="nofo_import_overwrite",
+    ),
     path(
         "<int:pk>/import/title",
         views.NofoImportTitleView.as_view(),
