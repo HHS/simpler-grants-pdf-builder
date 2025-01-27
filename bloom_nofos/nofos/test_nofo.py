@@ -4336,13 +4336,6 @@ class PreserveHeadingLinksTest(TestCase):
         result = str(soup)
         self.assertEqual(result, html)
 
-    def test_empty_anchor_wrapped_does_not_become_heading_id(self):
-        html = '<p><a id="_About_Priority_Populations"></a></p><h4>About priority populations</h4>'
-        soup = BeautifulSoup(html, "html.parser")
-        preserve_heading_links(soup)
-        result = str(soup)
-        self.assertEqual(result, html)
-
     def test_two_empty_anchors_preceding_heading_id(
         self,
     ):
@@ -4473,6 +4466,76 @@ class PreserveTableHeadingLinksTest(TestCase):
         result = str(soup)
         expected = '<p id="table-heading--Table7">About priority populations</p><table></table><a href="#table-heading--Table7">Table 5: About priority populations</a><a href="#table-heading--Table7">Table 6: About priority populations</a><a href="#table-heading--Table7">Table 7: About priority populations</a>'
         self.assertEqual(result, expected)
+
+    # Test <a> tags wrapped in paragraphs
+    def test_empty_anchor_wrapped_in_p_becomes_heading_id(self):
+        html = '<p><a id="_About_Priority_Populations"></a></p><h4>About priority populations</h4>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<p></p><h4 id="_About_Priority_Populations">About priority populations</h4>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_within_paragraph_preceding_heading(self):
+        # first ID is the one we keep
+        html = """
+        <p><a id="_Paper_Submissions"></a><a id="_Exemptions_for_Paper"></a></p>
+        <h4>About priority populations</h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = """
+        <p></p>\n<h4 id="_Paper_Submissions">About priority populations</h4>
+        """
+        self.assertEqual(result.strip(), expected.strip())
+
+    def test_empty_anchor_in_paragraph_with_non_empty_anchor_preceding_heading_does_NOT_become_heading_id(
+        self,
+    ):
+        html = """
+        <p><a id="_Valid_ID"></a><a id="_Invalid_ID">Not empty</a></p><h4>About priority populations</h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        # Since one of the <a> tags is non-empty, the <p> is ignored
+        self.assertEqual(result.strip(), html.strip())
+
+    def test_multiple_paragraphs_with_empty_anchors_preceding_heading(self):
+        html = """
+        <p><a id="_First_ID"></a></p>
+        <p><a id="_Second_ID"></a></p>
+        <h4>About priority populations</h4>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        # Only the last valid <a> tag's ID is used
+        expected = (
+            '<p></p>\n<p></p>\n<h4 id="_Second_ID">About priority populations</h4>'
+        )
+
+        self.assertEqual(result.strip(), expected.strip())
+
+    def test_complex_case_with_paragraph_and_multiple_anchors(self):
+        html = """
+        <p><a id="_Third_ID"></a><span>Other content</span></p>
+        <p><a id="_First_ID"></a><a id="_Second_ID"></a></p>
+        <h4><a id="_Inside_ID"></a>About priority populations</h4>
+        <a href="#_First_ID">Link 1</a>
+        <a href="#_Third_ID">Link 2</a>
+        <a href="#_Inside_ID">Link 3</a>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        # ID inside the heading takes precedence, links should update
+        # Note that the "_Third_ID" href doesn't change because the <a> tag for it is not in an empty <p>
+        expected = """
+        <p><a id="_Third_ID"></a><span>Other content</span></p>\n<p></p>\n<h4 id="_Inside_ID">About priority populations</h4>\n<a href="#_Inside_ID">Link 1</a>\n<a href="#_Third_ID">Link 2</a>\n<a href="#_Inside_ID">Link 3</a>
+        """
+        self.assertEqual(result.strip(), expected.strip())
 
 
 class UnwrapNestedListsTest(TestCase):

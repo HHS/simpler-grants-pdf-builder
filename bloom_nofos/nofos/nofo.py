@@ -1971,16 +1971,49 @@ def preserve_heading_links(soup):
     This function mutates the soup!
 
     Preserves heading links by transferring IDs from empty <a> tags to their parent heading elements.
-    ALSO preserves heading links by transferring IDs from empty <a> tags directly preceding headings to those heading elements.
+    Also preserves heading links by transferring IDs from empty <a> tags that immediately precede headings
+    (either as standalone elements or as part of a <p> tag containing only <a> elements) to those heading elements.
 
-    This function searches for 2 kinds of <a> tags:
-    - all <a> tags that directly precede heading tags
-    - all <a> tags that are direct children of heading tags
+    This function processes the following cases:
+    1. Empty <a> tags that are direct children of heading tags.
+    2. Empty <a> tags that are direct siblings preceding heading tags.
+    3. Empty <a> tags nested within a <p> tag that directly precedes a heading tag.
+       - The <p> tag must contain only valid <a> tags (i.e., tags with an "id" attribute and no text).
 
-    If such an <a> tag is empty (i.e., contains no text), the function transfers the ID to the heading element and removes the empty <a> tag.
+    If such an <a> tag is empty (i.e., contains no text), the function transfers the ID from the <a> tag to the heading
+    element and removes the empty <a> tag from the soup.
 
-    Empty <a> tags are removed in a later step, so these were getting screened out and then we were losing the link to the heading.
+    This ensures that headings retain their linkable IDs, even after empty <a> tags are removed during HTML cleanup.
     """
+
+    def _is_valid_anchor(element):
+        """
+        Checks if an element is a valid anchor (<a> tag).
+        A valid anchor must:
+        - Be an <a> tag.
+        - Have an 'id' attribute.
+        - Contain no text or other content.
+        """
+        return (
+            element.name == "a"
+            and element.attrs.get("id")
+            and not element.get_text(strip=True)
+        )
+
+    def _is_valid_anchor_or_paragraph_containing_anchors(element):
+        """
+        Checks if an element is a valid anchor or paragraph.
+        - Valid anchor: <a> tag with no text and an ID.
+        - Valid paragraph: <p> tag containing only <a> tags with IDs, and no text.
+        """
+        if _is_valid_anchor(element):
+            return True
+        if element.name == "p":
+            # Ensure the <p> tag has no text content and all children are valid <a> tags
+            if not element.get_text(strip=True):
+                children = element.find_all(recursive=False)  # Direct children only
+                return all(_is_valid_anchor(child) for child in children)
+        return False
 
     def _transfer_id_and_decompose(heading, anchor):
         if heading and anchor.attrs.get("id"):
@@ -2007,13 +2040,17 @@ def preserve_heading_links(soup):
             previous_sibling = heading.find_previous_sibling()
 
             # Traverse back through preceding siblings
-            while (
+            while previous_sibling and _is_valid_anchor_or_paragraph_containing_anchors(
                 previous_sibling
-                and previous_sibling.name == "a"
-                and not previous_sibling.get_text(strip=True)
-                and not previous_sibling.contents
             ):
-                preceding_id_anchors.append(previous_sibling)
+                if previous_sibling.name == "a":
+                    # Append single valid <a> tag
+                    preceding_id_anchors.append(previous_sibling)
+                elif previous_sibling.name == "p":
+                    # For valid <p>, add all <a> children
+                    preceding_id_anchors.extend(
+                        previous_sibling.find_all("a", recursive=False)
+                    )
                 previous_sibling = previous_sibling.find_previous_sibling()
 
             # Process all preceding empty <a> tags
