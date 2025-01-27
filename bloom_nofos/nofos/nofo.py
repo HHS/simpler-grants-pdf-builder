@@ -127,6 +127,18 @@ def process_nofo_html(soup, top_heading_level):
     return soup
 
 
+def build_nofo_sections_and_subsections(soup, top_heading_level):
+    """
+    Builds sections and subsections as python dicts, ready to be used to create a new NOFO.
+    Raises ValidationError if no sections found.
+    """
+    sections = get_sections_from_soup(soup, top_heading_level)
+    if not len(sections):
+        raise ValidationError("That file does not contain a NOFO.")
+    sections = get_subsections_from_sections(sections, top_heading_level)
+    return sections
+
+
 ###########################################################
 #################### UTILITY FUNCS ####################
 ###########################################################

@@ -1,7 +1,6 @@
 import io
 
 import docraptor
-import mammoth
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -53,20 +52,12 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_nofo_group_permission_func,
 )
-from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
+from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
-    add_body_if_no_body,
-    add_em_to_de_minimis,
-    add_endnotes_header_if_exists,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
-    add_strongs_to_soup,
-    clean_heading_tags,
-    clean_table_cells,
-    combine_consecutive_links,
+    build_nofo_sections_and_subsections,
     create_nofo,
-    decompose_empty_tags,
-    decompose_instructions_tables,
     find_broken_links,
     find_external_link,
     find_external_links,
@@ -74,27 +65,16 @@ from .nofo import (
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
-    get_sections_from_soup,
-    get_subsections_from_sections,
-    join_nested_lists,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
-    preserve_bookmark_links,
-    preserve_bookmark_targets,
-    preserve_heading_links,
     preserve_subsection_metadata,
-    preserve_table_heading_links,
     process_nofo_html,
-    remove_google_tracking_info_from_links,
     replace_chars,
     replace_links,
-    replace_src_for_inline_images,
     restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_opdiv,
     suggest_nofo_title,
-    unwrap_empty_elements,
-    unwrap_nested_lists,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
 
@@ -235,19 +215,26 @@ class NofosArchiveView(GroupAccessObjectMixin, View):
         return render(request, self.template_name, {"nofo": nofo})
 
 
-def nofo_import(request, pk=None):
-    view_path = "nofos:nofo_import"
-    kwargs = {}
-    if pk:
-        nofo = get_object_or_404(Nofo, pk=pk)
-        view_path = "nofos:nofo_import_overwrite"
-        kwargs = {"pk": nofo.id}
-
+def nofo_import_new(request):
+    """
+    This view handles importing a new NOFO from an uploaded file.
+    """
     if request.method == "POST":
-        uploaded_file = request.FILES.get("nofo-import", None)
-
+        uploaded_file = request.FILES.get("nofo-import")
         try:
             file_content = parse_uploaded_file_as_html_string(uploaded_file)
+
+            # replace problematic characters/links on import
+            cleaned_content = replace_links(replace_chars(file_content))
+
+            # Create a 'soup' object from our HTML string
+            soup = BeautifulSoup(cleaned_content, "html.parser")
+            # if there are no h1s, then h2s are the top heading level
+            top_heading_level = "h1" if soup.find("h1") else "h2"
+
+            soup = process_nofo_html(soup, top_heading_level)
+            sections = build_nofo_sections_and_subsections(soup, top_heading_level)
+
         except ValidationError as e:
             error_message = ",".join(e.messages)
 
@@ -263,120 +250,111 @@ def nofo_import(request, pk=None):
             # These errors show up as inline validation errors
             messages.error(request, error_message)
             return redirect("nofos:nofo_import")
+        except Exception as e:
+            return HttpResponseBadRequest(f"500 error: {str(e)}")
 
-        # replace problematic characters/links on import
-        cleaned_content = replace_links(replace_chars(file_content))
-        # Create a 'soup' object from our HTML string
-        soup = BeautifulSoup(cleaned_content, "html.parser")
-        # if there are no h1s, then h2s are the top heading level
-        top_heading_level = "h1" if soup.find("h1") else "h2"
-
-        soup = process_nofo_html(soup, top_heading_level)
-
-        # format all the data as dicts
-        sections = get_sections_from_soup(soup, top_heading_level)
-        if not len(sections):
-            messages.add_message(
-                request,
-                messages.ERROR,
-                "Sorry, that file doesn’t contain a NOFO.",
-            )
-            return redirect(view_path, **kwargs)
-
-        sections = get_subsections_from_sections(sections, top_heading_level)
-        filename = uploaded_file.name.strip()
-
-        if pk:
-            # RE-IMPORT NOFO
-            if nofo.status in ["published", "review"]:
-                return HttpResponseBadRequest(
-                    "In review/Published NOFOs can’t be re-imported."
-                )
-
-            try:
-                nofo.filename = filename
-
-                # Preserve page breaks if checkbox is checked
-                preserved_page_breaks = {}
-                if request.POST.get("preserve_page_breaks") == "on":
-                    preserved_page_breaks = preserve_subsection_metadata(nofo, sections)
-
-                nofo = overwrite_nofo(nofo, sections)
-
-                # Restore page breaks if any were preserved
-                if preserved_page_breaks:
-                    nofo = restore_subsection_metadata(nofo, preserved_page_breaks)
-
-                add_headings_to_nofo(nofo)
-                add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup)
-                nofo.save()
-
-                # Build success message starting with the basic info
-                messages.add_message(
-                    request,
-                    messages.SUCCESS,
-                    "Re-imported NOFO from file: {}".format(nofo.filename),
-                )
-
-                # Create audit event for reimporting a nofo
-                create_nofo_audit_event(
-                    event_type="nofo_reimport", nofo=nofo, user=request.user
-                )
-
-                return redirect("nofos:nofo_edit", pk=nofo.id)
-
-            except ValidationError as e:
-                # Format validation errors with line breaks for readability
-                error_str = str(e)
-                if len(error_str) > 100:  # Add line breaks for long messages
-                    error_str = error_str.replace('["', '[\n\n"').replace(
-                        '"]', '"\n\n]'
-                    )
-                return HttpResponseBadRequest(f"Error re-importing NOFO: {error_str}")
-
-            except Exception as e:
-                return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
-
-        else:
-            # IMPORT NEW NOFO
-            nofo_title = suggest_nofo_title(soup)  # guess the NOFO name
+        try:
+            nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
-            try:
-                nofo = create_nofo(nofo_title, sections, opdiv)
-                add_headings_to_nofo(nofo)
-                add_page_breaks_to_headings(nofo)
-                nofo.filename = filename
-            except HeadingValidationError as e:
-                return HttpResponseBadRequest(f"Error creating NOFO:\n\n{str(e)}")
-            except ValidationError as e:
-                return HttpResponseBadRequest(f"Error creating NOFO: {e}")
-            except Exception as e:
-                return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
-            nofo.group = request.user.group  # set group separately with request.user
+            nofo = create_nofo(nofo_title, sections, opdiv)
+            add_headings_to_nofo(nofo)
+            add_page_breaks_to_headings(nofo)
             suggest_all_nofo_fields(nofo, soup)
+            nofo.filename = uploaded_file.name.strip()
+            nofo.group = request.user.group
             nofo.save()
 
-            # Create audit event for importing a nofo
             create_nofo_audit_event(
                 event_type="nofo_import", nofo=nofo, user=request.user
             )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"Error creating NOFO: {e}")
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
-    if pk:
-        return render(
-            request,
-            "nofos/nofo_import_overwrite.html",
-            {"nofo": nofo},
-        )
-    else:
-        return render(
-            request,
-            "nofos/nofo_import.html",
-            {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE},
-        )
+    # If GET, just render the upload page
+    return render(
+        request,
+        "nofos/nofo_import.html",
+        {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE},
+    )
+
+
+def nofo_import_overwrite(request, pk):
+    """
+    This view handles overwriting (re-importing) an existing NOFO with a new file.
+    """
+
+    def _reimport_nofo(nofo, sections, soup, if_preserve_page_breaks):
+        """
+        Overwrite an existing NOFO object with new data.
+        """
+        if nofo.status in ["published", "review"]:
+            raise ValidationError("In review/Published NOFOs can't be re-imported.")
+
+        page_breaks = {}
+        if if_preserve_page_breaks:
+            page_breaks = preserve_subsection_metadata(nofo, sections)
+
+        nofo = overwrite_nofo(nofo, sections)
+
+        # Preserve page breaks if checkbox is checked
+        if if_preserve_page_breaks and page_breaks:
+            nofo = restore_subsection_metadata(nofo, page_breaks)
+
+        add_headings_to_nofo(nofo)
+        add_page_breaks_to_headings(nofo)
+        suggest_all_nofo_fields(nofo, soup)
+
+        return nofo
+
+    nofo = get_object_or_404(Nofo, pk=pk)
+
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("nofo-import")
+        try:
+            file_content = parse_uploaded_file_as_html_string(uploaded_file)
+
+            # replace problematic characters/links on import
+            cleaned_content = replace_links(replace_chars(file_content))
+
+            # Create a 'soup' object from our HTML string
+            soup = BeautifulSoup(cleaned_content, "html.parser")
+            # if there are no h1s, then h2s are the top heading level
+            top_heading_level = "h1" if soup.find("h1") else "h2"
+
+            soup = process_nofo_html(soup, top_heading_level)
+            sections = build_nofo_sections_and_subsections(soup, top_heading_level)
+
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return redirect("nofos:nofo_import_overwrite", pk=pk)
+        except Exception as e:
+            return HttpResponseBadRequest(f"500 error: {str(e)}")
+
+        # Re-import existing NOFO
+        try:
+            if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
+
+            _reimport_nofo(nofo, sections, soup, if_preserve_page_breaks)
+            nofo.filename = uploaded_file.name.strip()
+            nofo.save()
+
+            create_nofo_audit_event(
+                event_type="nofo_reimport", nofo=nofo, user=request.user
+            )
+
+            messages.success(request, f"Re-imported NOFO from file: {nofo.filename}")
+            return redirect("nofos:nofo_edit", pk=nofo.id)
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"Error re-importing NOFO: {e}")
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
+
+    return render(request, "nofos/nofo_import_overwrite.html", {"nofo": nofo})
 
 
 class BaseNofoEditView(GroupAccessObjectMixin, UpdateView):
