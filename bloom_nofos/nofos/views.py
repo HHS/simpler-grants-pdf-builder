@@ -56,7 +56,6 @@ from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsec
 from .nofo import (
     add_headings_to_nofo,
     add_page_breaks_to_headings,
-    build_nofo_sections_and_subsections,
     create_nofo,
     find_broken_links,
     find_external_link,
@@ -65,6 +64,8 @@ from .nofo import (
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
+    get_sections_from_soup,
+    get_subsections_from_sections,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
@@ -257,7 +258,7 @@ class BaseNofoImportView(View):
           1. Read uploaded file
           2. Parse string to HTML
           3. Clean/transform HTML
-          4. Extract sections
+          4. Build sections and subsections as python dicts
         """
         # 1. Read uploaded file
         uploaded_file = request.FILES.get("nofo-import")
@@ -271,8 +272,11 @@ class BaseNofoImportView(View):
             top_heading_level = "h1" if soup.find("h1") else "h2"
             soup = process_nofo_html(soup, top_heading_level)
 
-            # 4. Extract sections
-            sections = build_nofo_sections_and_subsections(soup, top_heading_level)
+            # 4. Build sections and subsections as python dicts
+            sections = get_sections_from_soup(soup, top_heading_level)
+            if not len(sections):
+                raise ValidationError("That file does not contain a NOFO.")
+            sections = get_subsections_from_sections(sections, top_heading_level)
 
         except ValidationError as e:
             # Render a distinct error page for mammoth style map warnings
