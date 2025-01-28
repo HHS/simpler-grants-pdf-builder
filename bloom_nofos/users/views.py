@@ -90,18 +90,20 @@ def callback(request):
     """Handle Login.gov callback."""
     error = request.GET.get("error")
     if error:
-        # Handle error cases
+        messages.error(request, f"Login.gov error: {error}")
         return redirect(settings.LOGIN_URL)
 
     # Validate state
     state = request.GET.get("state")
     stored_state = request.session.get("login_gov_state")
     if not state or state != stored_state:
+        messages.error(request, "Invalid state parameter")
         return redirect(settings.LOGIN_URL)
 
     # Get the authorization code
     code = request.GET.get("code")
     if not code:
+        messages.error(request, "No authorization code received")
         return redirect(settings.LOGIN_URL)
 
     try:
@@ -111,6 +113,10 @@ def callback(request):
 
         # Validate ID token
         id_token = token_response.get("id_token")
+        if not id_token:
+            messages.error(request, "No ID token in response")
+            return redirect(settings.LOGIN_URL)
+
         stored_nonce = request.session.get("login_gov_nonce")
         user_data = client.validate_id_token(id_token, stored_nonce)
 
@@ -126,10 +132,17 @@ def callback(request):
             # Redirect to next URL if available, otherwise to default
             next_url = request.session.get("next", settings.LOGIN_REDIRECT_URL)
             return redirect(next_url)
+        else:
+            messages.error(request, "Authentication failed")
 
     except Exception as e:
-        # Log the error and redirect to login
-        print(f"Login.gov authentication error: {str(e)}")
+        if "Private key not configured" in str(e):
+            messages.error(
+                request,
+                "Login.gov integration is not fully configured. Please contact your administrator.",
+            )
+        else:
+            messages.error(request, f"Login failed: {str(e)}")
 
     return redirect(settings.LOGIN_URL)
 

@@ -50,7 +50,7 @@
             {% if user.is_authenticated %}
               <a href="{% url 'users:user_view' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'user_view' %}aria-current="page"{% endif %}><span class="usa-sr-only">Your account</span><span aria-hidden="true">{{ user.email }}</span></a>
             {% else %}
-              <a href="{% url 'users:login' %}" class="usa-nav-link">Login</a>
+              <a href="{% url 'users:login_gov' %}" class="usa-nav-link">Login</a>
             {% endif %}
           </li>
         </ul>
