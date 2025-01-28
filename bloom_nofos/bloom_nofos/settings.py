@@ -240,7 +240,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Users
 
 AUTH_USER_MODEL = "users.BloomUser"
-LOGIN_URL = "/login"
+LOGIN_URL = "users:login_gov"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
@@ -515,9 +515,9 @@ LOGIN_GOV = {
     "OIDC_URL": env(
         "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
     ),
-    "PRIVATE_KEY": env("LOGIN_GOV_PRIVATE_KEY", default=""),
     "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
     "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
+    "PRIVATE_KEY_PATH": BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private.pem",
 }
 
 # Add Login.gov authentication backend
@@ -527,6 +527,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Login/Logout URLs
-LOGIN_URL = "login"  # URL name for the login view
+LOGIN_URL = "users:login_gov"  # Updated to match the new URL name
 LOGIN_REDIRECT_URL = "/"  # Where to redirect after successful login
 LOGOUT_REDIRECT_URL = "/"  # Where to redirect after logout

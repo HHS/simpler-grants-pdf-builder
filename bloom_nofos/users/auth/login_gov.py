@@ -2,13 +2,14 @@ import json
 import jwt
 import time
 import uuid
-import logging
+import os
+from pathlib import Path
 from urllib.parse import urlencode
 import requests
 from django.conf import settings
-from django.urls import reverse
-
-logger = logging.getLogger(__name__)
+from jwt.algorithms import RSAAlgorithm
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.backends import default_backend
 
 
 class LoginGovClient:
@@ -16,15 +17,63 @@ class LoginGovClient:
 
     def __init__(self):
         self.client_id = settings.LOGIN_GOV["CLIENT_ID"]
-        # Strip any whitespace from the URL
-        self.oidc_url = settings.LOGIN_GOV["OIDC_URL"].strip().rstrip("/")
-        self.private_key = settings.LOGIN_GOV["PRIVATE_KEY"]
+        base_url = settings.LOGIN_GOV["OIDC_URL"].strip().rstrip("/")
+        if not base_url.endswith("/openid_connect"):
+            base_url = f"{base_url}/openid_connect"
+        self.oidc_url = base_url
+        self.token_url = base_url.replace("/openid_connect", "/api/openid_connect")
+
+        if not settings.LOGIN_GOV.get("PRIVATE_KEY_PATH"):
+            raise Exception(
+                "Private key file not found: PRIVATE_KEY_PATH not configured in settings"
+            )
+
+        try:
+            with open(settings.LOGIN_GOV["PRIVATE_KEY_PATH"], "rb") as key_file:
+                self.private_key = key_file.read()
+            load_pem_private_key(
+                self.private_key, password=None, backend=default_backend()
+            )
+        except FileNotFoundError:
+            raise Exception(
+                f"Private key file not found at path: {settings.LOGIN_GOV['PRIVATE_KEY_PATH']}"
+            )
+        except Exception as e:
+            raise Exception(f"Error reading private key file: {str(e)}")
+
         self.redirect_uri = settings.LOGIN_GOV["REDIRECT_URI"].strip()
         self.acr_values = settings.LOGIN_GOV["ACR_VALUES"]
 
-        logger.debug(f"Initialized LoginGovClient with OIDC URL: {self.oidc_url}")
-        logger.debug(f"Redirect URI: {self.redirect_uri}")
-        logger.debug(f"Client ID: {self.client_id}")
+    def _get_login_gov_public_key(self, kid=None):
+        """Fetch Login.gov's public key configuration.
+
+        Args:
+            kid: Optional key ID to fetch a specific key
+        """
+        try:
+            certs_url = f"{self.token_url}/certs"
+            response = requests.get(certs_url)
+            response.raise_for_status()
+
+            keys = response.json()
+            if not keys or "keys" not in keys or not keys["keys"]:
+                raise ValueError("No keys found in Login.gov certs response")
+
+            if kid:
+                jwk = next((key for key in keys["keys"] if key.get("kid") == kid), None)
+                if not jwk:
+                    raise ValueError(f"No key found with ID: {kid}")
+            else:
+                jwk = next(
+                    (key for key in keys["keys"] if key.get("kty") == "RSA"), None
+                )
+                if not jwk:
+                    raise ValueError("No RSA key found in Login.gov certs")
+
+            return RSAAlgorithm.from_jwk(json.dumps(jwk))
+
+        except Exception as e:
+            raise ValueError(f"Error fetching Login.gov public key: {str(e)}")
 
     def get_authorization_url(self, state=None):
         """Generate the Login.gov authorization URL for the initial redirect."""
@@ -42,27 +91,36 @@ class LoginGovClient:
         }
 
         auth_url = f"{self.oidc_url}/authorize?{urlencode(params)}"
-        logger.debug(f"Generated authorization URL: {auth_url}")
-
         return auth_url, state, nonce
 
     def get_token(self, code):
         """Exchange authorization code for tokens."""
+        if not self.private_key:
+            raise Exception(
+                "Private key not configured. Cannot create client assertion."
+            )
+
         now = int(time.time())
 
-        # Create client assertion JWT
-        assertion = jwt.encode(
-            {
-                "iss": self.client_id,
-                "sub": self.client_id,
-                "aud": f"{self.oidc_url}/token",
-                "jti": str(uuid.uuid4()),
-                "exp": now + 300,  # 5 minutes
-                "iat": now,
-            },
-            self.private_key,
-            algorithm="RS256",
-        )
+        try:
+            private_key = load_pem_private_key(
+                self.private_key, password=None, backend=default_backend()
+            )
+
+            assertion = jwt.encode(
+                {
+                    "iss": self.client_id,
+                    "sub": self.client_id,
+                    "aud": f"{self.token_url}/token",
+                    "jti": str(uuid.uuid4()),
+                    "exp": now + 300,  # 5 minutes
+                    "iat": now,
+                },
+                private_key,
+                algorithm="RS256",
+            )
+        except Exception as e:
+            raise Exception(f"Error creating client assertion: {str(e)}")
 
         token_data = {
             "grant_type": "authorization_code",
@@ -71,17 +129,23 @@ class LoginGovClient:
             "client_assertion": assertion,
         }
 
-        response = requests.post(f"{self.oidc_url}/token", data=token_data)
+        response = requests.post(f"{self.token_url}/token", data=token_data)
         response.raise_for_status()
-
         return response.json()
 
     def validate_id_token(self, id_token, nonce):
         """Validate the ID token from Login.gov."""
         try:
+            unverified_header = jwt.get_unverified_header(id_token)
+            kid = unverified_header.get("kid")
+
+            public_key = self._get_login_gov_public_key(kid)
+            if not public_key:
+                raise ValueError("Could not get Login.gov public key")
+
             decoded = jwt.decode(
                 id_token,
-                self.private_key,
+                public_key,
                 algorithms=["RS256"],
                 audience=self.client_id,
             )
@@ -91,5 +155,5 @@ class LoginGovClient:
 
             return decoded
 
-        except jwt.InvalidTokenError as e:
+        except Exception as e:
             raise ValueError(f"Invalid ID token: {str(e)}")

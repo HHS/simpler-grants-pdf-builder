@@ -5,9 +5,9 @@ from . import views
 
 app_name = "users"
 urlpatterns = [
-    path("login/", views.login_view, name="login"),
+    path("login/", views.login_view, name="login_gov"),
     path("logout/", views.logout_view, name="logout"),
-    path("auth/callback/", views.callback, name="auth_callback"),
+    path("login/callback", views.callback, name="auth_callback"),
     path(
         "account", login_required(views.BloomUserDetailView.as_view()), name="user_view"
     ),
