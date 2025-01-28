@@ -13,7 +13,7 @@ Versioning since version 1.0.0.
   - The idea is to shrink the table of contents a bit if lots of items show up
 - Add a new icon for "award" (only for 2 CDC NOFOs for now)
 - Add 2 new images for CDC-RFA-CE-25-0114-b
-- Add cover image for CDC-RFA-CK-25-0125
+- Add cover image for CDC-RFA-CK-25-0125 and CDC-RFA-JG-25-0178
 - Add inline images for CDC-RFA-CE-25-0114
 - Can use 'page-break' to add a page-break in markdown body
 
