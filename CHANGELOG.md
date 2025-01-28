@@ -14,6 +14,7 @@ Versioning since version 1.0.0.
 - Add a new icon for "award" (only for 2 CDC NOFOs for now)
 - Add 2 new images for CDC-RFA-CE-25-0114-b
 - Add cover image for CDC-RFA-CK-25-0125
+- Add inline images for CDC-RFA-CE-25-0114
 - Can use 'page-break' to add a page-break in markdown body
 
 ### Changed
