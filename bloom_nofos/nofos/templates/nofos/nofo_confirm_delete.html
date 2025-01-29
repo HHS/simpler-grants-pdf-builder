@@ -29,15 +29,14 @@
 
   <form id="nofo-delete--form" method="post">
     {% csrf_token %}
-    <p>Are you absolutely sure you want to delete “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”?</p>
-    {{ form }}
+    <p>Are you absolutely sure you want to delete “{{ nofo|nofo_name }}”?</p>
 
     <ul class="usa-button-group margin-top-3">
       <li class="usa-button-group__item">
         <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
       </li>
       <li class="usa-button-group__item">
-        <a href="{% url 'nofos:nofo_view' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this NOFO</a>
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this NOFO</a>
       </li>
     </ul>
   </form>
