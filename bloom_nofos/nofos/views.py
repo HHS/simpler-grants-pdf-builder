@@ -273,10 +273,9 @@ class BaseNofoImportView(View):
             soup = process_nofo_html(soup, top_heading_level)
 
             # 4. Build sections and subsections as python dicts
-            sections = get_sections_from_soup(soup, top_heading_level)
-            if not len(sections):
-                raise ValidationError("That file does not contain a NOFO.")
-            sections = get_subsections_from_sections(sections, top_heading_level)
+            sections = self.get_sections_and_subsections_from_soup(
+                soup, top_heading_level
+            )
 
         except ValidationError as e:
             # Render a distinct error page for mammoth style map warnings
@@ -304,6 +303,17 @@ class BaseNofoImportView(View):
         return self.handle_nofo_create(
             request, soup, sections, filename, *args, **kwargs
         )
+
+    @staticmethod
+    def get_sections_and_subsections_from_soup(soup, top_heading_level):
+        """
+        Parse a soup object to extract sections and subsections.
+        Raise ValidationError if no sections are found.
+        """
+        sections = get_sections_from_soup(soup, top_heading_level)
+        if not len(sections):
+            raise ValidationError("That file does not contain a NOFO.")
+        return get_subsections_from_sections(sections, top_heading_level)
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
