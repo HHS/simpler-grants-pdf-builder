@@ -392,6 +392,14 @@ class NofosImportOverwriteView(BaseNofoImportView):
                 "In review/Published NOFOs can’t be re-imported."
             )
 
+        # Step 3: Proceed with reimport
+        return self.reimport_nofo(request, nofo, soup, sections, filename)
+
+    @staticmethod
+    def reimport_nofo(request, nofo, soup, sections, filename):
+        """
+        Handles the actual reimport logic, allowing external calls without requiring an instance.
+        """
         try:
             if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
             page_breaks = {}
@@ -400,7 +408,7 @@ class NofosImportOverwriteView(BaseNofoImportView):
 
             nofo = overwrite_nofo(nofo, sections)
 
-            # restore breaks if needed
+            # restore page breaks
             if if_preserve_page_breaks and page_breaks:
                 nofo = restore_subsection_metadata(nofo, page_breaks)
 
