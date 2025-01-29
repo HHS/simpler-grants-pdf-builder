@@ -15,9 +15,9 @@ class LoginGovBackend(ModelBackend):
         domain = email.lower().split("@")[1]
 
         domain_to_group = {
-            "bloomworks.digital": "Bloomworks",
-            "hrsa.gov": "HRSA: Health Resources and Services Administration",
-            "acf.hhs.gov": "ACF: Administration for Children and Families",
+            "bloomworks.digital": "bloom",
+            "hrsa.gov": "hrsa",
+            "acf.hhs.gov": "acf",
         }
 
         return domain_to_group.get(domain, "bloom")
