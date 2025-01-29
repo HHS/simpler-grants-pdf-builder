@@ -527,6 +527,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Login/Logout URLs
-LOGIN_URL = "users:login_gov"  # Updated to match the new URL name
-LOGIN_REDIRECT_URL = "/"  # Where to redirect after successful login
-LOGOUT_REDIRECT_URL = "/"  # Where to redirect after logout
+LOGIN_URL = "users:login_gov"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
