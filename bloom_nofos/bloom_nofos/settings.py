@@ -519,7 +519,7 @@ LOGIN_GOV = {
 # Add Login.gov authentication backend
 AUTHENTICATION_BACKENDS = [
     "users.auth.backend.LoginGovBackend",
-    "django.contrib.auth.backends.ModelBackend",  # Keep default backend as fallback
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Login/Logout URLs

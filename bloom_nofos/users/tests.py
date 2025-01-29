@@ -146,12 +146,12 @@ class LoginGovBackendTests(TestCase):
     def test_group_assignment_bloomworks(self):
         """Test group assignment for Bloomworks domain"""
         group = self.backend._get_group_from_email("test@bloomworks.digital")
-        self.assertEqual(group, "Bloomworks")
+        self.assertEqual(group, "bloom")
 
     def test_group_assignment_hrsa(self):
         """Test group assignment for HRSA domain"""
         group = self.backend._get_group_from_email("test@hrsa.gov")
-        self.assertEqual(group, "HRSA: Health Resources and Services Administration")
+        self.assertEqual(group, "hrsa")
 
     def test_group_assignment_unknown_domain(self):
         """Test group assignment for unknown domain defaults to bloom"""
@@ -178,9 +178,7 @@ class LoginGovBackendTests(TestCase):
         user = self.backend.authenticate(None, login_gov_data=login_gov_data)
         self.assertIsNotNone(user)
         self.assertEqual(user.email, "new@hrsa.gov")
-        self.assertEqual(
-            user.group, "HRSA: Health Resources and Services Administration"
-        )
+        self.assertEqual(user.group, "hrsa")
         self.assertEqual(user.login_gov_user_id, "test-sub-id")
         self.assertTrue(user.is_active)
         self.assertFalse(user.force_password_reset)
