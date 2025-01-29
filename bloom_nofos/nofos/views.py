@@ -1,4 +1,5 @@
 import io
+import json
 
 import docraptor
 from bs4 import BeautifulSoup
@@ -75,6 +76,7 @@ from .nofo import (
     restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_opdiv,
+    suggest_nofo_opportunity_number,
     suggest_nofo_title,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
@@ -185,6 +187,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
             config.DOCRAPTOR_LIVE_MODE
         )
+
+        # Clean up stale reimport session data
+        self.request.session.pop("reimport_data", None)
 
         return context
 
@@ -392,6 +397,19 @@ class NofosImportOverwriteView(BaseNofoImportView):
                 "In review/Published NOFOs can’t be re-imported."
             )
 
+        new_opportunity_number = suggest_nofo_opportunity_number(soup)
+        # If opportunity numbers do not match, redirect to "confirm" view
+        if nofo.number.lower() != new_opportunity_number.lower():
+            # If not, redirect to confirmation page
+            request.session["reimport_data"] = {
+                "soup": str(soup),
+                "filename": filename,
+                "new_opportunity_number": new_opportunity_number,
+                "if_preserve_page_breaks": request.POST.get("preserve_page_breaks")
+                == "on",
+            }
+            return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
+
         # Step 3: Proceed with reimport
         return self.reimport_nofo(request, nofo, soup, sections, filename)
 
@@ -429,6 +447,50 @@ class NofosImportOverwriteView(BaseNofoImportView):
             return HttpResponseBadRequest(f"Error re-importing NOFO: {e}")
         except Exception as e:
             return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
+
+
+class NofosConfirmReimportView(View):
+    """
+    Renders a confirmation page if the uploaded NOFO ID doesn’t match the existing NOFO.
+    """
+
+    template_name = "nofos/nofo_import_confirm_overwrite.html"
+
+    def get(self, request, pk, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=pk)
+
+        reimport_data = request.session.get("reimport_data", None)
+        # Redirect if no session data
+        if not reimport_data:
+            return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
+
+        context = {
+            "nofo": nofo,
+            "filename": reimport_data.get("filename", ""),
+            "new_opportunity_number": reimport_data.get("new_opportunity_number", ""),
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=pk)
+
+        reimport_data = request.session.pop("reimport_data", None)
+        # Redirect if no session data
+        if not reimport_data:
+            return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
+
+        soup = BeautifulSoup(reimport_data["soup"], "html.parser")
+        top_heading_level = "h1" if soup.find("h1") else "h2"
+
+        sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
+            soup, top_heading_level
+        )
+
+        filename = reimport_data["filename"]
+
+        return NofosImportOverwriteView.reimport_nofo(
+            request, nofo, soup, sections, filename
+        )
 
 
 class BaseNofoEditView(GroupAccessObjectMixin, UpdateView):

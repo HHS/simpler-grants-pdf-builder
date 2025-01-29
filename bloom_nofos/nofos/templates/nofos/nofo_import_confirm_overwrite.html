@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  Confirm re-import for “{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}”
+{% endblock %}
+
+{% block body_class %}nofo_import nofo_import--confirm-reimport{% endblock %}
+
+{% block content %}
+  <div class="usa-alert usa-alert--warning margin-bottom-3">
+    <div class="usa-alert__body">
+      <h4 class="usa-alert__heading">Warning</h4>
+      <p class="usa-alert__text">
+        Re-importing a NOFO overwrites most existing content.
+      </p>
+      <p class="usa-alert__text">
+        If you continue, you will lose all manual edits made since creating the NOFO, other than page breaks.
+      </p>
+    </div>
+  </div>
+
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Edit “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="Confirm re-import for “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>
+    The document you uploaded has a <strong>different opportunity number</strong> than the current NOFO.
+  </p>
+
+  <table class="usa-table">
+    <tbody>
+      <tr>
+        <th scope="row">Opportunity number in current NOFO (“{{ nofo|nofo_name }}”)</th>
+        <td>
+          <strong>{{ nofo.number }}</strong>
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Opportunity number in uploaded file (<code>{{ filename }}</code>)</th>
+        <td>
+          <strong>{{ new_opportunity_number }}</strong>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <form id="nofo_import--confirm-reimport--form" method="post">
+    {% csrf_token %}
+    <p>Are you absolutely sure you want to overwrite “{{ nofo|nofo_name }}” with the contents of <code>{{ filename }}</code>?</p>
+
+    <ul class="usa-button-group margin-top-3">
+      <li class="usa-button-group__item">
+        <button class="usa-button usa-button--secondary" type="submit">Yes, overwrite it</button>
+      </li>
+      <li class="usa-button-group__item">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to overwrite this NOFO</a>
+      </li>
+    </ul>
+  </form>
+{% endblock %}
