@@ -13,6 +13,11 @@ urlpatterns = [
         name="nofo_import_overwrite",
     ),
     path(
+        "<int:pk>/confirm-import/",
+        views.NofosConfirmReimportView.as_view(),
+        name="nofo_import_confirm_overwrite",
+    ),
+    path(
         "<int:pk>/import/title",
         views.NofoImportTitleView.as_view(),
         name="nofo_import_title",
