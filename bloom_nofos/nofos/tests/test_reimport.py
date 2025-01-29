@@ -7,6 +7,30 @@ from nofos.models import Nofo, Section, Subsection
 from users.models import BloomUser
 
 
+def create_test_html_file(opportunity_number="NOFO-ACF-001"):
+    """Create a test HTML file for reimporting with a given opportunity number."""
+    html_content = f"""
+    <html>
+    <head><title>Test NOFO</title></head>
+    <body>
+        <p>Opportunity name: Test NOFO</p>
+        <p>Opdiv: ACF</p>
+        <p>Opportunity number: {opportunity_number}</p>
+        <h1>Test Section 1</h1>
+        <h2 data-order="10">Eligibility Information</h2>
+        <p>Updated eligibility content with new requirements</p>
+        <h2 class="custom-class" data-order="20">Program Requirements</h2>
+        <p>Updated program requirements with new guidelines</p>
+        <h2 data-order="30">Award Information</h2>
+        <p>Updated award information with new amounts</p>
+    </body>
+    </html>
+    """
+    return SimpleUploadedFile(
+        "test.html", html_content.encode("utf-8"), content_type="text/html"
+    )
+
+
 class NofoReimportTests(TransactionTestCase):
     def setUp(self):
         self.user = BloomUser.objects.create_user(
@@ -67,28 +91,6 @@ class NofoReimportTests(TransactionTestCase):
             )
             self.subsections.append(subsection)
 
-    def create_test_file(self, with_page_breaks=False):
-        """Create a test HTML file for reimporting with optional page breaks in content."""
-        html_content = """
-        <html>
-        <body>
-            <p>Opportunity name: Test NOFO</p>
-            <p>Opdiv: ACF</p>
-            <p>Opportunity number: NOFO-ACF-001</p>
-            <h1>Test Section 1</h1>
-            <h2 data-order="10">Eligibility Information</h2>
-            <p>Updated eligibility content with new requirements</p>
-            <h2 class="custom-class" data-order="20">Program Requirements</h2>
-            <p>Updated program requirements with new guidelines</p>
-            <h2 data-order="30">Award Information</h2>
-            <p>Updated award information with new amounts</p>
-        </body>
-        </html>
-        """
-        return SimpleUploadedFile(
-            "test.html", html_content.encode("utf-8"), content_type="text/html"
-        )
-
     def test_reimport_preserves_page_breaks_when_checked(self):
         """Test that page breaks are preserved when checkbox is checked while content is updated."""
         # Add page breaks to simulate manual addition
@@ -97,7 +99,7 @@ class NofoReimportTests(TransactionTestCase):
         self.subsections[1].html_class = "custom-class page-break-before"
         self.subsections[1].save()
 
-        test_file = self.create_test_file()
+        test_file = create_test_html_file()
 
         # Verify initial state
         self.assertEqual(self.subsections[0].body, "Original eligibility content")
@@ -138,7 +140,7 @@ class NofoReimportTests(TransactionTestCase):
         self.subsections[1].html_class = "custom-class page-break-before"
         self.subsections[1].save()
 
-        test_file = self.create_test_file()
+        test_file = create_test_html_file()
 
         # Verify initial state
         self.assertEqual(self.subsections[0].body, "Original eligibility content")
@@ -171,7 +173,7 @@ class NofoReimportTests(TransactionTestCase):
 
     def test_reimport_success_behavior(self):
         """Test success message and redirect behavior for reimport."""
-        test_file = self.create_test_file()
+        test_file = create_test_html_file()
 
         response = self.client.post(
             reverse("nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.id}),
@@ -222,29 +224,6 @@ class NofosImportOverwriteViewTests(TestCase):
             "nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.pk}
         )
 
-    def create_test_html_file(self, opportunity_number="NOFO-ACF-001"):
-        """Create a test HTML file for reimporting with a given opportunity number."""
-        html_content = f"""
-        <html>
-        <head><title>Test NOFO</title></head>
-        <body>
-            <p>Opportunity name: Test NOFO</p>
-            <p>Opdiv: ACF</p>
-            <p>Opportunity number: {opportunity_number}</p>
-            <h1>Test Section 1</h1>
-            <h2 data-order="10">Eligibility Information</h2>
-            <p>Updated eligibility content with new requirements</p>
-            <h2 class="custom-class" data-order="20">Program Requirements</h2>
-            <p>Updated program requirements with new guidelines</p>
-            <h2 data-order="30">Award Information</h2>
-            <p>Updated award information with new amounts</p>
-        </body>
-        </html>
-        """
-        return SimpleUploadedFile(
-            "test.html", html_content.encode("utf-8"), content_type="text/html"
-        )
-
     def test_import_overwrite_view_get(self):
         """
         Test that the GET request for the NOFO import overwrite view returns a 200 status
@@ -264,7 +243,7 @@ class NofosImportOverwriteViewTests(TestCase):
         Test that POSTing an HTML file with a the same NOFO ID works as expected
         """
         # Create a test HTML file with the same NOFO id
-        test_file = self.create_test_html_file(opportunity_number=self.nofo.number)
+        test_file = create_test_html_file(opportunity_number=self.nofo.number)
 
         response = self.client.post(
             self.import_url,
@@ -302,7 +281,7 @@ class NofosImportOverwriteViewTests(TestCase):
         Test that POSTing an HTML file with a different NOFO ID redirects to the nofo edit page
         """
         # Create a test HTML file with the same NOFO id
-        test_file = self.create_test_html_file(opportunity_number="NOFO-ACF-002")
+        test_file = create_test_html_file(opportunity_number="NOFO-ACF-002")
 
         response = self.client.post(
             self.import_url,
