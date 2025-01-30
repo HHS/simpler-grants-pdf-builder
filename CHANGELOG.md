@@ -16,6 +16,7 @@ Versioning since version 1.0.0.
 - Add cover image for CDC-RFA-CK-25-0125 and CDC-RFA-JG-25-0178
 - Add inline images for CDC-RFA-CE-25-0114
 - Can use 'page-break' to add a page-break in markdown body
+- Add confirmation page for re-importing a NOFO if the IDs don't match up
 
 ### Changed
 
