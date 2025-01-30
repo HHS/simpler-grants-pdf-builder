@@ -397,6 +397,8 @@ class NofosImportOverwriteView(BaseNofoImportView):
                 "In review/Published NOFOs can’t be re-imported."
             )
 
+        if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
+
         new_opportunity_number = suggest_nofo_opportunity_number(soup)
         # If opportunity numbers do not match, redirect to "confirm" view
         if nofo.number.lower() != new_opportunity_number.lower():
@@ -405,21 +407,21 @@ class NofosImportOverwriteView(BaseNofoImportView):
                 "soup": str(soup),
                 "filename": filename,
                 "new_opportunity_number": new_opportunity_number,
-                "if_preserve_page_breaks": request.POST.get("preserve_page_breaks")
-                == "on",
+                "if_preserve_page_breaks": if_preserve_page_breaks,
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
         # Step 3: Proceed with reimport
-        return self.reimport_nofo(request, nofo, soup, sections, filename)
+        return self.reimport_nofo(
+            request, nofo, soup, sections, filename, if_preserve_page_breaks
+        )
 
     @staticmethod
-    def reimport_nofo(request, nofo, soup, sections, filename):
+    def reimport_nofo(request, nofo, soup, sections, filename, if_preserve_page_breaks):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
         """
         try:
-            if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
             page_breaks = {}
             if if_preserve_page_breaks:
                 page_breaks = preserve_subsection_metadata(nofo, sections)
@@ -487,9 +489,10 @@ class NofosConfirmReimportView(View):
         )
 
         filename = reimport_data["filename"]
+        if_preserve_page_breaks = reimport_data["if_preserve_page_breaks"]
 
         return NofosImportOverwriteView.reimport_nofo(
-            request, nofo, soup, sections, filename
+            request, nofo, soup, sections, filename, if_preserve_page_breaks
         )
 
 
