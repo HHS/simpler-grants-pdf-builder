@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from django.conf import settings
@@ -242,9 +243,11 @@ class NofoArchiveTest(TestCase):
         # Set NOFO to published using update() to bypass validation
         Nofo.objects.filter(pk=self.nofo.pk).update(status="published")
 
-        response = self.client.post(
-            reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
-        )
+        # Suppress "WARNING:django.request:Bad Request: /nofos/1/delete" in Django test logs
+        with self.assertLogs("django.request", level="WARNING"):
+            response = self.client.post(
+                reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+            )
 
         self.assertEqual(response.status_code, 400)
 
