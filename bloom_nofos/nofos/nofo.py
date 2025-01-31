@@ -1117,11 +1117,9 @@ def find_h7_headers(nofo):
     Identifies and returns a list of H7 subsections from a given NOFO.
 
     This function iterates through all sections and subsections of a NOFO object,
-    identifying subsections tagged as "h7".
-
-    Note:
-    - H7 tags must be directly defined as subsections. H7s created within
-      the body text of a subsection are not identified.
+    identifying both:
+    1. Subsections tagged as "h7"
+    2. Div elements with role="heading" aria-level="7" within subsection bodies
 
     Returns:
         list: A list of dictionaries, each containing details of subsections
@@ -1136,6 +1134,7 @@ def find_h7_headers(nofo):
 
     for section in nofo.sections.all().order_by("order"):
         for subsection in section.subsections.all().order_by("order"):
+            # Check for explicit h7 subsections
             if subsection.tag == "h7":
                 h7_headers.append(
                     {
@@ -1145,6 +1144,26 @@ def find_h7_headers(nofo):
                         "html_id": subsection.html_id,
                     }
                 )
+
+            # Check for div role="heading" aria-level="7" in subsection body
+            if subsection.body:
+                soup = BeautifulSoup(
+                    markdown.markdown(subsection.body, extensions=["extra"]),
+                    "html.parser",
+                )
+                div_h7s = soup.find_all(
+                    "div", attrs={"role": "heading", "aria-level": "7"}
+                )
+
+                for div_h7 in div_h7s:
+                    h7_headers.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "name": div_h7.get_text(strip=True),
+                            "html_id": f"{subsection.html_id}--div-h7-{len(h7_headers)}",
+                        }
+                    )
 
     return h7_headers
 

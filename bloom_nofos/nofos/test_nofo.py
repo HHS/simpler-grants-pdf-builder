@@ -704,7 +704,7 @@ class HTMLSubsectionTestsH1(TestCase):
     def test_get_subsections_from_soup_with_nonbreaking_space(self):
         # nonbreaking space before "1" in the h1 and the h2
         soup = BeautifulSoup(
-            "<h1><span>Section 1</span></h1><h2><span>Subsection 1</span> </h2><p>Section 1 body</p>",
+            "<h1><span>Section\xa01</span></h1><h2><span>Subsection\xa01</span> </h2><p>Section 1 body</p>",
             "html.parser",
         )
         sections = get_subsections_from_sections(get_sections_from_soup(soup))
@@ -1131,7 +1131,7 @@ class AddHeadingsTests(TestCase):
                 "has_section_page": True,
                 "subsections": [
                     {
-                        "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors and chronic health conditions among adults in the United States and territories.",
+                        "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors\xa0and chronic health conditions among adults in the United States and territories.",
                         "order": 1,
                         "tag": "h3",
                         "html_id": "custom-link",
@@ -2428,7 +2428,7 @@ class TestFindH7Headers(TestCase):
                         "order": 4,
                         "tag": "h4",
                         "body": [
-                            '<p>New Section H4 body</p><div role="heading" aria-level="7">This shimmed h7 will not be recognized</div>'
+                            '<p>New Section H4 body</p><div role="heading" aria-level="7">This shimmed h7 will be recognized</div>'
                         ],
                     },
                 ],
@@ -2437,7 +2437,7 @@ class TestFindH7Headers(TestCase):
 
     def test_find_h7_headers_find_all_h7s(self):
         """
-        Test finding the h7 in a nofo object successfully
+        Test finding both explicit h7 subsections and div role="heading" h7s
         """
         nofo = create_nofo("Test Nofo", self.sections, opdiv="Test OpDiv")
         self.assertEqual(nofo.title, "Test Nofo")
@@ -2453,12 +2453,24 @@ class TestFindH7Headers(TestCase):
         self.assertEqual(subsections[3].name, "New Subsection H4")
 
         h7_headers = find_h7_headers(nofo)
-        self.assertEqual(len(h7_headers), 1)
+        self.assertEqual(len(h7_headers), 2)  # Should find both types of H7s
+
+        # Check explicit h7 subsection
         self.assertEqual(h7_headers[0]["name"], "New Subsection H7")
         self.assertEqual(
             h7_headers[0]["html_id"], "1--new-section-h7--new-subsection-h7"
         )
         self.assertEqual(h7_headers[0]["section"], nofo.sections.first())
+
+        # Check div role="heading" h7
+        self.assertEqual(h7_headers[1]["name"], "This shimmed h7 will be recognized")
+        self.assertTrue(
+            h7_headers[1]["html_id"].startswith(
+                "1--new-section-h7--new-subsection-h4--div-h7-"
+            )
+        )
+        self.assertEqual(h7_headers[1]["section"], nofo.sections.first())
+        self.assertEqual(h7_headers[1]["subsection"], subsections[3])
 
 
 class TestUpdateLinkStatuses(TestCase):
@@ -3061,7 +3073,7 @@ class SuggestNofoFieldsTests(TestCase):
                     <p>Opportunity Name: Ranch Grants 2024-2025</p>             <!-- changed -->
                     <p>Opportunity Number: HRSA-2024-HOLLER-001</p>             <!-- changed -->
                     <p>Application Deadline: 2025-01-01</p>                     <!-- changed -->
-                    <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>  <!-- changed -->
+                    <p>OpDiv: Department of Hootin' Tootin' Affairs (DHTA)</p>  <!-- changed -->
                     <p>Agency: Bureau of Cowpolk Expansion (BCE)</p>            <!-- changed -->
                     <p>Subagency: </p>                                          <!-- empty -->
                     <p>Subagency2: </p>                                         <!-- empty -->
@@ -3080,7 +3092,7 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.number, "HRSA-2024-HOLLER-001")
         self.assertEqual(self.nofo.application_deadline, "2025-01-01")
         self.assertEqual(
-            self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
+            self.nofo.opdiv, "Department of Hootin' Tootin' Affairs (DHTA)"
         )
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Expansion (BCE)")
         self.assertEqual(self.nofo.subagency, "")
@@ -4582,7 +4594,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4596,7 +4608,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4613,7 +4625,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4776,7 +4788,7 @@ class NestedListTestsUL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4858,7 +4870,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4878,7 +4890,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4917,7 +4929,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4937,7 +4949,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -5202,7 +5214,7 @@ class NestedListTestsOL(TestCase):
                 <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
             </ol>
             <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant’s purpose/need?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant's purpose/need?</span></li>
             </ol>
             <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
         """
@@ -5237,7 +5249,7 @@ class NestedListTestsOL(TestCase):
                 <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
             </ol>
             <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant’s purpose/need?</span></li>
+                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant's purpose/need?</span></li>
             </ol>
             <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
         """
