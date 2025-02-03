@@ -704,7 +704,7 @@ class HTMLSubsectionTestsH1(TestCase):
     def test_get_subsections_from_soup_with_nonbreaking_space(self):
         # nonbreaking space before "1" in the h1 and the h2
         soup = BeautifulSoup(
-            "<h1><span>Section\xa01</span></h1><h2><span>Subsection\xa01</span> </h2><p>Section 1 body</p>",
+            "<h1><span>Section 1</span></h1><h2><span>Subsection 1</span> </h2><p>Section 1 body</p>",
             "html.parser",
         )
         sections = get_subsections_from_sections(get_sections_from_soup(soup))
@@ -1131,7 +1131,7 @@ class AddHeadingsTests(TestCase):
                 "has_section_page": True,
                 "subsections": [
                     {
-                        "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors\xa0and chronic health conditions among adults in the United States and territories.",
+                        "name": "This opportunity provides financial and technical aid to help communities monitor behavioral risk factors and chronic health conditions among adults in the United States and territories.",
                         "order": 1,
                         "tag": "h3",
                         "html_id": "custom-link",
@@ -2407,18 +2407,21 @@ class TestFindH7Headers(TestCase):
                         "name": "New Subsection H7",
                         "order": 1,
                         "tag": "h7",
+                        "html_id": "1--new-section-h7--new-subsection-h7",
                         "body": ["<p>New Section H7 body</p>"],
                     },
                     {
                         "name": "New Subsection H6",
                         "order": 2,
                         "tag": "h6",
+                        "html_id": "1--new-section-h7--new-subsection-h6",
                         "body": ["<p>New Section H6 body</p>"],
                     },
                     {
                         "name": "New Subsection H5",
                         "order": 3,
                         "tag": "h5",
+                        "html_id": "1--new-section-h7--new-subsection-h5",
                         "body": [
                             "<p>New Section H5 body</p><h7>This h7 will not be recognized</h7>"
                         ],
@@ -2427,6 +2430,7 @@ class TestFindH7Headers(TestCase):
                         "name": "New Subsection H4",
                         "order": 4,
                         "tag": "h4",
+                        "html_id": "1--new-section-h7--new-subsection-h4",
                         "body": [
                             '<p>New Section H4 body</p><div role="heading" aria-level="7">This shimmed h7 will be recognized</div>'
                         ],
@@ -2461,6 +2465,7 @@ class TestFindH7Headers(TestCase):
             h7_headers[0]["html_id"], "1--new-section-h7--new-subsection-h7"
         )
         self.assertEqual(h7_headers[0]["section"], nofo.sections.first())
+        self.assertEqual(h7_headers[0]["subsection"], subsections[0])
 
         # Check div role="heading" h7
         self.assertEqual(h7_headers[1]["name"], "This shimmed h7 will be recognized")
@@ -3073,7 +3078,7 @@ class SuggestNofoFieldsTests(TestCase):
                     <p>Opportunity Name: Ranch Grants 2024-2025</p>             <!-- changed -->
                     <p>Opportunity Number: HRSA-2024-HOLLER-001</p>             <!-- changed -->
                     <p>Application Deadline: 2025-01-01</p>                     <!-- changed -->
-                    <p>OpDiv: Department of Hootin' Tootin' Affairs (DHTA)</p>  <!-- changed -->
+                    <p>OpDiv: Department of Hootin’ Tootin’ Affairs (DHTA)</p>  <!-- changed -->
                     <p>Agency: Bureau of Cowpolk Expansion (BCE)</p>            <!-- changed -->
                     <p>Subagency: </p>                                          <!-- empty -->
                     <p>Subagency2: </p>                                         <!-- empty -->
@@ -3092,7 +3097,7 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.number, "HRSA-2024-HOLLER-001")
         self.assertEqual(self.nofo.application_deadline, "2025-01-01")
         self.assertEqual(
-            self.nofo.opdiv, "Department of Hootin' Tootin' Affairs (DHTA)"
+            self.nofo.opdiv, "Department of Hootin’ Tootin’ Affairs (DHTA)"
         )
         self.assertEqual(self.nofo.agency, "Bureau of Cowpolk Expansion (BCE)")
         self.assertEqual(self.nofo.subagency, "")
@@ -4594,7 +4599,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4608,7 +4613,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4625,7 +4630,7 @@ class NestedListTestsULandOL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4788,7 +4793,7 @@ class NestedListTestsUL(TestCase):
             <h6 class="c27" id="h.3rdcrjn"><span class="c77 c54">Strategy 1A – Health education (HED)</span></h6>
             <p class="c9"><span class="c4">You will implement a technical assistance plan and provide professional development to support the delivery of quality health education through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
-                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff's knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">HED1. Develop, implement, and review a technical assistance plan. Its goal is to support and improve teacher and school staff’s knowledge, comfort, and skills for delivering health education to students in secondary grades (6 to 12). This includes sexual and mental health education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED2. Each year, provide professional development for teachers and school staff delivering health education instructional programs to students in secondary grades (6 to 12). This includes sexual health and mental health education. Prioritize instructional competencies needed for culturally responsive and inclusive education.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">HED3. Each year, implement a health education instructional program for students in grades K to 12. Health education instructional programs should: </span></li>
             </ul>
@@ -4870,7 +4875,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4890,7 +4895,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4929,7 +4934,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -4949,7 +4954,7 @@ class NestedListTestsUL(TestCase):
             <p class="c9"><span class="c4">You will foster safe and supportive school environments and support the mental health and well-being of students and staff through the following activities:</span></p>
             <ul class="c34 lst-kix_list_25-0">
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE2. Each year, provide professional development to school staff on fostering safe and supportive school environments. Professional development topics may include supporting youth with LGBTQ+ identities and racial and ethnic minority youth, classroom management, and mental health awareness and crisis response.</span></li>
-                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff's mental health and well-being.</span></li>
+                <li class="c9 c17 li-bullet-0"><span class="c4">SSE3. Implement activities to support school staff’s mental health and well-being.</span></li>
                 <li class="c9 c17 li-bullet-0"><span class="c4">SSE4. Implement school-wide practices to support the behavioral and mental health and social and emotional well-being of students.</span></li>
             </ul>
             <ul class="c34 lst-kix_list_7-0">
@@ -5135,813 +5140,3 @@ class NestedListTestsUL(TestCase):
         self.assertEqual(len(last_li.find_all("ul")), 2)
         # nested ul has 5 lis
         self.assertEqual(len(last_li.find("ul").find_all("li", recursive=False)), 4)
-
-
-class NestedListTestsOL(TestCase):
-    def setUp(self):
-        self.html_single_list_ol = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_nested_list_ol = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_nested_list_ol_followed_by_li = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_2_nested_lists_ol = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_2_nested_lists_ol_followed_by_li = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant's purpose/need?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_double_nested_list_ol = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
-                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_double_nested_list_ol_followed_by_li = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
-                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="5">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant adequately and appropriately describe and document the key problem(s)/condition(s) relevant to the applicant's purpose/need?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_2_lists_ol_to_join = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0" start="4">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the proposed project clearly and adequately identify the relevance of the priority areas, as described in this NOFO, in relation to current state/community needs?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_2_nested_lists_ol_to_join = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="2">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-        self.html_2_nested_lists_ol_to_join_after_double_nested_list = """
-            <h6 class="c102" id="h.qsh70q"><span class="c10 c95">Option A (State)</span></h6>
-            <ol class="c7 lst-kix_ve93wcml2fgp-0 start" start="1">
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant demonstrate capacity to deliver and enhance person-centered, strengths-based services for people of all ages with dementia?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear description of the need for dementia-capability in the state system for the population it serves?</span></li>
-                <li class="c5 li-bullet-0"><span class="c2 c0">Does the applicant provide a clear understanding of the dementia capability of the system within which they are operating?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="1">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the application clearly articulate how previously funded program activities and outcomes impacted the state dementia-capable system and the need for additional resources?</span></li>
-            </ol>
-            <ol class="c7 lst-kix_l7y75dh7i3nd-2 start" start="1">
-                <li class="c36 c77 li-bullet-0"><span class="c2 c0">If a previously funded recipient, does the applicant describe the targeted population before and after the earlier funding, as well as the present-day population in the community? </span></li>
-            </ol>
-            <ol class="c7 lst-kix_ve93wcml2fgp-1 start" start="2">
-                <li class="c33 li-bullet-0"><span class="c2 c0">If previous program recipient, does the applicant clearly articulate how previously funded program activities and outcomes impacted the priority areas and the current state of the priority areas?</span></li>
-            </ol>
-            <p class="c9"><span class="c4">Sidebar: To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Backspace. </span></p>
-        """
-
-    def test_single_list_nothing_happens(self):
-        soup = join_nested_lists(BeautifulSoup(self.html_single_list_ol, "html.parser"))
-        self.assertEqual(len(soup.select("ol")), 1)
-
-        # last li of first list DOES NOT HAVE a nested ul
-        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 0)
-
-    def test_nested_list_becomes_nested(self):
-        soup = join_nested_lists(BeautifulSoup(self.html_nested_list_ol, "html.parser"))
-        # two uls
-        self.assertEqual(len(soup.select("ol")), 2)
-        # one nested list
-        self.assertEqual(len(soup.select("ol > li > ol")), 1)
-        # no uls are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # last li of first list HAS a nested ul
-        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 1)
-
-    def test_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_nested_list_ol_followed_by_li, "html.parser")
-        )
-
-        # two uls
-        self.assertEqual(len(soup.select("ol")), 2)
-        # one nested list
-        self.assertEqual(len(soup.select("ol > li > ol")), 1)
-        # no uls are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 4 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
-
-    def test_2_nested_lists_become_nested(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_2_nested_lists_ol, "html.parser")
-        )
-        # three uls
-        self.assertEqual(len(soup.select("ol")), 3)
-        # two nested lists
-        self.assertEqual(len(soup.select("ol > li > ol")), 2)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 4 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
-
-        # last li of first list HAS a nested ol
-        last_li = first_ol.find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 1)
-
-    def test_2_nested_lists_becomes_nested_and_last_item_added_to_first_list(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_2_nested_lists_ol_followed_by_li, "html.parser")
-        )
-        # three ols
-        self.assertEqual(len(soup.select("ol")), 3)
-        # two nested lists
-        self.assertEqual(len(soup.select("ol > li > ol")), 2)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 5 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 5)
-
-        # last li of first list DOES NOT HAVE a nested ol
-        last_li = first_ol.find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 0)
-
-    def test_double_nested_list_becomes_nested(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_double_nested_list_ol, "html.parser")
-        )
-        # three ols
-        self.assertEqual(len(soup.select("ol")), 3)
-        # two single nested lists
-        self.assertEqual(len(soup.select("ol > li > ol")), 2)
-        # one double nested list
-        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 3 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 3)
-
-        # last li of first list HAS 2 ols
-        last_li = first_ol.find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 2)
-
-    def test_double_nested_list_becomes_nested_and_last_item_added_to_first_list(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_double_nested_list_ol_followed_by_li, "html.parser")
-        )
-        # three ols
-        self.assertEqual(len(soup.select("ol")), 3)
-        # two single nested lists
-        self.assertEqual(len(soup.select("ol > li > ol")), 2)
-        # one double nested list
-        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 4 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
-
-        # last li of first list DOES NOT HAVE ols
-        last_li = first_ol.find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 0)
-
-    def test_join_2_lists_with_same_classname(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_2_lists_ol_to_join, "html.parser")
-        )
-        # two ols
-        self.assertEqual(len(soup.select("ol")), 1)
-        # one nested list
-        self.assertEqual(len(soup.select("ol > li > ol")), 0)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # first ol has 4 li children
-        first_ol = soup.find("ol")
-        self.assertEqual(len(first_ol.find_all("li", recursive=False)), 4)
-
-    def test_join_2_nested_lists_with_same_classname(self):
-        soup = join_nested_lists(
-            BeautifulSoup(self.html_2_nested_lists_ol_to_join, "html.parser")
-        )
-        # two ols
-        self.assertEqual(len(soup.select("ol")), 2)
-        # one nested list
-        self.assertEqual(len(soup.select("ol > li > ol")), 1)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # last li of first list HAS a nested ol
-        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 1)
-        # nested ol has 2 lis
-        self.assertEqual(len(last_li.find("ol").find_all("li")), 2)
-
-    def test_join_2_nested_lists_with_same_classname_after_a_double_nested_list(self):
-        soup = join_nested_lists(
-            BeautifulSoup(
-                self.html_2_nested_lists_ol_to_join_after_double_nested_list,
-                "html.parser",
-            )
-        )
-        # three ols
-        self.assertEqual(len(soup.select("ol")), 3)
-        # two nested lists
-        self.assertEqual(len(soup.select("ol > li > ol")), 2)
-        # one double nested list
-        self.assertEqual(len(soup.select("ol > li > ol > li > ol")), 1)
-        # no ols are siblings
-        self.assertEqual(len(soup.select("ol + ol")), 0)
-
-        # last li of first list HAS a nested ol
-        last_li = soup.find("ol").find_all("li", recursive=False)[-1]
-        self.assertEqual(len(last_li.find_all("ol")), 2)
-        # nested ol has 4 lis
-        self.assertEqual(len(last_li.find("ol").find_all("li", recursive=False)), 2)
-
-
-###########################################################
-#################### CALLOUT BOX TESTS ####################
-###########################################################
-
-
-class HTMLCalloutBoxTests(TestCase):
-    def assertSubsectionsMatch(self, subsections, subsections_assertions):
-        for index, _s in enumerate(subsections):
-            self.assertEqual(_s.get("name"), subsections_assertions[index]["name"])
-            self.assertEqual(
-                _s.get("is_callout_box"), subsections_assertions[index]["callout_box"]
-            )
-
-    def get_subsections(self, html_filename):
-        with open(html_filename, "r", encoding="UTF-8") as file:
-            soup = BeautifulSoup(file, "html.parser")
-            sections = get_subsections_from_sections(get_sections_from_soup(soup))
-            return sections[0].get("subsections")
-
-    def test_get_html_with_no_callout_boxes(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-1.html"
-        )
-
-        self.assertEqual(len(subsections), 5)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary 2",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose 2",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_1_callout_box(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-2.html"
-        )
-
-        self.assertEqual(len(subsections), 4)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title",
-                "callout_box": True,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_1_untitled_callout_box(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-2b.html"
-        )
-
-        self.assertEqual(len(subsections), 4)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_1_callout_box_followed_by_empty_section(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-3.html"
-        )
-
-        self.assertEqual(len(subsections), 5)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_1_untitled_callout_box_followed_by_empty_section(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-3b.html"
-        )
-
-        self.assertEqual(len(subsections), 5)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_2_callout_boxes_followed_by_heading(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-4.html"
-        )
-
-        self.assertEqual(len(subsections), 5)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title",
-                "callout_box": True,
-            },
-            {
-                "name": "Callout box title 2",
-                "callout_box": True,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_2_untitled_callout_boxes_followed_by_heading(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-4b.html"
-        )
-
-        self.assertEqual(len(subsections), 5)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_2_callout_boxes_followed_by_empty_section_and_heading(self):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-5.html"
-        )
-
-        self.assertEqual(len(subsections), 6)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title",
-                "callout_box": True,
-            },
-            {
-                "name": "Callout box title 2",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_2_untitled_callout_boxes_followed_by_empty_section_and_heading(
-        self,
-    ):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-5b.html"
-        )
-
-        self.assertEqual(len(subsections), 6)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_callout_box_followed_by_empty_section_followed_by_empty_section_twice(
-        self,
-    ):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-6.html"
-        )
-
-        self.assertEqual(len(subsections), 7)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Callout box title 2",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-    def test_get_html_with_untitled_callout_box_followed_by_empty_section_followed_by_empty_section_twice(
-        self,
-    ):
-        subsections = self.get_subsections(
-            "nofos/fixtures/html/callouts/callout-6b.html"
-        )
-
-        self.assertEqual(len(subsections), 7)
-        subsections_assertions = [
-            {
-                "name": "Basic information",
-                "callout_box": False,
-            },
-            {
-                "name": "Summary",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "",
-                "callout_box": True,
-            },
-            {
-                "name": "",
-                "callout_box": False,
-            },
-            {
-                "name": "Purpose",
-                "callout_box": False,
-            },
-        ]
-
-        self.assertSubsectionsMatch(subsections, subsections_assertions)
-
-
-class DecomposeInstructionsTablesTest(TestCase):
-    def test_removes_correct_tables(self):
-        """Test that tables with specific instructional text are removed."""
-        html_content = """
-        <html>
-            <body>
-                <table><tr><td><span>Instructions for NOFO writers</span><p>This table should be removed</p></td></tr></table>
-                <table><tr><td>Another table that should remain.</td></tr></table>
-            </body>
-        </html>
-        """
-        soup = BeautifulSoup(html_content, "html.parser")
-        decompose_instructions_tables(soup)
-        remaining_tables = soup.find_all("table")
-        self.assertEqual(len(remaining_tables), 1)
-        self.assertNotIn(
-            "Instructions for NOFO writers", remaining_tables[0].get_text()
-        )
-
-    def test_removes_correct_tables_nofo_team(self):
-        """Test that tables with specific instructional text are removed."""
-        html_content = """
-        <html>
-            <body>
-                <table><tr><td><strong class="instruction-box-heading"><span>INSTRUCTIONS FOR NEW NOFO TEAM</span></strong><span>DGHP New NOFO Team: Below are three metadata fields.</span></td></tr></table>
-                <table><tr><td>Another table that should remain.</td></tr></table>
-            </body>
-        </html>
-        """
-        soup = BeautifulSoup(html_content, "html.parser")
-        decompose_instructions_tables(soup)
-        remaining_tables = soup.find_all("table")
-        self.assertEqual(len(remaining_tables), 1)
-        self.assertNotIn(
-            "INSTRUCTIONS FOR NEW NOFO TEAM", remaining_tables[0].get_text()
-        )
-
-    def test_removes_correct_tables_instructions_1(self):
-        """Test that tables with specific instructional text are removed."""
-        html_content = """
-        <html>
-            <body>
-                <table><tr><td>DGHT-SPECIFIC INSTRUCTIONS: This table should be removed.</td></tr></table>
-                <table><tr><td>PAUL-SPECIFIC INSTRUCTIONS: This table should be removed.</td></tr></table>
-                <table><tr><td>SPECIFIC INSTRUCTIONS: This table should remain.</td></tr></table>
-            </body>
-        </html>
-        """
-        soup = BeautifulSoup(html_content, "html.parser")
-        decompose_instructions_tables(soup)
-        remaining_tables = soup.find_all("table")
-        self.assertEqual(len(remaining_tables), 1)
-        self.assertNotIn("-SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
-        self.assertIn("SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
-
-    def test_ignores_tables_with_2_cells(self):
-        """Test that tables with specific instructional text are removed."""
-        html_content = """
-        <html>
-            <body>
-                <table><tr><td>DGHT-SPECIFIC INSTRUCTIONS: This table should not be removed.</td><td>Because it has 2 cells</td></tr></table>
-                <table><tr><td>Instructions for NOFO writers: This table should be removed.</td></tr><tr><td>Because it has 2 rows and 2 cells</td></tr></table>
-            </body>
-        </html>
-        """
-        soup = BeautifulSoup(html_content, "html.parser")
-        decompose_instructions_tables(soup)
-        remaining_tables = soup.find_all("table")
-        self.assertEqual(len(remaining_tables), 2)
-        self.assertIn("-SPECIFIC INSTRUCTIONS:", remaining_tables[0].get_text())
-        self.assertIn("Instructions for NOFO writers:", remaining_tables[1].get_text())
-
-    def test_ignores_tables_without_instruction_text(self):
-        """Test that tables without the specific instructional text are not removed."""
-        html_content = """
-        <html>
-            <body>
-                <table><tr><td>Some information.</td></tr></table>
-                <table><tr><td>More data here.</td></tr></table>
-            </body>
-        </html>
-        """
-        soup = BeautifulSoup(html_content, "html.parser")
-        decompose_instructions_tables(soup)
-        remaining_tables = soup.find_all("table")
-        self.assertEqual(len(remaining_tables), 2)
-        self.assertIn("Some information.", remaining_tables[0].get_text())
-        self.assertIn("More data here.", remaining_tables[1].get_text())
