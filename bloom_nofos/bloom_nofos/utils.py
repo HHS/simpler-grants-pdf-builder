@@ -1,3 +1,5 @@
+import re
+
 from django.utils.timezone import now, timedelta
 
 
@@ -36,3 +38,8 @@ def is_docraptor_live_mode_active(last_updated):
 
 def get_timedelta_for_docraptor_live_mode():
     return timedelta(minutes=5)
+
+
+def parse_docraptor_ip_addresses(ip_string: str):
+    # Split on commas, spaces, and newlines while ignoring extra whitespace
+    return [ip.strip() for ip in re.split(r"[\s,]+", ip_string) if ip.strip()]

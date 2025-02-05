@@ -1,9 +1,12 @@
+from constance import config
+
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.urls import resolve
 
+from bloom_nofos.utils import parse_docraptor_ip_addresses
 from .utils import match_view_url
 
 
@@ -26,7 +29,7 @@ class NofosLoginRequiredMiddleware:
         if (
             resolve(request.path).app_name == self.APP_NAME
         ):  # match app_name defined in myapp.urls.py
-            safe_ips = settings.DOCRAPTOR_IPS.split(",")
+            safe_ips = parse_docraptor_ip_addresses(config.DOCRAPTOR_IPS)
             incoming_ip = request.headers.get("x-forwarded-for")
 
             if (

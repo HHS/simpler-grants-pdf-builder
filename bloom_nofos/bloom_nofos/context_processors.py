@@ -1,7 +1,7 @@
 from constance import config
 from django.conf import settings
 
-from .utils import is_docraptor_live_mode_active
+from .utils import is_docraptor_live_mode_active, parse_docraptor_ip_addresses
 
 
 def add_docraptor_live_mode(request):

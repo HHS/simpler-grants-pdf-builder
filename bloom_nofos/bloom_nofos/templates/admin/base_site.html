@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+    {{ block.super }}  {# Ensure other admin styles are loaded #}
+    <style>
+      .change-list .constance table tbody tr td:first-of-type {
+        word-break: break-word;
+      }
+    </style>
+{% endblock %}
