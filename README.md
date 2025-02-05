@@ -152,8 +152,6 @@ To manually deploy to production, create a new file `./bloom_nofos/bloom_nofos/.
 
   - default `"YOUR_API_KEY_HERE"`: this key works for printing test documents (with a watermark)
 
-- `DOCRAPTOR_IPS`: Allows specific IPs access to the 'view' page for a NOFO draft, so that we can generate a PDF based on the HTML. (Last updated: 2024-10-11)
-
   - default `""`: this means zero IPs are safelisted
 
 ## Build and run as a Docker container
