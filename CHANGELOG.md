@@ -27,6 +27,7 @@ Versioning since version 1.0.0.
   - Support "Understand Review, Selection, and Award" as a new section name
 - Preserve existing page breaks when a NOFO is reimported
   - Note that this is a best-guess effort: if subsections are renamed, page breaks can't be preserved
+- DocRaptor IPs can now be updated by superadmin users
 
 ### Fixed
 
