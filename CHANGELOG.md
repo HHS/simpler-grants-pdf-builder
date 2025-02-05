@@ -29,6 +29,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- H7 warning notice at the top of a NOFO now handles h7s in markdown body as well
+- Preserve heading links for h7 headings (other heading levels worked before, but not h7s)
 - Remove unneeded nested lists "li > ul > li" for BYB page and appendices
 - Page breaks were not possible to add to subsections without a heading
 - page-break-after was briefly not working
