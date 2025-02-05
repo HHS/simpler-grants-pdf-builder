@@ -1207,6 +1207,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
 
   @prince-pdf {
+    -prince-pdf-page-mode: show-bookmarks;
     prince-pdf-role-map: "H7" P;
   }
 
