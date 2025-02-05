@@ -4376,6 +4376,50 @@ class PreserveHeadingLinksTest(TestCase):
         expected = '<h4 id="_About_Priority_Populations_inside">About priority populations</h4><a href="#_About_Priority_Populations_inside">Link to h4</a><a href="#_About_Priority_Populations_inside">Link to preceding</a><a href="#_About_Priority_Populations_inside">Link to inside</a>'
         self.assertEqual(result, expected)
 
+    def test_h7_with_direct_child_anchor_transfers_id_and_removes_anchor(
+        self,
+    ):
+        """H7 heading with a direct child anchor should get the anchor's ID and remove the anchor."""
+        html = """
+        <div role="heading" aria-level="7">
+            <a id="h7-direct-link"></a>
+            Some H7 Heading Text
+        </div>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<div role="heading" aria-level="7" id="h7-direct-link">Some H7 Heading Text</div>'
+        self.assertEqual(result, expected)
+
+    def test_h7_with_preceding_anchor_transfers_id_and_removes_anchor(
+        self,
+    ):
+        """H7 heading with a preceding anchor should get the anchor's ID and remove the anchor."""
+        html = """
+        <a id="h7-preceding-link"></a>
+        <div role="heading" aria-level="7">Some H7 Heading Text</div>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<div role="heading" aria-level="7" id="h7-preceding-link">Some H7 Heading Text</div>'
+        self.assertEqual(result, expected)
+
+    def test_regular_div_ignores_preceding_anchor(
+        self,
+    ):
+        """Regular div without heading role should not get ID from preceding anchor."""
+        html = """
+        <a id="some-link"></a>
+        <div>Regular div content</div>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_heading_links(soup)
+        result = str(soup)
+        expected = '<a id="some-link"></a><div>Regular div content</div>'
+        self.assertEqual(result, expected)
+
 
 class PreserveTableHeadingLinksTest(TestCase):
     def test_empty_anchor_with_table_heading_id(self):
