@@ -1161,7 +1161,7 @@ def find_h7_headers(nofo):
                             "section": section,
                             "subsection": subsection,
                             "name": div_h7.get_text(strip=True),
-                            "html_id": f"{subsection.html_id}--div-h7-{len(h7_headers)}",
+                            "html_id": subsection.html_id,
                         }
                     )
 
