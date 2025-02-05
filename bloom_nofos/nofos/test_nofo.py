@@ -2469,10 +2469,8 @@ class TestFindH7Headers(TestCase):
 
         # Check div role="heading" h7
         self.assertEqual(h7_headers[1]["name"], "This shimmed h7 will be recognized")
-        self.assertTrue(
-            h7_headers[1]["html_id"].startswith(
-                "1--new-section-h7--new-subsection-h4--div-h7-"
-            )
+        self.assertEqual(
+            h7_headers[1]["html_id"], "1--new-section-h7--new-subsection-h4"
         )
         self.assertEqual(h7_headers[1]["section"], nofo.sections.first())
         self.assertEqual(h7_headers[1]["subsection"], subsections[3])
