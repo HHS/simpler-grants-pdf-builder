@@ -1,5 +1,4 @@
 import io
-import json
 
 import docraptor
 from bs4 import BeautifulSoup

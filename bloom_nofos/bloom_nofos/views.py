@@ -2,7 +2,7 @@ from constance import config
 from django.contrib.auth.views import RedirectURLMixin
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
 from django.views.generic import TemplateView
 
 from .forms import DocraptorTestModeForm
