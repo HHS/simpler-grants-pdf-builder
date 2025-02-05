@@ -458,12 +458,16 @@ if is_prod:
 # Document IPs for our PDF generating app
 DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
 DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
-DOCRAPTOR_LIVE_MODE = True
 
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "DOCRAPTOR_IPS": (
+        DOCRAPTOR_IPS,
+        "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",
+        str,
+    ),
     "DOCRAPTOR_LIVE_MODE": (
         now(),
         "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
