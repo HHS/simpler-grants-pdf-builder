@@ -630,16 +630,6 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
         return newTags[tag_name]
 
-    def is_h7(tag):
-        if (
-            tag.name == "div"
-            and tag.get("role") == "heading"
-            and tag.has_attr("aria-level")
-        ):
-            return True
-
-        return False
-
     def extract_first_header(td):
         for tag_name in heading_tags:
             header_element = td.find(tag_name)
@@ -1985,6 +1975,17 @@ def preserve_bookmark_targets(soup):
                 link.decompose()
 
 
+def is_h7(tag):
+    """
+    Checks if a tag is an H7 heading (div with heading role and aria-level).
+    """
+    return (
+        tag.name == "div"
+        and tag.get("role") == "heading"
+        and tag.has_attr("aria-level")
+    )
+
+
 def preserve_heading_links(soup):
     """
     This function mutates the soup!
@@ -2041,52 +2042,54 @@ def preserve_heading_links(soup):
             heading["id"] = anchor["id"]
             anchor.decompose()  # Remove the empty <a> tag
 
-    # List of all heading tags to check
-    heading_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
+    # Get all headings (h1-h6 and h7s)
+    headings = []
 
-    # Check each heading tag
-    for tag in heading_tags:
-        # Find all heading tags in the document
-        headings = soup.find_all(tag)
+    # Find regular heading tags
+    for tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+        headings.extend(soup.find_all(tag))
 
-        # Check each heading
-        for heading in headings:
-            # Store found empty anchors
-            heading_id_anchors = []
-            preceding_id_anchors = []
+    # Find H7 divs
+    headings.extend(soup.find_all(is_h7))
 
-            # Find empty <a> tags immediately preceding the heading
-            previous_sibling = heading.find_previous_sibling()
+    # Process all headings
+    for heading in headings:
+        # Store found empty anchors
+        heading_id_anchors = []
+        preceding_id_anchors = []
 
-            # Traverse back through preceding siblings
-            while previous_sibling and _is_valid_anchor_or_paragraph_containing_anchors(
-                previous_sibling
-            ):
-                if previous_sibling.name == "a":
-                    # Append single valid <a> tag
-                    preceding_id_anchors.append(previous_sibling)
-                elif previous_sibling.name == "p":
-                    # For valid <p>, add all <a> children
-                    preceding_id_anchors.extend(
-                        previous_sibling.find_all("a", recursive=False)
-                    )
-                previous_sibling = previous_sibling.find_previous_sibling()
+        # Find empty <a> tags immediately preceding the heading
+        previous_sibling = heading.find_previous_sibling()
 
-            # Process all preceding empty <a> tags
-            for preceding_anchor in reversed(preceding_id_anchors):
-                if not preceding_anchor.text.strip():
-                    _transfer_id_and_decompose(heading=heading, anchor=preceding_anchor)
+        # Traverse back through preceding siblings
+        while previous_sibling and _is_valid_anchor_or_paragraph_containing_anchors(
+            previous_sibling
+        ):
+            if previous_sibling.name == "a":
+                # Append single valid <a> tag
+                preceding_id_anchors.append(previous_sibling)
+            elif previous_sibling.name == "p":
+                # For valid <p>, add all <a> children
+                preceding_id_anchors.extend(
+                    previous_sibling.find_all("a", recursive=False)
+                )
+            previous_sibling = previous_sibling.find_previous_sibling()
 
-            # Find direct child anchor tags that are empty
-            for a in heading.find_all("a", recursive=False):
-                if a.get_text(strip=True) == "" and not a.contents:
-                    heading_id_anchors.append(a)
+        # Process all preceding empty <a> tags
+        for preceding_anchor in reversed(preceding_id_anchors):
+            if not preceding_anchor.text.strip():
+                _transfer_id_and_decompose(heading=heading, anchor=preceding_anchor)
 
-            # Process all internal empty <a> tags
-            for heading_anchor in heading_id_anchors:
-                # Check if the <a> tag is empty
-                if not heading_anchor.text.strip():
-                    _transfer_id_and_decompose(heading=heading, anchor=heading_anchor)
+        # Find direct child anchor tags that are empty
+        for a in heading.find_all("a", recursive=False):
+            if a.get_text(strip=True) == "" and not a.contents:
+                heading_id_anchors.append(a)
+
+        # Process all internal empty <a> tags
+        for heading_anchor in heading_id_anchors:
+            # Check if the <a> tag is empty
+            if not heading_anchor.text.strip():
+                _transfer_id_and_decompose(heading=heading, anchor=heading_anchor)
 
 
 def preserve_table_heading_links(soup):
