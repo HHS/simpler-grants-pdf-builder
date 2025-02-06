@@ -156,6 +156,21 @@ h2 {
 }
 
 /* Custom CSS for one nofo at a time */
+.nofo--cover-page--callout-box.callout-box--icon {
+  display: inline-block;
+  background-color: white;
+  margin-right: -15px;
+}
+
+.nofo--cover-page--callout-box.callout-box--icon .callout-box--contents svg {
+  width: 22px;
+}
+
+.nofo--cover-page--callout-box.callout-box--icon .callout-box--contents p,
+.nofo--cover-page--callout-box.callout-box--icon .callout-box--contents a {
+  color: #940200;
+}
+
 .hrsa-24-014 .toc h2 {
   margin-top: -16px;
   margin-bottom: 16px;

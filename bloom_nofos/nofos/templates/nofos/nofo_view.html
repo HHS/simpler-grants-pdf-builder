@@ -108,7 +108,16 @@
           </ul>
         {% else %}
           <span>Application due {{ nofo.application_deadline }}</span>
+          <br>
         {% endif %}
+        <div class="nofo--cover-page--callout-box callout-box callout-box--icon callout-box--alert">
+          <div class="callout-box--contents">
+            {% include "includes/icons/000-alert.svg" %}
+            <div>
+              <p><a href="https://groundhog-day.com">This NOFO has been modified</a>.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="nofo--cover-page--hero-image">
