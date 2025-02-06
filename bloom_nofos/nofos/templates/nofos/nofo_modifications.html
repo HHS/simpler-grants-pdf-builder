@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO modification status
+{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO modification status" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <p>This NOFO has been modified: <strong>{{ nofo.modifications|default:"Not modified" }}</strong></p>
+
+  <form id="nofo-modifications--form" method="post">
+    {% csrf_token %}
+
+    <button class="usa-button margin-top-3" type="submit">Toggle modification status</button>
+  </form>
+{% endblock %}

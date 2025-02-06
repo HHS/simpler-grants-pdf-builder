@@ -134,6 +134,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "cover_image",
                     "cover_image_alt_text",
                     "archived",
+                    "modifications",
                     "filename",
                     "sole_source_justification",
                 )

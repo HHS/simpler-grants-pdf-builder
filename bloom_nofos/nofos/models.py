@@ -285,6 +285,13 @@ class Nofo(models.Model):
         help_text="The OpDiv grouping of this NOFO. The group is used to control access to a NOFO.",
     )
 
+    modifications = models.DateField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="If this NOFO has post-publishing modifications. Adds a message to the cover page and a “Modifications” section to the end of the NOFO.",
+    )
+
     inline_css = models.TextField(
         "Inline CSS",
         blank=True,
