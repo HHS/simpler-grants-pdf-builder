@@ -23,6 +23,10 @@ h4 {
   background-color: var(--color--pale-blue);
 }
 
+.nofo--cover-page .nofo--cover-page--callout-box {
+  background-color: var(--color--white);
+}
+
 /* Cover page: hero image */
 
 .nofo--cover-page--hero
@@ -36,6 +40,10 @@ h4 {
 
 .nofo--cover-page--text .nofo--cover-page--header {
   background-color: var(--color--white);
+}
+
+.nofo--cover-page--text .nofo--cover-page--callout-box {
+  background-color: var(--color--pale-blue);
 }
 
 .nofo--cover-page--text .nofo--cover-page--header--logo--subheading,

@@ -128,3 +128,8 @@ h6 {
 .nofo--tagline {
   color: var(--color--hrsa-blue);
 }
+
+.nofo--cover-page--callout-box .callout-box--contents p,
+.nofo--cover-page--callout-box .callout-box--contents a {
+  color: var(--color--hrsa-red);
+}
