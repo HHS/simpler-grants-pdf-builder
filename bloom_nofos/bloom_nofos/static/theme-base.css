@@ -1207,6 +1207,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
 
   @prince-pdf {
+    /* Open Acrobat with bookmarks panel open by default */
     -prince-pdf-page-mode: show-bookmarks;
     prince-pdf-role-map: "H7" P;
   }
@@ -1228,6 +1229,12 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
   .bookmark-level-7 {
     -prince-bookmark-level: 7;
+  }
+
+  /* Render top-nav links inert */
+  .section--title-page--header-nav li a,
+  .header-nav--running-header li a {
+    -prince-link: none;
   }
 
   /* Page break rules */

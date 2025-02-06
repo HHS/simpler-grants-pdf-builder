@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Breadcrumb links are no longer clickable (instead, they are just visual indicators)
+- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by default
+
 ### Fixed
 
 - Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
