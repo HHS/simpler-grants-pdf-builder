@@ -84,7 +84,7 @@ from .nofo import (
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
 
 ###########################################################
-###################### NOFO VIEWS ########################
+################### NOFO OBJECT VIEWS #####################
 ###########################################################
 
 
@@ -614,6 +614,25 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
+###########################################################
+################### NOFO METADATA VIEWS ###################
+###########################################################
+
+
+class NofoEditModificationView(View):
+    def get(self, request, nofo_id):
+        nofo = get_object_or_404(Nofo, id=nofo_id)
+        return render(request, "nofos/nofo_modifications.html", {"nofo": nofo})
+
+    def post(self, request, nofo_id):
+        nofo = get_object_or_404(Nofo, id=nofo_id)
+        nofo.modifications = (
+            None if nofo.modifications else timezone.now()
+        )  # Toggle between None and today's date
+        nofo.save()
+        return redirect("nofos:nofo_modifications", nofo_id=nofo.id)
+
+
 class NofoEditTitleView(BaseNofoEditView):
     form_class = NofoNameForm
     template_name = "nofos/nofo_edit_title.html"
@@ -807,7 +826,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
 
 ###########################################################
-################### SECTION VIEWS ######################
+##################### SECTION VIEWS #######################
 ###########################################################
 
 
