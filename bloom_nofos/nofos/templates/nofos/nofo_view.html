@@ -110,14 +110,13 @@
           <span>Application due {{ nofo.application_deadline }}</span>
           <br>
         {% endif %}
-        <div class="nofo--cover-page--callout-box callout-box callout-box--icon callout-box--alert">
+        {% if nofo.modifications %}
+        <div class="callout-box nofo--cover-page--callout-box">
           <div class="callout-box--contents">
-            {% include "includes/icons/000-alert.svg" %}
-            <div>
-              <p><a href="https://groundhog-day.com">This NOFO has been modified</a>.</p>
-            </div>
+            <p><strong>Modified {{ nofo.modifications|date:"F j, Y" }}. <a href="#section--modifications">See updates</a>.</strong></p>
           </div>
         </div>
+        {% endif %}
       </div>
     </div>
     <div class="nofo--cover-page--hero-image">
