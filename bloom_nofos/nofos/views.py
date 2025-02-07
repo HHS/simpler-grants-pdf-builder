@@ -2,6 +2,7 @@ import io
 import json
 
 import docraptor
+from datetime import datetime
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -11,7 +12,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.utils import dateformat, timezone
+from django.utils import dateformat, dateparse, timezone
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -626,42 +627,59 @@ class NofoEditModificationView(View):
 
     def post(self, request, pk):
         nofo = get_object_or_404(Nofo, id=pk)
-        if nofo.modifications:
-            nofo.modifications = None
-            nofo.save()
+        submitted_date = request.POST.get("modifications", "").strip()
 
-        else:
-            nofo.modifications = timezone.now()
-            nofo.save()
+        if "/" in submitted_date:
+            submitted_date = datetime.strptime(submitted_date, "%m/%d/%Y").strftime(
+                "%Y-%m-%d"
+            )
 
-            # Check if a "Modifications" section exists
-            modifications_section = nofo.sections.filter(name="Modifications").first()
-            if not modifications_section:
-                # Create new "Modifications" section
-                modifications_section = Section.objects.create(
-                    nofo=nofo,
-                    name="Modifications",
-                    html_id="modifications",
-                    order=Section.get_next_order(nofo),  # Get next available order
-                    has_section_page=False,
+        parsed_date = dateparse.parse_date(submitted_date) if submitted_date else None
+
+        if submitted_date and not parsed_date:
+            messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
+            return redirect("nofos:nofo_modifications", pk=nofo.id)
+
+        nofo.modifications = parsed_date
+        nofo.save()
+
+        # Check if a "Modifications" section exists
+        modifications_section = nofo.sections.filter(name="Modifications").first()
+        if not modifications_section:
+            # Create new "Modifications" section
+            modifications_section = Section.objects.create(
+                nofo=nofo,
+                name="Modifications",
+                html_id="modifications",
+                order=Section.get_next_order(nofo),  # Get next available order
+                has_section_page=False,
+            )
+
+            # Get the default subsection that was automatically created
+            default_subsection = modifications_section.subsections.first()
+            if default_subsection:
+                default_subsection.body = (
+                    "| Modification description | Date updated |\n"
+                    "|--------------------------|--------------|\n"
+                    "|                          |              |\n"
+                    "|                          |              |\n"
+                    "|                          |              |\n"
                 )
-
-                # Get the default subsection that was automatically created
-                default_subsection = modifications_section.subsections.first()
-                if default_subsection:
-                    default_subsection.body = (
-                        "| Modification description | Date updated |\n"
-                        "|--------------------------|--------------|\n"
-                        "|                          |              |\n"
-                        "|                          |              |\n"
-                        "|                          |              |\n"
-                    )
-                    default_subsection.save()
+                default_subsection.save()
 
             messages.success(
                 self.request,
                 "NOFO is ‘modified’. Added message to cover page and created new section: “<a href='#{}'>{}</a>”".format(
                     modifications_section.html_id, modifications_section.name
+                ),
+            )
+
+        else:
+            # did NOT create new modifications section, just updated date
+            messages.success(
+                self.request,
+                "New modification date: “{}”".format(
+                    dateformat.format(nofo.modifications, "F j, Y")
                 ),
             )
 
