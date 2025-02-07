@@ -2,7 +2,7 @@
 {% load nofo_name %}
 
 {% block title %}
-  NOFO cover page modification message
+  NOFO cover page modification date
 {% endblock %}
 
 {% block body_class %}subsection_edit{% endblock %}
@@ -11,7 +11,7 @@
   {% with nofo|nofo_name as nofo_name_str %}
   {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
     {% url 'nofos:nofo_edit' nofo.id as back_href %}
-    {% include "includes/page_heading.html" with title="NOFO cover page modification message" back_text=back_text back_href=back_href only %}
+    {% include "includes/page_heading.html" with title="NOFO cover page modification date" back_text=back_text back_href=back_href only %}
   {% endwith %}
   {% endwith %}
 
@@ -22,7 +22,6 @@
   <blockquote>Modified {{ nofo.modifications|date:"F j, Y" }}. <a class="text-base" href="#modifications">See updates</a>.</blockquote>
 
   <br>
-
   
   <form id="nofo-modifications--form" method="post">
     {% csrf_token %}
@@ -32,6 +31,13 @@
         >New modification date</label
       >
       <div class="usa-hint" id="modifications-hint">mm/dd/yyyy</div>
+      {% for message in messages %}
+        {% if "error" in message.tags %}
+          <div class="usa-error-message" id="modifications--error">
+            Error: {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
       <div class="usa-date-picker" data-default-value="{{ nofo.modifications|date:"Y-m-d" }}">
         <input
           class="usa-input"
