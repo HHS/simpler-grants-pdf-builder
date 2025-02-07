@@ -5,7 +5,7 @@
 Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
-{% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% endblock %}
+{% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% if nofo.modifications %} nofo--modifications{% endif %}{% endblock %}
 
 {% block content %}
 {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
@@ -48,16 +48,39 @@ Edit “{{ nofo|nofo_name }}”
   </span>
 </div>
 
-{% if nofo.status == 'published' %}
+{% if nofo.status == 'published' and nofo.modifications %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO status is ‘published’.
+      NOFO is ‘published’ with modifications.
     </h2>
     <div class="usa-summary-box__text">
-      <p>Published NOFOs can’t be edited, re-imported, or deleted.</p>
-      <p>If you need to edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its
-          status</a>.</p>
+      <p>This NOFO has been modified since being published</a>.</p>
+      <p>You can edit the content of this NOFO, but be sure to update the “<a href="#modifications">Modifications</a>” section at the end of this NOFO with:</p>
+      <ul class="usa-list">
+        <li>A description of the changes you made</li>
+        <li>The date you made those changes</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% elif nofo.status == 'published' %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO is ‘published’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>Ordinarily, published NOFOs can’t be edited, re-imported, or deleted. To edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its
+        status</a>.</p>
+        <p class="margin-top-3">However, you can <strong>add modifications</strong> to a NOFO that has already been published.</p>
+        <form id="nofo-modifications--form" method="post" action="{% url 'nofos:nofo_modifications' nofo.id %}">
+          {% csrf_token %}
+          <p>
+          <button class="usa-button usa-button--accent-warm" type="submit">Add modifications</button>
+           — Adds a message to the cover page and a “Modifications” section to the end of the NOFO.
+          </p>
+        </form>
     </div>
   </div>
 </div>
