@@ -43,6 +43,13 @@ a:visited {
   color: var(--color--usa-link-visited);
 }
 
+blockquote {
+  margin: 0;
+  padding: 10px 15px;
+  border-left: 8px solid #dfe1e2;
+  font-style: italic;
+}
+
 /* Util classes */
 
 .inline-block {
@@ -748,6 +755,13 @@ details > summary > span:hover {
   display: none;
 }
 
+.nofo_edit .nofo-modifications-message,
+.nofo_edit .nofo-modifications-message a,
+.nofo_edit .nofo-modifications-message a:visited {
+  font-style: italic;
+  color: #71767a;
+}
+
 /* Section edit page */
 
 .section_edit .edit_section--other_sections {
@@ -844,6 +858,11 @@ main .back-link a::before,
 }
 
 /* Subsection edit page */
+
+.subsection_edit blockquote {
+  font-weight: 700;
+  color: #71767a;
+}
 
 .subsection_edit .hint--subsection-id {
   display: flex;
