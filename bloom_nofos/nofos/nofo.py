@@ -33,6 +33,22 @@ REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
 }
 
+# More realistic browser like request headers for GET requests
+REQUEST_HEADERS_GET = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate, br",
+    "DNT": "1",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Pragma": "no-cache",
+    "Cache-Control": "no-cache",
+}
 
 ###########################################################
 #################### NOFO IMPORT FUNCS ####################
@@ -117,7 +133,6 @@ def process_nofo_html(soup, top_heading_level):
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
-    replace_src_for_inline_images(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
@@ -889,9 +904,24 @@ def _update_link_statuses(all_links):
 
     def check_link_status(link):
         try:
+            # First try HEAD request
             response = requests.head(
                 link["url"], timeout=5, allow_redirects=True, headers=REQUEST_HEADERS
             )
+
+            # If we get certain error codes that often work with GET, retry with GET
+            if response.status_code in [403, 405, 500, 501, 502, 503]:
+                try:
+                    response = requests.get(
+                        link["url"],
+                        timeout=7,
+                        allow_redirects=True,
+                        headers=REQUEST_HEADERS_GET,
+                    )
+                except requests.RequestException:
+                    # If GET also fails, use original HEAD response
+                    pass
+
             link["status"] = response.status_code
             if len(response.history):
                 link["redirect_url"] = response.url
