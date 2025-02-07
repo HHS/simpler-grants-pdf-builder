@@ -735,12 +735,12 @@ details > summary > span:hover {
   text-align: right;
 }
 
-.nofo_edit.nofo_status--published
+.nofo_edit.nofo_status--published:not(.nofo--modifications)
   table.table--hide-edit-if-published
   thead
   tr
   th:last-of-type,
-.nofo_edit.nofo_status--published
+.nofo_edit.nofo_status--published:not(.nofo--modifications)
   table.table--hide-edit-if-published
   tbody
   tr
