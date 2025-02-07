@@ -623,7 +623,7 @@ class NofoImportNumberView(BaseNofoEditView):
 class NofoEditModificationView(View):
     def get(self, request, pk):
         nofo = get_object_or_404(Nofo, id=pk)
-        return render(request, "nofos/nofo_modifications.html", {"nofo": nofo})
+        return render(request, "nofos/nofo_edit_modifications.html", {"nofo": nofo})
 
     def post(self, request, pk):
         nofo = get_object_or_404(Nofo, id=pk)
@@ -637,8 +637,13 @@ class NofoEditModificationView(View):
         parsed_date = dateparse.parse_date(submitted_date) if submitted_date else None
 
         if submitted_date and not parsed_date:
-            messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
-            return redirect("nofos:nofo_modifications", pk=nofo.id)
+            messages.error(request, "Invalid date format.")
+            return render(
+                request,
+                "nofos/nofo_edit_modifications.html",
+                {"nofo": nofo},
+                status=400,
+            )
 
         nofo.modifications = parsed_date
         nofo.save()
