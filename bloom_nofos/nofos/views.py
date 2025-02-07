@@ -620,17 +620,52 @@ class NofoImportNumberView(BaseNofoEditView):
 
 
 class NofoEditModificationView(View):
-    def get(self, request, nofo_id):
-        nofo = get_object_or_404(Nofo, id=nofo_id)
+    def get(self, request, pk):
+        nofo = get_object_or_404(Nofo, id=pk)
         return render(request, "nofos/nofo_modifications.html", {"nofo": nofo})
 
-    def post(self, request, nofo_id):
-        nofo = get_object_or_404(Nofo, id=nofo_id)
-        nofo.modifications = (
-            None if nofo.modifications else timezone.now()
-        )  # Toggle between None and today's date
-        nofo.save()
-        return redirect("nofos:nofo_modifications", nofo_id=nofo.id)
+    def post(self, request, pk):
+        nofo = get_object_or_404(Nofo, id=pk)
+        if nofo.modifications:
+            nofo.modifications = None
+            nofo.save()
+
+        else:
+            nofo.modifications = timezone.now()
+            nofo.save()
+
+            # Check if a "Modifications" section exists
+            modifications_section = nofo.sections.filter(name="Modifications").first()
+            if not modifications_section:
+                # Create new "Modifications" section
+                modifications_section = Section.objects.create(
+                    nofo=nofo,
+                    name="Modifications",
+                    html_id="modifications",
+                    order=Section.get_next_order(nofo),  # Get next available order
+                    has_section_page=False,
+                )
+
+                # Get the default subsection that was automatically created
+                default_subsection = modifications_section.subsections.first()
+                if default_subsection:
+                    default_subsection.body = (
+                        "| Modification description | Date updated |\n"
+                        "|--------------------------|--------------|\n"
+                        "|                          |              |\n"
+                        "|                          |              |\n"
+                        "|                          |              |\n"
+                    )
+                    default_subsection.save()
+
+            messages.success(
+                self.request,
+                "NOFO is ‘modified’. Added message to cover page and created new section: “<a href='#{}'>{}</a>”".format(
+                    modifications_section.html_id, modifications_section.name
+                ),
+            )
+
+        return redirect("nofos:nofo_edit", pk=nofo.id)
 
 
 class NofoEditTitleView(BaseNofoEditView):
@@ -937,8 +972,10 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
         if self.nofo.id != self.nofo_id:
             return HttpResponseBadRequest("Oops, bad NOFO id")
-        if self.nofo.status == "published":
-            return HttpResponseBadRequest("Published NOFOs can’t be edited.")
+        if self.nofo.status == "published" and not self.nofo.modifications:
+            return HttpResponseBadRequest(
+                "Published NOFOs can’t be edited. Change the status of this NOFO or add modifications to it."
+            )
 
         return super().dispatch(request, *args, **kwargs)
 
