@@ -7,7 +7,7 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
-from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER
+from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER, REQUEST_HEADERS, REQUEST_HEADERS_GET
 from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import (
     _get_classnames_for_font_weight_bold as get_classnames_for_font_weight_bold,
@@ -2519,6 +2519,151 @@ class TestUpdateLinkStatuses(TestCase):
         all_links = [{"url": "https://example.com", "status": ""}]
         update_link_statuses(all_links)
         self.assertIn("Error: Connection error", all_links[0]["error"])
+
+    @patch("nofos.nofo.requests.head")
+    @patch("nofos.nofo.requests.get")
+    def test_status_code_500_retries_with_get(self, mock_get, mock_head):
+        # First request (HEAD) returns 500
+        mock_head_response = MagicMock()
+        mock_head_response.status_code = 500
+        mock_head_response.history = []
+        mock_head.return_value = mock_head_response
+
+        # Second request (GET) returns 200
+        mock_get_response = MagicMock()
+        mock_get_response.status_code = 200
+        mock_get_response.history = []
+        mock_get.return_value = mock_get_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+
+        # Verify HEAD was called first
+        mock_head.assert_called_once_with(
+            "https://example.com",
+            timeout=5,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS,
+        )
+
+        # Verify GET was called after HEAD returned 500
+        mock_get.assert_called_once_with(
+            "https://example.com",
+            timeout=7,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS_GET,
+        )
+
+        # Verify we got the 200 status from the GET request
+        self.assertEqual(all_links[0]["status"], 200)
+
+    @patch("nofos.nofo.requests.head")
+    @patch("nofos.nofo.requests.get")
+    def test_status_code_500_get_also_fails(self, mock_get, mock_head):
+        # First request (HEAD) returns 500
+        mock_head_response = MagicMock()
+        mock_head_response.status_code = 500
+        mock_head_response.history = []
+        mock_head.return_value = mock_head_response
+
+        # GET request fails
+        mock_get.side_effect = requests.RequestException("GET failed")
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+
+        # Verify HEAD was called first
+        mock_head.assert_called_once_with(
+            "https://example.com",
+            timeout=5,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS,
+        )
+
+        # Verify GET was attempted
+        mock_get.assert_called_once_with(
+            "https://example.com",
+            timeout=7,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS_GET,
+        )
+
+        # Verify we kept the 500 status from HEAD since GET failed
+        self.assertEqual(all_links[0]["status"], 500)
+
+    @patch("nofos.nofo.requests.head")
+    @patch("nofos.nofo.requests.get")
+    def test_status_code_403_retries_with_get(self, mock_get, mock_head):
+        # First request (HEAD) returns 403
+        mock_head_response = MagicMock()
+        mock_head_response.status_code = 403
+        mock_head_response.history = []
+        mock_head.return_value = mock_head_response
+
+        # Second request (GET) returns 200
+        mock_get_response = MagicMock()
+        mock_get_response.status_code = 200
+        mock_get_response.history = []
+        mock_get.return_value = mock_get_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+
+        # Verify HEAD was called first
+        mock_head.assert_called_once_with(
+            "https://example.com",
+            timeout=5,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS,
+        )
+
+        # Verify GET was called after HEAD returned 403
+        mock_get.assert_called_once_with(
+            "https://example.com",
+            timeout=7,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS_GET,
+        )
+
+        # Verify we got the 200 status from the GET request
+        self.assertEqual(all_links[0]["status"], 200)
+
+    @patch("nofos.nofo.requests.head")
+    @patch("nofos.nofo.requests.get")
+    def test_status_code_405_retries_with_get(self, mock_get, mock_head):
+        # First request (HEAD) returns 405
+        mock_head_response = MagicMock()
+        mock_head_response.status_code = 405
+        mock_head_response.history = []
+        mock_head.return_value = mock_head_response
+
+        # Second request (GET) returns 200
+        mock_get_response = MagicMock()
+        mock_get_response.status_code = 200
+        mock_get_response.history = []
+        mock_get.return_value = mock_get_response
+
+        all_links = [{"url": "https://example.com", "status": ""}]
+        update_link_statuses(all_links)
+
+        # Verify HEAD was called first
+        mock_head.assert_called_once_with(
+            "https://example.com",
+            timeout=5,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS,
+        )
+
+        # Verify GET was called after HEAD returned 405
+        mock_get.assert_called_once_with(
+            "https://example.com",
+            timeout=7,
+            allow_redirects=True,
+            headers=REQUEST_HEADERS_GET,
+        )
+
+        # Verify we got the 200 status from the GET request
+        self.assertEqual(all_links[0]["status"], 200)
 
 
 #########################################################
