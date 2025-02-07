@@ -133,6 +133,7 @@ def process_nofo_html(soup, top_heading_level):
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
+    replace_src_for_inline_images(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
