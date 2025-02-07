@@ -76,6 +76,7 @@ Edit “{{ nofo|nofo_name }}”
         <p class="margin-top-3">However, you can <strong>add modifications</strong> to a NOFO that has already been published.</p>
         <form id="nofo-modifications--form" method="post" action="{% url 'nofos:nofo_modifications' nofo.id %}">
           {% csrf_token %}
+          <input type="hidden" name="modifications" value="{% now 'Y-m-d' %}" />
           <p>
           <button class="usa-button usa-button--accent-warm" type="submit">Add modifications</button>
            — Adds a message to the cover page and a “Modifications” section to the end of the NOFO.
@@ -288,6 +289,13 @@ Edit “{{ nofo|nofo_name }}”
       <td>{{ nofo.tagline|get_value_or_none:"tagline"|safe_markdown }}</td>
       <td><a href="{% url 'nofos:nofo_edit_tagline' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
     </tr>
+    {% if nofo.modifications %}
+      <tr>
+        <th scope="row">Modification date</th>
+        <td class="nofo-modifications-message">“Modified {{ nofo.modifications|date:"F j, Y" }}. <a class="text-base" href="#modifications">See updates</a>.”</td>
+        <td><a href="{% url 'nofos:nofo_modifications' nofo.id %}">Edit<span class="usa-sr-only"> modification date</span></a></td>
+      </tr>
+    {% endif %}
   </tbody>
 </table>
 
