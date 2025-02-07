@@ -7,7 +7,7 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
-from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER, REQUEST_HEADERS, REQUEST_HEADERS_GET
+from .nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER, REQUEST_HEADERS
 from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import (
     _get_classnames_for_font_weight_bold as get_classnames_for_font_weight_bold,
@@ -2534,9 +2534,9 @@ class TestUpdateLinkStatuses(TestCase):
         # Verify GET was called after HEAD returned 500
         mock_get.assert_called_once_with(
             "https://example.com",
-            timeout=7,
+            timeout=5,
             allow_redirects=True,
-            headers=REQUEST_HEADERS_GET,
+            headers=REQUEST_HEADERS,
         )
 
         # Verify we got the 200 status from the GET request
@@ -2568,9 +2568,9 @@ class TestUpdateLinkStatuses(TestCase):
         # Verify GET was attempted
         mock_get.assert_called_once_with(
             "https://example.com",
-            timeout=7,
+            timeout=5,
             allow_redirects=True,
-            headers=REQUEST_HEADERS_GET,
+            headers=REQUEST_HEADERS,
         )
 
         # Verify we kept the 500 status from HEAD since GET failed
@@ -2605,9 +2605,9 @@ class TestUpdateLinkStatuses(TestCase):
         # Verify GET was called after HEAD returned 403
         mock_get.assert_called_once_with(
             "https://example.com",
-            timeout=7,
+            timeout=5,
             allow_redirects=True,
-            headers=REQUEST_HEADERS_GET,
+            headers=REQUEST_HEADERS,
         )
 
         # Verify we got the 200 status from the GET request
@@ -2642,9 +2642,9 @@ class TestUpdateLinkStatuses(TestCase):
         # Verify GET was called after HEAD returned 405
         mock_get.assert_called_once_with(
             "https://example.com",
-            timeout=7,
+            timeout=5,
             allow_redirects=True,
-            headers=REQUEST_HEADERS_GET,
+            headers=REQUEST_HEADERS,
         )
 
         # Verify we got the 200 status from the GET request

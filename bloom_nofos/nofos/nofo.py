@@ -28,13 +28,9 @@ from .utils import (
 )
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
-# Use Firefox user agent
-REQUEST_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0"
-}
 
-# More realistic browser like request headers for GET requests
-REQUEST_HEADERS_GET = {
+# More realistic browser-like request headers (Firefox) for HTTP requests
+REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5",
@@ -925,9 +921,9 @@ def _update_link_statuses(all_links):
                 try:
                     response = requests.get(
                         link["url"],
-                        timeout=7,
+                        timeout=5,
                         allow_redirects=True,
-                        headers=REQUEST_HEADERS_GET,
+                        headers=REQUEST_HEADERS,
                     )
                 except requests.RequestException:
                     # If GET also fails, use original HEAD response
