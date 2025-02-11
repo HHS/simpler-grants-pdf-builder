@@ -107,13 +107,6 @@ class SectionModelTest(TestCase):
 
     def test_valid_section_with_subsection(self):
         section = Section.objects.create(**self.valid_section_data)
-        subsection = Subsection.objects.create(
-            name="Test Subsection",
-            order=2,
-            section=section,
-            tag="h2",
-            html_id="1--test-section--test-subsection",
-        )
         section.full_clean()
 
     def test_automatic_order_assignment(self):
@@ -171,6 +164,8 @@ class SubsectionModelTest(TestCase):
         self.section = Section.objects.create(
             name="Test Section", order=1, nofo=self.nofo, html_id="1--test-section"
         )
+
+        # when sections are created, an empty subsection is created at "order=1"
         self.valid_subsection_data = {
             "name": "Test Subsection",
             "order": 2,
@@ -204,6 +199,34 @@ class SubsectionModelTest(TestCase):
     def test_valid_subsection_data(self):
         subsection = Subsection(**self.valid_subsection_data)
         subsection.full_clean()  # Should not raise ValidationError
+
+    def test_subsection_get_next(self):
+        subsection_data_2 = self.valid_subsection_data.copy()
+        subsection_data_2["name"] = "Test Subsection"
+        subsection_data_2["order"] = 3
+
+        subsection = Subsection.objects.create(**self.valid_subsection_data)
+        subsection_2 = Subsection.objects.create(**subsection_data_2)
+
+        self.assertEqual(subsection.get_next_subsection(), subsection_2)
+
+    def test_subsection_get_next_when_no_next(self):
+        subsection = Subsection.objects.create(**self.valid_subsection_data)
+
+        self.assertEqual(subsection.get_next_subsection(), None)
+
+    def test_subsection_get_previous(self):
+        # when a section is created, an empty subsection is created at "order=1"
+        first_subsection = self.section.subsections.first()
+        subsection = Subsection.objects.create(**self.valid_subsection_data)
+
+        self.assertEqual(subsection.get_previous_subsection(), first_subsection)
+
+    def test_subsection_get_previous_when_no_previous(self):
+        # when a section is created, an empty subsection is created at "order=1"
+        first_subsection = self.section.subsections.first()
+
+        self.assertEqual(first_subsection.get_previous_subsection(), None)
 
 
 class NofoArchiveTest(TestCase):
