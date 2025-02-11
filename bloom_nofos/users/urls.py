@@ -5,7 +5,8 @@ from . import views
 
 app_name = "users"
 urlpatterns = [
-    path("login/", views.login_view, name="login_gov"),
+    path("login/", views.traditional_login_view, name="login"),
+    path("login/gov/", views.login_view, name="login_gov"),
     path("logout/", views.logout_view, name="logout"),
     path("login/callback", views.callback, name="auth_callback"),
     path(

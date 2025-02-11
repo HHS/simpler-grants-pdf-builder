@@ -1004,3 +1004,7 @@ del {
 ins {
   background-color: #aceebb;
 }
+
+.login-gov-container {
+  max-width: 30rem;
+}
