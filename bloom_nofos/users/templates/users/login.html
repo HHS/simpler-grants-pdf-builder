@@ -5,25 +5,65 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 text-center">
-            <h2 class="mb-4">Welcome to Simpler Grants</h2>
-            <p class="mb-4">Please sign in with Login.gov to continue</p>
-            
-            <a href="{% url 'users:login_gov' %}" class="btn btn-primary btn-lg">
-                Sign in with Login.gov
-            </a>
-            
-            <div class="mt-4">
-                <small class="text-muted">
-                    Don't have a Login.gov account? 
-                    <a href="https://secure.login.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
-                        Create one here
-                    </a>
-                </small>
-            </div>
+{% include "includes/page_heading.html" with title="Login" only %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+    <p>
+        Your account doesn't have access to this page. To proceed, please login with an account that has access.
+    </p>
+  {% else %}
+    <p>Please login to see this page.</p>
+  {% endif %}
+{% endif %}
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="usa-alert usa-alert--{{ message.tags }}">
+        <div class="usa-alert__body">
+            <p class="usa-alert__text">{{ message }}</p>
         </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Email/password login form -->
+<form method="post" action="{% url 'users:login' %}">
+    {% csrf_token %}
+    <fieldset class="usa-fieldset">
+
+        {% if form.non_field_errors %}
+        <legend>
+            <div class="usa-error-message">
+                Error: {{ form.non_field_errors.0 }}
+            </div>
+        </legend>
+        {% endif %}
+
+        {% include "includes/form_macro.html" %}
+
+    </fieldset>
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <button class="usa-button margin-top-3" type="submit">Login</button>
+</form>
+
+<!-- Login.gov login button -->
+<div class="margin-top-4 login-gov-container">
+    <p class="text-center">- or -</p>
+    <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
+        Sign in with Login.gov
+    </a>
+
+    <div class="margin-top-2 text-center">
+        <small class="text-base-dark">
+            Don't have a Login.gov account?
+            <a href="https://secure.login.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
+                Create one here
+            </a>
+        </small>
     </div>
 </div>
 {% endblock %}
