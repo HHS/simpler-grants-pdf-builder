@@ -240,7 +240,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Users
 
 AUTH_USER_MODEL = "users.BloomUser"
-LOGIN_URL = "/login"
+LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
@@ -508,3 +508,25 @@ GROUP_CHOICES = [
     ("ihs", "IHS: Indian Health Service"),
     ("staging", "Staging environment"),
 ]
+
+# Login.gov Configuration
+LOGIN_GOV = {
+    "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
+    "OIDC_URL": env(
+        "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
+    ),
+    "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
+    "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
+    "PRIVATE_KEY_PATH": BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private.pem",
+}
+
+# Add Login.gov authentication backend
+AUTHENTICATION_BACKENDS = [
+    "users.auth.backend.LoginGovBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Login/Logout URLs
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
