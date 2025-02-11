@@ -536,3 +536,19 @@ class Subsection(models.Model):
     def get_absolute_url(self):
         nofo_id = self.section.nofo.id
         return reverse("nofos:subsection_edit", args=(nofo_id, self.id))
+
+    def get_previous_subsection(self):
+        """Returns the previous subsection in the same section."""
+        return (
+            self.section.subsections.filter(order__lt=self.order)
+            .order_by("-order")
+            .first()
+        )
+
+    def get_next_subsection(self):
+        """Returns the next subsection in the same section."""
+        return (
+            self.section.subsections.filter(order__gt=self.order)
+            .order_by("order")
+            .first()
+        )
