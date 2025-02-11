@@ -959,3 +959,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .usa-error-message {
   font-size: 1rem;
 }
+
+.login-gov-container {
+  max-width: 30rem;
+}

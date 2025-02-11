@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from .forms import BloomUserNameForm
+from .forms import BloomUserNameForm, LoginForm
 from .models import BloomUser
 from .auth.login_gov import LoginGovClient
 
@@ -151,3 +151,23 @@ def logout_view(request):
     """Handle user logout."""
     logout(request)
     return redirect(settings.LOGOUT_REDIRECT_URL)
+
+
+def traditional_login_view(request):
+    """Handle traditional login with username/password."""
+    form = LoginForm(request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            user = authenticate(request, username=email, password=password)
+
+            if user is not None:
+                login(request, user)
+                next_url = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
+                return redirect(next_url)
+            else:
+                messages.error(request, "Invalid email or password.")
+
+    return render(request, "users/login.html", {"form": form})
