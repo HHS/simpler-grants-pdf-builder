@@ -1,6 +1,9 @@
 import io
 import json
 
+from difflib import SequenceMatcher
+
+
 import docraptor
 from bs4 import BeautifulSoup
 from constance import config
@@ -453,6 +456,116 @@ class NofosImportOverwriteView(BaseNofoImportView):
             return HttpResponseBadRequest(f"Error re-importing NOFO: {e}")
         except Exception as e:
             return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
+
+
+class NofosImportCompareView(NofosImportOverwriteView):
+    """
+    Handles overwriting an existing NOFO with new content.
+    """
+
+    template_name = "nofos/nofo_import_compare.html"
+    redirect_url_name = "nofos:nofo_import_compare"
+
+    def html_diff(self, original, new):
+        matcher = SequenceMatcher(None, original, new)
+        result = []
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "replace":
+                result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
+                result.append(
+                    f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>'
+                )
+            elif tag == "delete":
+                result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
+            elif tag == "insert":
+                result.append(
+                    f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>'
+                )
+            elif tag == "equal":
+                result.append(original[i1:i2])
+
+        return "".join(result)
+
+    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+        """
+        Create a new NOFO and then pass both in for a comparison.
+        """
+        nofo = self.nofo
+
+        if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
+
+        try:
+            page_breaks = {}
+            if if_preserve_page_breaks:
+                page_breaks = preserve_subsection_metadata(nofo, sections)
+
+            nofo_title = suggest_nofo_title(soup)
+            opdiv = suggest_nofo_opdiv(soup)
+
+            new_nofo = create_nofo(nofo_title, sections, opdiv)
+
+            # restore page breaks
+            if if_preserve_page_breaks and page_breaks:
+                new_nofo = restore_subsection_metadata(new_nofo, page_breaks)
+
+            add_headings_to_nofo(new_nofo)
+            add_page_breaks_to_headings(new_nofo)
+            new_nofo.group = request.user.group
+            new_nofo.filename = filename
+            suggest_all_nofo_fields(new_nofo, soup)
+            new_nofo.save()
+
+            # Build the comparison object
+            nofo_comparison = []
+            for section in nofo.sections.all():
+                new_section = new_nofo.sections.filter(name=section.name).first()
+                if new_section:
+                    section_comparison = {
+                        "name": section.name,
+                        "subsections": [],
+                    }
+                    for subsection in section.subsections.all():
+                        new_subsection = new_section.subsections.filter(
+                            name=subsection.name
+                        ).first()
+                        if new_subsection and subsection.body != new_subsection.body:
+                            section_comparison["subsections"].append(
+                                {
+                                    "name": subsection.name,
+                                    "original_body": subsection.body,
+                                    "new_body": new_subsection.body,
+                                    "diff_body": self.html_diff(
+                                        subsection.body, new_subsection.body
+                                    ),
+                                }
+                            )
+                    if section_comparison["subsections"]:
+                        nofo_comparison.append(section_comparison)
+
+            # Calculate the total number of changed sections
+            num_changed_sections = len(nofo_comparison)
+            # Calculate the total number of changed subsections
+            num_changed_subsections = sum(
+                len(section["subsections"]) for section in nofo_comparison
+            )
+
+            return render(
+                request,
+                "nofos/nofo_import_compare.html",
+                {
+                    "nofo": nofo,
+                    "new_nofo": new_nofo,
+                    "nofo_comparison": nofo_comparison,
+                    "num_changed_sections": num_changed_sections,
+                    "num_changed_subsections": num_changed_subsections,
+                },
+            )
+
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"Error importing NOFO: {e}")
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error importing NOFO: {str(e)}")
 
 
 class NofosConfirmReimportView(View):
