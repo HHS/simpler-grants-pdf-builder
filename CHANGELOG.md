@@ -9,22 +9,34 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.3.0] - 2025-02-11
+
+### Added
+
 - Add classes to Table of Contents based on number of items
   - The idea is to shrink the table of contents a bit if lots of items show up
 - Add a new icon for "award" (only for 2 CDC NOFOs for now)
 - Add 2 new images for CDC-RFA-CE-25-0114-b
 - Add cover image for CDC-RFA-CK-25-0125
 - Can use 'page-break' to add a page-break in markdown body
+- Adds Login.gov as an authentication option
 
 ### Changed
 
 - All page break visuals say "page-break" now, dropped the "-before", "-after"
-- In the nofo section editor, page breaks added to a section now say "page-break"
+- In the nofo section editor, page breaks added to a section now say
+  "page-break"
   - Previously, it was just a dashed line, but nobody knew what that meant
 - Loop through sections to create breadcrumbs
   - Support "Understand Review, Selection, and Award" as a new section name
 - Preserve existing page breaks when a NOFO is reimported
-  - Note that this is a best-guess effort: if subsections are renamed, page breaks can't be preserved
+  - Note that this is a best-guess effort: if subsections are renamed, page
+    breaks can't be preserved
+- Requires Login.gov certs and ENV vars to be set for devs.
 
 ### Fixed
 
@@ -32,6 +44,10 @@ Versioning since version 1.0.0.
 - Page breaks were not possible to add to subsections without a heading
 - page-break-after was briefly not working
 - Small ToC links are all the same colour
+
+### Migrations
+
+- Adds login.gov ID to users model
 
 ## [2.3.0] - 2025-01-17
 
@@ -66,11 +82,13 @@ Versioning since version 1.0.0.
 
 - Styling changes to external links page for acommodate more cols
 - Style maps are better at handling lists when importing .docx files
-- Before You Begin page uses 'sole_source_justification' to show alternate version, not a specific NOFO ID
+- Before You Begin page uses 'sole_source_justification' to show alternate
+  version, not a specific NOFO ID
 
 ### Fixed
 
-- Fixes issue where archiving a NOFO would fail due to validation checks requiring at least one section
+- Fixes issue where archiving a NOFO would fail due to validation checks
+  requiring at least one section
 - Links starting with "file:///" should be flagged as broken links
 - Hotfix to make viewing content tables easier in edit view
 - Return sections by "order" for nofo.get_first_subsection()
