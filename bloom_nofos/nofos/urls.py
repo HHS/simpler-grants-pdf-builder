@@ -18,6 +18,11 @@ urlpatterns = [
         name="nofo_import_overwrite",
     ),
     path(
+        "<int:pk>/compare",
+        views.NofosImportCompareView.as_view(),
+        name="nofo_import_compare",
+    ),
+    path(
         "<int:pk>/confirm-import/",
         views.NofosConfirmReimportView.as_view(),
         name="nofo_import_confirm_overwrite",
