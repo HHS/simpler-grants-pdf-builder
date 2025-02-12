@@ -59,8 +59,8 @@
                       class="subsection-checkbox"
                     />
                     <details>
-                      <summary>{{ subsection.name }}</summary>
-                      <div class="diff">{{ subsection.diff_body|safe }}</div>
+                      <summary>{{ subsection.name }} ({{ subsection.status }})</summary>
+                      <div class="diff">{{ subsection.diff|safe }}</div>
                     </details>
                   </label>
                 </li>
