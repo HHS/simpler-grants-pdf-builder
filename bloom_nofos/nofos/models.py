@@ -537,6 +537,73 @@ class Subsection(models.Model):
         nofo_id = self.section.nofo.id
         return reverse("nofos:subsection_edit", args=(nofo_id, self.id))
 
+    def is_matching_subsection(self, other_subsection):
+        """
+        Determines whether this subsection matches another subsection.
+
+        This method is used to compare two subsections from different NOFOs to determine if they represent
+        the same structural element within a document. This function checks for:
+
+        1. Different NOFOs: If the subsections belong to the same NOFO, they are distinct and cannot match.
+        2. Same section name: If they belong to different sections, they cannot match.
+        3. Same subsection name: If both subsections have names, they are considered a match if their names are identical.
+        4. Unnamed Subsections Check: If neither subsection has a name, they are compared based on adjacency.
+            i. Recursively check **previous** and **next** subsections to determine whether they align.
+            ii. If a named subsection is encountered in either direction, it is used as an anchor for comparison.
+            iii. If both previous and next subsections match, the unnamed subsection is considered a match.
+
+        The adjacency check is implemented in `_are_adjacent_matching()`, which ensures that recursion proceeds only
+        in one direction (either "previous" or "next") at a time, preventing infinite loops.
+
+        Parameters:
+            other_subsection (Subsection): The subsection from another NOFO to compare against.
+
+        Returns:
+            bool: True if the subsections are considered equivalent, False otherwise.
+        """
+
+        def _are_adjacent_matching(subsection_self, subsection_other, direction):
+            """Helper function to check if adjacent subsections match while ensuring directionality."""
+
+            get_adjacent_func_name = "get_{}_subsection".format(direction)
+            get_adjacent_func_self = getattr(subsection_self, get_adjacent_func_name)
+            get_adjacent_func_other = getattr(subsection_other, get_adjacent_func_name)
+
+            self_adjacent = get_adjacent_func_self()
+            other_adjacent = get_adjacent_func_other()
+
+            # If neither has an adjacent subsection, assume they match
+            if not self_adjacent and not other_adjacent:
+                return True
+
+            # If one has an adjacent subsection and the other doesn't, they don't match
+            if bool(self_adjacent) != bool(other_adjacent):
+                return False
+
+            # If adjacent subsections have names, compare names directly
+            if self_adjacent.name and other_adjacent.name:
+                return self_adjacent.name == other_adjacent.name
+
+            # If still unnamed, continue checking in the same direction only
+            return _are_adjacent_matching(self_adjacent, other_adjacent, direction)
+
+        # 1. If in the same NOFO, they can't "match" because they are two distinct subsections
+        if self.section.nofo.id == other_subsection.section.nofo.id:
+            return False
+
+        # 2. If in different sections, they can't "match" because they live in different parts of the NOFO
+        if self.section.name != other_subsection.section.name:
+            return False
+
+        # 3. If both have names, check if they match
+        if self.name and other_subsection.name:
+            return self.name == other_subsection.name
+
+        # 4. If neither has a name, check previous and next subsections
+        return _are_adjacent_matching(
+            self, other_subsection, "previous"
+        ) and _are_adjacent_matching(self, other_subsection, "next")
+
     def get_previous_subsection(self):
         """Returns the previous subsection in the same section."""
         return (

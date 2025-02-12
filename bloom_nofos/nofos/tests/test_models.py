@@ -78,6 +78,56 @@ class NofoModelTest(TestCase):
             self.fail(f"Valid NOFO data raised ValidationError: {e}")
 
 
+class NofoArchiveTest(TestCase):
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", opdiv="Test OpDiv", status="draft"
+        )
+
+    def test_can_archive_nofo_without_sections(self):
+        """Test that a NOFO can be archived even when it has no sections (which would normally fail validation)"""
+        self.client.force_login(self.user)
+
+        # Verify the NOFO has no sections
+        self.assertEqual(self.nofo.sections.count(), 0)
+
+        response = self.client.post(
+            reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("nofos:nofo_index"))
+
+        # Verify the NOFO was archived
+        self.nofo.refresh_from_db()
+        self.assertIsNotNone(self.nofo.archived)
+
+    def test_cannot_archive_published_nofo(self):
+        """Test that a published NOFO cannot be archived"""
+        self.client.force_login(self.user)
+
+        # Set NOFO to published using update() to bypass validation
+        Nofo.objects.filter(pk=self.nofo.pk).update(status="published")
+
+        # Suppress "WARNING:django.request:Bad Request: /nofos/1/delete" in Django test logs
+        with self.assertLogs("django.request", level="WARNING"):
+            response = self.client.post(
+                reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+            )
+
+        self.assertEqual(response.status_code, 400)
+
+        # Verify the NOFO was not archived
+        self.nofo.refresh_from_db()
+        self.assertIsNone(self.nofo.archived)
+
+
 class SectionModelTest(TestCase):
     def setUp(self):
         # Create a NOFO instance first
@@ -229,51 +279,174 @@ class SubsectionModelTest(TestCase):
         self.assertEqual(first_subsection.get_previous_subsection(), None)
 
 
-class NofoArchiveTest(TestCase):
+class SubsectionMatchingTest(TestCase):
     def setUp(self):
-        self.user = BloomUser.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
+        """Set up test NOFOs, sections, and subsections."""
+        self.nofo1 = Nofo.objects.create(title="NOFO 1", opdiv="OpDiv 1")
+        self.nofo2 = Nofo.objects.create(title="NOFO 2", opdiv="OpDiv 2")
+
+        self.section1_nofo1 = Section.objects.create(
+            name="Section 1", order=1, nofo=self.nofo1, html_id="s1"
         )
-        self.nofo = Nofo.objects.create(
-            title="Test NOFO", opdiv="Test OpDiv", status="draft"
-        )
-
-    def test_can_archive_nofo_without_sections(self):
-        """Test that a NOFO can be archived even when it has no sections (which would normally fail validation)"""
-        self.client.force_login(self.user)
-
-        # Verify the NOFO has no sections
-        self.assertEqual(self.nofo.sections.count(), 0)
-
-        response = self.client.post(
-            reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
+        self.section1_nofo2 = Section.objects.create(
+            name="Section 1", order=1, nofo=self.nofo2, html_id="s1"
         )
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("nofos:nofo_index"))
+        # Default empty subsection at order=1 (created automatically)
+        self.sub1_nofo1 = self.section1_nofo1.subsections.first()
+        self.sub1_nofo2 = self.section1_nofo2.subsections.first()
 
-        # Verify the NOFO was archived
-        self.nofo.refresh_from_db()
-        self.assertIsNotNone(self.nofo.archived)
+    def test_same_section_same_name(self):
+        """Subsections with the same name but in different sections should not match."""
+        sub1 = Subsection.objects.create(
+            name="Key Facts", order=2, section=self.section1_nofo1, tag="h4"
+        )
+        sub2 = Subsection.objects.create(
+            name="Key Facts", order=2, section=self.section1_nofo2, tag="h4"
+        )
 
-    def test_cannot_archive_published_nofo(self):
-        """Test that a published NOFO cannot be archived"""
-        self.client.force_login(self.user)
+        self.assertTrue(sub1.is_matching_subsection(sub2))
 
-        # Set NOFO to published using update() to bypass validation
-        Nofo.objects.filter(pk=self.nofo.pk).update(status="published")
+    def test_different_section_same_name(self):
+        """Subsections in the same section but with different names should not match."""
+        # section.name == "Section 1"
+        sub1 = Subsection.objects.create(
+            name="Key Facts", order=2, section=self.section1_nofo1, tag="h4"
+        )
 
-        # Suppress "WARNING:django.request:Bad Request: /nofos/1/delete" in Django test logs
-        with self.assertLogs("django.request", level="WARNING"):
-            response = self.client.post(
-                reverse("nofos:nofo_archive", kwargs={"pk": self.nofo.pk})
-            )
+        # create same subsection in differently-named section
+        section2_nofo2 = Section.objects.create(
+            name="Section 2: new section", order=2, nofo=self.nofo2, html_id="s2"
+        )
+        sub2 = Subsection.objects.create(
+            name="Key Facts", order=2, section=section2_nofo2, tag="h4"
+        )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertFalse(sub1.is_matching_subsection(sub2))
 
-        # Verify the NOFO was not archived
-        self.nofo.refresh_from_db()
-        self.assertIsNone(self.nofo.archived)
+    def test_same_section_different_name(self):
+        """Subsections in the same section but with different names should not match."""
+        sub1 = Subsection.objects.create(
+            name="Overview", order=2, section=self.section1_nofo1, tag="h3"
+        )
+        sub2 = Subsection.objects.create(
+            name="Summary", order=2, section=self.section1_nofo2, tag="h3"
+        )
+
+        self.assertFalse(sub1.is_matching_subsection(sub2))
+
+    def test_same_subsection_from_same_nofo(self):
+        """A section with only one subsection should match if both NOFOs have only one unnamed subsection."""
+        self.assertFalse(self.sub1_nofo1.is_matching_subsection(self.sub1_nofo1))
+
+    def test_section_with_one_subsection(self):
+        """A section with only one subsection should match if both NOFOs have only one unnamed subsection."""
+        self.assertTrue(self.sub1_nofo1.is_matching_subsection(self.sub1_nofo2))
+
+    def test_sections_with_lopsided_unnamed_subsections(self):
+        """A section with only one unnamed subsection should match if the other NOFO also has only one unnamed subsection."""
+        sub1 = Subsection.objects.create(name="", order=2, section=self.section1_nofo1)
+        sub2 = Subsection.objects.create(name="", order=3, section=self.section1_nofo1)
+
+        # first nofo.section has 3 unnamed subsections, second nofo.section has 1 unnamed subsection
+        self.assertFalse(sub2.is_matching_subsection(self.sub1_nofo2))
+
+    def test_section_with_multiple_unnamed_subsections(self):
+        """Sections with multiple unnamed subsections should match only if their relative positions align."""
+        sub1_a = Subsection.objects.create(
+            name="", order=2, section=self.section1_nofo1
+        )
+        sub1_b = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo1
+        )
+
+        sub2_a = Subsection.objects.create(
+            name="", order=2, section=self.section1_nofo2
+        )
+        sub2_b = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo2
+        )
+
+        self.assertTrue(sub1_a.is_matching_subsection(sub2_a))
+        self.assertTrue(sub1_b.is_matching_subsection(sub2_b))
+
+    def test_both_previous_and_next_must_match(self):
+        """If both previous and next subsections match, the unnamed subsection should match."""
+        prev1 = Subsection.objects.create(
+            name="Prev", tag="h3", order=2, section=self.section1_nofo1
+        )
+        target1 = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo1
+        )
+        next1 = Subsection.objects.create(
+            name="Next", tag="h3", order=4, section=self.section1_nofo1
+        )
+
+        prev2 = Subsection.objects.create(
+            name="Prev", tag="h3", order=2, section=self.section1_nofo2
+        )
+        target2 = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo2
+        )
+        # Different name
+        next2 = Subsection.objects.create(
+            name="Next", tag="h3", order=4, section=self.section1_nofo2
+        )
+
+        # all true
+        self.assertTrue(prev1.is_matching_subsection(prev2))
+        self.assertTrue(next1.is_matching_subsection(next2))
+        self.assertTrue(target1.is_matching_subsection(target2))
+
+    def test_previous_and_next_must_match(self):
+        """If only one of previous/next subsections match, the unnamed subsection should not match."""
+        prev1 = Subsection.objects.create(
+            name="Prev", tag="h3", order=2, section=self.section1_nofo1
+        )
+        target1 = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo1
+        )
+        next1 = Subsection.objects.create(
+            name="Next", tag="h3", order=4, section=self.section1_nofo1
+        )
+
+        prev2 = Subsection.objects.create(
+            name="Prev", tag="h3", order=2, section=self.section1_nofo2
+        )
+        target2 = Subsection.objects.create(
+            name="", order=3, section=self.section1_nofo2
+        )
+        # Different name
+        next2 = Subsection.objects.create(
+            name="Changed Next", tag="h3", order=4, section=self.section1_nofo2
+        )
+
+        # true because everything matches about these specific subsections
+        self.assertTrue(prev1.is_matching_subsection(prev2))
+
+        # false because the names don't match
+        self.assertFalse(next1.is_matching_subsection(next2))
+
+        # false because adjacent subsection (next) doesn't match
+        self.assertFalse(target1.is_matching_subsection(target2))
+
+    def test_section_with_multiple_unnamed_subsections(self):
+        """Sections with multiple unnamed subsections should match only if their relative positions align."""
+        sub1_a = Subsection.objects.create(
+            name="", order=2, section=self.section1_nofo1
+        )
+        sub1_b = Subsection.objects.create(
+            name="Nofo 1 ABC", tag="h3", order=3, section=self.section1_nofo1
+        )
+
+        sub2_a = Subsection.objects.create(
+            name="", order=2, section=self.section1_nofo2
+        )
+        sub2_b = Subsection.objects.create(
+            name="Nofo 2 DEF", tag="h3", order=3, section=self.section1_nofo2
+        )
+
+        # all of these are false because the final subsection names don't match
+        self.assertFalse(self.sub1_nofo1.is_matching_subsection(self.sub1_nofo2))
+        self.assertFalse(sub1_a.is_matching_subsection(sub2_a))
+        self.assertFalse(sub1_b.is_matching_subsection(sub2_b))
