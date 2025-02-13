@@ -9,6 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.4.0] - 2025-02-13
+
+### Added
+
 - Add classes to Table of Contents based on number of items
   - The idea is to shrink the table of contents a bit if lots of items show up
 - Add a new icon for "award" (only for 2 CDC NOFOs for now)
@@ -41,6 +49,11 @@ Versioning since version 1.0.0.
 - Page breaks were not possible to add to subsections without a heading
 - page-break-after was briefly not working
 - Small ToC links are all the same colour
+
+### Migrations
+
+- Add public information subsection to Step 3 if it doesn't already exist in
+  existing NOFOs
 
 ## [2.3.0] - 2025-01-17
 
