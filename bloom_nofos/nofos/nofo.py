@@ -2216,6 +2216,8 @@ When filling out your SF-424 form, pay attention to Box 15: Descriptive Title of
 We share what you put there with [USAspending](https://www.usaspending.gov). This is where the public goes to learn how the federal government spends their money.
 
 Instead of just a title, insert a short description of your project and what it will do.
+
+[See instructions and examples](https://www.hhs.gov/sites/default/files/hhs-writing-award-descriptions.pdf).
 """,
 }
 
