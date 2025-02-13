@@ -26,15 +26,16 @@ def add_public_information_subsection(apps, schema_editor):
     Section = apps.get_model("nofos", "Section")
     Subsection = apps.get_model("nofos", "Subsection")
 
-    # The target section names to search for
-    step_3_names = [
-        "Step 3: Prepare Your Application",
-        "Step 3: Write Your Application",
-    ]
-
-    # Find all Step 3 sections
+    # Find all Step 3 sections in NOFOs that are NOT published and NOT archived
     step_3_sections = Section.objects.filter(
-        name__iregex=r"^Step 3: (Prepare|Write) Your Application$"
+        name__iregex=r"^Step 3: (Prepare|Write) Your Application$",
+        nofo__status__in=[
+            "draft",
+            "active",
+            "ready-for-qa",
+            "review",
+        ],  # Exclude "published"
+        nofo__archived__isnull=True,  # Exclude archived NOFOs
     )
 
     for section in step_3_sections:
