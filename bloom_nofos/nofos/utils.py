@@ -141,7 +141,6 @@ class StyleMapManager:
 # Pre-instantiate StyleMapManager with styles to ignore
 style_map_manager = StyleMapManager(
     [
-        "Bullet2",
         "BulletLevel2",
         "customXmlDelRange",
         "FootnoteReference",
@@ -153,6 +152,22 @@ style_map_manager = StyleMapManager(
         "office-word:",
     ]
 )
+
+# Explicit list styles
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet 3'] => ul|ol > li > ul|ol > li > ul > li:fresh",
+    location_in_nofo="This represents a double nested bullet list improperly formatted",
+    note="Convert them to li elements.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet 2 Calibri'] => ul|ol > li > ul > li:fresh",
+    note="Bullet list 2",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Bullet 2'] => ul|ol > li > ul > li:fresh",
+    note="Bullet list 2",
+)
+
 
 # list styles
 style_map_manager.add_style(
@@ -296,6 +311,11 @@ style_map_manager.add_style(
     note="Do nothing, it's whitespace",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='Heading 2 Char'] => h2:fresh",
+    location_in_nofo="Step 1 > Related work",
+    note="This signifies an h2",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='Heading 3 Char'] => h3:fresh",
     location_in_nofo="Step 1 > Program description > Four core functions",
     note="This signifies an h3",
@@ -408,14 +428,19 @@ style_map_manager.add_style(
     note="Convert them to li elements.",
 )
 style_map_manager.add_style(
-    style_rule="p[style-name='Bullet 3'] => ul|ol > li > ul|ol > li > ul > li:fresh",
-    location_in_nofo="This represents a double nested bullet list improperly formatted",
+    style_rule="p[style-name='List Bullet1'] => ul > li:fresh",
+    location_in_nofo="This represents a bullet list improperly formatted",
     note="Convert them to li elements.",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='No Spacing'] => span",
     location_in_nofo="This represents a non-breaking space",
     note="Convert to a non-breaking space.",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='Do not use bullet'] => p",
+    location_in_nofo="Step 1 > Approach > Organizational capacity",
+    note="This is just a regular paragraph, from what I can tell.",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Instructions'] => p:fresh",
