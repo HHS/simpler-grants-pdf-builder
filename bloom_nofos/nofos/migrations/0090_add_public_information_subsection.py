@@ -5,7 +5,7 @@ from django.db import migrations
 PUBLIC_INFORMATION_SUBSECTION = {
     "name": "Important: public information",
     "tag": "h5",
-    "html_id": "",
+    "html_id": "9999--important-public-information",
     "is_callout_box": True,
     "body": """
 When filling out your SF-424 form, pay attention to Box 15: Descriptive Title of Applicant's Project.
@@ -53,7 +53,7 @@ def add_public_information_subsection(apps, schema_editor):
                 section=section,
                 name=PUBLIC_INFORMATION_SUBSECTION["name"],
                 tag=PUBLIC_INFORMATION_SUBSECTION["tag"],
-                html_id="",  # This will be set by add_headings_to_nofo later
+                html_id=PUBLIC_INFORMATION_SUBSECTION["html_id"],
                 callout_box=PUBLIC_INFORMATION_SUBSECTION["is_callout_box"],
                 body=PUBLIC_INFORMATION_SUBSECTION["body"],
                 order=new_order,
@@ -65,7 +65,10 @@ def reverse_func(apps, schema_editor):
     Reverse the migration by removing all public information subsections.
     """
     Subsection = apps.get_model("nofos", "Subsection")
-    Subsection.objects.filter(name=PUBLIC_INFORMATION_SUBSECTION["name"]).delete()
+    Subsection.objects.filter(
+        name=PUBLIC_INFORMATION_SUBSECTION["name"],
+        html_id="9999--important-public-information",
+    ).delete()
 
 
 class Migration(migrations.Migration):
