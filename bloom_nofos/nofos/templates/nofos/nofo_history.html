@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static nofo_name %}
+
+{% block title %}
+  Audit History for "{{ nofo|nofo_name }}"
+{% endblock %}
+
+{% block body_class %}nofo_history nofo_status--{{ nofo.status }}{% endblock %}
+
+{% block content %}
+<div class="back-link font-body-md">
+  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Back to NOFO</a>
+</div>
+
+<h1>Audit History for "{{ nofo|nofo_name }}"</h1>
+
+<div class="margin-bottom-5">
+  <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
+</div>
+
+<table class="usa-table" id="audit-events-table">
+  <caption>
+    <div>
+      <h2 class="margin-bottom-0">Recent Changes</h2>
+    </div>
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Event</th>
+      <th scope="col">Object</th>
+      <th scope="col">User</th>
+      <th scope="col">Timestamp</th>
+    </tr>
+  </thead>
+  <tbody id="audit-events-body">
+    {% for event in audit_events %}
+    <tr>
+      <td>{{ event.event_type }}</td>
+      <td>{{ event.object_type }} - {{ event.object_description }}</td>
+      <td>{{ event.user }}</td>
+      <td>{{ event.timestamp }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" class="text-center">No audit events found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if has_more %}
+  <div class="text-center margin-y-3">
+    <button class="usa-button" id="load-more-btn" 
+            data-next-offset="{{ next_offset }}">
+      Load More Events
+    </button>
+  </div>
+{% endif %}
+
+<script>
+document.getElementById('load-more-btn').addEventListener('click', async function() {
+    const button = this;
+    const offset = button.dataset.nextOffset;
+    button.disabled = true;
+    button.textContent = 'Loading...';
+    
+    try {
+        const response = await fetch(`?offset=${offset}`);
+        const html = await response.text();
+        
+        // Parse the new content
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Get new rows and append them
+        const newRows = doc.getElementById('audit-events-body').children;
+        const currentTable = document.getElementById('audit-events-body');
+        
+        Array.from(newRows).forEach(row => {
+            currentTable.appendChild(row.cloneNode(true));
+        });
+        
+        // Update or remove the button
+        const hasMore = doc.getElementById('load-more-btn');
+        if (hasMore) {
+            button.dataset.nextOffset = hasMore.dataset.nextOffset;
+            button.disabled = false;
+            button.textContent = 'Load More Events';
+        } else {
+            button.remove();
+        }
+    } catch (error) {
+        button.textContent = 'Error loading more events. Try again.';
+        button.disabled = false;
+    }
+});
+</script>
+
+{% endblock %} 
