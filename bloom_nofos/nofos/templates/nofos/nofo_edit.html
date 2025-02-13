@@ -73,6 +73,13 @@ Edit “{{ nofo|nofo_name }}”
       <ul class="usa-list usa-list--unstyled">
         <li>
           <p>
+            <a class="usa-button usa-button--outline" href="{% url 'nofos:nofo_history' nofo.id %}">
+              View audit history
+            </a>— See when this NOFO was modified and by whom
+          </p>
+        </li>
+        <li>
+          <p>
             <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
               Check external links
             </a>— There are {{ external_links|length }} external links in this NOFO
@@ -318,7 +325,7 @@ Edit “{{ nofo|nofo_name }}”
     {% if nofo.cover_image and nofo.cover != 'nofo--cover-page--text' %}
       <tr>
         <th scope="row">Cover alt text</th>
-        <td>{% if nofo.cover_image_alt_text %}“{% endif%}{{ nofo.cover_image_alt_text|get_value_or_none:"alt text" }}{% if nofo.cover_image_alt_text %}”{% endif %}</td>
+        <td>{% if nofo.cover_image_alt_text %}""{% endif%}{{ nofo.cover_image_alt_text|get_value_or_none:"alt text" }}{% if nofo.cover_image_alt_text %}""{% endif %}</td>
         <td><a href="{% url 'nofos:nofo_edit_cover_image' nofo.id %}">Edit<span class="usa-sr-only"> cover image alt text</span></a></td>
       </tr>
     {% endif %}
