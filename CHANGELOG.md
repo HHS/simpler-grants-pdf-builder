@@ -25,6 +25,7 @@ Versioning since version 1.0.0.
 - Add inline images for CDC-RFA-CE-25-0114
 - Can use 'page-break' to add a page-break in markdown body
 - Add confirmation page for re-importing a NOFO if the IDs don't match up
+- Add "Important: public information" callout box to section 3 of new NOFOs
 
 ### Changed
 
@@ -41,6 +42,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Retry failed external link requests so that more of them will show up green
 - H7 warning notice at the top of a NOFO now handles h7s in markdown body as
   well
 - Preserve heading links for h7 headings (other heading levels worked before,
@@ -52,7 +54,7 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add public information subsection to Step 3 if it doesn't already exist
+- Add "Important: public information" subsection to non-archived, non-published NOFOs
 
 ## [2.3.0] - 2025-01-17
 
