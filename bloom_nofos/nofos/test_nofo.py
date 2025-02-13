@@ -1203,6 +1203,44 @@ class AddFinalSubsectionTests(TestCase):
         final_subsection = sections[-1].get("subsections", [])[-1]
         self.assertEqual(final_subsection.get("name"), "Subsection 3.1")
 
+    def test_NO_add_duplicate_public_information_section(self):
+        """
+        Test that the public information subsection is not added if it already exists in Step 3.
+        """
+        sections = self._get_sections_1_2_3()
+
+        # Manually add the public information subsection to Step 3
+        sections[2]["subsections"].append(
+            {
+                "name": PUBLIC_INFORMATION_SUBSECTION["name"],
+                "order": 2,
+                "tag": "h5",
+                "html_id": "",
+                "body": PUBLIC_INFORMATION_SUBSECTION["body"],
+                "is_callout_box": True,
+            }
+        )
+
+        # Initial state should have 2 subsections in Step 3
+        self.assertEqual(len(sections[2].get("subsections")), 2)
+
+        # Try to add the public information section again
+        add_final_subsection_to_step_3(sections)
+
+        # Verify no additional subsection was added
+        self.assertEqual(len(sections[0].get("subsections")), 1)  # Step 1 unchanged
+        self.assertEqual(len(sections[1].get("subsections")), 1)  # Step 2 unchanged
+        self.assertEqual(len(sections[2].get("subsections")), 2)  # Step 3 unchanged
+
+        # Verify the last subsection is still the public information subsection
+        final_subsection = sections[2].get("subsections", [])[-1]
+        self.assertEqual(
+            final_subsection.get("name"), PUBLIC_INFORMATION_SUBSECTION["name"]
+        )
+        self.assertEqual(
+            final_subsection.get("body"), PUBLIC_INFORMATION_SUBSECTION["body"]
+        )
+
 
 class AddHeadingsTests(TestCase):
     def setUp(self):
