@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO comparison result
+{% endblock %}
+
+{% block body_class %}nofo_compare{% endblock %}
+
+  {% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+    {% with "Compare a NOFO to “"|add:nofo_name_str|add:"”" as back_text %}
+      {% url 'nofos:nofo_edit' nofo.id as back_href %}
+      {% include "includes/page_heading.html" with title="NOFO comparison result" back_text=back_text back_href=back_href only %}
+    {% endwith %}
+  {% endwith %}
+
+  {% if nofo_comparison %}
+      <p>
+        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
+      </p>
+
+      {% for section in nofo_comparison %}
+        <table class="usa-table usa-table--borderless">
+          <caption>
+            <h2>{{ section.name }}</h2>
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Subsection</th>
+              <th scope="col">Status</th>
+              <th scope="col">Content</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subsection in section.subsections %}
+            {% if subsection.status != 'MATCH' %}
+              <tr>
+                <th scope="row">
+                  {{ subsection.name }}
+                </th>
+                <td>
+                  {{ subsection.status }}
+                </td>
+                <td><div class="diff">{{ subsection.diff|safe }}</div></td>
+              </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+  {% endif %}
+  
+{% endblock %}
