@@ -966,6 +966,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 /* compare page */
 
+.usa-alert--info.usa-alert--alpha .usa-alert__body {
+  background-color: #f0f0f0;
+}
+
 del {
   color: red;
   background-color: #ffebe9;
