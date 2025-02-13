@@ -21,18 +21,22 @@ Versioning since version 1.0.0.
 ### Changed
 
 - All page break visuals say "page-break" now, dropped the "-before", "-after"
-- In the nofo section editor, page breaks added to a section now say "page-break"
+- In the nofo section editor, page breaks added to a section now say
+  "page-break"
   - Previously, it was just a dashed line, but nobody knew what that meant
 - Loop through sections to create breadcrumbs
   - Support "Understand Review, Selection, and Award" as a new section name
 - Preserve existing page breaks when a NOFO is reimported
-  - Note that this is a best-guess effort: if subsections are renamed, page breaks can't be preserved
+  - Note that this is a best-guess effort: if subsections are renamed, page
+    breaks can't be preserved
 - DocRaptor IPs can now be updated by superadmin users
 
 ### Fixed
 
-- H7 warning notice at the top of a NOFO now handles h7s in markdown body as well
-- Preserve heading links for h7 headings (other heading levels worked before, but not h7s)
+- H7 warning notice at the top of a NOFO now handles h7s in markdown body as
+  well
+- Preserve heading links for h7 headings (other heading levels worked before,
+  but not h7s)
 - Remove unneeded nested lists "li > ul > li" for BYB page and appendices
 - Page breaks were not possible to add to subsections without a heading
 - page-break-after was briefly not working
@@ -71,11 +75,13 @@ Versioning since version 1.0.0.
 
 - Styling changes to external links page for acommodate more cols
 - Style maps are better at handling lists when importing .docx files
-- Before You Begin page uses 'sole_source_justification' to show alternate version, not a specific NOFO ID
+- Before You Begin page uses 'sole_source_justification' to show alternate
+  version, not a specific NOFO ID
 
 ### Fixed
 
-- Fixes issue where archiving a NOFO would fail due to validation checks requiring at least one section
+- Fixes issue where archiving a NOFO would fail due to validation checks
+  requiring at least one section
 - Links starting with "file:///" should be flagged as broken links
 - Hotfix to make viewing content tables easier in edit view
 - Return sections by "order" for nofo.get_first_subsection()

@@ -54,6 +54,7 @@ from .mixins import (
 )
 from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
 from .nofo import (
+    add_final_subsection_to_step_3,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
     create_nofo,
@@ -302,6 +303,8 @@ class BaseNofoImportView(View):
             return HttpResponseBadRequest(f"500 error: {str(e)}")
 
         filename = uploaded_file.name.strip()
+
+        add_final_subsection_to_step_3(sections)
 
         # 5. Hand off to child for nofo creation
         return self.handle_nofo_create(
