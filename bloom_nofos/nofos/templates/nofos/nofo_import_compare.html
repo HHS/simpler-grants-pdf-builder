@@ -15,8 +15,9 @@
     {% endwith %}
   {% endwith %}
 
-  <p>Select a NOFO file to compare to: {{ nofo|nofo_name }}</p>
-  <p>You will be able to see a diff of what has changed across sections.</p>
+  <p>Select a NOFO file to compare to <strong>{{ nofo.number }}</strong>.</p>
+
+  <p>Get a breakdown of what content has changed between the current version and your newly-uploaded document.</p>
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -35,66 +36,4 @@
 
     <button class="usa-button margin-top-3 submit-button" type="submit">Compare NOFOs</button>
   </form>
-
-  {% if nofo_comparison %}
-    <form id="comparison-form" class="usa-form margin-top-4 comparison-form">
-      <h2>Accept or Reject Changes</h2>
-
-      <p>
-        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-      </p>
-
-      <ul>
-        {% for section in nofo_comparison %}
-          <li>
-            <h3>Section: {{ section.name }}</h3>
-            <ul class="comparison-form--subsection-list">
-              {% for subsection in section.subsections %}
-                <li>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="subsections"
-                      value="{{ subsection.name }}"
-                      class="subsection-checkbox"
-                    />
-                    <details>
-                      <summary>{{ subsection.name }} ({{ subsection.status }})</summary>
-                      <div class="diff">{{ subsection.diff|safe }}</div>
-                    </details>
-                  </label>
-                </li>
-              {% endfor %}
-            </ul>
-          </li>
-        {% endfor %}
-      </ul>
-
-      <div class="button-group margin-bottom-2">
-        <button type="button" class="usa-button usa-button--outline" id="select-all">Select All</button>
-        <button type="button" class="usa-button usa-button--outline" id="deselect-all">Deselect All</button>
-      </div>
-
-      <button type="submit" class="usa-button margin-top-3">Submit Changes</button>
-    </form>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const selectAllButton = document.getElementById("select-all");
-        const deselectAllButton = document.getElementById("deselect-all");
-        const checkboxes = document.querySelectorAll(".subsection-checkbox");
-
-        selectAllButton.addEventListener("click", function (event) {
-          event.preventDefault();
-          checkboxes.forEach((checkbox) => (checkbox.checked = true));
-        });
-
-        deselectAllButton.addEventListener("click", function (event) {
-          event.preventDefault();
-          checkboxes.forEach((checkbox) => (checkbox.checked = false));
-        });
-      });
-    </script>
-  {% endif %}
-  
 {% endblock %}
