@@ -472,16 +472,12 @@ class NofosImportCompareView(NofosImportOverwriteView):
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
             if tag == "replace":
-                result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
-                result.append(
-                    f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>'
-                )
+                result.append(f"<del>{original[i1:i2]}</del>")
+                result.append(f"<ins>{new[j1:j2]}</ins>")
             elif tag == "delete":
-                result.append(f'<del style="color: red;">{original[i1:i2]}</del>')
+                result.append(f"<del>{original[i1:i2]}</del>")
             elif tag == "insert":
-                result.append(
-                    f'<ins style="background-color: yellow;">{new[j1:j2]}</ins>'
-                )
+                result.append(f"<ins>{new[j1:j2]}</ins>")
             elif tag == "equal":
                 result.append(original[i1:i2])
 
@@ -623,7 +619,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
             new_nofo.group = request.user.group
             new_nofo.filename = filename
             suggest_all_nofo_fields(new_nofo, soup)
-            # new_nofo.save()
+            new_nofo.save()
 
             # Build the comparison object
             nofo_comparison = self.compare_nofo_sections(new_nofo, nofo)
@@ -631,13 +627,16 @@ class NofosImportCompareView(NofosImportOverwriteView):
             # Calculate the total number of changed sections
             num_changed_sections = len(nofo_comparison)
             # Calculate the total number of changed subsections
-            num_changed_subsections = sum(
-                len(section["subsections"]) for section in nofo_comparison
-            )
+
+            num_changed_subsections = 0
+            for section in nofo_comparison:
+                for subsection in section["subsections"]:
+                    if subsection["status"] != "MATCH":
+                        num_changed_subsections += 1
 
             return render(
                 request,
-                "nofos/nofo_import_compare.html",
+                "nofos/nofo_compare.html",
                 {
                     "nofo": nofo,
                     "new_nofo": new_nofo,
