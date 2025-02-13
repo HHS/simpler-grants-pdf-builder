@@ -1,9 +1,6 @@
 import io
 import json
 
-from difflib import SequenceMatcher
-
-
 import docraptor
 from bs4 import BeautifulSoup
 from constance import config
@@ -62,6 +59,7 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_nofo,
     add_page_breaks_to_headings,
+    compare_nofos,
     create_nofo,
     find_broken_links,
     find_external_link,
@@ -466,132 +464,6 @@ class NofosImportCompareView(NofosImportOverwriteView):
     template_name = "nofos/nofo_import_compare.html"
     redirect_url_name = "nofos:nofo_import_compare"
 
-    def html_diff(self, original, new):
-        matcher = SequenceMatcher(None, original, new)
-        result = []
-
-        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag == "replace":
-                result.append(f"<del>{original[i1:i2]}</del>")
-                result.append(f"<ins>{new[j1:j2]}</ins>")
-            elif tag == "delete":
-                result.append(f"<del>{original[i1:i2]}</del>")
-            elif tag == "insert":
-                result.append(f"<ins>{new[j1:j2]}</ins>")
-            elif tag == "equal":
-                result.append(original[i1:i2])
-
-        return "".join(result)
-
-    def compare_nofo_sections(self, new_nofo, old_nofo):
-        """
-        Compares sections and subsections between an existing NOFO and a newly uploaded one.
-
-        - Identifies matched, added, and deleted subsections.
-        - Preserves order based on the new NOFO’s structure.
-        - If a matched subsection has different content, marks it as updated.
-
-        Returns:
-            list: A structured diff object containing sections and subsection changes.
-        """
-
-        nofo_comparison = []
-
-        for new_section in new_nofo.sections.all():
-            old_section = old_nofo.sections.filter(name=new_section.name).first()
-
-            section_comparison = {"name": new_section.name, "subsections": []}
-
-            # Get all subsections for comparison
-            new_subsections = list(new_section.subsections.all()) if new_section else []
-            old_subsections = list(old_section.subsections.all()) if old_section else []
-            max_length = max(len(new_subsections), len(old_subsections))
-
-            matched_subsections = set()  # Track matched subsection IDs
-
-            # Step 1: Iterate through both new and old subsections using the max index length
-            for index in range(max_length):
-                new_subsection = (
-                    new_subsections[index] if index < len(new_subsections) else None
-                )
-                old_subsection = (
-                    old_subsections[index] if index < len(old_subsections) else None
-                )
-
-                # First, check the new subsection (if it exists)
-                if new_subsection:
-                    matched_old_subsection = None
-
-                    # Look for a match in old subsections
-                    for os in old_subsections:
-                        if os.id in matched_subsections:
-                            continue  # Skip already matched
-
-                        if new_subsection.is_matching_subsection(os):
-                            matched_old_subsection = os
-                            # Mark as matched
-                            matched_subsections.add(new_subsection.id)
-                            matched_subsections.add(os.id)
-                            break
-
-                    if matched_old_subsection:
-                        # Check if body changed
-                        if new_subsection.body != matched_old_subsection.body:
-                            section_comparison["subsections"].append(
-                                {
-                                    "name": new_subsection.name,
-                                    "status": "UPDATE",
-                                    "body": new_subsection.body,
-                                    "diff": self.html_diff(
-                                        matched_old_subsection.body, new_subsection.body
-                                    ),
-                                }
-                            )
-                        else:
-                            section_comparison["subsections"].append(
-                                {
-                                    "name": new_subsection.name,
-                                    "body": new_subsection.body,
-                                    "status": "MATCH",
-                                }
-                            )
-                    else:
-                        # If no match was found, it's a new addition
-                        section_comparison["subsections"].append(
-                            {
-                                "name": new_subsection.name,
-                                "body": new_subsection.body,
-                                "diff": self.html_diff("", new_subsection.body),
-                                "status": "ADD",
-                            }
-                        )
-                        matched_subsections.add(new_subsection.id)
-
-                # Now, check the old subsection (if it exists)
-                if old_subsection and old_subsection.id not in matched_subsections:
-                    # Look for it in new NOFO subsections (maybe it was moved)
-                    has_moved = any(
-                        new.is_matching_subsection(old_subsection)
-                        for new in new_subsections
-                    )
-
-                    if not has_moved:
-                        section_comparison["subsections"].append(
-                            {
-                                "name": old_subsection.name,
-                                "body": old_subsection.body,
-                                "diff": self.html_diff(old_subsection.body, ""),
-                                "status": "DELETE",
-                            }
-                        )
-                        matched_subsections.add(old_subsection.id)
-
-            # Only add section comparison if there are changes
-            if section_comparison["subsections"]:
-                nofo_comparison.append(section_comparison)
-
-        return nofo_comparison
-
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
         Create a new NOFO and then pass both in for a comparison.
@@ -627,7 +499,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
             new_nofo.save()
 
             # Build the comparison object
-            nofo_comparison = self.compare_nofo_sections(new_nofo, nofo)
+            nofo_comparison = compare_nofos(new_nofo, nofo)
 
             # Calculate the total number of changed sections
             num_changed_sections = len(nofo_comparison)
