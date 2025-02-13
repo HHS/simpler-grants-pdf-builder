@@ -619,6 +619,11 @@ class NofosImportCompareView(NofosImportOverwriteView):
             new_nofo.group = request.user.group
             new_nofo.filename = filename
             suggest_all_nofo_fields(new_nofo, soup)
+
+            # give nofo a title that indicates it is a comparison NOFO
+            new_nofo.title = "(COMPARE) {}".format(new_nofo.title)
+            # archive this new NOFO immediately
+            new_nofo.archived = timezone.now().date()
             new_nofo.save()
 
             # Build the comparison object
