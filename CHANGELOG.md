@@ -52,8 +52,7 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add public information subsection to Step 3 if it doesn't already exist in
-  existing NOFOs
+- Add public information subsection to Step 3 if it doesn't already exist
 
 ## [2.3.0] - 2025-01-17
 
