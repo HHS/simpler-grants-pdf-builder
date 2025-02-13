@@ -2226,7 +2226,8 @@ def add_final_subsection_to_step_3(sections):
     """
     This function looks for a section named either "Step 3: Prepare Your Application"
     or "Step 3: Write Your Application" (case-insensitive). If found, it adds a
-    new subsection as the last subsection in the section's "subsections" list.
+    new subsection as the last subsection in the section's "subsections" list,
+    but only if a subsection with the same name doesn't already exist.
 
     Args:
         sections (list of dict): A list of section dictionaries, where each section may
@@ -2234,7 +2235,7 @@ def add_final_subsection_to_step_3(sections):
 
     Side Effects:
         - Modifies the `sections` list in-place by adding a new subsection to the
-          matching "Step 3" section.
+          matching "Step 3" section if it doesn't already exist.
 
     Note:
         This function stops searching after finding and modifying the first matching
@@ -2252,6 +2253,11 @@ def add_final_subsection_to_step_3(sections):
         if section.get("name", "").lower() in [name.lower() for name in step_3_names]:
             # Get the subsections array
             subsections = section.get("subsections", [])
+
+            # Check if subsection already exists
+            public_info_name = PUBLIC_INFORMATION_SUBSECTION["name"]
+            if any(sub.get("name") == public_info_name for sub in subsections):
+                break
 
             # Calculate the new order
             last_order = max((sub.get("order", 0) for sub in subsections), default=0)
