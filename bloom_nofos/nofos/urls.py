@@ -107,6 +107,11 @@ urlpatterns = [
         views.NofoEditStatusView.as_view(),
         name="nofo_edit_status",
     ),
+    path(
+        "<int:pk>/edit/modifications",
+        views.NofoEditModificationView.as_view(),
+        name="nofo_modifications",
+    ),
     path("<int:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
     path(
         "<int:pk>/section/<int:section_pk>/subsection/create",

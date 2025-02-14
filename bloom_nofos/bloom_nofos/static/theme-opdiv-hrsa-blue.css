@@ -42,11 +42,19 @@ h4 {
   fill: var(--color--white);
 }
 
+.nofo--cover-page .nofo--cover-page--callout-box {
+  background-color: var(--color--pale-blue);
+}
+
 /* Cover page: text */
 
 .nofo--cover-page--text .nofo--cover-page--header--logo svg .hrsa-text--blue,
 .nofo--cover-page--text .nofo--cover-page--header--logo svg .hrsa-text--red {
   fill: var(--color--white);
+}
+
+.nofo--cover-page--text .nofo--cover-page--callout-box {
+  background-color: var(--color--white);
 }
 
 /* Cover page: hero image */

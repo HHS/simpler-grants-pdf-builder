@@ -108,6 +108,14 @@
           </ul>
         {% else %}
           <span>Application due {{ nofo.application_deadline }}</span>
+          <br>
+        {% endif %}
+        {% if nofo.modifications %}
+        <div class="callout-box nofo--cover-page--callout-box">
+          <div class="callout-box--contents">
+            <p><strong>Modified {{ nofo.modifications|date:"F j, Y" }}. <a href="#section--modifications">Review updates</a>.</strong></p>
+          </div>
+        </div>
         {% endif %}
       </div>
     </div>

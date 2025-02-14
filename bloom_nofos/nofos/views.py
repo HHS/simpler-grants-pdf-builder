@@ -1,6 +1,7 @@
 import io
 
 import docraptor
+from datetime import datetime
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -12,7 +13,7 @@ from django.db.models import F
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.utils import dateformat, timezone
+from django.utils import dateformat, dateparse, timezone
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -82,7 +83,7 @@ from .nofo import (
 from .utils import create_nofo_audit_event, create_subsection_html_id, style_map_manager
 
 ###########################################################
-###################### NOFO VIEWS ########################
+################### NOFO OBJECT VIEWS #####################
 ###########################################################
 
 
@@ -537,6 +538,82 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
+###########################################################
+################### NOFO METADATA VIEWS ###################
+###########################################################
+
+
+class NofoEditModificationView(View):
+    def get(self, request, pk):
+        nofo = get_object_or_404(Nofo, id=pk)
+        return render(request, "nofos/nofo_edit_modifications.html", {"nofo": nofo})
+
+    def post(self, request, pk):
+        nofo = get_object_or_404(Nofo, id=pk)
+        submitted_date = request.POST.get("modifications", "").strip()
+
+        if "/" in submitted_date:
+            submitted_date = datetime.strptime(submitted_date, "%m/%d/%Y").strftime(
+                "%Y-%m-%d"
+            )
+
+        parsed_date = dateparse.parse_date(submitted_date) if submitted_date else None
+
+        if submitted_date and not parsed_date:
+            messages.error(request, "Invalid date format.")
+            return render(
+                request,
+                "nofos/nofo_edit_modifications.html",
+                {"nofo": nofo},
+                status=400,
+            )
+
+        nofo.modifications = parsed_date
+        nofo.save()
+
+        # Check if a "Modifications" section exists
+        modifications_section = nofo.sections.filter(name="Modifications").first()
+        if not modifications_section:
+            # Create new "Modifications" section
+            modifications_section = Section.objects.create(
+                nofo=nofo,
+                name="Modifications",
+                html_id="modifications",
+                order=Section.get_next_order(nofo),  # Get next available order
+                has_section_page=False,
+            )
+
+            # Get the default subsection that was automatically created
+            default_subsection = modifications_section.subsections.first()
+            if default_subsection:
+                default_subsection.body = (
+                    "| Modification description | Date updated |\n"
+                    "|--------------------------|--------------|\n"
+                    "|                          |              |\n"
+                    "|                          |              |\n"
+                    "|                          |              |\n"
+                )
+                default_subsection.save()
+
+            messages.success(
+                self.request,
+                "NOFO is ‘modified’. Added message to cover page and created new section: “<a href='#{}'>{}</a>”".format(
+                    modifications_section.html_id, modifications_section.name
+                ),
+            )
+
+        else:
+            # did NOT create new modifications section, just updated date
+            messages.success(
+                self.request,
+                "New modification date: “{}”".format(
+                    dateformat.format(nofo.modifications, "F j, Y")
+                ),
+            )
+
+        return redirect("nofos:nofo_edit", pk=nofo.id)
+
+
 class NofoEditTitleView(BaseNofoEditView):
     form_class = NofoNameForm
     template_name = "nofos/nofo_edit_title.html"
@@ -730,7 +807,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
 
 ###########################################################
-################### SECTION VIEWS ######################
+##################### SECTION VIEWS #######################
 ###########################################################
 
 
@@ -841,8 +918,10 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
         if self.nofo.id != self.nofo_id:
             return HttpResponseBadRequest("Oops, bad NOFO id")
-        if self.nofo.status == "published":
-            return HttpResponseBadRequest("Published NOFOs can’t be edited.")
+        if self.nofo.status == "published" and not self.nofo.modifications:
+            return HttpResponseBadRequest(
+                "Published NOFOs can’t be edited. Change the status of this NOFO or add modifications to it."
+            )
 
         return super().dispatch(request, *args, **kwargs)
 

@@ -1054,7 +1054,8 @@ section.section .section--title-page::before {
   margin-bottom: 0;
 }
 
-.callout-box--icon {
+.callout-box--icon,
+.nofo--cover-page--callout-box {
   padding: 10px 15px;
 }
 
@@ -1076,6 +1077,14 @@ section.section .section--title-page::before {
 
 .callout-box--questions .callout-box--contents p {
   font-size: 12pt;
+}
+
+.nofo--cover-page--callout-box {
+  margin-right: -15px; /* same as right margin, right-align text */
+}
+
+.nofo--cover-page--callout-box .callout-box--contents {
+  font-size: 10.5pt;
 }
 
 .section--endnotes h3,
