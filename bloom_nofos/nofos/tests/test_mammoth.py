@@ -29,16 +29,16 @@ class TestDocxConversion(TestCase):
 
             # 7 uls because nested lists create a new ul
             uls = soup.find_all("ul")
-            self.assertEqual(len(uls), 9, "Expected 9 <ul> elements in the HTML")
+            self.assertEqual(len(uls), 11, "Expected 11 <ul> elements in the HTML")
 
             # 14 <li> elements
             lis = soup.select("li")
-            self.assertEqual(len(lis), 17, "There should be exactly 17 list items")
+            self.assertEqual(len(lis), 20, "There should be exactly 20 list items")
 
             # 4 <li> elements
             nested_lis = soup.select("ul > li > ul > li")
             self.assertEqual(
-                len(nested_lis), 6, "There should be exactly 6 nested list items"
+                len(nested_lis), 8, "There should be exactly 8 nested list items"
             )
 
             # Print warnings if any exist in the conversion result
