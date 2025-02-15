@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
+
 ### Changed
 
 ### Fixed
