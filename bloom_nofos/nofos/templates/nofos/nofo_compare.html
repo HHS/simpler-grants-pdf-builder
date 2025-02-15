@@ -8,10 +8,10 @@
 {% block body_class %}nofo_compare{% endblock %}
 
   {% block content %}
-  <div class="usa-alert usa-alert--info usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
+  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
     <div class="usa-alert__body bg-base-lightest">
       <p class="usa-alert__text">
-        <span class="usa-tag bg-ink">Alpha</span>
+        <span class="usa-tag bg-gold text-ink">Beta</span>
         <span class="margin-left-1">Comparing NOFOs is an experimental feature and will change as we improve it.</span>
       </p>
     </div>
@@ -58,6 +58,18 @@
           </tbody>
         </table>
       {% endfor %}
-  {% endif %}
+    {% endif %}
+
+  <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+  <ul class="usa-button-group margin-top-3">
+    <li class="usa-button-group__item">
+      <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+        Re-import NOFO
+      </a>
+    </li>
+    <li class="usa-button-group__item">
+      <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to re-import</a>
+    </li>
+  </ul>
   
 {% endblock %}
