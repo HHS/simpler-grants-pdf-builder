@@ -83,7 +83,12 @@
             {% if subsection.status != 'MATCH' %}
               <tr>
                 <th scope="row">
-                  {{ subsection.name }}
+                  {# if the subsection.name value starts with "(#" #}
+                  {% if subsection.name|slice:":2" == "(#" %}
+                      <span class="text-base">{{ subsection.name }}</span>
+                  {% else %}
+                      {{ subsection.name }}
+                  {% endif %}
                 </th>
                 <td>
                   {{ subsection.status }}
