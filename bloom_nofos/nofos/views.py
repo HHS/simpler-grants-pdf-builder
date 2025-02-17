@@ -60,6 +60,7 @@ from .nofo import (
     add_headings_to_nofo,
     add_page_breaks_to_headings,
     compare_nofos,
+    compare_nofos_metadata,
     create_nofo,
     find_broken_links,
     find_external_link,
@@ -500,6 +501,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
 
             # Build the comparison object
             nofo_comparison = compare_nofos(new_nofo, nofo)
+            nofo_comparison_metadata = compare_nofos_metadata(new_nofo, nofo)
 
             # Calculate the total number of changed sections
             num_changed_sections = len(nofo_comparison)
@@ -518,6 +520,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
                     "nofo": nofo,
                     "new_nofo": new_nofo,
                     "nofo_comparison": nofo_comparison,
+                    "nofo_comparison_metadata": nofo_comparison_metadata,
                     "num_changed_sections": num_changed_sections,
                     "num_changed_subsections": num_changed_subsections,
                 },
