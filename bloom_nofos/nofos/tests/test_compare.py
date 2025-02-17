@@ -1,6 +1,6 @@
 from django.test import TestCase
 from ..models import Nofo, Section, Subsection
-from ..views import compare_nofos
+from ..views import compare_nofos, compare_nofos_metadata
 
 
 class TestCompareNofos(TestCase):
@@ -137,3 +137,84 @@ class TestCompareNofos(TestCase):
         self.assertEqual(subsection_delete["name"], "Old NOFO Fee Requirements")
         self.assertEqual(subsection_delete["value"], "Processing fee is $50.")
         self.assertIn("<del>Processing fee is $50.</del>", subsection_delete["diff"])
+
+
+class TestCompareNofosMetadata(TestCase):
+    def setUp(self):
+        """
+        Sets up two NOFO objects (old and new) with different metadata fields.
+        """
+        self.old_nofo = Nofo.objects.create(
+            title="Groundhog Training Grant",
+            number="GHOG-101",
+            opdiv="National Oceanic and Atmospheric Administration",
+            agency="Climate and Weather Division",
+            subagency="Department of Guessing Groundhogs (DGG)",
+            subagency2="Action Group for Diverse Prognosticators (AGDP)",
+            application_deadline="",
+            tagline="Make Groundhogs Great Again",
+        )
+
+        self.new_nofo = Nofo.objects.create(
+            title="Groundhog Training Grant",  # MATCH
+            number="GHOG-101",  # MATCH
+            opdiv="National Oceanic and Atmospheric Administration",  # MATCH
+            agency="Climate and Weather Division",  # MATCH
+            subagency="Department of Groundhog Excellence (DOGE)",  # UPDATE
+            subagency2="",  # DELETE
+            application_deadline="February 2, 2026",  # ADD
+            tagline="Make Groundhogs Great Again",  # MATCH
+        )
+
+    def test_compare_nofos_metadata(self):
+        """
+        Tests the compare_nofos_metadata function, ensuring it correctly identifies matches, updates, additions, and deletions.
+        """
+        nofo_comparison_metadata = compare_nofos_metadata(self.new_nofo, self.old_nofo)
+
+        # Ensure 8 attributes changes are detected
+        self.assertEqual(len(nofo_comparison_metadata), 8)
+        # 3 attributes are not matched (update, add, or delete)
+        non_matches_results = [
+            item for item in nofo_comparison_metadata if item["status"] != "MATCH"
+        ]
+        self.assertEqual(len(non_matches_results), 3)
+
+        # Match tests
+        matched_names = [
+            "NOFO title",
+            "Opportunity number",
+            "Operating Division",
+            "Agency",
+            "Tagline",
+        ]
+        for item in nofo_comparison_metadata:
+            if item["name"] in matched_names:
+                self.assertEqual(item["status"], "MATCH")
+                self.assertNotIn("diff", item)
+
+        # Update test (subagency changed)
+        subagency_update = nofo_comparison_metadata[4]
+        self.assertEqual(subagency_update["status"], "UPDATE")
+        self.assertEqual(
+            subagency_update["value"], "Department of Groundhog Excellence (DOGE)"
+        )
+        self.assertIn(
+            "Department of G<del>uessing G</del>roundhog<del>s</del><ins> Excellence</ins> (D<ins>O</ins>G<del>G</del><ins>E</ins>)",
+            subagency_update["diff"],
+        )
+
+        # Delete test (subagency2 removed)
+        subagency2_delete = nofo_comparison_metadata[5]
+        self.assertEqual(subagency2_delete["status"], "DELETE")
+        self.assertEqual(subagency2_delete["value"], "")
+        self.assertIn(
+            "<del>Action Group for Diverse Prognosticators (AGDP)</del>",
+            subagency2_delete["diff"],
+        )
+
+        # Addition test (application deadline added)
+        application_deadline_add = nofo_comparison_metadata[6]
+        self.assertEqual(application_deadline_add["status"], "ADD")
+        self.assertEqual(application_deadline_add["value"], "February 2, 2026")
+        self.assertIn("<ins>February 2, 2026</ins>", application_deadline_add["diff"])

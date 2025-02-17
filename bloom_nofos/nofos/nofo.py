@@ -956,6 +956,8 @@ def compare_nofos_metadata(new_nofo, nofo):
             # the comparison NOFO has this appended automatically, this is not a true change
             new_value = new_value.replace("(COMPARE) ", "")
 
+        field_name = Nofo._meta.get_field(key).verbose_name
+
         if old_value != new_value:
             if not old_value:  # Value was missing before, now added
                 status = "ADD"
@@ -967,14 +969,20 @@ def compare_nofos_metadata(new_nofo, nofo):
                 status = "UPDATE"
                 diff = _html_diff(old_value, new_value)
 
-            field_name = Nofo._meta.get_field(key).verbose_name
-
             nofo_metadata_comparison.append(
                 {
                     "name": field_name,
                     "status": status,
                     "value": new_value,
                     "diff": diff,
+                }
+            )
+        else:
+            nofo_metadata_comparison.append(
+                {
+                    "name": field_name,
+                    "status": "MATCH",
+                    "value": new_value,
                 }
             )
 
