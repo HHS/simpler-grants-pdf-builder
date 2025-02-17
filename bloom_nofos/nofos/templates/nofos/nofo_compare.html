@@ -32,15 +32,17 @@
     <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
 
     {% if nofo_comparison_metadata %}
-    <table class="usa-table usa-table--borderless">
+    <table class="usa-table usa-table--borderless w-100">
       <caption>
-        <h2>Basic information</h2>
+        <div>
+          <h2>Basic information</h2>
+        </div>
       </caption>
-      <thead>
+      <thead class="usa-sr-only">
         <tr>
-          <th scope="col">Attribute</th>
-          <th scope="col">Status</th>
-          <th scope="col">Content</th>
+          <th scope="col" class="w-15">Attribute</th>
+          <th scope="col" class="w-10">Status</th>
+          <th scope="col" class="w-75">Content</th>
         </tr>
       </thead>
       <tbody>
@@ -65,13 +67,15 @@
       {% for section in nofo_comparison %}
         <table class="usa-table usa-table--borderless">
           <caption>
-            <h2>{{ section.name }}</h2>
+            <div>
+              <h2>{{ section.name }}</h2>
+            </div>
           </caption>
-          <thead>
+          <thead class="usa-sr-only">
             <tr>
-              <th scope="col">Subsection</th>
-              <th scope="col">Status</th>
-              <th scope="col">Content</th>
+              <th scope="col" class="w-15">Subsection</th>
+              <th scope="col" class="w-10">Status</th>
+              <th scope="col" class="w-75">Content</th>
             </tr>
           </thead>
           <tbody>
