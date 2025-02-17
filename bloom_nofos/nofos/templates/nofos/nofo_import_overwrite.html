@@ -19,6 +19,14 @@
       </p>
     </div>
   </div>
+  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
+    <div class="usa-alert__body bg-base-lightest">
+      <p class="usa-alert__text">
+        <span class="usa-tag bg-gold text-ink">Beta</span>
+        <span class="margin-left-1"><a href="{% url 'nofos:nofo_import_compare' nofo.id %}">Compare your new document to see what’s new</a>.</span>
+      </p>
+    </div>
+  </div>
 
   {% with nofo|nofo_name as nofo_name_str %}
     {% with "Edit “"|add:nofo_name_str|add:"”" as back_text %}
@@ -26,7 +34,6 @@
       {% include "includes/page_heading.html" with title="Re-import “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
     {% endwith %}
   {% endwith %}
-
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
