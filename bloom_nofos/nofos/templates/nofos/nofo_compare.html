@@ -24,11 +24,44 @@
     {% endwith %}
   {% endwith %}
 
-  {% if nofo_comparison %}
-      <p>
-        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-      </p>
 
+    <p>
+      There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
+    </p>
+
+    <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
+
+    {% if nofo_comparison_metadata %}
+    <table class="usa-table usa-table--borderless">
+      <caption>
+        <h2>Basic information</h2>
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Status</th>
+          <th scope="col">Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for attribute in nofo_comparison_metadata %}
+        {% if attribute.status != 'MATCH' %}
+          <tr>
+            <th scope="row">
+              {{ attribute.name }}
+            </th>
+            <td>
+              {{ attribute.status }}
+            </td>
+            <td><div class="diff">{{ attribute.diff|safe }}</div></td>
+          </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if nofo_comparison %}
       {% for section in nofo_comparison %}
         <table class="usa-table usa-table--borderless">
           <caption>

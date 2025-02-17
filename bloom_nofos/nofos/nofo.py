@@ -776,6 +776,24 @@ def get_cover_image(nofo):
 ###########################################################
 
 
+def _html_diff(original, new):
+    matcher = SequenceMatcher(None, original, new)
+    result = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "replace":
+            result.append(f"<del>{original[i1:i2]}</del>")
+            result.append(f"<ins>{new[j1:j2]}</ins>")
+        elif tag == "delete":
+            result.append(f"<del>{original[i1:i2]}</del>")
+        elif tag == "insert":
+            result.append(f"<ins>{new[j1:j2]}</ins>")
+        elif tag == "equal":
+            result.append(original[i1:i2])
+
+    return "".join(result)
+
+
 def compare_nofos(new_nofo, old_nofo):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
@@ -787,24 +805,6 @@ def compare_nofos(new_nofo, old_nofo):
     Returns:
         list: A structured diff object containing sections and subsection changes.
     """
-
-    def _html_diff(original, new):
-        matcher = SequenceMatcher(None, original, new)
-        result = []
-
-        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag == "replace":
-                result.append(f"<del>{original[i1:i2]}</del>")
-                result.append(f"<ins>{new[j1:j2]}</ins>")
-            elif tag == "delete":
-                result.append(f"<del>{original[i1:i2]}</del>")
-            elif tag == "insert":
-                result.append(f"<ins>{new[j1:j2]}</ins>")
-            elif tag == "equal":
-                result.append(original[i1:i2])
-
-        return "".join(result)
-
     nofo_comparison = []
 
     for new_section in new_nofo.sections.all():
@@ -901,6 +901,62 @@ def compare_nofos(new_nofo, old_nofo):
             nofo_comparison.append(section_comparison)
 
     return nofo_comparison
+
+
+def compare_nofos_metadata(new_nofo, nofo):
+    """
+    Compares metadata fields between an existing NOFO and a newly uploaded one.
+
+    - Identifies added, deleted, and updated metadata fields.
+    - Returns a structured diff showing changes.
+
+    Returns:
+        list: A list of metadata changes, including diffs for modified fields.
+    """
+    nofo_metadata_comparison = []
+
+    metadata_keys = [
+        "title",
+        "number",
+        "opdiv",
+        "agency",
+        "subagency",
+        "subagency2",
+        "application_deadline",
+        "tagline",
+    ]
+
+    for key in metadata_keys:
+        old_value = getattr(nofo, key, "") or ""
+        new_value = getattr(new_nofo, key, "") or ""
+
+        if key == "title":
+            # the comparison NOFO has this appended automatically, this is not a true change
+            new_value = new_value.replace("(COMPARE) ", "")
+
+        if old_value != new_value:
+            if not old_value:  # Value was missing before, now added
+                status = "ADD"
+                diff = _html_diff("", new_value)
+            elif not new_value:  # Value was present before, now deleted
+                status = "DELETE"
+                diff = _html_diff(old_value, "")
+            else:  # Value changed
+                status = "UPDATE"
+                diff = _html_diff(old_value, new_value)
+
+            field_name = Nofo._meta.get_field(key).verbose_name
+
+            nofo_metadata_comparison.append(
+                {
+                    "name": field_name,
+                    "status": status,
+                    "body": new_value,
+                    "diff": diff,
+                }
+            )
+
+    return nofo_metadata_comparison
 
 
 ###########################################################
