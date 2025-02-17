@@ -812,6 +812,10 @@ def compare_nofos(new_nofo, old_nofo):
             "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
         }
     """
+
+    def get_subsection_name_or_order(subsection):
+        return subsection.name or "(#{})".format(subsection.order)
+
     nofo_comparison = []
 
     for new_section in new_nofo.sections.all():
@@ -856,7 +860,9 @@ def compare_nofos(new_nofo, old_nofo):
                     if new_subsection.body != matched_old_subsection.body:
                         section_comparison["subsections"].append(
                             {
-                                "name": new_subsection.name,
+                                "name": get_subsection_name_or_order(
+                                    matched_old_subsection
+                                ),
                                 "status": "UPDATE",
                                 "value": new_subsection.body,
                                 "diff": _html_diff(
@@ -867,7 +873,9 @@ def compare_nofos(new_nofo, old_nofo):
                     else:
                         section_comparison["subsections"].append(
                             {
-                                "name": new_subsection.name,
+                                "name": get_subsection_name_or_order(
+                                    matched_old_subsection
+                                ),
                                 "value": new_subsection.body,
                                 "status": "MATCH",
                             }
@@ -876,7 +884,7 @@ def compare_nofos(new_nofo, old_nofo):
                     # If no match was found, it's a new addition
                     section_comparison["subsections"].append(
                         {
-                            "name": new_subsection.name,
+                            "name": get_subsection_name_or_order(new_subsection),
                             "value": new_subsection.body,
                             "diff": _html_diff("", new_subsection.body),
                             "status": "ADD",
@@ -895,7 +903,7 @@ def compare_nofos(new_nofo, old_nofo):
                 if not has_moved:
                     section_comparison["subsections"].append(
                         {
-                            "name": old_subsection.name,
+                            "name": get_subsection_name_or_order(old_subsection),
                             "value": old_subsection.body,
                             "diff": _html_diff(old_subsection.body, ""),
                             "status": "DELETE",
