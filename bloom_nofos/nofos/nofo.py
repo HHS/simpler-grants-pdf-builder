@@ -803,7 +803,14 @@ def compare_nofos(new_nofo, old_nofo):
     - If a matched subsection has different content, marks it as updated.
 
     Returns:
-        list: A structured diff object containing sections and subsection changes.
+        list[dict]: A structured list of subsection diff objects, in this format:
+
+        {
+            "name": str,   # The name of the subsection
+            "status": str,  # One of "MATCH", "UPDATE", "ADD", or "DELETE"
+            "value": str,  # The body content of the new subsection (if applicable)
+            "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
+        }
     """
     nofo_comparison = []
 
@@ -851,7 +858,7 @@ def compare_nofos(new_nofo, old_nofo):
                             {
                                 "name": new_subsection.name,
                                 "status": "UPDATE",
-                                "body": new_subsection.body,
+                                "value": new_subsection.body,
                                 "diff": _html_diff(
                                     matched_old_subsection.body, new_subsection.body
                                 ),
@@ -861,7 +868,7 @@ def compare_nofos(new_nofo, old_nofo):
                         section_comparison["subsections"].append(
                             {
                                 "name": new_subsection.name,
-                                "body": new_subsection.body,
+                                "value": new_subsection.body,
                                 "status": "MATCH",
                             }
                         )
@@ -870,7 +877,7 @@ def compare_nofos(new_nofo, old_nofo):
                     section_comparison["subsections"].append(
                         {
                             "name": new_subsection.name,
-                            "body": new_subsection.body,
+                            "value": new_subsection.body,
                             "diff": _html_diff("", new_subsection.body),
                             "status": "ADD",
                         }
@@ -889,7 +896,7 @@ def compare_nofos(new_nofo, old_nofo):
                     section_comparison["subsections"].append(
                         {
                             "name": old_subsection.name,
-                            "body": old_subsection.body,
+                            "value": old_subsection.body,
                             "diff": _html_diff(old_subsection.body, ""),
                             "status": "DELETE",
                         }
@@ -911,7 +918,14 @@ def compare_nofos_metadata(new_nofo, nofo):
     - Returns a structured diff showing changes.
 
     Returns:
-        list: A list of metadata changes, including diffs for modified fields.
+        list[dict]: A structured list of subsection diff objects, in this format:
+
+        {
+            "name": str,   # The name of the attribute
+            "status": str,  # One of "MATCH", "UPDATE", "ADD", or "DELETE"
+            "value": str,  # The value of the new attribute (if applicable)
+            "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
+        }
     """
     nofo_metadata_comparison = []
 
@@ -951,7 +965,7 @@ def compare_nofos_metadata(new_nofo, nofo):
                 {
                     "name": field_name,
                     "status": status,
-                    "body": new_value,
+                    "value": new_value,
                     "diff": diff,
                 }
             )
