@@ -994,9 +994,17 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
         offset = int(self.request.GET.get("offset", 0))
 
         # Get audit events for this NOFO
-        nofo_events = CRUDEvent.objects.filter(
-            object_id=self.object.id, content_type__model="nofo"
-        ).order_by("-datetime")
+        nofo_events = (
+            CRUDEvent.objects.filter(
+                object_id=self.object.id, content_type__model="nofo"
+            )
+            .exclude(
+                # Exclude updates where only the timestamp changed
+                changed_fields__regex=r'^\{"updated": \[".+", ".+"\]\}$',
+                event_type=CRUDEvent.UPDATE,
+            )
+            .order_by("-datetime")
+        )
 
         # Get audit events for sections
         section_events = CRUDEvent.objects.filter(
@@ -1027,11 +1035,19 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
                 "timestamp": event.datetime,
             }
 
+            # Handle subsection events
+            if event.content_type.model == "subsection":
+                subsection = Subsection.objects.get(id=event.object_id)
+                name = subsection.name or f"#{subsection.order}"
+                event_details["object_description"] = (
+                    f"{subsection.section.name} - {name}"
+                )
+
             # Handle custom audit events (nofo_import, nofo_print, nofo_reimport)
             if event.changed_fields and event.changed_fields.strip():
-                try:
-                    changed_fields = json.loads(event.changed_fields)
-                    if isinstance(changed_fields, dict) and "action" in changed_fields:
+                changed_fields = json.loads(event.changed_fields)
+                if isinstance(changed_fields, dict):
+                    if "action" in changed_fields:
                         action = changed_fields["action"]
                         if action == "nofo_import":
                             event_details["event_type"] = "NOFO Imported"
@@ -1043,8 +1059,13 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
                                 ] += f" ({changed_fields['print_mode'][0]} mode)"
                         elif action == "nofo_reimport":
                             event_details["event_type"] = "NOFO Re-imported"
-                except json.JSONDecodeError:
-                    pass
+                    elif event.content_type.model == "nofo":
+                        field_name = next(iter(changed_fields.keys()))
+                        # Convert field_name from snake_case to Title Case
+                        formatted_field = " ".join(
+                            word.title() for word in field_name.split("_")
+                        )
+                        event_details["object_description"] = f"{formatted_field}"
 
             all_events.append(event_details)
 
@@ -1055,14 +1076,3 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
         context["next_offset"] = end_offset
 
         return context
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-
-        if request.headers.get("HX-Request"):
-            # For AJAX requests, return just the rows
-            return render(request, "nofos/partials/audit_events_rows.html", context)
-
-        # For normal requests, return the full page
-        return self.render_to_response(context)
