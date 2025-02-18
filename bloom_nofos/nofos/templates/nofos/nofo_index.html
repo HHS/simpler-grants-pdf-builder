@@ -69,7 +69,12 @@
 						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						{% timezone "America/New_York" %}
-							<td data-sort="{{ nofo.updated|date:"YmdHM" }}">{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %}, {{ nofo.updated|date:'H:i' }}{% endif %}</td>
+							<td data-sort="{{ nofo.updated|date:"YmdHM" }}">
+								<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
+									{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %}, {{ nofo.updated|date:'H:i' }}{% endif %}
+									<span class="usa-sr-only"> - View audit history for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span>
+								</a>
+							</td>
 						{% endtimezone %}
 						<td><a href="{% url 'nofos:nofo_view' nofo.id %}">View<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
 					</tr>

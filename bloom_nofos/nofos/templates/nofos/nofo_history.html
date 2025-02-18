@@ -8,11 +8,13 @@
 {% block body_class %}nofo_history nofo_status--{{ nofo.status }}{% endblock %}
 
 {% block content %}
-<div class="back-link font-body-md">
-  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Back to NOFO</a>
-</div>
+  {% with nofo|nofo_name as nofo_name_str %}
+    {% with "Edit “"|add:nofo_name_str|add:"”" as back_text %}
+      {% url 'nofos:nofo_edit' nofo.id as back_href %}
+      {% include "includes/page_heading.html" with title="Audit history for “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
+    {% endwith %}
+  {% endwith %}
 
-<h1>Audit History for "{{ nofo|nofo_name }}"</h1>
 
 <div class="margin-bottom-5">
   <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
@@ -58,7 +60,7 @@
 {% endif %}
 
 <script>
-document.getElementById('load-more-btn').addEventListener('click', async function() {
+document.getElementById('load-more-btn')?.addEventListener('click', async function() {
     const button = this;
     const offset = button.dataset.nextOffset;
     button.disabled = true;
@@ -76,9 +78,13 @@ document.getElementById('load-more-btn').addEventListener('click', async functio
         const newRows = doc.getElementById('audit-events-body').children;
         const currentTable = document.getElementById('audit-events-body');
         
+        const fragment = new DocumentFragment();
+
         Array.from(newRows).forEach(row => {
-            currentTable.appendChild(row.cloneNode(true));
+            fragment.appendChild(row.cloneNode(true));
         });
+
+        currentTable.appendChild(fragment);
         
         // Update or remove the button
         const hasMore = doc.getElementById('load-more-btn');
@@ -90,6 +96,7 @@ document.getElementById('load-more-btn').addEventListener('click', async functio
             button.remove();
         }
     } catch (error) {
+        console.error('Error loading more events:', error);
         button.textContent = 'Error loading more events. Try again.';
         button.disabled = false;
     }

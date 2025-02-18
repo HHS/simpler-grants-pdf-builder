@@ -1,8 +1,0 @@
-{% for event in audit_events %}
-<tr>
-    <td>{{ event.event_type }}</td>
-    <td>{{ event.object_type }} - {{ event.object_description }}</td>
-    <td>{{ event.user }}</td>
-    <td>{{ event.timestamp }}</td>
-</tr>
-{% endfor %}
