@@ -1,4 +1,5 @@
 import io
+import json
 
 import docraptor
 from bs4 import BeautifulSoup
@@ -24,6 +25,7 @@ from django.views.generic import (
 )
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
+from easyaudit.models import CRUDEvent
 
 from .forms import (
     CheckNOFOLinkSingleForm,
@@ -983,3 +985,97 @@ def insert_order_space_view(request, section_id):
 
     context = {"form": form, "title": "Insert Order Space", "section": section}
     return render(request, "admin/insert_order_space.html", context)
+
+
+class NofoHistoryView(GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_history.html"
+    events_per_page = 25  # Show 25 events per batch
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offset = int(self.request.GET.get("offset", 0))
+
+        # Get audit events for this NOFO
+        nofo_events = (
+            CRUDEvent.objects.filter(
+                object_id=self.object.id, content_type__model="nofo"
+            )
+            .exclude(
+                # Exclude updates where only the timestamp changed
+                changed_fields__regex=r'^\{"updated": \[".+", ".+"\]\}$',
+                event_type=CRUDEvent.UPDATE,
+            )
+            .order_by("-datetime")
+        )
+
+        # Get audit events for sections
+        section_events = CRUDEvent.objects.filter(
+            object_id__in=self.object.sections.values_list("id", flat=True),
+            content_type__model="section",
+        ).order_by("-datetime")
+
+        # Get audit events for subsections
+        subsection_events = CRUDEvent.objects.filter(
+            object_id__in=Subsection.objects.filter(
+                section__nofo=self.object
+            ).values_list("id", flat=True),
+            content_type__model="subsection",
+        ).order_by("-datetime")
+
+        # Combine all events and sort by datetime
+        all_events = []
+        for event in sorted(
+            list(nofo_events) + list(section_events) + list(subsection_events),
+            key=lambda x: x.datetime,
+            reverse=True,
+        ):
+            event_details = {
+                "event_type": event.get_event_type_display(),
+                "object_type": event.content_type.model.title(),
+                "object_description": event.object_repr,
+                "user": event.user,
+                "timestamp": event.datetime,
+            }
+
+            # Handle subsection events
+            if event.content_type.model == "subsection":
+                subsection = Subsection.objects.get(id=event.object_id)
+                name = subsection.name or f"#{subsection.order}"
+                event_details["object_description"] = (
+                    f"{subsection.section.name} - {name}"
+                )
+
+            # Handle custom audit events (nofo_import, nofo_print, nofo_reimport)
+            if event.changed_fields and event.changed_fields.strip():
+                changed_fields = json.loads(event.changed_fields)
+                if isinstance(changed_fields, dict):
+                    if "action" in changed_fields:
+                        action = changed_fields["action"]
+                        if action == "nofo_import":
+                            event_details["event_type"] = "NOFO Imported"
+                        elif action == "nofo_print":
+                            event_details["event_type"] = "NOFO Printed"
+                            if "print_mode" in changed_fields:
+                                event_details[
+                                    "event_type"
+                                ] += f" ({changed_fields['print_mode'][0]} mode)"
+                        elif action == "nofo_reimport":
+                            event_details["event_type"] = "NOFO Re-imported"
+                    elif event.content_type.model == "nofo":
+                        field_name = next(iter(changed_fields.keys()))
+                        # Convert field_name from snake_case to Title Case
+                        formatted_field = " ".join(
+                            word.title() for word in field_name.split("_")
+                        )
+                        event_details["object_description"] = f"{formatted_field}"
+
+            all_events.append(event_details)
+
+        # Slice the results for pagination
+        end_offset = offset + self.events_per_page
+        context["audit_events"] = all_events[offset:end_offset]
+        context["has_more"] = len(all_events) > end_offset
+        context["next_offset"] = end_offset
+
+        return context
