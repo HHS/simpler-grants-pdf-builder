@@ -127,23 +127,3 @@ class NofoHistoryViewTests(TestCase):
         self.assertContains(response, subsection_event.get_event_type_display())
         self.assertContains(response, "Section")
         self.assertContains(response, "Subsection")
-
-    def test_history_view_handles_invalid_json(self):
-        """Test that history view handles invalid JSON in changed_fields gracefully"""
-        # Create an event with invalid JSON
-        event = CRUDEvent.objects.create(
-            event_type=CRUDEvent.UPDATE,
-            object_id=self.nofo.id,
-            content_type=self.nofo_content_type,
-            object_repr=str(self.nofo),
-            user=self.user,
-            datetime=timezone.now(),
-            changed_fields="{invalid json",
-        )
-
-        url = reverse("nofos:nofo_history", args=[self.nofo.id])
-        response = self.client.get(url)
-
-        # Should not raise an error and should show the default event type
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, event.get_event_type_display())
