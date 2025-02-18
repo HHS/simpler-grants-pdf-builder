@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name %}
+{% load static nofo_name tz %}
 
 {% block title %}
   Audit History for "{{ nofo|nofo_name }}"
@@ -40,7 +40,11 @@
       <td>{{ event.event_type }}</td>
       <td>{{ event.object_type }} - {{ event.object_description }}</td>
       <td>{{ event.user }}</td>
-      <td>{{ event.timestamp }}</td>
+      {% timezone "America/New_York" %}
+        <td data-sort="{{ event.timestamp|date:"YmdHM" }}">
+          {{ event.timestamp|date:'M j' }}{% if event.timestamp|date:'M j' == today_m_j %}, {{ event.timestamp|date:'H:i' }}{% endif %}
+        </td>
+      {% endtimezone %}
     </tr>
     {% empty %}
     <tr>
