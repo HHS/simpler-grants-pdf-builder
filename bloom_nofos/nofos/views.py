@@ -1011,16 +1011,20 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
         )
 
         # Get audit events for sections
+        section_ids = list(self.object.sections.values_list("id", flat=True))
         section_events = CRUDEvent.objects.filter(
-            object_id__in=self.object.sections.values_list("id", flat=True),
+            object_id__in=(section_ids if section_ids else [0]),
             content_type__model="section",
         ).order_by("-datetime")
 
         # Get audit events for subsections
+        subsection_ids = list(
+            Subsection.objects.filter(section__nofo=self.object).values_list(
+                "id", flat=True
+            )
+        )
         subsection_events = CRUDEvent.objects.filter(
-            object_id__in=Subsection.objects.filter(
-                section__nofo=self.object
-            ).values_list("id", flat=True),
+            object_id__in=(subsection_ids if subsection_ids else [0]),
             content_type__model="subsection",
         ).order_by("-datetime")
 
