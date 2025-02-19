@@ -994,7 +994,6 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["today_m_j"] = dateformat.format(timezone.now(), "M j")
         offset = int(self.request.GET.get("offset", 0))
 
         # Get audit events for this NOFO
