@@ -39,6 +39,15 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 </div>
 
+<div class="nofo_edit--audit-widget font-sans-md">
+  <span>
+    Last updated: <strong>{{ nofo.updated|date:'F j' }} at {{ nofo.updated|date:'g:i A' }}</strong>
+  </span>
+  <span>
+    <a href="{% url 'nofos:nofo_history' nofo.id %}">See all updates to this NOFO</a>
+  </span>
+</div>
+
 {% if nofo.status == 'published' %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
@@ -71,13 +80,6 @@ Edit “{{ nofo|nofo_name }}”
     </h2>
     <div class="usa-summary-box__text">
       <ul class="usa-list usa-list--unstyled">
-        <li>
-          <p>
-            <a class="usa-button usa-button--outline" href="{% url 'nofos:nofo_history' nofo.id %}">
-              View audit history
-            </a>— See when this NOFO was modified and by whom
-          </p>
-        </li>
         <li>
           <p>
             <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
