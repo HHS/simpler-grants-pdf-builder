@@ -971,6 +971,19 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 /* compare page */
 
+.usa-alert--warning.usa-alert--alpha .usa-alert__body {
+  border-left: 2px solid black;
+  background-color: #f0f0f0;
+}
+
+.usa-alert--warning.usa-alert--alpha .usa-alert__text {
+  display: flex;
+}
+
+.usa-alert--warning.usa-alert--alpha .usa-tag {
+  height: 100%;
+}
+
 .nofo_compare caption h2 {
   margin-bottom: 0;
 }
@@ -979,13 +992,12 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: 0.5rem;
 }
 
-.usa-alert--warning.usa-alert--alpha .usa-alert__body {
-  border-left: 2px solid black;
-  background-color: #f0f0f0;
+.nofo_compare .usa-table .diff {
+  word-break: break-word;
 }
 
 del {
-  color: red;
+  color: var(--color--usa-error-message);
   background-color: #ffebe9;
 }
 
