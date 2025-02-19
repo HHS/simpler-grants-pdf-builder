@@ -71,7 +71,7 @@
 						{% timezone "America/New_York" %}
 							<td data-sort="{{ nofo.updated|date:"YmdHM" }}">
 								<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
-									{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %}, {{ nofo.updated|date:'H:i' }}{% endif %}
+									{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %},<br>{{ nofo.updated|date:'g:i A' }}{% endif %}
 									<span class="usa-sr-only"> - View audit history for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span>
 								</a>
 							</td>
