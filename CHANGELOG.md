@@ -13,6 +13,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Use a MS 365 form for feedback instead of a Google Form
 - Breadcrumb links are no longer clickable (instead, they are just visual indicators)
 - When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by default
 
