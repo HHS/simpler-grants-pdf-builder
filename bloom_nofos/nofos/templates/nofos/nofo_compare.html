@@ -93,7 +93,17 @@
                 <td>
                   {{ subsection.status }}
                 </td>
-                <td><div class="diff">{{ subsection.diff|safe }}</div></td>
+                <td>
+                  <div class="diff">
+                    {% if subsection.status == 'ADD' %}
+                      <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                    {% elif  subsection.status == 'DELETE' %}
+                      <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                    {% elif subsection.status == 'UPDATE' %}
+                      {{ subsection.diff|safe|linebreaks }}
+                    {% endif %}
+                  </div>
+                </td>
               </tr>
             {% endif %}
             {% endfor %}
