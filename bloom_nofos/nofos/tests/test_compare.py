@@ -8,13 +8,18 @@ class TestHtmlDiff(TestCase):
     def test_basic_text_change(self):
         original = "Groundhog Day!"
         new = "Valentines Day!"
-        expected = "<del>Grou</del><ins>Vale</ins>n<del>dhog</del><ins>tines</ins> Day!"
+        expected = "<del>Groundhog</del><ins>Valentines</ins> Day!"
         self.assertEqual(html_diff(original, new), expected)
 
     def test_whitespace_only_change(self):
-        original = "Groundhog Day!\n"
-        new = "Groundhog Day!  \n"
+        original = "Groundhog      Day!"
+        new = "Groundhog Day!"
         self.assertIsNone(html_diff(original, new))  # Whitespace only = None
+
+    def test_identical_strings(self):
+        original = "Groundhog Day!"
+        new = "Groundhog Day!"
+        self.assertIsNone(html_diff(original, new))  # No changes = None
 
     def test_text_added(self):
         original = "Groundhog"
@@ -27,16 +32,6 @@ class TestHtmlDiff(TestCase):
         new = "Day"
         expected = "<del>Groundhog </del>Day"
         self.assertEqual(html_diff(original, new), expected)
-
-    def test_mixed_text_and_whitespace_changes(self):
-        original = "Groundhog      Day!"
-        new = "Groundhog Day!"
-        self.assertIsNone(html_diff(original, new))  # Whitespace only = None
-
-    def test_identical_strings(self):
-        original = "Groundhog Day!"
-        new = "Groundhog Day!"
-        self.assertIsNone(html_diff(original, new))  # No changes = None
 
     def test_replace_with_partial_whitespace(self):
         original = "Groundhog Day!"
@@ -160,7 +155,7 @@ class TestCompareNofos(TestCase):
         self.assertEqual(subsection_update["name"], "(#3)")
         self.assertEqual(subsection_update["value"], "Go to 'Contacts and Support")
         self.assertIn(
-            "<del>Need</del><ins>Go</ins> <del>help?</del><ins>to</ins> <del>Visit c</del><ins>'C</ins>ontacts and <del>s</del><ins>S</ins>upport",
+            "<del>Need</del><ins>Go</ins> <del>help?</del><ins>to</ins> <del>Visit contacts</del><ins>'Contacts</ins> and <del>support</del><ins>Support</ins>",
             subsection_update["diff"],
         )
 
@@ -247,7 +242,7 @@ class TestCompareNofosMetadata(TestCase):
             subagency_update["value"], "Department of Groundhog Excellence (DOGE)"
         )
         self.assertIn(
-            "Department of G<del>uessing G</del>roundhog<del>s</del><ins> Excellence</ins> (D<ins>O</ins>G<del>G</del><ins>E</ins>)",
+            "Department of <del>Guessing</del><ins>Groundhog</ins> <del>Groundhogs</del><ins>Excellence</ins> (<del>DGG</del><ins>DOGE</ins>)",
             subagency_update["diff"],
         )
 

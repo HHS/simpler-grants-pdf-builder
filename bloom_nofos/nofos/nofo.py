@@ -777,15 +777,23 @@ def get_cover_image(nofo):
 
 
 def html_diff(original, new):
-    matcher = SequenceMatcher(None, original, new)
-    result = []
+    def _tokenize(text):
+        """Splits text into words while keeping punctuation and spaces intact."""
+        return re.findall(r"\s+|\w+|\W", text)
 
     def _is_whitespace_only(text):
         return re.fullmatch(r"\s*", text) is not None  # Matches only whitespace
 
+    original_tokens = _tokenize(original)
+    new_tokens = _tokenize(new)
+
+    matcher = SequenceMatcher(None, original_tokens, new_tokens)
+    result = []
+
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        old_text = original[i1:i2]
-        new_text = new[j1:j2]
+        # Rebuild text from tokens
+        old_text = "".join(original_tokens[i1:i2])
+        new_text = "".join(new_tokens[j1:j2])
 
         if tag == "replace":
             if not _is_whitespace_only(old_text):
