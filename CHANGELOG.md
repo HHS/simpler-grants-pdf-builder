@@ -19,6 +19,11 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fixed a bunch of things in the diff interface:
+  - Use full-word diffs, so `<del>January</del><ins>March</ins>` instead of `<del>Janu</del><ins>M</ins>ar<del>y</del><ins>ch</ins>`
+  - Show linebreaks that exist in body content (easier for lists, for example)
+  - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown, they generally don't matter)
+  - Hide the "Basic information" subsection because it duplicates information
 - Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
 
 ## [2.4.0] - 2025-02-13
