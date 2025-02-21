@@ -776,22 +776,36 @@ def get_cover_image(nofo):
 ###########################################################
 
 
-def _html_diff(original, new):
+def html_diff(original, new):
     matcher = SequenceMatcher(None, original, new)
     result = []
 
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "replace":
-            result.append(f"<del>{original[i1:i2]}</del>")
-            result.append(f"<ins>{new[j1:j2]}</ins>")
-        elif tag == "delete":
-            result.append(f"<del>{original[i1:i2]}</del>")
-        elif tag == "insert":
-            result.append(f"<ins>{new[j1:j2]}</ins>")
-        elif tag == "equal":
-            result.append(original[i1:i2])
+    def _is_whitespace_only(text):
+        return re.fullmatch(r"\s*", text) is not None  # Matches only whitespace
 
-    return "".join(result)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        old_text = original[i1:i2]
+        new_text = new[j1:j2]
+
+        if tag == "replace":
+            if not _is_whitespace_only(old_text):
+                result.append(f"<del>{old_text}</del>")
+            if not _is_whitespace_only(new_text):
+                result.append(f"<ins>{new_text}</ins>")
+            if _is_whitespace_only(old_text) and _is_whitespace_only(new_text):
+                result.append(new_text)
+        elif tag == "delete":
+            if not _is_whitespace_only(old_text):
+                result.append(f"<del>{old_text}</del>")
+        elif tag == "insert":
+            if not _is_whitespace_only(new_text):
+                result.append(f"<ins>{new_text}</ins>")
+        else:  # "equal" case
+            result.append(old_text)
+
+    diff_result = "".join(result)
+
+    return diff_result if "<del>" in diff_result or "<ins>" in diff_result else None
 
 
 def compare_nofos(new_nofo, old_nofo):
@@ -856,8 +870,11 @@ def compare_nofos(new_nofo, old_nofo):
                         break
 
                 if matched_old_subsection:
-                    # Check if body changed
-                    if new_subsection.body != matched_old_subsection.body:
+                    # grab a diff. if only whitespaces changes, None is returned
+                    diff = html_diff(matched_old_subsection.body, new_subsection.body)
+
+                    # Check if body changed and diff is not None
+                    if new_subsection.body != matched_old_subsection.body and diff:
                         section_comparison["subsections"].append(
                             {
                                 "name": get_subsection_name_or_order(
@@ -865,11 +882,10 @@ def compare_nofos(new_nofo, old_nofo):
                                 ),
                                 "status": "UPDATE",
                                 "value": new_subsection.body,
-                                "diff": _html_diff(
-                                    matched_old_subsection.body, new_subsection.body
-                                ),
+                                "diff": diff,
                             }
                         )
+
                     else:
                         section_comparison["subsections"].append(
                             {
@@ -886,7 +902,7 @@ def compare_nofos(new_nofo, old_nofo):
                         {
                             "name": get_subsection_name_or_order(new_subsection),
                             "value": new_subsection.body,
-                            "diff": _html_diff("", new_subsection.body),
+                            "diff": html_diff("", new_subsection.body),
                             "status": "ADD",
                         }
                     )
@@ -905,7 +921,7 @@ def compare_nofos(new_nofo, old_nofo):
                         {
                             "name": get_subsection_name_or_order(old_subsection),
                             "value": old_subsection.body,
-                            "diff": _html_diff(old_subsection.body, ""),
+                            "diff": html_diff(old_subsection.body, ""),
                             "status": "DELETE",
                         }
                     )
@@ -961,13 +977,13 @@ def compare_nofos_metadata(new_nofo, nofo):
         if old_value != new_value:
             if not old_value:  # Value was missing before, now added
                 status = "ADD"
-                diff = _html_diff("", new_value)
+                diff = html_diff("", new_value)
             elif not new_value:  # Value was present before, now deleted
                 status = "DELETE"
-                diff = _html_diff(old_value, "")
+                diff = html_diff(old_value, "")
             else:  # Value changed
                 status = "UPDATE"
-                diff = _html_diff(old_value, new_value)
+                diff = html_diff(old_value, new_value)
 
             nofo_metadata_comparison.append(
                 {

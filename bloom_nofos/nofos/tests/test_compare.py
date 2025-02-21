@@ -1,6 +1,53 @@
 from django.test import TestCase
 from ..models import Nofo, Section, Subsection
-from ..views import compare_nofos, compare_nofos_metadata
+from ..nofo import compare_nofos, compare_nofos_metadata, html_diff
+
+
+class TestHtmlDiff(TestCase):
+
+    def test_basic_text_change(self):
+        original = "Groundhog Day!"
+        new = "Valentines Day!"
+        expected = "<del>Grou</del><ins>Vale</ins>n<del>dhog</del><ins>tines</ins> Day!"
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_whitespace_only_change(self):
+        original = "Groundhog Day!\n"
+        new = "Groundhog Day!  \n"
+        self.assertIsNone(html_diff(original, new))  # Whitespace only = None
+
+    def test_text_added(self):
+        original = "Groundhog"
+        new = "Groundhog Day"
+        expected = "Groundhog<ins> Day</ins>"
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_text_removed(self):
+        original = "Groundhog Day"
+        new = "Day"
+        expected = "<del>Groundhog </del>Day"
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_mixed_text_and_whitespace_changes(self):
+        original = "Groundhog      Day!"
+        new = "Groundhog Day!"
+        self.assertIsNone(html_diff(original, new))  # Whitespace only = None
+
+    def test_identical_strings(self):
+        original = "Groundhog Day!"
+        new = "Groundhog Day!"
+        self.assertIsNone(html_diff(original, new))  # No changes = None
+
+    def test_replace_with_partial_whitespace(self):
+        original = "Groundhog Day!"
+        new = "Groundhog Day! (1993)"
+        expected = "Groundhog Day!<ins> (1993)</ins>"
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_empty_input(self):
+        self.assertIsNone(html_diff("", ""))  # No changes
+        self.assertEqual(html_diff("", "Groundhog"), "<ins>Groundhog</ins>")  # insert
+        self.assertEqual(html_diff("Groundhog", ""), "<del>Groundhog</del>")  # delete
 
 
 class TestCompareNofos(TestCase):
