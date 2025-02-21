@@ -1005,7 +1005,6 @@ ins {
   background-color: #aceebb;
 }
 
-del > br,
-ins > br {
+del + ins > br {
   display: none;
 }
