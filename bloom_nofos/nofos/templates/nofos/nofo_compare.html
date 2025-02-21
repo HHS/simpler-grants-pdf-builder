@@ -80,31 +80,33 @@
           </thead>
           <tbody>
             {% for subsection in section.subsections %}
-            {% if subsection.status != 'MATCH' %}
-              <tr>
-                <th scope="row">
-                  {# if the subsection.name value starts with "(#" #}
-                  {% if subsection.name|slice:":2" == "(#" %}
-                      <span class="text-base">{{ subsection.name }}</span>
-                  {% else %}
-                      {{ subsection.name }}
-                  {% endif %}
-                </th>
-                <td>
-                  {{ subsection.status }}
-                </td>
-                <td>
-                  <div class="diff">
-                    {% if subsection.status == 'ADD' %}
-                      <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                    {% elif  subsection.status == 'DELETE' %}
-                      <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                    {% elif subsection.status == 'UPDATE' %}
-                      {{ subsection.diff|safe|linebreaks }}
+            {% if subsection.name|lower != 'basic information' %}
+              {% if subsection.status != 'MATCH' %}
+                <tr>
+                  <th scope="row">
+                    {# if the subsection.name value starts with "(#" #}
+                    {% if subsection.name|slice:":2" == "(#" %}
+                        <span class="text-base">{{ subsection.name }}</span>
+                    {% else %}
+                        {{ subsection.name }}
                     {% endif %}
-                  </div>
-                </td>
-              </tr>
+                  </th>
+                  <td>
+                    {{ subsection.status }}
+                  </td>
+                  <td>
+                    <div class="diff">
+                      {% if subsection.status == 'ADD' %}
+                        <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                      {% elif  subsection.status == 'DELETE' %}
+                        <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                      {% elif subsection.status == 'UPDATE' %}
+                        {{ subsection.diff|safe|linebreaks }}
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
             {% endif %}
             {% endfor %}
           </tbody>
