@@ -1004,3 +1004,8 @@ del {
 ins {
   background-color: #aceebb;
 }
+
+del > br,
+ins > br {
+  display: none;
+}
