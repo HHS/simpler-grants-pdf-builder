@@ -154,6 +154,44 @@ To manually deploy to production, create a new file `./bloom_nofos/bloom_nofos/.
 
   - default `""`: this means zero IPs are safelisted
 
+## Login.gov Key Configuration
+
+This application uses Login.gov for authentication and requires both private and
+public keys. These keys can be sourced from either Google Cloud Secret Manager
+or local files.
+
+### Development Environment
+
+For local development, the application will:
+
+1. First attempt to fetch keys from Google Cloud Secret Manager
+2. If Secret Manager access fails, fall back to local certificate files
+
+#### Option 1: Using Local Certificate Files
+
+1. Place your Login.gov certificate files in `bloom_nofos/bloom_nofos/certs/`:
+   - `login-gov-private.pem`
+   - `login-gov-public.pem`
+
+2. No additional configuration needed - the application will automatically use
+   these files if Secret Manager access fails
+
+#### Option 2: Using Google Cloud Secret Manager
+
+1. Ensure you have access to the `bloom-nofos-1` project in Google Cloud
+2. You need the "Secret Manager Secret Accessor" role
+   (`roles/secretmanager.secretAccessor`)
+   - This can be granted by a project admin
+   - Even if you have the Editor role, you still need this specific role for
+     secret access
+3. Configure your environment:
+   ```bash
+   # Set up Google Cloud authentication
+   gcloud auth application-default login
+   gcloud config set project bloom-nofos-1
+   gcloud auth application-default set-quota-project bloom-nofos-1
+   ```
+
 ## Build and run as a Docker container
 
 ```sh
