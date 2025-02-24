@@ -159,7 +159,7 @@ def traditional_login_view(request):
 
     if request.method == "POST":
         if form.is_valid():
-            email = form.cleaned_data["email"]
+            email = form.cleaned_data["email"].strip().lower()
             password = form.cleaned_data["password"]
             user = authenticate(request, username=email, password=password)
 

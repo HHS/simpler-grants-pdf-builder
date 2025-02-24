@@ -166,11 +166,6 @@ WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
 # login backend
 
-AUTHENTICATION_BACKENDS = [
-    "users.backends.CaseInsensitiveEmailBackend",  # Custom backend to lowercase emails
-    "django.contrib.auth.backends.ModelBackend",  # Default Django backend
-]
-
 # Logging
 # In production, log all errors to console
 if not DEBUG:
@@ -239,11 +234,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Users
-
 AUTH_USER_MODEL = "users.BloomUser"
-LOGIN_URL = "users:login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -534,6 +525,11 @@ LOGIN_GOV_ENABLED = bool(LOGIN_GOV_PRIVATE_KEY and LOGIN_GOV_PUBLIC_KEY)
 if not LOGIN_GOV_ENABLED:
     print("Login.gov authentication is disabled due to missing keys")
 
+# Login/Logout URLs and settings
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
 LOGIN_GOV = {
     "ENABLED": LOGIN_GOV_ENABLED,
     "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
@@ -551,8 +547,3 @@ AUTHENTICATION_BACKENDS = [
     "users.auth.backend.LoginGovBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
-
-# Login/Logout URLs
-LOGIN_URL = "users:login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"

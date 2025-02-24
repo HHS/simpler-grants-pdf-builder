@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="usa-alert usa-alert--{{ message.tags }}">
+        <div class="usa-alert__body">
+            <p class="usa-alert__text">{{ message }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 {% block title %}
   Login — NOFO Web Flow
 {% endblock %}
@@ -15,18 +27,6 @@
   {% else %}
     <p>Please login to see this page.</p>
   {% endif %}
-{% endif %}
-
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="usa-alert usa-alert--{{ message.tags }}">
-        <div class="usa-alert__body">
-            <p class="usa-alert__text">{{ message }}</p>
-        </div>
-    </div>
-    {% endfor %}
-</div>
 {% endif %}
 
 <!-- Email/password login form -->
@@ -61,7 +61,7 @@
         <div class="margin-top-2 text-center">
             <small class="text-base-dark">
                 Don't have a Login.gov account?
-                <a href="https://secure.login.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
+                <a href="https://idp.int.identitysandbox.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
                     Create one here
                 </a>
             </small>
