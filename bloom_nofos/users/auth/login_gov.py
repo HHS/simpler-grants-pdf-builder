@@ -145,6 +145,7 @@ class LoginGovClient:
                 public_key,
                 algorithms=["RS256"],
                 audience=self.client_id,
+                issuer=self.oidc_url.replace("/openid_connect", "") + "/",
             )
 
             if decoded.get("nonce") != nonce:

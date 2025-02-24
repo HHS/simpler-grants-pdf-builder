@@ -60,17 +60,12 @@ class LoginGovBackend(ModelBackend):
         if username is None or password is None:
             return None
 
-        try:
-            user = User.objects.get(email=username)
-        except User.DoesNotExist:
-            User().set_password(password)
-            return None
+        user = User.objects.filter(email=username).first()
 
-        if user.check_password(password) and self.user_can_authenticate(user):
+        if user and user.check_password(password) and self.user_can_authenticate(user):
             return user
 
+        return None
+
     def get_user(self, user_id):
-        try:
-            return User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
+        return User.objects.filter(pk=user_id).first()
