@@ -20,6 +20,7 @@ import tomli
 from django.utils.timezone import now
 
 from .utils import cast_to_boolean
+from .utils import get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -155,6 +156,7 @@ TEMPLATES = [
                 "djversion.context_processors.version",
                 "bloom_nofos.context_processors.add_docraptor_live_mode",
                 "bloom_nofos.context_processors.add_github_sha",
+                "bloom_nofos.context_processors.settings_context",
             ],
         },
     },
@@ -189,7 +191,6 @@ if not DEBUG:
             },
         },
     }
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -509,15 +510,40 @@ GROUP_CHOICES = [
     ("staging", "Staging environment"),
 ]
 
-# Login.gov Configuration
+# Determine environment.  Until login.gov is fully deployed, we'll use staging as "prod"
+ENVIRONMENT = "staging" if is_prod else "dev"
+
+# Get Login.gov keys - always try Secret Manager first
+LOGIN_GOV_PRIVATE_KEY, LOGIN_GOV_PUBLIC_KEY = get_login_gov_keys(ENVIRONMENT)
+
+# If Secret Manager failed and we're in dev, try local files
+if not (LOGIN_GOV_PRIVATE_KEY and LOGIN_GOV_PUBLIC_KEY) and ENVIRONMENT == "dev":
+    try:
+        with open(BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private.pem") as f:
+            LOGIN_GOV_PRIVATE_KEY = f.read()
+        with open(BASE_DIR / "bloom_nofos" / "certs" / "login-gov-public.pem") as f:
+            LOGIN_GOV_PUBLIC_KEY = f.read()
+        print("Using local cert files for Login.gov keys")
+    except Exception as e:
+        print(
+            f"Warning: Login.gov keys not available. Login.gov authentication will be disabled: {e}"
+        )
+
+# Configure Login.gov based on key availability
+LOGIN_GOV_ENABLED = bool(LOGIN_GOV_PRIVATE_KEY and LOGIN_GOV_PUBLIC_KEY)
+if not LOGIN_GOV_ENABLED:
+    print("Login.gov authentication is disabled due to missing keys")
+
 LOGIN_GOV = {
+    "ENABLED": LOGIN_GOV_ENABLED,
     "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
     "OIDC_URL": env(
         "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
     ),
     "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
     "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
-    "PRIVATE_KEY_PATH": BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private.pem",
+    "PRIVATE_KEY": LOGIN_GOV_PRIVATE_KEY,
+    "PUBLIC_KEY": LOGIN_GOV_PUBLIC_KEY,
 }
 
 # Add Login.gov authentication backend

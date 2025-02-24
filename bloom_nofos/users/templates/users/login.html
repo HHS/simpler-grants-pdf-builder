@@ -50,20 +50,22 @@
     <button class="usa-button margin-top-3" type="submit">Login</button>
 </form>
 
-<!-- Login.gov login button -->
-<div class="margin-top-4 login-gov-container">
-    <p class="text-center">- or -</p>
-    <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
-        Sign in with Login.gov
-    </a>
+{% if settings.LOGIN_GOV.ENABLED %}
+    <!-- Login.gov login button -->
+    <div class="margin-top-4 login-gov-container">
+        <p class="text-center">- or -</p>
+        <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
+            Sign in with Login.gov
+        </a>
 
-    <div class="margin-top-2 text-center">
-        <small class="text-base-dark">
-            Don't have a Login.gov account?
-            <a href="https://secure.login.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
-                Create one here
-            </a>
-        </small>
+        <div class="margin-top-2 text-center">
+            <small class="text-base-dark">
+                Don't have a Login.gov account?
+                <a href="https://secure.login.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
+                    Create one here
+                </a>
+            </small>
+        </div>
     </div>
-</div>
+{% endif %}
 {% endblock %}

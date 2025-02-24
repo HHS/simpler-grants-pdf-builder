@@ -23,23 +23,20 @@ class LoginGovClient:
         self.oidc_url = base_url
         self.token_url = base_url.replace("/openid_connect", "/api/openid_connect")
 
-        if not settings.LOGIN_GOV.get("PRIVATE_KEY_PATH"):
+        # Get private key from settings
+        private_key = settings.LOGIN_GOV.get("PRIVATE_KEY")
+        if not private_key:
             raise Exception(
-                "Private key file not found: PRIVATE_KEY_PATH not configured in settings"
+                "Private key not configured in settings.LOGIN_GOV['PRIVATE_KEY']"
             )
 
         try:
-            with open(settings.LOGIN_GOV["PRIVATE_KEY_PATH"], "rb") as key_file:
-                self.private_key = key_file.read()
+            self.private_key = private_key.encode("utf-8")
             load_pem_private_key(
                 self.private_key, password=None, backend=default_backend()
             )
-        except FileNotFoundError:
-            raise Exception(
-                f"Private key file not found at path: {settings.LOGIN_GOV['PRIVATE_KEY_PATH']}"
-            )
         except Exception as e:
-            raise Exception(f"Error reading private key file: {str(e)}")
+            raise Exception(f"Error loading private key: {str(e)}")
 
         self.redirect_uri = settings.LOGIN_GOV["REDIRECT_URI"].strip()
         self.acr_values = settings.LOGIN_GOV["ACR_VALUES"]
