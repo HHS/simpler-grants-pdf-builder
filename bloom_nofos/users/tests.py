@@ -25,7 +25,8 @@ test_login_gov_settings_with_key = {
         "OIDC_URL": "https://test.login.gov",
         "REDIRECT_URI": "http://localhost:8000/users/login/callback",
         "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
-        "PRIVATE_KEY_PATH": "test_key.pem",
+        "PRIVATE_KEY": "test_private_key",
+        "PUBLIC_KEY": "test_public_key",
     }
 }
 
@@ -43,15 +44,14 @@ class LoginGovClientTests(TestCase):
         with self.assertRaises(Exception) as context:
             LoginGovClient()
         self.assertTrue(
-            "Private key file not found: PRIVATE_KEY_PATH not configured in settings"
+            "Private key not configured in settings.LOGIN_GOV['PRIVATE_KEY']"
             in str(context.exception)
         )
 
     @override_settings(**test_login_gov_settings_with_key)
-    @patch("builtins.open", new_callable=mock_open, read_data=b"test_private_key")
     @patch("users.auth.login_gov.load_pem_private_key")
     @patch("users.auth.login_gov.requests.get")
-    def test_get_login_gov_public_key(self, mock_get, mock_load_key, mock_file):
+    def test_get_login_gov_public_key(self, mock_get, mock_load_key):
         """Test fetching Login.gov public key."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
@@ -65,9 +65,8 @@ class LoginGovClientTests(TestCase):
         self.assertIsNotNone(key)
 
     @override_settings(**test_login_gov_settings_with_key)
-    @patch("builtins.open", new_callable=mock_open, read_data=b"test_private_key")
     @patch("users.auth.login_gov.load_pem_private_key")
-    def test_get_authorization_url(self, mock_load_key, mock_file):
+    def test_get_authorization_url(self, mock_load_key):
         """Test generating authorization URL."""
         mock_load_key.return_value = self.private_key
 
@@ -83,11 +82,10 @@ class LoginGovClientTests(TestCase):
         self.assertIn("nonce=" + nonce, url)
 
     @override_settings(**test_login_gov_settings_with_key)
-    @patch("builtins.open", new_callable=mock_open, read_data=b"test_private_key")
     @patch("users.auth.login_gov.load_pem_private_key")
     @patch("users.auth.login_gov.requests.post")
     @patch("users.auth.login_gov.jwt.encode")
-    def test_get_token(self, mock_jwt_encode, mock_post, mock_load_key, mock_file):
+    def test_get_token(self, mock_jwt_encode, mock_post, mock_load_key):
         """Test exchanging code for tokens."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
@@ -105,14 +103,11 @@ class LoginGovClientTests(TestCase):
         self.assertEqual(tokens["id_token"], "test_id_token")
 
     @override_settings(**test_login_gov_settings_with_key)
-    @patch("builtins.open", new_callable=mock_open, read_data=b"test_private_key")
     @patch("users.auth.login_gov.load_pem_private_key")
     @patch("users.auth.login_gov.jwt.get_unverified_header")
     @patch("users.auth.login_gov.jwt.decode")
     @patch("users.auth.login_gov.requests.get")
-    def test_validate_id_token(
-        self, mock_get, mock_decode, mock_header, mock_load_key, mock_file
-    ):
+    def test_validate_id_token(self, mock_get, mock_decode, mock_header, mock_load_key):
         """Test validating ID token."""
         mock_header.return_value = {"kid": "test_kid"}
         mock_response = MagicMock()
