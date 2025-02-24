@@ -52,3 +52,10 @@ class BloomUserNameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["full_name"].required = True
+
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"autocapitalize": "off", "autocorrect": "off"})
+    )
+    password = forms.CharField(widget=forms.PasswordInput())

@@ -23,6 +23,13 @@ class BloomUser(AbstractUser):
         default="bloom",
         help_text="The OpDiv for this user. If they are a Bloom coaches/admins, this should say 'Bloomworks'.",
     )
+    login_gov_user_id = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Unique identifier from Login.gov",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

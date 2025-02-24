@@ -9,17 +9,21 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
+- Add new "{id}/compare" route for comparing a new NOFO document to an existing
+  one
 
 ### Changed
 
 - Use a MS 365 form for feedback instead of a Google Form
-- Breadcrumb links are no longer clickable (instead, they are just visual indicators)
-- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by default
+- Breadcrumb links are no longer clickable (instead, they are just visual
+  indicators)
+- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by
+  default
 
 ### Fixed
 
-- Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
+- Fix for more list styles that were not importing correctly ("List Bullet1,
+  Bullet 2", etc)
 
 ## [2.4.0] - 2025-02-13
 
@@ -34,6 +38,7 @@ Versioning since version 1.0.0.
 - Can use 'page-break' to add a page-break in markdown body
 - Add confirmation page for re-importing a NOFO if the IDs don't match up
 - Add "Important: public information" callout box to section 3 of new NOFOs
+- Adds Login.gov as an authentication option
 
 ### Changed
 
@@ -47,6 +52,7 @@ Versioning since version 1.0.0.
   - Note that this is a best-guess effort: if subsections are renamed, page
     breaks can't be preserved
 - DocRaptor IPs can now be updated by superadmin users
+- Requires Login.gov certs and ENV vars to be set for devs.
 
 ### Fixed
 
@@ -62,7 +68,9 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add "Important: public information" subsection to non-archived, non-published NOFOs
+- Add "Important: public information" subsection to non-archived, non-published
+  NOFOs
+- Adds login.gov ID to users model
 
 ## [2.3.0] - 2025-01-17
 
