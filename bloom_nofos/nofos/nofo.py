@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from constance import config
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.forms import ValidationError
 from django.utils.html import escape
 from slugify import slugify
@@ -2465,6 +2466,27 @@ Instead of just a title, insert a short description of your project and what it 
 }
 
 
+def insert_order_space(section_id, insert_at_order):
+    """
+    Inserts an empty space in the ordering of Subsection instances within a Section.
+    All Subsection instances with an order greater than or equal to `insert_at_order`
+    will have their order incremented by 1, making room for a new instance at `insert_at_order`.
+
+    :param section_id: ID of the Section in which to insert the space.
+    :param insert_at_order: The order number at which to insert the space.
+    """
+    with transaction.atomic():
+        # Fetch the Subsections to be updated, in reverse order
+        subsections_to_update = Subsection.objects.filter(
+            section_id=section_id, order__gte=insert_at_order
+        ).order_by("-order")
+
+        # Increment their order by 1
+        for subsection in subsections_to_update:
+            # Directly incrementing to avoid conflict
+            Subsection.objects.filter(pk=subsection.pk).update(order=F("order") + 1)
+
+
 def add_final_subsection_to_step_3(sections):
     """
     This function looks for a section named either "Step 3: Prepare Your Application"
@@ -2491,6 +2513,8 @@ def add_final_subsection_to_step_3(sections):
         "Step 3: Write Your Application",
     ]
 
+    subsection_names = ["Other required forms", "Standard forms"]
+
     for section in sections:
         # case insensitive match
         if section.get("name", "").lower() in [name.lower() for name in step_3_names]:
@@ -2502,11 +2526,26 @@ def add_final_subsection_to_step_3(sections):
             if any(sub.get("name") == public_info_name for sub in subsections):
                 break
 
-            # Calculate the new order
-            last_order = max((sub.get("order", 0) for sub in subsections), default=0)
+            # find the new subsection
+            order_number = None
+            for subsection in subsections:
+                if subsection.get("name", "").lower() in [
+                    name.lower() for name in subsection_names
+                ]:
+                    order_number = subsection.order + 1
+                    break  # Stop looping once a matching subsection name is found
+
+            if order_number:
+                # if order_number, insert space
+                insert_order_space(section.id, order_number)
+            else:
+                # if no order_number, make it last
+                order_number = (
+                    max((sub.get("order", 0) for sub in subsections), default=0) + 1
+                )
 
             new_public_information_subsection = PUBLIC_INFORMATION_SUBSECTION.copy()
-            new_public_information_subsection["order"] = last_order + 1
+            new_public_information_subsection["order"] = order_number
             subsections.append(new_public_information_subsection)
 
             section["subsections"] = subsections
