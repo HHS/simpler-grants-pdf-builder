@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 
 from django.conf import settings
@@ -206,6 +205,75 @@ class SectionModelTest(TestCase):
         # Next order should be 6
         next_order = Section.get_next_order(self.nofo)
         self.assertEqual(next_order, 6)
+
+
+class SectionModelInsertOrderSpaceTests(TestCase):
+    def setUp(self):
+        """Set up test data for each test case."""
+        self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
+        self.section = Section.objects.create(name="Test Section", nofo=self.nofo)
+
+        # Create subsections with orders 1, 2, 3
+        self.sub1 = Subsection.objects.get(section=self.section, order=1)
+        self.sub1.name = "Subsection 1"
+        self.sub1.tag = "h3"
+        self.sub1.save()
+
+        self.sub2 = Subsection.objects.create(
+            section=self.section, name="Subsection 2", tag="h3", order=2
+        )
+        self.sub3 = Subsection.objects.create(
+            section=self.section, name="Subsection 3", tag="h3", order=3
+        )
+
+    def test_insert_at_middle(self):
+        """Test inserting space at order 2 shifts subsections 2 and 3 down."""
+        self.section.insert_order_space(2)
+
+        self.sub1.refresh_from_db()
+        self.sub2.refresh_from_db()
+        self.sub3.refresh_from_db()
+
+        self.assertEqual(self.sub1.order, 1)  # Unchanged
+        self.assertEqual(self.sub2.order, 3)  # Shifted from 2 → 3
+        self.assertEqual(self.sub3.order, 4)  # Shifted from 3 → 4
+
+    def test_insert_at_start(self):
+        """Test inserting space at order 1 shifts all subsections down."""
+        self.section.insert_order_space(1)
+
+        self.sub1.refresh_from_db()
+        self.sub2.refresh_from_db()
+        self.sub3.refresh_from_db()
+
+        self.assertEqual(self.sub1.order, 2)  # Shifted from 1 → 2
+        self.assertEqual(self.sub2.order, 3)  # Shifted from 2 → 3
+        self.assertEqual(self.sub3.order, 4)  # Shifted from 3 → 4
+
+    def test_insert_at_end(self):
+        """Test inserting space at order 5 (end) should have no effect."""
+        self.section.insert_order_space(5)
+
+        self.sub1.refresh_from_db()
+        self.sub2.refresh_from_db()
+        self.sub3.refresh_from_db()
+
+        self.assertEqual(self.sub1.order, 1)  # Unchanged
+        self.assertEqual(self.sub2.order, 2)  # Unchanged
+        self.assertEqual(self.sub3.order, 3)  # Unchanged
+
+    def test_multiple_insertions(self):
+        """Test inserting space multiple times at different positions."""
+        self.section.insert_order_space(2)  # First shift at order 2
+        self.section.insert_order_space(3)  # Second shift at order 3
+
+        self.sub1.refresh_from_db()
+        self.sub2.refresh_from_db()
+        self.sub3.refresh_from_db()
+
+        self.assertEqual(self.sub1.order, 1)  # Unchanged
+        self.assertEqual(self.sub2.order, 4)  # Shifted from 2 → 3 → 4
+        self.assertEqual(self.sub3.order, 5)  # Shifted from 3 → 4 → 5
 
 
 class SubsectionModelTest(TestCase):

@@ -8,8 +8,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
-from django.db.models import F
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -873,7 +871,7 @@ class NofoSubsectionCreateView(GroupAccessObjectMixin, CreateView):
         order = self.prev_subsection.order + 1
 
         # create a gap in the "order" count to insert this new subsection
-        insert_order_space(section.id, order)
+        section.insert_order_space(order)
 
         form.instance.section = section
         form.instance.order = order
@@ -1019,27 +1017,6 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-def insert_order_space(section_id, insert_at_order):
-    """
-    Inserts an empty space in the ordering of Subsection instances within a Section.
-    All Subsection instances with an order greater than or equal to `insert_at_order`
-    will have their order incremented by 1, making room for a new instance at `insert_at_order`.
-
-    :param section_id: ID of the Section in which to insert the space.
-    :param insert_at_order: The order number at which to insert the space.
-    """
-    with transaction.atomic():
-        # Fetch the Subsections to be updated, in reverse order
-        subsections_to_update = Subsection.objects.filter(
-            section_id=section_id, order__gte=insert_at_order
-        ).order_by("-order")
-
-        # Increment their order by 1
-        for subsection in subsections_to_update:
-            # Directly incrementing to avoid conflict
-            Subsection.objects.filter(pk=subsection.pk).update(order=F("order") + 1)
-
-
 @staff_member_required
 def insert_order_space_view(request, section_id):
     section = get_object_or_404(Section, pk=section_id)  # Get the section or return 404
@@ -1050,7 +1027,7 @@ def insert_order_space_view(request, section_id):
         if form.is_valid():
             section = form.cleaned_data["section"]
             order = form.cleaned_data["order"]
-            insert_order_space(section.id, order)
+            section.insert_order_space(order)
             messages.success(
                 request, f'Space inserted at order {order} for section "{section}".'
             )
