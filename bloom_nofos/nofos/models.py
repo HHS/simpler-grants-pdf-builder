@@ -2,7 +2,7 @@ import cssutils
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
-from django.db import models
+from django.db import models, transaction
 from django.forms import ValidationError
 from django.urls import reverse
 from django.utils import timezone
@@ -433,6 +433,28 @@ class Section(models.Model):
 
     def get_next_section(self):
         return self.nofo.sections.filter(order__gt=self.order).order_by("order").first()
+
+    def insert_order_space(self, insert_at_order):
+        """
+        Inserts an empty space in the ordering of Subsection instances within a Section.
+        All Subsection instances with an order greater than or equal to `insert_at_order`
+        will have their order incremented by 1, making room for a new instance at `insert_at_order`.
+
+        :param section_id: ID of the Section in which to insert the space.
+        :param insert_at_order: The order number at which to insert the space.
+        """
+        with transaction.atomic():
+            # Fetch the Subsections to be updated, in reverse order
+            subsections_to_update = Subsection.objects.filter(
+                section_id=self.id, order__gte=insert_at_order
+            ).order_by("-order")
+
+            # Increment their order by 1
+            for subsection in subsections_to_update:
+                # Directly incrementing to avoid conflict
+                Subsection.objects.filter(pk=subsection.pk).update(
+                    order=models.F("order") + 1
+                )
 
     def clean(self):
         super().clean()
