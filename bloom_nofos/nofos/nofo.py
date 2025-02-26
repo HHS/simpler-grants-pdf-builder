@@ -2468,7 +2468,7 @@ Instead of just a title, insert a short description of your project and what it 
 
 def add_final_subsection_to_step_3(sections):
     """
-    This function accepts a list of section dicts, _not Section objects.
+    This function accepts a list of section dicts, _not_ Section objects.
 
     This function looks for a section named either "Step 3: Prepare Your Application"
     or "Step 3: Write Your Application" (case-insensitive).
@@ -2493,6 +2493,30 @@ def add_final_subsection_to_step_3(sections):
         "Step 3" section.
     """
 
+    def _insert_new_subsection_at_order_number(subsections, order_number):
+        """
+        Inserts an empty space in the list at the specified order_number.
+        Increments the order of all elements with order >= order_number.
+
+        :param subsections: List of subsection dictionaries with "order" values.
+        :param order_number: The order number where the space should be inserted.
+        """
+        new_public_information_subsection = PUBLIC_INFORMATION_SUBSECTION.copy()
+        new_public_information_subsection["order"] = order_number
+
+        if order_number <= len(subsections):
+            for subsection in subsections:
+                if subsection.get("order", 0) >= order_number:
+                    # increment order numbers
+                    subsection["order"] += subsection["order"] + 1
+
+            # insert at specific position in array
+            subsections.insert(order_number - 1, new_public_information_subsection)
+
+        else:
+            # insert at the end of the array
+            subsections.append(new_public_information_subsection)
+
     # The target section names to search for
     step_3_names = [
         "Step 3: Prepare Your Application",
@@ -2514,13 +2538,13 @@ def add_final_subsection_to_step_3(sections):
 
             order_number = None
 
-            # # find the new subsection to insert after
-            # for subsection in subsections:
-            #     if subsection.get("name", "").lower() in [
-            #         name.lower() for name in subsection_names
-            #     ]:
-            #         order_number = subsection.order + 1
-            #         break  # Stop loop once a matching subsection name is found
+            # find the new subsection to insert after
+            for subsection in subsections:
+                if subsection.get("name", "").lower() in [
+                    name.lower() for name in subsection_names
+                ]:
+                    order_number = subsection.get("order") + 1
+                    break  # Stop loop once a matching subsection name is found
 
             if not order_number:
                 # set as last order if not yet set
@@ -2528,14 +2552,7 @@ def add_final_subsection_to_step_3(sections):
                     max((sub.get("order", 0) for sub in subsections), default=0) + 1
                 )
 
-            # has no effect if last order
-            # section.insert_order_space(order_number)
-
-            new_public_information_subsection = PUBLIC_INFORMATION_SUBSECTION.copy()
-            new_public_information_subsection["order"] = order_number
-            subsections.append(new_public_information_subsection)
-
-            section["subsections"] = subsections
+            _insert_new_subsection_at_order_number(subsections, order_number)
 
             # Exit after adding new subsection
             break
