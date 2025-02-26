@@ -9,6 +9,23 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.5.0] - 2025-02-26
+
+### Added
+
+- Add a "modifications" status to published NOFOs:
+
+  - Only "published" NOFOs can be modified
+  - There is a 'modified' message on the cover page
+  - There is a new setting in the NOFO edit page allowing you to set a modifications date
+  - A "Modifications" section is added to the end of your NOFO:
+    - This section shows up in the table of contents, but it does not have a section page
+    - It comes with 1 subsection: a table for you to list changes and the date of those changes
+
 - Add new "{id}/compare" route for comparing a new NOFO document to an existing one
 
 ### Changed
@@ -27,6 +44,10 @@ Versioning since version 1.0.0.
   - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown, they generally don't matter)
   - Hide the "Basic information" subsection because it duplicates information
 - Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
+
+### Migrations
+
+- Added a new attribute to NOFO model: "modifications", a datetime object (default null)
 
 ## [2.4.0] - 2025-02-13
 
