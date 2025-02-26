@@ -83,6 +83,12 @@ h4 {
   background-color: var(--color--ncipc-blue);
 }
 
+/* Cover page: text only */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg .cls-6 {
+  fill: var(--color--cdc-blue);
+}
+
 /* Cover page: medium image */
 
 .nofo--cover-page--medium .nofo--cover-page--footer--subheading {
