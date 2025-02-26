@@ -1241,6 +1241,121 @@ class AddFinalSubsectionTests(TestCase):
             final_subsection.get("body"), PUBLIC_INFORMATION_SUBSECTION["body"]
         )
 
+    def test_add_public_information_section_after_specific_subsection_titles(self):
+        """
+        Test that the public information subsection is added _after_ different subsection titles.
+        """
+
+        for subsection_name in [
+            "Other required forms",
+            "Standard forms",
+            "OTHER REQUIRED FORMS",
+            "StAnDaRd FoRmS",
+        ]:
+            with self.subTest(subsection_name=subsection_name):
+                sections = self._get_sections_1_2_3()
+
+                # Increment order number of initial subsection in Step 3
+                sections[2]["subsections"][0]["order"] = 2
+
+                # Manually add the form subsection to Step 3
+                sections[2]["subsections"].insert(
+                    0,
+                    {
+                        "name": subsection_name,
+                        "order": 1,
+                        "tag": "h5",
+                        "html_id": "",
+                        "body": "Body content",
+                        "is_callout_box": False,
+                    },
+                )
+
+                # Initial state should have 2 subsections in Step 3
+                self.assertEqual(len(sections[2].get("subsections")), 2)
+
+                # Add the public information section
+                add_final_subsection_to_step_3(sections)
+
+                # Verify extra subsection in step 3
+                self.assertEqual(len(sections[2].get("subsections")), 3)
+
+                # first subsection is the title we specified
+                self.assertEqual(sections[2]["subsections"][0]["name"], subsection_name)
+                # second subsection is public information one
+                self.assertEqual(
+                    sections[2]["subsections"][1]["name"],
+                    PUBLIC_INFORMATION_SUBSECTION["name"],
+                )
+                self.assertEqual(
+                    sections[2]["subsections"][1]["body"],
+                    PUBLIC_INFORMATION_SUBSECTION["body"],
+                )
+                # last subsection is the initial one
+                self.assertEqual(
+                    sections[2]["subsections"][2]["name"], "Subsection 3.1"
+                )
+
+    def test_add_public_information_section_after_first_specific_subsection_title(self):
+        """
+        Test that the public information subsection is added _after_ the first subsection title matched.
+        """
+        sections = self._get_sections_1_2_3()
+
+        # Increment order number of initial subsection in Step 3
+        sections[2]["subsections"][0]["order"] = 3
+
+        # Manually add "Standard forms" to Step 3
+        sections[2]["subsections"].insert(
+            0,
+            {
+                "name": "Standard forms",
+                "order": 1,
+                "tag": "h5",
+                "html_id": "",
+                "body": "Body content",
+                "is_callout_box": False,
+            },
+        )
+
+        # Manually add "Other required forms" to Step 3
+        sections[2]["subsections"].insert(
+            1,
+            {
+                "name": "Other required forms",
+                "order": 2,
+                "tag": "h5",
+                "html_id": "",
+                "body": "Body content",
+                "is_callout_box": False,
+            },
+        )
+
+        # Initial state should have 3 subsections in Step 3
+        self.assertEqual(len(sections[2].get("subsections")), 3)
+
+        # Try to add the public information section
+        add_final_subsection_to_step_3(sections)
+
+        # Verify extra subsection in step 3
+        self.assertEqual(len(sections[2].get("subsections")), 4)
+
+        # first subsection is "Standard forms"
+        self.assertEqual(sections[2]["subsections"][0]["name"], "Standard forms")
+        # second subsection is public information one
+        self.assertEqual(
+            sections[2]["subsections"][1]["name"],
+            PUBLIC_INFORMATION_SUBSECTION["name"],
+        )
+        self.assertEqual(
+            sections[2]["subsections"][1]["body"],
+            PUBLIC_INFORMATION_SUBSECTION["body"],
+        )
+        # third subsection is "Other required forms"
+        self.assertEqual(sections[2]["subsections"][2]["name"], "Other required forms")
+        # last subsection is the initial one
+        self.assertEqual(sections[2]["subsections"][3]["name"], "Subsection 3.1")
+
 
 class AddHeadingsTests(TestCase):
     def setUp(self):
