@@ -1249,8 +1249,10 @@ class AddFinalSubsectionTests(TestCase):
         for subsection_name in [
             "Other required forms",
             "Standard forms",
+            "Application components",
             "OTHER REQUIRED FORMS",
             "StAnDaRd FoRmS",
+            "application components",
         ]:
             with self.subTest(subsection_name=subsection_name):
                 sections = self._get_sections_1_2_3()
@@ -1303,7 +1305,7 @@ class AddFinalSubsectionTests(TestCase):
         sections = self._get_sections_1_2_3()
 
         # Increment order number of initial subsection in Step 3
-        sections[2]["subsections"][0]["order"] = 3
+        sections[2]["subsections"][0]["order"] = 4
 
         # Manually add "Standard forms" to Step 3
         sections[2]["subsections"].insert(
@@ -1330,15 +1332,27 @@ class AddFinalSubsectionTests(TestCase):
                 "is_callout_box": False,
             },
         )
+        # Manually add "Application components" to Step 3
+        sections[2]["subsections"].insert(
+            2,
+            {
+                "name": "Application components",
+                "order": 3,
+                "tag": "h5",
+                "html_id": "",
+                "body": "Body content",
+                "is_callout_box": False,
+            },
+        )
 
         # Initial state should have 3 subsections in Step 3
-        self.assertEqual(len(sections[2].get("subsections")), 3)
+        self.assertEqual(len(sections[2].get("subsections")), 4)
 
         # Try to add the public information section
         add_final_subsection_to_step_3(sections)
 
         # Verify extra subsection in step 3
-        self.assertEqual(len(sections[2].get("subsections")), 4)
+        self.assertEqual(len(sections[2].get("subsections")), 5)
 
         # first subsection is "Standard forms"
         self.assertEqual(sections[2]["subsections"][0]["name"], "Standard forms")
@@ -1353,8 +1367,12 @@ class AddFinalSubsectionTests(TestCase):
         )
         # third subsection is "Other required forms"
         self.assertEqual(sections[2]["subsections"][2]["name"], "Other required forms")
+        # fourth subsection is "Application components"
+        self.assertEqual(
+            sections[2]["subsections"][3]["name"], "Application components"
+        )
         # last subsection is the initial one
-        self.assertEqual(sections[2]["subsections"][3]["name"], "Subsection 3.1")
+        self.assertEqual(sections[2]["subsections"][4]["name"], "Subsection 3.1")
 
 
 class AddHeadingsTests(TestCase):
