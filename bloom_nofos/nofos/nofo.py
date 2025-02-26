@@ -2473,7 +2473,7 @@ def add_final_subsection_to_step_3(sections):
     This function looks for a section named either "Step 3: Prepare Your Application"
     or "Step 3: Write Your Application" (case-insensitive).
 
-    If found, then looks for a subsection called "Other required forms" or "Standard forms".
+    If found, then looks for a subsection called "Other required forms", "Standard forms", or "Application components".
 
         If either of those are found, then a new subsection is added immediately afterwards.
         If none are found, then the new subsection is added as the final subsection.
@@ -2523,7 +2523,11 @@ def add_final_subsection_to_step_3(sections):
         "Step 3: Write Your Application",
     ]
 
-    subsection_names = ["Other required forms", "Standard forms"]
+    subsection_names = [
+        "Other required forms",
+        "Standard forms",
+        "Application components",
+    ]
 
     for section in sections:
         # case insensitive match
