@@ -1,30 +1,30 @@
 /* CSS vars */
 
 :root {
-  --color--ncipc-teal: #004c52;
-  --color--ncipc-blue: #1a3b66;
-  --color--ncipc-yellow: #dba826;
-  --color--ncipc-seafoam: #51a3a1;
+  --color--dhp-teal: #00747e;
+  --color--dhp-purple: #814083;
+  --color--dhp-baby-blue: #007ac1;
+  --color--dhp-grey: #979797;
 }
 
 /* Page rules */
 
 @page {
   @bottom-left {
-    color: var(--color--ncipc-teal);
+    color: var(--color--dhp-baby-blue);
   }
 
   @bottom-right {
-    color: var(--color--ncipc-teal);
+    color: var(--color--dhp-baby-blue);
   }
 }
 
 @page cover {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 }
 
 @page title {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 
   @bottom-left {
     border-top: 1px solid var(--color--white);
@@ -49,11 +49,11 @@ h1 {
 }
 
 h3 {
-  color: var(--color--ncipc-blue);
+  color: var(--color--dhp-baby-blue);
 }
 
 h4 {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 /* Cover page */
@@ -63,12 +63,19 @@ h4 {
 }
 
 .nofo--cover-page--title {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 }
 
-.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--logo--subheading {
+  color: var(--color--cdc-blue);
+}
+
 .nofo--cover-page--header--intro {
-  color: var(--color--ncipc-teal);
+  color: var(--color--black);
+}
+
+.nofo--cover-page--header--logo svg .cls-6 {
+  fill: var(--color--cdc-blue);
 }
 
 .nofo--cover-page--title {
@@ -80,13 +87,22 @@ h4 {
 }
 
 .portrait .nofo--cover-page--footer {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 }
 
 /* Cover page: text only */
 
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--dhp-teal);
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--intro,
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading {
+  color: var(--color--white);
+}
+
 .nofo--cover-page--text .nofo--cover-page--header--logo svg .cls-6 {
-  fill: var(--color--cdc-blue);
+  fill: var(--color--white);
 }
 
 /* Cover page: medium image */
@@ -96,9 +112,12 @@ h4 {
 }
 
 /* Cover page: hero image */
+.nofo--cover-page--hero .nofo--cover-page--hero-image {
+  background-color: var(--color--dhp-teal);
+}
 
 .nofo--cover-page--hero .nofo--cover-page--title {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--header--logo svg .cls-5 {
@@ -108,24 +127,24 @@ h4 {
 /* Table of contents */
 
 .toc h2 {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 .toc .toc--section-name .toc--section-name--a {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 .toc .toc--section-name .toc--section-name--img[class*="white-icon"] {
-  background: var(--color--ncipc-teal);
+  background: var(--color--dhp-teal);
 }
 
 .toc .toc--section-name .toc--section-name--img svg {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 .nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
   color: var(--color--white);
-  fill: var(--color--ncipc-teal);
+  fill: var(--color--dhp-teal);
 }
 
 .nofo--icons--border
@@ -134,13 +153,13 @@ h4 {
   .toc--section-name--img
   svg
   circle {
-  stroke: var(--color--ncipc-teal);
+  stroke: var(--color--dhp-teal);
 }
 
 /* Before you begin */
 
 .nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
   fill: var(--color--white);
 }
 
@@ -149,12 +168,12 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--ncipc-teal);
+  stroke: var(--color--dhp-teal);
 }
 
 .nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
   color: var(--color--white);
-  fill: var(--color--ncipc-teal);
+  fill: var(--color--dhp-teal);
 }
 
 .nofo--icons--border
@@ -162,16 +181,16 @@ h4 {
   .section--before-you-begin--icon
   svg
   circle {
-  stroke: var(--color--ncipc-teal);
+  stroke: var(--color--dhp-teal);
 }
 
 .before-you-begin h2 {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 .before-you-begin .callout-box--icon .callout-box--contents svg {
   fill: var(--color--white);
-  color: var(--color--ncipc-blue);
+  color: var(--color--dhp-teal);
 }
 
 .before-you-begin .callout-box--icon .callout-box--contents svg circle {
@@ -180,26 +199,30 @@ h4 {
 
 /* Section title page */
 
+.section--title-page .section--title-page--header-nav > p {
+  color: var(--color--dhp-teal);
+}
+
 .section--title-page--header-nav li a {
-  border-top: 4px solid var(--color--white);
-  color: var(--color--white);
+  border-top: 4px solid var(--color--dhp-grey);
+  color: var(--color--med-grey);
 }
 
 .section--title-page--header-nav li a[aria-current] {
-  border-top: 4px solid var(--color--ncipc-yellow);
-  color: var(--color--ncipc-yellow);
+  border-top: 4px solid var(--color--dhp-purple);
+  color: var(--color--dhp-teal);
 }
 
 .section--title-page {
-  background-color: var(--color--ncipc-teal);
+  background-color: var(--color--dhp-teal);
 }
 
 .section--title-page--header-nav {
-  background-color: var(--color--ncipc-blue);
+  background-color: var(--color--white);
 }
 
 .nofo--icons--solid .section--title-page--icon svg {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
   fill: var(--color--white);
 }
 
@@ -209,26 +232,31 @@ h4 {
 
 /* Section contents */
 
+.header-nav--running-header li a {
+  border-top: 4px solid var(--color--dhp-grey);
+  color: var(--color--med-grey);
+}
+
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--ncipc-yellow);
-  color: var(--color--black);
+  border-top: 4px solid var(--color--dhp-purple);
+  color: var(--color--dhp-purple);
 }
 
 .nofo--tagline {
-  color: var(--color--ncipc-teal);
+  color: var(--color--dhp-teal);
 }
 
 .callout-box {
-  background-color: var(--color--ncipc-yellow);
-  color: var(--color--black);
+  background-color: var(--color--dhp-baby-blue);
+  color: var(--color--white);
 }
 
-.callout-box a {
-  color: var(--color--ncipc-blue);
+.callout-box--contents a {
+  color: var(--color--white);
 }
 
 .callout-box--icon {
-  background-color: var(--color--ncipc-blue);
+  background-color: var(--color--dhp-teal);
   color: var(--color--white);
 }
 
@@ -238,7 +266,7 @@ h4 {
 
 .callout-box--icon .callout-box--contents svg {
   fill: var(--color--white);
-  color: var(--color--ncipc-blue);
+  color: var(--color--dhp-teal);
 }
 
 .callout-box--icon .callout-box--contents svg circle {
@@ -247,40 +275,25 @@ h4 {
 
 table th {
   color: var(--color--white);
-  background-color: var(--color--ncipc-teal);
-  border-top: 2px solid var(--color--light-grey);
-  border-bottom: 2px solid var(--color--light-grey);
-  border-left: 2px solid var(--color--light-grey);
-}
-
-table th:first-of-type {
-  border-left: 2px solid var(--color--light-grey);
-}
-
-table th:last-of-type {
-  border-right: 2px solid var(--color--light-grey);
+  background-color: var(--color--dhp-baby-blue);
+  border: 3px solid var(--color--white);
 }
 
 table td {
-  border-left: 2px solid var(--color--light-grey);
-  border-right: 2px solid var(--color--light-grey);
-  border-bottom: 2px solid var(--color--light-grey);
+  background-color: var(--color--table-blue);
+  border: 3px solid var(--color--white);
 }
 
 /* Application checklist table */
 
-.section--step-5-submit-your-application table td {
-  border: none;
-}
-
+.section--step-5-submit-your-application table tr th:first-of-type,
 .section--step-5-submit-your-application table tr td:first-of-type {
-  border-left: var(--color--light-grey) 2px solid;
-  border-right: var(--color--light-grey) 2px solid;
+  border-left: none;
 }
 
+.section--step-5-submit-your-application table tr th:last-of-type,
 .section--step-5-submit-your-application table tr td:last-of-type {
-  border-left: var(--color--light-grey) 2px solid;
-  border-right: var(--color--light-grey) 2px solid;
+  border-right: none;
 }
 
 .section--step-5-submit-your-application
@@ -292,7 +305,40 @@ table td {
   tr
   td.usa-icon__td:not(.usa-icon__td--sublist)
   ~ td {
-  border-bottom: 2px solid var(--color--light-grey);
+  border-bottom-color: white;
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
+}
+
+.section--step-5-submit-your-application table tr td.usa-icon__td--list-heading,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--list-heading
+  ~ td {
+  border-bottom-color: var(--color--table-blue);
+}
+
+.section--step-5-submit-your-application
+  table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist,
+.section--step-5-submit-your-application
+  table
+  tbody
+  tr:last-of-type
+  td.usa-icon__td--sublist
+  ~ td {
+  border-bottom: none;
 }
 
 .section--step-5-submit-your-application
@@ -304,21 +350,18 @@ table td {
   tr
   td.usa-icon__td--before-sublist
   ~ td {
-  border-bottom: 2px solid var(--color--light-grey);
+  border-bottom-color: white;
 }
 
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading),
+  td:first-of-type:not(.usa-icon__td),
 .section--step-5-submit-your-application
   table
   tr
-  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading)
+  td:first-of-type:not(.usa-icon__td)
   ~ td {
-  border-bottom: 2px solid var(--color--light-grey);
-}
-
-.section--step-5-submit-your-application table tr:last-of-type td {
-  border-bottom: 2px solid var(--color--light-grey);
+  border-bottom-color: var(--color--table-blue);
+  background-color: var(--color--table-blue);
 }

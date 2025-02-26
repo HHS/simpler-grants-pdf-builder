@@ -9,29 +9,38 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Added the status to the edit_nofo actions box, with a link to the "edit status" page
-
 ### Changed
+
+### Fixed
+
+## [2.6.0] - 2025-02-27
+
+### Added
+
+- Add new theme: "CDC Portrait (DHP)"
+- Added the status to the edit_nofo actions box, with a link to the "edit status" page
 
 ### Fixed
 
 - Make sure the "Last changed" time on the NOFO edit page is in EST
 - Fix the "compare" page for when there are NO changes
 
+### Migrations
+
+- Added a new theme: 'portrait-cdc-dhp'
+
 ## [2.5.0] - 2025-02-26
 
 ### Added
 
+- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
 - Add a "modifications" status to published NOFOs:
-
   - Only "published" NOFOs can be modified
   - There is a 'modified' message on the cover page
   - There is a new setting in the NOFO edit page allowing you to set a modifications date
   - A "Modifications" section is added to the end of your NOFO:
     - This section shows up in the table of contents, but it does not have a section page
     - It comes with 1 subsection: a table for you to list changes and the date of those changes
-
-- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
 
 ### Changed
 
