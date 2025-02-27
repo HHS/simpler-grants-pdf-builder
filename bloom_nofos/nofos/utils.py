@@ -7,6 +7,8 @@ from django.core import serializers
 from django.utils import timezone
 from easyaudit.models import CRUDEvent
 from slugify import slugify
+from django.conf import settings
+
 
 from bloom_nofos.utils import is_docraptor_live_mode_active
 
@@ -97,6 +99,33 @@ def get_icon_path_choices(theme):
             "(Standard) White background, color icon, color outline",
         ),
     ]
+
+
+def get_next_status(status):
+    """
+    Returns the next sequential status in the STATUS_CHOICES sequence.
+    The idea is that NOFOs proceed progressively, so this function gets the next stage.
+
+    Args:
+        status (str): The current status to check.
+
+    Returns:
+        tuple or None: The next status as a tuple (status_key, status_label) if found,
+                       otherwise None.
+
+    Example:
+        get_next_status("draft")       # Returns ("active", "Active")
+        get_next_status("review")      # Returns ("published", "Published")
+        get_next_status("published")   # Returns None
+        get_next_status("nonexistent") # Returns None
+    """
+    if status == "published":
+        return None
+    for index, status_choice in enumerate(settings.STATUS_CHOICES):
+        if status_choice[0] == status:
+            return settings.STATUS_CHOICES[index + 1]
+
+    return None
 
 
 def match_view_url(url):
