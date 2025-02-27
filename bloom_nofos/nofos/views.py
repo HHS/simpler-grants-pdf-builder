@@ -82,7 +82,7 @@ from .nofo import (
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
 )
-from .utils import create_nofo_audit_event, create_subsection_html_id, get_next_status
+from .utils import create_nofo_audit_event, create_subsection_html_id
 
 ###########################################################
 ################### NOFO OBJECT VIEWS #####################
@@ -190,11 +190,6 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
             config.DOCRAPTOR_LIVE_MODE
         )
-
-        if get_next_status(self.object.status):
-            next_status_id, next_status_name = get_next_status(self.object.status)
-            next_status = {"id": next_status_id, "name": next_status_name}
-            context["next_status"] = next_status
 
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
