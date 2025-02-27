@@ -9,9 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added a button on the NOFO edit page to promote a NOFO to the next status
+
 ### Changed
 
 ### Fixed
+
+- Make sure the "Last changed" time on the NOFO edit page is in EST
+- Fix the "compare" page for when there are NO changes
 
 ## [2.5.0] - 2025-02-26
 
