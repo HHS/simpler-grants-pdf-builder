@@ -9,7 +9,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Added a button on the NOFO edit page to promote a NOFO to the next status
+- Added the status to the edit_nofo actions box, with a link to the "edit status" page
 
 ### Changed
 

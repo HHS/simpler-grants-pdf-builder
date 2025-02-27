@@ -508,13 +508,3 @@ GROUP_CHOICES = [
     ("ihs", "IHS: Indian Health Service"),
     ("staging", "Staging environment"),
 ]
-
-# "Statuses" for the NOFOs themselves
-
-STATUS_CHOICES = [
-    ("draft", "Draft"),
-    ("active", "Active"),
-    ("ready-for-qa", "Ready for QA"),
-    ("review", "In review"),
-    ("published", "Published"),
-]
