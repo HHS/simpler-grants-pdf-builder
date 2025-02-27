@@ -19,112 +19,124 @@
 
   {% with nofo|nofo_name as nofo_name_str %}
     {% with "Compare a NOFO to “"|add:nofo_name_str|add:"”" as back_text %}
-      {% url 'nofos:nofo_edit' nofo.id as back_href %}
+      {% url 'nofos:nofo_import_compare' nofo.id as back_href %}
       {% include "includes/page_heading.html" with title="NOFO comparison result" back_text=back_text back_href=back_href only %}
     {% endwith %}
   {% endwith %}
 
 
-    <p>
-      There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes in {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-    </p>
+    {% if num_changed_sections == 0 %}
+      <h2>No changes</h2>
+      <p>
+        This document is <strong>identical</strong> to your original NOFO: “{{ nofo.title }}”.
+      </p>
 
-    <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
-
-    {% if nofo_comparison_metadata %}
-    <table class="usa-table usa-table--borderless w-100">
-      <caption>
-        <div>
-          <h2>Basic information</h2>
-        </div>
-      </caption>
-      <thead class="usa-sr-only">
-        <tr>
-          <th scope="col" class="w-15">Attribute</th>
-          <th scope="col" class="w-10">Status</th>
-          <th scope="col" class="w-75">Content</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for attribute in nofo_comparison_metadata %}
-        {% if attribute.status != 'MATCH' %}
-          <tr>
-            <th scope="row">
-              {{ attribute.name }}
-            </th>
-            <td>
-              {{ attribute.status }}
-            </td>
-            <td><div class="diff">{{ attribute.diff|safe }}</div></td>
-          </tr>
-        {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
-    {% endif %}
-
-    {% if nofo_comparison %}
-      {% for section in nofo_comparison %}
-        <table class="usa-table usa-table--borderless">
-          <caption>
-            <div>
-              <h2>{{ section.name }}</h2>
-            </div>
-          </caption>
-          <thead class="usa-sr-only">
-            <tr>
-              <th scope="col" class="w-15">Subsection</th>
-              <th scope="col" class="w-10">Status</th>
-              <th scope="col" class="w-75">Content</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for subsection in section.subsections %}
-            {% if subsection.name|lower != 'basic information' %}
-              {% if subsection.status != 'MATCH' %}
-                <tr>
-                  <th scope="row">
-                    {# if the subsection.name value starts with "(#" #}
-                    {% if subsection.name|slice:":2" == "(#" %}
-                        <span class="text-base">{{ subsection.name }}</span>
-                    {% else %}
-                        {{ subsection.name }}
-                    {% endif %}
-                  </th>
-                  <td>
-                    {{ subsection.status }}
-                  </td>
-                  <td>
-                    <div class="diff">
-                      {% if subsection.status == 'ADD' %}
-                        <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                      {% elif  subsection.status == 'DELETE' %}
-                        <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                      {% elif subsection.status == 'UPDATE' %}
-                        {{ subsection.diff|safe|linebreaks }}
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% endif %}
-            {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-      {% endfor %}
-    {% endif %}
-
-  <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
-  <ul class="usa-button-group margin-top-3">
-    <li class="usa-button-group__item">
-      <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
-        Re-import NOFO
+      <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+      <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button">
+        Back to “{{ nofo|nofo_name }}”
       </a>
-    </li>
-    <li class="usa-button-group__item">
-      <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to re-import</a>
-    </li>
-  </ul>
-  <p class="font-body-sm">Have thoughts on this page? {% include "includes/feedback_link.html" %}.</p>
-  
+
+    {% else %}
+      <p>
+        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes across {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
+      </p>
+
+        <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
+
+      {% if nofo_comparison_metadata %}
+      <table class="usa-table usa-table--borderless w-100">
+        <caption>
+          <div>
+            <h2>Basic information</h2>
+          </div>
+        </caption>
+        <thead class="usa-sr-only">
+          <tr>
+            <th scope="col" class="w-15">Attribute</th>
+            <th scope="col" class="w-10">Status</th>
+            <th scope="col" class="w-75">Content</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attribute in nofo_comparison_metadata %}
+          {% if attribute.status != 'MATCH' %}
+            <tr>
+              <th scope="row">
+                {{ attribute.name }}
+              </th>
+              <td>
+                {{ attribute.status }}
+              </td>
+              <td><div class="diff">{{ attribute.diff|safe }}</div></td>
+            </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if nofo_comparison %}
+        {% for section in nofo_comparison %}
+          <table class="usa-table usa-table--borderless">
+            <caption>
+              <div>
+                <h2>{{ section.name }}</h2>
+              </div>
+            </caption>
+            <thead class="usa-sr-only">
+              <tr>
+                <th scope="col" class="w-15">Subsection</th>
+                <th scope="col" class="w-10">Status</th>
+                <th scope="col" class="w-75">Content</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for subsection in section.subsections %}
+              {% if subsection.name|lower != 'basic information' %}
+                {% if subsection.status != 'MATCH' %}
+                  <tr>
+                    <th scope="row">
+                      {# if the subsection.name value starts with "(#" #}
+                      {% if subsection.name|slice:":2" == "(#" %}
+                          <span class="text-base">{{ subsection.name }}</span>
+                      {% else %}
+                          {{ subsection.name }}
+                      {% endif %}
+                    </th>
+                    <td>
+                      {{ subsection.status }}
+                    </td>
+                    <td>
+                      <div class="diff">
+                        {% if subsection.status == 'ADD' %}
+                          <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                        {% elif  subsection.status == 'DELETE' %}
+                          <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                        {% elif subsection.status == 'UPDATE' %}
+                          {{ subsection.diff|safe|linebreaks }}
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endfor %}
+      {% endif %}
+
+    <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+    <ul class="usa-button-group margin-top-3">
+      <li class="usa-button-group__item">
+        <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+          Re-import NOFO
+        </a>
+      </li>
+      <li class="usa-button-group__item">
+        <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to re-import</a>
+      </li>
+    </ul>
+    <p class="font-body-sm">Have thoughts on this page? {% include "includes/feedback_link.html" %}.</p>
+  {% endif %}
 {% endblock %}
