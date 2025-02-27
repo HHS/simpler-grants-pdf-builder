@@ -54,7 +54,7 @@ Edit “{{ nofo|nofo_name }}”
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘Published’ with modifications.
+      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’ with modifications.
     </h2>
     <div class="usa-summary-box__text">
       <p>This NOFO has been modified since being published</a>.</p>
@@ -70,7 +70,7 @@ Edit “{{ nofo|nofo_name }}”
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘Published’.
+      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
     <div class="usa-summary-box__text">
       <p>Ordinarily, published NOFOs can’t be edited, re-imported, or deleted. To edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its
@@ -91,17 +91,10 @@ Edit “{{ nofo|nofo_name }}”
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘In review’.
+      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
     <div class="usa-summary-box__text">
       <p>NOFOs that are in review can’t be re-imported or deleted, but they can be edited as needed.</p>
-      <form class="margin-top-2" action="{% url 'nofos:nofo_edit_status' nofo.id %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="status" id="status" value="{{ next_status.id }}" />
-        <button type="submit" class="usa-button usa-button--accent-cool">
-          Set NOFO status to ‘{{ next_status.name }}’
-        </button>— Promote this NOFO to ‘{{ next_status.name }}’, or <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a> to something else
-      </form>
     </div>
   </div>
 </div>
@@ -109,19 +102,10 @@ Edit “{{ nofo|nofo_name }}”
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘{{ nofo.get_status_display }}’.
+      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
     <div class="usa-summary-box__text">
       <ul class="usa-list usa-list--unstyled">
-        <li>
-          <form class="margin-top-2" action="{% url 'nofos:nofo_edit_status' nofo.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="status" id="status" value="{{ next_status.id }}" />
-            <button type="submit" class="usa-button usa-button--accent-cool">
-              Set NOFO status to ‘{{ next_status.name }}’
-            </button>— Promote this NOFO to ‘{{ next_status.name }}’, or <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a> to something else
-          </form>
-        </li>
         <li>
           <p>
             <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">

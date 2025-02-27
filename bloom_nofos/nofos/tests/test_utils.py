@@ -13,7 +13,6 @@ from nofos.utils import (
     create_nofo_audit_event,
     create_subsection_html_id,
     get_icon_path_choices,
-    get_next_status,
     match_view_url,
 )
 from users.models import BloomUser as User
@@ -122,31 +121,6 @@ class TestGetIconPathChoices(TestCase):
         ]
         result = get_icon_path_choices("portrait-hrsa-white")
         self.assertEqual(result, expected_choices)
-
-
-class GetNextStatusTests(TestCase):
-    def test_next_status(self):
-        """Test that the function correctly returns the next status."""
-        self.assertEqual(get_next_status("draft"), ("active", "Active"))
-        self.assertEqual(
-            get_next_status("active"), ("ready-for-qa", "Ready\xa0for\xa0QA")
-        )
-        self.assertEqual(get_next_status("ready-for-qa"), ("review", "In\xa0review"))
-        self.assertEqual(get_next_status("review"), ("published", "Published"))
-
-    def test_published_returns_none(self):
-        """Test that 'published' has no next status."""
-        self.assertIsNone(get_next_status("published"))
-
-    def test_invalid_status_returns_none(self):
-        """Test that an invalid status returns None."""
-        self.assertIsNone(get_next_status("nonexistent"))
-        self.assertIsNone(get_next_status(""))  # Edge case: Empty string
-        self.assertIsNone(get_next_status(None))  # Edge case: None
-
-    def test_case_sensitivity(self):
-        """Test that statuses are case-sensitive (should return None if case is wrong)."""
-        self.assertIsNone(get_next_status("Draft"))  # Should be lowercase
 
 
 class TestCreateSubsectionHtmlId(TestCase):
