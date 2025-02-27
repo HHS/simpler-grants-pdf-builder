@@ -47,15 +47,6 @@ DESIGNER_CHOICES = [
 ]
 
 
-STATUS_CHOICES = [
-    ("draft", "Draft"),
-    ("active", "Active"),
-    ("ready-for-qa", "Ready for QA"),
-    ("review", "In review"),
-    ("published", "Published"),
-]
-
-
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
     ("landscape-cdc-white", "CDC Landscape (Light)"),
@@ -264,7 +255,7 @@ class Nofo(models.Model):
     status = models.CharField(
         max_length=32,
         validators=[MaxLengthValidator(32)],
-        choices=STATUS_CHOICES,
+        choices=settings.STATUS_CHOICES,
         blank=False,
         default="draft",
         help_text="The status of this NOFO in the NOFO Builder.",
