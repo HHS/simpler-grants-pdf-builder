@@ -134,6 +134,9 @@
       <div class="form-group inline-block">
         <fieldset class="usa-fieldset">
           <legend class="usa-legend legend--bootstrap">Has page break{% if 'landscape' in nofo.theme %} or column break{% endif %}?</legend>
+          <div class="usa-hint" id="page-break-before--hint-1">
+            This subsection starts on a new page in the printed PDF.
+          </div>
           {% if form.html_class.value %}
             {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' and form.html_class.value != 'none' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
@@ -148,6 +151,7 @@
               type="radio"
               name="html_class"
               value="page-break-before"
+              aria-describedby="page-break-before--hint-1"
               {% if form.html_class.value and "page-break-before" in form.html_class.value %}
                 checked="checked"
               {% endif %}
