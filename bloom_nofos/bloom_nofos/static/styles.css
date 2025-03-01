@@ -158,6 +158,9 @@ details > summary > span:hover {
   text-transform: none;
 }
 
+label.usa-label {
+  margin-bottom: 0.25rem;
+}
 /* Link check page */
 
 .pre--code-box {
@@ -898,6 +901,10 @@ main .back-link a::before,
   color: var(--color--text-default);
 }
 
+.subsection_edit .usa-legend + .usa-hint {
+  margin-bottom: 1rem;
+}
+
 .subsection_edit .main-martor,
 .subsection_create .main-martor {
   margin-top: 0;
@@ -972,10 +979,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .subsection_edit fieldset legend:not(.legend--bootstrap) {
   margin-bottom: -0.5rem;
-}
-
-.subsection_edit fieldset .usa-legend.legend--bootstrap {
-  margin-bottom: 0.85rem;
 }
 
 .table--callout-box {
