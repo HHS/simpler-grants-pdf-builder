@@ -5,6 +5,7 @@
   --color--text-default: #1b1b1b;
   --color--text-grey: #71767a;
   --color--usa-link: #005ea2;
+  --color--usa-link-rgb: 0, 94, 162;
   --color--usa-link-visited: #54278f;
   --color--usa-error-message: #b50909;
   --color--usa-error-bg-light: #f3e1e4;
@@ -905,6 +906,8 @@ main .back-link a::before,
   margin-bottom: 1rem;
 }
 
+/* Styling the martor editing window */
+
 .subsection_edit .main-martor,
 .subsection_create .main-martor {
   margin-top: 0;
@@ -920,6 +923,26 @@ main .back-link a::before,
 .subsection_create .main-martor .resizable .resizable-b {
   width: 100%;
   cursor: row-resize;
+}
+
+.subsection_edit .main-martor .nav-tabs .nav-link {
+  border-radius: 0;
+  border: none;
+  margin-bottom: 0;
+}
+
+.subsection_edit .main-martor .nav-tabs .nav-link:not(.active) {
+  background-color: rgba(var(--color--usa-link-rgb), 0.06);
+  border-bottom: 2px solid rgba(var(--color--usa-link-rgb), 0.06);
+}
+
+.subsection_edit .main-martor .nav-tabs .nav-link:not(.active):hover {
+  background-color: rgba(var(--color--usa-link-rgb), 0.1);
+  border-bottom: 2px solid rgba(var(--color--usa-link-rgb), 0.2);
+}
+
+.subsection_edit .main-martor .nav-tabs .nav-link:not(.active):hover span {
+  text-decoration: underline;
 }
 
 .subsection_edit div.martor-preview div[role="heading"] {
