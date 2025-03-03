@@ -947,6 +947,10 @@ main .back-link a::before,
   text-decoration: underline;
 }
 
+.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn:hover {
+  background-color: var(--color--light-grey);
+}
+
 .subsection_edit .main-martor .nav-tabs .btn-toolbar .btn.markdown-help {
   background-color: var(--color--usa-accent-warm);
 }
