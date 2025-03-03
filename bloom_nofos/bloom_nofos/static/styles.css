@@ -11,6 +11,8 @@
   --color--usa-error-bg-light: #f3e1e4;
   --color--usa-error-bg-dark: #8b0a03;
   --color--usa-error-bg-darker: #775540;
+  --color--usa-accent-warm: #fa9441;
+  --color--usa-accent-warm-hover: #c05600;
 }
 
 html {
@@ -943,6 +945,19 @@ main .back-link a::before,
 
 .subsection_edit .main-martor .nav-tabs .nav-link:not(.active):hover span {
   text-decoration: underline;
+}
+
+.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn.markdown-help {
+  background-color: var(--color--usa-accent-warm);
+}
+
+.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn.markdown-help:hover {
+  background-color: var(--color--usa-accent-warm-hover);
+  color: var(--color--white);
+}
+
+.subsection_edit .modal .modal-dialog .modal-content .text-center.small.credit {
+  display: none;
 }
 
 .subsection_edit div.martor-preview div[role="heading"] {
