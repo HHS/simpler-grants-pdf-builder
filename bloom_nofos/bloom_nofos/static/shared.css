@@ -206,8 +206,8 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
   list-style-type: circle;
 }
 
-div.martor-preview ol ol,
-div.martor-preview ul ul {
+.subsection_edit div.martor-preview ol ol,
+.subsection_edit div.martor-preview ul ul {
   margin-top: 0;
   margin-bottom: 5px;
 }
