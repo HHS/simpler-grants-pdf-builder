@@ -19,12 +19,13 @@
 
     <!-- Includes -->
     <link href="{% static 'uswds/uswds.css' %}" rel="stylesheet">
+    {% block uswds_css %}{% endblock %}
+    {% block css %}{% endblock %}
+
     <link href="{% static 'shared.css' %}" rel="stylesheet">
     {% block base_css %}
       <link href="{% static 'theme-base.css' %}" type="text/css" media="all" rel="stylesheet">
     {% endblock %}
-    {% block uswds_css %}{% endblock %}
-    {% block css %}{% endblock %}
     {% block uswds_js %}{% endblock %}
     {% block js %}{% endblock %}
 
