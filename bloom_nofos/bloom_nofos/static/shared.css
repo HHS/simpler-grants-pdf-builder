@@ -173,6 +173,45 @@
   background-color: var(--color--yellow);
 }
 
+/* List CSS */
+
+ol ol:not([type]) {
+  list-style-type: lower-alpha;
+}
+
+ol ol ol:not([type]) {
+  list-style-type: lower-roman;
+}
+
+ul ul ul ul:not([type]) {
+  list-style-type: none;
+}
+
+ul ul ul ul:not([type]) > li:before {
+  content: "⁃";
+  margin-left: -14px;
+  margin-right: 8px;
+}
+
+ul ul ul ul ul:not([type]) {
+  list-style-type: disc;
+}
+
+ul ul ul ul ul:not([type]) > li:before {
+  content: none;
+  margin-right: 0;
+}
+
+ul ul ul ul ul ul:not([type]) {
+  list-style-type: circle;
+}
+
+div.martor-preview ol ol,
+div.martor-preview ul ul {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
 @media screen {
   /* Remove right padding from last nav item */
   .usa-nav__primary-item:not(.usa-nav__primary-item__right-padding):last-of-type

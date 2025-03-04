@@ -568,14 +568,6 @@ label.usa-label {
   border-radius: 0.25rem;
 }
 
-.nofo_edit ol ol {
-  list-style-type: lower-alpha;
-}
-
-.nofo_edit ol ol ol {
-  list-style-type: lower-roman;
-}
-
 .nofo_edit .page-break--hr--container {
   position: relative;
 }
