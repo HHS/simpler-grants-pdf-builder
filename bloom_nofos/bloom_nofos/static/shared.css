@@ -175,34 +175,34 @@
 
 /* List CSS */
 
-ol ol:not([type]) {
+ol ol:not([type]):not(.usa-list--unstyled) {
   list-style-type: lower-alpha;
 }
 
-ol ol ol:not([type]) {
+ol ol ol:not([type]):not(.usa-list--unstyled) {
   list-style-type: lower-roman;
 }
 
-ul ul ul ul:not([type]) {
+ul ul ul ul:not([type]):not(.usa-list--unstyled) {
   list-style-type: none;
 }
 
-ul ul ul ul:not([type]) > li:before {
+ul ul ul ul:not([type]):not(.usa-list--unstyled) > li:before {
   content: "⁃";
   margin-left: -14px;
   margin-right: 8px;
 }
 
-ul ul ul ul ul:not([type]) {
+ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
   list-style-type: disc;
 }
 
-ul ul ul ul ul:not([type]) > li:before {
+ul ul ul ul ul:not([type]):not(.usa-list--unstyled) > li:before {
   content: none;
   margin-right: 0;
 }
 
-ul ul ul ul ul ul:not([type]) {
+ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
   list-style-type: circle;
 }
 
