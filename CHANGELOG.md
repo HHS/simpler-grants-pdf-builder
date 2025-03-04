@@ -9,9 +9,17 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add hint text to "Add page break?" radio buttons
+
 ### Changed
 
+- "Top" link is more visible on nofo_edit page
+- "Preview" tab is more visible (blue background)
+- Markdown Guide button is more visible (orange background)
+
 ### Fixed
+
+- Don't apply default list-style-type styling to lists with "type" attribute
 
 ## [2.6.0] - 2025-02-27
 
