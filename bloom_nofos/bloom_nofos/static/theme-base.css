@@ -452,37 +452,6 @@ ol ol:last-child {
   margin-bottom: 0.5rem;
 }
 
-ol ol {
-  list-style-type: lower-alpha;
-}
-
-ol ol ol {
-  list-style-type: lower-roman;
-}
-
-ul ul ul ul {
-  list-style-type: none;
-}
-
-ul ul ul ul > li:before {
-  content: "⁃";
-  margin-left: -14px;
-  margin-right: 8px;
-}
-
-ul ul ul ul ul {
-  list-style-type: disc;
-}
-
-ul ul ul ul ul > li:before {
-  content: none;
-  margin-right: 0;
-}
-
-ul ul ul ul ul ul {
-  list-style-type: circle;
-}
-
 img.usa-icon--check_box_outline_blank {
   height: 17px;
   width: 17px;
