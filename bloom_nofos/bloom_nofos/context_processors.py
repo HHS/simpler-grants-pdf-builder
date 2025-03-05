@@ -13,3 +13,8 @@ def add_docraptor_live_mode(request):
 
 def add_github_sha(request):
     return {"GITHUB_SHA": settings.GITHUB_SHA}
+
+
+def settings_context(request):
+    """Makes selected Django settings available to all templates."""
+    return {"settings": settings}

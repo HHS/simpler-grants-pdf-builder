@@ -1071,3 +1071,7 @@ ins {
 del + ins > br {
   display: none;
 }
+
+.login-gov-container {
+  max-width: 30rem;
+}
