@@ -5,11 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
-[2.7.0] - 2025-03-05
+## Unreleased
 
 ### Added
 
+### Changed
+
+- Lower word count for smaller "Key dates"/"Key facts" callout boxes (>= 80 chars, up from >86)
+- Change top nav breadcrumb colours for section pages in DHP theme
+
+### Fixed
+
+## [2.7.0] - 2025-03-05
+
+### Added
+
+- Add hint text to "Add page break?" radio buttons
 - Adds login.gov as an authentication option
+
+### Changed
+
+- "Top" link is more visible on nofo_edit page
+- "Preview" tab is more visible (blue background)
+- Markdown Guide button is more visible (orange background)
+
+### Fixed
+
+- Don't apply default list-style-type styling to lists with "type" attribute
 
 ### Migrations
 
@@ -20,8 +42,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add new theme: "CDC Portrait (DHP)"
-- Added the status to the edit_nofo actions box, with a link to the "edit
-  status" page
+- Added the status to the edit_nofo actions box, with a link to the "edit status" page
 
 ### Fixed
 
@@ -36,16 +57,13 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add new "{id}/compare" route for comparing a new NOFO document to an existing
-  one
+- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
 - Add a "modifications" status to published NOFOs:
   - Only "published" NOFOs can be modified
   - There is a 'modified' message on the cover page
-  - There is a new setting in the NOFO edit page allowing you to set a
-    modifications date
+  - There is a new setting in the NOFO edit page allowing you to set a modifications date
   - A "Modifications" section is added to the end of your NOFO:
-    - This section shows up in the table of contents, but it does not have a
-      section page
+    - This section shows up in the table of contents, but it does not have a section page
     - It comes with 1 subsection: a table for you to list changes and the date
       of those changes
 
