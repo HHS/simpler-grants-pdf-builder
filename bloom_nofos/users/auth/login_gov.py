@@ -24,16 +24,16 @@ class LoginGovClient:
         self.token_url = base_url.replace("/openid_connect", "/api/openid_connect")
 
         # Get private key from settings
-        private_key = settings.LOGIN_GOV.get("PRIVATE_KEY")
-        if not private_key:
+        private_key_pem = settings.LOGIN_GOV.get("PRIVATE_KEY")
+        if not private_key_pem:
             raise Exception(
                 "Private key not configured in settings.LOGIN_GOV['PRIVATE_KEY']"
             )
 
         try:
-            self.private_key = private_key.encode("utf-8")
-            load_pem_private_key(
-                self.private_key, password=None, backend=default_backend()
+            self.private_key_pem = private_key_pem.encode("utf-8")
+            self.private_key = load_pem_private_key(
+                self.private_key_pem, password=None, backend=default_backend()
             )
         except Exception as e:
             raise Exception(f"Error loading private key: {str(e)}")
@@ -100,10 +100,6 @@ class LoginGovClient:
         now = int(time.time())
 
         try:
-            private_key = load_pem_private_key(
-                self.private_key, password=None, backend=default_backend()
-            )
-
             assertion = jwt.encode(
                 {
                     "iss": self.client_id,
@@ -113,7 +109,7 @@ class LoginGovClient:
                     "exp": now + 300,  # 5 minutes
                     "iat": now,
                 },
-                private_key,
+                self.private_key,
                 algorithm="RS256",
             )
         except Exception as e:

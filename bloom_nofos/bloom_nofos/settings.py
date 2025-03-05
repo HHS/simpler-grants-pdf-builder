@@ -508,20 +508,20 @@ ENVIRONMENT = "staging" if is_prod else "dev"
 LOGIN_GOV_PRIVATE_KEY, LOGIN_GOV_PUBLIC_KEY = get_login_gov_keys(ENVIRONMENT)
 
 # If Secret Manager failed and we're in dev, try local files
-if not (LOGIN_GOV_PRIVATE_KEY and LOGIN_GOV_PUBLIC_KEY) and ENVIRONMENT == "dev":
+if not LOGIN_GOV_PRIVATE_KEY and ENVIRONMENT == "dev":
     try:
-        with open(BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private.pem") as f:
+        with open(
+            BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private-local.pem"
+        ) as f:
             LOGIN_GOV_PRIVATE_KEY = f.read()
-        with open(BASE_DIR / "bloom_nofos" / "certs" / "login-gov-public.pem") as f:
-            LOGIN_GOV_PUBLIC_KEY = f.read()
-        print("Using local cert files for Login.gov keys")
+            print("Using local private key file for Login.gov")
     except Exception as e:
         print(
-            f"Warning: Login.gov keys not available. Login.gov authentication will be disabled: {e}"
+            f"Warning: Login.gov private key not available. Login.gov authentication will be disabled: {e}"
         )
 
 # Configure Login.gov based on key availability
-LOGIN_GOV_ENABLED = bool(LOGIN_GOV_PRIVATE_KEY and LOGIN_GOV_PUBLIC_KEY)
+LOGIN_GOV_ENABLED = bool(LOGIN_GOV_PRIVATE_KEY)
 if not LOGIN_GOV_ENABLED:
     print("Login.gov authentication is disabled due to missing keys")
 
@@ -539,7 +539,6 @@ LOGIN_GOV = {
     "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
     "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
     "PRIVATE_KEY": LOGIN_GOV_PRIVATE_KEY,
-    "PUBLIC_KEY": LOGIN_GOV_PUBLIC_KEY,
 }
 
 # Add Login.gov authentication backend
