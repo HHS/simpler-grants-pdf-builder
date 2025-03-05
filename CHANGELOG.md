@@ -5,28 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
-## Unreleased
+[2.7.0] - 2025-03-05
 
 ### Added
 
-- Add hint text to "Add page break?" radio buttons
+- Adds login.gov as an authentication option
 
-### Changed
+### Migrations
 
-- "Top" link is more visible on nofo_edit page
-- "Preview" tab is more visible (blue background)
-- Markdown Guide button is more visible (orange background)
-
-### Fixed
-
-- Don't apply default list-style-type styling to lists with "type" attribute
+- Adds login.gov ID to users model
 
 ## [2.6.0] - 2025-02-27
 
 ### Added
 
 - Add new theme: "CDC Portrait (DHP)"
-- Added the status to the edit_nofo actions box, with a link to the "edit status" page
+- Added the status to the edit_nofo actions box, with a link to the "edit
+  status" page
 
 ### Fixed
 
@@ -41,35 +36,47 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add new "{id}/compare" route for comparing a new NOFO document to an existing one
+- Add new "{id}/compare" route for comparing a new NOFO document to an existing
+  one
 - Add a "modifications" status to published NOFOs:
   - Only "published" NOFOs can be modified
   - There is a 'modified' message on the cover page
-  - There is a new setting in the NOFO edit page allowing you to set a modifications date
+  - There is a new setting in the NOFO edit page allowing you to set a
+    modifications date
   - A "Modifications" section is added to the end of your NOFO:
-    - This section shows up in the table of contents, but it does not have a section page
-    - It comes with 1 subsection: a table for you to list changes and the date of those changes
+    - This section shows up in the table of contents, but it does not have a
+      section page
+    - It comes with 1 subsection: a table for you to list changes and the date
+      of those changes
 
 ### Changed
 
 - Use a MS 365 form for feedback instead of a Google Form
-- Breadcrumb links are no longer clickable (instead, they are just visual indicators)
-- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by default
-- "Important: public information" callout box will appear after specific subsection names in section 3 of new NOFOs
-  - If no matching subsection names are found, it will appear at the end of section 3 like normal
+- Breadcrumb links are no longer clickable (instead, they are just visual
+  indicators)
+- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by
+  default
+- "Important: public information" callout box will appear after specific
+  subsection names in section 3 of new NOFOs
+  - If no matching subsection names are found, it will appear at the end of
+    section 3 like normal
 
 ### Fixed
 
 - Fixed a bunch of things in the diff interface:
-  - Use full-word diffs, so `<del>January</del><ins>March</ins>` instead of `<del>Janu</del><ins>M</ins>ar<del>y</del><ins>ch</ins>`
+  - Use full-word diffs, so `<del>January</del><ins>March</ins>` instead of
+    `<del>Janu</del><ins>M</ins>ar<del>y</del><ins>ch</ins>`
   - Show linebreaks that exist in body content (easier for lists, for example)
-  - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown, they generally don't matter)
+  - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown,
+    they generally don't matter)
   - Hide the "Basic information" subsection because it duplicates information
-- Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
+- Fix for more list styles that were not importing correctly ("List Bullet1,
+  Bullet 2", etc)
 
 ### Migrations
 
-- Added a new attribute to NOFO model: "modifications", a datetime object (default null)
+- Added a new attribute to NOFO model: "modifications", a datetime object
+  (default null)
 
 ## [2.4.0] - 2025-02-13
 
@@ -84,6 +91,7 @@ Versioning since version 1.0.0.
 - Can use 'page-break' to add a page-break in markdown body
 - Add confirmation page for re-importing a NOFO if the IDs don't match up
 - Add "Important: public information" callout box to section 3 of new NOFOs
+- Adds Login.gov as an authentication option
 
 ### Changed
 
@@ -97,6 +105,7 @@ Versioning since version 1.0.0.
   - Note that this is a best-guess effort: if subsections are renamed, page
     breaks can't be preserved
 - DocRaptor IPs can now be updated by superadmin users
+- Requires Login.gov certs and ENV vars to be set for devs.
 
 ### Fixed
 
@@ -112,7 +121,9 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add "Important: public information" subsection to non-archived, non-published NOFOs
+- Add "Important: public information" subsection to non-archived, non-published
+  NOFOs
+- Adds login.gov ID to users model
 
 ## [2.3.0] - 2025-01-17
 
