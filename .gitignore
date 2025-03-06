@@ -22,5 +22,4 @@ export_links.csv
 
 # Login.gov certificates
 login-gov-cert*.pem
-certs/
 *.pem
