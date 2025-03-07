@@ -171,7 +171,7 @@ For local development, the application will:
 
 1. Place your Login.gov certificate files in `bloom_nofos/bloom_nofos/certs/`:
    - `login-gov-private.pem`
-   - `login-gov-public.pem`
+   - `login-gov-public.crt`
 
 2. No additional configuration needed - the application will automatically use
    these files if Secret Manager access fails
@@ -191,6 +191,7 @@ For local development, the application will:
    gcloud config set project bloom-nofos-1
    gcloud auth application-default set-quota-project bloom-nofos-1
    ```
+  4.  This will fetch the private key for you to use, the public keys should be commited to the bloom_nofos/bloom_nofos/certs directory 
 
 ## Build and run as a Docker container
 
