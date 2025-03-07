@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
+{% block title %}
+  Login — NOFO Web Flow
+{% endblock %}
+
+{% block content %}
+{% include "includes/page_heading.html" with title="Login" only %}
+
 {% if messages %}
-<div class="messages">
+<div class="messages margin-top-4">
     {% for message in messages %}
     <div class="usa-alert usa-alert--{{ message.tags }}">
         <div class="usa-alert__body">
@@ -11,13 +18,6 @@
     {% endfor %}
 </div>
 {% endif %}
-
-{% block title %}
-  Login — NOFO Web Flow
-{% endblock %}
-
-{% block content %}
-{% include "includes/page_heading.html" with title="Login" only %}
 
 {% if next %}
   {% if user.is_authenticated %}
