@@ -3,6 +3,8 @@
   --color--black: #000000;
   --color--white: #ffffff;
   --color--yellow: #fd0;
+  --color--green: #008817;
+  --color--green-dark: #216e1f;
   --color--table-grey: #edf1f3;
   --color--table-blue: #f2f6fc;
   --color--light-table-blue: #e8f5ff;
@@ -110,6 +112,21 @@
 
 .w-10 {
   width: 10%;
+}
+
+.usa-button--green,
+.usa-button--green:visited {
+  color: var(--color--white);
+  background-color: var(--color--green);
+}
+.usa-button--green.usa-button--hover,
+.usa-button--green:hover {
+  background-color: var(--color--green-dark);
+}
+
+.usa-button--green.usa-button--active,
+.usa-button--green:active {
+  background-color: #3f4a3c;
 }
 
 .bg-group--bloom {
