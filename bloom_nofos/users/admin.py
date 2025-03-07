@@ -17,6 +17,7 @@ class BloomUserAdmin(UserAdmin):
         "is_superuser_status",
         "is_staff_status",
         "is_active",
+        "has_login_gov",
         "formatted_last_login",
     )
 
@@ -25,8 +26,14 @@ class BloomUserAdmin(UserAdmin):
         if obj.last_login:
             # Ensure the datetime is timezone-aware and localized
             local_last_login = localtime(obj.last_login)
-            return local_last_login.strftime("%d\u00A0%b,\u00A0%H:%M")
+            return local_last_login.strftime("%d\u00a0%b,\u00a0%H:%M")
         return "—"
+
+    def has_login_gov(self, obj):
+        return bool(obj.login_gov_user_id)
+
+    has_login_gov.short_description = "Login.gov user"
+    has_login_gov.boolean = True
 
     formatted_last_login.short_description = "Last Login"
     formatted_last_login.admin_order_field = "last_login"
@@ -56,6 +63,7 @@ class BloomUserAdmin(UserAdmin):
                     "group",
                     "password",
                     "force_password_reset",
+                    "login_gov_user_id",
                 )
             },
         ),
@@ -82,6 +90,7 @@ class BloomUserAdmin(UserAdmin):
                     "password1",
                     "password2",
                     "force_password_reset",
+                    "login_gov_user_id",
                 ),
             },
         ),
