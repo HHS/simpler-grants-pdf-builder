@@ -1,20 +1,23 @@
 from constance import config
 from django.conf import settings
 
-from .utils import is_docraptor_live_mode_active, parse_docraptor_ip_addresses
+from .utils import is_docraptor_live_mode_active
 
 
-def add_docraptor_live_mode(request):
+def template_context(request):
+    """
+    Provides specific settings variables to all templates.
+    Only passes the exact settings needed rather than the entire settings object.
+    """
+    # Get DocRaptor live mode status
     last_updated = getattr(config, "DOCRAPTOR_LIVE_MODE")
     docraptor_live_mode = is_docraptor_live_mode_active(last_updated)
 
-    return {"DOCRAPTOR_LIVE_MODE": docraptor_live_mode}
+    # Get Login.gov enabled status
+    login_gov_enabled = getattr(settings, "LOGIN_GOV", {}).get("ENABLED", False)
 
-
-def add_github_sha(request):
-    return {"GITHUB_SHA": settings.GITHUB_SHA}
-
-
-def settings_context(request):
-    """Makes selected Django settings available to all templates."""
-    return {"settings": settings}
+    return {
+        "DOCRAPTOR_LIVE_MODE": docraptor_live_mode,
+        "GITHUB_SHA": settings.GITHUB_SHA,
+        "LOGIN_GOV_ENABLED": login_gov_enabled,
+    }

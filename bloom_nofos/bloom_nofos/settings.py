@@ -88,7 +88,6 @@ SESSION_COOKIE_SECURE = is_prod
 CSRF_COOKIE_SECURE = is_prod
 CSRF_COOKIE_HTTPONLY = False
 SECURE_BROWSER_XSS_FILTER = is_prod
-SESSION_COOKIE_SAMESITE = None
 
 # X-Frame-Options
 X_FRAME_OPTIONS = "DENY"
@@ -155,9 +154,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "djversion.context_processors.version",
-                "bloom_nofos.context_processors.add_docraptor_live_mode",
-                "bloom_nofos.context_processors.add_github_sha",
-                "bloom_nofos.context_processors.settings_context",
+                "bloom_nofos.context_processors.template_context",
             ],
         },
     },
