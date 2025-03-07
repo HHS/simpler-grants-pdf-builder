@@ -9,13 +9,18 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added "Login.gov" user attributes to admin page
+
 ### Changed
 
+- Green button colour 🟢
 - Lower word count for smaller "Key dates"/"Key facts" callout boxes (>= 80 chars, up from >86)
 - Change top nav breadcrumb colours for section pages in DHP theme
 - Rotate certs for login.gov staging
 
 ### Fixed
+
+- Login page once again displays errors correctly
 
 ## [2.7.0] - 2025-03-05
 
