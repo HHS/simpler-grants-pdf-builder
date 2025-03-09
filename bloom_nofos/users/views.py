@@ -1,18 +1,17 @@
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.views import PasswordChangeView
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import DetailView
-from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
-from django.urls import reverse
 from django.views.decorators.http import require_http_methods
+from django.views.generic import DetailView
 
+from .auth.login_gov import LoginGovClient
 from .forms import BloomUserNameForm, LoginForm
 from .models import BloomUser
-from .auth.login_gov import LoginGovClient
 
 
 class BloomUserDetailView(DetailView):

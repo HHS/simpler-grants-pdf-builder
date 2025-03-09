@@ -19,8 +19,7 @@ import environ
 import tomli
 from django.utils.timezone import now
 
-from .utils import cast_to_boolean
-from .utils import get_login_gov_keys
+from .utils import cast_to_boolean, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

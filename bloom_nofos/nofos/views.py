@@ -1,8 +1,8 @@
 import io
 import json
+from datetime import datetime
 
 import docraptor
-from datetime import datetime
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -22,9 +22,9 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from easyaudit.models import CRUDEvent
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
-from easyaudit.models import CRUDEvent
 
 from .forms import (
     CheckNOFOLinkSingleForm,

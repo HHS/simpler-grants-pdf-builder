@@ -1,12 +1,13 @@
+import json
+from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
+
+import jwt
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from users.auth.backend import LoginGovBackend
 from users.auth.login_gov import LoginGovClient
-import jwt
-import json
-from unittest.mock import patch, MagicMock, mock_open
-from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 User = get_user_model()
 

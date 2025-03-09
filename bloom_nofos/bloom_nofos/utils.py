@@ -1,10 +1,10 @@
+import os
 import re
 import sys
 
+from django.conf import settings
 from django.utils.timezone import now, timedelta
 from google.cloud import secretmanager
-import os
-from django.conf import settings
 
 
 def cast_to_boolean(value_str):
