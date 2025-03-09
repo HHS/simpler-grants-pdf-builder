@@ -17,6 +17,7 @@ Versioning since version 1.0.0.
 - Lower word count for smaller "Key dates"/"Key facts" callout boxes (>= 80 chars, up from >86)
 - Change top nav breadcrumb colours for section pages in DHP theme
 - Rotate certs for login.gov staging
+- Remove "local" cert: only 2 envs exist now
 
 ### Fixed
 

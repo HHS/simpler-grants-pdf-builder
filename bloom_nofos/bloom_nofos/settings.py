@@ -505,31 +505,32 @@ ENVIRONMENT = "staging" if is_prod else "dev"
 # Get Login.gov keys - always try Secret Manager first
 LOGIN_GOV_PRIVATE_KEY, LOGIN_GOV_PUBLIC_KEY = get_login_gov_keys(ENVIRONMENT)
 
+if LOGIN_GOV_PRIVATE_KEY and "test" not in sys.argv:
+    print("=====")
+    print(
+        "Login.gov: enabled; env: {}; private_key: secrets manager".format(ENVIRONMENT)
+    )
+
 # If Secret Manager failed and we're in dev, try local files
 if not LOGIN_GOV_PRIVATE_KEY and ENVIRONMENT == "dev":
     try:
         with open(
-            BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private-local.pem"
+            BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private-key-dev.pem"
         ) as f:
             LOGIN_GOV_PRIVATE_KEY = f.read()
-            print("Using local private key file for Login.gov")
+            print("Login.gov enabled; env: {}; private_key: local".format(ENVIRONMENT))
     except Exception as e:
-        print(
-            f"Warning: Login.gov private key not available. Login.gov authentication will be disabled: {e}"
-        )
+        print("Login.gov disabled; env: {}; private_key: None".format(ENVIRONMENT))
 
-# Configure Login.gov based on key availability
-LOGIN_GOV_ENABLED = bool(LOGIN_GOV_PRIVATE_KEY)
-if not LOGIN_GOV_ENABLED:
-    print("Login.gov authentication is disabled due to missing keys")
 
 # Login/Logout URLs and settings
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
+# Configure Login.gov based on key availability
 LOGIN_GOV = {
-    "ENABLED": LOGIN_GOV_ENABLED,
+    "ENABLED": bool(LOGIN_GOV_PRIVATE_KEY),
     "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
     "OIDC_URL": env(
         "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
@@ -538,6 +539,8 @@ LOGIN_GOV = {
     "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
     "PRIVATE_KEY": LOGIN_GOV_PRIVATE_KEY,
 }
+print("=====")
+
 
 # Add Login.gov authentication backend
 AUTHENTICATION_BACKENDS = [
