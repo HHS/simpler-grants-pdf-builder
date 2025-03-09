@@ -152,7 +152,29 @@ To manually deploy to production, create a new file `./bloom_nofos/bloom_nofos/.
 
   - default `"YOUR_API_KEY_HERE"`: this key works for printing test documents (with a watermark)
 
+- `DOCRAPTOR_IPS`: IP addresses that we expect DocRaptor requests to come from. Note that these can be overridden.
+
   - default `""`: this means zero IPs are safelisted
+
+- `API_TOKEN`: Bearer token to allow API access.
+
+  - default `""`: this will block any and all API access.
+
+- `LOGIN_GOV_CLIENT_ID`: Should match the "Issuer" string of our Login.gov app.
+
+  - default `""`: No issuer, will not connect to Login.gov
+
+- `LOGIN_GOV_OIDC_URL`=This is the root URL for Login.gov, where we send our auth requests.
+
+  - default `""`: No url, will not connect to Login.gov
+
+- `LOGIN_GOV_REDIRECT_URI`: The URL that Login.gov will redirect to after authentication.
+
+  - default `""`: No url, will not connect to Login.gov
+
+- `GOOGLE_CLOUD_PROJECT`: the GCP project ID containing our Login.gov `.pem` file.
+
+  - default `""`: No project ID, will try to use [local cert files](https://github.com/HHS/simpler-grants-pdf-builder?tab=readme-ov-file#option-1-using-local-certificate-files)
 
 ## Login.gov Key Configuration
 
@@ -160,16 +182,20 @@ This application uses Login.gov for authentication and requires both private and
 public keys. These keys can be sourced from either Google Cloud Secret Manager
 or local files.
 
+If you do not have these cert files, you won’t be able to log in with Login.gov, but
+you will still be able to login with Django Auth.
+
 ### Development Environment
 
 For local development, the application will:
 
-1. First attempt to fetch keys from Google Cloud Secret Manager
-2. If Secret Manager access fails, fall back to local certificate files
+1. Attempt to fetch keys from Google Cloud Secret Manager if `GOOGLE_CLOUD_PROJECT` env is set.
+2. If `GOOGLE_CLOUD_PROJECT` is missing or Secret Manager access fails, fall back to local certificate files.
 
 #### Option 1: Using Local Certificate Files
 
 1. Place your Login.gov certificate files in `bloom_nofos/bloom_nofos/certs/`:
+
    - `login-gov-private.pem`
    - `login-gov-public.crt`
 
@@ -191,7 +217,7 @@ For local development, the application will:
    gcloud config set project bloom-nofos-1
    gcloud auth application-default set-quota-project bloom-nofos-1
    ```
-  4.  This will fetch the private key for you to use, the public keys should be commited to the bloom_nofos/bloom_nofos/certs directory 
+4. This will fetch the private key for you to use, the public keys should be commited to the bloom_nofos/bloom_nofos/certs directory
 
 ## Build and run as a Docker container
 
