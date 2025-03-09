@@ -850,13 +850,13 @@ plugins = ["setuptools"]
 
 [[package]]
 name = "mammoth"
-version = "1.8.0"
+version = "1.9.0"
 description = "Convert Word documents from docx to simple and clean HTML and Markdown"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mammoth-1.8.0-py2.py3-none-any.whl", hash = "sha256:b2abf2340809b13a903c8b65a27846466290b869f0dd56e4a1e3072c4be1ea86"},
-    {file = "mammoth-1.8.0.tar.gz", hash = "sha256:7e8aa7db53f4aa7e9620b22bf8b716f1a16c84e969de1a0b1f920c756184e3d8"},
+    {file = "mammoth-1.9.0-py2.py3-none-any.whl", hash = "sha256:0eea277316586f0ca65d86834aec4de5a0572c83ec54b4991f9bb520a891150f"},
+    {file = "mammoth-1.9.0.tar.gz", hash = "sha256:74f5dae10ca240fd9b7a0e1a6deaebe0aad23bc590633ef6f5e868aa9b7042a6"},
 ]
 
 [package.dependencies]
@@ -1431,4 +1431,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.9"
-content-hash = "d30dead00ef7440e9b3af373c04a86f3f45cd282fe0f91073db83000684084ae"
+content-hash = "662541f8216d4b131e53efacae54fee9c17076726dfddf3a562e2f25df373842"
