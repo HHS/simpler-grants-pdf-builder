@@ -359,32 +359,32 @@ class NofoMarkdownConverterDIVTest(TestCase):
     maxDiff = None
 
     def test_div_role_heading(self):
-        html = '<h6>Component funding</h6><div aria-level="7" role="heading">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
-        expected_html = '###### Component funding\n\n<div aria-level="7" role="heading">Overview</div>We fund all cooperative agreements using component funding.'
+        html = '<h6>Component funding</h6><div><div aria-level="7" role="heading">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
+        expected_html = '###### Component funding\n\n<div aria-level="7" role="heading">Overview</div>\n\nWe fund all cooperative agreements using component funding.'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
     def test_div_class_heading_8(self):
         html = '<h6>Component funding</h6><div class="heading-8">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
-        expected_html = '###### Component funding\n\n<div class="heading-8">Overview</div>We fund all cooperative agreements using component funding.'
+        expected_html = '###### Component funding\n\n<div class="heading-8">Overview</div>\n\nWe fund all cooperative agreements using component funding.'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
     def test_div_class_heading_9(self):
         html = '<h6>Component funding</h6><div class="heading-9">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
-        expected_html = "###### Component funding\n\nOverviewWe fund all cooperative agreements using component funding."
+        expected_html = "###### Component funding\n\nOverview\n\nWe fund all cooperative agreements using component funding."
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
     def test_div_class_empty(self):
         html = '<h6>Component funding</h6><div class="">Overview</div><p>We fund all cooperative agreements using component funding.</p>'
-        expected_html = "###### Component funding\n\nOverviewWe fund all cooperative agreements using component funding."
+        expected_html = "###### Component funding\n\nOverview\n\nWe fund all cooperative agreements using component funding."
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
     def test_div_no_role_heading_no_class(self):
         html = "<h6>Component funding</h6><div>Overview</div><p>We fund all cooperative agreements using component funding.</p>"
-        expected_html = "###### Component funding\n\nOverviewWe fund all cooperative agreements using component funding."
+        expected_html = "###### Component funding\n\nOverview\n\nWe fund all cooperative agreements using component funding."
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
@@ -406,7 +406,7 @@ class NofoMarkdownConverterDIVTest(TestCase):
 
     def test_div_role_heading_class_heading_8(self):
         html = '<h6>Component funding</h6><div aria-level="7" role="heading">Overview</div><div class="heading-8">Introduction</div><p>We fund all cooperative agreements using component funding.</p>'
-        expected_html = '###### Component funding\n\n<div aria-level="7" role="heading">Overview</div><div class="heading-8">Introduction</div>We fund all cooperative agreements using component funding.'
+        expected_html = '###### Component funding\n\n<div aria-level="7" role="heading">Overview</div><div class="heading-8">Introduction</div>\n\nWe fund all cooperative agreements using component funding.'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
@@ -414,7 +414,7 @@ class NofoMarkdownConverterDIVTest(TestCase):
         html = """
         <div role="heading">Heading One</div><div>This is just a regular div.</div><p>Some paragraph text.</p>
         """
-        expected_html = '<div role="heading">Heading One</div>This is just a regular div.Some paragraph text.'
+        expected_html = '<div role="heading">Heading One</div>This is just a regular div.\n\nSome paragraph text.'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
@@ -422,7 +422,7 @@ class NofoMarkdownConverterDIVTest(TestCase):
         html = """
         <div><div><div role="heading">Nested Heading</div><p>Nested paragraph inside div.</p></div><p>Another paragraph.</p></div>
         """
-        expected_html = '<div role="heading">Nested Heading</div>Nested paragraph inside div.\n\nAnother paragraph.'
+        expected_html = '<div role="heading">Nested Heading</div>\n\nNested paragraph inside div.\n\nAnother paragraph.'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
