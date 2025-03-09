@@ -436,13 +436,13 @@ test = ["cssselect", "importlib-resources", "jaraco.test (>=5.1)", "lxml", "pyte
 
 [[package]]
 name = "django"
-version = "5.0.8"
+version = "5.0.13"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "Django-5.0.8-py3-none-any.whl", hash = "sha256:333a7988f7ca4bc14d360d3d8f6b793704517761ae3813b95432043daec22a45"},
-    {file = "Django-5.0.8.tar.gz", hash = "sha256:ebe859c9da6fead9c9ee6dbfa4943b04f41342f4cea2c4d8c978ef0d10694f2b"},
+    {file = "Django-5.0.13-py3-none-any.whl", hash = "sha256:b983238dfa2eb2e6b27ebb815e14f0741cf186606eb7bcd857e740174017c50e"},
+    {file = "Django-5.0.13.tar.gz", hash = "sha256:f9d4b7b87a9dae248d5f20cec940cf7290e07d508d6d8432e3c2cabf09b3b0ff"},
 ]
 
 [package.dependencies]
@@ -1430,4 +1430,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.9"
-content-hash = "8fb2562d5f3a24e320af0d2273e3a0a64ceecfa5ae4ed395a1ff5d4ae664da35"
+content-hash = "fa2a8b333dd95c36e0b870659b50c11a1855f3b93c165a10c38fdfb2adec163a"
