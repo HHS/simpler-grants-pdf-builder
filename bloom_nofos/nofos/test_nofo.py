@@ -9,8 +9,8 @@ from freezegun import freeze_time
 from .models import Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
-    REQUEST_HEADERS,
     PUBLIC_INFORMATION_SUBSECTION,
+    REQUEST_HEADERS,
 )
 from .nofo import _get_all_id_attrs_for_nofo as get_all_id_attrs_for_nofo
 from .nofo import (

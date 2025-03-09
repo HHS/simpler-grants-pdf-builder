@@ -4,8 +4,8 @@ import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from urllib.parse import parse_qs, urlparse
 from difflib import SequenceMatcher
+from urllib.parse import parse_qs, urlparse
 
 import cssutils
 import mammoth
