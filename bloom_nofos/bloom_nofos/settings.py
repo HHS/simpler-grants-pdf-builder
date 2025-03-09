@@ -469,13 +469,6 @@ CONSTANCE_CONFIG = {
     ),
 }
 
-# Disable migrations for constance in tests because there is a bug in their migration file
-# https://github.com/jazzband/django-constance/issues/575
-if "test" in sys.argv:
-    MIGRATION_MODULES = {
-        "constance": None,
-    }
-
 # Django codemirror
 DJANGO_MIRROR_DEFAULTS = {
     "mode": "css",
