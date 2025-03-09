@@ -2233,9 +2233,9 @@ def preserve_bookmark_targets(soup):
     3. If the parent of the empty <a> tag does not have an 'id', the new prefixed 'id' is copied to the parent element.
     4. The original empty <a> tag is then removed from the document.
     """
-    empty_links = soup.find_all(
-        "a", id=True, href=False, text=lambda t: not t or not t.strip()
-    )
+    empty_links = [
+        a for a in soup.find_all("a", id=True, href=False) if not a.text.strip()
+    ]
     for link in empty_links:
         if not link.get("id", "").startswith("_"):
             original_id = link.get("id", "")
@@ -2394,9 +2394,9 @@ def preserve_table_heading_links(soup):
         paragraph = table.find_previous_sibling("p")
         if paragraph:
             # Find all empty <a> tags within the paragraph
-            for a in paragraph.find_all("a", text=lambda t: not t or not t.strip()):
-                if not a.contents:
-                    table_id_anchors.append(a)
+            empty_links = [a for a in paragraph.find_all("a") if not a.text.strip()]
+            for a in empty_links:
+                table_id_anchors.append(a)
 
     for a in table_id_anchors:
         # Check if the <a> tag is empty

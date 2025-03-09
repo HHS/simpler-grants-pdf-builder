@@ -4661,6 +4661,15 @@ class PreserveBookmarkTargetsTest(TestCase):
         )
         self.assertEqual(str(soup), expected)
 
+    def test_empty_anchor_with_id_and_whitespace_transfers_to_parent(self):
+        html = '<p>This is a paragraph with an empty <a id="bookmark1"> </a> link.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = (
+            '<p id="nb_bookmark_bookmark1">This is a paragraph with an empty  link.</p>'
+        )
+        self.assertEqual(str(soup), expected)
+
     def test_empty_anchor_with_matching_href(self):
         html = '<p>Some text and a <a id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
         soup = BeautifulSoup(html, "html.parser")
@@ -4926,6 +4935,14 @@ class PreserveHeadingLinksTest(TestCase):
 class PreserveTableHeadingLinksTest(TestCase):
     def test_empty_anchor_with_table_heading_id(self):
         html = '<p><a id="Table5"></a>About priority populations</p><table></table>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_table_heading_links(soup)
+        result = str(soup)
+        expected = '<p id="table-heading--Table5">About priority populations</p><table></table>'
+        self.assertEqual(result, expected)
+
+    def test_empty_anchor_with_whitespace_with_table_heading_id(self):
+        html = '<p><a id="Table5"> </a>About priority populations</p><table></table>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_table_heading_links(soup)
         result = str(soup)
