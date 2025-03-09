@@ -63,7 +63,12 @@ def get_secret(secret_id: str) -> str:
     """Fetches a secret from Google Cloud Secret Manager."""
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     if not project_id:
-        print(f"[Secret Manager] No GOOGLE_CLOUD_PROJECT set, cannot fetch {secret_id}")
+        if settings.DEBUG:
+            print(
+                "[bloom_nofos.utils.get_secret] No GOOGLE_CLOUD_PROJECT, cannot fetch '{}'".format(
+                    secret_id
+                )
+            )
         return ""
 
     try:
@@ -72,7 +77,12 @@ def get_secret(secret_id: str) -> str:
         response = client.access_secret_version(request={"name": name})
         return response.payload.data.decode("UTF-8")
     except Exception as e:
-        print(f"[Secret Manager] Error accessing secret {secret_id}: {str(e)}")
+        if settings.DEBUG:
+            print(
+                "[bloom_nofos.utils.get_secret] Error accessing secret '{}': {}".format(
+                    secret_id, str(e)
+                )
+            )
         return ""
 
 
@@ -83,10 +93,10 @@ def get_login_gov_keys(environment: str = "dev", testing: bool = "test" in sys.a
         return "test_key", "test_key"
 
     # Get private key from Secret Manager
-    private_key = get_secret(f"login-gov-private-key-{environment}")
+    private_key = get_secret("login-gov-private-key-{}".format(environment))
 
     # Read public key from filesystem
-    cert_path = f"bloom_nofos/certs/login-gov-public-key-{environment}.crt"
+    cert_path = "bloom_nofos/certs/login-gov-public-key-{}.crt".format(environment)
     try:
         with open(cert_path) as f:
             public_key = f.read()

@@ -2,8 +2,6 @@ import json
 import jwt
 import time
 import uuid
-import os
-from pathlib import Path
 from urllib.parse import urlencode
 import requests
 from django.conf import settings
