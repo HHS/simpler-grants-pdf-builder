@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from constance import config
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F
 from django.forms import ValidationError
 from django.utils.html import escape
 from slugify import slugify
@@ -152,11 +151,11 @@ def replace_chars(file_content):
         ("\xa0", " "),
         ("&nbsp;", " "),
         # from (☐) U+2610 BALLOT BOX to (◻) U+25FB WHITE MEDIUM SQUARE
-        ("\u2610", "\u25FB"),
+        ("\u2610", "\u25fb"),
         # from (¨) U+00A8 DIAERESIS to (◻) U+25FB WHITE MEDIUM SQUARE
-        ("\u00A8", "\u25FB"),
+        ("\u00a8", "\u25fb"),
         # from () U+007F DELETE to (◻) U+25FB WHITE MEDIUM SQUARE
-        ("\u007F", "\u25FB"),
+        ("\u007f", "\u25fb"),
     ]
 
     for _from, _to in replacement_chars:
