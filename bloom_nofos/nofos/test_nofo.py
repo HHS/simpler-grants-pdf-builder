@@ -1030,11 +1030,11 @@ class CreateNOFOTests(TestCase):
 
         self.assertEqual(
             nofo.sections.first().subsections.all()[0].body,
-            "Subsection 1 body with **strong tag**\n\n",
+            "\n\nSubsection 1 body with **strong tag**\n\n",
         )
         self.assertEqual(
             nofo.sections.first().subsections.all()[1].body,
-            "Subsection 2 body with list\n\n* Item 1\n* Item 2\n",
+            "\n\nSubsection 2 body with list\n\n* Item 1\n* Item 2\n",
         )
 
 
@@ -1679,11 +1679,11 @@ class AddHeadingsTests(TestCase):
         self.assertEqual(subsection_1.html_id, "1--program-description--budget-budget")
         self.assertEqual(
             subsection_1.body,
-            "Subsection 1 body to [Budget & Budget](#1--program-description--budget-budget).\n\n",
+            "Subsection 1 body to [Budget & Budget](#1--program-description--budget-budget).\n",
         )
         self.assertEqual(
             subsection_2.body,
-            "Subsection 2 body to [Budget & Budget](#1--program-description--budget-budget).\n\n",
+            "Subsection 2 body to [Budget & Budget](#1--program-description--budget-budget).\n",
         )
 
     def test_add_headings_with_case_insensitive_links(self):
@@ -1709,11 +1709,11 @@ class AddHeadingsTests(TestCase):
         )
         self.assertEqual(
             subsection_1.body,
-            "Subsection 1 body to [Contacts and Support](#1--program-description--contacts-and-support).\n\n",
+            "Subsection 1 body to [Contacts and Support](#1--program-description--contacts-and-support).\n",
         )
         self.assertEqual(
             subsection_2.body,
-            "Subsection 2 body to [Contacts and Support](#1--program-description--contacts-and-support).\n\n",
+            "Subsection 2 body to [Contacts and Support](#1--program-description--contacts-and-support).\n",
         )
 
 

@@ -333,6 +333,8 @@ def _build_nofo(nofo, sections):
                 html_body = [str(tag).strip() for tag in subsection_body]
                 if html_body:
                     md_body = md("".join(html_body), escape_misc=False)
+                    # strip excess newlines, then add 1 trailing newline
+                    md_body = md_body.strip() + "\n"
 
             subsection_obj = Subsection(
                 name=subsection.get("name", ""),
