@@ -1,13 +1,14 @@
 import json
-import jwt
 import time
 import uuid
 from urllib.parse import urlencode
+
+import jwt
 import requests
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.conf import settings
 from jwt.algorithms import RSAAlgorithm
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.backends import default_backend
 
 
 class LoginGovClient:

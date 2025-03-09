@@ -8,7 +8,6 @@ from django.utils import timezone
 from easyaudit.models import CRUDEvent
 from slugify import slugify
 
-
 from bloom_nofos.utils import is_docraptor_live_mode_active
 
 
