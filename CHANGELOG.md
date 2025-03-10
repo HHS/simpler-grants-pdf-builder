@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Added "Login.gov" user attributes to admin page
+- Add explanation for `429` links on the external links status table
 
 ### Changed
 
