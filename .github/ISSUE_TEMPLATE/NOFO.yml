@@ -1,0 +1,57 @@
+name: NOFO Builder Tickets
+description: Submit a request for a task related to NOFO Builder.
+title: "[Task]: " # Prefills issue title
+labels: ["nofo-builder", "triage"] # Optional labels
+
+body:
+  - type: input
+    id: task_name
+    attributes:
+      label: Task name
+      description: "What do you need us to do?"
+      placeholder: "e.g., Fix table alignment in the NOFO editor"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Type of task
+      description: "What kind of task is this?"
+      multiple: false
+      options:
+        - General suggestion
+        - I need help
+        - Bug
+        - UI enhancement
+
+  - type: textarea
+    id: task_description
+    attributes:
+      label: Description
+      description: "Write a detailed description of what you want accomplished. Be as specific as possible, please!"
+      placeholder: "Provide step-by-step details of the issue or request."
+    validations:
+      required: true
+
+  - type: textarea
+    id: upload_image
+    attributes:
+      label: Upload an image
+      description: "Please add [annotated] screenshots or mock-ups to show us what you're talking about."
+      placeholder: "Drag and drop or paste an image here."
+    validations:
+      required: false
+
+  - type: input
+    id: user_email
+    attributes:
+      label: Your email
+      description: "Enter your email so we know who you are and how we can get in touch with you."
+      placeholder: "e.g., your.email@example.com"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "Thank you for submitting a request! We’ll review it as soon as possible."
