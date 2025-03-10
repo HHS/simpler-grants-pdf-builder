@@ -31,6 +31,9 @@ class NofoMarkdownConverter(MarkdownConverter):
         if el.get("role") == "heading":
             return str(el)
 
+        if el.get("class") and "heading-8" in el.get("class"):
+            return str(el)
+
         # Else, return text, which is what process_text would return
         return text
 

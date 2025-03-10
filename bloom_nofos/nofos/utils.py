@@ -149,6 +149,7 @@ style_map_manager = StyleMapManager(
         "non-row element in table",
         "Normal_0",
         "v:",
+        "w:",
         "office-word:",
     ]
 )
@@ -341,6 +342,11 @@ style_map_manager.add_style(
     style_rule="p[style-name='heading 7'] => div[role='heading'][aria-level='7']",
     location_in_nofo="Step 1 > Summary > Funding Strategy > Component Funding > Overview",
     note="This is how we represent H7s",
+)
+style_map_manager.add_style(
+    style_rule="p[style-name='heading 8'] => div.heading-8",
+    location_in_nofo="Step 1 > Approach > Strategies and activities > Component 1 > Required activities (years 1 and 2)",
+    note="This is an H8, which we don't formally support",
 )
 style_map_manager.add_style(
     style_rule="p[style-name='Default'] => p",
