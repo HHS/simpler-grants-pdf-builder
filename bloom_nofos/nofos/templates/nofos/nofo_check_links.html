@@ -48,11 +48,18 @@
             <td>Manually check if link is working.</td>
           </tr>
           <tr>
-            <th scope="row">404 🔴 (Not Found)</th>
+            <th scope="row">404 ⛔️ (Not Found)</th>
             <td>
               This page can’t be found.
             </td>
             <td>Manually check if link is working.</td>
+          </tr>
+          <tr>
+            <th scope="row">429 ⛔️ (Too Many Requests)</th>
+            <td>
+              Too many requests sent in a short time period.
+            </td>
+            <td>Try again in 5 minutes.</td>
           </tr>
           <tr>
             <th scope="row">500 🟠 (Server error)</th>
@@ -66,6 +73,7 @@
 
       <p>Sometimes, links that won’t load for the NOFO Builder are fine when you click them.</p>
       <p><strong>For this reason, <em>always</em> manually check links that are <em>not</em> 200 🟢.</strong></p>
+      <p>If see lots of <strong>429</strong>s, you should just wait a bit.</p>
       <p>Learn more about <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">HTTP response status codes</a>.</p>
     </div>
   </details>
