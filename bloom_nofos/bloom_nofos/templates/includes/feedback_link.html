@@ -1,8 +1,8 @@
+{% spaceless %}
 <a
-    class="usa-link usa-link--external"
+    class="usa-link usa-link--external{% if html_class %} {{ html_class }}{% endif %}"
     rel="noreferrer"
     target="_blank"
-    href="https://forms.office.com/Pages/ResponsePage.aspx?id=ZQrp8hdH80WEeW57vbgMkchDgIu0IAJAnHQJqY67rEdUMzg1RURBV1hUR1FKQklHTloyMkJDNU05MC4u"
-    >
-  Give us feedback
-</a>
+    href="https://forms.office.com/Pages/ResponsePage.aspx?id=ZQrp8hdH80WEeW57vbgMkZCu1xVHwN1Phn8PANcTDlxUQkJZVU9YVlNERTNCREpaS0pYT0xSNFQ4WS4u"
+>{% if link_text %}{{ link_text }}{% else %}Give us feedback{% endif %}</a>
+{% endspaceless %}

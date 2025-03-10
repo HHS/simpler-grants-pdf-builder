@@ -94,9 +94,7 @@
           </li>
           {% if user.group == 'hrsa' %}
             <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
-              <a class="usa-footer__primary-link" href="https://airtable.com/appdaa5AqUwI8jdOo/pagpyAKIEOyLofFCw/form" target="_blank">
-                Submit a support ticket <span aria-hidden="true">🎟️</span>
-              </a>
+              {% include "includes/feedback_link.html" with html_class="usa-footer__primary-link usa-link--external" link_text="Submit a support ticket" only %}
             </li>
           {% endif %}
           {% if request.path == "/" %}

@@ -1028,6 +1028,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   text-decoration: none;
 }
 
+.usa-footer__primary-link.usa-link--external::after {
+  margin-left: 6px;
+}
+
 .usa-error-message {
   font-size: 1rem;
 }

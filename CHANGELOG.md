@@ -19,6 +19,7 @@ Versioning since version 1.0.0.
 - Rotate certs for login.gov staging
 - Remove "local" cert: only 2 envs exist now
 - Update style map for "w:" and "heading 8" styles
+- Use MS form for feedback form (no longer using Airtable)
 
 ### Fixed
 
