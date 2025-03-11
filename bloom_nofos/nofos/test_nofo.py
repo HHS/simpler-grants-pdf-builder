@@ -40,6 +40,7 @@ from .nofo import (
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
     get_sections_from_soup,
+    get_step_2_section,
     get_subsections_from_sections,
     is_callout_box_table,
     join_nested_lists,
@@ -1890,6 +1891,71 @@ class TestGetAllIdAttrsForNofo(TestCase):
 ###########################################################
 ######### FIND THINGS IN THE NOFO DOCUMENT TESTS ##########
 ###########################################################
+
+
+class GetStep2SectionTests(TestCase):
+    def setUp(self):
+        """Set up a Nofo instance and create sections for testing."""
+        self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test Opdiv")
+
+    def test_find_section_by_name(self):
+        """Test that the function finds a section with 'Step 2' in the name."""
+        Section.objects.create(nofo=self.nofo, name="Step 1: Review", order=1)
+
+        step_2_section = Section.objects.create(
+            nofo=self.nofo, name="Step 2: Apply", order=2
+        )
+
+        Section.objects.create(
+            nofo=self.nofo, name="Step 3: Prepare", order=3
+        )  # This section should not be returned
+
+        result = get_step_2_section(self.nofo)
+        self.assertEqual(result, step_2_section)
+
+    def test_falls_back_to_order_2(self):
+        """Test that if no 'Step 2' section exists, the function falls back to order=2."""
+        order_2_section = Section.objects.create(
+            nofo=self.nofo, name="General Info", order=2
+        )
+        Section.objects.create(
+            nofo=self.nofo, name="Unrelated Section", order=5
+        )  # This section should not be returned
+
+        result = get_step_2_section(self.nofo)
+        self.assertEqual(result, order_2_section)
+
+    def test_prefers_step_2_name_over_order_2(self):
+        """Test that the function prefers a 'Step 2' section over a section with order=2."""
+        step_2_section = Section.objects.create(
+            nofo=self.nofo, name="Step 2: Write Application", order=4
+        )
+        Section.objects.create(
+            nofo=self.nofo, name="Eligibility Requirements", order=2
+        )  # This section should not be returned
+
+        result = get_step_2_section(self.nofo)
+        self.assertEqual(result, step_2_section)
+
+    def test_returns_none_if_no_match(self):
+        """Test that the function returns None if no matching sections exist."""
+        Section.objects.create(nofo=self.nofo, name="Unrelated Section", order=1)
+        Section.objects.create(nofo=self.nofo, name="Another Unrelated", order=5)
+
+        result = get_step_2_section(self.nofo)
+        self.assertIsNone(result)
+
+    def test_multiple_step_2_sections_returns_first(self):
+        """Test that the function returns the first 'Step 2' section if multiple exist."""
+        step_2a = Section.objects.create(
+            nofo=self.nofo, name="Step 2: Prepare", order=1
+        )
+        Section.objects.create(
+            nofo=self.nofo, name="Step 2: Write Application", order=3
+        )  # Second section
+
+        result = get_step_2_section(self.nofo)
+        self.assertEqual(result, step_2a)
 
 
 class TestFindSameOrHigherHeadingLevelsConsecutive(TestCase):

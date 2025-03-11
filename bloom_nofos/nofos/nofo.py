@@ -1018,6 +1018,23 @@ def compare_nofos_metadata(new_nofo, nofo):
 ###########################################################
 
 
+def get_step_2_section(nofo):
+    """
+    Retrieves the section that either contains 'Step 2' in its name,
+    or falls back to the section with order=2. If neither exist, returns None.
+    """
+    sections = nofo.sections.all()
+
+    # Try to get section containing "Step 2" (case-insensitive)
+    step_2_section = sections.filter(name__icontains="Step 2").first()
+
+    # If no match, try to get section with order=2
+    if not step_2_section:
+        step_2_section = sections.filter(order=2).first()
+
+    return step_2_section  # Returns None if nothing matches
+
+
 def _get_next_subsection(section, subsection, with_tag=False):
     """
     Recursively find the next subsection in the given section based on the order.
