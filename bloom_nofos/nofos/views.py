@@ -69,6 +69,7 @@ from .nofo import (
     find_same_or_higher_heading_levels_consecutive,
     get_cover_image,
     get_sections_from_soup,
+    get_step_2_section,
     get_subsections_from_sections,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
@@ -170,6 +171,8 @@ class NofosDetailView(DetailView):
         )
 
         context["nofo_cover_image"] = get_cover_image(self.object)
+
+        context["step_2_section"] = get_step_2_section(self.object)
 
         return context
 
