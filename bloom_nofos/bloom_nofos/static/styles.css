@@ -733,6 +733,24 @@ label.usa-label {
   font-size: 12px;
 }
 
+/* Target only safari */
+_::-webkit-full-page-media,
+_:future,
+:root .nofo_edit table th.nofo-edit-table--subsection--name.page-break-before {
+  position: relative;
+}
+
+_::-webkit-full-page-media,
+_:future,
+:root
+  .nofo_edit
+  table
+  th.nofo-edit-table--subsection--name.page-break-before::before {
+  right: -270%;
+  left: unset;
+  transform: none;
+}
+
 .nofo_edit table th.nofo-edit-table--subsection--name.column-break-before,
 .nofo_edit table th.nofo-edit-table--subsection--name.column-break-before ~ td {
   border-top: 1px dotted #5c5c5c;
