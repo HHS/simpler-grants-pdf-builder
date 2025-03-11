@@ -241,11 +241,19 @@
         <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.</p>
         <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
         <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
-        <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
+        {% if step_2_section %}
+          <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+        {% else %}
+          <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+        {% endif %}
 
         <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
         <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
-        <a href="#step-2-get-ready-to-apply">See Step 2: Get Ready to Apply</a>
+        {% if step_2_section %}
+          <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+        {% else %}
+          <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+        {% endif %}
       {% endif %}
 
       <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
