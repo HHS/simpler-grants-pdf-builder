@@ -24,6 +24,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Solve "page break" floating at the top in Safari
 - Login page once again displays errors correctly
 
 ## [2.7.0] - 2025-03-05
