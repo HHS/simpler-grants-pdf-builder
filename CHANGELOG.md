@@ -9,6 +9,15 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.8.0] - 2025-03-12
+
+### Added
+
+- Add new theme: "CDC Portrait (DHP)"
 - Added "Login.gov" user attributes to admin page
 - Add explanation for `429` links on the external links status table
 
@@ -26,6 +35,10 @@ Versioning since version 1.0.0.
 
 - Solve "page break" floating at the top in Safari
 - Login page once again displays errors correctly
+
+### Migrations
+
+- Add migration for the new DHP theme
 
 ## [2.7.0] - 2025-03-05
 
@@ -52,7 +65,6 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add new theme: "CDC Portrait (DHP)"
 - Added the status to the edit_nofo actions box, with a link to the "edit status" page
 
 ### Fixed
@@ -81,31 +93,23 @@ Versioning since version 1.0.0.
 ### Changed
 
 - Use a MS 365 form for feedback instead of a Google Form
-- Breadcrumb links are no longer clickable (instead, they are just visual
-  indicators)
-- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by
-  default
-- "Important: public information" callout box will appear after specific
-  subsection names in section 3 of new NOFOs
-  - If no matching subsection names are found, it will appear at the end of
-    section 3 like normal
+- Breadcrumb links are no longer clickable (instead, they are just visual indicators)
+- When you open a NOFO Builder PDF in Acrobat, the Bookmarks tab will be open by default
+- "Important: public information" callout box will appear after specific subsection names in section 3 of new NOFOs
+  - If no matching subsection names are found, it will appear at the end of section 3 like normal
 
 ### Fixed
 
 - Fixed a bunch of things in the diff interface:
-  - Use full-word diffs, so `<del>January</del><ins>March</ins>` instead of
-    `<del>Janu</del><ins>M</ins>ar<del>y</del><ins>ch</ins>`
+  - Use full-word diffs, so `<del>January</del><ins>March</ins>` instead of `<del>Janu</del><ins>M</ins>ar<del>y</del><ins>ch</ins>`
   - Show linebreaks that exist in body content (easier for lists, for example)
-  - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown,
-    they generally don't matter)
+  - Reclassify whitespace-only changes as "MATCH" not "UPDATE" (in markdown, they generally don't matter)
   - Hide the "Basic information" subsection because it duplicates information
-- Fix for more list styles that were not importing correctly ("List Bullet1,
-  Bullet 2", etc)
+- Fix for more list styles that were not importing correctly ("List Bullet1, Bullet 2", etc)
 
 ### Migrations
 
-- Added a new attribute to NOFO model: "modifications", a datetime object
-  (default null)
+- Added a new attribute to NOFO model: "modifications", a datetime object (default null)
 
 ## [2.4.0] - 2025-02-13
 
@@ -125,24 +129,20 @@ Versioning since version 1.0.0.
 ### Changed
 
 - All page break visuals say "page-break" now, dropped the "-before", "-after"
-- In the nofo section editor, page breaks added to a section now say
-  "page-break"
+- In the nofo section editor, page breaks added to a section now say "page-break"
   - Previously, it was just a dashed line, but nobody knew what that meant
 - Loop through sections to create breadcrumbs
   - Support "Understand Review, Selection, and Award" as a new section name
 - Preserve existing page breaks when a NOFO is reimported
-  - Note that this is a best-guess effort: if subsections are renamed, page
-    breaks can't be preserved
+  - Note that this is a best-guess effort: if subsections are renamed, page breaks can't be preserved
 - DocRaptor IPs can now be updated by superadmin users
 - Requires Login.gov certs and ENV vars to be set for devs.
 
 ### Fixed
 
 - Retry failed external link requests so that more of them will show up green
-- H7 warning notice at the top of a NOFO now handles h7s in markdown body as
-  well
-- Preserve heading links for h7 headings (other heading levels worked before,
-  but not h7s)
+- H7 warning notice at the top of a NOFO now handles h7s in markdown body as well
+- Preserve heading links for h7 headings (other heading levels worked before, but not h7s)
 - Remove unneeded nested lists "li > ul > li" for BYB page and appendices
 - Page breaks were not possible to add to subsections without a heading
 - page-break-after was briefly not working
@@ -150,8 +150,7 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add "Important: public information" subsection to non-archived, non-published
-  NOFOs
+- Add "Important: public information" subsection to non-archived, non-published NOFOs
 - Adds login.gov ID to users model
 
 ## [2.3.0] - 2025-01-17
@@ -187,13 +186,11 @@ Versioning since version 1.0.0.
 
 - Styling changes to external links page for acommodate more cols
 - Style maps are better at handling lists when importing .docx files
-- Before You Begin page uses 'sole_source_justification' to show alternate
-  version, not a specific NOFO ID
+- Before You Begin page uses 'sole_source_justification' to show alternate version, not a specific NOFO ID
 
 ### Fixed
 
-- Fixes issue where archiving a NOFO would fail due to validation checks
-  requiring at least one section
+- Fixes issue where archiving a NOFO would fail due to validation checks requiring at least one section
 - Links starting with "file:///" should be flagged as broken links
 - Hotfix to make viewing content tables easier in edit view
 - Return sections by "order" for nofo.get_first_subsection()
