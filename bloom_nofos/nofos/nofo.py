@@ -320,14 +320,6 @@ def _build_nofo(nofo, sections):
         if not model_section:
             continue
 
-        # if no subsections, raise error
-        if not section.get("subsections"):
-            e = ValidationError(
-                {"subsections": "Section must have at least one subsection"}
-            )
-            e.nofo = nofo
-            raise e
-
         for subsection in section.get("subsections", []):
             md_body = ""
             subsection_body = subsection.get("body", [])
