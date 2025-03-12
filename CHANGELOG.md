@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Allow empty sections
+  - No longer creating a default empty subsection when a section is created
+
 ### Fixed
 
 ## [2.8.0] - 2025-03-12
