@@ -69,17 +69,21 @@ class TestCompareNofos(TestCase):
 
         # Modify the first (default) subsection instead of creating a new one
         # These two subsections will match
-        self.old_sub_1 = self.old_section.subsections.first()
-        self.old_sub_1.name = "Budget Requirements"
-        self.old_sub_1.body = "Budget must not exceed $100K."
-        self.old_sub_1.tag = "h3"
-        self.old_sub_1.save()
+        self.old_sub_1 = Subsection.objects.create(
+            name="Budget Requirements",
+            body="Budget must not exceed $100K.",
+            section=self.old_section,
+            order=1,
+            tag="h3",
+        )
 
-        self.new_sub_1 = self.new_section.subsections.first()
-        self.new_sub_1.name = "Budget Requirements"
-        self.new_sub_1.body = "Budget must not exceed $100K."
-        self.new_sub_1.tag = "h3"
-        self.new_sub_1.save()
+        self.new_sub_1 = Subsection.objects.create(
+            name="Budget Requirements",
+            body="Budget must not exceed $100K.",
+            section=self.new_section,
+            order=1,
+            tag="h3",
+        )
 
         # Changed subsection (no name, different content)
         self.old_sub_2 = Subsection.objects.create(

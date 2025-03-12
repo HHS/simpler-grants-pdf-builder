@@ -28,10 +28,13 @@ class NofoAPITest(TestCase):
         )
 
         # Get the default subsection and update it
-        self.default_subsection = self.section.subsections.get(order=1)
-        self.default_subsection.name = "API Test NOFO: Subsection 1"
-        self.default_subsection.tag = "h3"
-        self.default_subsection.save()
+        self.default_subsection = Subsection.objects.create(
+            section=self.section,
+            name="API Test NOFO: Subsection 1",
+            tag="h3",
+            body="",
+            order=1,
+        )
 
         # Load fixture data for import tests
         fixture_path = os.path.join(
@@ -160,6 +163,7 @@ class NofoAPITest(TestCase):
             content_type="application/json",
             **self.headers,
         )
+        print("response")
         self.assertEqual(response.status_code, 201)
 
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
