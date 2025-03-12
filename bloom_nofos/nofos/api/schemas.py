@@ -26,7 +26,7 @@ class SectionBaseSchema(ModelSchema):
 
 
 class SectionSchema(SectionBaseSchema):
-    subsections: List[SubsectionSchema]
+    subsections: Optional[List[SubsectionSchema]]
 
 
 class NofoBaseSchema(ModelSchema):

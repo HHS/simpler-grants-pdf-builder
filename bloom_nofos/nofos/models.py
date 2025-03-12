@@ -412,12 +412,7 @@ class Section(models.Model):
         if not self.pk and not self.order:
             self.order = self.get_next_order(self.nofo)
 
-        # Save the section first (necessary for creating a default subsection)
         super().save(*args, **kwargs)
-
-        # If this is a new section, create a default subsection with only required fields
-        if not self.subsections.exists():
-            Subsection.objects.create(section=self, order=1)
 
         # Update NOFO's updated timestamp
         if self.nofo:
@@ -463,18 +458,6 @@ class Section(models.Model):
                 Subsection.objects.filter(pk=subsection.pk).update(
                     order=models.F("order") + 1
                 )
-
-    def clean(self):
-        super().clean()
-        errors = {}
-
-        # Validate that sections have at least one subsection
-        # Note: New sections will automatically get a default subsection on save
-        if self.pk and not self.subsections.exists():
-            errors["__all__"] = "Section must have at least one subsection"
-
-        if errors:
-            raise ValidationError(errors)
 
 
 # Custom exception for heading validation errors
