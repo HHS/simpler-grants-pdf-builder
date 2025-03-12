@@ -28,6 +28,10 @@ def create_nofo(request, payload: NofoSchema):
         data = payload.dict()
         sections = data.pop("sections", [])
 
+        # Raise validation error if sections is empty
+        if not sections:
+            raise ValidationError({"__all__": ["NOFO must have at least one section"]})
+
         # Remove fields we dont want set on import
         excluded_fields = ["id", "archived", "status", "group"]
         for field in excluded_fields:
