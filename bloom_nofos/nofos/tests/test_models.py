@@ -147,16 +147,10 @@ class SectionModelTest(TestCase):
         with self.assertRaises(ValidationError):
             section.full_clean()
 
-    def test_section_requires_subsection(self):
-        section = Section.objects.create(**self.valid_section_data)
-        self.assertEqual(section.subsections.count(), 1)
-        section.subsections.all().delete()
-        with self.assertRaises(ValidationError):
-            section.full_clean()
-
-    def test_valid_section_with_subsection(self):
+    def test_empty_section_is_okay(self):
         section = Section.objects.create(**self.valid_section_data)
         section.full_clean()
+        self.assertEqual(section.subsections.count(), 0)
 
     def test_automatic_order_assignment(self):
         # Create first section without order
@@ -172,19 +166,6 @@ class SectionModelTest(TestCase):
         section2_data["html_id"] = "2--second-section"
         section2 = Section.objects.create(**section2_data)
         self.assertEqual(section2.order, 2)
-
-    def test_automatic_subsection_creation(self):
-        # Create section without subsection
-        section_data = self.valid_section_data.copy()
-        section = Section.objects.create(**section_data)
-
-        # Verify a default subsection was created
-        self.assertEqual(section.subsections.count(), 1)
-        default_subsection = section.subsections.first()
-        self.assertEqual(default_subsection.order, 1)
-
-        # Verify section passes validation
-        section.full_clean()  # Should not raise ValidationError
 
     def test_order_preserved_with_explicit_value(self):
         # Create section with explicit order
@@ -214,10 +195,9 @@ class SectionModelInsertOrderSpaceTests(TestCase):
         self.section = Section.objects.create(name="Test Section", nofo=self.nofo)
 
         # Create subsections with orders 1, 2, 3
-        self.sub1 = Subsection.objects.get(section=self.section, order=1)
-        self.sub1.name = "Subsection 1"
-        self.sub1.tag = "h3"
-        self.sub1.save()
+        self.sub1 = Subsection.objects.create(
+            section=self.section, name="Subsection 1", tag="h3", order=1
+        )
 
         self.sub2 = Subsection.objects.create(
             section=self.section, name="Subsection 2", tag="h3", order=2
@@ -340,12 +320,6 @@ class SubsectionModelTest(TestCase):
 
         self.assertEqual(subsection.get_previous_subsection(), first_subsection)
 
-    def test_subsection_get_previous_when_no_previous(self):
-        # when a section is created, an empty subsection is created at "order=1"
-        first_subsection = self.section.subsections.first()
-
-        self.assertEqual(first_subsection.get_previous_subsection(), None)
-
 
 class SubsectionMatchingTest(TestCase):
     def setUp(self):
@@ -360,9 +334,19 @@ class SubsectionMatchingTest(TestCase):
             name="Section 1", order=1, nofo=self.nofo2, html_id="s1"
         )
 
-        # Default empty subsection at order=1 (created automatically)
-        self.sub1_nofo1 = self.section1_nofo1.subsections.first()
-        self.sub1_nofo2 = self.section1_nofo2.subsections.first()
+        # Create an empty subsection for each section
+        self.sub1_nofo1 = Subsection.objects.create(
+            section=self.section1_nofo1,
+            name="",
+            order=1,
+            body="",
+        )
+        self.sub1_nofo2 = Subsection.objects.create(
+            section=self.section1_nofo2,
+            name="",
+            order=1,
+            body="",
+        )
 
     def test_same_section_same_name(self):
         """Subsections with the same name but in different sections should not match."""

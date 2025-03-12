@@ -1727,11 +1727,13 @@ class AddPageBreaksToHeadingsTests(TestCase):
         )
 
         # Get the default subsection that was automatically created
-        self.default_subsection = self.section.subsections.get(order=1)
-        self.default_subsection.name = "Basic information"
-        self.default_subsection.tag = "h3"
-        self.default_subsection.body = "Basic information section, no html_class"
-        self.default_subsection.save()
+        Subsection.objects.create(
+            section=self.section,
+            name="Basic information",
+            tag="h3",
+            body="Basic information section, no html_class",
+            order=1,
+        )
 
         Subsection.objects.create(
             section=self.section,
