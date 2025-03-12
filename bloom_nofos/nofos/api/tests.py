@@ -36,6 +36,25 @@ class NofoAPITest(TestCase):
             order=1,
         )
 
+        self.minimal_compliant_payload = {
+            "title": "Minimal NOFO",
+            "short_name": "",
+            "tagline": "",
+            "application_deadline": "",
+            "agency": "",
+            "number": "",
+            "opdiv": "Test OpDiv",
+            "sections": [
+                {
+                    "name": "Step 1",
+                    "html_id": "1--step-1",
+                    "order": 1,
+                    "has_section_page": True,
+                    "subsections": [],
+                }
+            ],
+        }
+
         # Load fixture data for import tests
         fixture_path = os.path.join(
             settings.BASE_DIR, "nofos", "fixtures", "json", "cms-u2u-25-001.json"
@@ -55,6 +74,22 @@ class NofoAPITest(TestCase):
         self.assertEqual(
             data["sections"][0]["subsections"][0]["name"], self.default_subsection.name
         )
+
+    def test_export_nofo_no_subsections(self):
+        """Test exporting a NOFO via API"""
+
+        # Delete the default subsection before running assertions
+        self.default_subsection.delete()
+        self.assertEqual(len(self.section.subsections.all()), 0)
+
+        response = self.client.get(f"/api/nofos/{self.nofo.id}", **self.headers)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["id"], self.nofo.id)
+        self.assertEqual(data["title"], self.nofo.title)
+        self.assertEqual(data["sections"][0]["name"], self.section.name)
+        self.assertEqual(data["sections"][0]["subsections"], [])
 
     def test_export_archived_nofo_returns_404(self):
         """Test that archived NOFOs return 404"""
@@ -110,12 +145,8 @@ class NofoAPITest(TestCase):
 
     def test_import_nofo_without_sections(self):
         """Test importing a NOFO without sections"""
-        payload = {
-            "title": "No Sections NOFO",
-            "number": "TEST-002",
-            "sections": [],
-            "opdiv": "Test OpDiv",
-        }
+        payload = self.minimal_compliant_payload
+        payload["sections"] = []  # empty sections array
 
         response = self.client.post(
             "/api/nofos",
@@ -125,6 +156,58 @@ class NofoAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+        response_json = json.loads(response.content)
+        self.assertEqual(response_json["message"], "Model validation error")
+        self.assertEqual(
+            response_json["details"]["__all__"], ["NOFO must have at least one section"]
+        )
+
+    def test_import_nofo_without_subsections_is_okay(self):
+        """Test importing a NOFO without subsections"""
+        payload = self.minimal_compliant_payload
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.headers,
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_import_nofo_without_subsections_key_is_not_allowed(self):
+        """Test importing a NOFO without subsections key"""
+        payload = self.minimal_compliant_payload
+        # delete "subsections" key
+        del payload["sections"][0]["subsections"]
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.headers,
+        )
+
+        self.assertEqual(response.status_code, 422)
+        response_json = json.loads(response.content)
+        self.assertEqual(response_json["detail"][0]["msg"], "Field required")
+
+    def test_import_nofo_with_non_array_subsections_key_is_not_allowed(self):
+        """Test importing a NOFO without subsections key"""
+        payload = self.minimal_compliant_payload
+        # set subsections key to invalid value
+        payload["sections"][0]["subsections"] = None
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.headers,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        response_json = json.loads(response.content)
+        self.assertEqual(response_json["message"], "'NoneType' object is not iterable")
 
     def test_import_nofo_with_id(self):
         """Test that providing an ID is ignored during import"""
@@ -163,7 +246,6 @@ class NofoAPITest(TestCase):
             content_type="application/json",
             **self.headers,
         )
-        print("response")
         self.assertEqual(response.status_code, 201)
 
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
