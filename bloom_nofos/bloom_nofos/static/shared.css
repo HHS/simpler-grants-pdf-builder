@@ -190,6 +190,12 @@
   background-color: var(--color--yellow);
 }
 
+.martor-preview img,
+.nofo-edit-table--subsection--body img,
+.section--content img {
+  border-radius: 10px;
+}
+
 /* List CSS */
 
 ol ol:not([type]):not(.usa-list--unstyled) {

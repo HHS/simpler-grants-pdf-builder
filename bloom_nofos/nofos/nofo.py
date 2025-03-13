@@ -119,6 +119,7 @@ def process_nofo_html(soup, top_heading_level):
             file.write(str(soup))
 
     decompose_instructions_tables(soup)
+    normalize_whitespace_img_alt_text(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
     preserve_bookmark_links(soup)
@@ -136,6 +137,13 @@ def process_nofo_html(soup, top_heading_level):
     preserve_bookmark_targets(soup)
 
     soup = add_em_to_de_minimis(soup)
+
+    for a in soup.find_all("a"):
+        print("a.text", a.text)
+
+    for img in soup.find_all("img"):
+        alt_text = img.get("alt", "No alt text")  # Get alt text, or use fallback
+        print("alt_text", repr(alt_text))
 
     return soup
 
@@ -2450,6 +2458,20 @@ def decompose_instructions_tables(soup):
                 or re.match(r".+-specific instructions", table_text_lowercase)
             ):
                 table.decompose()
+
+
+def normalize_whitespace_img_alt_text(soup):
+    """
+    This function mutates the soup!
+
+    Normalize whitespace in image alt text by replacing all occurrences
+    of double newlines (\n\n) with a single newline (\n).
+
+    :param soup: BeautifulSoup object to modify in place.
+    """
+    for img in soup.find_all("img"):
+        if img.has_attr("alt"):
+            img["alt"] = img["alt"].replace("\n\n", "\n")
 
 
 ###########################################################

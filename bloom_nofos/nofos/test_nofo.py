@@ -44,6 +44,7 @@ from .nofo import (
     get_subsections_from_sections,
     is_callout_box_table,
     join_nested_lists,
+    normalize_whitespace_img_alt_text,
     overwrite_nofo,
     preserve_bookmark_links,
     preserve_bookmark_targets,
@@ -6478,3 +6479,58 @@ class DecomposeInstructionsTablesTest(TestCase):
         self.assertEqual(len(remaining_tables), 2)
         self.assertIn("Some information.", remaining_tables[0].get_text())
         self.assertIn("More data here.", remaining_tables[1].get_text())
+
+
+class NormalizeWhitespaceImgAltTextTests(TestCase):
+    def test_replaces_double_newlines_with_single(self):
+        """Ensure double newlines in img alt text are replaced with a single newline."""
+        html = '<img src="turtle.jpg" alt="A turtle in a tank\n\nAI-generated content may be incorrect.">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        normalize_whitespace_img_alt_text(soup)
+
+        self.assertEqual(
+            soup.find("img")["alt"],
+            "A turtle in a tank\nAI-generated content may be incorrect.",
+        )
+
+    def test_does_not_modify_single_newline(self):
+        """Ensure single newlines remain unchanged in img alt text."""
+        html = '<img src="fish.jpg" alt="A fish in a pond\nLooking for food.">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        normalize_whitespace_img_alt_text(soup)
+
+        self.assertEqual(soup.find("img")["alt"], "A fish in a pond\nLooking for food.")
+
+    def test_ignores_images_without_alt_text(self):
+        """Ensure images without alt text remain unchanged."""
+        html = '<img src="no-alt.jpg">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        normalize_whitespace_img_alt_text(soup)
+
+        self.assertIsNone(soup.find("img").get("alt"))
+
+    def test_handles_multiple_images(self):
+        """Ensure function correctly processes multiple img tags in a document."""
+        html = """
+        <img src="img1.jpg" alt="First image\n\nExtra info.">
+        <img src="img2.jpg" alt="Second image\n\nDetails here.">
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        normalize_whitespace_img_alt_text(soup)
+
+        img_tags = soup.find_all("img")
+        self.assertEqual(img_tags[0]["alt"], "First image\nExtra info.")
+        self.assertEqual(img_tags[1]["alt"], "Second image\nDetails here.")
+
+    def test_no_images_in_html(self):
+        """Ensure function does not raise errors when there are no img tags."""
+        html = "<p>No images here!</p>"
+        soup = BeautifulSoup(html, "html.parser")
+
+        normalize_whitespace_img_alt_text(soup)
+
+        self.assertEqual(str(soup), html)
