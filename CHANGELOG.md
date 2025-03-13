@@ -11,10 +11,13 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Add rounded corners by default to all inline images
 - Allow empty sections
   - No longer creating a default empty subsection when a section is created
 
 ### Fixed
+
+- Normalize whitespace for MS Word AI-generated alt text
 
 ## [2.8.0] - 2025-03-12
 
