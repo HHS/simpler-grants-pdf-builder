@@ -17,6 +17,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Remove "Jump to a step": we don't have links here anymore so they should go
 - Normalize whitespace for MS Word AI-generated alt text
 
 ## [2.8.0] - 2025-03-12

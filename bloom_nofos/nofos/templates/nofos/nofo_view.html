@@ -287,7 +287,6 @@
       {% if section.has_section_page %}
         <div class="title-page section--title-page">
           <div class="header-nav section--title-page--header-nav">
-            <p>Jump to a step</p>
             <ol>
               {% spaceless %}
               {% with nofo.sections.all|dictsort:"order"|filter_breadcrumb_sections as breadcrumb_sections %}
