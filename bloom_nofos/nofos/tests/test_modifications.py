@@ -99,8 +99,22 @@ class NofoEditModificationViewTest(TestCase):
         self.nofo.refresh_from_db()
 
         # Only 1 Modifications section exists
-        sections = self.nofo.sections.filter(name="Modifications")
-        self.assertEqual(sections.count(), 1)
+        modification_sections = self.nofo.sections.filter(name="Modifications")
+        self.assertEqual(modification_sections.count(), 1)
+
+        # Ensure it still has only one subsection with the expected content
+        subsections = modification_sections[0].subsections.all()
+        self.assertEqual(subsections.count(), 1)
+        self.assertEqual(
+            subsections[0].body,
+            (
+                "| Modification description | Date updated |\n"
+                "|--------------------------|--------------|\n"
+                "|                          |              |\n"
+                "|                          |              |\n"
+                "|                          |              |\n"
+            ),
+        )
 
     def test_post_does_not_duplicate_modifications_section(self):
         """Ensure an existing 'Modifications' section is not duplicated on repeated requests."""
@@ -113,5 +127,5 @@ class NofoEditModificationViewTest(TestCase):
         self.nofo.refresh_from_db()
 
         # Should still be only one Modifications section
-        sections = self.nofo.sections.filter(name="Modifications")
-        self.assertEqual(sections.count(), 1)
+        modification_sections = self.nofo.sections.filter(name="Modifications")
+        self.assertEqual(modification_sections.count(), 1)

@@ -688,17 +688,20 @@ class NofoEditModificationView(View):
                 has_section_page=False,
             )
 
-            # Get the default subsection that was automatically created
-            default_subsection = modifications_section.subsections.first()
-            if default_subsection:
-                default_subsection.body = (
+            # Create an initial subsection with a modifications table
+            Subsection.objects.create(
+                section=modifications_section,
+                name="",
+                tag="",
+                body=(
                     "| Modification description | Date updated |\n"
                     "|--------------------------|--------------|\n"
                     "|                          |              |\n"
                     "|                          |              |\n"
                     "|                          |              |\n"
-                )
-                default_subsection.save()
+                ),
+                order=1,
+            )
 
             messages.success(
                 self.request,
