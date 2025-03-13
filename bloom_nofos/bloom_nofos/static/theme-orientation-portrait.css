@@ -231,8 +231,7 @@ section.before-you-begin {
 
 /* Section title page */
 
-.section--title-page .section--title-page--header-nav > ol,
-.section--title-page .section--title-page--header-nav > p {
+.section--title-page .section--title-page--header-nav > ol {
   margin-left: -5mm;
 }
 
