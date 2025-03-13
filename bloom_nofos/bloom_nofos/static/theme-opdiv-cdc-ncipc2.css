@@ -210,7 +210,7 @@ h4 {
 /* Section contents */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--ncipc-yellow);
+  border-top-color: var(--color--ncipc-yellow);
   color: var(--color--black);
 }
 

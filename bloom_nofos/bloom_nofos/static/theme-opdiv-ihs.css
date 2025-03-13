@@ -63,7 +63,7 @@ div[role="heading"] {
 /* Running header */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--ihs-blue);
+  border-top-color: var(--color--ihs-blue);
   color: var(--color--ihs-blue);
 }
 

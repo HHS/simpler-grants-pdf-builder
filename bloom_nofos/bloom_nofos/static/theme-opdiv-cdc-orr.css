@@ -199,7 +199,7 @@ section.nofo--cover-page.nofo--cover-page--hero {
 /* Section contents */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--orr-red);
+  border-top-color: var(--color--orr-red);
   color: var(--color--black);
 }
 
