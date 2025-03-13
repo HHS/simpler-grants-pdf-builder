@@ -205,12 +205,12 @@ h4 {
 /* Section contents */
 
 .header-nav--running-header li a {
-  border-top: 4px solid var(--color--iod-grey);
+  border-top-color: var(--color--iod-grey);
   color: var(--color--iod-grey);
 }
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--iod-green);
+  border-top-color: var(--color--iod-green);
   color: var(--color--iod-teal);
 }
 

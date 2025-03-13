@@ -607,12 +607,13 @@ div[role="heading"] {
 }
 
 .header-nav--running-header {
+  height: 20mm;
   display: none;
   position: running(breadcrumbs);
 }
 
 .header-nav--running-header li a {
-  border-top: 4px solid var(--color--light-grey);
+  border-top: 5px solid var(--color--light-grey);
   color: var(--color--med-grey);
 }
 
