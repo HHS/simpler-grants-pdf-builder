@@ -138,13 +138,6 @@ def process_nofo_html(soup, top_heading_level):
 
     soup = add_em_to_de_minimis(soup)
 
-    for a in soup.find_all("a"):
-        print("a.text", a.text)
-
-    for img in soup.find_all("img"):
-        alt_text = img.get("alt", "No alt text")  # Get alt text, or use fallback
-        print("alt_text", repr(alt_text))
-
     return soup
 
 

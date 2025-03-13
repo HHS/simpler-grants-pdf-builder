@@ -14,6 +14,7 @@ Versioning since version 1.0.0.
 - Temporarily set the "Live mode" timeout to 90 minutes
 - Add rounded corners by default to all inline images
 - Breadcrumb links now have a 5px top border
+- Allow page break styles within tables
 - Allow empty sections
   - No longer creating a default empty subsection when a section is created
 

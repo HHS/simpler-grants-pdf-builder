@@ -1210,6 +1210,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
 
   /* Page break rules */
+  table .page-break-before,
   .page-break--hr--container .page-break-before,
   .page-break-before--heading,
   .callout-box.page-break-before {
@@ -1217,6 +1218,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     page-break-before: always !important;
   }
 
+  table .page-break-after,
   .page-break--hr--container .page-break-after,
   .page-break-after--heading {
     break-after: page !important;
