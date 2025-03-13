@@ -44,17 +44,17 @@
 }
 
 .header-nav.header-nav--running-header li a {
-  border-top: 4px solid var(--color--light-grey);
+  border-top-color: var(--color--light-grey);
   color: var(--color--med-grey);
 }
 
 .header-nav.header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--hrsa-red);
+  border-top-color: var(--color--hrsa-red);
   color: var(--color--hrsa-red);
 }
 
 .section--title-page--header-nav a[aria-current] {
-  border-top: 4px solid var(--color--hrsa-blue);
+  border-top-color: var(--color--hrsa-blue);
 }
 
 /* Headings */

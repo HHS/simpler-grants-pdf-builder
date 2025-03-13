@@ -229,12 +229,12 @@ h4 {
 /* Section contents */
 
 .header-nav--running-header li a {
-  border-top: 4px solid var(--color--dhp-grey);
+  border-top-color: var(--color--dhp-grey);
   color: var(--color--med-grey);
 }
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--dhp-purple);
+  border-top-color: var(--color--dhp-purple);
   color: var(--color--dhp-purple);
 }
 

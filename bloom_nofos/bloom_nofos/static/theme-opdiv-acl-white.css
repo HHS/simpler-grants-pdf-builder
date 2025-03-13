@@ -126,7 +126,7 @@ h3 {
 /* Running header */
 
 .header-nav--running-header li a[aria-current] {
-  border-top: 4px solid var(--color--acl-yellow);
+  border-top-color: var(--color--acl-yellow);
   color: var(--color--acl-blue);
 }
 
