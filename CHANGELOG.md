@@ -11,6 +11,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Temporarily set the "Live mode" timeout to 90 minutes
 - Add rounded corners by default to all inline images
 - Allow empty sections
   - No longer creating a default empty subsection when a section is created
