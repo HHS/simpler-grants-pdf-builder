@@ -23,6 +23,10 @@ Versioning since version 1.0.0.
 - Remove "Jump to a step": we don't have links here anymore so they should go
 - Normalize whitespace for MS Word AI-generated alt text
 
+### Removed
+
+- Super duper custom callout box for the front of HRSA-24-014
+
 ## [2.8.0] - 2025-03-12
 
 ### Added
