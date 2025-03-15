@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -84,6 +85,70 @@ from .nofo import (
     suggest_nofo_title,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id
+
+
+###########################################################
+######### NOFO UTILS (used in views and admin) ############
+###########################################################
+
+
+def duplicate_nofo(original_nofo, archive=False):
+    with transaction.atomic():
+        # Clone the NOFO
+        new_nofo = Nofo.objects.get(pk=original_nofo.pk)
+        new_nofo.id = None  # Clear the id to create a new instance
+        new_nofo.title += " (copy)"  # Append " (copy)" to title and short_name
+        new_nofo.short_name += " (copy)"
+        new_nofo.status = "draft"
+
+        if archive:
+            new_nofo.archived = timezone.now().date()
+
+        new_nofo.save()
+
+        # Clone each section
+        sections = Section.objects.filter(nofo=original_nofo)
+        sections_map = {}
+        for section in sections:
+            original_section_id = section.id
+            section.nofo = new_nofo
+            section.id = None
+            section.save()
+            sections_map[original_section_id] = section
+
+            # Clone each subsection
+            subsections = Subsection.objects.filter(section_id=original_section_id)
+            for subsection in subsections:
+                subsection.section = sections_map[original_section_id]
+                subsection.id = None
+                subsection.save()
+
+        return new_nofo
+
+
+@staff_member_required
+def insert_order_space_view(request, section_id):
+    section = get_object_or_404(Section, pk=section_id)  # Get the section or return 404
+    initial_data = {"section": section}  # Pre-populate the form with the section
+
+    if request.method == "POST":
+        form = InsertOrderSpaceForm(request.POST, initial=initial_data)
+        if form.is_valid():
+            section = form.cleaned_data["section"]
+            order = form.cleaned_data["order"]
+            section.insert_order_space(order)
+            messages.success(
+                request, f'Space inserted at order {order} for section "{section}".'
+            )
+
+            return redirect("admin:nofos_section_change", object_id=section.id)
+    else:
+        form = InsertOrderSpaceForm(initial=initial_data)
+        form.fields["section"].disabled = True  # Make the section field non-editable
+
+    context = {"form": form, "title": "Insert Order Space", "section": section}
+    return render(request, "admin/insert_order_space.html", context)
+
 
 ###########################################################
 ################### NOFO OBJECT VIEWS #####################
@@ -1125,30 +1190,6 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         context["links"] = find_external_links(self.object, with_status)
         context["with_status"] = with_status
         return context
-
-
-@staff_member_required
-def insert_order_space_view(request, section_id):
-    section = get_object_or_404(Section, pk=section_id)  # Get the section or return 404
-    initial_data = {"section": section}  # Pre-populate the form with the section
-
-    if request.method == "POST":
-        form = InsertOrderSpaceForm(request.POST, initial=initial_data)
-        if form.is_valid():
-            section = form.cleaned_data["section"]
-            order = form.cleaned_data["order"]
-            section.insert_order_space(order)
-            messages.success(
-                request, f'Space inserted at order {order} for section "{section}".'
-            )
-
-            return redirect("admin:nofos_section_change", object_id=section.id)
-    else:
-        form = InsertOrderSpaceForm(initial=initial_data)
-        form.fields["section"].disabled = True  # Make the section field non-editable
-
-    context = {"form": form, "title": "Insert Order Space", "section": section}
-    return render(request, "admin/insert_order_space.html", context)
 
 
 class NofoHistoryView(GroupAccessObjectMixin, DetailView):
