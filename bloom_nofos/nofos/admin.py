@@ -1,13 +1,12 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.db import transaction
 from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
 from .models import Nofo, Section, Subsection
-from .views import insert_order_space_view
+from .views import duplicate_nofo, insert_order_space_view
 
 # Remove Groups from admin
 admin.site.unregister(Group)
@@ -102,7 +101,7 @@ class SectionAdmin(admin.ModelAdmin):
 class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
-    actions = ["duplicate_nofo"]
+    actions = ["duplicate_nofo_admin"]
 
     list_display = [
         "title",
@@ -153,35 +152,9 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     mirror_fields = ("inline_css",)
 
     @admin.action(description="Duplicate selected NOFOs")
-    def duplicate_nofo(self, request, queryset):
+    def duplicate_nofo_admin(self, request, queryset):
         for original_nofo in queryset:
-            with transaction.atomic():
-                # Clone the NOFO
-                new_nofo = Nofo.objects.get(pk=original_nofo.pk)
-                new_nofo.id = None  # Clear the id to create a new instance
-                new_nofo.title += " (copy)"  # Append " (copy)" to title and short_name
-                new_nofo.short_name += " (copy)"
-                new_nofo.status = "draft"
-                new_nofo.save()
-
-                # Clone each section
-                sections = Section.objects.filter(nofo=original_nofo)
-                sections_map = {}
-                for section in sections:
-                    original_section_id = section.id
-                    section.nofo = new_nofo
-                    section.id = None
-                    section.save()
-                    sections_map[original_section_id] = section
-
-                    # Clone each subsection
-                    subsections = Subsection.objects.filter(
-                        section_id=original_section_id
-                    )
-                    for subsection in subsections:
-                        subsection.section = sections_map[original_section_id]
-                        subsection.id = None
-                        subsection.save()
+            duplicate_nofo(original_nofo)
 
 
 admin.site.register(Subsection, SubsectionAdmin)
