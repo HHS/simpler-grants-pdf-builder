@@ -92,7 +92,7 @@ from .utils import create_nofo_audit_event, create_subsection_html_id
 ###########################################################
 
 
-def duplicate_nofo(original_nofo, archive=False):
+def duplicate_nofo(original_nofo):
     with transaction.atomic():
         # Clone the NOFO
         new_nofo = Nofo.objects.get(pk=original_nofo.pk)
@@ -100,10 +100,6 @@ def duplicate_nofo(original_nofo, archive=False):
         new_nofo.title += " (copy)"  # Append " (copy)" to title and short_name
         new_nofo.short_name += " (copy)"
         new_nofo.status = "draft"
-
-        if archive:
-            new_nofo.archived = timezone.now().date()
-
         new_nofo.save()
 
         # Clone each section
@@ -498,6 +494,11 @@ class NofosImportOverwriteView(BaseNofoImportView):
             page_breaks = {}
             if if_preserve_page_breaks:
                 page_breaks = preserve_subsection_metadata(nofo, sections)
+
+            # clone nofo and then archive it immediately
+            cloned_nofo = duplicate_nofo(nofo)
+            cloned_nofo.archived = timezone.now().date()
+            cloned_nofo.save()
 
             nofo = overwrite_nofo(nofo, sections)
 
