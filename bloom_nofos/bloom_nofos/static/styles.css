@@ -11,6 +11,8 @@
   --color--usa-error-bg-light: #f3e1e4;
   --color--usa-error-bg-dark: #8b0a03;
   --color--usa-error-bg-darker: #775540;
+  --color--usa-emergency-light: #ffe7d4;
+  --color--usa-emergency: #9c3d10;
   --color--usa-accent-warm: #fa9441;
   --color--usa-accent-warm-hover: #c05600;
 }
@@ -632,12 +634,57 @@ label.usa-label {
   font-weight: 400;
 }
 
+/* broken link error + tooltip */
 .nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link,
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating {
+  color: var(--color--usa-emergency);
+  background-color: var(--color--usa-emergency-light);
+}
+
+.nofo_edit
+  .nofo-edit-table--subsection--body
+  a.nofo_edit--broken-link
+  + .usa-tooltip__body,
+.nofo_edit
+  .nofo-edit-table--subsection--body
+  a.nofo_edit--broken-link
+  + .usa-tooltip__body--top {
+  background-color: var(--color--usa-emergency);
+}
+
+.nofo_edit
+  .nofo-edit-table--subsection--body
+  a.nofo_edit--broken-link
+  + .usa-tooltip__body--bottom:after {
+  border-bottom-color: var(--color--usa-emergency);
+}
+
+/* heading  error + tooltip */
 .nofo_edit
   .nofo-edit-table--subsection--name.nofo_edit--heading-error
   span.floating {
   color: var(--color--usa-error-message);
   background-color: var(--color--usa-error-bg-light);
+}
+
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating
+  .usa-tooltip__body,
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating
+  .usa-tooltip__body--top {
+  background-color: var(--color--usa-error-bg-dark);
+}
+
+.nofo_edit
+  .nofo-edit-table--subsection--name.nofo_edit--heading-error
+  span.floating
+  .usa-tooltip__body--bottom:after {
+  border-bottom-color: var(--color--usa-error-bg-dark);
 }
 
 .nofo_edit
