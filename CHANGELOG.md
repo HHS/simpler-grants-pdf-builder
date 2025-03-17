@@ -17,6 +17,7 @@ Versioning since version 1.0.0.
 - Allow page break styles within tables
 - Allow empty sections
   - No longer creating a default empty subsection when a section is created
+- Error message tooltips match colour blocks at the top on nofo_edit page
 
 ### Fixed
 
