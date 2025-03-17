@@ -50,6 +50,35 @@ You can find the exact version of python that is being used by referencing the [
 
 `poetry` is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you.
 
+<details>
+
+<summary>
+Updating dependencies
+</summary>
+
+#### Updating poetry dependencies
+
+Note: this is not required for initial installation + booting up the app, but I am putting it here so that I remember.
+
+```bash
+# check for outdated deps
+poetry show --outdated
+
+# update 1 package
+poetry update django
+
+# reinstall deps from lockfile
+poetry install --no-root
+
+# update everything
+poetry update
+
+# update only nested dependencies
+poetry update --lock
+```
+
+</details>
+
 ### [Install `docker`](https://docs.docker.com/install/)
 
 A docker container allows a developer to package up an application and all of its parts. This means we can build an app in any language, in any stack, and then run it anywhere — whether locally or on a server.
