@@ -41,7 +41,7 @@ def is_docraptor_live_mode_active(last_updated):
 
 
 def get_timedelta_for_docraptor_live_mode():
-    return timedelta(minutes=90)
+    return timedelta(minutes=5)
 
 
 def parse_docraptor_ip_addresses(ip_string: str):

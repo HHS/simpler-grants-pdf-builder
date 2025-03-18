@@ -38,7 +38,7 @@ class CreateNofoAuditEventTests(TestCase):
     def test_valid_event_type_nofo_print_test(self):
         # Set DOCRAPTOR_LIVE_MODE to a past timestamp to simulate "test" mode
         with override_config(
-            DOCRAPTOR_LIVE_MODE=now() - timedelta(minutes=90, seconds=1)
+            DOCRAPTOR_LIVE_MODE=now() - timedelta(minutes=5, seconds=1)
         ):
             create_nofo_audit_event("nofo_print", self.nofo, self.user)
 
