@@ -10,9 +10,13 @@ Edit “{{ nofo|nofo_name }}”
 {% block content %}
 {% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" only %}
 
-<!-- WARNING MESSAGE FOR ARCHIVED NOFOS -->
+<!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
 {% if nofo.archived %}
-  {% include "includes/archived_alert.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+  {% if nofo.successor %}
+    {% include "includes/warning_successor.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+  {% else %}
+    {% include "includes/warning_archived.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+  {% endif %}
 {% endif %}
 
 <div class="back-link font-body-md">
