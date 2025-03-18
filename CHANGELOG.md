@@ -11,6 +11,17 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [2.9.0] - 2025-03-18
+
+### Added
+
+- Reimporting a NOFO saves a past revision of that NOFO from now on
+  - We don't expose this in the UI yet, but it is now IMPOSSIBLE to wipe out your past NOFO by reimporting another NOFO over it.
+
+### Changed
+
 - Temporarily set the "Live mode" timeout to 90 minutes
 - Add rounded corners by default to all inline images
 - Breadcrumb links now have a 5px top border
@@ -26,7 +37,12 @@ Versioning since version 1.0.0.
 
 ### Removed
 
-- Super duper custom callout box for the front of HRSA-24-014
+- Super duper custom callout box from the front cover of HRSA-24-014
+  - Replaced with the "modifications" setting
+
+### Migrations
+
+- Add "successor" field to NOFO model
 
 ## [2.8.0] - 2025-03-12
 
