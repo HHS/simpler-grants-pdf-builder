@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
 from nofos.models import Nofo, Section, Subsection
+from nofos.views import duplicate_nofo
 from users.models import BloomUser
 
 
@@ -29,6 +30,74 @@ def create_test_html_file(opportunity_number="NOFO-ACF-001"):
     return SimpleUploadedFile(
         "test.html", html_content.encode("utf-8"), content_type="text/html"
     )
+
+
+class DuplicateNofoTests(TestCase):
+    def setUp(self):
+        """Set up test data: Create a NOFO with sections and subsections."""
+        self.original_nofo = Nofo.objects.create(
+            title="Test NOFO",
+            short_name="test-nofo",
+            number="NOFO-ACF-001",
+            opdiv="ACF",
+            group="bloom",
+            status="active",
+        )
+
+        self.section = Section.objects.create(
+            nofo=self.original_nofo, name="Test Section", order=1
+        )
+
+        self.subsection = Subsection.objects.create(
+            section=self.section,
+            name="Test Subsection",
+            order=1,
+            tag="h3",
+            body="Test Subsection content",
+        )
+
+    def test_duplicate_nofo_creates_new_instance(self):
+        """Test that duplicating a NOFO creates a new instance with a different ID."""
+        new_nofo = duplicate_nofo(self.original_nofo)
+
+        # New "copy" NOFO is created
+        self.assertNotEqual(new_nofo.id, self.original_nofo.id)
+        self.assertEqual(new_nofo.title, "Test NOFO (copy)")
+        self.assertEqual(new_nofo.short_name, "test-nofo (copy)")
+        self.assertEqual(new_nofo.status, "draft")
+        self.assertEqual(new_nofo.opdiv, self.original_nofo.opdiv)
+
+    def test_duplicate_nofo_keeps_original_unchanged(self):
+        """Ensure the original NOFO remains unchanged after duplication."""
+        duplicate_nofo(self.original_nofo)
+
+        # Refresh original NOFO from DB
+        self.original_nofo.refresh_from_db()
+
+        self.assertEqual(self.original_nofo.title, "Test NOFO")  # No change
+        self.assertEqual(self.original_nofo.status, "active")  # No change
+
+    def test_duplicate_nofo_copies_sections(self):
+        """Test that duplicating a NOFO also duplicates its sections."""
+        new_nofo = duplicate_nofo(self.original_nofo)
+
+        self.assertEqual(new_nofo.sections.count(), 1)  # Section copied
+        new_section = new_nofo.sections.first()
+        self.assertEqual(new_section.name, "Test Section")
+        self.assertNotEqual(new_section.id, self.section.id)  # New instance
+        self.assertEqual(new_section.order, self.section.order)
+
+    def test_duplicate_nofo_copies_subsections(self):
+        """Ensure subsections are also duplicated."""
+        new_nofo = duplicate_nofo(self.original_nofo)
+
+        new_section = new_nofo.sections.first()
+        self.assertEqual(new_section.subsections.count(), 1)
+
+        new_subsection = new_section.subsections.first()
+        self.assertEqual(new_subsection.name, "Test Subsection")
+        self.assertEqual(new_subsection.body, "Test Subsection content")
+        self.assertNotEqual(new_subsection.id, self.subsection.id)  # New instance
 
 
 class NofoReimportTests(TransactionTestCase):
@@ -196,6 +265,51 @@ class NofoReimportTests(TransactionTestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Re-imported NOFO from file: test.html")
 
+    def test_reimport_creates_archived_copy(self):
+        """Test that reimport creates an archived copy of the existing NOFO."""
+        test_file = create_test_html_file()
+
+        # Perform reimport
+        response = self.client.post(
+            reverse("nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.id}),
+            {
+                "nofo-import": test_file,
+                "preserve_page_breaks": "on",
+                "csrfmiddlewaretoken": "dummy",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Fetch the NOFOs after reimport
+        nofos = Nofo.objects.filter(number=self.nofo.number)
+
+        # Ensure we now have 2 NOFOs
+        self.assertEqual(nofos.count(), 2)
+
+        # Identify the original and new NOFOs
+        original_nofo = nofos.filter(id=self.nofo.id).first()
+        copied_nofo = nofos.exclude(id=self.nofo.id).first()
+
+        # Ensure original NOFO is NOT archived
+        self.assertIsNotNone(original_nofo)
+        self.assertIsNone(original_nofo.archived)
+
+        # Ensure new NOFO is archived and has "copy" in the title
+        self.assertIsNotNone(copied_nofo)
+        self.assertTrue("copy" in copied_nofo.title.lower())
+        self.assertIsNotNone(copied_nofo.archived)  # Archived should be a timestamp
+
+        # Ensure sections and subsections were copied
+        self.assertEqual(copied_nofo.sections.count(), self.nofo.sections.count())
+        for section in self.nofo.sections.all():
+            copied_section = copied_nofo.sections.filter(name=section.name).first()
+            self.assertIsNotNone(copied_section)
+            self.assertEqual(
+                copied_section.subsections.count(), section.subsections.count()
+            )
+
 
 class NofosImportOverwriteViewTests(TestCase):
     def setUp(self):
@@ -218,6 +332,18 @@ class NofosImportOverwriteViewTests(TestCase):
             number="NOFO-ACF-001",
             opdiv="ACF",
             group="bloom",
+        )
+
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Test Section", order=1
+        )
+
+        self.subsection = Subsection.objects.create(
+            section=self.section,
+            name="Test Subsection",
+            order=1,
+            tag="h3",
+            body="Test Subsection content",
         )
 
         self.import_url = reverse(
