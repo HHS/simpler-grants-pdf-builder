@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added a tooltip to the box emoji that explains the subsection is a callout box
+
 ### Changed
 
 - "Live mode" timeout is 5 minutes
@@ -20,7 +22,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Reimporting a NOFO saves a past revision of that NOFO from now on
-  - We don't expose this in the UI yet, but it is now IMPOSSIBLE to wipe out your past NOFO by reimporting another NOFO over it.
+  - We don't expose this in the UI yet, but it is now IMPOSSIBLE to wipe out your past NOFO by reimporting another NOFO over it
 
 ### Changed
 
