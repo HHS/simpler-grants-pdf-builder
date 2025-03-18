@@ -72,9 +72,13 @@
 {% endblock %}
 
 {% block content %}
-  <!-- WARNING MESSAGE FOR ARCHIVED NOFOS -->
+  <!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
   {% if nofo.archived %}
-    {% include "includes/archived_alert.html" with nofo=nofo user=user only %}
+    {% if nofo.successor %}
+      {% include "includes/warning_successor.html" with nofo=nofo user=user only %}
+    {% else %}
+      {% include "includes/warning_archived.html" with nofo=nofo user=user only %}
+    {% endif %}
   {% endif %}
   <!-- COVER PAGE -->
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
