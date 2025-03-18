@@ -306,11 +306,19 @@ class Nofo(models.Model):
         help_text="An SSJ NOFO is intended for only 1 applicant.",
     )
 
+    successor = models.ForeignKey(
+        "self",  # self-referential foreign key
+        on_delete=models.CASCADE,  # If a NOFO is deleted, also delete history
+        null=True,
+        blank=True,
+        related_name="ancestors",
+    )
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return "({}) {}".format(self.id, self.title or self.short_name)
 
     def get_admin_url(self):
         """
