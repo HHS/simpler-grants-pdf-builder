@@ -92,14 +92,22 @@ from .utils import create_nofo_audit_event, create_subsection_html_id
 ###########################################################
 
 
-def duplicate_nofo(original_nofo):
+def duplicate_nofo(original_nofo, is_successor=False):
     with transaction.atomic():
         # Clone the NOFO
         new_nofo = Nofo.objects.get(pk=original_nofo.pk)
         new_nofo.id = None  # Clear the id to create a new instance
-        new_nofo.title += " (copy)"  # Append " (copy)" to title and short_name
-        new_nofo.short_name += " (copy)"
-        new_nofo.status = "draft"
+
+        if is_successor:
+            # the "new" nofo is an archive, so it is the "succeeded" by the original one
+            new_nofo.successor = original_nofo
+
+        else:
+            # else, we are just duplicating it, no familial relationship is implied
+            new_nofo.title += " (copy)"
+            new_nofo.short_name += " (copy)"
+            new_nofo.status = "draft"
+
         new_nofo.save()
 
         # Clone each section
@@ -496,7 +504,7 @@ class NofosImportOverwriteView(BaseNofoImportView):
                 page_breaks = preserve_subsection_metadata(nofo, sections)
 
             # clone nofo and then archive it immediately
-            cloned_nofo = duplicate_nofo(nofo)
+            cloned_nofo = duplicate_nofo(nofo, is_successor=True)
             cloned_nofo.archived = timezone.now().date()
             cloned_nofo.save()
 
