@@ -1298,4 +1298,9 @@ class NofoHistoryView(GroupAccessObjectMixin, DetailView):
         context["has_more"] = len(all_events) > end_offset
         context["next_offset"] = end_offset
 
+        # find previous versions, if any
+        context["ancestor_nofos"] = Nofo.objects.filter(successor=self.object).order_by(
+            "created"
+        )
+
         return context

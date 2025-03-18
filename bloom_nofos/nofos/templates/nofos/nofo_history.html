@@ -20,6 +20,32 @@
   <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
 </div>
 
+{% if ancestor_nofos %}
+  <details class="usa-accordion usa-accordion--bordered">
+    <summary class="usa-accordion__button">
+      <h2 class="usa-accordion--heading">
+        Past versions ({{ ancestor_nofos|length }})
+      </h2>
+    </summary>
+
+    <div class="usa-accordion__content usa-prose">
+      <p>All past versions of this NOFO. The most recent version is at the end.</p>
+      <ol class="usa-list usa-list--unstyled">
+        {% for ancestor_nofo in ancestor_nofos %}
+        <li>
+          <a href="{% url 'nofos:nofo_edit' ancestor_nofo.id %}">#{{ancestor_nofo.id}}</a>:
+          {% timezone "America/New_York" %}
+        <td>
+          {{ ancestor_nofo.created|date:'F j' }}, {{ ancestor_nofo.created|date:'g:i A' }}
+        </td>
+      {% endtimezone %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </details>
+{% endif %}
+
 <table class="usa-table" id="audit-events-table">
   <caption>
     <div>
