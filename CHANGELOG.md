@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- "Live mode" timeout is 5 minutes
+
 ### Fixed
 
 ## [2.9.0] - 2025-03-18
