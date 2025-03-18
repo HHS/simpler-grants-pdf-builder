@@ -67,6 +67,10 @@ class DuplicateNofoTests(TestCase):
         self.assertEqual(new_nofo.status, "draft")
         self.assertEqual(new_nofo.opdiv, self.original_nofo.opdiv)
 
+        # since this is not a "successor" nofo, successor and archived fields are None
+        self.assertIsNone(new_nofo.successor)
+        self.assertIsNone(new_nofo.archived)
+
     def test_duplicate_nofo_keeps_original_unchanged(self):
         """Ensure the original NOFO remains unchanged after duplication."""
         duplicate_nofo(self.original_nofo)
@@ -76,6 +80,26 @@ class DuplicateNofoTests(TestCase):
 
         self.assertEqual(self.original_nofo.title, "Test NOFO")  # No change
         self.assertEqual(self.original_nofo.status, "active")  # No change
+        self.assertIsNone(self.original_nofo.successor)
+        self.assertIsNone(self.original_nofo.archived)
+
+    def test_duplicate_nofo_is_successor_creates_new_successor_instance(self):
+        """Test that duplicating a NOFO creates a new instance with a different ID."""
+        new_nofo = duplicate_nofo(self.original_nofo, is_successor=True)
+
+        # New "copy" NOFO is created
+        self.assertNotEqual(new_nofo.id, self.original_nofo.id)
+        # copy is NOT included in the title or short name
+        self.assertEqual(new_nofo.title, "Test NOFO")
+        self.assertEqual(new_nofo.short_name, "test-nofo")
+        # status is NOT changed to draft
+        self.assertEqual(new_nofo.status, "active")
+        self.assertEqual(new_nofo.opdiv, self.original_nofo.opdiv)
+        # archived is set
+        self.assertIsNotNone(new_nofo.archived)
+
+        # Set successor on new NOFO
+        self.assertEqual(new_nofo.successor, self.original_nofo)
 
     def test_duplicate_nofo_copies_sections(self):
         """Test that duplicating a NOFO also duplicates its sections."""
@@ -296,10 +320,10 @@ class NofoReimportTests(TransactionTestCase):
         self.assertIsNotNone(original_nofo)
         self.assertIsNone(original_nofo.archived)
 
-        # Ensure new NOFO is archived and has "copy" in the title
+        # Ensure new NOFO is archived and has the original nofo as its successor
         self.assertIsNotNone(copied_nofo)
-        self.assertTrue("copy" in copied_nofo.title.lower())
-        self.assertIsNotNone(copied_nofo.archived)  # Archived should be a timestamp
+        self.assertIsNotNone(copied_nofo.archived)
+        self.assertEqual(copied_nofo.successor, original_nofo)
 
         # Ensure sections and subsections were copied
         self.assertEqual(copied_nofo.sections.count(), self.nofo.sections.count())

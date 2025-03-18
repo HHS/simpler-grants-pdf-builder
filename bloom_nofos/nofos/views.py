@@ -101,6 +101,8 @@ def duplicate_nofo(original_nofo, is_successor=False):
         if is_successor:
             # the "new" nofo is an archive, so it is the "succeeded" by the original one
             new_nofo.successor = original_nofo
+            # immediately archive this NOFO
+            new_nofo.archived = timezone.now().date()
 
         else:
             # else, we are just duplicating it, no familial relationship is implied
@@ -503,10 +505,8 @@ class NofosImportOverwriteView(BaseNofoImportView):
             if if_preserve_page_breaks:
                 page_breaks = preserve_subsection_metadata(nofo, sections)
 
-            # clone nofo and then archive it immediately
-            cloned_nofo = duplicate_nofo(nofo, is_successor=True)
-            cloned_nofo.archived = timezone.now().date()
-            cloned_nofo.save()
+            # cloning a nofo creates a past revision and then archives it immediately
+            duplicate_nofo(nofo, is_successor=True)
 
             nofo = overwrite_nofo(nofo, sections)
 
