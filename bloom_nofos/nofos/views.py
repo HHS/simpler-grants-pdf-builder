@@ -10,7 +10,8 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, dateparse, timezone
@@ -112,22 +113,36 @@ def duplicate_nofo(original_nofo, is_successor=False):
 
         new_nofo.save()
 
-        # Clone each section
-        sections = Section.objects.filter(nofo=original_nofo)
-        sections_map = {}
-        for section in sections:
-            original_section_id = section.id
-            section.nofo = new_nofo
-            section.id = None
-            section.save()
-            sections_map[original_section_id] = section
+        # Clone all sections and then bulk create them
+        original_sections = list(Section.objects.filter(nofo=original_nofo))
+        section_map = {}
 
-            # Clone each subsection
-            subsections = Subsection.objects.filter(section_id=original_section_id)
-            for subsection in subsections:
-                subsection.section = sections_map[original_section_id]
-                subsection.id = None
-                subsection.save()
+        new_sections = [
+            Section(
+                **model_to_dict(original_section, exclude=["id", "nofo"]),
+                nofo=new_nofo,
+            )
+            for original_section in original_sections
+        ]
+        created_sections = Section.objects.bulk_create(new_sections)
+
+        # Map old section IDs to new section objects
+        for original, new in zip(original_sections, created_sections):
+            section_map[original.id] = new
+
+        # Clone all subsections and then bulk create them
+        original_subsections = list(
+            Subsection.objects.filter(section__in=original_sections)
+        )
+
+        new_subsections = [
+            Subsection(
+                **model_to_dict(original_subsection, exclude=["id", "section"]),
+                section=section_map[original_subsection.section.id],
+            )
+            for original_subsection in original_subsections
+        ]
+        Subsection.objects.bulk_create(new_subsections)
 
         return new_nofo
 
