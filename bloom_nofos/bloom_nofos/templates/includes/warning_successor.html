@@ -2,14 +2,11 @@
 
 <div class="usa-alert usa-alert--warning{% if class_name %} {{ class_name }}{% endif %}">
   <div class="usa-alert__body">
-    <h4 class="usa-alert__heading text-base-darkest">Past revision of {{ nofo.successor.number }}</h4>
-    <p class="usa-alert__text">
-      This is a past revision of <a href="{% url 'nofos:nofo_edit' nofo.successor.id %}">(#{{nofo.successor.id}}): “{{ nofo.successor|nofo_name }}”</a>.
-    </p>
+    <h4 class="usa-alert__heading text-base-darkest">Past version of {{ nofo.successor.number }}</h4>
     <p class="usa-alert__text">
       This NOFO revision is from {{ nofo.archived|date:"F j, Y" }}.
       {% if not user.is_superuser %}
-        To revert to this version, contact Adam or Paul.
+        To restore to this version, contact Paul or Adam.
       {% endif %}
     </p>
   </div>

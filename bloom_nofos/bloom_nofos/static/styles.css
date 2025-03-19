@@ -554,6 +554,10 @@ label.usa-label {
   height: 15px;
 }
 
+.nofo_edit.nofo--archived .add-or-remove-subsections {
+  display: none;
+}
+
 .nofo_edit caption div a {
   text-decoration: none;
 }
@@ -823,6 +827,16 @@ _:future,
   th:last-of-type,
 .nofo_edit.nofo_status--published:not(.nofo--modifications)
   table.table--hide-edit-if-published
+  tbody
+  tr
+  td:last-of-type,
+.nofo_edit.nofo--archived
+  table.table--hide-edit-if-archived
+  thead
+  tr
+  th:last-of-type,
+.nofo_edit.nofo--archived
+  table.table--hide-edit-if-archived
   tbody
   tr
   td:last-of-type {

@@ -9,13 +9,18 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added "Past versions" to the nofo audit history page
 - Added a tooltip to the box emoji that explains the subsection is a callout box
 
 ### Changed
 
 - "Live mode" timeout is 5 minutes
+- Archived NOFOs can't be edited in any way
+  - This includes hiding all the edit UI links
 
 ### Fixed
+
+- Published NOFOs can't have subsections added or removed
 
 ## [2.9.0] - 2025-03-18
 
