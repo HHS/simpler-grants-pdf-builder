@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "bloom-nofos"
-version = "2.9.0"
+version = "2.10.0"
 description = "the no-code solo nofo web flow"
 authors = ["Paul Craig <paul@pcraig.ca>"]
 readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "3.11.9"
+python = "3.12.2"
 django = "5.0.13"
 beautifulsoup4 = "^4.12.2"
 markdownify = "0.14.1"
