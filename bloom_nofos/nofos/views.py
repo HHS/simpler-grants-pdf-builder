@@ -89,7 +89,6 @@ from .nofo import (
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id
 
-
 ###########################################################
 ######### NOFO UTILS (used in views and admin) ############
 ###########################################################
@@ -750,17 +749,22 @@ class NofoImportNumberView(BaseNofoEditView):
 ###########################################################
 
 
-class NofoEditModificationView(PreventIfArchivedMixin, GroupAccessObjectMixin, View):
+class NofoEditModificationView(
+    PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView
+):
+    model = Nofo
+    template_name = "nofos/nofo_edit_modifications.html"
+    fields = ["modifications"]  # Allow only modifications to be edited
+    context_object_name = "nofo"
+
     archived_error_message = "Can’t add modifications to an archived NOFO."
 
-    def get(self, request, pk):
-        nofo = get_object_or_404(Nofo, id=pk)
-        return render(request, "nofos/nofo_edit_modifications.html", {"nofo": nofo})
+    def form_valid(self, form):
+        """Handle NOFO modification update."""
+        nofo = form.instance
+        submitted_date = self.request.POST.get("modifications", "").strip()
 
-    def post(self, request, pk):
-        nofo = get_object_or_404(Nofo, id=pk)
-        submitted_date = request.POST.get("modifications", "").strip()
-
+        # Convert date format if needed
         if "/" in submitted_date:
             submitted_date = datetime.strptime(submitted_date, "%m/%d/%Y").strftime(
                 "%Y-%m-%d"
@@ -769,9 +773,9 @@ class NofoEditModificationView(PreventIfArchivedMixin, GroupAccessObjectMixin, V
         parsed_date = dateparse.parse_date(submitted_date) if submitted_date else None
 
         if submitted_date and not parsed_date:
-            messages.error(request, "Invalid date format.")
+            messages.error(self.request, "Invalid date format.")
             return render(
-                request,
+                self.request,
                 "nofos/nofo_edit_modifications.html",
                 {"nofo": nofo},
                 status=400,
@@ -780,19 +784,18 @@ class NofoEditModificationView(PreventIfArchivedMixin, GroupAccessObjectMixin, V
         nofo.modifications = parsed_date
         nofo.save()
 
-        # Check if a "Modifications" section exists
-        modifications_section = nofo.sections.filter(name="Modifications").first()
-        if not modifications_section:
-            # Create new "Modifications" section
-            modifications_section = Section.objects.create(
-                nofo=nofo,
-                name="Modifications",
-                html_id="modifications",
-                order=Section.get_next_order(nofo),  # Get next available order
-                has_section_page=False,
-            )
+        # Check if a "Modifications" section exists, create it if needed
+        modifications_section, created = nofo.sections.get_or_create(
+            name="Modifications",
+            defaults={
+                "html_id": "modifications",
+                "order": Section.get_next_order(nofo),
+                "has_section_page": False,
+            },
+        )
 
-            # Create an initial subsection with a modifications table
+        if created:
+            # Create initial subsection with modifications table
             Subsection.objects.create(
                 section=modifications_section,
                 name="",
@@ -806,21 +809,14 @@ class NofoEditModificationView(PreventIfArchivedMixin, GroupAccessObjectMixin, V
                 ),
                 order=1,
             )
-
             messages.success(
                 self.request,
-                "NOFO is ‘modified’. Added message to cover page and created new section: “<a href='#{}'>{}</a>”".format(
-                    modifications_section.html_id, modifications_section.name
-                ),
+                f"NOFO is ‘modified’. Added message to cover page and created new section: “<a href='#{modifications_section.html_id}'>{modifications_section.name}</a>”",
             )
-
         else:
-            # did NOT create new modifications section, just updated date
             messages.success(
                 self.request,
-                "New modification date: “{}”".format(
-                    dateformat.format(nofo.modifications, "F j, Y")
-                ),
+                f"New modification date: “{dateformat.format(nofo.modifications, 'F j, Y')}”",
             )
 
         return redirect("nofos:nofo_edit", pk=nofo.id)
