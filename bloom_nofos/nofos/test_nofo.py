@@ -1084,17 +1084,15 @@ class OverwriteNOFOTests(TestCase):
 
     def test_overwrite_nofo_success_empty_sections(self):
         """
-        Test overwriting a nofo with empty sections raises validation error
+        Test overwriting with a nofo with empty sections is allowed
         """
         nofo = create_nofo("Test Nofo", self.sections, opdiv="Test OpDiv")
         self.assertEqual(nofo.title, "Test Nofo")
         self.assertEqual(nofo.number, "NOFO #999")
         self.assertEqual(nofo.sections.first().name, "Section 1")
 
-        with self.assertRaises(ValidationError) as context:
-            nofo = overwrite_nofo(nofo, [])
-
-        self.assertIn("NOFO must have at least one section", str(context.exception))
+        nofo = overwrite_nofo(nofo, [])
+        self.assertEqual(len(nofo.sections.all()), 0)  # no sections
 
 
 class AddFinalSubsectionTests(TestCase):

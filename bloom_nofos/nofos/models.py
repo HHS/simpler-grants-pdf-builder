@@ -349,10 +349,6 @@ class Nofo(models.Model):
             errors["title"] = "Either title or number must be provided"
             errors["number"] = "Either title or number must be provided"
 
-        # Validate at least one section exists (only for existing NOFOs)
-        if self.pk and not self.sections.exists():
-            errors["__all__"] = "NOFO must have at least one section"
-
         if errors:
             raise ValidationError(errors)
 
