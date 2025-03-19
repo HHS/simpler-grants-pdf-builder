@@ -9,11 +9,20 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.10.0] - 2025-03-19
+
+### Added
+
 - Added "Past versions" to the nofo audit history page
 - Added a tooltip to the box emoji that explains the subsection is a callout box
 
 ### Changed
 
+- Update Python version to 3.12.2
 - "Live mode" timeout is 5 minutes
 - Archived NOFOs can't be edited in any way
   - This includes hiding all the edit UI links
