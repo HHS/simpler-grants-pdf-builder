@@ -298,7 +298,7 @@ class NofoMarkdownConverterPTest(TestCase):
 
     def test_regular_p_asterisk(self):
         html = "<p>Regular Paragraph with asterisk *</p>"
-        expected_markdown = "Regular Paragraph with asterisk \*"
+        expected_markdown = "Regular Paragraph with asterisk \\*"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
@@ -310,13 +310,13 @@ class NofoMarkdownConverterPTest(TestCase):
 
     def test_regular_p_asterisk_in_td(self):
         html = "<table><tr><th><p>Header</p></th></tr><tr><td><p>Content *</p></td></tr></table>"
-        expected_markdown = "| Header |\n| --- |\n| Content \* |"
+        expected_markdown = "| Header |\n| --- |\n| Content \\* |"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
     def test_regular_p_asterisk_in_th(self):
         html = "<table><tr><th><p>Header *</p></th></tr><tr><td><p>Content</p></td></tr></table>"
-        expected_markdown = "| Header \* |\n| --- |\n| Content |"
+        expected_markdown = "| Header \\* |\n| --- |\n| Content |"
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
