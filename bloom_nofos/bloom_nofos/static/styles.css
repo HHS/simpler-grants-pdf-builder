@@ -410,6 +410,10 @@ label.usa-label {
   justify-content: space-between;
 }
 
+.nofo--archived .nofo_edit--audit-widget {
+  display: none;
+}
+
 .nofo_edit .usa-summary-box__text p:last-of-type {
   margin-bottom: 0;
 }
