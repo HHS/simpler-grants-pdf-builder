@@ -2,12 +2,12 @@
 
 - Write ADRs
   - Why Python
-- Add Login.gov
 - Password reset flow on command line
 - Password reset flow exists
 
 # DONE
 
+- Add Login.gov
 - Loop the sections to create breadcrumbs
 - .docx imports
   - Investigate images

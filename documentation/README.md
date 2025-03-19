@@ -36,7 +36,7 @@ Chosen option: DocRaptor, which is a SaaS service that uses Prince to generate a
 
 ### [Prince](https://www.princexml.com/) (via [DocRaptor](https://docraptor.com/))
 
-Prince is an HTML to PDF library which renders tagged PDFs from HTML and CSS source documents. Our workflow here involves exporting a Word doc (or Google doc) as HTML and then using Prince to render the output.
+Prince is an HTML to PDF library which renders tagged PDFs from HTML and CSS source documents. Our workflow here involves exporting a Word doc as HTML and then using Prince to render the output.
 
 We prefer going through DocRaptor in part because it is easier to get started with.
 
