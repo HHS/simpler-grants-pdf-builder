@@ -52,6 +52,8 @@ from .forms import (
 )
 from .mixins import (
     GroupAccessObjectMixin,
+    PreventIfArchivedMixin,
+    PreventIfPublishedMixin,
     SuperuserRequiredMixin,
     has_nofo_group_permission_func,
 )
@@ -286,31 +288,37 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofosArchiveView(GroupAccessObjectMixin, View):
+class NofosArchiveView(PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView):
+    model = Nofo
     template_name = "nofos/nofo_confirm_delete.html"
     success_url = reverse_lazy("nofos:nofo_index")
+    context_object_name = "nofo"
+    fields = []  # We handle field updates manually
+
+    archived_error_message = "This NOFO is already archived."
 
     def dispatch(self, request, *args, **kwargs):
-        # Get NOFO directly from database to bypass validation
-        pk = kwargs.get("pk")
-        nofo = Nofo.objects.filter(pk=pk).first()
-        if not nofo:
-            raise Http404("No NOFO found matching the query")
-        if nofo.status != "draft":
+        """Retrieve the NOFO object and validate its status before proceeding."""
+        self.object = self.get_object()
+
+        if self.object.status != "draft":
             return HttpResponseBadRequest("Only draft NOFOs can be deleted.")
 
-        if request.method == "POST":
-            # Update directly without triggering save()
-            Nofo.objects.filter(pk=pk).update(archived=timezone.now())
-            messages.error(
-                request,
-                "You deleted NOFO: '{}'.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
-                    nofo.short_name or nofo.title
-                ),
-            )
-            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
 
-        return render(request, self.template_name, {"nofo": nofo})
+    def post(self, request, *args, **kwargs):
+        """Archive the NOFO instead of deleting it."""
+        nofo = self.get_object()
+        nofo.archived = timezone.now()
+        nofo.save(update_fields=["archived"])
+
+        messages.error(
+            request,
+            "You deleted NOFO: '{}'.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                nofo.short_name or nofo.title
+            ),
+        )
+        return redirect(self.success_url)
 
 
 class BaseNofoImportView(View):
@@ -456,13 +464,16 @@ class NofosImportNewView(BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
 
-class NofosImportOverwriteView(BaseNofoImportView):
+class NofosImportOverwriteView(
+    PreventIfArchivedMixin, GroupAccessObjectMixin, BaseNofoImportView
+):
     """
     Handles overwriting an existing NOFO with new content.
     """
 
     template_name = "nofos/nofo_import_overwrite.html"
     redirect_url_name = "nofos:nofo_import_overwrite"
+    archived_error_message = "Can’t reimport an archived NOFO."
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -648,7 +659,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
             return HttpResponseBadRequest(f"Error importing NOFO: {str(e)}")
 
 
-class NofosConfirmReimportView(View):
+class NofosConfirmReimportView(GroupAccessObjectMixin, View):
     """
     Renders a confirmation page if the uploaded NOFO ID doesn’t match the existing NOFO.
     """
@@ -693,8 +704,10 @@ class NofosConfirmReimportView(View):
         )
 
 
-class BaseNofoEditView(GroupAccessObjectMixin, UpdateView):
+class BaseNofoEditView(PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView):
     model = Nofo
+
+    archived_error_message = "Can’t update an archived NOFO."
 
     def get_success_url(self):
         return self.object.get_absolute_url()
@@ -737,7 +750,9 @@ class NofoImportNumberView(BaseNofoEditView):
 ###########################################################
 
 
-class NofoEditModificationView(View):
+class NofoEditModificationView(PreventIfArchivedMixin, GroupAccessObjectMixin, View):
+    archived_error_message = "Can’t add modifications to an archived NOFO."
+
     def get(self, request, pk):
         nofo = get_object_or_404(Nofo, id=pk)
         return render(request, "nofos/nofo_edit_modifications.html", {"nofo": nofo})
@@ -1039,19 +1054,22 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 
 
-class NofoSubsectionCreateView(GroupAccessObjectMixin, CreateView):
+class NofoSubsectionCreateView(
+    PreventIfArchivedMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    CreateView,
+):
     model = Subsection
     form_class = SubsectionCreateForm
     template_name = "nofos/subsection_create.html"
 
+    published_error_message = "Subsections can’t be added to published NOFOs."
+    archived_error_message = "Subsections can’t be added to archived NOFOs."
+
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
         self.nofo = get_object_or_404(Nofo, pk=self.nofo_id)
-
-        if self.nofo.status == "published":
-            return HttpResponseBadRequest(
-                "Subsections can’t be added to published NOFOs."
-            )
 
         # Check if prev_subsection is provided
         self.prev_subsection_id = self.request.GET.get("prev_subsection")
@@ -1101,12 +1119,17 @@ class NofoSubsectionCreateView(GroupAccessObjectMixin, CreateView):
         return context
 
 
-class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
+class NofoSubsectionEditView(
+    PreventIfArchivedMixin, PreventIfPublishedMixin, GroupAccessObjectMixin, UpdateView
+):
     model = Subsection
     form_class = SubsectionEditForm
     template_name = "nofos/subsection_edit.html"
     context_object_name = "subsection"
     pk_url_kwarg = "subsection_pk"
+
+    published_error_message = "Published NOFOs can’t be edited. Change the status of this NOFO or add modifications to it."
+    archived_error_message = "Archived NOFOs can’t be edited."
 
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
@@ -1115,10 +1138,6 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
         if self.nofo.id != self.nofo_id:
             return HttpResponseBadRequest("Oops, bad NOFO id")
-        if self.nofo.status == "published" and not self.nofo.modifications:
-            return HttpResponseBadRequest(
-                "Published NOFOs can’t be edited. Change the status of this NOFO or add modifications to it."
-            )
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -1146,10 +1165,14 @@ class NofoSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return context
 
 
-class NofoSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
+class NofoSubsectionDeleteView(
+    PreventIfArchivedMixin, GroupAccessObjectMixin, DeleteView
+):
     model = Subsection
     pk_url_kwarg = "subsection_pk"
     template_name = "nofos/subsection_confirm_delete.html"
+
+    archived_error_message = "Subsections can’t be deleted from archived NOFOs."
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1216,14 +1239,17 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofoHistoryView(GroupAccessObjectMixin, DetailView):
+class NofoHistoryView(PreventIfArchivedMixin, GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_history.html"
     events_per_page = 25  # Show 25 events per batch
 
+    archived_error_message = "Archived NOFOs don’t have an audit history."
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         offset = int(self.request.GET.get("offset", 0))
+        self.nofo = self.model
 
         # Get audit events for this NOFO
         nofo_events = (

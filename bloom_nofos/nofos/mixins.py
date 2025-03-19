@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 
 from .models import Nofo
@@ -35,5 +36,30 @@ class SuperuserRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_superuser:
             raise PermissionDenied("You don’t have permission to view this page.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PreventIfPublishedMixin:
+    published_error_message = "This object is published and can’t be changed."
+
+    def dispatch(self, request, *args, **kwargs):
+        nofo = getattr(self, "nofo", None) or self.get_object()
+
+        # Throw exception if the object is published and not modified
+        if nofo.status == "published" and not nofo.modifications:
+            return HttpResponseBadRequest(self.published_error_message)
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PreventIfArchivedMixin:
+    archived_error_message = "This object is archived and can’t be changed."
+
+    def dispatch(self, request, *args, **kwargs):
+        nofo = getattr(self, "nofo", None) or self.get_object()
+        # Throw exception if the object is archived
+        if nofo.archived:
+            return HttpResponseBadRequest(self.archived_error_message)
 
         return super().dispatch(request, *args, **kwargs)
