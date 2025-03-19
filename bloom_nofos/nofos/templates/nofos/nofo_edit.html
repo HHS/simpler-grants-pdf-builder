@@ -54,7 +54,21 @@ Edit “{{ nofo|nofo_name }}”
   </span>
 </div>
 
-{% if nofo.status == 'published' and nofo.modifications %}
+{% if nofo.archived %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO is ‘Archived’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>Archived NOFOs exist as a record for posterity but can’t be edited in any way. If you would like to restore this NOFO, please get in touch with Paul or Adam.</p>
+      {% if nofo.successor %}
+        <p>This is a past version of <a href="{% url 'nofos:nofo_edit' nofo.successor.id %}">{{ nofo.successor }}</a></p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% elif nofo.status == 'published' and nofo.modifications %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
@@ -231,7 +245,7 @@ Edit “{{ nofo|nofo_name }}”
 </section>
 {% endif %}
 
-<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published">
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
   <caption>
     <div>
       <h2 class="margin-bottom-0">Basic information</h2>
@@ -305,7 +319,7 @@ Edit “{{ nofo|nofo_name }}”
   </tbody>
 </table>
 
-<table class="usa-table usa-table--borderless width-full">
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
   <caption>
     <div>
       <h2 class="margin-bottom-0">NOFO metadata</h2>
@@ -337,7 +351,7 @@ Edit “{{ nofo|nofo_name }}”
   </tbody>
 </table>
 
-<table class="usa-table usa-table--borderless width-full">
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
   <caption>
     <div>
       <h2 class="margin-bottom-0">NOFO theme options</h2>
@@ -380,7 +394,7 @@ Edit “{{ nofo|nofo_name }}”
   </tbody>
 </table>
 
-<table class="usa-table usa-table--borderless width-full">
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
   <caption>
     <div>
       <h2 class="margin-bottom-0">NOFO management options</h2>
@@ -416,7 +430,7 @@ Edit “{{ nofo|nofo_name }}”
 </table>
 
 {% for section in nofo.sections.all|dictsort:"order" %}
-<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--section">
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived table--section">
   <caption aria-label="{{ section.name }}">
     <div>
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
@@ -431,7 +445,7 @@ Edit “{{ nofo|nofo_name }}”
           <span class="usa-sr-only">Copy link to this section</span>
         </button>
       </span>
-      <span><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
+      <span class="add-or-remove-subsections"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
       <span>
         <a class="back-to-top" href="#back-to-top">Top</a>
       </span>
