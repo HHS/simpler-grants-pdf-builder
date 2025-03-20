@@ -2585,3 +2585,36 @@ def add_final_subsection_to_step_3(sections):
 
             # Exit after adding new subsection
             break
+
+
+def modifications_update_announcement_text(nofo):
+    """
+    Update announcement text in all subsection bodies of a given NOFO.
+    Usually this is just in 1 subsection ("Key facts"), but I guess it could be in others.
+
+    - Looks for "Announcement version: New" or "Announcement type: New" (case insensitive).
+    - Replaces them with "Announcement version: Modified" or "Announcement type: Modified".
+    - Mutates the NOFO object in place.
+
+    :param nofo: The NOFO object containing sections and subsections.
+    """
+    patterns = [
+        (
+            re.compile(r"Announcement version:\s*New", re.IGNORECASE),
+            "Announcement version: Modified",
+        ),
+        (
+            re.compile(r"Announcement type:\s*New", re.IGNORECASE),
+            "Announcement type: Modified",
+        ),
+    ]
+
+    for section in nofo.sections.all():
+        for subsection in section.subsections.all():
+            updated_body = subsection.body
+            for pattern, replacement in patterns:
+                updated_body = pattern.sub(replacement, updated_body)
+
+            if updated_body != subsection.body:
+                subsection.body = updated_body
+                subsection.save()
