@@ -52,7 +52,7 @@ from .forms import (
 )
 from .mixins import (
     GroupAccessObjectMixin,
-    PreventIfArchivedMixin,
+    PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
     SuperuserRequiredMixin,
     has_nofo_group_permission_func,
@@ -288,7 +288,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofosArchiveView(PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView):
+class NofosArchiveView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, UpdateView
+):
     model = Nofo
     template_name = "nofos/nofo_confirm_delete.html"
     success_url = reverse_lazy("nofos:nofo_index")
@@ -465,7 +467,7 @@ class NofosImportNewView(BaseNofoImportView):
 
 
 class NofosImportOverwriteView(
-    PreventIfArchivedMixin, GroupAccessObjectMixin, BaseNofoImportView
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, BaseNofoImportView
 ):
     """
     Handles overwriting an existing NOFO with new content.
@@ -497,9 +499,9 @@ class NofosImportOverwriteView(
         Overwrite an existing NOFO with the new sections.
         """
         nofo = self.nofo
-        if nofo.status in ["published", "review"]:
+        if nofo.status in ["published", "review", "paused"]:
             return HttpResponseBadRequest(
-                "In review/Published NOFOs can’t be re-imported."
+                "{} NOFOs can’t be re-imported.".format(nofo.get_status_display())
             )
 
         if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
@@ -704,7 +706,9 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
         )
 
 
-class BaseNofoEditView(PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView):
+class BaseNofoEditView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, UpdateView
+):
     model = Nofo
 
     archived_error_message = "Can’t update an archived NOFO."
@@ -751,7 +755,7 @@ class NofoImportNumberView(BaseNofoEditView):
 
 
 class NofoEditModificationView(
-    PreventIfArchivedMixin, GroupAccessObjectMixin, UpdateView
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, UpdateView
 ):
     model = Nofo
     template_name = "nofos/nofo_edit_modifications.html"
@@ -940,6 +944,9 @@ class NofoEditIconStyleView(BaseNofoEditView):
 class NofoEditStatusView(BaseNofoEditView):
     form_class = NofoStatusForm
     template_name = "nofos/nofo_edit_status.html"
+    cancelled_error_message = (
+        None  # setting None allows us to edit status for cancelled NOFOs
+    )
 
 
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
@@ -1054,7 +1061,7 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
 
 
 class NofoSubsectionCreateView(
-    PreventIfArchivedMixin,
+    PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
     GroupAccessObjectMixin,
     CreateView,
@@ -1119,7 +1126,10 @@ class NofoSubsectionCreateView(
 
 
 class NofoSubsectionEditView(
-    PreventIfArchivedMixin, PreventIfPublishedMixin, GroupAccessObjectMixin, UpdateView
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    UpdateView,
 ):
     model = Subsection
     form_class = SubsectionEditForm
@@ -1165,7 +1175,7 @@ class NofoSubsectionEditView(
 
 
 class NofoSubsectionDeleteView(
-    PreventIfArchivedMixin, GroupAccessObjectMixin, DeleteView
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DeleteView
 ):
     model = Subsection
     pk_url_kwarg = "subsection_pk"
@@ -1238,12 +1248,15 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofoHistoryView(PreventIfArchivedMixin, GroupAccessObjectMixin, DetailView):
+class NofoHistoryView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
     model = Nofo
     template_name = "nofos/nofo_history.html"
     events_per_page = 25  # Show 25 events per batch
 
     archived_error_message = "Archived NOFOs don’t have an audit history."
+    cancelled_error_message = None  # setting None allows us to view for cancelled NOFOs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
