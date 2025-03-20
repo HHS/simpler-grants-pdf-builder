@@ -75,6 +75,7 @@ from .nofo import (
     get_sections_from_soup,
     get_step_2_section,
     get_subsections_from_sections,
+    modifications_update_announcement_text,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
@@ -783,6 +784,8 @@ class NofoEditModificationView(
 
         nofo.modifications = parsed_date
         nofo.save()
+
+        modifications_update_announcement_text(nofo)
 
         # Check if a "Modifications" section exists, create it if needed
         modifications_section, created = nofo.sections.get_or_create(

@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- "Add modifications" now finds all instances of "Announcement type: New" and changes them to say "Announcement type: Modified"
+
 ### Fixed
 
 ## [2.10.0] - 2025-03-19
