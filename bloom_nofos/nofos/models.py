@@ -53,6 +53,8 @@ STATUS_CHOICES = [
     ("ready-for-qa", "Ready for QA"),
     ("review", "In review"),
     ("published", "Published"),
+    ("paused", "Paused"),
+    ("cancelled", "Cancelled"),
 ]
 
 

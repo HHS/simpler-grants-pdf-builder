@@ -1,7 +1,7 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import DESIGNER_CHOICES, Nofo, Section, Subsection
+from .models import DESIGNER_CHOICES, Nofo, Section, Subsection, STATUS_CHOICES
 from .utils import get_icon_path_choices
 
 
@@ -39,7 +39,6 @@ NofoCoverForm = create_nofo_form_class(["cover"])
 NofoGroupForm = create_nofo_form_class(["group"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
-NofoStatusForm = create_nofo_form_class(["status"])
 NofoSubagencyForm = create_nofo_form_class(
     ["subagency"], not_required_field_labels=["Subagency"]
 )
@@ -48,6 +47,33 @@ NofoSubagency2Form = create_nofo_form_class(
 )
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
+
+
+# Nofo status form: same options but with a divider inserted after "published"
+class NofoStatusForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["status"]
+
+    def __init__(self, *args, **kwargs):
+        super(NofoStatusForm, self).__init__(*args, **kwargs)
+
+        # Find the index of "published" so we can insert a divider after it
+        published_index = next(
+            (i for i, (value, _) in enumerate(STATUS_CHOICES) if value == "published"),
+            None,
+        )
+
+        if published_index is not None:
+            updated_choices = STATUS_CHOICES[
+                : published_index + 1
+            ]  # Include "published"
+            updated_choices.append(("", "──────────"))  # Add the divider
+            updated_choices.extend(
+                STATUS_CHOICES[published_index + 1 :]
+            )  # Add the remaining items
+
+            self.fields["status"].choices = updated_choices  # Assign modified choices
 
 
 # Nofo designer form

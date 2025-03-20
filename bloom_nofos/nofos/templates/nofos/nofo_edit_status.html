@@ -5,6 +5,8 @@
   NOFO status
 {% endblock %}
 
+{% block body_class %}overflow-scroll{% endblock %}
+
 {% block content %}
   {% with nofo|nofo_name as nofo_name_str %}
   {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
@@ -13,14 +15,96 @@
   {% endwith %}
   {% endwith %}
 
-  <p>A NOFO’s status changes what editing options are available.</p>
-  <ul class="usa-list">
-    <li><strong>Draft:</strong> the default status. Draft NOFOs can be edited, re-imported, or deleted.</li>
-    <li><strong>Active:</strong> NOFOs that are being actively worked on. Active NOFOs can be edited or re-imported but <em>can’t be</em> deleted.</li>
-    <li><strong>Ready for QA:</strong> NOFOs awaiting a QA review before sending back to writing teams. QA NOFOs can be edited or re-imported but <em>not</em> deleted.</li>
-    <li><strong>In review:</strong> NOFOs being reviewed by OpDivs. In review NOFOs can be edited but <em>can’t be</em> re-imported or deleted.</li>
-    <li><strong>Published:</strong> NOFOs that have been shipped. Published NOFOs <em>can’t be</em> edited, re-imported, or deleted.</li>
-  </ul>
+  <p>A NOFO’s status determines how it can be modified.</p>
+
+  <details>
+    <summary><span>What does the ‘Status’ mean?</span></summary>
+
+    <div>
+      <table class="usa-table usa-table--font-size-1">
+        <thead>
+          <tr>
+            <th scope="col">Status</th>
+            <th scope="col">What it means</th>
+            <th scope="col">Permissions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Draft</th>
+            <td>
+              The default status, this is a new NOFO.
+            </td>
+            <td><strong>Can be:</strong> edited, re-imported, or deleted.</td>
+          </tr>
+          <tr>
+            <th scope="row">Active</th>
+            <td>
+              NOFOs that are being actively worked on.
+            </td>
+            <td>
+              <strong>Can be:</strong> edited or re-imported.
+              <br />
+              <strong>Can’t be:</strong> deleted.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Ready for QA</th>
+            <td>
+              NOFOs awaiting QA review before sending back to writing teams.
+            </td>
+            <td>
+              <strong>Can be:</strong> edited or re-imported.
+              <br />
+              <strong>Can’t be:</strong> deleted.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">In review</th>
+            <td>
+              NOFOs being reviewed by OpDivs.
+            </td>
+            <td>
+              <strong>Can be:</strong> edited.
+              <br />
+              <strong>Can’t be:</strong> reimported or deleted.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Published</th>
+            <td>
+              NOFOs that have been shipped.
+            </td>
+            <td>
+              <strong>Can’t be:</strong> edited, re-imported, or deleted.
+              <br />
+              However, once <em>modified</em>, they can be edited again.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Paused</th>
+            <td>
+              NOFOs that are indefinitely delayed.
+            </td>
+            <td>
+              <strong>Can be:</strong> edited.
+              <br />
+              <strong>Can’t be:</strong> reimported or deleted.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Cancelled</th>
+            <td>
+              NOFOs that will not be published.
+            </td>
+            <td>
+              <strong>Can’t be:</strong> edited, re-imported, or deleted.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
 
   <form id="nofo-status--form" method="post">
     {% csrf_token %}
