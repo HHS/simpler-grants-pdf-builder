@@ -53,13 +53,18 @@ class PreventIfPublishedMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class PreventIfArchivedMixin:
-    archived_error_message = "This object is archived and can’t be changed."
+class PreventIfArchivedOrCancelledMixin:
+    archived_error_message = "This NOFO is archived and can’t be changed."
+    cancelled_error_message = "This NOFO was cancelled and can’t be changed."
 
     def dispatch(self, request, *args, **kwargs):
         nofo = getattr(self, "nofo", None) or self.get_object()
         # Throw exception if the object is archived
         if nofo.archived:
             return HttpResponseBadRequest(self.archived_error_message)
+
+        # Throw exception if the object is cancelled _and there is_ an error message
+        if nofo.status == "cancelled" and self.cancelled_error_message:
+            return HttpResponseBadRequest(self.cancelled_error_message)
 
         return super().dispatch(request, *args, **kwargs)
