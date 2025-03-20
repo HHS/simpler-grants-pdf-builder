@@ -54,7 +54,18 @@ Edit “{{ nofo|nofo_name }}”
   </span>
 </div>
 
-{% if nofo.archived %}
+{% if nofo.status == 'cancelled' %}
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>Cancelled NOFOs exist as a record for posterity but can’t be edited in any way. If you would like to restore this NOFO, <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a> to something else.</p>
+    </div>
+  </div>
+</div>
+{% elif nofo.archived %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
@@ -105,14 +116,14 @@ Edit “{{ nofo|nofo_name }}”
     </div>
   </div>
 </div>
-{% elif nofo.status == 'review' %}
+{% elif nofo.status == 'review' or nofo.status == 'paused' %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
       NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
     <div class="usa-summary-box__text">
-      <p>NOFOs that are in review can’t be re-imported or deleted, but they can be edited as needed.</p>
+      <p>NOFOs that are {{ nofo.get_status_display|lower }} can’t be re-imported or deleted, but they can be edited as needed.</p>
     </div>
   </div>
 </div>
