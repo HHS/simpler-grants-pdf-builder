@@ -44,6 +44,7 @@ from .nofo import (
     get_subsections_from_sections,
     is_callout_box_table,
     join_nested_lists,
+    modifications_update_announcement_text,
     normalize_whitespace_img_alt_text,
     overwrite_nofo,
     preserve_bookmark_links,
@@ -6549,3 +6550,85 @@ class NormalizeWhitespaceImgAltTextTests(TestCase):
         normalize_whitespace_img_alt_text(soup)
 
         self.assertEqual(str(soup), html)
+
+
+class UpdateAnnouncementTextTests(TestCase):
+    def setUp(self):
+        """Set up test NOFO, sections, and subsections."""
+        self.nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
+
+        self.section = Section.objects.create(nofo=self.nofo, name="Section 1", order=1)
+
+        self.subsection1 = Subsection.objects.create(
+            section=self.section,
+            name="Subsection 1",
+            tag="h3",
+            order=1,
+            body="This is an example.\nAnnouncement version: New",
+        )
+
+        self.subsection2 = Subsection.objects.create(
+            section=self.section,
+            name="Subsection 2",
+            tag="h3",
+            order=2,
+            body="Announcement type: New\nMore content here.",
+        )
+
+        self.subsection3 = Subsection.objects.create(
+            section=self.section,
+            name="Subsection 3",
+            tag="h3",
+            order=3,
+            body="No announcement text here.",
+        )
+
+    def test_updates_announcement_text(self):
+        """Test that the function updates 'New' to 'Modified' in subsections."""
+        modifications_update_announcement_text(self.nofo)
+
+        # Refresh from DB to check changes
+        self.subsection1.refresh_from_db()
+        self.subsection2.refresh_from_db()
+        self.subsection3.refresh_from_db()
+
+        self.assertEqual(
+            self.subsection1.body, "This is an example.\nAnnouncement version: Modified"
+        )  # Changed
+        self.assertEqual(
+            self.subsection2.body, "Announcement type: Modified\nMore content here."
+        )  # Changed
+        self.assertEqual(
+            self.subsection3.body, "No announcement text here."
+        )  # Unchanged
+
+    def test_does_nothing_if_no_matches(self):
+        """Test that the function makes no changes when no matching text is present."""
+        self.subsection1.body = "No relevant announcement here."
+        self.subsection2.body = "Completely unrelated content."
+        self.subsection1.save()
+        self.subsection2.save()
+
+        modifications_update_announcement_text(self.nofo)
+
+        # Refresh from DB
+        self.subsection1.refresh_from_db()
+        self.subsection2.refresh_from_db()
+
+        self.assertEqual(self.subsection1.body, "No relevant announcement here.")
+        self.assertEqual(self.subsection2.body, "Completely unrelated content.")
+
+    def test_case_insensitivity(self):
+        """Test that the function correctly updates text regardless of casing."""
+        self.subsection1.body = "ANNOUNCEMENT VERSION: new"
+        self.subsection2.body = "Announcement Type: NEW"
+        self.subsection1.save()
+        self.subsection2.save()
+
+        modifications_update_announcement_text(self.nofo)
+
+        self.subsection1.refresh_from_db()
+        self.subsection2.refresh_from_db()
+
+        self.assertEqual(self.subsection1.body, "Announcement version: Modified")
+        self.assertEqual(self.subsection2.body, "Announcement type: Modified")
