@@ -13,9 +13,10 @@
 	<h1 class="font-heading-xl margin-y-0">{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
 
 	<p class="nofo_index--filter">
-		<a href="{% url 'nofos:nofo_index' %}?status=all&group={{ nofo_group }}" {% if nofo_status == 'all' %}aria-current="page"{% endif %}>{{ nofo_group|title }} NOFOs</a> | 
-		<a href="{% url 'nofos:nofo_index' %}?group={{ nofo_group }}" {% if not nofo_status or nofo_status == 'unpublished' %}aria-current="page"{% endif %}>{{ nofo_group|title }} unpublished NOFOs</a> | 
-		<a href="{% url 'nofos:nofo_index' %}?status=published&group={{ nofo_group }}" {% if nofo_status == 'published' %}aria-current="page"{% endif %}>All{% if nofo_group != 'all' %} {{ nofo_group|title }}{% endif %} published NOFOs</a>
+		<a href="{% url 'nofos:nofo_index' %}?group={{ nofo_group }}" {% if not nofo_status or nofo_status == 'in progress' %}aria-current="page"{% endif %}>In progress NOFOs</a> |
+		<a href="{% url 'nofos:nofo_index' %}?status=published&group={{ nofo_group }}" {% if nofo_status == 'published' %}aria-current="page"{% endif %}>Published NOFOs</a> |
+		<a href="{% url 'nofos:nofo_index' %}?status=paused&group={{ nofo_group }}" {% if nofo_status == 'paused' %}aria-current="page"{% endif %}>Paused NOFOs</a> |
+		<a href="{% url 'nofos:nofo_index' %}?status=cancelled&group={{ nofo_group }}" {% if nofo_status == 'cancelled' %}aria-current="page"{% endif %}>Cancelled NOFOs</a>
 	</p>
 
 	{% if user.group == 'bloom' %}
@@ -31,12 +32,16 @@
 	{% if nofo_list %}
 		<table class="sortable usa-table usa-table--borderless width-full">
 			<caption>
-				{% if not nofo_status or nofo_status == 'unpublished' %}
+				{% if not nofo_status or nofo_status == 'in progress' %}
 					NOFOs being worked on or in review.
 				{% elif nofo_status == 'published' %}
-					NOFOs that made it across the finish line.
+					NOFOs that rode off into the sunset.
+				{% elif nofo_status == 'paused' %}
+					NOFOs cooling their heels at the saloon.
+				{% elif nofo_status == 'cancelled' %}
+					NOFOs that were put out to pasture.
 				{% elif nofo_status == 'all' %}
-					All the NOFOs fit to show.
+					Every NOFO in the corral.
 				{% else %}
 					List of NOFOs with status: {{ nofo_status }}
 				{% endif %}

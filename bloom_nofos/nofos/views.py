@@ -189,15 +189,17 @@ class NofosListView(ListView):
         queryset = queryset.filter(archived__isnull=True)
 
         # default status: return unpublished NOFOs
-        self.status = self.request.GET.get("status", "unpublished")
+        self.status = self.request.GET.get("status", "in progress")
         # default group: 'all' nofos unless a bloom user. if bloom user, default to 'bloom'
         self.group = self.request.GET.get(
             "group", "bloom" if self.request.user.group == "bloom" else "all"
         )
 
         if self.status:
-            if self.status == "unpublished":
-                queryset = queryset.exclude(status="published")
+            if self.status == "in progress":
+                queryset = queryset.exclude(
+                    status__in=["published", "paused", "cancelled"]
+                )
             elif self.status == "all":
                 pass
             else:
