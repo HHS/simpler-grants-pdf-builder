@@ -5,15 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
-## Unreleased
+## Unversioned
 
 ### Added
 
 ### Changed
 
+### Migrations
+
+## [2.11.0] - 2025-03-21
+
+### Added
+
+- Add 2 new statuses: Paused and Cancelled
+
+### Changed
+
+- Change index page to show 4 groupings: in progress, published, paused, cancelled
+  - Remove "all", since probably nobody uses this
 - "Add modifications" now finds all instances of "Announcement type: New" and changes them to say "Announcement type: Modified"
 
-### Fixed
+### Migrations
+
+- Add migration for new statues
 
 ## [2.10.0] - 2025-03-19
 
