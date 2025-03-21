@@ -1,13 +1,21 @@
+import csv
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
+from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView
+from easyaudit.models import CRUDEvent
+from nofos.models import Nofo, Subsection
 
 from .auth.login_gov import LoginGovClient
 from .forms import BloomUserNameForm, LoginForm
@@ -70,6 +78,105 @@ class BloomUserNameView(View):
             return redirect("users:user_view")
 
         return render(request, self.template_name, {"form": form})
+
+
+###########################################################
+####################### DATA EXPORTS ######################
+###########################################################
+
+
+class DataExportNofosView(LoginRequiredMixin, View):
+    """
+    Handles exporting all NOFOs the logged-in user has edited.
+    """
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+
+        # Find all events where the user edited a NOFO or its subsections
+        events = CRUDEvent.objects.filter(
+            event_type=2,  # UPDATE events
+            content_type__model__in=["nofo", "subsection"],
+            user=user,
+        ).values("object_id", "content_type__model", "changed_fields")
+
+        # Organize events into a dict mapping NOFO IDs to edit counts
+        nofo_edit_counts = {}
+
+        for event in events:
+            object_id = event["object_id"]
+            model = event["content_type__model"]
+
+            # Determine NOFO ID
+            if model == "nofo":
+                nofo_id = object_id
+
+            elif model == "subsection":
+                nofo_id = (
+                    Subsection.objects.filter(id=object_id)
+                    .values_list("section__nofo_id", flat=True)
+                    .first()
+                )
+                if not nofo_id:
+                    continue  # Skip if we can't resolve NOFO ID
+
+            # Skip events where the only change was "updated" timestamp
+            try:
+                changed_fields = json.loads(event["changed_fields"])
+                if (
+                    changed_fields
+                    and "updated" in changed_fields
+                    and len(changed_fields) == 1
+                ):
+                    continue
+            except json.JSONDecodeError:
+                continue  # Skip events with invalid JSON
+
+            # Count edits for each NOFO
+            nofo_id = int(nofo_id)
+            nofo_edit_counts[nofo_id] = nofo_edit_counts.get(nofo_id, 0) + 1
+
+        # Fetch NOFO details for the edited NOFOs
+        nofos = (
+            Nofo.objects.filter(id__in=nofo_edit_counts.keys())
+            .filter(Q(archived__isnull=True))
+            .values("id", "number", "title", "status")
+        )
+
+        # Prepare CSV response
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="edited_nofos.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "NOFO ID",
+                "NOFO Number",
+                "NOFO Title",
+                "Nofo Status",
+                "User Email",
+                "Edits",
+            ]
+        )
+
+        for nofo in nofos:
+            writer.writerow(
+                [
+                    nofo["id"],
+                    nofo["number"],
+                    nofo["title"],
+                    nofo["status"],
+                    user.email,
+                    nofo_edit_counts[nofo["id"]],
+                ]
+            )
+
+        return response  # Return the generated CSV file
+
+
+###########################################################
+####################### AUTH ROUTES #######################
+###########################################################
 
 
 def login_view(request):

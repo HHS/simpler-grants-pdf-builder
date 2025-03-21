@@ -1,7 +1,7 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import DESIGNER_CHOICES, Nofo, Section, Subsection, STATUS_CHOICES
+from .models import DESIGNER_CHOICES, STATUS_CHOICES, Nofo, Section, Subsection
 from .utils import get_icon_path_choices
 
 
