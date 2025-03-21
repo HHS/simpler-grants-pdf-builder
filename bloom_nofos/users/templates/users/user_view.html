@@ -60,4 +60,13 @@
       </tr>
     </tbody>
   </table>
+
+  <h2>Export data</h2>
+
+  <form action="{% url 'users:export_nofo_data' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+        Download My Edited NOFOs (CSV)
+    </button>
+</form>
 {% endblock %}
