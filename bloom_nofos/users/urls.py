@@ -35,7 +35,7 @@ urlpatterns = [
     ),
     path(
         "export/nofos",
-        views.DataExportNofosView.as_view(),
-        name="export_nofo_data",
+        views.ExportNofoReportView.as_view(),
+        name="export_nofo_report",
     ),
 ]
