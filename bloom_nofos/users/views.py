@@ -1,5 +1,6 @@
 import csv
 import json
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,6 +12,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.timezone import make_aware
 from django.views import View
 from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView
@@ -18,12 +20,13 @@ from easyaudit.models import CRUDEvent
 from nofos.models import Nofo, Subsection
 
 from .auth.login_gov import LoginGovClient
-from .forms import BloomUserNameForm, LoginForm
+from .forms import BloomUserNameForm, ExportNofoReportForm, LoginForm
 from .models import BloomUser
 
 
 class BloomUserDetailView(DetailView):
     model = BloomUser
+    template_name = "users/user_view.html"
 
     def get_object(self):
         """
@@ -31,7 +34,11 @@ class BloomUserDetailView(DetailView):
         """
         return self.request.user
 
-    template_name = "users/user_view.html"
+    def get_context_data(self, **kwargs):
+        """Pass the NOFO export form to the template."""
+        context = super().get_context_data(**kwargs)
+        context["nofo_export_form"] = ExportNofoReportForm()  # Add the form
+        return context
 
 
 class BloomPasswordChangeView(PasswordChangeView):
@@ -85,20 +92,44 @@ class BloomUserNameView(View):
 ###########################################################
 
 
-class DataExportNofosView(LoginRequiredMixin, View):
+class ExportNofoReportView(View):
     """
     Handles exporting all NOFOs the logged-in user has edited.
     """
 
     def post(self, request, *args, **kwargs):
+        form = ExportNofoReportForm(request.POST)
+
+        if not form.is_valid():
+            return render(
+                request, "users/user_view.html", {"nofo_export_form": form}, status=400
+            )
+
         user = request.user
 
-        # Find all events where the user edited a NOFO or its subsections
-        events = CRUDEvent.objects.filter(
-            event_type=2,  # UPDATE events
-            content_type__model__in=["nofo", "subsection"],
-            user=user,
-        ).values("object_id", "content_type__model", "changed_fields")
+        events_filters = {
+            "event_type": 2,  # UPDATE events
+            "content_type__model__in": ["nofo", "subsection"],
+            "user": request.user,
+        }
+
+        # Define the date range (convert naive datetime to aware datetime)
+        start_date = form.cleaned_data.get("start_date")
+        end_date = form.cleaned_data.get("end_date")
+
+        # Convert dates to timezone-aware datetimes (set to start/end of the day)
+        if start_date:
+            start_date = make_aware(datetime.combine(start_date, datetime.min.time()))
+            events_filters["datetime__gte"] = start_date
+
+        if end_date:
+            end_date = make_aware(datetime.combine(end_date, datetime.max.time()))
+            events_filters["datetime__lte"] = end_date
+
+        # Query CRUDEvent for NOFO edits within date range
+        events = CRUDEvent.objects.filter(**events_filters).values(
+            "object_id", "datetime", "content_type__model", "changed_fields"
+        )
 
         # Organize events into a dict mapping NOFO IDs to edit counts
         nofo_edit_counts = {}
