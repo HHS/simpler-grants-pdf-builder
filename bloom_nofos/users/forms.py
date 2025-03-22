@@ -59,3 +59,16 @@ class LoginForm(forms.Form):
         widget=forms.EmailInput(attrs={"autocapitalize": "off", "autocorrect": "off"})
     )
     password = forms.CharField(widget=forms.PasswordInput())
+
+
+class ExportNofoReportForm(forms.Form):
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        label="Start date",
+    )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        label="End date",
+    )
