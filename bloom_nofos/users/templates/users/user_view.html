@@ -4,6 +4,8 @@
   Your account
 {% endblock %}
 
+{% block body_class %}user_view{% endblock %}
+
 {% block content %}
   {% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
 
@@ -61,9 +63,11 @@
     </tbody>
   </table>
 
-  <h2>Export a RandyReport™️</h2>
+  <h2 class="margin-top-6">Export a RandyReport™️</h2>
+  <p>Export every NOFO you have edited as a CSV report.</p>
+  <p>Each row contains a NOFO’s number, title, and the number of edits you have made.</p>
 
-  <form action="{% url 'users:export_nofo_report' %}" method="post">
+  <form action="{% url 'users:export_nofo_report' %}" method="post" class="form--export-report">
     {% csrf_token %}
 
     <div class="form-group">
@@ -76,8 +80,8 @@
         {{ nofo_export_form.end_date }}
     </div>
 
-    <button type="submit" class="btn btn-primary">
-        Download My Edited NOFOs (CSV)
+    <button type="submit" class="usa-button margin-top-3">
+        Export my NOFO data (CSV)
     </button>
   </form>
 {% endblock %}
