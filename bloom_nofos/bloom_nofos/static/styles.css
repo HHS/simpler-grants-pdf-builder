@@ -1174,3 +1174,22 @@ del + ins > br {
 .login-gov-container {
   max-width: 30rem;
 }
+
+/* User pages */
+
+.user_view .form--export-report {
+  width: 33rem;
+}
+
+.user_view .form--export-report .form-group {
+  display: flex;
+  align-items: baseline;
+}
+
+.user_view .form--export-report .form-group label {
+  width: 200px;
+}
+
+.user_view .form--export-report .form-group input {
+  height: 2.2rem;
+}
