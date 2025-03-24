@@ -64,11 +64,16 @@ class LoginForm(forms.Form):
 class ExportNofoReportForm(forms.Form):
     start_date = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        widget=forms.DateInput(attrs={"type": "date", "class": "usa-input"}),
         label="Start date",
     )
     end_date = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        widget=forms.DateInput(attrs={"type": "date", "class": "usa-input"}),
         label="End date",
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.label_suffix = " (Optional)"  # option

@@ -9,6 +9,9 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added initial version of RandyReport on account pages
+  - The name will have to change for sure
+
 ### Changed
 
 ### Migrations
