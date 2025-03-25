@@ -1031,11 +1031,11 @@ class CreateNOFOTests(TestCase):
 
         self.assertEqual(
             nofo.sections.first().subsections.all()[0].body,
-            "\n\nSubsection 1 body with **strong tag**\n\n",
+            "Subsection 1 body with **strong tag**",
         )
         self.assertEqual(
             nofo.sections.first().subsections.all()[1].body,
-            "\n\nSubsection 2 body with list\n\n* Item 1\n* Item 2\n",
+            "Subsection 2 body with list\n\n* Item 1\n* Item 2",
         )
 
 
