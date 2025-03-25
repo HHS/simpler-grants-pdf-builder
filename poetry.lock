@@ -862,13 +862,13 @@ testing = ["coverage", "pyyaml"]
 
 [[package]]
 name = "markdownify"
-version = "0.14.1"
+version = "1.1.0"
 description = "Convert HTML to markdown."
 optional = false
 python-versions = "*"
 files = [
-    {file = "markdownify-0.14.1-py3-none-any.whl", hash = "sha256:4c46a6c0c12c6005ddcd49b45a5a890398b002ef51380cd319db62df5e09bc2a"},
-    {file = "markdownify-0.14.1.tar.gz", hash = "sha256:a62a7a216947ed0b8dafb95b99b2ef4a0edd1e18d5653c656f68f03db2bfb2f1"},
+    {file = "markdownify-1.1.0-py3-none-any.whl", hash = "sha256:32a5a08e9af02c8a6528942224c91b933b4bd2c7d078f9012943776fc313eeef"},
+    {file = "markdownify-1.1.0.tar.gz", hash = "sha256:449c0bbbf1401c5112379619524f33b63490a8fa479456d41de9dc9e37560ebd"},
 ]
 
 [package.dependencies]
@@ -1412,4 +1412,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.2"
-content-hash = "e79444f7090d67419b8930b4f8954e62a3a4ab0e16112f85ffcecaeb138f9142"
+content-hash = "553b0ac2db1b53b1839fae4865b21dc6dd37ce6e374599f09761956b570465e5"
