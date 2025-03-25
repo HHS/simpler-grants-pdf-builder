@@ -15,7 +15,7 @@ class NofoMarkdownConverter(MarkdownConverter):
             if el.has_attr("class"):
                 del el["class"]
 
-    def convert_a(self, el, text, convert_as_inline):
+    def convert_a(self, el, text, parent_tags):
         # keep the in-text footnote links as HTML so that the ids aren't lost
         if el and el.attrs.get("id", "").startswith(("footnote", "endnote")):
             self._remove_classes_recursive(el)
@@ -24,9 +24,9 @@ class NofoMarkdownConverter(MarkdownConverter):
             # return link AND parent (which is <sup>)
             return str(el.parent)
 
-        return super().convert_a(el, text, convert_as_inline)
+        return super().convert_a(el, text, parent_tags)
 
-    def convert_div(self, el, text, convert_as_inline):
+    def convert_div(self, el, text, parent_tags):
         # Output raw HTML if the div has role="heading" attribute
         if el.get("role") == "heading":
             return str(el)
@@ -37,7 +37,7 @@ class NofoMarkdownConverter(MarkdownConverter):
         # Else, return text, which is what process_text would return
         return text
 
-    def convert_ol(self, el, text, convert_as_inline):
+    def convert_ol(self, el, text, parent_tags):
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
         if start and start != "1":
@@ -58,17 +58,17 @@ class NofoMarkdownConverter(MarkdownConverter):
             [li.attrs.update({"tabindex": "-1"}) for li in el.find_all("li")]
             return str(el.prettify())
 
-        return super().convert_ol(el, text, convert_as_inline)
+        return super().convert_ol(el, text, parent_tags)
 
-    def convert_ul(self, el, text, convert_as_inline):
+    def convert_ul(self, el, text, parent_tags):
         for parent in el.parents:
             if parent.name == "td":
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 
-        return super().convert_ul(el, text, convert_as_inline)
+        return super().convert_ul(el, text, parent_tags)
 
-    def convert_p(self, el, text, convert_as_inline):
+    def convert_p(self, el, text, parent_tags):
         # if we are in a table cell, and that table cell contains multiple children, return the string
         if el.parent.name == "td" or el.parent.name == "th":
             if len(list(el.parent.children)) > 1:
@@ -80,9 +80,9 @@ class NofoMarkdownConverter(MarkdownConverter):
             if "bookmark" in p_id or "table-heading" in p_id:
                 return str(el)
 
-        return super().convert_p(el, text, convert_as_inline)
+        return super().convert_p(el, text, parent_tags)
 
-    def convert_table(self, el, text, convert_as_inline):
+    def convert_table(self, el, text, parent_tags):
         def _has_colspan_or_rowspan_not_one(tag):
             # Check for colspan/rowspan attributes not equal to '1'
             colspan = tag.get("colspan", "1")
@@ -96,9 +96,9 @@ class NofoMarkdownConverter(MarkdownConverter):
                 self._remove_classes_recursive(el)
                 return str(el.prettify()) + "\n"
 
-        return super().convert_table(el, text, convert_as_inline)
+        return super().convert_table(el, text, parent_tags)
 
-    def convert_th(self, el, text, convert_as_inline):
+    def convert_th(self, el, text, parent_tags):
         # automatically add width classes to table headers based on number of <th> elements
         def _determine_width_class_from_th_siblings(th_count=0):
             # Determine the width class based on the number of <th> elements in the first table row
@@ -137,7 +137,7 @@ class NofoMarkdownConverter(MarkdownConverter):
         if width_class:
             text = f"{text.strip()} {{: .{width_class} }}"
 
-        return super().convert_th(el, text, convert_as_inline)
+        return super().convert_th(el, text, parent_tags)
 
 
 # Create shorthand method for conversion
