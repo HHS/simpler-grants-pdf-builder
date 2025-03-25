@@ -2,6 +2,46 @@ from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
 
+def get_width_class(th):
+    def _get_num_columns_th(th):
+        return len(th.parent.find_all("th"))
+
+    def _get_width_class_from_num_columns(num_cols=0):
+        # Determine the width class based on the number of <th> elements in the first table row
+        width_class = ""
+        if num_cols == 3:
+            width_class = "w-33"
+        elif num_cols == 4:
+            width_class = "w-25"
+        elif num_cols == 5:
+            width_class = "w-20"
+
+        return width_class
+
+    def _get_width_class_if_application_checklist_th(th):
+        # grab the text and lowercase please
+        th_text = th.get_text(strip=True).lower()
+
+        # Applying specific rules based on the header content
+        if th_text == "component":
+            return "w-45"
+        if th_text.startswith(("how to upload", "how to submit")):
+            return "w-40"
+        if "page limit" in th_text:
+            return "w-15"
+
+        # default to w-33
+        return "w-33"
+
+    num_cols = _get_num_columns_th(th)
+    width_class = _get_width_class_from_num_columns(num_cols)
+
+    if num_cols == 3:
+        width_class = _get_width_class_if_application_checklist_th(th)
+
+    return width_class
+
+
 class NofoMarkdownConverter(MarkdownConverter):
     """
     Leave ULs and OLs TDs as HTML
@@ -89,51 +129,32 @@ class NofoMarkdownConverter(MarkdownConverter):
             rowspan = tag.get("rowspan", "1")
             return colspan != "1" or rowspan != "1"
 
+        def _get_first_row_ths(table):
+            # get the ths in the first row, or empty array
+            first_row = table.find("tr")
+            if not first_row:
+                return []
+
+            return first_row.find_all("th")
+
         cells = el.find_all(["td", "th"])
         for cell in cells:
             # return table as HTML if we find colspan/rowspan != 1 for any cell
             if _has_colspan_or_rowspan_not_one(cell):
                 self._remove_classes_recursive(el)
+
+                for th in _get_first_row_ths(table=el):
+                    width_class = get_width_class(th)
+                    if width_class:
+                        th["class"] = [width_class]
+
                 return str(el.prettify()) + "\n"
 
         return super().convert_table(el, text, parent_tags)
 
     def convert_th(self, el, text, parent_tags):
         # automatically add width classes to table headers based on number of <th> elements
-        def _determine_width_class_from_th_siblings(th_count=0):
-            # Determine the width class based on the number of <th> elements in the first table row
-            width_class = ""
-            if th_count == 3:
-                width_class = "w-33"
-            elif th_count == 4:
-                width_class = "w-25"
-            elif th_count == 5:
-                width_class = "w-20"
-
-            return width_class
-
-        def _determine_width_class_if_application_checklist_th(el):
-            # grab the text and lowercase please
-            th_text = el.get_text(strip=True).lower()
-
-            # Applying specific rules based on the header content
-            if th_text == "component":
-                return "w-45"
-            if th_text.startswith(("how to upload", "how to submit")):
-                return "w-40"
-            if "page limit" in th_text:
-                return "w-15"
-
-            # default to w-33
-            return "w-33"
-
-        th_count = len(el.parent.find_all("th"))
-        # Add the class to the text if a class was determined
-        width_class = _determine_width_class_from_th_siblings(th_count)
-
-        if th_count == 3:
-            width_class = _determine_width_class_if_application_checklist_th(el)
-
+        width_class = get_width_class(th=el)
         if width_class:
             text = f"{text.strip()} {{: .{width_class} }}"
 
