@@ -2,7 +2,7 @@
 {% load static nofo_name input_type get_value_or_none whitespaceless %}
 
 {% block title %}
-  Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
+  New subsection
 {% endblock %}
 
 {% block css %}
@@ -26,6 +26,21 @@
   
   <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
 
+  {% if prev_subsection_with_tag %}
+  <h2 class="font-serif-md margin-top-4">Previous subsection{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
+  <div class="previous-subsection-widget">
+    <p class="previous-subsection--section text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
+    <p class="previous-subsection--subsection">
+      <a href="{% url 'nofos:subsection_edit' nofo.id prev_subsection_with_tag.section.id prev_subsection_with_tag.id %}" class="usa-link usa-link--external" target="blank" title="{{ prev_subsection_with_tag.name }} (Opens in a new tab)">
+        {{ prev_subsection_with_tag.name }}
+        (<span class="previous-subsection--tag">{{ prev_subsection_with_tag.tag }}</span>)
+      </a>
+    </p>
+  </div>
+  {% endif %}
+
+  <h2 class="font-serif-lg margin-top-4 margin-bottom-0">Your new subsection</h2>
+
   <form class="form" method="post">
     {% csrf_token %}
     <fieldset class="usa-fieldset">
@@ -48,7 +63,7 @@
       <div class="form-group width-mobile">
         <label class="usa-label" for="tag">Heading level</label>
         <div class="usa-hint" id="tag--hint-1">
-          Required if name exists
+          Required if name exists. {% if prev_subsection_with_tag %}Last heading: <span class="previous-subsection--tag">{{ prev_subsection_with_tag.tag }}</span>.{% endif %}
         </div>
         {% if form.errors.tag %}
           <div class="usa-error-message" id="tag--error">
