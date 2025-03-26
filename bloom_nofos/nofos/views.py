@@ -1087,6 +1087,16 @@ class NofoSubsectionCreateView(
         # Fetch previous subsection
         self.prev_subsection = get_object_or_404(Subsection, pk=self.prev_subsection_id)
 
+        # loop until you find the next previous subsection with a tag
+        self.prev_subsection_with_tag = self.prev_subsection
+        while (
+            self.prev_subsection_with_tag is not None
+            and not self.prev_subsection_with_tag.tag
+        ):
+            self.prev_subsection_with_tag = (
+                self.prev_subsection_with_tag.get_previous_subsection()
+            )
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -1124,6 +1134,7 @@ class NofoSubsectionCreateView(
         context["subsection"] = self.object
         context["nofo"] = self.nofo
         context["prev_subsection"] = self.prev_subsection
+        context["prev_subsection_with_tag"] = self.prev_subsection_with_tag
         return context
 
 
