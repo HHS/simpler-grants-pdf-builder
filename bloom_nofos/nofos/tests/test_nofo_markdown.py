@@ -88,6 +88,227 @@ class NofoMarkdownConverterTABLETest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), pretty_html)
 
+    def test_table_0_ths(self):
+        html = "<table><tr><td>TD 1</td><td>TD 2</td></tr><tr><td colspan='2'>Cell 1</td></th></table>"
+        expected_html = """
+<table>
+ <tr>
+  <td>
+   TD 1
+  </td>
+  <td>
+   TD 2
+  </td>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_1_th(self):
+        html = (
+            "<table><tr><th>TH 1</th></tr><tr><td colspan='1'>Cell 1</td></th></table>"
+        )
+        expected_markdown = "| TH 1 |\n| --- |\n| Cell 1 |"
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_markdown.strip())
+
+    def test_table_2_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th></tr><tr><td colspan='2'>Cell 1</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th>
+   TH 1
+  </th>
+  <th>
+   TH 2
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_3_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th></tr><tr><td colspan='2'>Cell 1</td><td>Cell 3</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th class="w-33">
+   TH 1
+  </th>
+  <th class="w-33">
+   TH 2
+  </th>
+  <th class="w-33">
+   TH 3
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+  <td>
+   Cell 3
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_3_ths_with_paragraphs(self):
+        html = "<table><tr><th><p>TH 1.1</p><p>TH 1.2</p></th><th>TH 2</th><th>TH 3</th></tr><tr><td colspan='2'>Cell 1</td><td>Cell 3</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th class="w-33">
+   <p>
+    TH 1.1
+   </p>
+   <p>
+    TH 1.2
+   </p>
+  </th>
+  <th class="w-33">
+   TH 2
+  </th>
+  <th class="w-33">
+   TH 3
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+  <td>
+   Cell 3
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_4_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th></tr><tr><td colspan='2'>Cell 1</td><td>Cell 3</td><td>Cell 4</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th class="w-25">
+   TH 1
+  </th>
+  <th class="w-25">
+   TH 2
+  </th>
+  <th class="w-25">
+   TH 3
+  </th>
+  <th class="w-25">
+   TH 4
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+  <td>
+   Cell 3
+  </td>
+  <td>
+   Cell 4
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_5_ths(self):
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th><th>TH 5</th></tr><tr><td colspan='2'>Cell 1</td><td>Cell 3</td><td>Cell 4</td><td>Cell 5</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th class="w-20">
+   TH 1
+  </th>
+  <th class="w-20">
+   TH 2
+  </th>
+  <th class="w-20">
+   TH 3
+  </th>
+  <th class="w-20">
+   TH 4
+  </th>
+  <th class="w-20">
+   TH 5
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+  <td>
+   Cell 3
+  </td>
+  <td>
+   Cell 4
+  </td>
+  <td>
+   Cell 5
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
+    def test_table_6_ths(self):
+        # no classnames on this one
+        html = "<table><tr><th>TH 1</th><th>TH 2</th><th>TH 3</th><th>TH 4</th><th>TH 5</th><th>TH 6</th></tr><tr><td colspan='2'>Cell 1</td><td>Cell 3</td><td>Cell 4</td><td>Cell 5</td><td>Cell 6</td></th></table>"
+        expected_html = """<table>
+ <tr>
+  <th>
+   TH 1
+  </th>
+  <th>
+   TH 2
+  </th>
+  <th>
+   TH 3
+  </th>
+  <th>
+   TH 4
+  </th>
+  <th>
+   TH 5
+  </th>
+  <th>
+   TH 6
+  </th>
+ </tr>
+ <tr>
+  <td colspan="2">
+   Cell 1
+  </td>
+  <td>
+   Cell 3
+  </td>
+  <td>
+   Cell 4
+  </td>
+  <td>
+   Cell 5
+  </td>
+  <td>
+   Cell 6
+  </td>
+ </tr>
+</table>"""
+        md_body = md(html)
+        self.assertEqual(md_body.strip(), expected_html.strip())
+
 
 class NofoMarkdownConverterTHTest(TestCase):
     def test_table_0_ths(self):
@@ -155,7 +376,7 @@ class NofoMarkdownConverterTHTest(TestCase):
 
     def test_application_checklist_table_with_colspan(self):
         html = "<table><tr><th colspan='2'><p><strong>Component</strong></p></th><th><p><strong>How to upload </strong></p></th><th><p><strong>Page limit </strong></p></th></tr><tr><td colspan='2'><p>◻ <a href='  # _Project_abstract'><strong>Project abstract</strong></a> </p></td><td><p>Use the Project Abstract Summary Form. </p></td><td><p>1 page </p></td></tr></tbody></table>"
-        expected_html = '<table>\n <tr>\n  <th colspan="2">\n   <p>\n    <strong>\n     Component\n    </strong>\n   </p>\n  </th>\n  <th>\n   <p>\n    <strong>\n     How to upload\n    </strong>\n   </p>\n  </th>\n  <th>\n   <p>\n    <strong>\n     Page limit\n    </strong>\n   </p>\n  </th>\n </tr>\n <tr>\n  <td colspan="2">\n   <p>\n    ◻\n    <a href="  # _Project_abstract">\n     <strong>\n      Project abstract\n     </strong>\n    </a>\n   </p>\n  </td>\n  <td>\n   <p>\n    Use the Project Abstract Summary Form.\n   </p>\n  </td>\n  <td>\n   <p>\n    1 page\n   </p>\n  </td>\n </tr>\n</table>'
+        expected_html = '<table>\n <tr>\n  <th class="w-45" colspan="2">\n   <p>\n    <strong>\n     Component\n    </strong>\n   </p>\n  </th>\n  <th class="w-40">\n   <p>\n    <strong>\n     How to upload\n    </strong>\n   </p>\n  </th>\n  <th class="w-15">\n   <p>\n    <strong>\n     Page limit\n    </strong>\n   </p>\n  </th>\n </tr>\n <tr>\n  <td colspan="2">\n   <p>\n    ◻\n    <a href="  # _Project_abstract">\n     <strong>\n      Project abstract\n     </strong>\n    </a>\n   </p>\n  </td>\n  <td>\n   <p>\n    Use the Project Abstract Summary Form.\n   </p>\n  </td>\n  <td>\n   <p>\n    1 page\n   </p>\n  </td>\n </tr>\n</table>'
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html.strip())
 
