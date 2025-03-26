@@ -11,10 +11,13 @@ Versioning since version 1.0.0.
 
 - Added initial version of RandyReport on account pages
   - The name will have to change for sure
+- Add default column classes to HTML tables on import
+  - Previously, it was just markdown tables
+- Show previous heading level on "create subsection" page
 
 ### Changed
 
-### Migrations
+### Fixed
 
 ## [2.11.0] - 2025-03-21
 
