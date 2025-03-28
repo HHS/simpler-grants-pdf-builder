@@ -17,6 +17,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Also match "Annoucement type/version: Initial" when we slam that Modifications button
+
 ### Fixed
 
 ## [2.11.0] - 2025-03-21
