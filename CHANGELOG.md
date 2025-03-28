@@ -27,6 +27,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- When you save a subsection, the nofo_edit page loads at the top of that subsection
+  - Same when you add a new subsection
+  - Same with the "back" link
 - Change index page to show 4 groupings: in progress, published, paused, cancelled
   - Remove "all", since probably nobody uses this
 - "Add modifications" now finds all instances of "Announcement type: New" and changes them to say "Announcement type: Modified"
