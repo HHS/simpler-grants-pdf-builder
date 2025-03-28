@@ -6583,6 +6583,14 @@ class UpdateAnnouncementTextTests(TestCase):
             body="No announcement text here.",
         )
 
+        self.subsection4 = Subsection.objects.create(
+            section=self.section,
+            name="Subsection 4",
+            tag="h3",
+            order=4,
+            body="Announcement type: INITIAL\nMore content afterwards.",
+        )
+
     def test_updates_announcement_text(self):
         """Test that the function updates 'New' to 'Modified' in subsections."""
         modifications_update_announcement_text(self.nofo)
@@ -6591,6 +6599,7 @@ class UpdateAnnouncementTextTests(TestCase):
         self.subsection1.refresh_from_db()
         self.subsection2.refresh_from_db()
         self.subsection3.refresh_from_db()
+        self.subsection4.refresh_from_db()
 
         self.assertEqual(
             self.subsection1.body, "This is an example.\nAnnouncement version: Modified"
@@ -6601,6 +6610,10 @@ class UpdateAnnouncementTextTests(TestCase):
         self.assertEqual(
             self.subsection3.body, "No announcement text here."
         )  # Unchanged
+        self.assertEqual(
+            self.subsection4.body,
+            "Announcement type: Modified\nMore content afterwards.",
+        )  # Changed
 
     def test_does_nothing_if_no_matches(self):
         """Test that the function makes no changes when no matching text is present."""

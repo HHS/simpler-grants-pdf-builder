@@ -2600,11 +2600,11 @@ def modifications_update_announcement_text(nofo):
     """
     patterns = [
         (
-            re.compile(r"Announcement version:\s*New", re.IGNORECASE),
+            re.compile(r"Announcement version:\s*(?:New|Initial)", re.IGNORECASE),
             "Announcement version: Modified",
         ),
         (
-            re.compile(r"Announcement type:\s*New", re.IGNORECASE),
+            re.compile(r"Announcement type:\s*(?:New|Initial)", re.IGNORECASE),
             "Announcement type: Modified",
         ),
     ]
