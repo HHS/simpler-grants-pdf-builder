@@ -5,6 +5,8 @@
 Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
+{% block html_class %}html--nofo_edit{% endblock %}
+
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% if nofo.modifications %} nofo--modifications{% endif %}{% if nofo.archived %} nofo--archived{% endif %}{% endblock %}
 
 {% block content %}
@@ -594,6 +596,10 @@ Edit “{{ nofo|nofo_name }}”
             }
         });
     });
+  });
+
+  window.addEventListener('load', function () {
+    document.documentElement.style.scrollBehavior = 'smooth';
   });
 </script>
 {% endblock %}
