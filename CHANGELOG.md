@@ -9,6 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.12.0] - 2025-03-31
+
+### Added
+
 - Added initial version of RandyReport on account pages
   - The name will have to change for sure
 - Add default column classes to HTML tables on import
@@ -17,9 +25,25 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Added new HRSA designers
+  - Dvora
+  - Jennifer
+  - Marco
+- Removed former HRSA designers
+  - Doretha
+  - Gwen
+  - Shonda
+- Removed former Bloom coaches
+  - Idit
+  - Mick
+  - Morgan
+  - Sara
+  - Shane
 - Also match "Annoucement type/version: Initial" when we slam that Modifications button
 
-### Fixed
+### Migrations
+
+- Add migration for added/removed designers & coaches
 
 ## [2.11.0] - 2025-03-21
 
