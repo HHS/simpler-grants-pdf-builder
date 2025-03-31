@@ -15,14 +15,9 @@ COACH_CHOICES = [
     ("alex", "Alex"),
     ("emily", "Emily"),
     ("hannah", "Hannah"),
-    ("idit", "Idit"),
     ("julie", "Julie"),
     ("july", "July"),
-    ("mick", "Mick"),
     ("moira", "Moira"),
-    ("morgan", "Morgan"),
-    ("sara", "Sara"),
-    ("shane", "Shane"),
 ]
 
 DESIGNER_CHOICES = [
@@ -35,14 +30,14 @@ DESIGNER_CHOICES = [
     ("bloom-kevin", "Kevin"),
     ("bloom-yasmine", "Yasmine"),
     ("hrsa-betty", "Betty"),
-    ("hrsa-doretha", "Doretha"),
+    ("hrsa-dvora", "Dvora"),
     ("hrsa-ericka", "Ericka"),
-    ("hrsa-gwen", "Gwen"),
     ("hrsa-jene", "Jene"),
+    ("hrsa-jennifer", "Jennifer"),
     ("hrsa-kieumy", "KieuMy"),
     ("hrsa-lynda", "Lynda"),
+    ("hrsa-marco", "Marco"),
     ("hrsa-randy", "Randy"),
-    ("hrsa-shonda", "Shonda"),
     ("hrsa-stephanie", "Stephanie V"),
 ]
 
