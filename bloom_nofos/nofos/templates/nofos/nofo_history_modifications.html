@@ -21,9 +21,11 @@
     {% if modification_events %}
       <ul class="usa-list">
         {% for event in modification_events %}
-          <li class="margin-bottom-2">
+          <li>
             <div>
-              <strong>{{ event.event_type }}</strong> —
+              <strong>{{ event.event_type }}</strong>
+            </div>
+            <div>
               {{ event.object_type }}: {{ event.object_description }}
             </div>
             <div class="text-base text-gray-700">
@@ -36,6 +38,21 @@
           </li>
         {% endfor %}
       </ul>
+
+      <h2 class="margin-top-4 font-serif-md">As a markdown table</h3>
+      <div class="bg-base-lightest padding-3 radius-md margin-bottom-3 overflow-auto">
+        <code>
+          | Modification description | Date updated |</br>
+          |--------------------------|--------------|</br>
+          {% for event in modification_events %}
+          {% if event.object_html_id %}
+            | Updated “[{{ event.object_description }}](#{{ event.object_html_id }})” | {{ event.timestamp|date:"F j, Y" }} |</br>
+          {% else %}
+            | Updated “{{ event.object_description }}” | {{ event.timestamp|date:"F j, Y" }} |</br>
+          {% endif %}
+          {% endfor %}
+          </code>
+      </div>
     {% else %}
       <p>No changes found after the modification date.</p>
     {% endif %}

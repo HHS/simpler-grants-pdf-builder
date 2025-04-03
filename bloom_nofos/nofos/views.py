@@ -1265,7 +1265,7 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-def get_audit_events_for_nofo(nofo):
+def get_audit_events_for_nofo(nofo, reverse=True):
     """
     Return all audit events related to the given NOFO: the NOFO object,
     its sections, and its subsections.
@@ -1313,7 +1313,7 @@ def get_audit_events_for_nofo(nofo):
     return sorted(
         list(nofo_events) + list(section_events) + list(subsection_events),
         key=lambda e: e.datetime,
-        reverse=True,
+        reverse=reverse,
     )
 
 
@@ -1429,7 +1429,7 @@ class NofoModificationsHistoryView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        all_events = get_audit_events_for_nofo(self.object)
+        all_events = get_audit_events_for_nofo(self.object, reverse=False)
         modifications_date = None
 
         for event in all_events:
@@ -1488,6 +1488,11 @@ class NofoModificationsHistoryView(
                 "event_type": event.get_event_type_display(),
                 "object_type": event.content_type.model.title(),
                 "object_description": event.object_repr,
+                "object_html_id": (
+                    json.loads(event.object_json_repr)[0]
+                    .get("fields", [])
+                    .get("html_id", "")
+                ),
                 "user": event.user,
                 "timestamp": event.datetime,
             }
