@@ -1,6 +1,8 @@
 import io
 import json
 from datetime import datetime
+from collections import OrderedDict
+
 
 import docraptor
 from bs4 import BeautifulSoup
@@ -788,10 +790,10 @@ class NofoEditModificationView(
                 status=400,
             )
 
+        modifications_update_announcement_text(nofo)
+
         nofo.modifications = parsed_date
         nofo.save()
-
-        modifications_update_announcement_text(nofo)
 
         # Check if a "Modifications" section exists, create it if needed
         modifications_section, created = nofo.sections.get_or_create(
@@ -1268,10 +1270,29 @@ def get_audit_events_for_nofo(nofo):
     Return all audit events related to the given NOFO: the NOFO object,
     its sections, and its subsections.
     """
+
+    def _filter_updated_events(events):
+        """Remove events where only the 'updated' field changed."""
+        filtered_events = []
+        for event in events:
+            if event.event_type != CRUDEvent.UPDATE:
+                filtered_events.append(event)
+                continue
+            try:
+                changed = json.loads(event.changed_fields or "{}")
+                if not (
+                    changed.keys() == {"updated"} or list(changed.keys()) == ["updated"]
+                ):
+                    filtered_events.append(event)
+            except Exception:
+                filtered_events.append(event)
+        return filtered_events
+
     # Get audit events for the NOFO
     nofo_events = CRUDEvent.objects.filter(
         object_id=nofo.id, content_type__model="nofo"
     )
+    nofo_events = _filter_updated_events(nofo_events)
 
     # Get audit events for Sections
     section_ids = list(nofo.sections.values_list("id", flat=True))
@@ -1370,4 +1391,129 @@ class NofoHistoryView(
             "created"
         )
 
+        return context
+
+
+def deduplicate_audit_events_by_day_and_object(events):
+    """
+    Deduplicate audit events so that only the most recent event
+    for a given object (type + description) on a given day is kept.
+
+    Args:
+        events (list of dict): A list of audit event dictionaries, each with
+                               'object_type', 'object_description', and 'timestamp' keys.
+
+    Returns:
+        list: Deduplicated list of events, keeping the latest per object per day.
+    """
+    deduplicated = OrderedDict()
+
+    for event in events:
+        key = (
+            event["object_type"],
+            event["object_description"],
+            event["timestamp"].date(),  # Use only the date
+        )
+        deduplicated[key] = event  # Overwrites earlier events on same object + day
+
+    return list(deduplicated.values())
+
+
+class NofoModificationsHistoryView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
+    model = Nofo
+    template_name = "nofos/nofo_history_modifications.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        all_events = get_audit_events_for_nofo(self.object)
+        modifications_date = None
+
+        for event in all_events:
+            try:
+                changed = json.loads(event.changed_fields)
+            except Exception:
+                continue
+
+            if "modifications" in changed:
+                modifications_date = event.datetime
+                break
+
+        # If no mod date, show nothing
+        if not modifications_date:
+            context["modification_events"] = []
+            return context
+
+        # Gather relevant events after the modifications flag was added
+        filtered_events = []
+        for event in all_events:
+            # skip events happening before modifications date
+            if event.datetime <= modifications_date:
+                continue
+
+            if event.event_type == CRUDEvent.UPDATE:
+                try:
+                    changed = json.loads(event.changed_fields)
+                    # Skip "updated" events
+                    if changed == {"updated": changed.get("updated")}:
+                        continue
+                    # Skip custom audit events
+                    if changed.get("action") in [
+                        "nofo_import",
+                        "nofo_print",
+                        "nofo_reimport",
+                    ]:
+                        continue
+                except Exception:
+                    pass
+
+            # Skip events related to "Modifications" section
+            if event.content_type.model == "section":
+                if "Modifications" in event.object_repr:
+                    continue  # Skip this event
+
+            # Skip events for subsections belonging to "Modifications" section
+            if event.content_type.model == "subsection":
+                try:
+                    subsection = Subsection.objects.get(id=event.object_id)
+                    if subsection.section.name == "Modifications":
+                        continue  # Skip this event
+                except Subsection.DoesNotExist:
+                    continue  # Skip if the subsection is gone
+
+            event_details = {
+                "event_type": event.get_event_type_display(),
+                "object_type": event.content_type.model.title(),
+                "object_description": event.object_repr,
+                "user": event.user,
+                "timestamp": event.datetime,
+            }
+
+            # Improve object description for subsection edits
+            if event.content_type.model == "subsection":
+                try:
+                    subsection = Subsection.objects.get(id=event.object_id)
+                    name = subsection.name or f"#{subsection.order}"
+                    event_details["object_description"] = (
+                        f"{subsection.section.name} - {name}"
+                    )
+                except Subsection.DoesNotExist:
+                    continue  # Skip if the subsection doesn't exist
+            elif event.content_type.model == "nofo":
+                field_name = next(iter(json.loads(event.changed_fields).keys()))
+                # Convert field_name from snake_case to Title Case
+                formatted_field = " ".join(
+                    word.title() for word in field_name.split("_")
+                )
+                event_details["object_description"] = f"{formatted_field}"
+
+            filtered_events.append(event_details)
+
+        filtered_events = deduplicate_audit_events_by_day_and_object(filtered_events)
+
+        context["modification_events"] = filtered_events
+        context["modification_date"] = modifications_date
         return context
