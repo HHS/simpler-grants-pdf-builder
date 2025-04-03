@@ -117,7 +117,9 @@
         {% if nofo.modifications %}
         <div class="callout-box nofo--cover-page--callout-box">
           <div class="callout-box--contents">
-            <p><strong>Modified {{ nofo.modifications|date:"F j, Y" }}. <a href="#section--modifications">Review updates</a>.</strong></p>
+            <p>
+              <strong>Last modified {{ nofo.modifications|date:"F j, Y" }}. <a href="#section--modifications">Review updates</a>.</strong>
+            </p>
           </div>
         </div>
         {% endif %}

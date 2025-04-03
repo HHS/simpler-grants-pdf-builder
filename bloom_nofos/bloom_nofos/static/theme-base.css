@@ -978,6 +978,7 @@ section.section .section--title-page::before {
 }
 
 .nofo--cover-page--callout-box {
+  display: inline-block;
   margin-right: -15px; /* same as right margin, right-align text */
 }
 
