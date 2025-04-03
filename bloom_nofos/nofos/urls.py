@@ -13,6 +13,11 @@ urlpatterns = [
         name="nofo_history",
     ),
     path(
+        "<int:pk>/history-modifications",
+        views.NofoModificationsHistoryView.as_view(),
+        name="nofo_history_modifications",
+    ),
+    path(
         "<int:pk>/import",
         views.NofosImportOverwriteView.as_view(),
         name="nofo_import_overwrite",
