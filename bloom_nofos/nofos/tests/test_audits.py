@@ -8,6 +8,7 @@ from easyaudit.models import CRUDEvent
 from nofos.models import Nofo, Section, Subsection
 from ..audits import (
     deduplicate_audit_events_by_day_and_object,
+    format_audit_event,
     get_audit_events_for_nofo,
 )
 from django.contrib.auth import get_user_model
@@ -77,6 +78,85 @@ class DeduplicateAuditEventsTests(TestCase):
         deduped = deduplicate_audit_events_by_day_and_object(single)
         self.assertEqual(len(deduped), 1)
         self.assertEqual(deduped[0], single[0])
+
+
+class FormatAuditEventTests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", group="bloom", opdiv="Test OpDiv"
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Section 1", html_id="sec-1", order=1
+        )
+        self.subsection = Subsection.objects.create(
+            section=self.section, name="Subsection 1", order=1, tag="h3"
+        )
+
+        self.nofo_ct = ContentType.objects.get_for_model(Nofo)
+        self.section_ct = ContentType.objects.get_for_model(Section)
+        self.subsection_ct = ContentType.objects.get_for_model(Subsection)
+
+    def create_event(
+        self, obj, content_type, changed_fields=None, event_type=CRUDEvent.UPDATE
+    ):
+        return CRUDEvent.objects.create(
+            object_id=str(obj.id),
+            content_type=content_type,
+            event_type=event_type,
+            changed_fields=json.dumps(changed_fields or {}),
+            object_repr=str(obj),
+            object_json_repr=json.dumps(
+                [{"fields": {"html_id": getattr(obj, "html_id", "")}}]
+            ),
+            user=None,
+            datetime=timezone.now(),
+        )
+
+    def test_format_subsection_event(self):
+        event = self.create_event(
+            self.subsection, self.subsection_ct, {"body": ["Old", "New"]}
+        )
+        formatted = format_audit_event(event)
+
+        self.assertEqual(formatted["object_type"], "Subsection")
+        self.assertEqual(formatted["object_description"], "Section 1 - Subsection 1")
+        self.assertEqual(formatted["event_type"], "Update")
+        self.assertEqual(formatted["object_html_id"], "1--section-1--subsection-1")
+
+    def test_format_nofo_field_update(self):
+        event = self.create_event(self.nofo, self.nofo_ct, {"title": ["Old", "New"]})
+        formatted = format_audit_event(event)
+
+        self.assertEqual(formatted["object_type"], "Nofo")
+        self.assertEqual(formatted["object_description"], "Title")
+
+    def test_format_custom_action_event(self):
+        event = self.create_event(
+            self.nofo,
+            self.nofo_ct,
+            {"action": "nofo_print", "print_mode": ["full", "full"]},
+        )
+        formatted = format_audit_event(event)
+
+        self.assertEqual(formatted["event_type"], "NOFO Printed (full mode)")
+
+    def test_handles_missing_html_id_gracefully(self):
+        # nofo object does not have an HTML ID
+        event = self.create_event(
+            self.nofo, self.nofo_ct, {"status": ["draft", "published"]}
+        )
+        event.save()
+
+        formatted = format_audit_event(event)
+        self.assertEqual(formatted["object_html_id"], "")
+
+    def test_non_json_changed_fields_does_not_crash(self):
+        event = self.create_event(self.nofo, self.nofo_ct)
+        event.changed_fields = "not-json"
+        event.save()
+
+        formatted = format_audit_event(event)
+        self.assertEqual(formatted["event_type"], "Update")
 
 
 class GetAuditEventsForNofoTests(TestCase):
