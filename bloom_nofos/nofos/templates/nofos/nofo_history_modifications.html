@@ -14,8 +14,8 @@
   {% endwith %}
 
   {% if modification_date %}
-    <p class="text-base margin-bottom-4">
-      Showing all changes made <strong>after {{ modification_date|localtime|date:"F j, Y, g:i a" }}</strong>.
+    <p class="margin-bottom-4">
+      Showing all changes made since adding modifications on <strong>{{ modification_date|localtime|date:"F j, Y, g:i a" }}</strong>
     </p>
 
     {% if modification_events %}
@@ -26,13 +26,11 @@
               <strong>{{ event.event_type }}</strong>
             </div>
             <div>
-              {{ event.object_type }}: {{ event.object_description }}
+              ({{ event.object_type }}) {{ event.object_description }}
             </div>
-            <div class="text-base text-gray-700">
+            <div class="text-base">
               {% timezone "America/New_York" %}
-                <td>
-                  {{ event.timestamp|date:'F j' }}, {{ event.timestamp|date:'g:i A' }}
-                </td>
+                {{ event.timestamp|date:'F j' }}, {{ event.timestamp|date:'g:i A' }}
               {% endtimezone %}
             </div>
           </li>
