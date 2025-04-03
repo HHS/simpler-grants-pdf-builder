@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Change cover page "modifications" message for HRSA NOFOs
+  - "Modified [date]. Review updates." → "Last modifed [date]. Review updates."
+
 ### Fixed
 
 ## [2.12.0] - 2025-03-31

@@ -325,7 +325,9 @@ Edit “{{ nofo|nofo_name }}”
     {% if nofo.modifications %}
       <tr>
         <th scope="row">Modification date</th>
-        <td class="nofo-modifications-message">“Modified {{ nofo.modifications|date:"F j, Y" }}. <a class="text-base" href="#modifications">Review updates</a>.”</td>
+        <td class="nofo-modifications-message">
+          “Last modified {{ nofo.modifications|date:"F j, Y" }}. <a class="text-base" href="#modifications">Review updates</a>.”
+        </td>
         <td><a href="{% url 'nofos:nofo_modifications' nofo.id %}">Edit<span class="usa-sr-only"> modification date</span></a></td>
       </tr>
     {% endif %}
