@@ -25,12 +25,12 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-from easyaudit.models import CRUDEvent
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 
 from .audits import (
     deduplicate_audit_events_by_day_and_object,
+    format_audit_event,
     get_audit_events_for_nofo,
 )
 from .forms import (
@@ -1284,52 +1284,9 @@ class NofoHistoryView(
         self.nofo = self.object
 
         # Get audit events for this NOFO
-        nofo_events = get_audit_events_for_nofo(self.nofo)
-
-        # Combine all events and sort by datetime
-        all_events = []
-        for event in nofo_events:
-            event_details = {
-                "event_type": event.get_event_type_display(),
-                "object_type": event.content_type.model.title(),
-                "object_description": event.object_repr,
-                "user": event.user,
-                "timestamp": event.datetime,
-            }
-
-            # Handle subsection events
-            if event.content_type.model == "subsection":
-                subsection = Subsection.objects.get(id=event.object_id)
-                name = subsection.name or f"#{subsection.order}"
-                event_details["object_description"] = (
-                    f"{subsection.section.name} - {name}"
-                )
-
-            # Handle custom audit events (nofo_import, nofo_print, nofo_reimport)
-            if event.changed_fields and event.changed_fields.strip():
-                changed_fields = json.loads(event.changed_fields)
-                if isinstance(changed_fields, dict):
-                    if "action" in changed_fields:
-                        action = changed_fields["action"]
-                        if action == "nofo_import":
-                            event_details["event_type"] = "NOFO Imported"
-                        elif action == "nofo_print":
-                            event_details["event_type"] = "NOFO Printed"
-                            if "print_mode" in changed_fields:
-                                event_details[
-                                    "event_type"
-                                ] += f" ({changed_fields['print_mode'][0]} mode)"
-                        elif action == "nofo_reimport":
-                            event_details["event_type"] = "NOFO Re-imported"
-                    elif event.content_type.model == "nofo":
-                        field_name = next(iter(changed_fields.keys()))
-                        # Convert field_name from snake_case to Title Case
-                        formatted_field = " ".join(
-                            word.title() for word in field_name.split("_")
-                        )
-                        event_details["object_description"] = f"{formatted_field}"
-
-            all_events.append(event_details)
+        all_events = [
+            format_audit_event(event) for event in get_audit_events_for_nofo(self.nofo)
+        ]
 
         # Slice the results for pagination
         end_offset = offset + self.events_per_page
@@ -1381,26 +1338,22 @@ class NofoModificationsHistoryView(
             if event.datetime <= modifications_date:
                 continue
 
-            if event.event_type == CRUDEvent.UPDATE:
-                try:
-                    changed = json.loads(event.changed_fields)
-                    # Skip "updated" events
-                    if changed == {"updated": changed.get("updated")}:
-                        continue
-                    # Skip custom audit events
-                    if changed.get("action") in [
-                        "nofo_import",
-                        "nofo_print",
-                        "nofo_reimport",
-                    ]:
-                        continue
-                except Exception:
-                    pass
+            # Skip custom audit events
+            try:
+                changed = json.loads(event.changed_fields)
+                if changed.get("action") in [
+                    "nofo_import",
+                    "nofo_print",
+                    "nofo_reimport",
+                ]:
+                    continue
+            except Exception:
+                pass
 
             # Skip events related to "Modifications" section
             if event.content_type.model == "section":
                 if "Modifications" in event.object_repr:
-                    continue  # Skip this event
+                    continue
 
             # Skip events for subsections belonging to "Modifications" section
             if event.content_type.model == "subsection":
@@ -1411,37 +1364,7 @@ class NofoModificationsHistoryView(
                 except Subsection.DoesNotExist:
                     continue  # Skip if the subsection is gone
 
-            event_details = {
-                "event_type": event.get_event_type_display(),
-                "object_type": event.content_type.model.title(),
-                "object_description": event.object_repr,
-                "object_html_id": (
-                    json.loads(event.object_json_repr)[0]
-                    .get("fields", [])
-                    .get("html_id", "")
-                ),
-                "user": event.user,
-                "timestamp": event.datetime,
-            }
-
-            # Improve object description for subsection edits
-            if event.content_type.model == "subsection":
-                subsection = Subsection.objects.get(id=event.object_id)
-                name = subsection.name or f"#{subsection.order}"
-                event_details["object_description"] = (
-                    f"{subsection.section.name} - {name}"
-                )
-
-            # Improve object description for nofo edits
-            elif event.content_type.model == "nofo":
-                field_name = next(iter(json.loads(event.changed_fields).keys()))
-                # Convert field_name from snake_case to Title Case
-                formatted_field = " ".join(
-                    word.title() for word in field_name.split("_")
-                )
-                event_details["object_description"] = f"{formatted_field}"
-
-            filtered_events.append(event_details)
+            filtered_events.append(format_audit_event(event))
 
         filtered_events = deduplicate_audit_events_by_day_and_object(filtered_events)
 
