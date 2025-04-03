@@ -1,13 +1,82 @@
 import json
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 
 from easyaudit.models import CRUDEvent
 from nofos.models import Nofo, Section, Subsection
-from ..audits import get_audit_events_for_nofo
+from ..audits import (
+    deduplicate_audit_events_by_day_and_object,
+    get_audit_events_for_nofo,
+)
 from django.contrib.auth import get_user_model
+
+
+class DeduplicateAuditEventsTests(TestCase):
+    def setUp(self):
+        base_time = datetime(2025, 4, 1, 12, 0, 0)
+
+        self.events = [
+            {
+                "object_type": "Subsection",
+                "object_description": "Step 1 - Key facts",
+                "timestamp": base_time,
+            },
+            {
+                "object_type": "Subsection",
+                "object_description": "Step 1 - Key facts",
+                "timestamp": base_time + timedelta(hours=1),  # same day, should replace
+            },
+            {
+                "object_type": "Subsection",
+                "object_description": "Step 1 - Key facts",
+                "timestamp": base_time + timedelta(days=1),  # next day, keep
+            },
+            {
+                "object_type": "Nofo",
+                "object_description": "Application Deadline",
+                "timestamp": base_time,
+            },
+            {
+                "object_type": "Nofo",
+                "object_description": "Application Deadline",
+                "timestamp": base_time
+                + timedelta(minutes=30),  # same day, should replace
+            },
+        ]
+
+    def test_deduplicates_by_object_and_date(self):
+        deduped = deduplicate_audit_events_by_day_and_object(self.events)
+
+        # Expect only 3 results:
+        # - One for "Step 1 - Key facts" on April 1 (latest one)
+        # - One for "Step 1 - Key facts" on April 2
+        # - One for "Application Deadline" on April 1 (latest one)
+        self.assertEqual(len(deduped), 3)
+
+        key_facts_april1 = next(
+            e
+            for e in deduped
+            if e["object_description"] == "Step 1 - Key facts"
+            and e["timestamp"].date() == datetime(2025, 4, 1).date()
+        )
+        self.assertEqual(key_facts_april1["timestamp"].hour, 13)
+
+        app_deadline = next(
+            e for e in deduped if e["object_description"] == "Application Deadline"
+        )
+        self.assertEqual(app_deadline["timestamp"].minute, 30)
+
+    def test_empty_event_list(self):
+        deduped = deduplicate_audit_events_by_day_and_object([])
+        self.assertEqual(deduped, [])
+
+    def test_single_event(self):
+        single = self.events[:1]
+        deduped = deduplicate_audit_events_by_day_and_object(single)
+        self.assertEqual(len(deduped), 1)
+        self.assertEqual(deduped[0], single[0])
 
 
 class GetAuditEventsForNofoTests(TestCase):
