@@ -1263,6 +1263,39 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         return context
 
 
+def get_audit_events_for_nofo(nofo):
+    """
+    Return all audit events related to the given NOFO: the NOFO object,
+    its sections, and its subsections.
+    """
+    # Get audit events for the NOFO
+    nofo_events = CRUDEvent.objects.filter(
+        object_id=nofo.id, content_type__model="nofo"
+    )
+
+    # Get audit events for Sections
+    section_ids = list(nofo.sections.values_list("id", flat=True))
+    section_events = CRUDEvent.objects.filter(
+        object_id__in=[str(sid) for sid in section_ids],
+        content_type__model="section",
+    )
+
+    # Get audit events for Subsections
+    subsection_ids = list(
+        Subsection.objects.filter(section__nofo=nofo).values_list("id", flat=True)
+    )
+    subsection_events = CRUDEvent.objects.filter(
+        object_id__in=[str(sid) for sid in subsection_ids],
+        content_type__model="subsection",
+    )
+
+    return sorted(
+        list(nofo_events) + list(section_events) + list(subsection_events),
+        key=lambda e: e.datetime,
+        reverse=True,
+    )
+
+
 class NofoHistoryView(
     PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
 ):
@@ -1276,48 +1309,14 @@ class NofoHistoryView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         offset = int(self.request.GET.get("offset", 0))
-        self.nofo = self.model
+        self.nofo = self.object
 
         # Get audit events for this NOFO
-        nofo_events = (
-            CRUDEvent.objects.filter(
-                object_id=self.object.id, content_type__model="nofo"
-            )
-            .exclude(
-                # Exclude updates where only the timestamp changed
-                changed_fields__regex=r'^\{"updated": \[".+", ".+"\]\}$',
-                event_type=CRUDEvent.UPDATE,
-            )
-            .order_by("-datetime")
-        )
-
-        # Get audit events for sections
-        section_ids = list(self.object.sections.values_list("id", flat=True))
-        section_events = CRUDEvent.objects.filter(
-            object_id__in=[str(id) for id in (section_ids if section_ids else [0])],
-            content_type__model="section",
-        ).order_by("-datetime")
-
-        # Get audit events for subsections
-        subsection_ids = list(
-            Subsection.objects.filter(section__nofo=self.object).values_list(
-                "id", flat=True
-            )
-        )
-        subsection_events = CRUDEvent.objects.filter(
-            object_id__in=[
-                str(id) for id in (subsection_ids if subsection_ids else [0])
-            ],
-            content_type__model="subsection",
-        ).order_by("-datetime")
+        nofo_events = get_audit_events_for_nofo(self.nofo)
 
         # Combine all events and sort by datetime
         all_events = []
-        for event in sorted(
-            list(nofo_events) + list(section_events) + list(subsection_events),
-            key=lambda x: x.datetime,
-            reverse=True,
-        ):
+        for event in nofo_events:
             event_details = {
                 "event_type": event.get_event_type_display(),
                 "object_type": event.content_type.model.title(),
