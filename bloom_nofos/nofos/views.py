@@ -1,7 +1,6 @@
 import io
 import json
 from datetime import datetime
-from collections import OrderedDict
 
 
 import docraptor
@@ -30,7 +29,10 @@ from easyaudit.models import CRUDEvent
 
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 
-from .audits import get_audit_events_for_nofo
+from .audits import (
+    deduplicate_audit_events_by_day_and_object,
+    get_audit_events_for_nofo,
+)
 from .forms import (
     CheckNOFOLinkSingleForm,
     InsertOrderSpaceForm,
@@ -1341,31 +1343,6 @@ class NofoHistoryView(
         )
 
         return context
-
-
-def deduplicate_audit_events_by_day_and_object(events):
-    """
-    Deduplicate audit events so that only the most recent event
-    for a given object (type + description) on a given day is kept.
-
-    Args:
-        events (list of dict): A list of audit event dictionaries, each with
-                               'object_type', 'object_description', and 'timestamp' keys.
-
-    Returns:
-        list: Deduplicated list of events, keeping the latest per object per day.
-    """
-    deduplicated = OrderedDict()
-
-    for event in events:
-        key = (
-            event["object_type"],
-            event["object_description"],
-            event["timestamp"].date(),  # Use only the date
-        )
-        deduplicated[key] = event  # Overwrites earlier events on same object + day
-
-    return list(deduplicated.values())
 
 
 class NofoModificationsHistoryView(

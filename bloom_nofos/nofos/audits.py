@@ -1,6 +1,34 @@
 import json
+from collections import OrderedDict
+
+
 from easyaudit.models import CRUDEvent
 from .models import Subsection
+
+
+def deduplicate_audit_events_by_day_and_object(events):
+    """
+    Deduplicate audit events so that only the most recent event
+    for a given object (type + description) on a given day is kept.
+
+    Args:
+        events (list of dict): A list of audit event dictionaries, each with
+        'object_type', 'object_description', and 'timestamp' keys.
+
+    Returns:
+        list: Deduplicated list of events, keeping the latest per object per day.
+    """
+    deduplicated = OrderedDict()
+
+    for event in events:
+        key = (
+            event["object_type"],
+            event["object_description"],
+            event["timestamp"].date(),  # Use only the date
+        )
+        deduplicated[key] = event  # Overwrites earlier events on same object + day
+
+    return list(deduplicated.values())
 
 
 def get_audit_events_for_nofo(nofo, reverse=True):
