@@ -50,6 +50,9 @@
   <caption>
     <div>
       <h2 class="margin-bottom-0">Latest Changes</h2>
+      {% if nofo.modifications %}
+        <p>You can also see <a href="{% url 'nofos:nofo_history_modifications' nofo.id %}">all updates since this NOFO was modified</a>.</p>
+      {% endif %}
     </div>
   </caption>
   <thead>
