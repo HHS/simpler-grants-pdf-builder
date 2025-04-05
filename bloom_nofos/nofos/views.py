@@ -1370,4 +1370,15 @@ class NofoModificationsHistoryView(
 
         context["modification_events"] = filtered_events
         context["modification_date"] = modifications_date
+
+        # Find the first subsection under the "Modifications" section
+        try:
+            modifications_section = self.object.sections.get(name="Modifications")
+            modifications_subsection = modifications_section.subsections.order_by(
+                "order"
+            ).first()
+        except Section.DoesNotExist:
+            modifications_subsection = None
+
+        context["modifications_subsection"] = modifications_subsection
         return context
