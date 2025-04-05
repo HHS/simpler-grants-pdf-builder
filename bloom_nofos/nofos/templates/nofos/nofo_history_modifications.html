@@ -9,35 +9,64 @@
   {% with nofo|nofo_name as nofo_name_str %}
     {% with "Edit “"|add:nofo_name_str|add:"”" as back_text %}
       {% url 'nofos:nofo_edit' nofo.id as back_href %}
-      {% include "includes/page_heading.html" with title="Modification history for “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
+      {% include "includes/page_heading.html" with title="Updates since modifying “"|add:nofo_name_str|add:"”" back_text=back_text back_href=back_href only %}
     {% endwith %}
   {% endwith %}
 
   {% if modification_date %}
-    <p class="margin-bottom-4">
-      Showing all changes made since adding modifications on <strong>{{ modification_date|localtime|date:"F j, Y, g:i a" }}</strong>
+  <section class="usa-prose margin-top-1">
+    <p>
+      All changes made since adding modifications on <strong>{{ modification_date|localtime|date:"F j, Y, g:i a" }}</strong>
     </p>
+    <ul>
+      <li><a href="#html-table">As an HTML table</a></li>
+      <li><a href="#markdown-table">As a Markdown table</a></li>
+    </ul>
+  </section>
+    
 
     {% if modification_events %}
-      <ul class="usa-list">
-        {% for event in modification_events %}
-          <li>
-            <div>
-              <strong>{{ event.event_type }}</strong>
-            </div>
-            <div>
-              ({{ event.object_type }}) {{ event.object_description }}
-            </div>
-            <div class="text-base">
-              {% timezone "America/New_York" %}
+      <table class="usa-table" id="audit-events-table">
+        <caption>
+          <div>
+            <h2 id="html-table" class="margin-bottom-0 font-serif-lg">Changes since NOFO was modified (HTML table)</h2>
+            {% if nofo.modifications %}
+              <p>You can also see <a href="{% url 'nofos:nofo_history' nofo.id %}">all updates since this NOFO was created</a>.</p>
+            {% endif %}
+          </div>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="usa-sr-only">Event </span>Type</th>
+            <th scope="col">Object</th>
+            <th scope="col">User</th>
+            <th scope="col" class="w-20">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="audit-events-body">
+          {% for event in modification_events %}
+          <tr>
+            <td>{{ event.event_type }}</td>
+            <td><em>{{ event.object_type }}</em><br>{{ event.object_description }}</td>
+            <td>{{ event.user.email }}</td>
+            {% timezone "America/New_York" %}
+              <td>
                 {{ event.timestamp|date:'F j' }}, {{ event.timestamp|date:'g:i A' }}
-              {% endtimezone %}
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
+              </td>
+            {% endtimezone %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">No audit events found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-      <h2 class="margin-top-4 font-serif-md">As a markdown table</h3>
+      <h2 id="markdown-table" class="margin-top-4 font-serif-lg">Changes since NOFO was modified (Markdown table)</h3>
+      {% if modifications_subsection %}
+        <p><a class="usa-link usa-link--external" target="_blank" href="{% url 'nofos:subsection_edit' nofo.id modifications_subsection.section.id modifications_subsection.id %}">Link to “Modifications” subsection</a>.</p>
+      {% endif %}
       <div class="bg-base-lightest padding-3 radius-md margin-bottom-3 overflow-auto">
         <code>
           | Modification description | Date updated |</br>

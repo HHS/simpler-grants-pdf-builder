@@ -88,12 +88,9 @@ Edit “{{ nofo|nofo_name }}”
       NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’ with modifications.
     </h2>
     <div class="usa-summary-box__text">
-      <p>This NOFO has been modified since being published</a>.</p>
-      <p>You can edit the content of this NOFO, but be sure to update the “<a href="#modifications">Modifications</a>” section at the end of this NOFO with:</p>
-      <ul class="usa-list">
-        <li>A description of the changes you made</li>
-        <li>The date you made those changes</li>
-      </ul>
+      <p>Make sure to update the “<a href="#modifications">Modifications</a>” section at the end of this NOFO with the changes you’ve made since publication.</p>
+      <p><a href="{% url 'nofos:nofo_history_modifications' nofo.id %}">See changes made since this NOFO was modified</a>.</p>
+      <p>Last modification date on cover page: <a href="{% url 'nofos:nofo_modifications' nofo.id %}">{{ nofo.modifications|date:"F j, Y" }}</a>.</p>
     </div>
   </div>
 </div>
