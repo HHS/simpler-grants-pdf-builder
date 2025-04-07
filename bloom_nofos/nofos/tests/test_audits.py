@@ -1,17 +1,18 @@
 import json
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
+
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.utils import timezone
-from django.contrib.contenttypes.models import ContentType
-
 from easyaudit.models import CRUDEvent
 from nofos.models import Nofo, Section, Subsection
+
 from ..audits import (
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
     get_audit_events_for_nofo,
 )
-from django.contrib.auth import get_user_model
 
 
 class DeduplicateAuditEventsTests(TestCase):

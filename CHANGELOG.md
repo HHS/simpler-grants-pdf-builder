@@ -20,6 +20,10 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Show audit events since modifying a NOFO on its own page
+  - Also provide a markdown table that people can copy and paste
+- Show the modification date in the subsection edit page for the mods table
+- Add links in nofo_edit page "actions" box to new audit page and mods date
 - Added initial version of RandyReport on account pages
   - The name will have to change for sure
 - Add default column classes to HTML tables on import
