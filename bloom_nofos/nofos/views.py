@@ -2,7 +2,6 @@ import io
 import json
 from datetime import datetime
 
-
 import docraptor
 from bs4 import BeautifulSoup
 from constance import config

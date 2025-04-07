@@ -1,8 +1,8 @@
 import json
 from collections import OrderedDict
 
-
 from easyaudit.models import CRUDEvent
+
 from .models import Subsection
 
 
