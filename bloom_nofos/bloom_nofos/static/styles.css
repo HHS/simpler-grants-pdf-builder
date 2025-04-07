@@ -166,6 +166,26 @@ details > summary > span:hover {
 label.usa-label {
   margin-bottom: 0.25rem;
 }
+
+.outline-box {
+  border: 2px solid #c9c9c9;
+  border-radius: 0.25rem;
+  padding: 8px 12px;
+  max-width: 450px;
+}
+
+.outline-box p:not(:last-of-type) {
+  margin-bottom: 4px;
+}
+
+.outline-box .outline-box--heading {
+  font-size: 1rem;
+}
+.outline-box .outline-box--content {
+  font-size: 1.15rem;
+  margin-bottom: 0;
+}
+
 /* Link check page */
 
 .pre--code-box {
@@ -1129,31 +1149,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .usa-error-message {
   font-size: 1rem;
-}
-
-/* create page */
-
-.subsection_create .previous-subsection-widget {
-  border: 2px solid #c9c9c9;
-  border-radius: 0.25rem;
-  padding: 8px 12px;
-  max-width: 450px;
-}
-
-.subsection_create .previous-subsection-widget p {
-  margin-bottom: 4px;
-}
-
-.previous-subsection--section {
-  font-size: 1rem;
-}
-.previous-subsection--subsection {
-  font-size: 1.15rem;
-  margin-bottom: 0;
-}
-
-.previous-subsection--tag {
-  font-variant: small-caps;
 }
 
 /* compare page */

@@ -28,18 +28,18 @@
 
   {% if prev_subsection_with_tag %}
   <h2 class="font-serif-md margin-top-4">Previous subsection{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
-  <div class="previous-subsection-widget">
-    <p class="previous-subsection--section text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
-    <p class="previous-subsection--subsection">
+  <div class="previous-subsection-widget outline-box">
+    <p class="outline-box--heading text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
+    <p class="outline-box--content">
       <a href="{% url 'nofos:subsection_edit' nofo.id prev_subsection_with_tag.section.id prev_subsection_with_tag.id %}" class="usa-link usa-link--external" target="blank" title="{{ prev_subsection_with_tag.name }} (Opens in a new tab)">
         {{ prev_subsection_with_tag.name }}
-        (<span class="previous-subsection--tag">{{ prev_subsection_with_tag.tag }}</span>)
+        (<span class="small-caps">{{ prev_subsection_with_tag.tag }}</span>)
       </a>
     </p>
   </div>
   {% endif %}
 
-  <h2 class="font-serif-lg margin-top-4 margin-bottom-0">Your new subsection</h2>
+  <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Your new subsection</h2>
 
   <form class="form" method="post">
     {% csrf_token %}
