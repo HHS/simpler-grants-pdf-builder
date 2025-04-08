@@ -16,6 +16,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fix to allow unbolded "Other required forms:" string in appliction checklist
+- Fix link to edit modification date in the subsection edit page for the mods table
 - Fix for nested lists no longer importing correctly
 
 ## [2.12.0] - 2025-03-31
