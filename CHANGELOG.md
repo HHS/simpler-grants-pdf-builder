@@ -16,6 +16,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fix for nested lists no longer importing correctly
+
 ## [2.12.0] - 2025-03-31
 
 ### Added

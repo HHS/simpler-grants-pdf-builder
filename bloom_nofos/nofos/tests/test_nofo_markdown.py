@@ -476,6 +476,98 @@ class NofoMarkdownConverterULTest(TestCase):
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
 
+class NofoMarkdownConverterLITest(TestCase):
+    def test_five_level_nested_ul(self):
+        html = """
+        <ul>
+            <li>Level 1
+                <ul>
+                    <li>Level 2
+                        <ul>
+                            <li>Level 3
+                                <ul>
+                                    <li>Level 4
+                                        <ul>
+                                            <li>Level 5</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        """
+        expected = """* Level 1
+    + Level 2
+        - Level 3
+            * Level 4
+                + Level 5"""
+        self.assertEqual(md(html).strip(), expected.strip())
+
+    def test_five_level_nested_ol(self):
+        html = """
+        <ol>
+            <li>Step 1
+                <ol>
+                    <li>Step 2
+                        <ol>
+                            <li>Step 3
+                                <ol>
+                                    <li>Step 4
+                                        <ol>
+                                            <li>Step 5</li>
+                                        </ol>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+        </ol>
+        """
+        expected = """1. Step 1
+    1. Step 2
+        1. Step 3
+            1. Step 4
+                1. Step 5"""
+        self.assertEqual(md(html).strip(), expected.strip())
+
+    def test_mixed_ul_inside_ol(self):
+        html = """
+        <ol>
+            <li>Do this
+                <ul>
+                    <li>First</li>
+                    <li>Second</li>
+                </ul>
+            </li>
+        </ol>
+        """
+        expected = """1. Do this
+    * First
+    * Second"""
+        self.assertEqual(md(html).strip(), expected.strip())
+
+    def test_mixed_ol_inside_ul(self):
+        html = """
+        <ul>
+            <li>Start here
+                <ol>
+                    <li>Step A</li>
+                    <li>Step B</li>
+                </ol>
+            </li>
+        </ul>
+        """
+        expected = """* Start here
+    1. Step A
+    2. Step B"""
+        self.assertEqual(md(html).strip(), expected.strip())
+
+
 class NofoMarkdownConverterATest(TestCase):
     maxDiff = None
 
