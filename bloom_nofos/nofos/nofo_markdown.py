@@ -1,5 +1,12 @@
+import re
+
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
+
+
+# this is copied from __init__.py in markdownify
+# https://github.com/matthewwithanm/python-markdownify/blob/2d654a6b7e822e1547199da855c9d304d162cb27/markdownify/__init__.py#L9
+re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
 
 
 def get_width_class(th):
@@ -107,6 +114,51 @@ class NofoMarkdownConverter(MarkdownConverter):
                 return str(el).replace("*", "&ast;")
 
         return super().convert_ul(el, text, parent_tags)
+
+    def convert_li(self, el, text, parent_tags):
+        # handle some early-exit scenarios
+        text = (text or "").strip()
+        if not text:
+            return "\n"
+
+        # determine list item bullet character to use
+        parent = el.parent
+        if parent is not None and parent.name == "ol":
+            if parent.get("start") and str(parent.get("start")).isnumeric():
+                start = int(parent.get("start"))
+            else:
+                start = 1
+            # For ordered lists, calculate based on sibling count
+            bullet = "%s." % (start + len(el.find_previous_siblings("li")))
+        else:
+            # For unordered lists, calculate nested depth (if needed)
+            depth = -1
+            tmp_el = el
+            while tmp_el:
+                if tmp_el.name == "ul":
+                    depth += 1
+                tmp_el = tmp_el.parent
+            bullets = self.options["bullets"]
+            bullet = bullets[depth % len(bullets)]
+
+        # Add a trailing space to the bullet marker
+        bullet = bullet + " "
+
+        # Instead of calculating indent from bullet length, use fixed 4 spaces
+        fixed_indent = "    "  # 4 spaces, as required by CommonMark
+        bullet_indent = fixed_indent
+
+        # Indent the content lines with a fixed indent of 4 spaces
+        def _indent_for_li(match):
+            line_content = match.group(1)
+            return bullet_indent + line_content if line_content else ""
+
+        text = re_line_with_content.sub(_indent_for_li, text)
+
+        # Replace the first 4 spaces with the bullet (preserving any extra characters beyond the 4-char indent)
+        text = bullet + text[len(fixed_indent) :]
+
+        return "%s\n" % text
 
     def convert_p(self, el, text, parent_tags):
         # if we are in a table cell, and that table cell contains multiple children, return the string
