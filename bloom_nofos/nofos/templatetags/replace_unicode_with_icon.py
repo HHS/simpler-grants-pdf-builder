@@ -55,7 +55,7 @@ def is_list_heading(td):
         return True
 
     if (
-        td.text.lower() == "other required forms"
+        td.text.lower().startswith("other required forms")
         or td.text.lower() == "attachments"
         or td.text.lower() == "narratives"
     ):
