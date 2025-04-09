@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 app_name = "nofos"
+
 urlpatterns = [
     path("", views.NofosListView.as_view(), name="nofo_index"),
     path("import", views.NofosImportNewView.as_view(), name="nofo_import"),
