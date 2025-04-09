@@ -9,15 +9,27 @@ from nofos.models import Nofo, Subsection
 from .models import BloomUser
 
 
+def get_filename(base_filename, group, start_date, end_date):
+    # Determine the file name based on provided dates.
+    filename = "{}_{}".format(base_filename, group if group else "user")
+    if start_date and end_date:
+        # Both dates provided: use both.
+        return "{}_{}_{}.csv".format(
+            filename, start_date.isoformat(), end_date.isoformat()
+        )
+    elif start_date or end_date:
+        # Only one date provided: use whichever is not None.
+        provided_date = start_date if start_date else end_date
+        return "{}_{}.csv".format(filename, provided_date.isoformat())
+
+    return "{}.csv".format(filename)
+
+
 def export_nofo_report(start_date, end_date, user, group=None):
     """
     Handles exporting all NOFOs for the logged-in user or everyone in their group.
     Now aggregates the number of edits per user and per NOFO.
     """
-    from django.db.models import Q
-    from django.utils.timezone import make_aware
-    from datetime import datetime
-    import json
 
     # Start with audit events that have been recorded.
     events_filters = {
