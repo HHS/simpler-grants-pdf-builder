@@ -81,8 +81,8 @@ class ExportNofoReportForm(forms.Form):
         if user:
             # Look up the display value for the user's group
             self.fields["user_scope"].choices = [
-                ("me", "For me"),
-                ("all", f"For all of {user.group.upper()}"),
+                ("user", "For me"),
+                ("group", f"For all of {user.group.upper()}"),
             ]
 
         self.order_fields(["user_scope", "start_date", "end_date"])
