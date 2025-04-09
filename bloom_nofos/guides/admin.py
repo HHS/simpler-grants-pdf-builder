@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import ContentGuide
 
-# Register your models here.
+
+@admin.register(ContentGuide)
+class ContentGuideAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "filename", "created", "updated")

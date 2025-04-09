@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Content Guides</h1>
+  <ul class="usa-list">
+    {% for guide in guides %}
+      <li>
+        <a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a>
+        <span class="text-base text-gray-500">Last updated {{ guide.updated|date:"F j, Y" }}</span>
+      </li>
+    {% empty %}
+      <li>No content guides available.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

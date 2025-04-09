@@ -74,21 +74,105 @@ THEME_CHOICES = [
 ]
 
 
-class Nofo(models.Model):
-    title = models.TextField(
-        "NOFO title",
-        max_length=250,
-        validators=[MaxLengthValidator(250)],
-        blank=True,
-        help_text="The official name for this NOFO. It will be public when the NOFO is published.",
-    )
+class BaseNofo(models.Model):
+    class Meta:
+        abstract = True
+        ordering = ["-updated"]
 
     filename = models.CharField(
         max_length=511,
         validators=[MaxLengthValidator(511)],
         blank=True,
         null=True,
-        help_text="The filename used to import this NOFO. If re-imported, this value is the most recent filename.",
+        help_text="The filename used to import this document. If re-imported, this value is the most recent filename.",
+    )
+
+    group = models.CharField(
+        max_length=16,
+        validators=[MaxLengthValidator(16)],
+        choices=settings.GROUP_CHOICES,
+        blank=False,
+        default="bloom",
+        help_text="The OpDiv grouping for this document. The group is used to control access to a NOFO. The 'Bloomworks' group can be used to hide NOFOs from OpDiv users.",
+    )
+
+    opdiv = models.CharField(
+        "Operating Division",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=False,
+        help_text="The HHS operating division (eg, HRSA, CDC)",
+    )
+
+    status = models.CharField(
+        max_length=32,
+        validators=[MaxLengthValidator(32)],
+        choices=STATUS_CHOICES,
+        blank=False,
+        default="draft",
+        help_text="The status of this document in the NOFO Builder.",
+    )
+
+    archived = models.DateField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Archived documents are soft-deleted: they are not visible in the UI but can be recovered by superusers.",
+    )
+
+    successor = models.ForeignKey(
+        "self",  # self-referential foreign key
+        on_delete=models.CASCADE,  # If a NOFO is deleted, also delete history
+        null=True,
+        blank=True,
+        related_name="ancestors",
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "({}) {}".format(self.id, self.title or "Untitled")
+
+    def get_first_subsection(self):
+        return (
+            self.sections.order_by("order")
+            .first()
+            .subsections.order_by("order")
+            .first()
+        )
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # If the instance already exists, check if any field other than 'status' has changed
+            original_document = self.__class__.objects.get(pk=self.pk)
+            for field in self._meta.fields:
+                if field.name != "status" and getattr(
+                    original_document, field.name
+                ) != getattr(self, field.name):
+                    # A field other than 'status' has changed, update the 'updated' field
+                    self.updated = timezone.now()
+                    break
+        else:
+            # If it's a new instance, set the 'updated' field to the current time
+            self.updated = timezone.now()
+
+        # Call the clean method for validation
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
+class Nofo(BaseNofo):
+    class Meta:
+        verbose_name = "NOFO"
+        verbose_name_plural = "NOFOs"
+
+    title = models.TextField(
+        "NOFO title",
+        max_length=250,
+        validators=[MaxLengthValidator(250)],
+        blank=True,
+        help_text="The official name for this NOFO. It will be public when the NOFO is published.",
     )
 
     short_name = models.CharField(
@@ -104,23 +188,6 @@ class Nofo(models.Model):
         validators=[MaxLengthValidator(200)],
         blank=True,
         help_text="The official opportunity number for this NOFO.",
-    )
-
-    group = models.CharField(
-        max_length=16,
-        validators=[MaxLengthValidator(16)],
-        choices=settings.GROUP_CHOICES,
-        blank=False,
-        default="bloom",
-        help_text="The OpDiv grouping of this NOFO. The group is used to control access to a NOFO. The 'Bloomworks' group can be used to hide NOFOs from OpDiv users.",
-    )
-
-    opdiv = models.CharField(
-        "Operating Division",
-        max_length=511,
-        validators=[MaxLengthValidator(511)],
-        blank=False,
-        help_text="The HHS operating division (eg, HRSA, CDC)",
     )
 
     agency = models.CharField(
@@ -259,30 +326,6 @@ class Nofo(models.Model):
         help_text="The designer is responsible for the layout of this NOFO.",
     )
 
-    status = models.CharField(
-        max_length=32,
-        validators=[MaxLengthValidator(32)],
-        choices=STATUS_CHOICES,
-        blank=False,
-        default="draft",
-        help_text="The status of this NOFO in the NOFO Builder.",
-    )
-
-    archived = models.DateField(
-        null=True,
-        blank=True,
-        default=None,
-        help_text="Archived NOFOs are soft-deleted: they are not visible in the UI but can be recovered by superusers.",
-    )
-
-    group = models.CharField(
-        max_length=16,
-        choices=settings.GROUP_CHOICES,
-        blank=False,
-        default="bloom",
-        help_text="The OpDiv grouping of this NOFO. The group is used to control access to a NOFO.",
-    )
-
     modifications = models.DateField(
         null=True,
         blank=True,
@@ -303,17 +346,6 @@ class Nofo(models.Model):
         help_text="An SSJ NOFO is intended for only 1 applicant.",
     )
 
-    successor = models.ForeignKey(
-        "self",  # self-referential foreign key
-        on_delete=models.CASCADE,  # If a NOFO is deleted, also delete history
-        null=True,
-        blank=True,
-        related_name="ancestors",
-    )
-
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return "({}) {}".format(self.id, self.title or self.short_name)
 
@@ -328,14 +360,6 @@ class Nofo(models.Model):
         Returns the main edit view for this NOFO.
         """
         return reverse("nofos:nofo_edit", args=(self.id,))
-
-    def get_first_subsection(self):
-        return (
-            self.sections.order_by("order")
-            .first()
-            .subsections.order_by("order")
-            .first()
-        )
 
     def clean(self):
         super().clean()
@@ -356,25 +380,6 @@ class Nofo(models.Model):
                 parser.parseString(self.inline_css)
             except Exception as e:
                 raise ValidationError(f"Invalid CSS: {e}")
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            # If the instance already exists, check if any field other than 'status' has changed
-            original_nofo = Nofo.objects.get(pk=self.pk)
-            for field in self._meta.fields:
-                if field.name != "status" and getattr(
-                    original_nofo, field.name
-                ) != getattr(self, field.name):
-                    # A field other than 'status' has changed, update the 'updated' field
-                    self.updated = timezone.now()
-                    break
-        else:
-            # If it's a new instance, set the 'updated' field to the current time
-            self.updated = timezone.now()
-
-        # Call the clean method for validation
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 
 class Section(models.Model):

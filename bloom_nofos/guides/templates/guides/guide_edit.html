@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Edit Content Guide</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="usa-button">Save changes</button>
+  </form>
+
+  <p><a href="{% url 'guides:guide_index' %}">Back to all content guides</a></p>
+{% endblock %}
