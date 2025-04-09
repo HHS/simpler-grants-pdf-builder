@@ -131,6 +131,10 @@ class BaseNofo(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def is_nofo(self):
+        return isinstance(self, Nofo)
+
     def __str__(self):
         return "({}) {}".format(self.id, self.title or "Untitled")
 
@@ -382,26 +386,16 @@ class Nofo(BaseNofo):
                 raise ValidationError(f"Invalid CSS: {e}")
 
 
-class Section(models.Model):
+class BaseSection(models.Model):
     class Meta:
-        ordering = ["order"]
-        unique_together = ("nofo", "order")
-
-    nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
+        abstract = True
 
     name = models.TextField(
         "Section name",
         max_length=250,
         validators=[MaxLengthValidator(250)],
-        blank=False,
-        null=False,
     )
-    html_id = models.CharField(
-        max_length=511,
-        validators=[MaxLengthValidator(511)],
-        blank=False,
-        null=False,
-    )
+    html_id = models.CharField(max_length=511, validators=[MaxLengthValidator(511)])
     order = models.IntegerField(null=True)
 
     has_section_page = models.BooleanField(
@@ -410,43 +404,24 @@ class Section(models.Model):
         help_text="If true, this section will have its own page and icon in the ToC.",
     )
 
-    class Meta:
-        unique_together = ("nofo", "order")
-
-    @classmethod
-    def get_next_order(cls, nofo):
-        """Get the next available order number for a section in this NOFO"""
-        last_section = nofo.sections.order_by("-order").first()
-        return (last_section.order + 1) if last_section else 1
-
-    def save(self, *args, **kwargs):
-        if not self.pk and not self.order:
-            self.order = self.get_next_order(self.nofo)
-
-        super().save(*args, **kwargs)
-
-        # Update NOFO's updated timestamp
-        if self.nofo:
-            self.nofo.updated = timezone.now()
-            self.nofo.save()
-
     def __str__(self):
-        nofo_id = "999"
-        try:
-            if self.nofo.number:
-                nofo_id = self.nofo.number
-        except Nofo.DoesNotExist:
-            pass
-
-        return "({}) {}".format(nofo_id, self.name)
+        return f"({self.parent_id or '999'}) {self.name}"
 
     def get_previous_section(self):
         return (
-            self.nofo.sections.filter(order__lt=self.order).order_by("-order").first()
+            self.get_sibling_queryset()
+            .filter(order__lt=self.order)
+            .order_by("-order")
+            .first()
         )
 
     def get_next_section(self):
-        return self.nofo.sections.filter(order__gt=self.order).order_by("order").first()
+        return (
+            self.get_sibling_queryset()
+            .filter(order__gt=self.order)
+            .order_by("order")
+            .first()
+        )
 
     def insert_order_space(self, insert_at_order):
         """
@@ -458,17 +433,62 @@ class Section(models.Model):
         :param insert_at_order: The order number at which to insert the space.
         """
         with transaction.atomic():
-            # Fetch the Subsections to be updated, in reverse order
-            subsections_to_update = Subsection.objects.filter(
+            self.get_subsection_model().objects.filter(
                 section_id=self.id, order__gte=insert_at_order
-            ).order_by("-order")
+            ).order_by("-order").update(order=models.F("order") + 1)
 
-            # Increment their order by 1
-            for subsection in subsections_to_update:
-                # Directly incrementing to avoid conflict
-                Subsection.objects.filter(pk=subsection.pk).update(
-                    order=models.F("order") + 1
-                )
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.order:
+            self.order = self.get_next_order()
+
+        super().save(*args, **kwargs)
+
+        parent = self.get_parent()
+        if parent:
+            parent.updated = timezone.now()
+            parent.save()
+
+    def get_next_order(self):
+        last_section = self.get_sibling_queryset().order_by("-order").first()
+        return (last_section.order + 1) if last_section else 1
+
+    def get_parent(self):
+        raise NotImplementedError("Subclasses must implement get_parent.")
+
+    def get_sibling_queryset(self):
+        raise NotImplementedError("Subclasses must implement get_sibling_queryset.")
+
+    def get_subsection_model(self):
+        raise NotImplementedError("Subclasses must implement get_subsection_model.")
+
+
+class Section(BaseSection):
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("nofo", "order")
+
+    nofo = models.ForeignKey(
+        "nofos.Nofo",
+        on_delete=models.CASCADE,
+        related_name="sections",
+    )
+
+    @property
+    def parent_id(self):
+        return self.nofo.number
+
+    @property
+    def subsections(self):
+        return self.nofo_subsections.all()
+
+    def get_parent(self):
+        return self.nofo
+
+    def get_sibling_queryset(self):
+        return self.nofo.sections.all()
+
+    def get_subsection_model(self):
+        return Subsection
 
 
 # Custom exception for heading validation errors
@@ -476,10 +496,10 @@ class HeadingValidationError(Exception):
     pass
 
 
-class Subsection(models.Model):
-    section = models.ForeignKey(
-        Section, on_delete=models.CASCADE, related_name="subsections"
-    )
+class BaseSubsection(models.Model):
+    class Meta:
+        abstract = True
+
     name = models.TextField(
         "Subsection name",
         max_length=400,
@@ -501,9 +521,6 @@ class Subsection(models.Model):
     )
 
     order = models.IntegerField(null=True)
-
-    class Meta:
-        unique_together = ("section", "order")
 
     TAG_CHOICES = [
         ("h2", "Heading 2"),
@@ -643,3 +660,13 @@ class Subsection(models.Model):
             .order_by("order")
             .first()
         )
+
+
+class Subsection(BaseSubsection):
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("section", "order")
+
+    section = models.ForeignKey(
+        Section, on_delete=models.CASCADE, related_name="subsections"
+    )
