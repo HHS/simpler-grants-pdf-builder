@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "constance",
     "nofos.apps.NofosConfig",
+    "guides.apps.GuidesConfig",
     "users.apps.UsersConfig",
     "easyaudit",
     "djversion",
