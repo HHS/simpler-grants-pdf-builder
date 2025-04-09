@@ -62,6 +62,8 @@ class LoginForm(forms.Form):
 
 
 class ExportNofoReportForm(forms.Form):
+    user_scope = forms.ChoiceField(label="For you or for everyone?", required=True)
+
     start_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date", "class": "usa-input"}),
@@ -74,6 +76,16 @@ class ExportNofoReportForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        if user:
+            # Look up the display value for the user's group
+            self.fields["user_scope"].choices = [
+                ("me", "For me"),
+                ("all", f"For all of {user.group.upper()}"),
+            ]
+
+        self.order_fields(["user_scope", "start_date", "end_date"])
+
         for field in self.fields.values():
-            field.label_suffix = " (Optional)"  # option
+            field.label_suffix = " (Optional)"
