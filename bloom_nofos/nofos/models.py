@@ -383,7 +383,12 @@ class Nofo(BaseNofo):
 
 
 class Section(models.Model):
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("nofo", "order")
+
     nofo = models.ForeignKey(Nofo, on_delete=models.CASCADE, related_name="sections")
+
     name = models.TextField(
         "Section name",
         max_length=250,
