@@ -90,6 +90,21 @@ class ExportNofoReportView(FormView):
     template_name = "users/export_nofo_report.html"
     form_class = ExportNofoReportForm
 
+    def get_filename(self, group, start_date, end_date):
+        # Determine the file name based on provided dates.
+        base_filename = "nb_export_user"
+        if start_date and end_date:
+            # Both dates provided: use both.
+            return "{}_{}_{}.csv".format(
+                base_filename, start_date.isoformat(), end_date.isoformat()
+            )
+        elif start_date or end_date:
+            # Only one date provided: use whichever is not None.
+            provided_date = start_date if start_date else end_date
+            return "{}_{}.csv".format(base_filename, provided_date.isoformat())
+
+        return "{}.csv".format(base_filename)
+
     def form_valid(self, form):
         # Get the date range from the validated form
         start_date = form.cleaned_data.get("start_date")
@@ -100,7 +115,9 @@ class ExportNofoReportView(FormView):
 
         # Prepare CSV response
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="edited_nofos.csv"'
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+            self.get_filename(group=None, start_date=start_date, end_date=end_date)
+        )
         writer = csv.writer(response)
         for row in csv_rows:
             writer.writerow(row)
