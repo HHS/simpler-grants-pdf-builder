@@ -9,6 +9,9 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Added a separate page for the NOFO exports
+  - It is now possible to export for all users in your group
+
 ### Changed
 
 - Change cover page "modifications" message for HRSA NOFOs
