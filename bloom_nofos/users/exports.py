@@ -1,24 +1,30 @@
-import csv
 import json
 from datetime import datetime
 
 from django.db.models import Q
-from django.http import HttpResponse
 from django.utils.timezone import make_aware
 from easyaudit.models import CRUDEvent
 from nofos.models import Nofo, Subsection
 
+from .models import BloomUser
 
-def export_nofo_report(start_date, end_date, user):
+
+def export_nofo_report(start_date, end_date, user, group=None):
     """
-    Handles exporting all NOFOs the logged-in user has edited.
+    Handles exporting all NOFOs for the logged-in user or everyone in their group.
     """
 
     events_filters = {
         "event_type": 2,  # UPDATE events
         "content_type__model__in": ["nofo", "subsection"],
-        "user": user,
     }
+
+    if group:
+        # Export for all users in the same group.
+        events_filters["user__in"] = BloomUser.objects.filter(group=group)
+    else:
+        # Export for only the current user.
+        events_filters["user"] = user
 
     # Convert dates to timezone-aware datetimes (set to start/end of the day)
     if start_date:

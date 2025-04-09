@@ -105,12 +105,29 @@ class ExportNofoReportView(FormView):
 
         return "{}.csv".format(base_filename)
 
+    def get_form_kwargs(self):
+        """Pass the current user to the form so that it can customize field choices."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         # Get the date range from the validated form
         start_date = form.cleaned_data.get("start_date")
         end_date = form.cleaned_data.get("end_date")
+
+        # Get the group based on user_scope (either 'me' or 'all')
+        group = (
+            self.request.user.group
+            if form.cleaned_data.get("user_scope") == "all"
+            else None
+        )
+
         csv_rows = export_nofo_report(
-            start_date=start_date, end_date=end_date, user=self.request.user
+            start_date=start_date,
+            end_date=end_date,
+            user=self.request.user,
+            group=group,
         )
 
         # Prepare CSV response

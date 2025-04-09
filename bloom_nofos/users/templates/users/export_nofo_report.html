@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-  Export a RandyReport™️
+  Export NOFO usage data
 {% endblock %}
 
 {% block body_class %}user_view{% endblock %}
@@ -12,28 +12,36 @@
   <div class="subsection_edit--header">
 
     {% url 'users:user_view' as back_href %}
-    {% include "includes/page_heading.html" with title="Export a RandyReport™️" back_text="Your account" back_href=back_href only %}
+    {% include "includes/page_heading.html" with title="Export NOFO usage data" back_text="Your account" back_href=back_href only %}
 
   </div>
 
-  <p>Export every NOFO you have edited as a CSV report.</p>
-  <p>Each row contains a NOFO’s number, title, and the number of edits you have made.</p>
+  <div class="usa-prose">
+    <p>Export every NOFO edited by you or everyone at {{ user.get_group_display }} as a CSV report.</p>
+    <p>Each row contains a NOFO’s number, title, and the number of edits made.</p>
 
-  <form action="{% url 'users:export_nofo_report' %}" method="post" class="form--export-report">
-    {% csrf_token %}
+    <form action="{% url 'users:export_nofo_report' %}" method="post" class="form--export-report">
+      {% csrf_token %}
 
-    <div class="form-group">
-        {{ form.start_date.label_tag }}
-        {{ form.start_date }}
-    </div>
+      <div class="form-group">
+        {% with id=form.user_scope.name label=form.user_scope.label hint=form.user_scope.help_text value=form.user_scope.value choices=form.user_scope.field.choices error=form.user_scope.errors.0 %}
+          {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+        {% endwith %}
+      </div>
 
-    <div class="form-group">
-        {{ form.end_date.label_tag }}
-        {{ form.end_date }}
-    </div>
+      <div class="form-group">
+          {{ form.start_date.label_tag }}
+          {{ form.start_date }}
+      </div>
 
-    <button type="submit" class="usa-button margin-top-3">
-        Export my NOFO data (CSV)
-    </button>
-  </form>
+      <div class="form-group">
+          {{ form.end_date.label_tag }}
+          {{ form.end_date }}
+      </div>
+
+      <button type="submit" class="usa-button margin-top-3">
+          Export NOFO data (CSV)
+      </button>
+    </form>
+  </div>
 {% endblock %}
