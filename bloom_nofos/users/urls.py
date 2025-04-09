@@ -34,7 +34,7 @@ urlpatterns = [
         name="user_force_password_reset",
     ),
     path(
-        "export/nofos",
+        "account/export",
         views.ExportNofoReportView.as_view(),
         name="export_nofo_report",
     ),

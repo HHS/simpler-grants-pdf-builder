@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Export a RandyReport™️
+{% endblock %}
+
+{% block body_class %}user_view{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Profile updated successfully" only %}
+
+  <div class="subsection_edit--header">
+
+    {% url 'users:user_view' as back_href %}
+    {% include "includes/page_heading.html" with title="Export a RandyReport™️" back_text="Your account" back_href=back_href only %}
+
+  </div>
+
+  <p>Export every NOFO you have edited as a CSV report.</p>
+  <p>Each row contains a NOFO’s number, title, and the number of edits you have made.</p>
+
+  <form action="{% url 'users:export_nofo_report' %}" method="post" class="form--export-report">
+    {% csrf_token %}
+
+    <div class="form-group">
+        {{ form.start_date.label_tag }}
+        {{ form.start_date }}
+    </div>
+
+    <div class="form-group">
+        {{ form.end_date.label_tag }}
+        {{ form.end_date }}
+    </div>
+
+    <button type="submit" class="usa-button margin-top-3">
+        Export my NOFO data (CSV)
+    </button>
+  </form>
+{% endblock %}

@@ -63,25 +63,10 @@
     </tbody>
   </table>
 
-  <h2 class="margin-top-6">Export a RandyReport™️</h2>
-  <p>Export every NOFO you have edited as a CSV report.</p>
-  <p>Each row contains a NOFO’s number, title, and the number of edits you have made.</p>
+  <h2 class="margin-top-6">Other actions</h2>
 
-  <form action="{% url 'users:export_nofo_report' %}" method="post" class="form--export-report">
-    {% csrf_token %}
+  <p>
+    <a href="{% url 'users:export_nofo_report' %}">Export a usage report</a>
+  </p>
 
-    <div class="form-group">
-        {{ nofo_export_form.start_date.label_tag }}
-        {{ nofo_export_form.start_date }}
-    </div>
-
-    <div class="form-group">
-        {{ nofo_export_form.end_date.label_tag }}
-        {{ nofo_export_form.end_date }}
-    </div>
-
-    <button type="submit" class="usa-button margin-top-3">
-        Export my NOFO data (CSV)
-    </button>
-  </form>
 {% endblock %}

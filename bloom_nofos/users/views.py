@@ -10,7 +10,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from django.views.generic import DetailView
+from django.views.generic import DetailView, FormView
 
 from .auth.login_gov import LoginGovClient
 from .exports import export_nofo_report
@@ -86,36 +86,30 @@ class BloomUserNameView(View):
 ###########################################################
 
 
-class ExportNofoReportView(View):
-    """
-    Handles exporting all NOFOs the logged-in user has edited.
-    """
+class ExportNofoReportView(FormView):
+    template_name = "users/export_nofo_report.html"
+    form_class = ExportNofoReportForm
 
-    def post(self, request, *args, **kwargs):
-        form = ExportNofoReportForm(request.POST)
-
-        if not form.is_valid():
-            return render(
-                request, "users/user_view.html", {"nofo_export_form": form}, status=400
-            )
-
-        # Define the date range
+    def form_valid(self, form):
+        # Get the date range from the validated form
         start_date = form.cleaned_data.get("start_date")
         end_date = form.cleaned_data.get("end_date")
-
         csv_rows = export_nofo_report(
-            start_date=start_date, end_date=end_date, user=request.user
+            start_date=start_date, end_date=end_date, user=self.request.user
         )
 
         # Prepare CSV response
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="edited_nofos.csv"'
-
         writer = csv.writer(response)
         for row in csv_rows:
             writer.writerow(row)
 
-        return response  # Return the generated CSV file
+        return response
+
+    def form_invalid(self, form):
+        # If the form is invalid, simply re-render the export page with errors.
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 ###########################################################
