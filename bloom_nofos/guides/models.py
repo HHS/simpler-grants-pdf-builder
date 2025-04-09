@@ -1,5 +1,5 @@
 from django.db import models
-from nofos.models import BaseNofo, BaseSubsection, Section
+from nofos.models import BaseNofo, BaseSection, BaseSubsection
 from django.core.validators import MaxLengthValidator
 
 
@@ -26,13 +26,38 @@ class ContentGuide(BaseNofo):
     #     return reverse("nofos:nofo_edit", args=(self.id,))
 
 
+class ContentGuideSection(BaseSection):
+    content_guide = models.ForeignKey(
+        "guides.ContentGuide",
+        on_delete=models.CASCADE,
+        related_name="sections",
+    )
+
+    @property
+    def parent_id(self):
+        return self.content_guide.filename
+
+    @property
+    def subsections(self):
+        return self.cg_subsections.all()
+
+    def get_parent(self):
+        return self.content_guide
+
+    def get_sibling_queryset(self):
+        return self.content_guide.sections.all()
+
+    def get_subsection_model(self):
+        return ContentGuideSubsection
+
+
 class ContentGuideSubsection(BaseSubsection):
     class Meta:
         ordering = ["order"]
         unique_together = ("section", "order")
 
     section = models.ForeignKey(
-        Section, on_delete=models.CASCADE, related_name="diff_subsections"
+        ContentGuideSection, on_delete=models.CASCADE, related_name="subsections"
     )
 
     COMPARISON_CHOICES = [
