@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, FormView
 
 from .auth.login_gov import LoginGovClient
-from .exports import export_nofo_report
+from .exports import export_nofo_report, get_filename
 from .forms import BloomUserNameForm, ExportNofoReportForm, LoginForm
 from .models import BloomUser
 
@@ -90,21 +90,6 @@ class ExportNofoReportView(FormView):
     template_name = "users/export_nofo_report.html"
     form_class = ExportNofoReportForm
 
-    def get_filename(self, group, start_date, end_date):
-        # Determine the file name based on provided dates.
-        base_filename = "nb_export_{}".format(group if group else "user")
-        if start_date and end_date:
-            # Both dates provided: use both.
-            return "{}_{}_{}.csv".format(
-                base_filename, start_date.isoformat(), end_date.isoformat()
-            )
-        elif start_date or end_date:
-            # Only one date provided: use whichever is not None.
-            provided_date = start_date if start_date else end_date
-            return "{}_{}.csv".format(base_filename, provided_date.isoformat())
-
-        return "{}.csv".format(base_filename)
-
     def get_form_kwargs(self):
         """Pass the current user to the form so that it can customize field choices."""
         kwargs = super().get_form_kwargs()
@@ -133,7 +118,12 @@ class ExportNofoReportView(FormView):
         # Prepare CSV response
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="{}"'.format(
-            self.get_filename(group=group, start_date=start_date, end_date=end_date)
+            get_filename(
+                base_filename="nofo_export",
+                group=group,
+                start_date=start_date,
+                end_date=end_date,
+            )
         )
         writer = csv.writer(response)
         for row in csv_rows:
