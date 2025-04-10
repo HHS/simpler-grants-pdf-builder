@@ -3,7 +3,6 @@ import re
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
-
 # this is copied from __init__.py in markdownify
 # https://github.com/matthewwithanm/python-markdownify/blob/2d654a6b7e822e1547199da855c9d304d162cb27/markdownify/__init__.py#L9
 re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)

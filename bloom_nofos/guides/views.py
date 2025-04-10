@@ -1,26 +1,23 @@
-from django.views.generic import ListView, UpdateView
-from django.urls import reverse_lazy
-from django.shortcuts import redirect
-from guides.models import ContentGuide
-from nofos.models import HeadingValidationError
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-
-from nofos.views import BaseNofoImportView
-from .mixins import GroupAccessObjectContentGuideMixin
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, UpdateView
+from guides.forms import ContentGuideTitleForm
+from guides.guide import create_content_guide
+from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from nofos.models import HeadingValidationError
 from nofos.nofo import (
-    suggest_nofo_title,
-    suggest_nofo_opdiv,
     add_headings_to_document,
     add_page_breaks_to_headings,
+    suggest_nofo_opdiv,
+    suggest_nofo_title,
 )
 from nofos.utils import create_nofo_audit_event
+from nofos.views import BaseNofoImportView
 
-from guides.models import ContentGuideSection, ContentGuideSubsection
-from guides.guide import create_content_guide
-from guides.forms import ContentGuideTitleForm
+from .mixins import GroupAccessObjectContentGuideMixin
 
 
 class ContentGuideListView(LoginRequiredMixin, ListView):
