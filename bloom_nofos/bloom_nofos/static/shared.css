@@ -114,6 +114,10 @@
   width: 10%;
 }
 
+.w-5 {
+  width: 5%;
+}
+
 .usa-button--green,
 .usa-button--green:visited {
   color: var(--color--white);
@@ -179,6 +183,14 @@
 
 .list-upper-alpha {
   list-style-type: upper-alpha;
+}
+
+/* Utility CSS */
+*,
+::after,
+::before {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 
 .usa-table--font-size-1 {

@@ -157,11 +157,6 @@ h2 {
 
 /* Regular CSS */
 
-* {
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-}
-
 html {
   font-size: 11pt;
   line-height: 1.5;
