@@ -383,7 +383,7 @@ class Nofo(BaseNofo):
             try:
                 parser.parseString(self.inline_css)
             except Exception as e:
-                raise ValidationError(f"Invalid CSS: {e}")
+                raise ValidationError("Invalid CSS: {}".format(e))
 
 
 class BaseSection(models.Model):
@@ -405,7 +405,7 @@ class BaseSection(models.Model):
     )
 
     def __str__(self):
-        return f"({self.parent_id or '999'}) {self.name}"
+        return "({}) {}".format(self.document_id or "999", self.name)
 
     def get_previous_section(self):
         return (
@@ -433,27 +433,55 @@ class BaseSection(models.Model):
         :param insert_at_order: The order number at which to insert the space.
         """
         with transaction.atomic():
-            self.get_subsection_model().objects.filter(
-                section_id=self.id, order__gte=insert_at_order
-            ).order_by("-order").update(order=models.F("order") + 1)
+            # Fetch the Subsections to be updated, in reverse order
+            subsections_to_update = (
+                self.get_subsection_model()
+                .objects.filter(section_id=self.id, order__gte=insert_at_order)
+                .order_by("-order")
+            )
+
+            # Increment their order by 1
+            for subsection in subsections_to_update:
+                # Directly incrementing to avoid conflict
+                self.get_subsection_model().objects.filter(pk=subsection.pk).update(
+                    order=models.F("order") + 1
+                )
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.order:
-            self.order = self.get_next_order()
+            self.order = self.get_next_order(self.get_document())
 
         super().save(*args, **kwargs)
 
-        parent = self.get_parent()
-        if parent:
-            parent.updated = timezone.now()
-            parent.save()
+        document = self.get_document()
+        if document:
+            document.updated = timezone.now()
+            document.save()
 
-    def get_next_order(self):
-        last_section = self.get_sibling_queryset().order_by("-order").first()
+    @classmethod
+    def get_next_order(cls, document):
+        """
+        Get the next available order number for a section in this NOFO or ContentGuide.
+        """
+        last_section = (
+            cls.objects.filter(**{cls.get_document_type(): document})
+            .order_by("-order")
+            .first()
+        )
+
         return (last_section.order + 1) if last_section else 1
 
-    def get_parent(self):
-        raise NotImplementedError("Subclasses must implement get_parent.")
+    @classmethod
+    def get_document_type(cls):
+        field_names = [f.name for f in cls._meta.fields]
+        if "nofo" in field_names:
+            return "nofo"
+        elif "content_guide" in field_names:
+            return "content_guide"
+        raise ValueError("Document field not found")
+
+    def get_document(self):
+        raise NotImplementedError("Subclasses must implement get_document.")
 
     def get_sibling_queryset(self):
         raise NotImplementedError("Subclasses must implement get_sibling_queryset.")
@@ -474,14 +502,14 @@ class Section(BaseSection):
     )
 
     @property
-    def parent_id(self):
-        return self.nofo.number
+    def document_id(self):
+        return self.nofo.id
 
     @property
     def subsections(self):
         return self.nofo_subsections.all()
 
-    def get_parent(self):
+    def get_document(self):
         return self.nofo
 
     def get_sibling_queryset(self):
@@ -551,7 +579,7 @@ class BaseSubsection(models.Model):
 
     def get_document(self):
         """Return the document object (Nofo or ContentGuide) this subsection belongs to."""
-        return self.section.get_parent()
+        return self.section.get_document()
 
     def clean(self):
         # Enforce 'tag' when 'name' is False
