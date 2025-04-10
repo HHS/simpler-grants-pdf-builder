@@ -549,6 +549,10 @@ class BaseSubsection(models.Model):
     def __str__(self):
         return self.name or "(Unnamed subsection)"
 
+    def get_document(self):
+        """Return the document object (Nofo or ContentGuide) this subsection belongs to."""
+        return self.section.get_parent()
+
     def clean(self):
         # Enforce 'tag' when 'name' is False
         if self.name and not self.tag:
@@ -569,10 +573,11 @@ class BaseSubsection(models.Model):
         self.full_clean()  # Call the clean method for validation
         super().save(*args, **kwargs)
 
-        # set "updated" field on Nofo
-        if self.section and self.section.nofo:
-            self.section.nofo.updated = timezone.now()
-            self.section.nofo.save()
+        # set "updated" field on Nofo/ContentGuide
+        document = self.get_document()
+        if document:
+            document.updated = timezone.now()
+            document.save()
 
     def get_absolute_url(self):
         nofo_id = self.section.nofo.id

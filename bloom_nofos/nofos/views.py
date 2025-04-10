@@ -64,7 +64,7 @@ from .mixins import (
 from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
 from .nofo import (
     add_final_subsection_to_step_3,
-    add_headings_to_nofo,
+    add_headings_to_document,
     add_page_breaks_to_headings,
     compare_nofos,
     compare_nofos_metadata,
@@ -453,7 +453,7 @@ class NofosImportNewView(BaseNofoImportView):
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv)
-            add_headings_to_nofo(nofo)
+            add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
             suggest_all_nofo_fields(nofo, soup)
             nofo.filename = filename
@@ -461,7 +461,7 @@ class NofosImportNewView(BaseNofoImportView):
             nofo.save()
 
             create_nofo_audit_event(
-                event_type="nofo_import", nofo=nofo, user=request.user
+                event_type="nofo_import", document=nofo, user=request.user
             )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
@@ -548,14 +548,14 @@ class NofosImportOverwriteView(
             if if_preserve_page_breaks and page_breaks:
                 nofo = restore_subsection_metadata(nofo, page_breaks)
 
-            add_headings_to_nofo(nofo)
+            add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
             suggest_all_nofo_fields(nofo, soup)
             nofo.filename = filename
             nofo.save()
 
             create_nofo_audit_event(
-                event_type="nofo_reimport", nofo=nofo, user=request.user
+                event_type="nofo_reimport", document=nofo, user=request.user
             )
 
             messages.success(request, f"Re-imported NOFO from file: {nofo.filename}")
@@ -618,7 +618,7 @@ class NofosImportCompareView(NofosImportOverwriteView):
             if if_preserve_page_breaks and page_breaks:
                 new_nofo = restore_subsection_metadata(new_nofo, page_breaks)
 
-            add_headings_to_nofo(new_nofo)
+            add_headings_to_document(new_nofo)
             add_page_breaks_to_headings(new_nofo)
             new_nofo.group = request.user.group
             new_nofo.filename = filename
@@ -1017,7 +1017,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
             # Create audit event for printing a nofo
             create_nofo_audit_event(
-                event_type="nofo_print", nofo=nofo, user=request.user
+                event_type="nofo_print", document=nofo, user=request.user
             )
 
             return response

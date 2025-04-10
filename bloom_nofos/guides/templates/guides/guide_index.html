@@ -1,15 +1,57 @@
 {% extends "base.html" %}
+{% load tz %}
+
+{% block title %}
+	Content Guides
+{% endblock %}
+
+{% block body_class %}content_guide_index{% endblock %}
 
 {% block content %}
-  <h1>Content Guides</h1>
-  <ul class="usa-list">
-    {% for guide in guides %}
-      <li>
-        <a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a>
-        <span class="text-base text-gray-500">Last updated {{ guide.updated|date:"F j, Y" }}</span>
-      </li>
-    {% empty %}
-      <li>No content guides available.</li>
-    {% endfor %}
-  </ul>
+  <h1 class="font-heading-xl margin-y-0">Content Guides</h1>
+  <p>See your content guides or compare them to incoming NOFOs.</p>
+
+  {% if content_guides %}
+      <table class="usa-table usa-table--borderless width-full table--section">
+        <caption>
+          <div>
+            <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+          </div>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Updated</th>
+            <th scope="col">Comparison</th>
+            <th scope="col">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for guide in content_guides %}
+            <tr>
+              <th scope="row"><a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a></th>
+              {% timezone "America/New_York" %}
+							  <td>
+									{{ guide.updated|date:'M j' }}, {{ guide.updated|date:'g:i A' }}
+							  </td>
+						  {% endtimezone %}
+              <td>
+                <a href="{% url 'nofos:nofo_import_compare' guide.pk %}">Compare this guide to a NOFO</a>
+              </td>
+              <td><a href="{% url 'nofos:nofo_archive' guide.pk %}" class="text-secondary-dark">Delete</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+    {% else %}
+		<p>No Content Guides available. Sorry!</p>
+	  {% endif %}
+
+    <h2 class="font-heading-md margin-top-6">Import a new Content Guide</h2>
+    <p>Upload your Content Guide file as a Word Document.</p>
+    <p>
+      <a class="usa-button" href="{% url 'guides:guide_import' %}">
+      Import Content Guide
+      </a>
+    </p>
 {% endblock %}

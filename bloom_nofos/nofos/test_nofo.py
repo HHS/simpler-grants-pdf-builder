@@ -22,7 +22,7 @@ from .nofo import (
     add_em_to_de_minimis,
     add_endnotes_header_if_exists,
     add_final_subsection_to_step_3,
-    add_headings_to_nofo,
+    add_headings_to_document,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
     clean_heading_tags,
@@ -1538,7 +1538,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        add_headings_to_nofo(nofo)
+        add_headings_to_document(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -1576,7 +1576,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        add_headings_to_nofo(nofo)
+        add_headings_to_document(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -1633,7 +1633,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        add_headings_to_nofo(nofo)
+        add_headings_to_document(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -1666,7 +1666,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        add_headings_to_nofo(nofo)
+        add_headings_to_document(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
@@ -1694,7 +1694,7 @@ class AddHeadingsTests(TestCase):
         ################
         # ADD HEADINGS
         ################
-        add_headings_to_nofo(nofo)
+        add_headings_to_document(nofo)
         section = nofo.sections.first()
         subsection_1 = nofo.sections.first().subsections.all()[0]
         subsection_2 = nofo.sections.first().subsections.all()[1]
