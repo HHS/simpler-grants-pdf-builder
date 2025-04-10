@@ -1,8 +1,8 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
+from nofos.mixins import has_group_permission_func
 
 from .models import ContentGuide
-from nofos.mixins import has_group_permission_func
 
 # TODO: genericize this
 

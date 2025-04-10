@@ -1,6 +1,6 @@
+from django.core.validators import MaxLengthValidator
 from django.db import models
 from nofos.models import BaseNofo, BaseSection, BaseSubsection
-from django.core.validators import MaxLengthValidator
 
 
 class ContentGuide(BaseNofo):
