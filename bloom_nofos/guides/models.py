@@ -34,7 +34,7 @@ class ContentGuideSection(BaseSection):
     )
 
     @property
-    def get_document_id(self):
+    def document_id(self):
         return self.content_guide.id
 
     @property
