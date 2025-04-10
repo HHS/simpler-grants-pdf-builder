@@ -5,10 +5,11 @@ from guides.models import ContentGuide
 from nofos.models import HeadingValidationError
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 from nofos.views import BaseNofoImportView
-from nofos.mixins import GroupAccessObjectMixin
+from .mixins import GroupAccessObjectContentGuideMixin
 from nofos.nofo import (
     suggest_nofo_title,
     suggest_nofo_opdiv,
@@ -22,7 +23,7 @@ from guides.guide import create_content_guide
 from guides.forms import ContentGuideTitleForm
 
 
-class ContentGuideListView(ListView):
+class ContentGuideListView(LoginRequiredMixin, ListView):
     model = ContentGuide
     template_name = "guides/guide_index.html"
     context_object_name = "content_guides"
@@ -31,7 +32,7 @@ class ContentGuideListView(ListView):
         return ContentGuide.objects.order_by("-updated")
 
 
-class ContentGuideImportView(BaseNofoImportView):
+class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
     """
     Handles importing a NEW Content Guide from an uploaded file.
     """
@@ -67,7 +68,7 @@ class ContentGuideImportView(BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
-class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
+class ContentGuideEditTitleView(GroupAccessObjectContentGuideMixin, UpdateView):
     model = ContentGuide
     form_class = ContentGuideTitleForm
     template_name = "guides/guide_edit_title.html"
@@ -76,7 +77,7 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
         return reverse_lazy("guides:guide_index")
 
 
-class ContentGuideEditView(UpdateView):
+class ContentGuideEditView(LoginRequiredMixin, UpdateView):
     model = ContentGuide
     template_name = "guides/guide_edit.html"
     fields = ["title"]  # Add more fields later
