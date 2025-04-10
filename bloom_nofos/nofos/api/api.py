@@ -2,8 +2,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from ninja import NinjaAPI
 from ninja.security import HttpBearer
-from nofos.models import Nofo
-from nofos.nofo import _build_nofo
+from nofos.models import Nofo, Section, Subsection
+from nofos.nofo import _build_document
 
 from .schemas import ErrorSchema, NofoSchema, SuccessSchema
 
@@ -43,7 +43,7 @@ def create_nofo(request, payload: NofoSchema):
         nofo.full_clean()
         nofo.save()
 
-        _build_nofo(nofo, sections)
+        _build_document(nofo, sections, Section, Subsection)
         nofo.save()
 
         serialized_nofo = NofoSchema.from_orm(nofo)

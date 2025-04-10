@@ -16,7 +16,7 @@ def clean_string(string):
     return re.sub(r"\s+", " ", string.strip())
 
 
-def create_nofo_audit_event(event_type, nofo, user):
+def create_nofo_audit_event(event_type, document, user):
     # Define allowed event types
     allowed_event_types = ["nofo_import", "nofo_print", "nofo_reimport"]
 
@@ -46,10 +46,10 @@ def create_nofo_audit_event(event_type, nofo, user):
     # Create the audit log event
     CRUDEvent.objects.create(
         event_type=CRUDEvent.UPDATE,
-        object_id=nofo.pk,
-        content_type=ContentType.objects.get_for_model(nofo),
-        object_repr=str(nofo),
-        object_json_repr=serializers.serialize("json", [nofo]),
+        object_id=document.pk,
+        content_type=ContentType.objects.get_for_model(document),
+        object_repr=str(document),
+        object_json_repr=serializers.serialize("json", [document]),
         changed_fields=json.dumps(changed_fields_json),
         user=user if user else None,
         user_pk_as_string=str(user.pk) if user else "",
