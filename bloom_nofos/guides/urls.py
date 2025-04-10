@@ -11,4 +11,9 @@ urlpatterns = [
         name="guide_import",
     ),
     path("<int:pk>/edit", views.ContentGuideEditView.as_view(), name="guide_edit"),
+    path(
+        "<int:pk>/edit/title",
+        views.ContentGuideEditTitleView.as_view(),
+        name="guide_edit_title",
+    ),
 ]
