@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add completely new app: guides
+  - Add basic functionality: we can import a content guide and edit its title
 - Added a separate page for the NOFO exports
   - It is now possible to export for all users in your group
 
@@ -22,6 +24,11 @@ Versioning since version 1.0.0.
 - Fix to allow unbolded "Other required forms:" string in appliction checklist
 - Fix link to edit modification date in the subsection edit page for the mods table
 - Fix for nested lists no longer importing correctly
+
+### Migrations
+
+- Add migrations for subclassing all of our Nofo models
+  - a ContentGuide is related but not the same as a Nofo
 
 ## [2.12.0] - 2025-03-31
 
