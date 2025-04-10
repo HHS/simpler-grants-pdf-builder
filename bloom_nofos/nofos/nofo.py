@@ -194,7 +194,9 @@ def replace_links(file_content):
 
 
 @transaction.atomic
-def add_headings_to_nofo(nofo):
+def add_headings_to_document(
+    document, SectionModel=Section, SubsectionModel=Subsection
+):
     new_ids = []
     # collect sections and subsections in arrays to facilitate bulk updating
     sections_to_update = []
@@ -203,7 +205,7 @@ def add_headings_to_nofo(nofo):
     counter = 1
 
     # add ids to all section headings
-    for section in nofo.sections.all():
+    for section in document.sections.all():
         section_id = "{}".format(slugify(section.name))
 
         if section.html_id and len(section.html_id):
@@ -235,8 +237,8 @@ def add_headings_to_nofo(nofo):
             counter += 1
 
     # Bulk update sections and subsections
-    Section.objects.bulk_update(sections_to_update, ["html_id"])
-    Subsection.objects.bulk_update(subsections_to_update, ["html_id"])
+    SectionModel.objects.bulk_update(sections_to_update, ["html_id"])
+    SubsectionModel.objects.bulk_update(subsections_to_update, ["html_id"])
     # Reset the subsections list to avoid duplication
     subsections_to_update = []
 
@@ -257,7 +259,7 @@ def add_headings_to_nofo(nofo):
     ]
 
     # replace all old ids with new ids
-    for section in nofo.sections.all():
+    for section in document.sections.all():
         for subsection in section.subsections.all():
             for patterns in compiled_patterns:
                 # Use precompiled patterns
@@ -270,24 +272,24 @@ def add_headings_to_nofo(nofo):
 
             subsections_to_update.append(subsection)
 
-    Subsection.objects.bulk_update(subsections_to_update, ["body"])
+    SubsectionModel.objects.bulk_update(subsections_to_update, ["body"])
 
 
-def add_page_breaks_to_headings(nofo):
+def add_page_breaks_to_headings(document):
     page_break_headings = [
         "eligibility",
         "program description",
         "application checklist",
     ]
 
-    for section in nofo.sections.all():
+    for section in document.sections.all():
         for subsection in section.subsections.all():
             if subsection.name and subsection.name.lower() in page_break_headings:
                 subsection.html_class = "page-break-before"
                 subsection.save()
 
 
-def _build_nofo(nofo, sections):
+def _build_document(document, sections, SectionModel, SubsectionModel):
     sections_to_create = []
     subsections_to_create = []
 
@@ -297,25 +299,25 @@ def _build_nofo(nofo, sections):
         section_order = section.get("order", "")
         default_html_id = f"{section_order}--{slugify(section_name)}"
 
-        section_obj = Section(
+        object_name = "nofo" if hasattr(SectionModel, "nofo") else "content_guide"
+        section_obj = SectionModel(
             name=section_name,
             order=section_order,
             html_id=section.get("html_id") or default_html_id,
             has_section_page=section.get("has_section_page"),
-            nofo=nofo,
+            **{object_name: document},
         )
         try:
             section_obj.full_clean()
         except ValidationError as e:
-            e.nofo = nofo
+            e.document = document
             raise e
         sections_to_create.append(section_obj)
 
     # Bulk create sections and retrieve them
-    created_sections = Section.objects.bulk_create(sections_to_create)
+    created_sections = SectionModel.objects.bulk_create(sections_to_create)
     # Map created sections to their names for subsection linking
     section_mapping = {section.name: section for section in created_sections}
-
     for section in sections:
         model_section = section_mapping.get(section.get("name", "Section X"))
         if not model_section:
@@ -336,30 +338,35 @@ def _build_nofo(nofo, sections):
                     # strip excess newlines, then add 1 trailing newline
                     md_body = md_body.strip() + "\n"
 
-            subsection_obj = Subsection(
-                name=subsection.get("name", ""),
-                order=subsection.get("order", ""),
-                tag=subsection.get("tag", ""),
-                html_id=subsection.get("html_id"),
-                callout_box=subsection.get(
+            subsection_fields = {
+                "name": subsection.get("name", ""),
+                "order": subsection.get("order", ""),
+                "tag": subsection.get("tag", ""),
+                "html_id": subsection.get("html_id"),
+                "callout_box": subsection.get(
                     "is_callout_box", subsection.get("callout_box", False)
                 ),
-                html_class=subsection.get("html_class", ""),
-                body=md_body,  # body can be empty
-                section=model_section,
-            )
+                "html_class": subsection.get("html_class", ""),
+                "body": md_body,  # body can be empty
+                "section": model_section,
+            }
 
-            # Ensure `subsection.html_id` is assigned if not already set
+            if hasattr(SubsectionModel, "comparison_type"):
+                subsection_fields["comparison_type"] = subsection.get(
+                    "comparison_type", "name"
+                )
+
+            subsection_obj = SubsectionModel(**subsection_fields)
             add_html_id_to_subsection(subsection_obj)
             try:
                 subsection_obj.full_clean()
             except ValidationError as e:
-                e.nofo = nofo
+                e.document = document
                 raise e
             subsections_to_create.append(subsection_obj)
 
-    Subsection.objects.bulk_create(subsections_to_create)
-    return nofo
+    SubsectionModel.objects.bulk_create(subsections_to_create)
+    return document
 
 
 def create_nofo(title, sections, opdiv):
@@ -368,7 +375,7 @@ def create_nofo(title, sections, opdiv):
     nofo.opdiv = opdiv
     nofo.save()
     try:
-        return _build_nofo(nofo, sections)
+        return _build_document(nofo, sections, Section, Subsection)
     except ValidationError as e:
         e.nofo = nofo
         raise e
@@ -495,7 +502,7 @@ def restore_subsection_metadata(nofo, preserved_page_breaks):
 
 def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
-    nofo = _build_nofo(nofo, sections)
+    nofo = _build_document(nofo, sections, Section, Subsection)
     nofo.save()  # Save after sections are added
     return nofo
 
