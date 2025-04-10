@@ -5,14 +5,17 @@ from django.shortcuts import get_object_or_404
 from .models import Nofo
 
 
-def has_nofo_group_permission_func(user, nofo):
+def has_group_permission_func(user, document):
+    if not user.is_authenticated:
+        return False
+
     # Check if the NOFO is archived
-    if nofo.archived is not None:
+    if document.archived is not None:
         # If archived, only 'bloom' users can access
         return user.group == "bloom"
 
     # If not a 'bloom' user and the group doesn't match, fail
-    if user.group != "bloom" and user.group != nofo.group:
+    if user.group != "bloom" and user.group != document.group:
         return False
 
     return True
@@ -25,7 +28,7 @@ class GroupAccessObjectMixin:
         pk = self.kwargs.get("pk")
         nofo = get_object_or_404(Nofo, pk=pk)
 
-        if not has_nofo_group_permission_func(request.user, nofo):
+        if not has_group_permission_func(request.user, nofo):
             raise PermissionDenied("You don’t have permission to view this NOFO.")
 
         # Continue with normal processing, which will include deletion

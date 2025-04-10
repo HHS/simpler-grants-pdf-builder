@@ -59,7 +59,7 @@ from .mixins import (
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
     SuperuserRequiredMixin,
-    has_nofo_group_permission_func,
+    has_group_permission_func,
 )
 from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
 from .nofo import (
@@ -240,7 +240,7 @@ class NofosDetailView(DetailView):
         # Most non-authed users are filtered out by middleware.py
         if request.user.is_authenticated:
             # do not let users from other groups print this nofo
-            if not has_nofo_group_permission_func(request.user, nofo):
+            if not has_group_permission_func(request.user, nofo):
                 raise PermissionDenied("You don’t have permission to view this NOFO.")
 
         # Continue with the normal flow for anonymous or authorized users
