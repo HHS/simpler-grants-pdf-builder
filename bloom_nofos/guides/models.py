@@ -34,14 +34,14 @@ class ContentGuideSection(BaseSection):
     )
 
     @property
-    def parent_id(self):
-        return self.content_guide.filename
+    def get_document_id(self):
+        return self.content_guide.id
 
     @property
     def subsections(self):
-        return self.cg_subsections.all()
+        return self.subsections.all()
 
-    def get_parent(self):
+    def get_document(self):
         return self.content_guide
 
     def get_sibling_queryset(self):
