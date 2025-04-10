@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  Name your Content Guide
+{% endblock %}
+
+{% block content %}
+  {% url 'nofos:content_guide_index' nofo.id as back_href %}
+  {% include "includes/page_heading.html" with title="Name your Content Guide" back_text="Content Guides" back_href=back_href only %}
+
+
+  <form id="nofo-title--form nofo-title--form--content-guide" method="post">
+    {% csrf_token %}
+
+    {% with id=form.title.name label=form.title.label value=form.title.value hint=form.title.help_text hint2="eg: “CDC FY26 Content Guide”" hint2for="title" error=form.title.errors.0 input_type="TextInput" %}
+      {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type only %}
+    {% endwith %}
+
+    <button class="usa-button margin-top-3" type="submit">Save name</button>
+  </form>
+{% endblock %}
