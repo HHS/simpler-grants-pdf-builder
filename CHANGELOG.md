@@ -13,6 +13,7 @@ Versioning since version 1.0.0.
   - Add basic functionality: we can import a content guide and edit its title
 - Added a separate page for the NOFO exports
   - It is now possible to export for all users in your group
+- Added a real "edit" page for Content Guides
 
 ### Changed
 
