@@ -1,13 +1,136 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load martortags tz nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+
+
+{% block title %}
+  Configure Content Guide: “{{ guide.title }}”
+{% endblock %}
+
+{% block body_class %}content_guide_edit{% endblock %}
 
 {% block content %}
-  <h1>Edit Content Guide</h1>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="usa-button">Save changes</button>
-  </form>
+  <div class="back-link font-body-md">
+    <a href="{% url 'guides:guide_index' %}">All Content Guides</a>
+  </div>
+  <div class="nofo_edit--header--subheading font-mono-sm text-base">Content Guide</div>
+  <div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
+    <div class="nofo_edit--header--h1 {% if guide.title|length > 40 %}nofo_edit--header--h1--smaller{% endif %}">
+      <h1 class="font-heading- margin-0">Configure Content Guide: “{{ guide.title }}”</h1>
+    </div>
+  </div>
 
-  <p><a href="{% url 'guides:guide_index' %}">Back to all content guides</a></p>
+  {% timezone "America/New_York" %}
+    <p>
+      This Content Guide was created on {{ guide.updated|date:'F j' }} at {{ guide.updated|date:'g:i A' }}.
+    </p>
+  {% endtimezone %}
+
+  <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+    <div class="usa-summary-box__body">
+      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+        Other actions
+      </h2>
+      <div class="usa-summary-box__text">
+        <p>Content Guides can be compared to existing NOFOs or new NOFO Word documents.</p>
+        <p>You can define what to compare, but you can’t directly edit the text of the Content Guide.</p>
+        <a class="usa-button usa-button--accent-warm" href="#">TODO: Compare to a NOFO</a>
+           — Check for differences between a NOFO document and this Content Guide.
+          </p>
+      </div>
+    </div>
+  </div>
+
+  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
+    <caption>
+      <div>
+        <h2 class="margin-bottom-0">Basic information</h2>
+      </div>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row" class="w-15">Name</th>
+        <td>{{ guide.title }}</td>
+        <td class="w-5 text-right"><a href="{% url 'guides:guide_edit_title' guide.id %}">Edit<span class="usa-sr-only"> name</span></a></td>
+      </tr>
+      <tr>
+        <th scope="row">Filename</th>
+        <td>{{ guide.filename }}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+
+    {% for section in guide.sections.all|dictsort:"order" %}
+      <table class="usa-table usa-table--borderless width-full table--section">
+        <caption>
+          <div>
+            <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+          </div>
+        </caption>
+        <thead>
+          <tr>
+            <!-- <th scope="col">Order</th> -->
+            <th scope="col">Comparison type</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Content</th>
+            <th scope="col">Manage</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {% for subsection in section.subsections.all|dictsort:"order" %}
+            {% if subsection.name != 'Basic information' %}
+            <tr class="row--comparison-type--{{ subsection.comparison_type }}">
+              <!-- <th scope="row"
+                class="w-5 nofo-edit-table--subsection--index"
+                id="{{ subsection.html_id }}">
+                <span class="floating">
+                  <span class="text-base">#{{subsection.order }}</span>
+                </span>
+              </th> -->
+              <td class="w-20 nofo-edit-table--subsection--comparison_type">
+                {{ subsection.get_comparison_type_display }}
+              </td>
+              <th scope="row"
+                class="w-20 nofo-edit-table--subsection--name{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
+                <span class="floating">
+                  {% if subsection.name %}
+                    <span {% if subsection.comparison_type == 'none' %}class="text-base text-italic"{% endif %}>
+                      {{ subsection.name }}
+                    </span>
+                  {% else %}
+                    <span class="text-base">—</span>
+                  {% endif %}
+                </span>
+              </th>
+              <td class="nofo-edit-table--subsection--body">
+                {% if subsection.comparison_type == 'body' %}
+                  {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+                {% elif subsection.comparison_type == 'diff_strings' %}
+                  {{ subsection.diff_strings }}
+                {% else %}
+                  <span class="text-base text-italic">N/A</span>
+                {% endif %}
+              </td>
+              <td class="w-5 text-right nofo-edit-table--subsection--manage ">
+                <span class="floating">
+                  <a href="#">TODO: Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+                </span>
+              </td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+
 {% endblock %}
