@@ -1093,6 +1093,25 @@ main .back-link a::before,
   font-weight: 600;
 }
 
+/* Content guides */
+
+.content_guide_edit .nofo_edit--header--subheading {
+  margin-bottom: -10px;
+  z-index: 30;
+  position: relative;
+  margin-top: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.subsection_edit--diff-subsection
+  .subsection_edit--comparison-table
+  .row-comparison--no
+  > *:not(:nth-of-type(2)) {
+  color: var(--color--text-grey);
+  font-style: italic;
+}
+
 /* NOFO external links page */
 
 .nofo_links .usa-table td,
