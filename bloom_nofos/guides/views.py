@@ -1,10 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView
-from guides.forms import ContentGuideTitleForm
+from guides.forms import ContentGuideTitleForm, ContentGuideSubsectionEditForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from nofos.models import HeadingValidationError
@@ -81,3 +81,27 @@ class ContentGuideEditView(LoginRequiredMixin, DetailView):
 
     def get_success_url(self):
         return reverse_lazy("guides:guide_edit", args=[self.object.pk])
+
+
+class ContentGuideSubsectionEditView(UpdateView):
+    model = ContentGuideSubsection
+    form_class = ContentGuideSubsectionEditForm
+    template_name = "guides/subsection_edit.html"
+    context_object_name = "subsection"
+    pk_url_kwarg = "subsection_pk"
+
+    def get_queryset(self):
+        return ContentGuideSubsection.objects.filter(
+            section__content_guide_id=self.kwargs["pk"]
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["section"] = get_object_or_404(
+            ContentGuideSection, pk=self.kwargs["section_pk"]
+        )
+        context["guide"] = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})

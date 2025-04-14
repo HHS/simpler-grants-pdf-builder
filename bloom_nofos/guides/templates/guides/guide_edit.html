@@ -106,16 +106,22 @@
               </th>
               <td class="nofo-edit-table--subsection--body">
                 {% if subsection.comparison_type == 'body' %}
-                  {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+                  <div>
+                    {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+                  </div>
                 {% elif subsection.comparison_type == 'diff_strings' %}
-                  {{ subsection.diff_strings }}
+                  <ul class="usa-list margin-top-0">
+                    {% for diff_string in subsection.diff_strings %}
+                      <li>{{ diff_string }}</li>
+                    {% endfor %}
+                  </ul>
                 {% else %}
                   <span class="text-base text-italic">N/A</span>
                 {% endif %}
               </td>
               <td class="w-5 text-right nofo-edit-table--subsection--manage ">
                 <span class="floating">
-                  <a href="#">TODO: Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+                  <a href="{% url 'guides:subsection_edit' guide.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
                 </span>
               </td>
             </tr>
