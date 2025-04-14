@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from guides.models import ContentGuide, ContentGuideSection
+from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 User = get_user_model()
 
@@ -166,3 +166,73 @@ class ContentGuideEditViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.section1.name)
         self.assertContains(response, self.section2.name)
+
+
+class ContentGuideSubsectionEditViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Test Guide", group="bloom", opdiv="CDC"
+        )
+        self.section = ContentGuideSection.objects.create(
+            name="Main Section", content_guide=self.guide, order=1
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            name="Test Subsection",
+            order=1,
+            tag="h3",
+            comparison_type="none",
+        )
+
+        self.url = reverse(
+            "guides:subsection_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": self.section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+
+    def test_get_view_returns_200_and_shows_subsection(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.subsection.name)
+
+    def test_post_updates_comparison_type_and_diff_strings(self):
+        response = self.client.post(
+            self.url,
+            {
+                "comparison_type": "diff_strings",
+                "diff_string_1": "must include this",
+                "diff_string_2": "and maybe this",
+            },
+        )
+        self.assertRedirects(
+            response, reverse("guides:guide_edit", kwargs={"pk": self.guide.pk})
+        )
+
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.comparison_type, "diff_strings")
+        self.assertEqual(
+            self.subsection.diff_strings, ["must include this", "and maybe this"]
+        )
+
+    def test_post_with_blank_strings_sets_empty_list(self):
+        response = self.client.post(
+            self.url,
+            {
+                "comparison_type": "diff_strings",
+                "diff_string_1": "",
+                "diff_string_2": "",
+            },
+        )
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.diff_strings, [])
