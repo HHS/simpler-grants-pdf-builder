@@ -16,8 +16,10 @@ from nofos.nofo import (
 )
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
+from nofos.mixins import GroupAccessObjectMixinFactory
 
-from .mixins import GroupAccessObjectContentGuideMixin
+
+GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 
 
 class ContentGuideListView(LoginRequiredMixin, ListView):
@@ -65,7 +67,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
-class ContentGuideEditTitleView(GroupAccessObjectContentGuideMixin, UpdateView):
+class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
     model = ContentGuide
     form_class = ContentGuideTitleForm
     template_name = "guides/guide_edit_title.html"
@@ -74,7 +76,7 @@ class ContentGuideEditTitleView(GroupAccessObjectContentGuideMixin, UpdateView):
         return reverse_lazy("guides:guide_index")
 
 
-class ContentGuideEditView(LoginRequiredMixin, DetailView):
+class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
     model = ContentGuide
     template_name = "guides/guide_edit.html"
     context_object_name = "guide"
@@ -83,7 +85,7 @@ class ContentGuideEditView(LoginRequiredMixin, DetailView):
         return reverse_lazy("guides:guide_edit", args=[self.object.pk])
 
 
-class ContentGuideSubsectionEditView(UpdateView):
+class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
     model = ContentGuideSubsection
     form_class = ContentGuideSubsectionEditForm
     template_name = "guides/subsection_edit.html"

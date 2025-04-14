@@ -21,18 +21,26 @@ def has_group_permission_func(user, document):
     return True
 
 
-# Note that this Mixin requires a self.get_object method
-class GroupAccessObjectMixin:
-    def dispatch(self, request, *args, **kwargs):
-        # Get the NOFO by pk since "get_object" could also be a subsection
-        pk = self.kwargs.get("pk")
-        nofo = get_object_or_404(Nofo, pk=pk)
+def GroupAccessObjectMixinFactory(model_class):
+    """
+    Returns a mixin class that restricts access to objects of `model_class`
+    based on the current user's group and the object's `archived` status.
+    """
 
-        if not has_group_permission_func(request.user, nofo):
-            raise PermissionDenied("You don’t have permission to view this NOFO.")
+    class GroupAccessObjectMixin:
+        def dispatch(self, request, *args, **kwargs):
+            pk = self.kwargs.get("pk")
+            obj = get_object_or_404(model_class, pk=pk)
 
-        # Continue with normal processing, which will include deletion
-        return super().dispatch(request, *args, **kwargs)
+            if not has_group_permission_func(request.user, obj):
+                object_name = model_class._meta.verbose_name
+                raise PermissionDenied(
+                    f"You don’t have permission to view this {object_name}."
+                )
+
+            return super().dispatch(request, *args, **kwargs)
+
+    return GroupAccessObjectMixin
 
 
 class SuperuserRequiredMixin:
