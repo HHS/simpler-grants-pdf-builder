@@ -9,11 +9,31 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.14.0] - 2025-04-14
+
+### Added
+
+- Added a real "edit" page for Content Guides
+- Add in an "edit" page for Content Guide Subsections
+
+### Migrations
+
+- Update options for comparison_type of a Content Guide Subsection
+
+## [2.13.0] - 2025-04-10
+
+### Added
+
 - Add completely new app: guides
   - Add basic functionality: we can import a content guide and edit its title
 - Added a separate page for the NOFO exports
   - It is now possible to export for all users in your group
 - Added a real "edit" page for Content Guides
+- Add in an "edit" page for Content Guide Subsections
 
 ### Changed
 
