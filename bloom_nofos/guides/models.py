@@ -64,7 +64,7 @@ class ContentGuideSubsection(BaseSubsection):
         ("none", "Do not compare"),
         ("name", "Compare name"),
         ("body", "Compare name and all text"),
-        ("diff_strings", "Compare name and text segments"),
+        ("diff_strings", "Compare name and required strings"),
     ]
 
     comparison_type = models.CharField(
