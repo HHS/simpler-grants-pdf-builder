@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static input_type whitespaceless martortags get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+
+{% block title %}
+  Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
+{% endblock %}
+
+{% block body_class %}subsection_edit subsection_edit--diff-subsection{% endblock %}
+
+{% block content %}
+  <div class="back-link font-body-md margin-bottom-105">
+    <a href="{% url 'guides:guide_edit' guide.id %}#{{ subsection.html_id }}">Edit “{{ guide.title }}”</a>
+  </div>
+  <div class="subsection_edit--header">
+    <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+  </div>
+
+  <p>Decide what to compare in this subsection.</p>
+
+  {% if form.non_field_errors %}
+    <legend class="legend--bootstrap">
+      <div class="usa-error-message">
+        Error: {{ form.non_field_errors.0 }}
+      </div>
+    </legend>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% with id=form.comparison_type.name label=form.comparison_type.label hint="Decide what to compare from this subsection" value=form.comparison_type.value choices=form.comparison_type.field.choices error=form.comparison_type.errors.0 %}
+      {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+    {% endwith %}
+
+    <details class="margin-top-4" {% if subsection.comparison_type == "diff_strings" %}open{% endif %}>
+      <summary><span class="font-sans-md text-primary text-underline">Add required strings to match against</span></summary>
+
+      <div class="margin-bottom-4">
+        {% with id=form.diff_string_1.name label=form.diff_string_1.label value=form.diff_string_1.value hint=form.diff_string_1.help_text error=form.diff_string_1.errors.0 disabled=form.diff_string_1.field.widget.attrs.is_disabled input_type="TextInput" %}
+          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type only %}
+        {% endwith %}
+
+        {% with id=form.diff_string_2.name label=form.diff_string_2.label value=form.diff_string_2.value hint=form.diff_string_2.help_text error=form.diff_string_2.errors.0 disabled=form.diff_string_2.field.widget.attrs.is_disabled input_type="TextInput" %}
+          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type only %}
+        {% endwith %}
+      </div>
+    </details>
+
+    <table class="usa-table w-85 subsection_edit--comparison-table">
+      <caption>
+        Comparison table
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Field</th>
+          <th scope="col">Value</th>
+          <th scope="col">Compare?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="{% if subsection.comparison_type in "name body diff_strings" %}row-comparison--yes{% else %}row-comparison--no{% endif%}">
+          <th scope="row">Subsection name</th>
+          <td>
+            {{ subsection.name }}
+          </td>
+          <td>
+            {% if subsection.comparison_type in "name body diff_strings" %}
+              <span role="img" aria-hidden="true">✅</span>
+              <span class="usa-sr-only">Yes, compare on the title</span>
+            {% else %}
+              <span role="img" aria-hidden="true">❌</span>
+              <span class="usa-sr-only">No, don’t compare on the title</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="{% if subsection.comparison_type == "body" %}row-comparison--yes{% else %}row-comparison--no{% endif%}">
+          <th scope="row">Subsection text</th>
+          <td>
+            {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+          </td>
+          <td>
+            {% if subsection.comparison_type == "body" %}
+              <span role="img" aria-hidden="true">✅</span>
+              <span class="usa-sr-only">Yes, compare on body text</span>
+            {% else %}
+              <span role="img" aria-hidden="true">❌</span>
+              <span class="usa-sr-only">No, don’t compare on body title</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="{% if subsection.comparison_type == "diff_strings" %}row-comparison--yes{% else %}row-comparison--no{% endif%}">
+          <th scope="row">Required strings</th>
+          <td>
+            {% if subsection.diff_strings|length == 0 %}
+              —
+            {% else %}
+              <ul class="usa-list margin-top-0">
+                {% for diff_string in subsection.diff_strings %}
+                  <li>{{ diff_string }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+          <td>
+            {% if subsection.comparison_type == "diff_strings" %}
+              <span role="img" aria-hidden="true">✅</span>
+              <span class="usa-sr-only">Yes, compare on body text</span>
+            {% else %}
+              <span role="img" aria-hidden="true">❌</span>
+              <span class="usa-sr-only">No, don’t compare on body title</span>
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="form-group">
+      <button class="usa-button margin-top-3" type="submit">Save subsection</button>
+    </div>
+  </form>
+{% endblock %}
