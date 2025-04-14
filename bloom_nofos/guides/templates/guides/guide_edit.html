@@ -78,7 +78,6 @@
         </caption>
         <thead>
           <tr>
-            <!-- <th scope="col">Order</th> -->
             <th scope="col">Comparison type</th>
             <th scope="col">Heading</th>
             <th scope="col">Content</th>
@@ -90,13 +89,6 @@
           {% for subsection in section.subsections.all|dictsort:"order" %}
             {% if subsection.name != 'Basic information' %}
             <tr class="row--comparison-type--{{ subsection.comparison_type }}">
-              <!-- <th scope="row"
-                class="w-5 nofo-edit-table--subsection--index"
-                id="{{ subsection.html_id }}">
-                <span class="floating">
-                  <span class="text-base">#{{subsection.order }}</span>
-                </span>
-              </th> -->
               <td class="w-20 nofo-edit-table--subsection--comparison_type">
                 {{ subsection.get_comparison_type_display }}
               </td>

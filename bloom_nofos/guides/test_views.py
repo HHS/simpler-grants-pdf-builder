@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from guides.models import ContentGuide
+from guides.models import ContentGuide, ContentGuideSection
 
 User = get_user_model()
 
@@ -123,3 +123,46 @@ class ContentGuideEditTitleViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertNotEqual(response.status_code, 200)
         self.assertIn(response.status_code, [302, 403])
+
+
+class ContentGuideEditViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="user@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="user@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Test Content Guide",
+            opdiv="CDC",
+            group="bloom",
+        )
+
+        self.section1 = ContentGuideSection.objects.create(
+            name="Introduction",
+            html_id="intro",
+            order=1,
+            content_guide=self.guide,
+        )
+        self.section2 = ContentGuideSection.objects.create(
+            name="Eligibility",
+            html_id="eligibility",
+            order=2,
+            content_guide=self.guide,
+        )
+
+        self.url = reverse("guides:guide_edit", args=[self.guide.pk])
+
+    def test_view_displays_guide_title(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Configure Content Guide: “{self.guide.title}”")
+
+    def test_view_displays_section_names(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.section1.name)
+        self.assertContains(response, self.section2.name)

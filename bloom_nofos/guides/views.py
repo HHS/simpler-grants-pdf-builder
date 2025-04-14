@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView
 from guides.forms import ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
@@ -74,10 +74,9 @@ class ContentGuideEditTitleView(GroupAccessObjectContentGuideMixin, UpdateView):
         return reverse_lazy("guides:guide_index")
 
 
-class ContentGuideEditView(LoginRequiredMixin, UpdateView):
+class ContentGuideEditView(LoginRequiredMixin, DetailView):
     model = ContentGuide
     template_name = "guides/guide_edit.html"
-    fields = ["title"]  # Add more fields later
     context_object_name = "guide"
 
     def get_success_url(self):
