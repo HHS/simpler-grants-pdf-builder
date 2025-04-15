@@ -5,33 +5,40 @@ from .models import DESIGNER_CHOICES, STATUS_CHOICES, Nofo, Section, Subsection
 from .utils import get_icon_path_choices
 
 
-def create_nofo_form_class(field_arr, not_required_field_labels=None):
+from django import forms
+
+
+def create_object_model_form(model_class):
     """
-    Factory function to create Nofo form classes dynamically.
+    Returns a function that builds a ModelForm for `model_class` using given field names and optional required label overrides.
     """
 
-    class _NofoForm(forms.ModelForm):
-        class Meta:
-            model = Nofo
-            fields = field_arr
+    def _form_factory(field_names, not_required_labels=None):
+        class _ModelForm(forms.ModelForm):
+            class Meta:
+                model = model_class
+                fields = field_names
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            for field in self.fields.values():
-                if (
-                    not_required_field_labels
-                    and field.label in not_required_field_labels
-                ):
-                    field.required = False
-                else:
-                    field.required = True
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                for field in self.fields.values():
+                    if not_required_labels and field.label in not_required_labels:
+                        field.required = False
+                    else:
+                        field.required = True
 
-    return _NofoForm
+        _ModelForm.__name__ = f"{model_class.__name__}FormFor_{'_'.join(field_names)}"
+        return _ModelForm
+
+    return _form_factory
+
+
+create_nofo_form_class = create_object_model_form(Nofo)
 
 
 # Creating form classes
 NofoNameForm = create_nofo_form_class(
-    ["title", "short_name"], not_required_field_labels=["Short name"]
+    ["title", "short_name"], not_required_labels=["Short name"]
 )
 NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
@@ -40,10 +47,10 @@ NofoGroupForm = create_nofo_form_class(["group"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoSubagencyForm = create_nofo_form_class(
-    ["subagency"], not_required_field_labels=["Subagency"]
+    ["subagency"], not_required_labels=["Subagency"]
 )
 NofoSubagency2Form = create_nofo_form_class(
-    ["subagency2"], not_required_field_labels=["Subagency 2"]
+    ["subagency2"], not_required_labels=["Subagency 2"]
 )
 NofoTaglineForm = create_nofo_form_class(["tagline"])
 NofoThemeForm = create_nofo_form_class(["theme"])
