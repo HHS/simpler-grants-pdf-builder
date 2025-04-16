@@ -1,8 +1,7 @@
 from django import forms
-
-from .models import ContentGuide, ContentGuideSubsection
 from nofos.forms import create_object_model_form
 
+from .models import ContentGuide, ContentGuideSubsection
 
 create_content_guide_form_class = create_object_model_form(ContentGuide)
 
@@ -10,9 +9,6 @@ ContentGuideTitleForm = create_content_guide_form_class(["title"])
 
 
 class ContentGuideSubsectionEditForm(forms.ModelForm):
-    diff_string_1 = forms.CharField(required=False, label="Required string 1")
-    diff_string_2 = forms.CharField(required=False, label="Required string 2")
-
     class Meta:
         model = ContentGuideSubsection
         fields = ["comparison_type"]  # only directly editable field from the model
@@ -20,23 +16,38 @@ class ContentGuideSubsectionEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Pre-populate string fields if instance has them
-        diff_strings = self.instance.diff_strings or []
-        self.fields["diff_string_1"].initial = (
-            diff_strings[0] if len(diff_strings) > 0 else ""
-        )
-        self.fields["diff_string_2"].initial = (
-            diff_strings[1] if len(diff_strings) > 1 else ""
-        )
+        values = self._get_diff_string_values()
+        num_fields = len(values) + 1 if len(values) else 2
+        print("num_fields", num_fields)
+
+        for i in range(num_fields):
+            self.fields[f"diff_string_{i}"] = forms.CharField(
+                required=False,
+                label=f"Required string {i + 1}",
+                initial=values[i] if i < len(values) else "",
+            )
+
+    def _get_diff_string_values(self):
+        """Get list of input values from form data (if bound) or instance."""
+        if self.is_bound:
+            return [
+                v
+                for i in range(100)
+                if (v := self.data.get(f"diff_string_{i}")) is not None
+            ]
+        return self.instance.diff_strings or []
 
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        # Overwrite diff_strings with what’s in the form fields
-        diff_string_1 = self.cleaned_data.get("diff_string_1")
-        diff_string_2 = self.cleaned_data.get("diff_string_2")
+        # Pull only non-empty strings in order
+        diff_strings = [
+            self.cleaned_data[key].strip()
+            for key in self.cleaned_data
+            if key.startswith("diff_string_") and self.cleaned_data[key].strip()
+        ]
 
-        instance.diff_strings = [s for s in [diff_string_1, diff_string_2] if s]
+        instance.diff_strings = diff_strings
 
         if commit:
             instance.save()
