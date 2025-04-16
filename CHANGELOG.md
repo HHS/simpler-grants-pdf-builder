@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Allow any number of "required strings" for content guide subsections
+  - More correctly, up to 100
+
 ### Fixed
 
 ## [2.14.0] - 2025-04-14
