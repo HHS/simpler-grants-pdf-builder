@@ -5,9 +5,6 @@ from .models import DESIGNER_CHOICES, STATUS_CHOICES, Nofo, Section, Subsection
 from .utils import get_icon_path_choices
 
 
-from django import forms
-
-
 def create_object_model_form(model_class):
     """
     Returns a function that builds a ModelForm for `model_class` using given field names and optional required label overrides.

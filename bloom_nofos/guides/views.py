@@ -4,9 +4,10 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView
-from guides.forms import ContentGuideTitleForm, ContentGuideSubsectionEditForm
+from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.models import HeadingValidationError
 from nofos.nofo import (
     add_headings_to_document,
@@ -16,8 +17,6 @@ from nofos.nofo import (
 )
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
-from nofos.mixins import GroupAccessObjectMixinFactory
-
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 

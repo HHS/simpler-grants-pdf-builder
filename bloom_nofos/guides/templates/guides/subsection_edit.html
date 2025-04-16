@@ -36,13 +36,21 @@
       <summary><span class="font-sans-md text-primary text-underline">Add required strings to match against</span></summary>
 
       <div class="margin-bottom-4">
-        {% with id=form.diff_string_1.name label=form.diff_string_1.label value=form.diff_string_1.value hint=form.diff_string_1.help_text error=form.diff_string_1.errors.0 disabled=form.diff_string_1.field.widget.attrs.is_disabled input_type="TextInput" %}
-          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type only %}
-        {% endwith %}
+        <div class="diff-strings--container">
+        {% for field in form %}
+          {% if "diff_string_" in field.name %}
+            {% with id=field.name label=field.label value=field.value hint=field.help_text error=field.errors.0 disabled=field.field.widget.attrs.is_disabled input_type="TextInput" %}
+              {% include "includes/_text_input.html" with id=id label=label hint=hint value=value error=error disabled=disabled input_type=input_type only %}
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+        </div>
 
-        {% with id=form.diff_string_2.name label=form.diff_string_2.label value=form.diff_string_2.value hint=form.diff_string_2.help_text error=form.diff_string_2.errors.0 disabled=form.diff_string_2.field.widget.attrs.is_disabled input_type="TextInput" %}
-          {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type only %}
-        {% endwith %}
+        <div class="diff-strings--button-container">
+          <button type="button" class="usa-button usa-button--outline margin-top-4 diff-strings--button add-button display-none">
+            Add required string
+          </button>
+        </div>
       </div>
     </details>
 
@@ -118,4 +126,51 @@
       <button class="usa-button margin-top-3" type="submit">Save subsection</button>
     </div>
   </form>
+{% endblock %}
+
+{% block js_footer %}
+<script>
+  function createDiffStringLabel(index) {
+    const label = document.createElement("label");
+    label.className = "usa-label";
+    label.htmlFor = `diff_string_${index}`;
+    label.textContent = `Required string ${index + 1}`;
+    return label;
+  }
+
+  function createDiffStringInput(index) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.name = `diff_string_${index}`;
+    input.id = `diff_string_${index}`;
+    input.className = "usa-input border-2px margin-bottom-2";
+    input.setAttribute("aria-describedby", "");
+    input.value = "";
+    return input;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const container = form.querySelector(".diff-strings--container");
+    const addBtn = form.querySelector(".diff-strings--button");
+
+    // Unhide the "Add required string" button
+    addBtn.classList.remove("display-none");
+
+    addBtn.addEventListener("click", () => {
+      const inputs = container.querySelectorAll("input[name^='diff_string_']");
+      if (inputs.length >= 100) return;
+
+      const newIndex = inputs.length;
+
+      const label = createDiffStringLabel(newIndex);
+      const input = createDiffStringInput(newIndex);
+
+      container.appendChild(label);
+      container.appendChild(input);
+
+      input.focus();
+    });
+  });
+</script>
 {% endblock %}
