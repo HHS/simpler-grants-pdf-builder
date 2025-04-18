@@ -101,6 +101,63 @@ def result_delete(original_subsection):
     }
 
 
+def compare_sections(new_section, old_section):
+    """
+    Compares all subsections in a pair of NOFO sections.
+    Returns a dict with:
+        - section name
+        - comparison result for each subsection
+    """
+    # Get all subsections for comparison
+    new_subsections = list(new_section.subsections.all())
+    old_subsections = list(old_section.subsections.all()) if old_section else []
+
+    max_length = max(len(new_subsections), len(old_subsections))
+    matched_subsections = set()
+
+    subsections = []
+
+    for index in range(max_length):
+        new_sub = new_subsections[index] if index < len(new_subsections) else None
+        old_sub = old_subsections[index] if index < len(old_subsections) else None
+
+        # First, check the new subsection for a match
+        if new_sub:
+            matched_old_sub = find_matching_subsection(
+                new_sub, old_subsections, matched_subsections
+            )
+            if matched_old_sub:
+                # add ids from both subsections to the "matched_subsections" set
+                matched_subsections.update([new_sub.id, matched_old_sub.id])
+
+                # Check if body does not match and diff is not None
+                if new_sub.body != matched_old_sub.body and html_diff(
+                    matched_old_sub.body, new_sub.body
+                ):
+                    # UPDATE
+                    subsections.append(result_update(matched_old_sub, new_sub))
+                else:
+                    # MATCH
+                    subsections.append(result_match(new_sub))
+            else:
+                # ADD
+                subsections.append(result_add(new_sub))
+                matched_subsections.add(new_sub.id)
+
+        if old_sub and old_sub.id not in matched_subsections:
+            # Look for it in new NOFO subsections (maybe it was moved)
+            has_moved = any(n.is_matching_subsection(old_sub) for n in new_subsections)
+            if not has_moved:
+                # DELETE
+                subsections.append(result_delete(old_sub))
+                matched_subsections.add(old_sub.id)
+
+    return {
+        "name": new_section.name,
+        "subsections": subsections,
+    }
+
+
 def compare_nofos(new_nofo, old_nofo):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
@@ -124,75 +181,11 @@ def compare_nofos(new_nofo, old_nofo):
 
     for new_section in new_nofo.sections.all():
         old_section = old_nofo.sections.filter(name=new_section.name).first()
+        comparison = compare_sections(new_section, old_section)
 
-        section_comparison = {"name": new_section.name, "subsections": []}
-
-        # Get all subsections for comparison
-        new_subsections = list(new_section.subsections.all()) if new_section else []
-        old_subsections = list(old_section.subsections.all()) if old_section else []
-        max_length = max(len(new_subsections), len(old_subsections))
-
-        matched_subsections = set()  # Track matched subsection IDs
-
-        # Step 1: Iterate through both new and old subsections using the max index length
-        for index in range(max_length):
-            new_subsection = (
-                new_subsections[index] if index < len(new_subsections) else None
-            )
-            old_subsection = (
-                old_subsections[index] if index < len(old_subsections) else None
-            )
-
-            # First, check the new subsection (if it exists)
-            if new_subsection:
-                matched_old_subsection = find_matching_subsection(
-                    new_subsection, old_subsections, matched_subsections
-                )
-
-                if matched_old_subsection:
-                    # add ids from both subsections to the "matched_subsections" set
-                    matched_subsections.update(
-                        [new_subsection.id, matched_old_subsection.id]
-                    )
-
-                    # Grab a diff. If only whitespaces changes, None is returned
-                    diff = html_diff(matched_old_subsection.body, new_subsection.body)
-
-                    # Check if body changed and diff is not None
-                    if new_subsection.body != matched_old_subsection.body and diff:
-                        # UPDATE
-                        section_comparison["subsections"].append(
-                            result_update(matched_old_subsection, new_subsection)
-                        )
-
-                    else:
-                        # MATCH
-                        section_comparison["subsections"].append(
-                            result_match(new_subsection)
-                        )
-                else:
-                    # ADD
-                    section_comparison["subsections"].append(result_add(new_subsection))
-                    matched_subsections.add(new_subsection.id)
-
-            # Now, check the old subsection (if it exists)
-            if old_subsection and old_subsection.id not in matched_subsections:
-                # Look for it in new NOFO subsections (maybe it was moved)
-                has_moved = any(
-                    new.is_matching_subsection(old_subsection)
-                    for new in new_subsections
-                )
-
-                if not has_moved:
-                    # DELETE
-                    section_comparison["subsections"].append(
-                        result_delete(old_subsection)
-                    )
-                    matched_subsections.add(old_subsection.id)
-
-        # Only add section comparison if there are changes
-        if section_comparison["subsections"]:
-            nofo_comparison.append(section_comparison)
+        if comparison["subsections"]:
+            # Only add section comparison if there are changes
+            nofo_comparison.append(comparison)
 
     return nofo_comparison
 
