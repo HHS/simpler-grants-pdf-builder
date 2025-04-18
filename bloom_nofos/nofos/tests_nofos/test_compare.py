@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from ..models import Nofo, Section, Subsection
-from ..nofo import compare_nofos, compare_nofos_metadata, html_diff
+from ..nofo_compare import compare_nofos, compare_nofos_metadata, html_diff
 
 
 class TestHtmlDiff(TestCase):
