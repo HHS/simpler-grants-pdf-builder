@@ -1,7 +1,12 @@
 from django.test import TestCase
 
 from ..models import Nofo, Section, Subsection
-from ..nofo_compare import compare_nofos, compare_nofos_metadata, html_diff
+from ..nofo_compare import (
+    compare_nofos,
+    compare_nofos_metadata,
+    html_diff,
+    merge_renamed_subsections,
+)
 
 
 class TestHtmlDiff(TestCase):
@@ -44,6 +49,86 @@ class TestHtmlDiff(TestCase):
         self.assertIsNone(html_diff("", ""))  # No changes
         self.assertEqual(html_diff("", "Groundhog"), "<ins>Groundhog</ins>")  # insert
         self.assertEqual(html_diff("Groundhog", ""), "<del>Groundhog</del>")  # delete
+
+
+class MergeRenamedSubsectionsTests(TestCase):
+    def test_exact_body_match_renamed_title(self):
+        input_data = [
+            {
+                "status": "DELETE",
+                "name": "Overview",
+                "old_value": "This is some content.",
+                "new_value": "",
+            },
+            {
+                "status": "ADD",
+                "name": "Summary",
+                "old_value": "",
+                "new_value": "This is some content.",
+            },
+        ]
+        result = merge_renamed_subsections(input_data)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["status"], "UPDATE")
+        self.assertIn("<del>Overview</del>", result[0]["name"])
+        self.assertIn("<ins>Summary</ins>", result[0]["name"])
+        self.assertEqual(result[0]["diff"], "")
+
+    def test_renamed_title_and_changed_body(self):
+        input_data = [
+            {
+                "status": "DELETE",
+                "name": "Overview",
+                "old_value": "Old content.",
+                "new_value": "",
+            },
+            {
+                "status": "ADD",
+                "name": "Summary",
+                "old_value": "",
+                "new_value": "New content.",
+            },
+        ]
+        result = merge_renamed_subsections(input_data)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["status"], "DELETE")
+        self.assertEqual(result[1]["status"], "ADD")
+
+    def test_completely_different_title_and_body(self):
+        input_data = [
+            {
+                "status": "DELETE",
+                "name": "Overview",
+                "old_value": "Old content.",
+                "new_value": "",
+            },
+            {
+                "status": "ADD",
+                "name": "Eligibility",
+                "old_value": "",
+                "new_value": "Completely new content.",
+            },
+        ]
+        result = merge_renamed_subsections(input_data)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["status"], "DELETE")
+        self.assertEqual(result[1]["status"], "ADD")
+
+    def test_minimal_shared_heading(self):
+        input_data = [
+            {"status": "DELETE", "name": "a", "old_value": "hello", "new_value": ""},
+            {
+                "status": "ADD",
+                "name": "a b",
+                "old_value": "",
+                "new_value": "hello world",
+            },
+        ]
+        result = merge_renamed_subsections(input_data)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["status"], "UPDATE")
+        self.assertIn("<ins> b</ins>", result[0]["name"])
+        self.assertEqual(result[0]["diff"], "hello<ins> world</ins>")
 
 
 class TestCompareNofos(TestCase):

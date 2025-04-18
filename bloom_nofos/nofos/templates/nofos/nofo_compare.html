@@ -100,7 +100,7 @@
                       {% if subsection.name|slice:":2" == "(#" %}
                           <span class="text-base">{{ subsection.name }}</span>
                       {% else %}
-                          {{ subsection.name }}
+                          {{ subsection.name|safe }}
                       {% endif %}
                     </th>
                     <td>
@@ -108,7 +108,9 @@
                     </td>
                     <td>
                       <div class="diff">
-                        {% if subsection.status == 'ADD' %}
+                        {% if not subsection.diff %}
+                          <span class="text-base text-italic">No change</span>
+                        {% elif subsection.status == 'ADD' %}
                           <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
                         {% elif  subsection.status == 'DELETE' %}
                           <del>{{ subsection.diff|safe|linebreaksbr }}</del>

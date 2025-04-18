@@ -132,7 +132,7 @@ def compare_sections(new_section, old_section):
 
                 # Check if body does not match and diff is not None
                 if new_sub.body != matched_old_sub.body and html_diff(
-                    matched_old_sub.body, new_sub.body
+                    matched_old_sub.body.strip(), new_sub.body.strip()
                 ):
                     # UPDATE
                     subsections.append(result_update(matched_old_sub, new_sub))
@@ -158,6 +158,64 @@ def compare_sections(new_section, old_section):
     }
 
 
+def merge_renamed_subsections(subsections):
+    """
+    Detects DELETE + ADD pairs in a section that are likely renames and merges them into an UPDATE.
+    This improves diff quality when only a subsection title has changed (and body remains the same or similar).
+    """
+    merged = []
+    i = 0
+
+    while i < len(subsections):
+        current = subsections[i]
+        next_item = subsections[i + 1] if i + 1 < len(subsections) else None
+
+        if current["status"] == "DELETE" and next_item and next_item["status"] == "ADD":
+            old_body = current["old_value"].strip()
+            new_body = next_item["new_value"].strip()
+            old_name = current["name"]
+            new_name = next_item["name"]
+
+            if old_body == new_body:
+                # Rename only — same content
+                merged.append(
+                    {
+                        "name": html_diff(old_name, new_name) or new_name,
+                        "status": "UPDATE",
+                        "old_value": old_body,
+                        "new_value": new_body,
+                        "diff": "",  # no body changes
+                    }
+                )
+                i += 2
+                continue
+
+            # Otherwise, check if it's a likely rename with small body change
+            heading_diff = html_diff(old_name, new_name)
+            if heading_diff:
+
+                # Remove all <del>...</del> and <ins>...</ins>
+                shared_text = re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff).strip()
+                if shared_text:  # could include a length param here
+                    merged.append(
+                        {
+                            "name": heading_diff,
+                            "status": "UPDATE",
+                            "old_value": old_body,
+                            "new_value": new_body,
+                            "diff": html_diff(old_body, new_body) or "",
+                        }
+                    )
+                    i += 2
+                    continue
+
+        # Normal case: keep the current item
+        merged.append(current)
+        i += 1
+
+    return merged
+
+
 def compare_nofos(new_nofo, old_nofo):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
@@ -172,7 +230,8 @@ def compare_nofos(new_nofo, old_nofo):
         {
             "name": str,   # The name of the subsection
             "status": str,  # One of "MATCH", "UPDATE", "ADD", or "DELETE"
-            "value": str,  # The body content of the new subsection (if applicable)
+            "old_value": str,  # The body content of the old subsection (if applicable)
+            "new_value": str,  # The body content of the new subsection (if applicable)
             "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
         }
     """
@@ -186,6 +245,9 @@ def compare_nofos(new_nofo, old_nofo):
         if comparison["subsections"]:
             # Only add section comparison if there are changes
             nofo_comparison.append(comparison)
+
+    for section in nofo_comparison:
+        section["subsections"] = merge_renamed_subsections(section["subsections"])
 
     return nofo_comparison
 
