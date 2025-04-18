@@ -11,10 +11,18 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [2.15.0] - 2025-04-18
+
+### Added
+
+- Add License: CC0 1.0 Universal (Public Domain Dedication)
+
+### Changed
+
 - Allow any number of "required strings" for content guide subsections
   - More correctly, up to 100
-
-### Fixed
 
 ## [2.14.0] - 2025-04-14
 
