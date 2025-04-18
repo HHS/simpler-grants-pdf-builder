@@ -66,8 +66,6 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_page_breaks_to_headings,
-    compare_nofos,
-    compare_nofos_metadata,
     create_nofo,
     find_broken_links,
     find_external_link,
@@ -92,6 +90,7 @@ from .nofo import (
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
 )
+from .nofo_compare import compare_nofos, compare_nofos_metadata
 from .utils import create_nofo_audit_event, create_subsection_html_id
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
