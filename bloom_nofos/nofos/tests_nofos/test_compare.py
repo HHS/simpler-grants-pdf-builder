@@ -152,13 +152,17 @@ class TestCompareNofos(TestCase):
         subsection_match = subsections[0]
         self.assertEqual(subsection_match["status"], "MATCH")
         self.assertEqual(subsection_match["name"], "Budget Requirements")
-        self.assertEqual(subsection_match["value"], "Budget must not exceed $100K.")
+        self.assertEqual(subsection_match["old_value"], "Budget must not exceed $100K.")
+        self.assertEqual(subsection_match["new_value"], "Budget must not exceed $100K.")
 
         # Update test (unnamed subsection)
         subsection_update = subsections[1]
         self.assertEqual(subsection_update["status"], "UPDATE")
         self.assertEqual(subsection_update["name"], "(#3)")
-        self.assertEqual(subsection_update["value"], "Go to 'Contacts and Support")
+        self.assertEqual(
+            subsection_update["old_value"], "Need help? Visit contacts and support"
+        )
+        self.assertEqual(subsection_update["new_value"], "Go to 'Contacts and Support")
         self.assertIn(
             "<del>Need</del><ins>Go</ins> <del>help?</del><ins>to</ins> <del>Visit contacts</del><ins>'Contacts</ins> and <del>support</del><ins>Support</ins>",
             subsection_update["diff"],
@@ -168,7 +172,8 @@ class TestCompareNofos(TestCase):
         subsection_update = subsections[2]
         self.assertEqual(subsection_update["status"], "UPDATE")
         self.assertEqual(subsection_update["name"], "Application Process")
-        self.assertEqual(subsection_update["value"], "Submit before Feb 1.")
+        self.assertEqual(subsection_update["old_value"], "Submit before Jan 1.")
+        self.assertEqual(subsection_update["new_value"], "Submit before Feb 1.")
         self.assertIn(
             "Submit before <del>Jan</del><ins>Feb</ins> 1.", subsection_update["diff"]
         )
@@ -177,12 +182,14 @@ class TestCompareNofos(TestCase):
         subsection_add = subsections[3]
         self.assertEqual(subsection_add["status"], "ADD")
         self.assertEqual(subsection_add["name"], "New NOFO Funding Guidelines")
-        self.assertEqual(subsection_add["value"], "Follow these new rules.")
+        self.assertEqual(subsection_add["old_value"], "")
+        self.assertEqual(subsection_add["new_value"], "Follow these new rules.")
 
         # Deletion test
         subsection_delete = subsections[4]
         self.assertEqual(subsection_delete["name"], "Old NOFO Fee Requirements")
-        self.assertEqual(subsection_delete["value"], "Processing fee is $50.")
+        self.assertEqual(subsection_delete["old_value"], "Processing fee is $50.")
+        self.assertEqual(subsection_delete["new_value"], "")
         self.assertIn("<del>Processing fee is $50.</del>", subsection_delete["diff"])
 
 
