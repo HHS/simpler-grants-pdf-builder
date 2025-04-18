@@ -18,7 +18,6 @@ class ContentGuideSubsectionEditForm(forms.ModelForm):
 
         values = self._get_diff_string_values()
         num_fields = len(values) + 1 if len(values) else 2
-        print("num_fields", num_fields)
 
         for i in range(num_fields):
             self.fields[f"diff_string_{i}"] = forms.CharField(
