@@ -44,6 +44,19 @@ def html_diff(original, new):
     return diff_result if "<del>" in diff_result or "<ins>" in diff_result else None
 
 
+def find_matching_subsection(new_subsection, old_subsections, matched_ids):
+    """
+    Attempts to find an unmatched old subsection that matches the given new subsection.
+    Returns the matched subsection or None.
+    """
+    for old_subsection in old_subsections:
+        if old_subsection.id in matched_ids:
+            continue
+        if new_subsection.is_matching_subsection(old_subsection):
+            return old_subsection
+    return None
+
+
 def compare_nofos(new_nofo, old_nofo):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
@@ -91,21 +104,16 @@ def compare_nofos(new_nofo, old_nofo):
 
             # First, check the new subsection (if it exists)
             if new_subsection:
-                matched_old_subsection = None
-
-                # Look for a match in old subsections
-                for os in old_subsections:
-                    if os.id in matched_subsections:
-                        continue  # Skip already matched
-
-                    if new_subsection.is_matching_subsection(os):
-                        matched_old_subsection = os
-                        # Mark as matched
-                        matched_subsections.add(new_subsection.id)
-                        matched_subsections.add(os.id)
-                        break
+                matched_old_subsection = find_matching_subsection(
+                    new_subsection, old_subsections, matched_subsections
+                )
 
                 if matched_old_subsection:
+                    # add ids from both subsections to the "matched_subsections" set
+                    matched_subsections.update(
+                        [new_subsection.id, matched_old_subsection.id]
+                    )
+
                     # grab a diff. if only whitespaces changes, None is returned
                     diff = html_diff(matched_old_subsection.body, new_subsection.body)
 
