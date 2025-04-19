@@ -1,9 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
@@ -106,3 +107,37 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})
+
+
+class ContentGuideCompareView(View):
+    template_name = "guides/guide_import_compare.html"
+
+    def get(self, request, pk):
+        guide = get_object_or_404(ContentGuide, pk=pk)
+        return render(request, self.template_name, {"guide": guide})
+
+    def post(self, request, pk):
+        guide = get_object_or_404(ContentGuide, pk=pk)
+        uploaded_file = request.FILES.get("nofo-import")
+
+        if not uploaded_file:
+            messages.error(request, "You must upload a file to compare.")
+            return render(request, self.template_name, {"guide": guide})
+
+        try:
+            filename = uploaded_file.name.strip()
+        except Exception as e:
+            messages.error(
+                request, "Could not parse the uploaded file: {}".format(str(e))
+            )
+            return render(request, self.template_name, {"guide": guide})
+
+        # TODO: Do actual comparison logic here.
+        # For now, just redirect or render the same page.
+        messages.success(
+            request,
+            "File uploaded successfully: {}. (Comparison coming soon.)".format(
+                filename
+            ),
+        )
+        return render(request, self.template_name, {"guide": guide})

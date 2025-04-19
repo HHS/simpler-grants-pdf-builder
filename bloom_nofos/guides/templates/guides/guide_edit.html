@@ -34,7 +34,7 @@
       <div class="usa-summary-box__text">
         <p>Content Guides can be compared to existing NOFOs or new NOFO Word documents.</p>
         <p>You can define what to compare, but you can’t directly edit the text of the Content Guide.</p>
-        <a class="usa-button usa-button--accent-warm" href="#">TODO: Compare to a NOFO</a>
+        <a class="usa-button usa-button--accent-warm" href="{% url 'guides:guide_compare' guide.id %}">Compare to a NOFO</a>
            — Check for differences between a NOFO document and this Content Guide.
           </p>
       </div>
