@@ -72,8 +72,17 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
     form_class = ContentGuideTitleForm
     template_name = "guides/guide_edit_title.html"
 
-    def get_success_url(self):
-        return reverse_lazy("guides:guide_index")
+    def form_valid(self, form):
+        guide = self.object
+        guide.title = form.cleaned_data["title"]
+        guide.save()
+
+        messages.success(
+            self.request,
+            f"View Content Guide: <a href='{reverse_lazy('guides:guide_edit', args=[guide.id])}'>{guide.title}</a>",
+        )
+
+        return redirect("guides:guide_index")
 
 
 class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
