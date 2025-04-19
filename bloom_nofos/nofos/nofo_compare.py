@@ -256,6 +256,9 @@ def apply_comparison_types(subsections):
     def normalize(text):
         return re.sub(r"\s+", " ", text.strip()).lower()
 
+    def name_modified(item):
+        return "<del>" in item.get("name", "") or "<ins>" in item.get("name", "")
+
     results = []
     for item in subsections:
         comparison_type = item.get("comparison_type")
@@ -263,13 +266,26 @@ def apply_comparison_types(subsections):
         if comparison_type == "none":
             continue
 
-        if not comparison_type or item["status"] in ["ADD", "DELETE", "MATCH"]:
+        if not comparison_type or item["status"] in ["ADD", "MATCH"]:
+            results.append(item)
+            continue
+
+        if item["status"] == "DELETE":
+            if comparison_type == "name":
+                item["diff"] = "—"
+
+            elif comparison_type == "diff_strings":
+                item["diff"] = "<ul>"
+                for s in item.get("diff_strings", []):
+                    item["diff"] += "<li><del>{}</del></li>".format(escape(s))
+                item["diff"] += "</ul>"
+
             results.append(item)
             continue
 
         if item["status"] == "UPDATE":
             if comparison_type == "name":
-                if "<del>" not in item["name"] and "<ins>" not in item["name"]:
+                if not name_modified(item):
                     item["status"] = "MATCH"
 
                 item["diff"] = "—"
@@ -289,7 +305,9 @@ def apply_comparison_types(subsections):
                         )
                     )
                 else:
-                    item["status"] = "MATCH"
+                    if not name_modified(item):
+                        item["status"] = "MATCH"
+
                     item["diff"] = "—"
 
             # default case, do nothing
