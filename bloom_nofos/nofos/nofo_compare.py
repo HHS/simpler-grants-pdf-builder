@@ -111,7 +111,6 @@ def compare_sections(old_section, new_section):
     # Get all subsections for comparison
     new_subsections = list(new_section.subsections.all())
     old_subsections = list(old_section.subsections.all()) if old_section else []
-
     max_length = max(len(new_subsections), len(old_subsections))
     matched_subsections = set()
 
@@ -120,7 +119,6 @@ def compare_sections(old_section, new_section):
     for index in range(max_length):
         new_sub = new_subsections[index] if index < len(new_subsections) else None
         old_sub = old_subsections[index] if index < len(old_subsections) else None
-
         # First, check the new subsection for a match
         if new_sub:
             matched_old_sub = find_matching_subsection(

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Content Guide comparison result
+{% endblock %}
+
+{% block body_class %}nofo_compare nofo_compare--content-guide{% endblock %}
+
+  {% block content %}
+  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
+    <div class="usa-alert__body bg-base-lightest">
+      <p class="usa-alert__text">
+        <span class="usa-tag bg-gold text-ink">Beta</span>
+        <span class="margin-left-1">Comparing a Content Guide to a NOFO is an experimental feature and will change as we improve it. {% include "includes/feedback_link.html" %}.</span>
+      </p>
+    </div>
+  </div>
+
+  {% url 'guides:guide_edit' guide.id as back_href %}
+  {% include "includes/page_heading.html" with title="Content Guide comparison result" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
+
+
+    {% if num_changed_sections == 0 %}
+      <h2>No changes</h2>
+      <p>
+        This document is <strong>identical</strong> to your Content Guide: “{{ guide.title }}”.
+      </p>
+
+      <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+      <a href="{% url 'guides:guide_edit' guide.id %}" class="usa-button">
+        Back to “{{ guide.title }}”
+      </a>
+
+    {% else %}
+      <p>
+        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes across {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
+      </p>
+
+      {% if comparison %}
+        {% for section in comparison %}
+          <table class="usa-table usa-table--borderless">
+            <caption>
+              <div>
+                <h2>{{ section.name }}</h2>
+              </div>
+            </caption>
+            <thead class="usa-sr-only">
+              <tr>
+                <th scope="col" class="w-15">Subsection</th>
+                <th scope="col" class="w-10">Status</th>
+                <th scope="col" class="w-75">Content</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for subsection in section.subsections %}
+              {% if subsection.name|lower != 'basic information' %}
+                {% if subsection.status != 'MATCH' %}
+                  <tr>
+                    <th scope="row">
+                      {# if the subsection.name value starts with "(#" #}
+                      {% if subsection.name|slice:":2" == "(#" %}
+                          <span class="text-base">{{ subsection.name }}</span>
+                      {% else %}
+                          {{ subsection.name|safe }}
+                      {% endif %}
+                    </th>
+                    <td>
+                      {{ subsection.status }}
+                    </td>
+                    <td>
+                      <div class="diff">
+                        {% if not subsection.diff %}
+                          <span class="text-base text-italic">No change</span>
+                        {% elif subsection.status == 'ADD' %}
+                          <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                        {% elif  subsection.status == 'DELETE' %}
+                          <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                        {% elif subsection.status == 'UPDATE' %}
+                          {{ subsection.diff|safe|linebreaks }}
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endfor %}
+      {% endif %}
+
+    <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+    <ul class="usa-button-group margin-top-3">
+      <li class="usa-button-group__item">
+        <a href="{% url 'guides:guide_edit' guide.id %}" class="usa-button usa-button--outline">Back to “{{ guide.title }}”</a>
+      </li>
+    </ul>
+    <p class="font-body-sm">Have thoughts on this page? {% include "includes/feedback_link.html" %}.</p>
+  {% endif %}
+{% endblock %}
