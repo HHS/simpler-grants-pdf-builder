@@ -15,9 +15,9 @@ Edit “{{ nofo|nofo_name }}”
 <!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
 {% if nofo.archived %}
   {% if nofo.successor %}
-    {% include "includes/warning_successor.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+    {% include "includes/warning_successor.html" with document=nofo user=user class_name="margin-bottom-3" only %}
   {% else %}
-    {% include "includes/warning_archived.html" with nofo=nofo user=user class_name="margin-bottom-3" only %}
+    {% include "includes/warning_archived.html" with document=nofo user=user class_name="margin-bottom-3" only %}
   {% endif %}
 {% endif %}
 

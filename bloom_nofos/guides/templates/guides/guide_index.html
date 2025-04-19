@@ -38,9 +38,9 @@
 							  </td>
 						  {% endtimezone %}
               <td>
-                <a href="{% url 'nofos:nofo_import_compare' guide.pk %}">Compare this guide to a NOFO</a>
+                <a href="{% url 'guides:guide_compare' guide.pk %}">Compare to a NOFO</a>
               </td>
-              <td><a href="{% url 'nofos:nofo_archive' guide.pk %}" class="text-secondary-dark">Delete</a></td>
+              <td><a href="{% url 'guides:guide_archive' guide.pk %}" class="text-secondary-dark">Delete</a></td>
             </tr>
           {% endfor %}
           </tbody>
