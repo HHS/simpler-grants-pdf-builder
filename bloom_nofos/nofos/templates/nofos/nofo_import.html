@@ -28,7 +28,7 @@
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx or .html files." accept=".html,.docx" value=title %}
+    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx files." accept=".html,.docx" value=title %}
       {% for message in messages %}
         {% if "error" in message.tags %}
           {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message only %}
