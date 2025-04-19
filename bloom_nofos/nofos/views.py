@@ -633,10 +633,10 @@ class NofosImportCompareView(NofosImportOverwriteView):
 
             # Build the comparison object
             nofo_comparison = self.remove_matches_from_comparison(
-                compare_nofos(new_nofo, nofo)
+                compare_nofos(nofo, new_nofo)
             )
             nofo_comparison_metadata = self.remove_matches_from_comparison(
-                compare_nofos_metadata(new_nofo, nofo)
+                compare_nofos_metadata(nofo, new_nofo)
             )
 
             # Calculate the total number of changed sections
