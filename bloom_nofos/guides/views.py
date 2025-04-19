@@ -71,7 +71,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
-class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
+class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
     model = ContentGuide
     form_class = ContentGuideTitleForm
     template_name = "guides/guide_edit_title.html"
@@ -123,6 +123,30 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
 
     def get_success_url(self):
         return reverse_lazy("guides:guide_edit", args=[self.object.pk])
+
+
+class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
+    model = ContentGuide
+    form_class = ContentGuideTitleForm
+    template_name = "guides/guide_edit_title.html"
+    context_object_name = "guide"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["show_back_link"] = True
+        return context
+
+    def form_valid(self, form):
+        guide = self.object
+        guide.title = form.cleaned_data["title"]
+        guide.save()
+
+        messages.success(
+            self.request,
+            f"Updated title to “{guide.title}”.",
+        )
+
+        return redirect("guides:guide_edit", pk=guide.id)
 
 
 class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
