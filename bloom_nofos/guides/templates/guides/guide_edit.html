@@ -9,6 +9,13 @@
 {% block body_class %}content_guide_edit{% endblock %}
 
 {% block content %}
+  {% if guide.archived %}
+    {% if guide.successor %}
+      {% include "includes/warning_successor.html" with document=guide user=user class_name="margin-bottom-3" only %}
+    {% else %}
+      {% include "includes/warning_archived.html" with document=guide user=user class_name="margin-bottom-3" only %}
+    {% endif %}
+  {% endif %}
 
   <div class="back-link font-body-md">
     <a href="{% url 'guides:guide_index' %}">All Content Guides</a>

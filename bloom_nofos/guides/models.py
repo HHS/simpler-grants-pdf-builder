@@ -1,5 +1,6 @@
 from django.core.validators import MaxLengthValidator
 from django.db import models
+from django.urls import reverse
 from nofos.models import BaseNofo, BaseSection, BaseSubsection
 
 
@@ -19,11 +20,17 @@ class ContentGuide(BaseNofo):
     def __str__(self):
         return f"(Guide {self.id}) {self.title or self.filename}"
 
-    # def get_absolute_url(self):
-    #     """
-    #     Returns the main edit view for this NOFO.
-    #     """
-    #     return reverse("nofos:nofo_edit", args=(self.id,))
+    def get_admin_url(self):
+        """
+        Returns the admin URL for this Content Guide.
+        """
+        return reverse("admin:guides_contentguide_change", args=(self.id,))
+
+    def get_absolute_url(self):
+        """
+        Returns the main edit view for this Content Guide.
+        """
+        return reverse("guides:guide_edit", args=(self.id,))
 
 
 class ContentGuideSection(BaseSection):
