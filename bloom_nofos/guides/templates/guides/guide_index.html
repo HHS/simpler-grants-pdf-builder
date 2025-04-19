@@ -8,6 +8,8 @@
 {% block body_class %}content_guide_index{% endblock %}
 
 {% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Content Guide saved successfully" error_heading="Content Guide deleted" only %}
+
   <h1 class="font-heading-xl margin-y-0">Content Guides</h1>
   <p>See your content guides or compare them to incoming NOFOs.</p>
 
