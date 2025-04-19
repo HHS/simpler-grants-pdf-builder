@@ -14,11 +14,14 @@ from nofos.models import HeadingValidationError
 from nofos.nofo import (
     add_headings_to_document,
     add_page_breaks_to_headings,
+    create_nofo,
+    suggest_all_nofo_fields,
     suggest_nofo_opdiv,
     suggest_nofo_title,
 )
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
+from nofos.nofo_compare import compare_nofos
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 
@@ -146,35 +149,66 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})
 
 
-class ContentGuideCompareView(View):
+class ContentGuideCompareView(BaseNofoImportView):
     template_name = "guides/guide_import_compare.html"
+    redirect_url_name = "guides:guide_import_compare"
 
-    def get(self, request, pk):
-        guide = get_object_or_404(ContentGuide, pk=pk)
-        return render(request, self.template_name, {"guide": guide})
+    def dispatch(self, request, *args, **kwargs):
+        self.guide = get_object_or_404(ContentGuide, pk=kwargs.get("pk"))
+        return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request, pk):
-        guide = get_object_or_404(ContentGuide, pk=pk)
-        uploaded_file = request.FILES.get("nofo-import")
+    def get_redirect_url_kwargs(self):
+        return {"pk": self.kwargs["pk"]}
 
-        if not uploaded_file:
-            messages.error(request, "You must upload a file to compare.")
-            return render(request, self.template_name, {"guide": guide})
+    def get(self, request, *args, **kwargs):
+        return render(
+            request,
+            self.get_template_name(),
+            {"guide": self.guide},
+        )
+
+    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+        guide = self.guide
 
         try:
-            filename = uploaded_file.name.strip()
-        except Exception as e:
-            messages.error(
-                request, "Could not parse the uploaded file: {}".format(str(e))
+            # Create a temporary NOFO for comparison
+            new_nofo = create_nofo(
+                title=suggest_nofo_title(soup),
+                sections=sections,
+                opdiv=suggest_nofo_opdiv(soup),
             )
-            return render(request, self.template_name, {"guide": guide})
 
-        # TODO: Do actual comparison logic here.
-        # For now, just redirect or render the same page.
-        messages.success(
-            request,
-            "File uploaded successfully: {}. (Comparison coming soon.)".format(
-                filename
-            ),
-        )
-        return render(request, self.template_name, {"guide": guide})
+            new_nofo.group = request.user.group
+            new_nofo.filename = filename
+            suggest_all_nofo_fields(new_nofo, soup)
+            add_headings_to_document(new_nofo)
+            add_page_breaks_to_headings(new_nofo)
+
+            # Mark it as archived immediately
+            new_nofo.title = f"(COMPARE) {new_nofo.title}"
+            new_nofo.archived = timezone.now()
+            new_nofo.save()
+
+            # Compare against the existing Content Guide
+            comparison = compare_nofos(guide, new_nofo)
+
+            # Optional: remove "MATCH" results and collapse renamed sections
+
+            # Tally changes
+            num_changed_sections = len(comparison)
+            num_changed_subsections = sum(len(s["subsections"]) for s in comparison)
+
+            return render(
+                request,
+                "guides/guide_compare.html",  # You’ll need to create this!
+                {
+                    "guide": guide,
+                    "new_nofo": new_nofo,
+                    "comparison": comparison,
+                    "num_changed_sections": num_changed_sections,
+                    "num_changed_subsections": num_changed_subsections,
+                },
+            )
+
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error comparing NOFO: {str(e)}")
