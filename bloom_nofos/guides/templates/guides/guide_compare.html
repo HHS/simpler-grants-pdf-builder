@@ -38,7 +38,7 @@
 
       {% if comparison %}
         {% for section in comparison %}
-          <table class="usa-table usa-table--borderless">
+          <table class="usa-table usa-table--borderless w-100">
             <caption>
               <div>
                 <h2>{{ section.name }}</h2>
@@ -46,9 +46,10 @@
             </caption>
             <thead class="usa-sr-only">
               <tr>
-                <th scope="col" class="w-15">Subsection</th>
+                <th scope="col" class="w-20">Subsection</th>
                 <th scope="col" class="w-10">Status</th>
-                <th scope="col" class="w-75">Content</th>
+                <th scope="col" class="w-10">Comp type</th>
+                <th scope="col" class="w-65">Content</th>
               </tr>
             </thead>
             <tbody>
@@ -66,6 +67,9 @@
                     </th>
                     <td>
                       {{ subsection.status }}
+                    </td>
+                    <td>
+                      {{ subsection.comparison_type }}
                     </td>
                     <td>
                       <div class="diff">
