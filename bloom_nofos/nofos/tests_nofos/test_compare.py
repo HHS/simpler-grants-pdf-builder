@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django.test import TestCase
 
 from ..models import Nofo, Section, Subsection
@@ -431,46 +433,85 @@ class TestApplyComparisonTypes(TestCase):
     def test_none_comparison_type_skips_all_statuses(self):
         for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
             with self.subTest(status=status):
-                items = [{"status": status, "comparison_type": "none"}]
+                items = [
+                    {"status": status, "comparison_type": "none", "diff": "old diff"}
+                ]
                 result = apply_comparison_types(items)
                 self.assertEqual(result, [], "Failed for status={}".format(status))
 
     def test_missing_comparison_type_appends_all_statuses(self):
-        item = {"status": "UPDATE", "name": "Something", "diff": "test"}
+        item = {"status": "UPDATE", "name": "Something", "diff": "old diff"}
         self.assertEqual(apply_comparison_types([item])[0], item)
 
         for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
             with self.subTest(status=status):
-                items = [{"status": status, "name": "Something", "diff": "test"}]
-                result = apply_comparison_types(items)
+                item = {"status": status, "name": "Something", "diff": "old diff"}
+                original_item = deepcopy(item)
+
+                result = apply_comparison_types([item])
                 self.assertEqual(
-                    result, [items[0]], "Failed for status={}".format(status)
+                    result[0], original_item, "Failed for status={}".format(status)
                 )
 
     # ADD can't have comparison types
     def test_add_status_untouched(self):
-        item = {"status": "ADD", "comparison_type": "name"}
+        item = {"status": "ADD", "diff": "old diff", "comparison_type": "name"}
         self.assertIn(item, apply_comparison_types([item]))
 
-    def test_delete_status_untouched_for_all_comparison_types(self):
-        for comparison_type in ["name", "body", "diff_strings"]:
-            with self.subTest(comparison_type=comparison_type):
-                items = [{"status": "DELETE", "comparison_type": comparison_type}]
-                result = apply_comparison_types(items)
-                self.assertEqual(
-                    result,
-                    [items[0]],
-                    "Failed for comparison_type={}".format(comparison_type),
-                )
+    def test_delete_status_comparison_type_name(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "name",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        original_item["diff"] = "—"
+        self.assertEqual(result[0], original_item)
+
+    def test_delete_status_comparison_type_body(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "body",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        self.assertEqual(result[0], original_item)
+
+    def test_delete_status_comparison_type_diff_strings(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        original_item["diff"] = (
+            "<ul><li><del>one</del></li><li><del>two</del></li><li><del>three</del></li></ul>"
+        )
+        self.assertEqual(result[0], original_item)
 
     def test_match_status_untouched_for_all_comparison_types(self):
         for comparison_type in ["name", "body", "diff_strings"]:
             with self.subTest(comparison_type=comparison_type):
-                items = [{"status": "MATCH", "comparison_type": comparison_type}]
-                result = apply_comparison_types(items)
+                item = {
+                    "status": "MATCH",
+                    "comparison_type": comparison_type,
+                    "diff": "old diff",
+                }
+                original_item = deepcopy(item)
+
+                result = apply_comparison_types([item])
                 self.assertEqual(
-                    result,
-                    [items[0]],
+                    result[0],
+                    original_item,
                     "Failed for comparison_type={}".format(comparison_type),
                 )
 
@@ -519,3 +560,16 @@ class TestApplyComparisonTypes(TestCase):
         result = apply_comparison_types([item])[0]
         self.assertEqual(result["status"], "UPDATE")
         self.assertIn("<del>banana</del>", result["diff"])
+
+    def test_update_diff_strings_match_all_but_name_modified(self):
+        item = {
+            "name": "The <ins>New</ins> Program",
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "program"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertEqual(result["diff"], "—")
