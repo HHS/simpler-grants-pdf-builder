@@ -98,7 +98,8 @@ class ContentGuideImportViewTests(TestCase):
         self.assertContains(follow_response, "Error: Oops! No fos uploaded.")
 
 
-class ContentGuideEditTitleViewTests(TestCase):
+# Edit the title right after importing
+class ContentGuideImportTitleViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="test@example.com",
@@ -111,7 +112,8 @@ class ContentGuideEditTitleViewTests(TestCase):
         self.guide = ContentGuide.objects.create(
             title="Original Title", opdiv="CDC", group="bloom"
         )
-        self.url = reverse("guides:guide_edit_title", kwargs={"pk": self.guide.pk})
+        self.url = reverse("guides:guide_import_title", kwargs={"pk": self.guide.pk})
+        self.redirect_url = reverse("guides:guide_index")
 
     def test_view_returns_200_for_authorized_user(self):
         response = self.client.get(self.url)
@@ -121,7 +123,7 @@ class ContentGuideEditTitleViewTests(TestCase):
         response = self.client.post(self.url, {"title": "Updated Title"})
         self.guide.refresh_from_db()
         self.assertEqual(self.guide.title, "Updated Title")
-        self.assertRedirects(response, reverse("guides:guide_index"))
+        self.assertRedirects(response, self.redirect_url)
 
     def test_post_invalid_data_shows_errors(self):
         response = self.client.post(self.url, {"title": ""})  # empty title = invalid
@@ -137,6 +139,14 @@ class ContentGuideEditTitleViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertNotEqual(response.status_code, 200)
         self.assertIn(response.status_code, [302, 403])
+
+
+# Edit the title from the "edit" screen
+class ContentGuideEditTitleViewTests(ContentGuideImportTitleViewTests):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("guides:guide_edit_title", kwargs={"pk": self.guide.pk})
+        self.redirect_url = reverse("guides:guide_edit", kwargs={"pk": self.guide.pk})
 
 
 class ContentGuideArchiveViewTests(TestCase):

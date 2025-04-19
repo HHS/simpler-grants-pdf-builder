@@ -9,6 +9,8 @@
 {% block body_class %}content_guide_edit{% endblock %}
 
 {% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Content Guide saved successfully" error_heading="Subsection deleted" only %}
+
   {% if guide.archived %}
     {% if guide.successor %}
       {% include "includes/warning_successor.html" with document=guide user=user class_name="margin-bottom-3" only %}
