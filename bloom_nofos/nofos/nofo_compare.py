@@ -61,24 +61,39 @@ def get_subsection_name_or_order(subsection):
     return subsection.name or "(#{})".format(subsection.order)
 
 
-def result_match(new_subsection):
-    return {
-        "name": get_subsection_name_or_order(new_subsection),
+def add_content_guide_comparison_metadata(result, subsection):
+    """
+    Adds comparison_type and diff_strings to the result dict if present on the subsection.
+    Returns a new dict with those keys added if applicable.
+    """
+    if hasattr(subsection, "comparison_type"):
+        result["comparison_type"] = subsection.comparison_type
+        result["diff_strings"] = subsection.diff_strings or []
+    return result
+
+
+def result_match(original_subsection):
+    result = {
+        "name": get_subsection_name_or_order(original_subsection),
         "status": "MATCH",
-        "old_value": new_subsection.body,
-        "new_value": new_subsection.body,
-        "diff": "",  # no changes
+        "old_value": original_subsection.body,
+        "new_value": original_subsection.body,
+        "diff": "",  # no changes,
     }
+
+    return add_content_guide_comparison_metadata(result, original_subsection)
 
 
 def result_update(original_subsection, new_subsection):
-    return {
+    result = {
         "name": get_subsection_name_or_order(original_subsection),
         "status": "UPDATE",
         "old_value": original_subsection.body,
         "new_value": new_subsection.body,
         "diff": html_diff(original_subsection.body, new_subsection.body) or "",
     }
+
+    return add_content_guide_comparison_metadata(result, original_subsection)
 
 
 def result_add(new_subsection):
@@ -92,13 +107,30 @@ def result_add(new_subsection):
 
 
 def result_delete(original_subsection):
-    return {
-        "name": get_subsection_name_or_order(original_subsection),
+    result = {
+        "name": html_diff(get_subsection_name_or_order(original_subsection), ""),
         "status": "DELETE",
         "old_value": original_subsection.body,
         "new_value": "",
         "diff": html_diff(original_subsection.body, "") or "",
     }
+
+    return add_content_guide_comparison_metadata(result, original_subsection)
+
+
+def contains_required_strings(diff_strings, body):
+    """
+    Returns True if all required strings (normalized) are found in the normalized body.
+    """
+
+    def normalize_whitespace(text):
+        return re.sub(r"\s+", " ", text.strip())
+
+    normalized_body = normalize_whitespace(body).lower()
+    for string in diff_strings:
+        if normalize_whitespace(string).lower() not in normalized_body:
+            return False
+    return True
 
 
 def compare_sections(old_section, new_section):
@@ -136,7 +168,8 @@ def compare_sections(old_section, new_section):
                     subsections.append(result_update(matched_old_sub, new_sub))
                 else:
                     # MATCH
-                    subsections.append(result_match(new_sub))
+                    subsections.append(result_match(matched_old_sub))
+
             else:
                 # ADD
                 subsections.append(result_add(new_sub))
@@ -168,11 +201,11 @@ def merge_renamed_subsections(subsections):
         current = subsections[i]
         next_item = subsections[i + 1] if i + 1 < len(subsections) else None
 
-        if current["status"] == "DELETE" and next_item and next_item["status"] == "ADD":
-            old_body = current["old_value"].strip()
-            new_body = next_item["new_value"].strip()
-            old_name = current["name"]
-            new_name = next_item["name"]
+        if current["status"] == "ADD" and next_item and next_item["status"] == "DELETE":
+            new_body = current["new_value"].strip()
+            old_body = next_item["old_value"].strip()
+            new_name = current["name"]
+            old_name = next_item["name"].replace("<del>", "").replace("</del>", "")
 
             if old_body == new_body:
                 # Rename only — same content
