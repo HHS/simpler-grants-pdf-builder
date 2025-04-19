@@ -101,7 +101,7 @@ def result_delete(original_subsection):
     }
 
 
-def compare_sections(new_section, old_section):
+def compare_sections(old_section, new_section):
     """
     Compares all subsections in a pair of NOFO sections.
     Returns a dict with:
@@ -216,7 +216,7 @@ def merge_renamed_subsections(subsections):
     return merged
 
 
-def compare_nofos(new_nofo, old_nofo):
+def compare_nofos(old_nofo, new_nofo):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
 
@@ -240,7 +240,7 @@ def compare_nofos(new_nofo, old_nofo):
 
     for new_section in new_nofo.sections.all():
         old_section = old_nofo.sections.filter(name=new_section.name).first()
-        comparison = compare_sections(new_section, old_section)
+        comparison = compare_sections(old_section, new_section)
 
         if comparison["subsections"]:
             # Only add section comparison if there are changes
@@ -252,7 +252,7 @@ def compare_nofos(new_nofo, old_nofo):
     return nofo_comparison
 
 
-def compare_nofos_metadata(new_nofo, nofo):
+def compare_nofos_metadata(old_nofo, new_nofo):
     """
     Compares metadata fields between an existing NOFO and a newly uploaded one.
 
@@ -283,7 +283,7 @@ def compare_nofos_metadata(new_nofo, nofo):
     ]
 
     for key in metadata_keys:
-        old_value = getattr(nofo, key, "") or ""
+        old_value = getattr(old_nofo, key, "") or ""
         new_value = getattr(new_nofo, key, "") or ""
 
         if key == "title":

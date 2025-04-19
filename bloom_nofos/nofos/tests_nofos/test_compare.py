@@ -224,7 +224,7 @@ class TestCompareNofos(TestCase):
         """
         Tests the compare_nofos function, ensuring it correctly identifies matches, updates, additions, and deletions.
         """
-        result = compare_nofos(self.new_nofo, self.old_nofo)
+        result = compare_nofos(self.old_nofo, self.new_nofo)
 
         # Ensure the result is structured correctly
         self.assertEqual(len(result), 1)  # Only one section should be in the diff
@@ -309,7 +309,7 @@ class TestCompareNofosMetadata(TestCase):
         """
         Tests the compare_nofos_metadata function, ensuring it correctly identifies matches, updates, additions, and deletions.
         """
-        nofo_comparison_metadata = compare_nofos_metadata(self.new_nofo, self.old_nofo)
+        nofo_comparison_metadata = compare_nofos_metadata(self.old_nofo, self.new_nofo)
 
         # Ensure 8 attributes changes are detected
         self.assertEqual(len(nofo_comparison_metadata), 8)
