@@ -662,7 +662,7 @@ class BaseSubsection(models.Model):
             return _are_adjacent_matching(self_adjacent, other_adjacent, direction)
 
         # 1. If in the same NOFO, they can't "match" because they are two distinct subsections
-        if self.section.nofo.id == other_subsection.section.nofo.id:
+        if self.get_document().id == other_subsection.get_document().id:
             return False
 
         # 2. If in different sections, they can't "match" because they live in different parts of the NOFO
