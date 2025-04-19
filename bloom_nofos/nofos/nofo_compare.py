@@ -1,6 +1,8 @@
 import re
 from difflib import SequenceMatcher
 
+from django.utils.html import escape
+
 from .models import Nofo
 
 
@@ -94,6 +96,22 @@ def result_update(original_subsection, new_subsection):
     }
 
     return add_content_guide_comparison_metadata(result, original_subsection)
+
+
+def result_merged_update(name, old_value, new_value, old_sub_dict=None):
+    result = {
+        "name": name,
+        "status": "UPDATE",
+        "old_value": old_value,
+        "new_value": new_value,
+        "diff": html_diff(old_value, new_value),
+    }
+
+    if old_sub_dict.get("comparison_type", None):
+        result["comparison_type"] = old_sub_dict.get("comparison_type")
+        result["diff_strings"] = old_sub_dict.get("diff_strings", [])
+
+    return result
 
 
 def result_add(new_subsection):
@@ -207,44 +225,79 @@ def merge_renamed_subsections(subsections):
             new_name = current["name"]
             old_name = next_item["name"].replace("<del>", "").replace("</del>", "")
 
-            if old_body == new_body:
-                # Rename only — same content
+            heading_diff = html_diff(old_name, new_name)
+
+            is_rename_only = old_body == new_body
+            # look for if there is shared text in the header (remove del and ins and keep remainder)
+            has_shared_heading = bool(
+                re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff).strip()
+            )
+
+            if is_rename_only or has_shared_heading:
                 merged.append(
-                    {
-                        "name": html_diff(old_name, new_name) or new_name,
-                        "status": "UPDATE",
-                        "old_value": old_body,
-                        "new_value": new_body,
-                        "diff": "",  # no body changes
-                    }
+                    result_merged_update(
+                        name=heading_diff or new_name,
+                        old_value=old_body,
+                        new_value=new_body,
+                        old_sub_dict=next_item,
+                    )
                 )
                 i += 2
                 continue
-
-            # Otherwise, check if it's a likely rename with small body change
-            heading_diff = html_diff(old_name, new_name)
-            if heading_diff:
-
-                # Remove all <del>...</del> and <ins>...</ins>
-                shared_text = re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff).strip()
-                if shared_text:  # could include a length param here
-                    merged.append(
-                        {
-                            "name": heading_diff,
-                            "status": "UPDATE",
-                            "old_value": old_body,
-                            "new_value": new_body,
-                            "diff": html_diff(old_body, new_body) or "",
-                        }
-                    )
-                    i += 2
-                    continue
 
         # Normal case: keep the current item
         merged.append(current)
         i += 1
 
     return merged
+
+
+def apply_comparison_types(subsections):
+    def normalize(text):
+        return re.sub(r"\s+", " ", text.strip()).lower()
+
+    results = []
+    for item in subsections:
+        comparison_type = item.get("comparison_type")
+
+        if comparison_type == "none":
+            continue
+
+        if not comparison_type or item["status"] in ["ADD", "DELETE", "MATCH"]:
+            results.append(item)
+            continue
+
+        if item["status"] == "UPDATE":
+            if comparison_type == "name":
+                if "<del>" not in item["name"] and "<ins>" not in item["name"]:
+                    item["status"] = "MATCH"
+
+                item["diff"] = "—"
+
+            elif comparison_type == "diff_strings":
+                diff_strings_not_matched = []
+                normalized_body = normalize(item["new_value"])
+                for s in item.get("diff_strings", []):
+                    if normalize(s) not in normalized_body:
+                        diff_strings_not_matched.append(s)
+
+                if diff_strings_not_matched:
+                    item["diff"] = "<ul>{}</ul>".format(
+                        "".join(
+                            f"<li><del>{escape(s)}</del></li>"
+                            for s in diff_strings_not_matched
+                        )
+                    )
+                else:
+                    item["status"] = "MATCH"
+                    item["diff"] = "—"
+
+            # default case, do nothing
+            # elif comparison_type == "body":
+
+            results.append(item)
+
+    return results
 
 
 def compare_nofos(old_nofo, new_nofo):
@@ -279,6 +332,9 @@ def compare_nofos(old_nofo, new_nofo):
 
     for section in nofo_comparison:
         section["subsections"] = merge_renamed_subsections(section["subsections"])
+
+    for section in nofo_comparison:
+        section["subsections"] = apply_comparison_types(section["subsections"])
 
     return nofo_comparison
 
