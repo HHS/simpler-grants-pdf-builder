@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from ..models import Nofo, Section, Subsection
 from ..nofo_compare import (
+    apply_comparison_types,
     compare_nofos,
     compare_nofos_metadata,
     html_diff,
@@ -423,3 +424,98 @@ class TestCompareNofosMetadata(TestCase):
         self.assertEqual(application_deadline_add["status"], "ADD")
         self.assertEqual(application_deadline_add["value"], "February 2, 2026")
         self.assertIn("<ins>February 2, 2026</ins>", application_deadline_add["diff"])
+
+
+class TestApplyComparisonTypes(TestCase):
+
+    def test_none_comparison_type_skips_all_statuses(self):
+        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
+            with self.subTest(status=status):
+                items = [{"status": status, "comparison_type": "none"}]
+                result = apply_comparison_types(items)
+                self.assertEqual(result, [], "Failed for status={}".format(status))
+
+    def test_missing_comparison_type_appends_all_statuses(self):
+        item = {"status": "UPDATE", "name": "Something", "diff": "test"}
+        self.assertEqual(apply_comparison_types([item])[0], item)
+
+        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
+            with self.subTest(status=status):
+                items = [{"status": status, "name": "Something", "diff": "test"}]
+                result = apply_comparison_types(items)
+                self.assertEqual(
+                    result, [items[0]], "Failed for status={}".format(status)
+                )
+
+    # ADD can't have comparison types
+    def test_add_status_untouched(self):
+        item = {"status": "ADD", "comparison_type": "name"}
+        self.assertIn(item, apply_comparison_types([item]))
+
+    def test_delete_status_untouched_for_all_comparison_types(self):
+        for comparison_type in ["name", "body", "diff_strings"]:
+            with self.subTest(comparison_type=comparison_type):
+                items = [{"status": "DELETE", "comparison_type": comparison_type}]
+                result = apply_comparison_types(items)
+                self.assertEqual(
+                    result,
+                    [items[0]],
+                    "Failed for comparison_type={}".format(comparison_type),
+                )
+
+    def test_match_status_untouched_for_all_comparison_types(self):
+        for comparison_type in ["name", "body", "diff_strings"]:
+            with self.subTest(comparison_type=comparison_type):
+                items = [{"status": "MATCH", "comparison_type": comparison_type}]
+                result = apply_comparison_types(items)
+                self.assertEqual(
+                    result,
+                    [items[0]],
+                    "Failed for comparison_type={}".format(comparison_type),
+                )
+
+    def test_update_name_diff_present(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "name",
+            "name": "<del>Foo</del><ins>Bar</ins>",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_name_no_diff_becomes_match(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "name",
+            "name": "Section Title",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_diff_strings_match_all(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "program"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_diff_strings_some_missing(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "banana"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertIn("<del>banana</del>", result["diff"])
