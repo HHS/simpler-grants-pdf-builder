@@ -11,6 +11,9 @@ urlpatterns = [
         views.ContentGuideImportView.as_view(),
         name="guide_import",
     ),
+    path(
+        "<int:pk>/delete", views.ContentGuideArchiveView.as_view(), name="guide_archive"
+    ),
     path("<int:pk>/edit", views.ContentGuideEditView.as_view(), name="guide_edit"),
     path(
         "<int:pk>/compare",

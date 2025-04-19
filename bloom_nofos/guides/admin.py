@@ -19,5 +19,5 @@ class ContentGuideSectionInline(admin.TabularInline):
 
 @admin.register(ContentGuide)
 class ContentGuideAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "filename", "created", "updated")
+    list_display = ("id", "title", "filename", "created", "updated", "archived")
     inlines = [ContentGuideSectionInline]

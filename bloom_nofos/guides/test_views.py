@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 User = get_user_model()
@@ -41,6 +42,19 @@ class ContentGuideListViewTests(TestCase):
         url = reverse("guides:guide_index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
+
+    def test_archived_guides_are_excluded(self):
+        # Archive one of the guides
+        self.guide1.archived = timezone.now()
+        self.guide1.save()
+
+        url = reverse("guides:guide_index")
+        response = self.client.get(url)
+        guides = list(response.context["content_guides"])
+
+        self.assertNotIn(self.guide1, guides)
+        self.assertIn(self.guide2, guides)
+        self.assertEqual(len(guides), 1)
 
 
 class ContentGuideImportViewTests(TestCase):
@@ -125,6 +139,52 @@ class ContentGuideEditTitleViewTests(TestCase):
         self.assertIn(response.status_code, [302, 403])
 
 
+class ContentGuideArchiveViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Test Content Guide",
+            opdiv="CDC",
+            group="bloom",
+        )
+        self.url = reverse("guides:guide_archive", args=[self.guide.id])
+
+    def test_get_view_renders_confirmation_page(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Are you absolutely sure you want to delete “Test Content Guide”?",
+        )
+
+    def test_post_archives_guide(self):
+        response = self.client.post(self.url)
+        self.guide.refresh_from_db()
+        self.assertIsNotNone(self.guide.archived)
+        self.assertRedirects(response, reverse("guides:guide_index"))
+
+    def test_cannot_archive_already_archived_guide(self):
+        self.guide.archived = timezone.now()
+        self.guide.save()
+
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"already archived", response.content)
+
+    def test_anonymous_user_forbidden(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+        self.assertIn(b"403 Forbidden", response.content)
+
+
 class ContentGuideEditViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -166,6 +226,14 @@ class ContentGuideEditViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.section1.name)
         self.assertContains(response, self.section2.name)
+
+    def test_view_shows_archived_warning_if_guide_is_archived(self):
+        self.guide.archived = timezone.now()
+        self.guide.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Archived Content Guide")
 
 
 class ContentGuideSubsectionEditViewTests(TestCase):

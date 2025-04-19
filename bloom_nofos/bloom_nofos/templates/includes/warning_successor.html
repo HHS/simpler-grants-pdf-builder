@@ -2,9 +2,9 @@
 
 <div class="usa-alert usa-alert--warning{% if class_name %} {{ class_name }}{% endif %}">
   <div class="usa-alert__body">
-    <h4 class="usa-alert__heading text-base-darkest">Past version of {{ nofo.successor.number }}</h4>
+    <h4 class="usa-alert__heading text-base-darkest">Past version of {{ document.successor.number }}</h4>
     <p class="usa-alert__text">
-      This NOFO revision is from {{ nofo.archived|date:"F j, Y" }}.
+      This {% if not document.number %}Content Guide{% else %}NOFO{% endif %} revision is from {{ document.archived|date:"F j, Y" }}.
       {% if not user.is_superuser %}
         To restore to this version, contact Paul or Adam.
       {% endif %}

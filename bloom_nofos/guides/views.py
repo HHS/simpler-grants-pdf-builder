@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
@@ -28,7 +29,7 @@ class ContentGuideListView(LoginRequiredMixin, ListView):
     context_object_name = "content_guides"
 
     def get_queryset(self):
-        return ContentGuide.objects.order_by("-updated")
+        return ContentGuide.objects.filter(archived__isnull=True).order_by("-updated")
 
 
 class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
@@ -83,6 +84,33 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
         )
 
         return redirect("guides:guide_index")
+
+
+class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
+    model = ContentGuide
+    template_name = "guides/guide_confirm_delete.html"
+    success_url = reverse_lazy("guides:guide_index")
+    context_object_name = "guide"
+    fields = []  # We don’t need a form — just confirm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.archived:
+            return HttpResponseBadRequest("This Content Guide is already archived.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        guide = self.get_object()
+        guide.archived = timezone.now()
+        guide.save(update_fields=["archived"])
+
+        messages.error(
+            request,
+            "You deleted Content Guide: “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                guide.title
+            ),
+        )
+        return redirect(self.success_url)
 
 
 class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
