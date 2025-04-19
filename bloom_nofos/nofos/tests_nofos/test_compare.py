@@ -55,24 +55,24 @@ class MergeRenamedSubsectionsTests(TestCase):
     def test_exact_body_match_renamed_title(self):
         input_data = [
             {
-                "status": "DELETE",
-                "name": "Overview",
-                "old_value": "This is some content.",
-                "new_value": "",
-            },
-            {
                 "status": "ADD",
-                "name": "Summary",
+                "name": "Overview",
                 "old_value": "",
                 "new_value": "This is some content.",
+            },
+            {
+                "status": "DELETE",
+                "name": "Summary",
+                "old_value": "This is some content.",
+                "new_value": "",
             },
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["status"], "UPDATE")
-        self.assertIn("<del>Overview</del>", result[0]["name"])
-        self.assertIn("<ins>Summary</ins>", result[0]["name"])
-        self.assertEqual(result[0]["diff"], "")
+        self.assertIn("<ins>Overview</ins>", result[0]["name"])
+        self.assertIn("<del>Summary</del>", result[0]["name"])
+        self.assertEqual(result[0]["diff"], None)
 
     def test_renamed_title_and_changed_body(self):
         input_data = [
@@ -116,12 +116,17 @@ class MergeRenamedSubsectionsTests(TestCase):
 
     def test_minimal_shared_heading(self):
         input_data = [
-            {"status": "DELETE", "name": "a", "old_value": "hello", "new_value": ""},
             {
                 "status": "ADD",
                 "name": "a b",
                 "old_value": "",
                 "new_value": "hello world",
+            },
+            {
+                "status": "DELETE",
+                "name": "a",
+                "old_value": "hello",
+                "new_value": "",
             },
         ]
         result = merge_renamed_subsections(input_data)
@@ -175,48 +180,84 @@ class TestCompareNofos(TestCase):
             name="",
             body="Need help? Visit contacts and support",
             section=self.old_section,
-            order=3,
+            order=2,
             tag="h3",
         )
         self.new_sub_2 = Subsection.objects.create(
             name="",
             body="Go to 'Contacts and Support",
             section=self.new_section,
-            order=3,
+            order=2,
             tag="h3",
         )
 
         # Changed subsection (same name, different content)
-        self.old_sub_2 = Subsection.objects.create(
+        self.old_sub_3 = Subsection.objects.create(
             name="Application Process",
             body="Submit before Jan 1.",
             section=self.old_section,
-            order=4,
+            order=3,
             tag="h3",
         )
-        self.new_sub_2 = Subsection.objects.create(
+        self.new_sub_3 = Subsection.objects.create(
             name="Application Process",
             body="Submit before Feb 1.",
             section=self.new_section,
-            order=4,
+            order=3,
             tag="h3",
         )
 
         # Added subsection (exists only in new NOFO)
-        self.new_sub_3 = Subsection.objects.create(
+        self.new_sub_4 = Subsection.objects.create(
             name="New NOFO Funding Guidelines",
             body="Follow these new rules.",
             section=self.new_section,
-            order=5,
+            order=4,
             tag="h3",
         )
 
+        # Matched subsection (same name, same content, different orders, different tags)
+        self.old_sub_5 = Subsection.objects.create(
+            name="Permitting rules",
+            body="Of course permits must be obtained.",
+            section=self.old_section,
+            order=4,
+            tag="h3",
+        )
+        self.new_sub_5 = Subsection.objects.create(
+            name="Permitting rules",
+            body="Of course permits must be obtained.",
+            section=self.new_section,
+            order=5,
+            tag="h4",
+        )
+
         # Deleted subsection (exists only in old NOFO)
-        self.old_sub_4 = Subsection.objects.create(
+        self.old_sub_5 = Subsection.objects.create(
             name="Old NOFO Fee Requirements",
             body="Processing fee is $50.",
             section=self.old_section,
             order=5,
+            tag="h3",
+        )
+
+        # THESE 2 WILL GET MERGED
+
+        # Added subsection (exists only in new NOFO)
+        self.new_sub_6 = Subsection.objects.create(
+            name="Visit SAM.gov",
+            body="This is the website where you can sign up.",
+            section=self.new_section,
+            order=6,
+            tag="h3",
+        )
+
+        # Deleted subsection (exists only in old NOFO)
+        self.old_sub_6 = Subsection.objects.create(
+            name="SAM.gov",
+            body="Visit the website to sign up.",
+            section=self.old_section,
+            order=6,
             tag="h3",
         )
 
@@ -231,7 +272,7 @@ class TestCompareNofos(TestCase):
         self.assertEqual(result[0]["name"], "Step 1")
 
         subsections = result[0]["subsections"]
-        self.assertEqual(len(subsections), 5)
+        self.assertEqual(len(subsections), 7)
 
         # Match test
         subsection_match = subsections[0]
@@ -243,7 +284,7 @@ class TestCompareNofos(TestCase):
         # Update test (unnamed subsection)
         subsection_update = subsections[1]
         self.assertEqual(subsection_update["status"], "UPDATE")
-        self.assertEqual(subsection_update["name"], "(#3)")
+        self.assertEqual(subsection_update["name"], "(#2)")
         self.assertEqual(
             subsection_update["old_value"], "Need help? Visit contacts and support"
         )
@@ -270,12 +311,37 @@ class TestCompareNofos(TestCase):
         self.assertEqual(subsection_add["old_value"], "")
         self.assertEqual(subsection_add["new_value"], "Follow these new rules.")
 
+        # Second match test
+        subsection_match_2 = subsections[4]
+        self.assertEqual(subsection_match_2["status"], "MATCH")
+        self.assertEqual(subsection_match_2["name"], "Permitting rules")
+        self.assertEqual(
+            subsection_match_2["old_value"], "Of course permits must be obtained."
+        )
+        self.assertEqual(
+            subsection_match_2["new_value"], "Of course permits must be obtained."
+        )
+
         # Deletion test
-        subsection_delete = subsections[4]
-        self.assertEqual(subsection_delete["name"], "Old NOFO Fee Requirements")
+        subsection_delete = subsections[5]
+        self.assertEqual(
+            subsection_delete["name"], "<del>Old NOFO Fee Requirements</del>"
+        )
         self.assertEqual(subsection_delete["old_value"], "Processing fee is $50.")
         self.assertEqual(subsection_delete["new_value"], "")
         self.assertIn("<del>Processing fee is $50.</del>", subsection_delete["diff"])
+
+        # Deletion test
+        subsection_merge = subsections[6]
+        self.assertEqual(subsection_merge["name"], "<ins>Visit </ins>SAM.gov")
+        self.assertEqual(subsection_merge["old_value"], "Visit the website to sign up.")
+        self.assertEqual(
+            subsection_merge["new_value"], "This is the website where you can sign up."
+        )
+        self.assertIn(
+            "<del>Visit</del><ins>This is</ins> the website <del>to</del><ins>where you can</ins> sign up.",
+            subsection_merge["diff"],
+        )
 
 
 class TestCompareNofosMetadata(TestCase):

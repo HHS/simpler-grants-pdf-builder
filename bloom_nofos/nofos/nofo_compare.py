@@ -209,7 +209,7 @@ def compare_sections(old_section, new_section):
 
 def merge_renamed_subsections(subsections):
     """
-    Detects DELETE + ADD pairs in a section that are likely renames and merges them into an UPDATE.
+    Detects ADD + DELETE pairs in a section that are likely renames and merges them into an UPDATE.
     This improves diff quality when only a subsection title has changed (and body remains the same or similar).
     """
     merged = []
@@ -230,7 +230,7 @@ def merge_renamed_subsections(subsections):
             is_rename_only = old_body == new_body
             # look for if there is shared text in the header (remove del and ins and keep remainder)
             has_shared_heading = bool(
-                re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff).strip()
+                re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff or "").strip()
             )
 
             if is_rename_only or has_shared_heading:
