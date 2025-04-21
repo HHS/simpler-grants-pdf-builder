@@ -9,7 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Compare content guides
+- Delete a content guide
+- Use width classes for HTML tables on nofo_edit page
+
 ### Changed
+
+- Editing a content guide name from the nofo_edit page works better
+- Show HTML table classnames on nofo_edit page and martor preview
 
 ### Fixed
 
