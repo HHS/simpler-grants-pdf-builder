@@ -663,6 +663,16 @@ label.usa-label {
   font-weight: 400;
 }
 
+.nofo-edit-table--subsection--body table > thead > tr > th::after,
+.subsection_edit div.martor-preview table > thead > tr > th::after {
+  content: "." attr(class);
+  display: block;
+  font-size: 0.85em;
+  font-weight: 400;
+  font-family: monospace;
+  color: var(--color--med-grey);
+}
+
 /* broken link error + tooltip */
 .nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link,
 .nofo_edit
@@ -735,10 +745,6 @@ label.usa-label {
 .nofo_edit main table.table--section th,
 .nofo_edit main table.table--section td {
   padding: calc(0.75rem - 5px) 1rem 0.75rem 1rem;
-}
-
-.nofo_edit main table.table--section th,
-.nofo_edit main table.table--section td {
   border-top: none;
 }
 
@@ -781,22 +787,27 @@ label.usa-label {
   top: 139px;
 }
 
-.nofo_edit main table tbody tr:first-of-type th {
+.nofo_edit main table.usa-table > tbody > tr:first-of-type > th {
   width: 15%;
 }
 
-.nofo_edit table th.nofo-edit-table--subsection--name {
+.nofo_edit table.usa-table th.nofo-edit-table--subsection--name {
   scroll-margin-top: 115px;
 }
 
-.nofo_edit table th.nofo-edit-table--subsection--name.page-break-before,
-.nofo_edit table th.nofo-edit-table--subsection--name.page-break-before ~ td {
+.nofo_edit
+  table.usa-table
+  th.nofo-edit-table--subsection--name.page-break-before,
+.nofo_edit
+  table.usa-table
+  th.nofo-edit-table--subsection--name.page-break-before
+  ~ td {
   border-top: 2px dashed #5c5c5c;
 }
 
 .nofo_edit .page-break--hr--container .page-break--hr--text,
 .nofo_edit
-  table
+  table.usa-table
   th.nofo-edit-table--subsection--name.page-break-before::before {
   content: "[ ↓ page-break ↓ ]";
   position: absolute;
