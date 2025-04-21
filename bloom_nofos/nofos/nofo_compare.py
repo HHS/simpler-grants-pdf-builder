@@ -318,7 +318,36 @@ def apply_comparison_types(subsections):
     return results
 
 
-def compare_nofos(old_nofo, new_nofo):
+def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
+    """
+    Removes any comparison items (subsections or metadata rows) with statuses in `statuses_to_ignore`.
+
+    If the comparison is section-based (i.e., each item has a `subsections` key),
+    it will remove matching subsections and discard empty sections.
+
+    If the comparison is flat (metadata-style), it will directly filter the list.
+    """
+    if not statuses_to_ignore:
+        return comparison
+
+    # Check if it's section-based (compare_nofos)
+    if comparison and "subsections" in comparison[0]:
+        filtered = []
+        for section in comparison:
+            subsections = [
+                s
+                for s in section["subsections"]
+                if s["status"] not in statuses_to_ignore
+            ]
+            if subsections:
+                filtered.append({**section, "subsections": subsections})
+        return filtered
+
+    # Flat metadata-style comparison (compare_nofos_metadata)
+    return [item for item in comparison if item["status"] not in statuses_to_ignore]
+
+
+def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
 
@@ -354,10 +383,10 @@ def compare_nofos(old_nofo, new_nofo):
     for section in nofo_comparison:
         section["subsections"] = apply_comparison_types(section["subsections"])
 
-    return nofo_comparison
+    return filter_comparison_by_status(nofo_comparison, statuses_to_ignore)
 
 
-def compare_nofos_metadata(old_nofo, new_nofo):
+def compare_nofos_metadata(old_nofo, new_nofo, statuses_to_ignore=[]):
     """
     Compares metadata fields between an existing NOFO and a newly uploaded one.
 
@@ -412,7 +441,8 @@ def compare_nofos_metadata(old_nofo, new_nofo):
                 {
                     "name": field_name,
                     "status": status,
-                    "value": new_value,
+                    "old_value": old_value,
+                    "new_value": new_value,
                     "diff": diff,
                 }
             )
@@ -421,8 +451,9 @@ def compare_nofos_metadata(old_nofo, new_nofo):
                 {
                     "name": field_name,
                     "status": "MATCH",
-                    "value": new_value,
+                    "old_value": old_value,
+                    "new_value": new_value,
                 }
             )
 
-    return nofo_metadata_comparison
+    return filter_comparison_by_status(nofo_metadata_comparison, statuses_to_ignore)
