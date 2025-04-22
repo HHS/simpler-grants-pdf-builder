@@ -7,6 +7,7 @@ from ..nofo_compare import (
     apply_comparison_types,
     compare_nofos,
     compare_nofos_metadata,
+    filter_comparison_by_status,
     html_diff,
     merge_renamed_subsections,
 )
@@ -137,6 +138,277 @@ class MergeRenamedSubsectionsTests(TestCase):
         self.assertEqual(result[0]["status"], "UPDATE")
         self.assertIn("<ins> b</ins>", result[0]["name"])
         self.assertEqual(result[0]["diff"], "hello<ins> world</ins>")
+
+
+class FilterComparisonByStatusTests(TestCase):
+    def test_returns_unchanged_when_no_statuses_to_ignore(self):
+        data = [{"name": "X", "status": "MATCH"}]
+        result = filter_comparison_by_status(data, statuses_to_ignore=[])
+        self.assertEqual(result, data)
+
+    def test_flat_comparison_filters_match(self):
+        data = [
+            {"name": "A", "status": "MATCH"},
+            {"name": "B", "status": "ADD"},
+            {"name": "C", "status": "UPDATE"},
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
+        self.assertEqual(
+            result,
+            [
+                {"name": "B", "status": "ADD"},
+                {"name": "C", "status": "UPDATE"},
+            ],
+        )
+
+    def test_flat_comparison_filters_multiple(self):
+        data = [
+            {"name": "A", "status": "MATCH"},
+            {"name": "B", "status": "ADD"},
+            {"name": "C", "status": "UPDATE"},
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH", "ADD"])
+        self.assertEqual(result, [{"name": "C", "status": "UPDATE"}])
+
+    def test_flat_comparison_all_filtered(self):
+        data = [
+            {"name": "A", "status": "MATCH"},
+            {"name": "B", "status": "MATCH"},
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
+        self.assertEqual(result, [])
+
+    def test_section_based_filters_subsections(self):
+        data = [
+            {
+                "name": "Section 1",
+                "subsections": [
+                    {"name": "A", "status": "MATCH"},
+                    {"name": "B", "status": "ADD"},
+                ],
+            },
+            {
+                "name": "Section 2",
+                "subsections": [
+                    {"name": "C", "status": "MATCH"},
+                    {"name": "D", "status": "UPDATE"},
+                ],
+            },
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
+        self.assertEqual(
+            result,
+            [
+                {
+                    "name": "Section 1",
+                    "subsections": [{"name": "B", "status": "ADD"}],
+                },
+                {
+                    "name": "Section 2",
+                    "subsections": [{"name": "D", "status": "UPDATE"}],
+                },
+            ],
+        )
+
+    def test_section_based_drops_empty_sections(self):
+        data = [
+            {
+                "name": "Section 1",
+                "subsections": [{"name": "A", "status": "MATCH"}],
+            },
+            {
+                "name": "Section 2",
+                "subsections": [{"name": "B", "status": "ADD"}],
+            },
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
+        self.assertEqual(
+            result,
+            [{"name": "Section 2", "subsections": [{"name": "B", "status": "ADD"}]}],
+        )
+
+    def test_section_based_keeps_empty_sections_if_no_array_provided(self):
+        data = [
+            {
+                "name": "Section 1",
+                "subsections": [],
+            },
+            {
+                "name": "Section 2",
+                "subsections": [],
+            },
+        ]
+        result = filter_comparison_by_status(data)
+        self.assertEqual(result, data)
+
+    def test_section_based_drops_intially_empty_sections_if_array_provided(self):
+        data = [
+            {
+                "name": "Section 1",
+                "subsections": [],
+            },
+            {
+                "name": "Section 2",
+                "subsections": [],
+            },
+        ]
+        result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
+        self.assertEqual(result, [])
+
+    def test_empty_array_returns_empty(self):
+        result = filter_comparison_by_status([], statuses_to_ignore=["MATCH"])
+        self.assertEqual(result, [])
+
+    def test_empty_array_with_no_ignored_statuses_returns_empty(self):
+        result = filter_comparison_by_status([], statuses_to_ignore=[])
+        self.assertEqual(result, [])
+
+
+class TestApplyComparisonTypes(TestCase):
+
+    def test_none_comparison_type_skips_all_statuses(self):
+        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
+            with self.subTest(status=status):
+                items = [
+                    {"status": status, "comparison_type": "none", "diff": "old diff"}
+                ]
+                result = apply_comparison_types(items)
+                self.assertEqual(result, [], "Failed for status={}".format(status))
+
+    def test_missing_comparison_type_appends_all_statuses(self):
+        item = {"status": "UPDATE", "name": "Something", "diff": "old diff"}
+        self.assertEqual(apply_comparison_types([item])[0], item)
+
+        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
+            with self.subTest(status=status):
+                item = {"status": status, "name": "Something", "diff": "old diff"}
+                original_item = deepcopy(item)
+
+                result = apply_comparison_types([item])
+                self.assertEqual(
+                    result[0], original_item, "Failed for status={}".format(status)
+                )
+
+    # ADD can't have comparison types
+    def test_add_status_untouched(self):
+        item = {"status": "ADD", "diff": "old diff", "comparison_type": "name"}
+        self.assertIn(item, apply_comparison_types([item]))
+
+    def test_delete_status_comparison_type_name(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "name",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        original_item["diff"] = "—"
+        self.assertEqual(result[0], original_item)
+
+    def test_delete_status_comparison_type_body(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "body",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        self.assertEqual(result[0], original_item)
+
+    def test_delete_status_comparison_type_diff_strings(self):
+        item = {
+            "status": "DELETE",
+            "diff": "old diff",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["one", "two", "three"],
+        }
+        original_item = deepcopy(item)
+
+        result = apply_comparison_types([item])
+        original_item["diff"] = (
+            "<ul><li><del>one</del></li><li><del>two</del></li><li><del>three</del></li></ul>"
+        )
+        self.assertEqual(result[0], original_item)
+
+    def test_match_status_untouched_for_all_comparison_types(self):
+        for comparison_type in ["name", "body", "diff_strings"]:
+            with self.subTest(comparison_type=comparison_type):
+                item = {
+                    "status": "MATCH",
+                    "comparison_type": comparison_type,
+                    "diff": "old diff",
+                }
+                original_item = deepcopy(item)
+
+                result = apply_comparison_types([item])
+                self.assertEqual(
+                    result[0],
+                    original_item,
+                    "Failed for comparison_type={}".format(comparison_type),
+                )
+
+    def test_update_name_diff_present(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "name",
+            "name": "<del>Foo</del><ins>Bar</ins>",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_name_no_diff_becomes_match(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "name",
+            "name": "Section Title",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_diff_strings_match_all(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "program"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(result["diff"], "—")
+
+    def test_update_diff_strings_some_missing(self):
+        item = {
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "banana"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertIn("<del>banana</del>", result["diff"])
+
+    def test_update_diff_strings_match_all_but_name_modified(self):
+        item = {
+            "name": "The <ins>New</ins> Program",
+            "status": "UPDATE",
+            "comparison_type": "diff_strings",
+            "diff_strings": ["data", "program"],
+            "new_value": "This data program is working.",
+            "diff": "old diff",
+        }
+        result = apply_comparison_types([item])[0]
+        self.assertEqual(result["status"], "UPDATE")
+        self.assertEqual(result["diff"], "—")
 
 
 class TestCompareNofos(TestCase):
@@ -434,150 +706,3 @@ class TestCompareNofosMetadata(TestCase):
         self.assertEqual(application_deadline_add["old_value"], "")
         self.assertEqual(application_deadline_add["new_value"], "February 2, 2026")
         self.assertIn("<ins>February 2, 2026</ins>", application_deadline_add["diff"])
-
-
-class TestApplyComparisonTypes(TestCase):
-
-    def test_none_comparison_type_skips_all_statuses(self):
-        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
-            with self.subTest(status=status):
-                items = [
-                    {"status": status, "comparison_type": "none", "diff": "old diff"}
-                ]
-                result = apply_comparison_types(items)
-                self.assertEqual(result, [], "Failed for status={}".format(status))
-
-    def test_missing_comparison_type_appends_all_statuses(self):
-        item = {"status": "UPDATE", "name": "Something", "diff": "old diff"}
-        self.assertEqual(apply_comparison_types([item])[0], item)
-
-        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
-            with self.subTest(status=status):
-                item = {"status": status, "name": "Something", "diff": "old diff"}
-                original_item = deepcopy(item)
-
-                result = apply_comparison_types([item])
-                self.assertEqual(
-                    result[0], original_item, "Failed for status={}".format(status)
-                )
-
-    # ADD can't have comparison types
-    def test_add_status_untouched(self):
-        item = {"status": "ADD", "diff": "old diff", "comparison_type": "name"}
-        self.assertIn(item, apply_comparison_types([item]))
-
-    def test_delete_status_comparison_type_name(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "name",
-            "diff_strings": ["one", "two", "three"],
-        }
-        original_item = deepcopy(item)
-
-        result = apply_comparison_types([item])
-        original_item["diff"] = "—"
-        self.assertEqual(result[0], original_item)
-
-    def test_delete_status_comparison_type_body(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "body",
-            "diff_strings": ["one", "two", "three"],
-        }
-        original_item = deepcopy(item)
-
-        result = apply_comparison_types([item])
-        self.assertEqual(result[0], original_item)
-
-    def test_delete_status_comparison_type_diff_strings(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["one", "two", "three"],
-        }
-        original_item = deepcopy(item)
-
-        result = apply_comparison_types([item])
-        original_item["diff"] = (
-            "<ul><li><del>one</del></li><li><del>two</del></li><li><del>three</del></li></ul>"
-        )
-        self.assertEqual(result[0], original_item)
-
-    def test_match_status_untouched_for_all_comparison_types(self):
-        for comparison_type in ["name", "body", "diff_strings"]:
-            with self.subTest(comparison_type=comparison_type):
-                item = {
-                    "status": "MATCH",
-                    "comparison_type": comparison_type,
-                    "diff": "old diff",
-                }
-                original_item = deepcopy(item)
-
-                result = apply_comparison_types([item])
-                self.assertEqual(
-                    result[0],
-                    original_item,
-                    "Failed for comparison_type={}".format(comparison_type),
-                )
-
-    def test_update_name_diff_present(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "name",
-            "name": "<del>Foo</del><ins>Bar</ins>",
-            "diff": "old diff",
-        }
-        result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertEqual(result["diff"], "—")
-
-    def test_update_name_no_diff_becomes_match(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "name",
-            "name": "Section Title",
-            "diff": "old diff",
-        }
-        result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "MATCH")
-        self.assertEqual(result["diff"], "—")
-
-    def test_update_diff_strings_match_all(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "program"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
-        result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "MATCH")
-        self.assertEqual(result["diff"], "—")
-
-    def test_update_diff_strings_some_missing(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "banana"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
-        result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertIn("<del>banana</del>", result["diff"])
-
-    def test_update_diff_strings_match_all_but_name_modified(self):
-        item = {
-            "name": "The <ins>New</ins> Program",
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "program"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
-        result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertEqual(result["diff"], "—")
