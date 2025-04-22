@@ -405,7 +405,10 @@ class TestCompareNofosMetadata(TestCase):
         subagency_update = nofo_comparison_metadata[4]
         self.assertEqual(subagency_update["status"], "UPDATE")
         self.assertEqual(
-            subagency_update["value"], "Department of Groundhog Excellence (DOGE)"
+            subagency_update["old_value"], "Department of Guessing Groundhogs (DGG)"
+        )
+        self.assertEqual(
+            subagency_update["new_value"], "Department of Groundhog Excellence (DOGE)"
         )
         self.assertIn(
             "Department of <del>Guessing</del><ins>Groundhog</ins> <del>Groundhogs</del><ins>Excellence</ins> (<del>DGG</del><ins>DOGE</ins>)",
@@ -415,7 +418,11 @@ class TestCompareNofosMetadata(TestCase):
         # Delete test (subagency2 removed)
         subagency2_delete = nofo_comparison_metadata[5]
         self.assertEqual(subagency2_delete["status"], "DELETE")
-        self.assertEqual(subagency2_delete["value"], "")
+        self.assertEqual(
+            subagency2_delete["old_value"],
+            "Action Group for Diverse Prognosticators (AGDP)",
+        )
+        self.assertEqual(subagency2_delete["new_value"], "")
         self.assertIn(
             "<del>Action Group for Diverse Prognosticators (AGDP)</del>",
             subagency2_delete["diff"],
@@ -424,7 +431,8 @@ class TestCompareNofosMetadata(TestCase):
         # Addition test (application deadline added)
         application_deadline_add = nofo_comparison_metadata[6]
         self.assertEqual(application_deadline_add["status"], "ADD")
-        self.assertEqual(application_deadline_add["value"], "February 2, 2026")
+        self.assertEqual(application_deadline_add["old_value"], "")
+        self.assertEqual(application_deadline_add["new_value"], "February 2, 2026")
         self.assertIn("<ins>February 2, 2026</ins>", application_deadline_add["diff"])
 
 

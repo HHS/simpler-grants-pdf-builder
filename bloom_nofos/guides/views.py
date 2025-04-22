@@ -175,7 +175,7 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
 class ContentGuideCompareView(BaseNofoImportView):
     template_name = "guides/guide_import_compare.html"
-    redirect_url_name = "guides:guide_import_compare"
+    redirect_url_name = "guides:guide_compare"
 
     def dispatch(self, request, *args, **kwargs):
         self.guide = get_object_or_404(ContentGuide, pk=kwargs.get("pk"))
@@ -214,11 +214,9 @@ class ContentGuideCompareView(BaseNofoImportView):
             new_nofo.save()
 
             # Compare against the existing Content Guide
-            comparison = compare_nofos(guide, new_nofo)
+            comparison = compare_nofos(guide, new_nofo, statuses_to_ignore=["MATCH"])
 
-            # Optional: remove "MATCH" results and collapse renamed sections
-
-            # Tally changes
+            # Number of changes
             num_changed_sections = len(comparison)
             num_changed_subsections = sum(len(s["subsections"]) for s in comparison)
 

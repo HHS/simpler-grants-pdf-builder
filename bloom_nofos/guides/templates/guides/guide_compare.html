@@ -11,7 +11,7 @@
     <div class="usa-alert__body bg-base-lightest">
       <p class="usa-alert__text">
         <span class="usa-tag bg-gold text-ink">Beta</span>
-        <span class="margin-left-1">Comparing a Content Guide to a NOFO is an experimental feature and will change as we improve it. {% include "includes/feedback_link.html" %}.</span>
+        <span class="margin-left-1">Comparing a Content Guide to a NOFO is an experimental feature and will change as we improve it. <br />{% include "includes/feedback_link.html" %}.</span>
       </p>
     </div>
   </div>
@@ -23,7 +23,7 @@
     {% if num_changed_sections == 0 %}
       <h2>No changes</h2>
       <p>
-        This document is <strong>identical</strong> to your Content Guide: “{{ guide.title }}”.
+        This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) matches your Content Guide: “{{ guide.title }}”.
       </p>
 
       <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
@@ -55,37 +55,35 @@
             <tbody>
               {% for subsection in section.subsections %}
               {% if subsection.name|lower != 'basic information' %}
-                {% if subsection.status != 'MATCH' %}
-                  <tr>
-                    <th scope="row">
-                      {# if the subsection.name value starts with "(#" #}
-                      {% if subsection.name|slice:":2" == "(#" %}
-                          <span class="text-base">{{ subsection.name }}</span>
-                      {% else %}
-                          {{ subsection.name|safe }}
+                <tr>
+                  <th scope="row">
+                    {# if the subsection.name value starts with "(#" #}
+                    {% if subsection.name|slice:":2" == "(#" %}
+                        <span class="text-base">{{ subsection.name }}</span>
+                    {% else %}
+                        {{ subsection.name|safe }}
+                    {% endif %}
+                  </th>
+                  <td>
+                    {{ subsection.status }}
+                  </td>
+                  <td>
+                    {{ subsection.comparison_type }}
+                  </td>
+                  <td>
+                    <div class="diff">
+                      {% if not subsection.diff %}
+                        <span class="text-base text-italic">No change</span>
+                      {% elif subsection.status == 'ADD' %}
+                        <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                      {% elif  subsection.status == 'DELETE' %}
+                        <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                      {% elif subsection.status == 'UPDATE' %}
+                        {{ subsection.diff|safe|linebreaks }}
                       {% endif %}
-                    </th>
-                    <td>
-                      {{ subsection.status }}
-                    </td>
-                    <td>
-                      {{ subsection.comparison_type }}
-                    </td>
-                    <td>
-                      <div class="diff">
-                        {% if not subsection.diff %}
-                          <span class="text-base text-italic">No change</span>
-                        {% elif subsection.status == 'ADD' %}
-                          <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                        {% elif  subsection.status == 'DELETE' %}
-                          <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                        {% elif subsection.status == 'UPDATE' %}
-                          {{ subsection.diff|safe|linebreaks }}
-                        {% endif %}
-                      </div>
-                    </td>
-                  </tr>
-                {% endif %}
+                    </div>
+                  </td>
+                </tr>
               {% endif %}
               {% endfor %}
             </tbody>
