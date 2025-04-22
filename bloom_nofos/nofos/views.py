@@ -576,27 +576,6 @@ class NofosImportCompareView(NofosImportOverwriteView):
     template_name = "nofos/nofo_import_compare.html"
     redirect_url_name = "nofos:nofo_import_compare"
 
-    def remove_matches_from_comparison(self, comparison):
-        if comparison[0].get("subsections"):
-            # if sections comparison
-            for section in comparison:
-                # remove subsections that match
-                section["subsections"] = [
-                    subsection
-                    for subsection in section["subsections"]
-                    if subsection["status"] != "MATCH"
-                ]
-
-            # remove sections with empty subsections array
-            comparison = [
-                section for section in comparison if len(section["subsections"])
-            ]
-        else:
-            # if metadata comparison, remove matches
-            comparison = [item for item in comparison if item["status"] != "MATCH"]
-
-        return comparison
-
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
         Create a new NOFO and then pass both in for a comparison.
@@ -632,22 +611,18 @@ class NofosImportCompareView(NofosImportOverwriteView):
             new_nofo.save()
 
             # Build the comparison object
-            nofo_comparison = self.remove_matches_from_comparison(
-                compare_nofos(nofo, new_nofo)
+            nofo_comparison = compare_nofos(
+                nofo, new_nofo, statuses_to_ignore=["MATCH"]
             )
-            nofo_comparison_metadata = self.remove_matches_from_comparison(
-                compare_nofos_metadata(nofo, new_nofo)
+            nofo_comparison_metadata = compare_nofos_metadata(
+                nofo, new_nofo, statuses_to_ignore=["MATCH"]
             )
 
-            # Calculate the total number of changed sections
+            # Number of changes
             num_changed_sections = len(nofo_comparison)
-            # Calculate the total number of changed subsections
-
-            num_changed_subsections = 0
-            for section in nofo_comparison:
-                for subsection in section["subsections"]:
-                    if subsection["status"] != "MATCH":
-                        num_changed_subsections += 1
+            num_changed_subsections = sum(
+                len(s["subsections"]) for s in nofo_comparison
+            )
 
             return render(
                 request,
