@@ -25,25 +25,36 @@
   {% endwith %}
 
 
-    {% if num_changed_sections == 0 %}
-      <h2>No changes</h2>
-      <p>
-        This document is <strong>identical</strong> to your original NOFO: “{{ nofo.title }}”.
-      </p>
+  {% if num_changed_sections == 0 and not nofo_comparison_metadata %}
+    <h2>No changes</h2>
+    <p>
+      
+      This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) is <strong>identical</strong> to your original NOFO: “{{ nofo.title }}”.
+    </p>
 
-      <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
-      <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button">
-        Back to “{{ nofo|nofo_name }}”
-      </a>
-
-    {% else %}
-      <p>
+    <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
+    <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button">
+      Back to “{{ nofo|nofo_name }}”
+    </a>
+  {% else %}
+    
+    <p><strong>Overview</strong></p>
+    <ul class="usa-list">
+    {% if num_changed_sections %}
+      <li>
         There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes across {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-      </p>
+      </li>
+    {% endif %}
+    {% if nofo_comparison_metadata %}
+      <li>
+        <strong>{{ nofo_comparison_metadata|length }}</strong> metadata field{{ nofo_comparison_metadata|pluralize:' has,s have' }} changed.
+      </li>
+    {% endif %}
+    </ul>
 
-        <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
+    <p>After comparing this NOFO, you can <a href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">continue with re-importing</a> or <a href="{% url 'nofos:nofo_edit' nofo.id %}">return to the edit page</a>.</p>
 
-      {% if nofo_comparison_metadata %}
+    {% if nofo_comparison_metadata %}
       <table class="usa-table usa-table--borderless w-100">
         <caption>
           <div>
@@ -59,7 +70,6 @@
         </thead>
         <tbody>
           {% for attribute in nofo_comparison_metadata %}
-          {% if attribute.status != 'MATCH' %}
             <tr>
               <th scope="row">
                 {{ attribute.name }}
@@ -69,64 +79,61 @@
               </td>
               <td><div class="diff">{{ attribute.diff|safe }}</div></td>
             </tr>
-          {% endif %}
           {% endfor %}
         </tbody>
       </table>
-      {% endif %}
+    {% endif %}
 
-      {% if nofo_comparison %}
-        {% for section in nofo_comparison %}
-          <table class="usa-table usa-table--borderless">
-            <caption>
-              <div>
-                <h2>{{ section.name }}</h2>
-              </div>
-            </caption>
-            <thead class="usa-sr-only">
+    {% if nofo_comparison %}
+      {% for section in nofo_comparison %}
+        <table class="usa-table usa-table--borderless w-100">
+          <caption>
+            <div>
+              <h2>{{ section.name }}</h2>
+            </div>
+          </caption>
+          <thead class="usa-sr-only">
+            <tr>
+              <th scope="col" class="w-15">Subsection</th>
+              <th scope="col" class="w-10">Status</th>
+              <th scope="col" class="w-75">Content</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subsection in section.subsections %}
+            {% if subsection.name|lower != 'basic information' %}
               <tr>
-                <th scope="col" class="w-15">Subsection</th>
-                <th scope="col" class="w-10">Status</th>
-                <th scope="col" class="w-75">Content</th>
+                <th scope="row">
+                  {# if the subsection.name value starts with "(#" #}
+                  {% if subsection.name|slice:":2" == "(#" %}
+                      <span class="text-base">{{ subsection.name }}</span>
+                  {% else %}
+                      {{ subsection.name|safe }}
+                  {% endif %}
+                </th>
+                <td>
+                  {{ subsection.status }}
+                </td>
+                <td>
+                  <div class="diff">
+                    {% if not subsection.diff %}
+                      <span class="text-base text-italic">No change</span>
+                    {% elif subsection.status == 'ADD' %}
+                      <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
+                    {% elif  subsection.status == 'DELETE' %}
+                      <del>{{ subsection.diff|safe|linebreaksbr }}</del>
+                    {% elif subsection.status == 'UPDATE' %}
+                      {{ subsection.diff|safe|linebreaks }}
+                    {% endif %}
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {% for subsection in section.subsections %}
-              {% if subsection.name|lower != 'basic information' %}
-                {% if subsection.status != 'MATCH' %}
-                  <tr>
-                    <th scope="row">
-                      {# if the subsection.name value starts with "(#" #}
-                      {% if subsection.name|slice:":2" == "(#" %}
-                          <span class="text-base">{{ subsection.name }}</span>
-                      {% else %}
-                          {{ subsection.name|safe }}
-                      {% endif %}
-                    </th>
-                    <td>
-                      {{ subsection.status }}
-                    </td>
-                    <td>
-                      <div class="diff">
-                        {% if not subsection.diff %}
-                          <span class="text-base text-italic">No change</span>
-                        {% elif subsection.status == 'ADD' %}
-                          <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                        {% elif  subsection.status == 'DELETE' %}
-                          <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                        {% elif subsection.status == 'UPDATE' %}
-                          {{ subsection.diff|safe|linebreaks }}
-                        {% endif %}
-                      </div>
-                    </td>
-                  </tr>
-                {% endif %}
-              {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
-        {% endfor %}
-      {% endif %}
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+    {% endif %}
 
     <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
     <ul class="usa-button-group margin-top-3">
