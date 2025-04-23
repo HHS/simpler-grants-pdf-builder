@@ -11,7 +11,7 @@ from .models import Nofo
 @dataclass
 class SubsectionDiff:
     name: str
-    status: str
+    status: str  # "MATCH", "UPDATE", "ADD", "DELETE"
     old_value: Optional[str] = ""
     new_value: Optional[str] = ""
     diff: Optional[str] = None
@@ -76,76 +76,71 @@ def get_subsection_name_or_order(subsection):
     return subsection.name or "(#{})".format(subsection.order)
 
 
-def add_content_guide_comparison_metadata(result, subsection):
+def add_content_guide_comparison_metadata(
+    result: SubsectionDiff, subsection
+) -> SubsectionDiff:
     """
     Adds comparison_type and diff_strings to the result dict if present on the subsection.
     Returns a new dict with those keys added if applicable.
     """
     if hasattr(subsection, "comparison_type"):
-        result["comparison_type"] = subsection.comparison_type
-        result["diff_strings"] = subsection.diff_strings or []
+        result.comparison_type = subsection.comparison_type or "body"
+        result.diff_strings = subsection.diff_strings or []
     return result
 
 
 def result_match(original_subsection):
-    result = {
-        "name": get_subsection_name_or_order(original_subsection),
-        "status": "MATCH",
-        "old_value": original_subsection.body,
-        "new_value": original_subsection.body,
-        "diff": "",  # no changes,
-    }
-
+    result = SubsectionDiff(
+        name=get_subsection_name_or_order(original_subsection),
+        status="MATCH",
+        old_value=original_subsection.body,
+        new_value=original_subsection.body,
+        diff="",  # explicitly setting for template compatibility
+    )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
 
 def result_update(original_subsection, new_subsection):
-    result = {
-        "name": get_subsection_name_or_order(original_subsection),
-        "status": "UPDATE",
-        "old_value": original_subsection.body,
-        "new_value": new_subsection.body,
-        "diff": html_diff(original_subsection.body, new_subsection.body) or "",
-    }
-
+    result = SubsectionDiff(
+        name=get_subsection_name_or_order(original_subsection),
+        status="UPDATE",
+        old_value=original_subsection.body,
+        new_value=new_subsection.body,
+        diff=html_diff(original_subsection.body, new_subsection.body) or "",
+    )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
 
-def result_merged_update(name, old_value, new_value, old_sub_dict=None):
-    result = {
-        "name": name,
-        "status": "UPDATE",
-        "old_value": old_value,
-        "new_value": new_value,
-        "diff": html_diff(old_value, new_value),
-    }
-
-    if old_sub_dict.get("comparison_type", None):
-        result["comparison_type"] = old_sub_dict.get("comparison_type")
-        result["diff_strings"] = old_sub_dict.get("diff_strings", [])
-
-    return result
+def result_merged_update(name, old_value, new_value, old_sub):
+    return SubsectionDiff(
+        name=name,
+        status="UPDATE",
+        old_value=old_value,
+        new_value=new_value,
+        diff=html_diff(old_value, new_value),
+        comparison_type=old_sub.comparison_type,
+        diff_strings=old_sub.diff_strings or [],
+    )
 
 
 def result_add(new_subsection):
-    return {
-        "name": get_subsection_name_or_order(new_subsection),
-        "status": "ADD",
-        "old_value": "",
-        "new_value": new_subsection.body,
-        "diff": html_diff("", new_subsection.body) or "",
-    }
+    return SubsectionDiff(
+        name=get_subsection_name_or_order(new_subsection),
+        status="ADD",
+        old_value="",
+        new_value=new_subsection.body,
+        diff=html_diff("", new_subsection.body) or "",
+    )
 
 
 def result_delete(original_subsection):
-    result = {
-        "name": html_diff(get_subsection_name_or_order(original_subsection), ""),
-        "status": "DELETE",
-        "old_value": original_subsection.body,
-        "new_value": "",
-        "diff": html_diff(original_subsection.body, "") or "",
-    }
-
+    result = SubsectionDiff(
+        name=html_diff(get_subsection_name_or_order(original_subsection), ""),
+        status="DELETE",
+        old_value=original_subsection.body,
+        new_value="",
+        diff=html_diff(original_subsection.body, "") or "",
+    )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
 
@@ -220,7 +215,9 @@ def compare_sections(old_section, new_section):
     }
 
 
-def merge_renamed_subsections(subsections):
+def merge_renamed_subsections(
+    subsections: list[SubsectionDiff],
+) -> list[SubsectionDiff]:
     """
     Detects ADD + DELETE pairs in a section that are likely renames and merges them into an UPDATE.
     This improves diff quality when only a subsection title has changed (and body remains the same or similar).
@@ -232,11 +229,11 @@ def merge_renamed_subsections(subsections):
         current = subsections[i]
         next_item = subsections[i + 1] if i + 1 < len(subsections) else None
 
-        if current["status"] == "ADD" and next_item and next_item["status"] == "DELETE":
-            new_body = current["new_value"].strip()
-            old_body = next_item["old_value"].strip()
-            new_name = current["name"]
-            old_name = next_item["name"].replace("<del>", "").replace("</del>", "")
+        if current.status == "ADD" and next_item and next_item.status == "DELETE":
+            new_body = (current.new_value or "").strip()
+            old_body = (next_item.old_value or "").strip()
+            new_name = current.name
+            old_name = re.sub(r"<.*?>", "", next_item.name)  # strip <del> tags
 
             heading_diff = html_diff(old_name, new_name)
 
@@ -252,7 +249,7 @@ def merge_renamed_subsections(subsections):
                         name=heading_diff or new_name,
                         old_value=old_body,
                         new_value=new_body,
-                        old_sub_dict=next_item,
+                        old_sub=next_item,
                     )
                 )
                 i += 2
@@ -265,53 +262,52 @@ def merge_renamed_subsections(subsections):
     return merged
 
 
-def apply_comparison_types(subsections):
+def apply_comparison_types(subsections: list[SubsectionDiff]) -> list[SubsectionDiff]:
     def normalize(text):
         return re.sub(r"\s+", " ", text.strip()).lower()
 
-    def name_modified(item):
-        return "<del>" in item.get("name", "") or "<ins>" in item.get("name", "")
+    def name_modified(item: SubsectionDiff):
+        return "<del>" in item.name or "<ins>" in item.name
 
     results = []
     for item in subsections:
-        comparison_type = item.get("comparison_type")
+        comparison_type = item.comparison_type
 
         if comparison_type == "none":
             continue
 
-        if not comparison_type or item["status"] in ["ADD", "MATCH"]:
+        if not comparison_type or item.status in ["ADD", "MATCH"]:
             results.append(item)
             continue
 
-        if item["status"] == "DELETE":
+        if item.status == "DELETE":
             if comparison_type == "name":
-                item["diff"] = "—"
+                item.diff = "—"
 
             elif comparison_type == "diff_strings":
-                item["diff"] = "<ul>"
-                for s in item.get("diff_strings", []):
-                    item["diff"] += "<li><del>{}</del></li>".format(escape(s))
-                item["diff"] += "</ul>"
+                item.diff = "<ul>"
+                for s in item.diff_strings:
+                    item.diff += f"<li><del>{escape(s)}</del></li>"
+                item.diff += "</ul>"
 
             results.append(item)
             continue
 
-        if item["status"] == "UPDATE":
+        if item.status == "UPDATE":
             if comparison_type == "name":
                 if not name_modified(item):
-                    item["status"] = "MATCH"
-
-                item["diff"] = "—"
+                    item.status = "MATCH"
+                item.diff = "—"
 
             elif comparison_type == "diff_strings":
                 diff_strings_not_matched = []
-                normalized_body = normalize(item["new_value"])
-                for s in item.get("diff_strings", []):
+                normalized_body = normalize(item.new_value or "")
+                for s in item.diff_strings:
                     if normalize(s) not in normalized_body:
                         diff_strings_not_matched.append(s)
 
                 if diff_strings_not_matched:
-                    item["diff"] = "<ul>{}</ul>".format(
+                    item.diff = "<ul>{}</ul>".format(
                         "".join(
                             f"<li><del>{escape(s)}</del></li>"
                             for s in diff_strings_not_matched
@@ -319,9 +315,9 @@ def apply_comparison_types(subsections):
                     )
                 else:
                     if not name_modified(item):
-                        item["status"] = "MATCH"
+                        item.status = "MATCH"
 
-                    item["diff"] = "—"
+                    item.diff = "—"
 
             # default case, do nothing
             # elif comparison_type == "body":
@@ -335,15 +331,14 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
     """
     Removes any comparison items (subsections or metadata rows) with statuses in `statuses_to_ignore`.
 
-    If the comparison is section-based (i.e., each item has a `subsections` key),
-    it will remove matching subsections and discard empty sections.
+    - If the comparison is section-based (i.e., each item is a dict with a 'subsections' list),
+      it will filter the subsections and discard sections that become empty.
 
-    If the comparison is flat (metadata-style), it will directly filter the list.
+    - If the comparison is flat (i.e., a list of SubsectionDiffs), it will directly filter the list.
     """
     if not statuses_to_ignore:
         return comparison
 
-    # Check if it's section-based (compare_nofos)
     if (
         comparison
         and isinstance(comparison[0], dict)
@@ -352,15 +347,13 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
         filtered = []
         for section in comparison:
             subsections = [
-                s
-                for s in section["subsections"]
-                if s["status"] not in statuses_to_ignore
+                s for s in section["subsections"] if s.status not in statuses_to_ignore
             ]
             if subsections:
                 filtered.append({**section, "subsections": subsections})
         return filtered
 
-    # Flat metadata-style comparison (compare_nofos_metadata)
+    # Flat list metadata comparison (compare_nofos_metadata)
     return [item for item in comparison if item.status not in statuses_to_ignore]
 
 
@@ -368,20 +361,22 @@ def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):
     """
     Compares sections and subsections between an existing NOFO and a newly uploaded one.
 
-    - Identifies matched, added, and deleted subsections.
-    - Preserves order based on the new NOFO’s structure.
-    - If a matched subsection has different content, marks it as updated.
+    - Compares subsections within each section by name and position.
+    - Marks each subsection as "MATCH", "UPDATE", "ADD", or "DELETE".
+    - Applies additional rules to detect renamed subsections and diff string requirements.
+    - Respects comparison_type and diff_strings if present on ContentGuideSubsections.
+
+    Args:
+        old_nofo: The existing NOFO instance.
+        new_nofo: The new NOFO instance being compared.
+        statuses_to_ignore (list[str], optional): Subsection statuses to exclude from the result (e.g. ["MATCH"]).
 
     Returns:
-        list[dict]: A structured list of subsection diff objects, in this format:
-
-        {
-            "name": str,   # The name of the subsection
-            "status": str,  # One of "MATCH", "UPDATE", "ADD", or "DELETE"
-            "old_value": str,  # The body content of the old subsection (if applicable)
-            "new_value": str,  # The body content of the new subsection (if applicable)
-            "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
-        }
+        list[dict]: A list of sections with structural diffs, each in the format:
+            {
+                "name": str,  # Section name
+                "subsections": list[SubsectionDiff]  # Comparison results per subsection
+            }
     """
 
     nofo_comparison = []
