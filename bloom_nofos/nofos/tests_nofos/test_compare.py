@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from ..models import Nofo, Section, Subsection
 from ..nofo_compare import (
+    SubsectionDiff,
     apply_comparison_types,
     compare_nofos,
     compare_nofos_metadata,
@@ -57,123 +58,124 @@ class TestHtmlDiff(TestCase):
 
 class MergeRenamedSubsectionsTests(TestCase):
     def test_exact_body_match_renamed_title(self):
+
         input_data = [
-            {
-                "status": "ADD",
-                "name": "Overview",
-                "old_value": "",
-                "new_value": "This is some content.",
-            },
-            {
-                "status": "DELETE",
-                "name": "Summary",
-                "old_value": "This is some content.",
-                "new_value": "",
-            },
+            SubsectionDiff(
+                name="Overview",
+                status="ADD",
+                old_value="",
+                new_value="This is some content.",
+            ),
+            SubsectionDiff(
+                name="Summary",
+                status="DELETE",
+                old_value="This is some content.",
+                new_value="",
+            ),
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["status"], "UPDATE")
-        self.assertIn("<ins>Overview</ins>", result[0]["name"])
-        self.assertIn("<del>Summary</del>", result[0]["name"])
-        self.assertEqual(result[0]["diff"], None)
+        self.assertEqual(result[0].status, "UPDATE")
+        self.assertIn("<ins>Overview</ins>", result[0].name)
+        self.assertIn("<del>Summary</del>", result[0].name)
+        self.assertEqual(result[0].diff, None)
 
     def test_renamed_title_and_changed_body(self):
         input_data = [
-            {
-                "status": "DELETE",
-                "name": "Overview",
-                "old_value": "Old content.",
-                "new_value": "",
-            },
-            {
-                "status": "ADD",
-                "name": "Summary",
-                "old_value": "",
-                "new_value": "New content.",
-            },
+            SubsectionDiff(
+                name="Summary",
+                status="ADD",
+                old_value="",
+                new_value="New content.",
+            ),
+            SubsectionDiff(
+                name="Overview",
+                status="DELETE",
+                old_value="Old content.",
+                new_value="",
+            ),
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 2)
-        self.assertEqual(result[0]["status"], "DELETE")
-        self.assertEqual(result[1]["status"], "ADD")
+        self.assertEqual(result[0].status, "ADD")
+        self.assertEqual(result[1].status, "DELETE")
 
     def test_completely_different_title_and_body(self):
         input_data = [
-            {
-                "status": "DELETE",
-                "name": "Overview",
-                "old_value": "Old content.",
-                "new_value": "",
-            },
-            {
-                "status": "ADD",
-                "name": "Eligibility",
-                "old_value": "",
-                "new_value": "Completely new content.",
-            },
+            SubsectionDiff(
+                name="Eligibility",
+                status="ADD",
+                old_value="",
+                new_value="Totally new stuff.",
+            ),
+            SubsectionDiff(
+                name="Overview",
+                status="DELETE",
+                old_value="Old content.",
+                new_value="",
+            ),
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 2)
-        self.assertEqual(result[0]["status"], "DELETE")
-        self.assertEqual(result[1]["status"], "ADD")
+        self.assertEqual(result[0].status, "ADD")
+        self.assertEqual(result[1].status, "DELETE")
 
     def test_minimal_shared_heading(self):
         input_data = [
-            {
-                "status": "ADD",
-                "name": "a b",
-                "old_value": "",
-                "new_value": "hello world",
-            },
-            {
-                "status": "DELETE",
-                "name": "a",
-                "old_value": "hello",
-                "new_value": "",
-            },
+            SubsectionDiff(
+                name="a b",
+                status="ADD",
+                old_value="",
+                new_value="Groundhog Day",
+            ),
+            SubsectionDiff(
+                name="a",
+                status="DELETE",
+                old_value="Groundhog",
+                new_value="",
+            ),
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["status"], "UPDATE")
-        self.assertIn("<ins> b</ins>", result[0]["name"])
-        self.assertEqual(result[0]["diff"], "hello<ins> world</ins>")
+        self.assertEqual(result[0].status, "UPDATE")
+        self.assertIn("<ins> b</ins>", result[0].name)
+        self.assertEqual(result[0].diff, "Groundhog<ins> Day</ins>")
 
 
 class FilterComparisonByStatusTests(TestCase):
     def test_returns_unchanged_when_no_statuses_to_ignore(self):
-        data = [{"name": "X", "status": "MATCH"}]
+        data = [SubsectionDiff(name="A", status="MATCH")]
         result = filter_comparison_by_status(data, statuses_to_ignore=[])
         self.assertEqual(result, data)
 
     def test_flat_comparison_filters_match(self):
         data = [
-            {"name": "A", "status": "MATCH"},
-            {"name": "B", "status": "ADD"},
-            {"name": "C", "status": "UPDATE"},
+            SubsectionDiff(name="A", status="MATCH"),
+            SubsectionDiff(name="B", status="ADD"),
+            SubsectionDiff(name="C", status="UPDATE"),
         ]
         result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
         self.assertEqual(
             result,
             [
-                {"name": "B", "status": "ADD"},
-                {"name": "C", "status": "UPDATE"},
+                SubsectionDiff(name="B", status="ADD"),
+                SubsectionDiff(name="C", status="UPDATE"),
             ],
         )
 
     def test_flat_comparison_filters_multiple(self):
         data = [
-            {"name": "A", "status": "MATCH"},
-            {"name": "B", "status": "ADD"},
-            {"name": "C", "status": "UPDATE"},
+            SubsectionDiff(name="A", status="MATCH"),
+            SubsectionDiff(name="B", status="ADD"),
+            SubsectionDiff(name="C", status="UPDATE"),
         ]
         result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH", "ADD"])
-        self.assertEqual(result, [{"name": "C", "status": "UPDATE"}])
+        self.assertEqual(result, [SubsectionDiff(name="C", status="UPDATE")])
 
     def test_flat_comparison_all_filtered(self):
         data = [
-            {"name": "A", "status": "MATCH"},
-            {"name": "B", "status": "MATCH"},
+            SubsectionDiff(name="A", status="MATCH"),
+            SubsectionDiff(name="B", status="MATCH"),
         ]
         result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
         self.assertEqual(result, [])
@@ -183,15 +185,15 @@ class FilterComparisonByStatusTests(TestCase):
             {
                 "name": "Section 1",
                 "subsections": [
-                    {"name": "A", "status": "MATCH"},
-                    {"name": "B", "status": "ADD"},
+                    SubsectionDiff(name="A", status="MATCH"),
+                    SubsectionDiff(name="B", status="ADD"),
                 ],
             },
             {
                 "name": "Section 2",
                 "subsections": [
-                    {"name": "C", "status": "MATCH"},
-                    {"name": "D", "status": "UPDATE"},
+                    SubsectionDiff(name="C", status="MATCH"),
+                    SubsectionDiff(name="D", status="UPDATE"),
                 ],
             },
         ]
@@ -201,11 +203,11 @@ class FilterComparisonByStatusTests(TestCase):
             [
                 {
                     "name": "Section 1",
-                    "subsections": [{"name": "B", "status": "ADD"}],
+                    "subsections": [SubsectionDiff(name="B", status="ADD")],
                 },
                 {
                     "name": "Section 2",
-                    "subsections": [{"name": "D", "status": "UPDATE"}],
+                    "subsections": [SubsectionDiff(name="D", status="UPDATE")],
                 },
             ],
         )
@@ -214,17 +216,22 @@ class FilterComparisonByStatusTests(TestCase):
         data = [
             {
                 "name": "Section 1",
-                "subsections": [{"name": "A", "status": "MATCH"}],
+                "subsections": [SubsectionDiff(name="A", status="MATCH")],
             },
             {
                 "name": "Section 2",
-                "subsections": [{"name": "B", "status": "ADD"}],
+                "subsections": [SubsectionDiff(name="B", status="ADD")],
             },
         ]
         result = filter_comparison_by_status(data, statuses_to_ignore=["MATCH"])
         self.assertEqual(
             result,
-            [{"name": "Section 2", "subsections": [{"name": "B", "status": "ADD"}]}],
+            [
+                {
+                    "name": "Section 2",
+                    "subsections": [SubsectionDiff(name="B", status="ADD")],
+                }
+            ],
         )
 
     def test_section_based_keeps_empty_sections_if_no_array_provided(self):
@@ -270,78 +277,99 @@ class TestApplyComparisonTypes(TestCase):
         for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
             with self.subTest(status=status):
                 items = [
-                    {"status": status, "comparison_type": "none", "diff": "old diff"}
+                    SubsectionDiff(
+                        name="", status=status, comparison_type="none", diff="old diff"
+                    )
                 ]
                 result = apply_comparison_types(items)
-                self.assertEqual(result, [], "Failed for status={}".format(status))
+                self.assertEqual(result, [], f"Failed for status={status}")
 
     def test_missing_comparison_type_appends_all_statuses(self):
-        item = {"status": "UPDATE", "name": "Something", "diff": "old diff"}
+        # Single test for "UPDATE" without comparison_type
+        item = SubsectionDiff(status="UPDATE", name="Something", diff="old diff")
         self.assertEqual(apply_comparison_types([item])[0], item)
 
         for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
             with self.subTest(status=status):
-                item = {"status": status, "name": "Something", "diff": "old diff"}
+                item = SubsectionDiff(status=status, name="Something", diff="old diff")
                 original_item = deepcopy(item)
 
                 result = apply_comparison_types([item])
                 self.assertEqual(
-                    result[0], original_item, "Failed for status={}".format(status)
+                    result[0], original_item, f"Failed for status={status}"
                 )
 
     # ADD can't have comparison types
     def test_add_status_untouched(self):
-        item = {"status": "ADD", "diff": "old diff", "comparison_type": "name"}
+        item = SubsectionDiff(
+            name="", status="ADD", comparison_type="name", diff="old diff"
+        )
+
         self.assertIn(item, apply_comparison_types([item]))
 
     def test_delete_status_comparison_type_name(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "name",
-            "diff_strings": ["one", "two", "three"],
-        }
+        item = SubsectionDiff(
+            name="",
+            status="DELETE",
+            comparison_type="name",
+            diff="old diff",
+            diff_strings=["one", "two", "three"],
+        )
+
         original_item = deepcopy(item)
 
         result = apply_comparison_types([item])
-        original_item["diff"] = "—"
+        original_item.diff = "—"
         self.assertEqual(result[0], original_item)
 
     def test_delete_status_comparison_type_body(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "body",
-            "diff_strings": ["one", "two", "three"],
-        }
+        item = SubsectionDiff(
+            name="",
+            status="DELETE",
+            comparison_type="body",
+            diff="old diff",
+            diff_strings=["one", "two", "three"],
+        )
         original_item = deepcopy(item)
 
         result = apply_comparison_types([item])
         self.assertEqual(result[0], original_item)
 
     def test_delete_status_comparison_type_diff_strings(self):
-        item = {
-            "status": "DELETE",
-            "diff": "old diff",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["one", "two", "three"],
-        }
+        item = SubsectionDiff(
+            name="",
+            status="DELETE",
+            comparison_type="diff_strings",
+            diff="old diff",
+            diff_strings=["one", "two", "three"],
+        )
         original_item = deepcopy(item)
 
         result = apply_comparison_types([item])
-        original_item["diff"] = (
-            "<ul><li><del>one</del></li><li><del>two</del></li><li><del>three</del></li></ul>"
-        )
+        original_item.diff = "<ul><li><del>one</del></li><li><del>two</del></li><li><del>three</del></li></ul>"
         self.assertEqual(result[0], original_item)
+
+    def test_none_comparison_type_skips_all_statuses(self):
+        for status in ["UPDATE", "MATCH", "ADD", "DELETE"]:
+            with self.subTest(status=status):
+                items = [
+                    SubsectionDiff(
+                        name="", status=status, comparison_type="none", diff="old diff"
+                    )
+                ]
+                result = apply_comparison_types(items)
+                self.assertEqual(result, [], f"Failed for status={status}")
 
     def test_match_status_untouched_for_all_comparison_types(self):
         for comparison_type in ["name", "body", "diff_strings"]:
             with self.subTest(comparison_type=comparison_type):
-                item = {
-                    "status": "MATCH",
-                    "comparison_type": comparison_type,
-                    "diff": "old diff",
-                }
+                item = SubsectionDiff(
+                    name="",
+                    status="MATCH",
+                    comparison_type=comparison_type,
+                    diff="old diff",
+                )
+
                 original_item = deepcopy(item)
 
                 result = apply_comparison_types([item])
@@ -352,63 +380,65 @@ class TestApplyComparisonTypes(TestCase):
                 )
 
     def test_update_name_diff_present(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "name",
-            "name": "<del>Foo</del><ins>Bar</ins>",
-            "diff": "old diff",
-        }
+        item = SubsectionDiff(
+            status="UPDATE",
+            comparison_type="name",
+            name="<del>Foo</del><ins>Bar</ins>",
+            diff="old diff",
+        )
         result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertEqual(result["diff"], "—")
+        self.assertEqual(result.status, "UPDATE")
+        self.assertEqual(result.diff, "—")
 
     def test_update_name_no_diff_becomes_match(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "name",
-            "name": "Section Title",
-            "diff": "old diff",
-        }
+        item = SubsectionDiff(
+            status="UPDATE",
+            comparison_type="name",
+            name="Section Title",
+            diff="old diff",
+        )
         result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "MATCH")
-        self.assertEqual(result["diff"], "—")
+        self.assertEqual(result.status, "MATCH")
+        self.assertEqual(result.diff, "—")
 
     def test_update_diff_strings_match_all(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "program"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
+        item = SubsectionDiff(
+            name="",
+            status="UPDATE",
+            comparison_type="diff_strings",
+            diff_strings=["data", "program"],
+            new_value="This data program is working.",
+            diff="old diff",
+        )
         result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "MATCH")
-        self.assertEqual(result["diff"], "—")
+        self.assertEqual(result.status, "MATCH")
+        self.assertEqual(result.diff, "—")
 
     def test_update_diff_strings_some_missing(self):
-        item = {
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "banana"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
+        item = SubsectionDiff(
+            name="",
+            status="UPDATE",
+            comparison_type="diff_strings",
+            diff_strings=["data", "banana"],
+            new_value="This data program is working.",
+            diff="old diff",
+        )
         result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertIn("<del>banana</del>", result["diff"])
+        self.assertEqual(result.status, "UPDATE")
+        self.assertIn("<del>banana</del>", result.diff)
 
     def test_update_diff_strings_match_all_but_name_modified(self):
-        item = {
-            "name": "The <ins>New</ins> Program",
-            "status": "UPDATE",
-            "comparison_type": "diff_strings",
-            "diff_strings": ["data", "program"],
-            "new_value": "This data program is working.",
-            "diff": "old diff",
-        }
+        item = SubsectionDiff(
+            name="The <ins>New</ins> Program",
+            status="UPDATE",
+            comparison_type="diff_strings",
+            diff_strings=["data", "program"],
+            new_value="This data program is working.",
+            diff="old diff",
+        )
         result = apply_comparison_types([item])[0]
-        self.assertEqual(result["status"], "UPDATE")
-        self.assertEqual(result["diff"], "—")
+        self.assertEqual(result.status, "UPDATE")
+        self.assertEqual(result.diff, "—")
 
 
 class TestCompareNofos(TestCase):
@@ -538,7 +568,7 @@ class TestCompareNofos(TestCase):
 
     def test_compare_nofos(self):
         """
-        Tests the compare_nofos function, ensuring it correctly identifies matches, updates, additions, and deletions.
+        Tests the compare_nofos function, ensuring it correctly identifies matches, updates, additions, deletions, and merges.
         """
         result = compare_nofos(self.old_nofo, self.new_nofo)
 
@@ -551,71 +581,71 @@ class TestCompareNofos(TestCase):
 
         # Match test
         subsection_match = subsections[0]
-        self.assertEqual(subsection_match["status"], "MATCH")
-        self.assertEqual(subsection_match["name"], "Budget Requirements")
-        self.assertEqual(subsection_match["old_value"], "Budget must not exceed $100K.")
-        self.assertEqual(subsection_match["new_value"], "Budget must not exceed $100K.")
+        self.assertEqual(subsection_match.status, "MATCH")
+        self.assertEqual(subsection_match.name, "Budget Requirements")
+        self.assertEqual(subsection_match.old_value, "Budget must not exceed $100K.")
+        self.assertEqual(subsection_match.new_value, "Budget must not exceed $100K.")
 
         # Update test (unnamed subsection)
         subsection_update = subsections[1]
-        self.assertEqual(subsection_update["status"], "UPDATE")
-        self.assertEqual(subsection_update["name"], "(#2)")
+        self.assertEqual(subsection_update.status, "UPDATE")
+        self.assertEqual(subsection_update.name, "(#2)")
         self.assertEqual(
-            subsection_update["old_value"], "Need help? Visit contacts and support"
+            subsection_update.old_value, "Need help? Visit contacts and support"
         )
-        self.assertEqual(subsection_update["new_value"], "Go to 'Contacts and Support")
+        self.assertEqual(subsection_update.new_value, "Go to 'Contacts and Support")
         self.assertIn(
             "<del>Need</del><ins>Go</ins> <del>help?</del><ins>to</ins> <del>Visit contacts</del><ins>'Contacts</ins> and <del>support</del><ins>Support</ins>",
-            subsection_update["diff"],
+            subsection_update.diff,
         )
 
         # Update test 2 (regular subsection)
-        subsection_update = subsections[2]
-        self.assertEqual(subsection_update["status"], "UPDATE")
-        self.assertEqual(subsection_update["name"], "Application Process")
-        self.assertEqual(subsection_update["old_value"], "Submit before Jan 1.")
-        self.assertEqual(subsection_update["new_value"], "Submit before Feb 1.")
+        subsection_update_2 = subsections[2]
+        self.assertEqual(subsection_update_2.status, "UPDATE")
+        self.assertEqual(subsection_update_2.name, "Application Process")
+        self.assertEqual(subsection_update_2.old_value, "Submit before Jan 1.")
+        self.assertEqual(subsection_update_2.new_value, "Submit before Feb 1.")
         self.assertIn(
-            "Submit before <del>Jan</del><ins>Feb</ins> 1.", subsection_update["diff"]
+            "Submit before <del>Jan</del><ins>Feb</ins> 1.", subsection_update_2.diff
         )
 
         # Addition test
         subsection_add = subsections[3]
-        self.assertEqual(subsection_add["status"], "ADD")
-        self.assertEqual(subsection_add["name"], "New NOFO Funding Guidelines")
-        self.assertEqual(subsection_add["old_value"], "")
-        self.assertEqual(subsection_add["new_value"], "Follow these new rules.")
+        self.assertEqual(subsection_add.status, "ADD")
+        self.assertEqual(subsection_add.name, "New NOFO Funding Guidelines")
+        self.assertEqual(subsection_add.old_value, "")
+        self.assertEqual(subsection_add.new_value, "Follow these new rules.")
 
         # Second match test
         subsection_match_2 = subsections[4]
-        self.assertEqual(subsection_match_2["status"], "MATCH")
-        self.assertEqual(subsection_match_2["name"], "Permitting rules")
+        self.assertEqual(subsection_match_2.status, "MATCH")
+        self.assertEqual(subsection_match_2.name, "Permitting rules")
         self.assertEqual(
-            subsection_match_2["old_value"], "Of course permits must be obtained."
+            subsection_match_2.old_value, "Of course permits must be obtained."
         )
         self.assertEqual(
-            subsection_match_2["new_value"], "Of course permits must be obtained."
+            subsection_match_2.new_value, "Of course permits must be obtained."
         )
 
         # Deletion test
         subsection_delete = subsections[5]
-        self.assertEqual(
-            subsection_delete["name"], "<del>Old NOFO Fee Requirements</del>"
-        )
-        self.assertEqual(subsection_delete["old_value"], "Processing fee is $50.")
-        self.assertEqual(subsection_delete["new_value"], "")
-        self.assertIn("<del>Processing fee is $50.</del>", subsection_delete["diff"])
+        self.assertEqual(subsection_delete.status, "DELETE")
+        self.assertEqual(subsection_delete.name, "<del>Old NOFO Fee Requirements</del>")
+        self.assertEqual(subsection_delete.old_value, "Processing fee is $50.")
+        self.assertEqual(subsection_delete.new_value, "")
+        self.assertIn("<del>Processing fee is $50.</del>", subsection_delete.diff)
 
-        # Deletion test
+        # Merged update test (renamed + updated content)
         subsection_merge = subsections[6]
-        self.assertEqual(subsection_merge["name"], "<ins>Visit </ins>SAM.gov")
-        self.assertEqual(subsection_merge["old_value"], "Visit the website to sign up.")
+        self.assertEqual(subsection_merge.status, "UPDATE")
+        self.assertEqual(subsection_merge.name, "<ins>Visit </ins>SAM.gov")
+        self.assertEqual(subsection_merge.old_value, "Visit the website to sign up.")
         self.assertEqual(
-            subsection_merge["new_value"], "This is the website where you can sign up."
+            subsection_merge.new_value, "This is the website where you can sign up."
         )
         self.assertIn(
             "<del>Visit</del><ins>This is</ins> the website <del>to</del><ins>where you can</ins> sign up.",
-            subsection_merge["diff"],
+            subsection_merge.diff,
         )
 
 
