@@ -17,6 +17,10 @@ Versioning since version 1.0.0.
 
 - Editing a content guide name from the nofo_edit page works better
 - Show HTML table classnames on nofo_edit page and martor preview
+- Don't show ADDs on Content Guide compare screen
+- Don't show red lines on Content Guide compare screen
+- "nofo_compare" function accepts a list of statuses to exclude
+  - for example, we don't want to show the matches on the diff page
 
 ### Fixed
 
