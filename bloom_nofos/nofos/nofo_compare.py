@@ -1,9 +1,22 @@
 import re
 from difflib import SequenceMatcher
+from dataclasses import dataclass, field
+from typing import Optional, List
 
 from django.utils.html import escape
 
 from .models import Nofo
+
+
+@dataclass
+class SubsectionDiff:
+    name: str
+    status: str
+    old_value: Optional[str] = ""
+    new_value: Optional[str] = ""
+    diff: Optional[str] = None
+    comparison_type: str = "body"
+    diff_strings: List[str] = field(default_factory=list)
 
 
 def html_diff(original, new):
@@ -331,7 +344,11 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
         return comparison
 
     # Check if it's section-based (compare_nofos)
-    if comparison and "subsections" in comparison[0]:
+    if (
+        comparison
+        and isinstance(comparison[0], dict)
+        and "subsections" in comparison[0]
+    ):
         filtered = []
         for section in comparison:
             subsections = [
@@ -344,7 +361,7 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
         return filtered
 
     # Flat metadata-style comparison (compare_nofos_metadata)
-    return [item for item in comparison if item["status"] not in statuses_to_ignore]
+    return [item for item in comparison if item.status not in statuses_to_ignore]
 
 
 def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):
@@ -388,22 +405,22 @@ def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):
 
 def compare_nofos_metadata(old_nofo, new_nofo, statuses_to_ignore=[]):
     """
-    Compares metadata fields between an existing NOFO and a newly uploaded one.
+    Compares metadata fields between two NOFO objects (an existing one and a new one).
 
-    - Identifies added, deleted, and updated metadata fields.
-    - Returns a structured diff showing changes.
+    The result is a list of SubsectionDiff objects, which represent structured diffs
+    for each metadata field. Optional comparison-related fields (like comparison_type
+    and diff_strings) are available for downstream use but not populated here.
+
+    Args:
+        old_nofo: The original NOFO instance.
+        new_nofo: The updated NOFO instance being compared.
+        statuses_to_ignore (list[str], optional): A list of statuses to exclude from
+            the final result (e.g., ["MATCH"] to omit unchanged fields).
 
     Returns:
-        list[dict]: A structured list of subsection diff objects, in this format:
-
-        {
-            "name": str,   # The name of the attribute
-            "status": str,  # One of "MATCH", "UPDATE", "ADD", or "DELETE"
-            "value": str,  # The value of the new attribute (if applicable)
-            "diff": str (optional)  # An HTML-based diff string showing changes (only included if the content changed)
-        }
+        list[SubsectionDiff]: A filtered list of metadata diffs.
     """
-    nofo_metadata_comparison = []
+    comparison_results = []
 
     metadata_keys = [
         "title",
@@ -421,39 +438,38 @@ def compare_nofos_metadata(old_nofo, new_nofo, statuses_to_ignore=[]):
         new_value = getattr(new_nofo, key, "") or ""
 
         if key == "title":
-            # the comparison NOFO has this appended automatically, this is not a true change
             new_value = new_value.replace("(COMPARE) ", "")
 
         field_name = Nofo._meta.get_field(key).verbose_name
 
         if old_value != new_value:
-            if not old_value:  # Value was missing before, now added
+            if not old_value:
                 status = "ADD"
                 diff = html_diff("", new_value)
-            elif not new_value:  # Value was present before, now deleted
+            elif not new_value:
                 status = "DELETE"
                 diff = html_diff(old_value, "")
-            else:  # Value changed
+            else:
                 status = "UPDATE"
                 diff = html_diff(old_value, new_value)
 
-            nofo_metadata_comparison.append(
-                {
-                    "name": field_name,
-                    "status": status,
-                    "old_value": old_value,
-                    "new_value": new_value,
-                    "diff": diff,
-                }
+            comparison_results.append(
+                SubsectionDiff(
+                    name=field_name,
+                    status=status,
+                    old_value=old_value,
+                    new_value=new_value,
+                    diff=diff,
+                )
             )
         else:
-            nofo_metadata_comparison.append(
-                {
-                    "name": field_name,
-                    "status": "MATCH",
-                    "old_value": old_value,
-                    "new_value": new_value,
-                }
+            comparison_results.append(
+                SubsectionDiff(
+                    name=field_name,
+                    status="MATCH",
+                    old_value=old_value,
+                    new_value=new_value,
+                )
             )
 
-    return filter_comparison_by_status(nofo_metadata_comparison, statuses_to_ignore)
+    return filter_comparison_by_status(comparison_results, statuses_to_ignore)
