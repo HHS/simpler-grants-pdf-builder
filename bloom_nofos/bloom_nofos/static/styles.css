@@ -1240,6 +1240,10 @@ del {
   background-color: #ffebe9;
 }
 
+.nofo_compare--content-guide del {
+  text-decoration: none;
+}
+
 ins {
   background-color: #aceebb;
 }
