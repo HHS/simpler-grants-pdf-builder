@@ -40,7 +40,9 @@
         <tr>
           <th scope="row">{{ match.section.name }}</th>
           <td>
+            <a class="usa-link usa-link--external" href={% url "nofos:subsection_edit" nofo.id match.section.id match.subsection_id %}>
             {{ match.subsection_name }}
+            </a>
           </td>
           <td>
             {{ match.highlighted_body|safe|linebreaksbr }}
