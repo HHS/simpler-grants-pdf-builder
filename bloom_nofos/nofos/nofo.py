@@ -2382,3 +2382,32 @@ def modifications_update_announcement_text(nofo):
             if updated_body != subsection.body:
                 subsection.body = updated_body
                 subsection.save()
+
+
+def find_subsections_with_nofo_field_value(nofo, field_name):
+    import re
+
+    value = getattr(nofo, field_name, None)
+    if not value:
+        return []
+
+    matches = []
+    pattern = re.compile(re.escape(value), re.IGNORECASE)
+
+    for section in nofo.sections.prefetch_related("subsections").all():
+        for subsection in section.subsections.all():
+            if pattern.search(subsection.body):
+                highlighted = pattern.sub(
+                    lambda m: f"<mark>{m.group(0)}</mark>", subsection.body
+                )
+                matches.append(
+                    {
+                        "subsection_id": subsection.id,
+                        "subsection_name": subsection.name or "(No name)",
+                        "highlighted_body": highlighted,
+                        "body": subsection.body,
+                        "section": subsection.section,
+                    }
+                )
+
+    return matches
