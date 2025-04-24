@@ -38,6 +38,7 @@ from .nofo import (
     find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
+    find_subsections_with_nofo_field_value,
     get_cover_image,
     get_sections_from_soup,
     get_step_2_section,
@@ -6645,3 +6646,74 @@ class UpdateAnnouncementTextTests(TestCase):
 
         self.assertEqual(self.subsection1.body, "Announcement version: Modified")
         self.assertEqual(self.subsection2.body, "Announcement type: Modified")
+
+
+class FindSubsectionsWithFieldValueTests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", opdiv="AHA", application_deadline="July 15, 2025"
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Important Dates", order=1
+        )
+
+        self.matching_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Deadline Details",
+            order=1,
+            tag="h3",
+            body="All applications are due by July 15, 2025. Late submissions will not be accepted.",
+        )
+
+        self.non_matching_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Other Info",
+            order=2,
+            tag="h3",
+            body="This section does not mention any deadlines.",
+        )
+
+    def test_returns_match_with_highlight(self):
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>July 15, 2025</mark>", match["highlighted_body"])
+        self.assertIn("Deadline Details", match["subsection_name"])
+        self.assertEqual(self.section, match["section"])
+        self.assertEqual(1, match["subsection_id"])
+        self.assertEqual(match["body"], self.matching_subsection.body)
+
+    def test_ignores_subsections_without_match(self):
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertNotIn("Other Info", [r["subsection_name"] for r in results])
+
+    def test_case_insensitive_matching(self):
+        self.matching_subsection.body = "all applications due by JULY 15, 2025"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertEqual(len(results), 1)
+        self.assertEqual(self.section, results[0]["section"])
+        self.assertEqual(1, results[0]["subsection_id"])
+        self.assertIn("<mark>JULY 15, 2025</mark>", results[0]["highlighted_body"])
+
+    def test_returns_empty_list_when_no_value(self):
+        self.nofo.application_deadline = ""
+        self.nofo.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertEqual(results, [])
+
+    def test_returns_empty_list_when_no_subsection_matches(self):
+        self.matching_subsection.body = "No dates mentioned here."
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertEqual(results, [])

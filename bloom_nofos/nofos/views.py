@@ -73,6 +73,7 @@ from .nofo import (
     find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_same_or_higher_heading_levels_consecutive,
+    find_subsections_with_nofo_field_value,
     get_cover_image,
     get_sections_from_soup,
     get_step_2_section,
@@ -839,6 +840,13 @@ class NofoEditGroupView(BaseNofoEditView):
 class NofoEditApplicationDeadlineView(BaseNofoEditView):
     form_class = NofoApplicationDeadlineForm
     template_name = "nofos/nofo_edit_application_deadline.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection_matches"] = find_subsections_with_nofo_field_value(
+            self.object, "application_deadline"
+        )
+        return context
 
 
 class NofoEditTaglineView(BaseNofoEditView):

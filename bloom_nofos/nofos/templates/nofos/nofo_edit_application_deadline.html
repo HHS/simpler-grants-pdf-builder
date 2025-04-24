@@ -20,4 +20,34 @@
 
     <button class="usa-button margin-top-3" type="submit">Save application deadline</button>
   </form>
+
+  {% if subsection_matches %}
+    <hr class="margin-top-4 margin-bottom-3">
+    <h2 class="h4">Application deadline found in {{ subsection_matches|length }} subsections</h2>
+    <table class="usa-table usa-table--borderless">
+      <caption>
+        Subsections containing: “{{ form.application_deadline.value }}”
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Section</th>
+          <th scope="col">Subsection</th>
+          <th scope="col">Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in subsection_matches %}
+        <tr>
+          <th scope="row">{{ match.section.name }}</th>
+          <td>
+            {{ match.subsection_name }}
+          </td>
+          <td>
+            {{ match.highlighted_body|safe|linebreaksbr }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
 {% endblock %}
