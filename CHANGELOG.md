@@ -12,6 +12,7 @@ Versioning since version 1.0.0.
 - Compare content guides
 - Delete a content guide
 - Use width classes for HTML tables on nofo_edit page
+- Add cover image for HHS-2025-IHS-ALZ-0002
 
 ### Changed
 
