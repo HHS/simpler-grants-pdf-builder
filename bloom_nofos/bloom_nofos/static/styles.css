@@ -1000,6 +1000,26 @@ main .back-link a::before,
   width: 16px;
 }
 
+/* Nofo edit properties pages */
+
+.edit__application-deadline form table h2 {
+  margin: 0;
+}
+
+.edit__application-deadline form table tr > th:first-of-type,
+.edit__application-deadline form table tr > td:first-of-type {
+  padding-left: 0;
+}
+
+.edit__application-deadline
+  form
+  table
+  tr
+  > td:first-of-type
+  .usa-checkbox__label {
+  margin-top: 0;
+}
+
 /* Subsection edit page */
 
 .subsection_edit blockquote {
