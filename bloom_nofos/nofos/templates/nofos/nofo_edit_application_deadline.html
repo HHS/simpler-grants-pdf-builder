@@ -23,8 +23,7 @@
     <button class="usa-button margin-top-3" type="submit">Save application deadline</button>
 
   {% if subsection_matches %}
-    <hr class="margin-top-4 margin-bottom-3">
-    <table class="usa-table usa-table--borderless">
+    <table class="usa-table usa-table--borderless margin-top-4">
       <caption>
         <h2 class="h4">{{ subsection_matches|length }} subsection{{ subsection_matches|length|pluralize }} found with “{{ form.application_deadline.value }}”</h2>
       </caption>
@@ -53,7 +52,7 @@
               </label>
             </div>
           </td>
-          <th scope="row">{{ match.section.name }}</th>
+          <td>{{ match.section.name }}</td>
           <td>
             <a class="usa-link usa-link--external" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection_id %}">
               {{ match.subsection_name }}
@@ -68,4 +67,49 @@
     </table>
   {% endif %}
   </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('nofo-application-deadline--form');
+      const button = form.querySelector('button[type="submit"]');
+      const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
+      const originalButtonText = button.textContent.trim();
+
+      if (checkboxes.length === 0) {
+        // No subsection matches, nothing to do
+        return;
+      }
+
+      function updateButtonText() {
+        const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
+        if (checkedCount === 0) {
+          button.textContent = originalButtonText;
+        } else if (checkedCount === 1) {
+          button.textContent = `${originalButtonText} + 1 subsection`;
+        } else {
+          button.textContent = `${originalButtonText} + ${checkedCount} subsections`;
+        }
+      }
+
+      function updateRowHighlight(checkbox) {
+        const row = checkbox.closest('tr');
+        const className = 'subsection--selected'
+        if (checkbox.checked) {
+          row.classList.add(className);
+        } else {
+          row.classList.remove(className);
+        }
+      }
+
+      // Attach listener to each checkbox
+      checkboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+          updateButtonText();
+          updateRowHighlight(checkbox);
+        });
+      });
+    });
+  </script>
 {% endblock %}
