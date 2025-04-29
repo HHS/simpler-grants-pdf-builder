@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from bs4 import BeautifulSoup
-from django.forms import ValidationError
 from django.test import TestCase
 from freezegun import freeze_time
 
@@ -55,6 +54,7 @@ from .nofo import (
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
+    replace_value_in_subsections,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
@@ -6717,3 +6717,75 @@ class FindSubsectionsWithFieldValueTests(TestCase):
             self.nofo, "application_deadline"
         )
         self.assertEqual(results, [])
+
+
+class ReplaceValueInSubsectionsTests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", opdiv="AHA", application_deadline="July 15, 2025"
+        )
+        self.section = Section.objects.create(nofo=self.nofo, name="Section A", order=1)
+
+        self.subsection_1 = Subsection.objects.create(
+            section=self.section,
+            name="Dates",
+            order=1,
+            tag="h3",
+            body="The application deadline is June 1, 2025.",
+        )
+
+        self.subsection_2 = Subsection.objects.create(
+            section=self.section,
+            name="Reminder",
+            order=2,
+            tag="h3",
+            body="Make sure you apply before JUNE 1, 2025!",
+        )
+
+        self.subsection_3 = Subsection.objects.create(
+            section=self.section,
+            name="Unrelated",
+            order=3,
+            tag="h3",
+            body="This subsection does not contain the target string.",
+        )
+
+    def test_case_insensitive_replace(self):
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id, self.subsection_2.id],
+            "June 1, 2025",
+            "August 1, 2025",
+        )
+
+        self.assertEqual(len(updated), 2)
+        self.subsection_1.refresh_from_db()
+        self.subsection_2.refresh_from_db()
+
+        self.assertIn("August 1, 2025", self.subsection_1.body)
+        self.assertIn("August 1, 2025", self.subsection_2.body)
+        self.assertNotIn("June 1, 2025", self.subsection_1.body)
+        self.assertNotIn("JUNE 1, 2025", self.subsection_2.body)
+
+    def test_unmatched_subsection_not_updated(self):
+        updated = replace_value_in_subsections(
+            [self.subsection_3.id], "June 1, 2025", "August 1, 2025"
+        )
+
+        self.assertEqual(len(updated), 0)
+
+        self.subsection_3.refresh_from_db()
+        self.assertIn("does not contain the target", self.subsection_3.body)
+
+    def test_mixed_match_and_nonmatch(self):
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id, self.subsection_3.id],
+            "June 1, 2025",
+            "August 1, 2025",
+        )
+
+        self.assertEqual(len(updated), 1)
+        self.assertEqual(updated[0].id, self.subsection_1.id)
+
+    def test_empty_id_list_returns_empty_list(self):
+        updated = replace_value_in_subsections([], "June 1, 2025", "August 1, 2025")
+        self.assertEqual(updated, [])
