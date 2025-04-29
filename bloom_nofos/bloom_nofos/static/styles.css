@@ -1008,7 +1008,8 @@ main .back-link a::before,
 
 .edit__application-deadline form table tr > th:first-of-type,
 .edit__application-deadline form table tr > td:first-of-type {
-  padding-left: 0;
+  padding-left: 0.5rem;
+  padding-right: 0;
 }
 
 .edit__application-deadline
@@ -1018,6 +1019,10 @@ main .back-link a::before,
   > td:first-of-type
   .usa-checkbox__label {
   margin-top: 0;
+}
+
+.edit__application-deadline form table tr.subsection--selected td {
+  background-color: #f2e4d4;
 }
 
 /* Subsection edit page */
