@@ -6685,6 +6685,30 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         self.assertEqual(1, match["subsection_id"])
         self.assertEqual(match["body"], self.matching_subsection.body)
 
+    def test_ignores_match_if_basic_information(self):
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+        self.assertEqual(len(results), 0)
+
+    def test_returns_match_with_basic_information_if_order_is_not_1(self):
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.order = 3
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "application_deadline"
+        )
+
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>July 15, 2025</mark>", match["highlighted_body"])
+        self.assertIn("Basic information", match["subsection_name"])
+        self.assertEqual(self.section, match["section"])
+        self.assertEqual(1, match["subsection_id"])
+        self.assertEqual(match["body"], self.matching_subsection.body)
+
     def test_ignores_subsections_without_match(self):
         results = find_subsections_with_nofo_field_value(
             self.nofo, "application_deadline"
