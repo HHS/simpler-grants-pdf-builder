@@ -2385,7 +2385,13 @@ def modifications_update_announcement_text(nofo):
 
 
 def find_subsections_with_nofo_field_value(nofo, field_name):
-    import re
+    def _is_basic_info_first_subsection(subsection):
+        return (
+            subsection.name
+            and subsection.name.lower() == "basic information"
+            and subsection.order == 1
+            and subsection.section.order == 1
+        )
 
     value = getattr(nofo, field_name, None)
     if not value:
@@ -2397,18 +2403,19 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
     for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
             if pattern.search(subsection.body):
-                highlighted = pattern.sub(
-                    lambda m: f"<mark>{m.group(0)}</mark>", subsection.body
-                )
-                matches.append(
-                    {
-                        "subsection_id": subsection.id,
-                        "subsection_name": subsection.name or "(No name)",
-                        "highlighted_body": highlighted,
-                        "body": subsection.body,
-                        "section": subsection.section,
-                    }
-                )
+                if not _is_basic_info_first_subsection(subsection):
+                    highlighted = pattern.sub(
+                        lambda m: f"<mark>{m.group(0)}</mark>", subsection.body
+                    )
+                    matches.append(
+                        {
+                            "subsection_id": subsection.id,
+                            "subsection_name": subsection.name or "(No name)",
+                            "highlighted_body": highlighted,
+                            "body": subsection.body,
+                            "section": subsection.section,
+                        }
+                    )
 
     return matches
 
