@@ -1,5 +1,6 @@
 import io
 import json
+import re
 from datetime import datetime
 
 import docraptor
@@ -847,6 +848,31 @@ class NofoEditApplicationDeadlineView(BaseNofoEditView):
             self.object, "application_deadline"
         )
         return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        old_deadline = Nofo.objects.get(pk=self.object.pk).application_deadline
+
+        response = super().form_valid(form)
+
+        new_deadline = form.cleaned_data.get("application_deadline")
+
+        # Get selected subsection IDs from POST
+        subsection_ids = self.request.POST.getlist("replace_subsections")
+
+        if subsection_ids:
+            subsections = Subsection.objects.filter(id__in=subsection_ids)
+            for subsection in subsections:
+                # Replace old deadline with new deadline, case insensitive
+                subsection.body = re.sub(
+                    re.escape(old_deadline),
+                    new_deadline,
+                    subsection.body,
+                    flags=re.IGNORECASE,
+                )
+                subsection.save()
+
+        return response
 
 
 class NofoEditTaglineView(BaseNofoEditView):
