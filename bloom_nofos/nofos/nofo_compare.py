@@ -1,7 +1,7 @@
 import re
-from difflib import SequenceMatcher
 from dataclasses import dataclass, field
-from typing import Optional, List
+from difflib import SequenceMatcher
+from typing import List, Optional
 
 from django.utils.html import escape
 

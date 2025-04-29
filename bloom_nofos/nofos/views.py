@@ -16,6 +16,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, dateparse, timezone
+from django.utils.html import format_html
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -86,6 +87,7 @@ from .nofo import (
     process_nofo_html,
     replace_chars,
     replace_links,
+    replace_value_in_subsections,
     restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_opdiv,
@@ -856,21 +858,35 @@ class NofoEditApplicationDeadlineView(BaseNofoEditView):
         response = super().form_valid(form)
 
         new_deadline = form.cleaned_data.get("application_deadline")
-
-        # Get selected subsection IDs from POST
         subsection_ids = self.request.POST.getlist("replace_subsections")
 
-        if subsection_ids:
-            subsections = Subsection.objects.filter(id__in=subsection_ids)
-            for subsection in subsections:
-                # Replace old deadline with new deadline, case insensitive
-                subsection.body = re.sub(
-                    re.escape(old_deadline),
-                    new_deadline,
-                    subsection.body,
-                    flags=re.IGNORECASE,
-                )
-                subsection.save()
+        updated_subsections = replace_value_in_subsections(
+            subsection_ids,
+            old_value=old_deadline,
+            new_value=new_deadline,
+        )
+
+        success_message = "Updated application deadline to “{}”".format(new_deadline)
+
+        if updated_subsections:
+            # add list of changed subsections to success message
+            subsection_list_html = "".join(
+                [
+                    "<li><a href='#{}'>{}</a></li>".format(
+                        sub.html_id, sub.name or "(#){}".format(sub.order)
+                    )
+                    for sub in updated_subsections
+                ]
+            )
+
+            success_message += format_html(
+                ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                len(updated_subsections),
+                "" if len(updated_subsections) == 1 else "s",
+                format_html(subsection_list_html),
+            )
+
+        messages.success(self.request, success_message)
 
         return response
 

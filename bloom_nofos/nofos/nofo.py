@@ -2411,3 +2411,33 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
                 )
 
     return matches
+
+
+def replace_value_in_subsections(subsection_ids, old_value, new_value):
+    """
+    Replaces `old_value` with `new_value` in bodies of given subsection_ids.
+    Note that old_value uses a case-insensitive compare, so "JUNE 1" will match "June 1".
+    Returns the list of updated Subsection objects.
+    """
+    if not subsection_ids:
+        return []
+
+    updated_subsections = []
+
+    subsections = Subsection.objects.filter(id__in=subsection_ids).select_related(
+        "section"
+    )
+    for subsection in subsections:
+        original_body = subsection.body
+        new_body = re.sub(
+            re.escape(old_value),
+            new_value,
+            subsection.body,
+            flags=re.IGNORECASE,
+        )
+        if new_body != original_body:
+            subsection.body = new_body
+            subsection.save()
+            updated_subsections.append(subsection)
+
+    return updated_subsections
