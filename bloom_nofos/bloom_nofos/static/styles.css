@@ -663,8 +663,8 @@ label.usa-label {
   font-weight: 400;
 }
 
-.nofo-edit-table--subsection--body table > thead > tr > th::after,
-.subsection_edit div.martor-preview table > thead > tr > th::after {
+.nofo-edit-table--subsection--body table > thead > tr > th[class]::after,
+.subsection_edit div.martor-preview table > thead > tr > th[class]::after {
   content: "." attr(class);
   display: block;
   font-size: 0.85em;
@@ -847,7 +847,7 @@ _:future,
   padding: 0;
 }
 
-.nofo_edit main table tbody tr:first-of-type td:last-of-type {
+.nofo_edit main table.usa-table > tbody > tr:first-of-type > td:last-of-type {
   width: 5%;
   text-align: right;
 }
