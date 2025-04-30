@@ -6679,11 +6679,11 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         )
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>July 15, 2025</mark>", match["highlighted_body"])
-        self.assertIn("Deadline Details", match["subsection_name"])
+        self.assertIn("<mark>July 15, 2025</mark>", match["subsection_body_highlight"])
+        self.assertIn("Deadline Details", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
-        self.assertEqual(1, match["subsection_id"])
-        self.assertEqual(match["body"], self.matching_subsection.body)
+        self.assertEqual(1, match["subsection"].id)
+        self.assertEqual(match["subsection"].body, self.matching_subsection.body)
 
     def test_ignores_match_if_basic_information(self):
         self.matching_subsection.name = "Basic information"
@@ -6703,17 +6703,17 @@ class FindSubsectionsWithFieldValueTests(TestCase):
 
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>July 15, 2025</mark>", match["highlighted_body"])
-        self.assertIn("Basic information", match["subsection_name"])
+        self.assertIn("<mark>July 15, 2025</mark>", match["subsection_body_highlight"])
+        self.assertIn("Basic information", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
-        self.assertEqual(1, match["subsection_id"])
-        self.assertEqual(match["body"], self.matching_subsection.body)
+        self.assertEqual(1, match["subsection"].id)
+        self.assertEqual(match["subsection"].body, self.matching_subsection.body)
 
     def test_ignores_subsections_without_match(self):
         results = find_subsections_with_nofo_field_value(
             self.nofo, "application_deadline"
         )
-        self.assertNotIn("Other Info", [r["subsection_name"] for r in results])
+        self.assertNotIn("Other Info", [r["subsection"].name for r in results])
 
     def test_case_insensitive_matching(self):
         self.matching_subsection.body = "all applications due by JULY 15, 2025"
@@ -6723,8 +6723,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(self.section, results[0]["section"])
-        self.assertEqual(1, results[0]["subsection_id"])
-        self.assertIn("<mark>JULY 15, 2025</mark>", results[0]["highlighted_body"])
+        self.assertEqual(1, results[0]["subsection"].id)
+        self.assertIn(
+            "<mark>JULY 15, 2025</mark>", results[0]["subsection_body_highlight"]
+        )
 
     def test_returns_empty_list_when_no_value(self):
         self.nofo.application_deadline = ""
