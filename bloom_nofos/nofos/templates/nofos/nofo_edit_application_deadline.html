@@ -46,6 +46,7 @@
                 type="checkbox"
                 name="replace_subsections"
                 value="{{ match.subsection.id }}"
+                checked
               />
               <label class="usa-checkbox__label" for="replace-{{ match.subsection.id }}">
                 <span class="usa-sr-only">Replace application deadline in subsection: {{ match.subsection|subsection_name_or_order }}</span>
@@ -109,7 +110,13 @@
           updateButtonText();
           updateRowHighlight(checkbox);
         });
+
+        // run once when page loads
+        updateRowHighlight(checkbox);
       });
+
+      // run once when page loads
+      updateButtonText();
     });
   </script>
 {% endblock %}
