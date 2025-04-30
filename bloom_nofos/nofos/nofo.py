@@ -2409,10 +2409,8 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
                     )
                     matches.append(
                         {
-                            "subsection_id": subsection.id,
-                            "subsection_name": subsection.name or "(No name)",
-                            "highlighted_body": highlighted,
-                            "body": subsection.body,
+                            "subsection": subsection,
+                            "subsection_body_highlight": highlighted,
                             "section": subsection.section,
                         }
                     )
@@ -2431,10 +2429,14 @@ def replace_value_in_subsections(subsection_ids, old_value, new_value):
 
     updated_subsections = []
 
-    subsections = Subsection.objects.filter(id__in=subsection_ids).select_related(
-        "section"
-    )
-    for subsection in subsections:
+    for subsection_id in subsection_ids:
+        try:
+            subsection = Subsection.objects.select_related("section").get(
+                id=subsection_id
+            )
+        except Subsection.DoesNotExist:
+            continue
+
         original_body = subsection.body
         new_body = re.sub(
             re.escape(old_value),
