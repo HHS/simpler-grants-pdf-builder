@@ -83,7 +83,9 @@ class BaseNofo(models.Model):
 
     uuid = models.UUIDField(
         default=uuid.uuid4,
-        null=True,
+        editable=False,
+        unique=True,
+        null=False,
     )
 
     filename = models.CharField(
@@ -399,7 +401,9 @@ class BaseSection(models.Model):
 
     uuid = models.UUIDField(
         default=uuid.uuid4,
-        null=True,
+        editable=False,
+        unique=True,
+        null=False,
     )
 
     name = models.TextField(
@@ -542,7 +546,9 @@ class BaseSubsection(models.Model):
 
     uuid = models.UUIDField(
         default=uuid.uuid4,
-        null=True,
+        editable=False,
+        unique=True,
+        null=False,
     )
 
     name = models.TextField(
