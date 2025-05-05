@@ -1,5 +1,6 @@
 import io
 import json
+import uuid
 from datetime import datetime
 
 import docraptor
@@ -108,6 +109,7 @@ def duplicate_nofo(original_nofo, is_successor=False):
         # Clone the NOFO
         new_nofo = Nofo.objects.get(pk=original_nofo.pk)
         new_nofo.id = None  # Clear the id to create a new instance
+        new_nofo.uuid = uuid.uuid4()  # new uuid
 
         if is_successor:
             # the "new" nofo is an archive, so it is the "succeeded" by the original one

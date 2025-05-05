@@ -62,6 +62,7 @@ class DuplicateNofoTests(TestCase):
 
         # New "copy" NOFO is created
         self.assertNotEqual(new_nofo.id, self.original_nofo.id)
+        self.assertNotEqual(new_nofo.uuid, self.original_nofo.uuid)
         self.assertEqual(new_nofo.title, "Test NOFO (copy)")
         self.assertEqual(new_nofo.short_name, "test-nofo (copy)")
         self.assertEqual(new_nofo.status, "draft")
@@ -443,7 +444,6 @@ class NofosImportOverwriteViewTests(TestCase):
             follow=False,  # don't follow redirect yet
         )
 
-        # confirm it redirects to to the NOFO edit page
         # confirm it redirects to the confirm-import page
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
