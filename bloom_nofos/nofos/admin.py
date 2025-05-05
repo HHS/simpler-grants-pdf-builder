@@ -119,6 +119,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "uuid",
                     "title",
                     "short_name",
                     "status",
