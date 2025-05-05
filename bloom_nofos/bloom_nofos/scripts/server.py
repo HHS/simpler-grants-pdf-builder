@@ -6,6 +6,11 @@ def main():
     subprocess.run(cmd)
 
 
+def collectstatic():
+    cmd = ["python", "manage.py", "collectstatic", "--noinput"]
+    subprocess.run(cmd)
+
+
 def makemigrations():
     cmd = ["python", "manage.py", "makemigrations"]
     subprocess.run(cmd)
