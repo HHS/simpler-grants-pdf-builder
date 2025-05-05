@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bloom_nofos"
-version = "2.16.0"
+version = "2.17.0"
 description = "the no-code solo nofo web flow"
 authors = ["Paul Craig <paul@pcraig.ca>"]
 readme = "README.md"
