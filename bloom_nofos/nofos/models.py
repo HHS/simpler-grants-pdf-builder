@@ -1,4 +1,6 @@
 import cssutils
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -78,6 +80,11 @@ class BaseNofo(models.Model):
     class Meta:
         abstract = True
         ordering = ["-updated"]
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+    )
 
     filename = models.CharField(
         max_length=511,
@@ -390,6 +397,11 @@ class BaseSection(models.Model):
     class Meta:
         abstract = True
 
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+    )
+
     name = models.TextField(
         "Section name",
         max_length=250,
@@ -527,6 +539,11 @@ class HeadingValidationError(Exception):
 class BaseSubsection(models.Model):
     class Meta:
         abstract = True
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+    )
 
     name = models.TextField(
         "Subsection name",
