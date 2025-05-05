@@ -9,6 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.16.0] - 2025-05-04
+
+### Added
+
 - Compare content guides
 - Delete a content guide
 - Use width classes for HTML tables on nofo_edit page
@@ -17,14 +25,13 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Update Python version to 3.13.2
 - Editing a content guide name from the nofo_edit page works better
 - Show HTML table classnames on nofo_edit page and martor preview
 - Don't show ADDs on Content Guide compare screen
 - Don't show red lines on Content Guide compare screen
 - "nofo_compare" function accepts a list of statuses to exclude
   - for example, we don't want to show the matches on the diff page
-
-### Fixed
 
 ## [2.15.0] - 2025-04-18
 
