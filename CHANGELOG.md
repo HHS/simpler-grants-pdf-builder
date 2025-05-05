@@ -11,9 +11,22 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [2.17.0] - 2025-05-05
+
+### Added
+
+- Added a Makefile so that we can lint and run tests and stuff
+
+### Changed
+
 - Dockerfile now uses python -slim image, not python -alpine image
 
-### Fixed
+### Migrations
+
+- Add `uuid` field to Nofos, Sections, and Subsections (and ContentGuide equivalents)
+  - Note that the `uuid` field is not being used for anything yet, it just exists
 
 ## [2.16.0] - 2025-05-04
 
