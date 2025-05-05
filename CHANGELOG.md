@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Dockerfile now uses python -slim image, not python -alpine image
+
 ### Fixed
 
 ## [2.16.0] - 2025-05-04
