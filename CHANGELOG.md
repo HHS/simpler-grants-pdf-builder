@@ -24,6 +24,11 @@ Versioning since version 1.0.0.
 - Use width classes for HTML tables on nofo_edit page
 - Add cover image for HHS-2025-IHS-ALZ-0002
 - Early concept of "change this everywhere" feature for application deadline
+- 4 new cover images for ACF nofos:
+  - hhs-2025-acf-ofa-fn-0015.jpg
+  - hhs-2025-acf-ofa-zd-0013.jpg
+  - hhs-2025-acf-ofa-zj-0014.jpg
+  - hhs-2025-acf-ofa-zb-0109.jpg
 
 ### Changed
 
