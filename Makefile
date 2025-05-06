@@ -1,8 +1,17 @@
-.PHONY: help test lint format migrate makemigrations
+.PHONY: help test lint format collectstatic migrate makemigrations
 
-PYTHON=poetry run python
-MANAGE=poetry run python manage.py
-WORKDIR=bloom_nofos
+WORKDIR = bloom_nofos
+USE_DOCKER ?= 0
+IMAGE_NAME ?= bloom_nofos
+
+ifeq ($(USE_DOCKER),1)
+	PY_RUN_CMD = docker run --rm -w /app/$(WORKDIR) $(IMAGE_NAME) poetry run
+else
+	PY_RUN_CMD = poetry run
+endif
+
+
+MANAGE = $(PY_RUN_CMD) python manage.py
 
 help:
 	@echo "Available commands:"
