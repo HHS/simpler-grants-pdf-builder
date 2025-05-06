@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Makefile commands can be run from a Docker image
+
 ### Fixed
 
 ## [2.17.0] - 2025-05-05

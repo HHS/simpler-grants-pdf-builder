@@ -1,4 +1,4 @@
-.PHONY: help test lint format collectstatic migrate makemigrations
+.PHONY: help build test lint format collectstatic migrate makemigrations
 
 WORKDIR = bloom_nofos
 USE_DOCKER ?= 0
@@ -15,12 +15,16 @@ MANAGE = $(PY_RUN_CMD) python manage.py
 
 help:
 	@echo "Available commands:"
+	@echo "  make build           Build a docker image"
 	@echo "  make test            Run all tests"
 	@echo "  make lint            Run isort and black --check"
 	@echo "  make format          Auto-format using isort and black"
 	@echo "  make collectstatic   Run collectstatic"
 	@echo "  make migrate         Run database migrations"
 	@echo "  make makemigrations  Create new migrations"
+
+build:
+	docker build -t $(IMAGE_NAME) .
 
 test:
 	cd $(WORKDIR) && $(MANAGE) test
