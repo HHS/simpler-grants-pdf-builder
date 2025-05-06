@@ -36,7 +36,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Configure Poetry and install dependencies
 RUN poetry config virtualenvs.in-project true && \
-  poetry install --no-root --without dev && \
+  poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
 
