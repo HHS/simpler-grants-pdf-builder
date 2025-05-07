@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add script to download all Nofos and ContentGuides to a .csv
+
 ### Changed
 
 - Makefile commands can be run from a Docker image
