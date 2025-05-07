@@ -34,9 +34,11 @@ class ContentGuide(BaseNofo):
 
 
 class ContentGuideSection(BaseSection):
-    content_guide = models.CharField(
-        max_length=36, null=True, blank=True
-    )  # UUID as text
+    content_guide = models.ForeignKey(
+        "guides.ContentGuide",
+        on_delete=models.CASCADE,
+        related_name="sections",
+    )
 
     @property
     def document_id(self):
@@ -61,7 +63,9 @@ class ContentGuideSubsection(BaseSubsection):
         ordering = ["order"]
         unique_together = ("section", "order")
 
-    section = models.CharField(max_length=36, null=True, blank=True)  # UUID as text
+    section = models.ForeignKey(
+        ContentGuideSection, on_delete=models.CASCADE, related_name="subsections"
+    )
 
     COMPARISON_CHOICES = [
         ("none", "Do not compare"),

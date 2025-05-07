@@ -1071,7 +1071,7 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
         self.section = self.get_object()
         self.nofo = self.section.nofo
 
-        if self.nofo.id != self.nofo_id:
+        if str(self.nofo.id) != str(self.nofo_id):
             return HttpResponseBadRequest("Oops, bad NOFO id")
 
         return super().dispatch(request, *args, **kwargs)
@@ -1190,7 +1190,7 @@ class NofoSubsectionEditView(
         self.subsection = self.get_object()
         self.nofo = self.subsection.section.nofo
 
-        if self.nofo.id != self.nofo_id:
+        if str(self.nofo.id) != str(self.nofo_id):
             return HttpResponseBadRequest("Oops, bad NOFO id")
 
         return super().dispatch(request, *args, **kwargs)
@@ -1243,7 +1243,7 @@ class NofoSubsectionDeleteView(
         self.subsection = self.get_object()
         self.nofo = self.subsection.section.nofo
 
-        if self.nofo.id != self.nofo_id:
+        if str(self.nofo.id) != str(self.nofo_id):
             return HttpResponseBadRequest("Oops, bad NOFO id")
         if self.nofo.status != "draft":
             return HttpResponseBadRequest(
