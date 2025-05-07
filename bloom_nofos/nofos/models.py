@@ -129,13 +129,7 @@ class BaseNofo(models.Model):
         help_text="Archived documents are soft-deleted: they are not visible in the UI but can be recovered by superusers.",
     )
 
-    successor = models.ForeignKey(
-        "self",  # self-referential foreign key
-        on_delete=models.CASCADE,  # If a NOFO is deleted, also delete history
-        null=True,
-        blank=True,
-        related_name="ancestors",
-    )
+    successor = models.CharField(max_length=36, null=True, blank=True)  # UUID as text
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
@@ -511,11 +505,7 @@ class Section(BaseSection):
         ordering = ["order"]
         unique_together = ("nofo", "order")
 
-    nofo = models.ForeignKey(
-        "nofos.Nofo",
-        on_delete=models.CASCADE,
-        related_name="sections",
-    )
+    nofo = models.CharField(max_length=36, null=True, blank=True)  # UUID as text
 
     @property
     def document_id(self):
@@ -723,6 +713,4 @@ class Subsection(BaseSubsection):
         ordering = ["order"]
         unique_together = ("section", "order")
 
-    section = models.ForeignKey(
-        Section, on_delete=models.CASCADE, related_name="subsections"
-    )
+    section = models.CharField(max_length=36, null=True, blank=True)  # UUID as text
