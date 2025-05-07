@@ -12,26 +12,28 @@ urlpatterns = [
         name="guide_import",
     ),
     path(
-        "<int:pk>/import/title",
+        "<uuid:pk>/import/title",
         views.ContentGuideImportTitleView.as_view(),
         name="guide_import_title",
     ),
     path(
-        "<int:pk>/delete", views.ContentGuideArchiveView.as_view(), name="guide_archive"
+        "<uuid:pk>/delete",
+        views.ContentGuideArchiveView.as_view(),
+        name="guide_archive",
     ),
-    path("<int:pk>/edit", views.ContentGuideEditView.as_view(), name="guide_edit"),
+    path("<uuid:pk>/edit", views.ContentGuideEditView.as_view(), name="guide_edit"),
     path(
-        "<int:pk>/edit/title",
+        "<uuid:pk>/edit/title",
         views.ContentGuideEditTitleView.as_view(),
         name="guide_edit_title",
     ),
     path(
-        "<int:pk>/compare",
+        "<uuid:pk>/compare",
         views.ContentGuideCompareView.as_view(),
         name="guide_compare",
     ),
     path(
-        "guides/<int:pk>/section/<int:section_pk>/subsection/<int:subsection_pk>/edit",
+        "guides/<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.ContentGuideSubsectionEditView.as_view(),
         name="subsection_edit",
     ),
