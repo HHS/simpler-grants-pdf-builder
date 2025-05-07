@@ -81,6 +81,13 @@ class BaseNofo(models.Model):
         abstract = True
         ordering = ["-updated"]
 
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+    )
+
     uuid = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -393,6 +400,13 @@ class BaseSection(models.Model):
     class Meta:
         abstract = True
 
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+    )
+
     uuid = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -533,6 +547,13 @@ class HeadingValidationError(Exception):
 class BaseSubsection(models.Model):
     class Meta:
         abstract = True
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+    )
 
     uuid = models.UUIDField(
         default=uuid.uuid4,
