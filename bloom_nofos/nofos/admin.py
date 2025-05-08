@@ -119,7 +119,6 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
             None,
             {
                 "fields": (
-                    "uuid",
                     "title",
                     "short_name",
                     "status",
@@ -150,7 +149,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
         ),
     )
 
-    readonly_fields = ("filename", "uuid")
+    readonly_fields = ("filename",)
     mirror_fields = ("inline_css",)
 
     @admin.action(description="Duplicate selected NOFOs")

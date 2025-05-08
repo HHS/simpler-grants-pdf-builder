@@ -88,13 +88,6 @@ class BaseNofo(models.Model):
         unique=True,
     )
 
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        null=False,
-    )
-
     filename = models.CharField(
         max_length=511,
         validators=[MaxLengthValidator(511)],
@@ -413,13 +406,6 @@ class BaseSection(models.Model):
         unique=True,
     )
 
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        null=False,
-    )
-
     name = models.TextField(
         "Section name",
         max_length=250,
@@ -563,13 +549,6 @@ class BaseSubsection(models.Model):
         default=uuid.uuid4,
         editable=False,
         unique=True,
-    )
-
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        null=False,
     )
 
     name = models.TextField(
