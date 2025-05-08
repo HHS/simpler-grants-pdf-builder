@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("guides", "0009_guides_update_foreign_keys_to_uuid"),
+        ("guides", "0011_guides_easyaudit_uuid"),
     ]
 
     operations = [

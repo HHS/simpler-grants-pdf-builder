@@ -61,7 +61,7 @@ def clean_easyaudit_deleted_guides(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("guides", "0010_alter_contentguide_id_alter_contentguidesection_id_and_more"),
+        ("guides", "0009_guides_update_foreign_keys_to_uuid"),
     ]
 
     operations = [

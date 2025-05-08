@@ -29,7 +29,7 @@ def promote_uuid_to_id_guides(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("guides", "0012_guides_easyaudit_uuid"),
+        ("guides", "0012_alter_contentguide_id_alter_contentguidesection_id_and_more"),
     ]
 
     operations = [
