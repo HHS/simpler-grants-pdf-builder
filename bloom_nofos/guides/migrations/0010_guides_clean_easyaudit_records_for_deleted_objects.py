@@ -12,22 +12,22 @@ def clean_easyaudit_deleted_guides(apps, schema_editor):
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "guides.contentguide"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM guides_contentguide);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM guides_contentguide);
+                """
             )
             cursor.execute(
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "guides.contentguidesection"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM guides_contentguidesection);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM guides_contentguidesection);
+                """
             )
             cursor.execute(
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "guides.contentguidesubsection"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM guides_contentguidesubsection);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM guides_contentguidesubsection);
+                """
             )
 
     elif db_vendor == "sqlite":
