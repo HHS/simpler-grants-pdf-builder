@@ -361,18 +361,27 @@ class StyleMapManagerTests(TestCase):
 
 
 class MatchUrlTests(TestCase):
-    def test_match_valid_urls(self):
+    def test_match_valid_uuid_urls(self):
         """
-        Test the match_url function with valid URLs.
+        Test the match_view_url function with valid UUID URLs.
         """
-        self.assertTrue(match_view_url("/nofos/123"))
-        self.assertTrue(match_view_url("/nofos/1"))
-        self.assertTrue(match_view_url("/nofos/0"))
+        self.assertTrue(match_view_url("/nofos/8713ea6d-335a-409f-90c0-f75162aecf0e"))
+        self.assertTrue(match_view_url("/nofos/123e4567-e89b-12d3-a456-426614174000"))
+        self.assertTrue(match_view_url("/nofos/abcdef12-1234-5678-1234-abcdefabcdef"))
 
     def test_match_invalid_urls(self):
         """
-        Test the match_url function with invalid URLs.
+        Test the match_view_url function with invalid URLs.
         """
+        # Invalid UUIDs
+        self.assertFalse(match_view_url("/nofos/123"))
+        self.assertFalse(match_view_url("/nofos/1"))
+        self.assertFalse(match_view_url("/nofos/0"))
+        self.assertFalse(match_view_url("/nofos/12345"))
+        self.assertFalse(match_view_url("/nofos/not-a-uuid"))
+        self.assertFalse(match_view_url("/nofos/1234-5678"))
+
+        # Invalid paths
         self.assertFalse(match_view_url("/nofos"))
         self.assertFalse(match_view_url("/nofos/"))
         self.assertFalse(match_view_url("/nofos/abc"))
