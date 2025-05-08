@@ -61,7 +61,7 @@ def clean_easyaudit_deleted_nofos(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("nofos", "0104_alter_nofo_id_alter_section_id_alter_subsection_id"),
+        ("nofos", "0103_nofos_update_foreign_keys_to_uuid"),
     ]
 
     operations = [
