@@ -17,6 +17,29 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.0.0] - 2025-05-07
+
+### Changed
+
+- Use uuids for NOFO.id, section.id, subsection.id
+- [BREAKING] All NOFO urls are broken because of the database migration
+- Use uuids for ContentGuide.id, section.id, subsection.id
+- [BREAKING] All Content Guide urls are broken because of the database migration
+
+### Added
+
+- Add script to download all Nofos and ContentGuides to a .csv
+
+### Changed
+
+- Makefile commands can be run from a Docker image
+
+### Migrations
+
+- Change id fields from integers to UUIDs for our main models
+  - Includes: Nofo, Section, Subsection, ContentGuide, ContentGuideSection, and Subsection
+- Remove the separate `uuid` field that is no longer needed
+
 ## [2.17.0] - 2025-05-05
 
 ### Added

@@ -1,5 +1,6 @@
-from django.db import migrations
 import uuid
+
+from django.db import migrations
 
 
 def regenerate_uuids(apps, schema_editor):
