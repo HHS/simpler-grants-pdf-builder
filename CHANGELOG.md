@@ -9,13 +9,11 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add script to download all Nofos and ContentGuides to a .csv
-
 ### Changed
 
-- Makefile commands can be run from a Docker image
-
 ### Fixed
+
+- match_view_url needed to be updated to look for uuid vals in urls
 
 ## [3.0.0] - 2025-05-07
 

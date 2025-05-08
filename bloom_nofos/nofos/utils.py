@@ -1,5 +1,6 @@
 import json
 import re
+import uuid
 
 from constance import config
 from django.contrib.contenttypes.models import ContentType
@@ -101,7 +102,7 @@ def get_icon_path_choices(theme):
 
 def match_view_url(url):
     """
-    Check if the given URL matches the pattern "/nofos/{integer}".
+    Check if the given URL matches the pattern "/nofos/{uuid}".
 
     Args:
     url (str): The URL to be checked.
@@ -109,10 +110,17 @@ def match_view_url(url):
     Returns:
     bool: True if the URL matches the pattern, False otherwise.
     """
-    # Regular expression to match the specified pattern
-    pattern = r"^/nofos/\d+$"
+    # Extract the UUID part from the URL
+    if not url.startswith("/nofos/"):
+        return False
 
-    return bool(re.match(pattern, url))
+    uuid_part = url[len("/nofos/") :]
+
+    try:
+        uuid.UUID(uuid_part)
+        return True
+    except ValueError:
+        return False
 
 
 class StyleMapManager:
