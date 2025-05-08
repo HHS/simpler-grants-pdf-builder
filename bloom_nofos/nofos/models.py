@@ -156,7 +156,7 @@ class BaseNofo(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        if self.pk:
+        if self.pk and self.__class__.objects.filter(pk=self.pk).exists():
             # If the instance already exists, check if any field other than 'status' has changed
             original_document = self.__class__.objects.get(pk=self.pk)
             for field in self._meta.fields:
@@ -464,7 +464,7 @@ class BaseSection(models.Model):
                 )
 
     def save(self, *args, **kwargs):
-        if not self.pk and not self.order:
+        if not self.order:
             self.order = self.get_next_order(self.get_document())
 
         super().save(*args, **kwargs)

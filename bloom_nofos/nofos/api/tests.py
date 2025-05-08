@@ -68,7 +68,7 @@ class NofoAPITest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["id"], self.nofo.id)
+        self.assertEqual(data["id"], str(self.nofo.id))
         self.assertEqual(data["title"], self.nofo.title)
         self.assertEqual(data["sections"][0]["name"], self.section.name)
         self.assertEqual(
@@ -86,7 +86,7 @@ class NofoAPITest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["id"], self.nofo.id)
+        self.assertEqual(data["id"], str(self.nofo.id))
         self.assertEqual(data["title"], self.nofo.title)
         self.assertEqual(data["sections"][0]["name"], self.section.name)
         self.assertEqual(data["sections"][0]["subsections"], [])
@@ -102,7 +102,9 @@ class NofoAPITest(TestCase):
 
     def test_export_nonexistent_nofo(self):
         """Test exporting a non-existent NOFO"""
-        response = self.client.get("/api/nofos/99999", **self.headers)
+        response = self.client.get(
+            "/api/nofos/00000000-0000-0000-0000-000000000000", **self.headers
+        )
 
         self.assertEqual(response.status_code, 404)
 
@@ -115,7 +117,7 @@ class NofoAPITest(TestCase):
         """Test importing a valid NOFO using fixture data"""
 
         import_data = self.fixture_data.copy()
-        import_data["id"] = 99999
+        import_data["id"] = "00000000-0000-0000-0000-000000000000"
         import_data["status"] = "published"
         import_data["group"] = "different-group"
         import_data["archived"] = "2024-01-01"
@@ -132,7 +134,7 @@ class NofoAPITest(TestCase):
         # Verify NOFO was created with correct data
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
 
-        self.assertNotEqual(nofo.id, 99999)
+        self.assertNotEqual(str(nofo.id), "00000000-0000-0000-0000-000000000000")
         self.assertEqual(nofo.status, "draft")
         self.assertEqual(nofo.group, "bloom")
         self.assertIsNone(nofo.archived)
@@ -213,7 +215,7 @@ class NofoAPITest(TestCase):
         """Test that providing an ID is ignored during import"""
         # Use fixture data but modify the ID
         import_data = self.fixture_data.copy()
-        import_data["id"] = 999
+        import_data["id"] = "00000000-0000-0000-0000-000000000000"
 
         # Remove fields we don't want
         excluded_fields = ["archived", "status", "group"]
@@ -231,7 +233,7 @@ class NofoAPITest(TestCase):
 
         # Verify NOFO was created with a different ID
         nofo = Nofo.objects.get(number="CMS-2U2-25-001")
-        self.assertNotEqual(nofo.id, 999)
+        self.assertNotEqual(str(nofo.id), "00000000-0000-0000-0000-000000000000")
 
     def test_export_nofo_ordering(self):
         """Test that sections and subsections are returned in order"""

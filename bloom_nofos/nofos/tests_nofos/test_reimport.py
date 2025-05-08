@@ -62,7 +62,6 @@ class DuplicateNofoTests(TestCase):
 
         # New "copy" NOFO is created
         self.assertNotEqual(new_nofo.id, self.original_nofo.id)
-        self.assertNotEqual(new_nofo.uuid, self.original_nofo.uuid)
         self.assertEqual(new_nofo.title, "Test NOFO (copy)")
         self.assertEqual(new_nofo.short_name, "test-nofo (copy)")
         self.assertEqual(new_nofo.status, "draft")
