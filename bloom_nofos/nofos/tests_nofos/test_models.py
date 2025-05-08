@@ -27,13 +27,8 @@ class NofoModelTest(TestCase):
             "number": cls.fixture_data["number"],
             "opdiv": cls.fixture_data["opdiv"],
             "agency": cls.fixture_data["agency"],
-            "subagency": cls.fixture_data["subagency"],
-            "subagency2": cls.fixture_data["subagency2"],
             "application_deadline": cls.fixture_data["application_deadline"],
             "tagline": cls.fixture_data["tagline"],
-            "author": cls.fixture_data["author"],
-            "subject": cls.fixture_data["subject"],
-            "keywords": cls.fixture_data["keywords"],
         }
 
     def test_nofo_requires_opdiv(self):

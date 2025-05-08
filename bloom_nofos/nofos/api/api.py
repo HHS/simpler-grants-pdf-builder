@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from ninja import NinjaAPI
@@ -58,7 +60,7 @@ def create_nofo(request, payload: NofoSchema):
 
 
 @api.get("/nofos/{nofo_id}", response={200: NofoSchema, 404: ErrorSchema})
-def get_nofo(request, nofo_id: int):
+def get_nofo(request, nofo_id: uuid.UUID):
     """Export a NOFO by ID"""
     try:
         nofo = Nofo.objects.get(id=nofo_id, archived__isnull=True)

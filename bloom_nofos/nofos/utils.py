@@ -68,8 +68,8 @@ def add_html_id_to_subsection(subsection):
     The `html_id` is based on the subsection's order or primary key (if present).
     """
     if subsection.name and not subsection.html_id:
-        # Use the primary key if available; otherwise, fall back to the order field
-        counter = subsection.pk or subsection.order
+        # Use the order if available; otherwise, fall back to the primary key
+        counter = subsection.order or subsection.pk
         subsection.html_id = create_subsection_html_id(counter, subsection)
 
 
