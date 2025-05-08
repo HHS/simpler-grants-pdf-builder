@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Tag docker images built with Makefile with latest git sha (or "latest")
+
 ### Fixed
 
 - match_view_url needed to be updated to look for uuid vals in urls
