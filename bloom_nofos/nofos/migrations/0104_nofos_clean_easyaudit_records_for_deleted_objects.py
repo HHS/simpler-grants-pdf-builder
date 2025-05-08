@@ -12,22 +12,22 @@ def clean_easyaudit_deleted_nofos(apps, schema_editor):
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.nofo"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM nofos_nofo);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM nofos_nofo);
+                """
             )
             cursor.execute(
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.section"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM nofos_section);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM nofos_section);
+                """
             )
             cursor.execute(
                 """
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.subsection"%'
-                AND CAST(object_id AS UUID) NOT IN (SELECT id FROM nofos_subsection);
-            """
+                AND object_id::bigint NOT IN (SELECT id FROM nofos_subsection);
+                """
             )
 
     elif db_vendor == "sqlite":
