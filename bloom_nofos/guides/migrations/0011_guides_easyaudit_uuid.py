@@ -74,7 +74,7 @@ def update_easyaudit_guides_to_uuid(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("guides", "0011_guides_clean_easyaudit_records_for_deleted_objects"),
+        ("guides", "0010_guides_clean_easyaudit_records_for_deleted_objects"),
     ]
 
     operations = [

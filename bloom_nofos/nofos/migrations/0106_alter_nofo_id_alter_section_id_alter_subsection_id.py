@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("nofos", "0103_nofos_update_foreign_keys_to_uuid"),
+        ("nofos", "0105_nofos_easyaudit_uuid"),
     ]
 
     operations = [

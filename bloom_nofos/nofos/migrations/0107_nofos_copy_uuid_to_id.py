@@ -29,7 +29,7 @@ def promote_uuid_to_id_nofos(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("nofos", "0106_nofos_easyaudit_uuid"),
+        ("nofos", "0106_alter_nofo_id_alter_section_id_alter_subsection_id"),
     ]
 
     operations = [
