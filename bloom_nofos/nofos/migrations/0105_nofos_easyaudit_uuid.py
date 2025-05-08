@@ -40,31 +40,85 @@ def update_easyaudit_nofos_to_uuid(apps, schema_editor):
             # NOFOs
             cursor.execute(
                 """
-                UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id) || '"')
+                UPDATE easyaudit_crudevent
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_nofo WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "nofos.nofo"%';
-            """
+                """
             )
 
             # Sections
             cursor.execute(
                 """
-                UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id) || '"')
+                UPDATE easyaudit_crudevent
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM nofos_section WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_section WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "nofos.section"%';
-            """
+                """
             )
 
             # Subsections
             cursor.execute(
                 """
-                UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id) || '"')
+                UPDATE easyaudit_crudevent
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM nofos_subsection WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "nofos.subsection"%';
-            """
+                """
             )
 
     else:
