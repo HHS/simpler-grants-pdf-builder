@@ -41,30 +41,84 @@ def update_easyaudit_guides_to_uuid(apps, schema_editor):
             cursor.execute(
                 """
                 UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id) || '"')
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguide WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "guides.contentguide"%';
-            """
+                """
             )
 
-            # ContentGuideSection
+            # ContentGuideSections
             cursor.execute(
                 """
                 UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id) || '"')
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesection WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "guides.contentguidesection"%';
-            """
+                """
             )
 
-            # ContentGuideSubsection
+            # ContentGuideSubsections
             cursor.execute(
                 """
                 UPDATE easyaudit_crudevent 
-                SET object_id = (SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id),
-                    object_json_repr = REPLACE(object_json_repr, '"pk": ' || object_id, '"pk": "' || (SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id) || '"')
+                SET object_id = (
+                    SELECT
+                        SUBSTR(uuid, 1, 8) || '-' ||
+                        SUBSTR(uuid, 9, 4) || '-' ||
+                        SUBSTR(uuid, 13, 4) || '-' ||
+                        SUBSTR(uuid, 17, 4) || '-' ||
+                        SUBSTR(uuid, 21)
+                    FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id
+                ),
+                object_json_repr = REPLACE(
+                    object_json_repr,
+                    '"pk": ' || object_id,
+                    '"pk": "' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id), 1, 8) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id), 9, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id), 13, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id), 17, 4) || '-' ||
+                    SUBSTR((SELECT uuid FROM guides_contentguidesubsection WHERE CAST(object_id AS INTEGER) = id), 21)
+                    || '"'
+                )
                 WHERE object_json_repr LIKE '%"model": "guides.contentguidesubsection"%';
-            """
+                """
             )
 
     else:
