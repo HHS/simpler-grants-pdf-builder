@@ -4,12 +4,19 @@ WORKDIR = bloom_nofos
 USE_DOCKER ?= 0
 IMAGE_NAME ?= bloom_nofos
 
+# Check if git exists and get the hash, otherwise use 'latest'
+GIT_EXISTS := $(shell which git 2>/dev/null)
+ifdef GIT_EXISTS
+    IMAGE_TAG := $(shell git rev-parse HEAD 2>/dev/null || echo "latest")
+else
+    IMAGE_TAG := latest
+endif
+
 ifeq ($(USE_DOCKER),1)
 	PY_RUN_CMD = docker run --rm -w /app/$(WORKDIR) $(IMAGE_NAME) poetry run
 else
 	PY_RUN_CMD = poetry run
 endif
-
 
 MANAGE = $(PY_RUN_CMD) python manage.py
 
@@ -24,7 +31,8 @@ help:
 	@echo "  make makemigrations  Create new migrations"
 
 build:
-	docker build -t $(IMAGE_NAME) .
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	@echo "Built image: $(IMAGE_NAME):$(IMAGE_TAG)"
 
 test:
 	cd $(WORKDIR) && $(MANAGE) test
