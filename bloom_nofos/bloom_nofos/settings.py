@@ -19,6 +19,7 @@ import environ
 import tomli
 from django.utils.timezone import now
 
+from .aws import is_aws_db, generate_iam_auth_token
 from .utils import cast_to_boolean, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -195,8 +196,46 @@ database_url = (
     env.get_value("DATABASE_URL", default=None) or f"sqlite:///{default_db_path}"
 )
 
-DATABASES = {"default": env.db_url_config(database_url)}
+if is_aws_db(env):
+    db_host = env.get_value("DB_HOST")
+    db_name = env.get_value("DB_NAME")
+    db_user = env.get_value("DB_USER")
+    db_port = env.get_value("DB_PORT", default=5432)
+    aws_region = env.get_value("AWS_REGION")
+    ssl_mode = env.get_value("DB_SSL_MODE", default="require")
 
+    # Check if password is provided or if we need to generate an IAM token
+    db_password = env.get_value("DB_PASSWORD", default=None)
+    if db_password is None:
+        # Generate IAM auth token
+        db_password = generate_iam_auth_token(aws_region, db_host, db_port, db_user)
+
+    # Construct database URL
+    database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}?sslmode={ssl_mode}"
+
+    # TODO: Remove this
+    print(
+        "DATABASE URL",
+        f"postgresql://{db_user}:p*a*s*s*w*o*r*d@{db_host}:{db_port}/{db_name}?sslmode={ssl_mode}",
+    )
+
+    # Assuming this is needed because it is also here: https://github.com/HHS/simpler-grants-gov/blob/main/api/src/adapters/db/clients/postgres_client.py#L98
+    db_options = {
+        "connect_timeout": 10,
+    }
+
+    # Configure database
+    DATABASES = {
+        "default": {
+            **env.db_url_config(database_url),
+            "OPTIONS": db_options,
+        }
+    }
+
+else:
+    DATABASES = {"default": env.db_url_config(database_url)}
+
+# TODO: remove this once we are fully migrated to AWS
 # If the flag as been set, configure to use proxy
 if not is_prod and DATABASES["default"]["HOST"].startswith("/cloudsql"):
     DATABASES["default"]["HOST"] = "127.0.0.1"
