@@ -200,7 +200,7 @@ if is_aws_db(env):
     db_host = env.get_value("DB_HOST")
     db_name = env.get_value("DB_NAME")
     db_user = env.get_value("DB_USER")
-    db_port = env.get_value("DB_PORT", default=5432)
+    db_port = int(env.get_value("DB_PORT", default=5432))
     aws_region = env.get_value("AWS_REGION")
     ssl_mode = env.get_value("DB_SSL_MODE", default="require")
 
