@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add configuration in settings.py for AWS database connection
+
 ### Changed
 
 - IHS not-selected top nav link borders on section pages are white
