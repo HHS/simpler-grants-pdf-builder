@@ -11,6 +11,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- IHS not-selected top nav link borders on section pages are white
 - Tag docker images built with Makefile with latest git sha (or "latest")
 
 ### Fixed
