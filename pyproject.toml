@@ -33,6 +33,7 @@ pyjwt = "^2.10.1"
 google-cloud-secret-manager = "^2.23.2"
 
 # sortable = "@3", check nofo_index.html
+boto3 = "^1.38.12"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
