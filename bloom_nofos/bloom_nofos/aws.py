@@ -13,9 +13,13 @@ def is_aws_db(env):
     )
 
 
-def generate_iam_auth_token(aws_region, host, port, user):
+def generate_iam_auth_token(env):
+    db_host = env.get_value("DB_HOST")
+    db_user = env.get_value("DB_USER")
+    db_port = int(env.get_value("DB_PORT", default=5432))
+    aws_region = env.get_value("AWS_REGION")
+
     client = boto3.client("rds", region_name=aws_region)
-    token = client.generate_db_auth_token(
-        DBHostname=host, Port=port, DBUsername=user, Region=aws_region
+    return client.generate_db_auth_token(
+        DBHostname=db_host, Port=db_port, DBUsername=db_user, Region=aws_region
     )
-    return token

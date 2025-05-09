@@ -197,38 +197,23 @@ database_url = (
 )
 
 if is_aws_db(env):
-    db_host = env.get_value("DB_HOST")
-    db_name = env.get_value("DB_NAME")
-    db_user = env.get_value("DB_USER")
-    db_port = int(env.get_value("DB_PORT", default=5432))
-    aws_region = env.get_value("AWS_REGION")
-    ssl_mode = env.get_value("DB_SSL_MODE", default="require")
-
-    # Check if password is provided or if we need to generate an IAM token
+    # Generate IAM auth token if no password provided
     db_password = env.get_value("DB_PASSWORD", default=None)
     if db_password is None:
-        # Generate IAM auth token
-        db_password = generate_iam_auth_token(aws_region, db_host, db_port, db_user)
+        db_password = generate_iam_auth_token(env)
 
-    # Construct database URL
-    database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}?sslmode={ssl_mode}"
-
-    # TODO: Remove this
-    print(
-        "DATABASE URL",
-        f"postgresql://{db_user}:p*a*s*s*w*o*r*d@{db_host}:{db_port}/{db_name}?sslmode={ssl_mode}",
-    )
-
-    # Assuming this is needed because it is also here: https://github.com/HHS/simpler-grants-gov/blob/main/api/src/adapters/db/clients/postgres_client.py#L98
-    db_options = {
-        "connect_timeout": 10,
-    }
-
-    # Configure database
+    # Assuming the "connect_timeout" is needed because it is also here: https://github.com/HHS/simpler-grants-gov/blob/main/api/src/adapters/db/clients/postgres_client.py#L98
     DATABASES = {
         "default": {
-            **env.db_url_config(database_url),
-            "OPTIONS": db_options,
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env.get_value("DB_NAME"),
+            "USER": env.get_value("DB_USER"),
+            "PASSWORD": db_password,
+            "HOST": env.get_value("DB_HOST"),
+            "PORT": int(env.get_value("DB_PORT", default=5432)),
+            "OPTIONS": {
+                "connect_timeout": 10,
+            },
         }
     }
 
