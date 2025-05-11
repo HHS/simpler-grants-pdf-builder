@@ -6683,7 +6683,7 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         self.assertIn("Deadline Details", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
-        self.assertEqual(self.matching_subsection.body, match["subsection"].body)
+        self.assertEqual(match["subsection"].body, self.matching_subsection.body)
 
     def test_ignores_match_if_basic_information(self):
         self.matching_subsection.name = "Basic information"
@@ -6700,14 +6700,13 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(
             self.nofo, "application_deadline"
         )
-
         self.assertEqual(len(results), 1)
         match = results[0]
         self.assertIn("<mark>July 15, 2025</mark>", match["subsection_body_highlight"])
         self.assertIn("Basic information", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
-        self.assertEqual(self.matching_subsection.body, match["subsection"].body)
+        self.assertEqual(match["subsection"].body, self.matching_subsection.body)
 
     def test_ignores_subsections_without_match(self):
         results = find_subsections_with_nofo_field_value(
@@ -6747,21 +6746,17 @@ class FindSubsectionsWithFieldValueTests(TestCase):
     def test_returns_match_for_title(self):
         self.matching_subsection.body = "This NOFO is titled Test NOFO"
         self.matching_subsection.save()
-        results = find_subsections_with_nofo_field_value(
-            self.nofo, "title"
-        )
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
         self.assertEqual(len(results), 1)
         match = results[0]
         self.assertIn("<mark>Test NOFO</mark>", match["subsection_body_highlight"])
         self.assertEqual(self.section, match["section"])
-        self.assertEqual(1, match["subsection"].id)
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     def test_returns_empty_list_when_no_title_matches(self):
         self.matching_subsection.body = "No title mentioned here."
         self.matching_subsection.save()
-        results = find_subsections_with_nofo_field_value(
-            self.nofo, "title"
-        )
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
         self.assertEqual(results, [])
 
     def test_returns_match_for_number(self):
@@ -6769,23 +6764,108 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         self.nofo.save()
         self.matching_subsection.body = "The NOFO number is HRSA-24-019"
         self.matching_subsection.save()
-        results = find_subsections_with_nofo_field_value(
-            self.nofo, "number"
-        )
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(len(results), 1)
         match = results[0]
         self.assertIn("<mark>HRSA-24-019</mark>", match["subsection_body_highlight"])
         self.assertEqual(self.section, match["section"])
-        self.assertEqual(1, match["subsection"].id)
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     def test_returns_empty_list_when_no_number_matches(self):
         self.nofo.number = "HRSA-24-019"
         self.nofo.save()
         self.matching_subsection.body = "No number mentioned here."
         self.matching_subsection.save()
-        results = find_subsections_with_nofo_field_value(
-            self.nofo, "number"
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
+        self.assertEqual(results, [])
+
+    # Additional tests for title field
+    def test_case_insensitive_title_matching(self):
+        self.matching_subsection.body = (
+            "The NOFO is called TEST NOFO and it's important"
         )
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>TEST NOFO</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
+
+    def test_ignores_title_match_if_basic_information(self):
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.body = "This NOFO is titled Test NOFO"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
+        self.assertEqual(len(results), 0)
+
+    def test_returns_title_match_with_basic_information_if_order_is_not_1(self):
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.order = 2
+        self.matching_subsection.body = "This NOFO is titled Test NOFO"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>Test NOFO</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
+
+    # Additional tests for number field
+    def test_case_insensitive_number_matching(self):
+        self.nofo.number = "HRSA-24-019"
+        self.nofo.save()
+        self.matching_subsection.body = "The NOFO number is hrsa-24-019"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>hrsa-24-019</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
+
+    def test_ignores_number_match_if_basic_information(self):
+        self.nofo.number = "HRSA-24-019"
+        self.nofo.save()
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.body = "The NOFO number is HRSA-24-019"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
+        self.assertEqual(len(results), 0)
+
+    def test_returns_number_match_with_basic_information_if_order_is_not_1(self):
+        self.nofo.number = "HRSA-24-019"
+        self.nofo.save()
+        self.matching_subsection.name = "Basic information"
+        self.matching_subsection.order = 3
+        self.matching_subsection.body = "The NOFO number is HRSA-24-019"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>HRSA-24-019</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.matching_subsection.id, match["subsection"].id)
+
+    def test_returns_multiple_matches_for_same_field(self):
+        second_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Another Section",
+            order=3,
+            tag="h3",
+            body="Check out Test NOFO for more details",
+        )
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
+        self.assertEqual(len(results), 1)
+        self.matching_subsection.body = "This document is for Test NOFO"
+        self.matching_subsection.save()
+
+        results = find_subsections_with_nofo_field_value(self.nofo, "title")
+        self.assertEqual(len(results), 2)
+        subsection_ids = [r["subsection"].id for r in results]
+        self.assertIn(self.matching_subsection.id, subsection_ids)
+        self.assertIn(second_subsection.id, subsection_ids)
+
+    def test_returns_empty_when_field_value_is_none(self):
+        self.nofo.number = None
+        self.nofo.save()
+        results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(results, [])
 
 
@@ -6885,3 +6965,103 @@ class ReplaceValueInSubsectionsTests(TestCase):
         self.subsection_1.refresh_from_db()
         self.assertIn("HRSA-24-020", self.subsection_1.body)
         self.assertNotIn("HRSA-24-019", self.subsection_1.body)
+
+    # Additional tests for replacing title
+    def test_replace_title_case_insensitive(self):
+        self.subsection_1.body = "The NOFO title is TEST NOFO"
+        self.subsection_1.save()
+        self.subsection_2.body = "Check out test nofo for details"
+        self.subsection_2.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id, self.subsection_2.id],
+            "Test NOFO",
+            "Updated NOFO Title",
+        )
+        self.assertEqual(len(updated), 2)
+        self.subsection_1.refresh_from_db()
+        self.subsection_2.refresh_from_db()
+        self.assertIn("Updated NOFO Title", self.subsection_1.body)
+        self.assertIn("Updated NOFO Title", self.subsection_2.body)
+        self.assertNotIn("TEST NOFO", self.subsection_1.body)
+        self.assertNotIn("test nofo", self.subsection_2.body)
+
+    def test_replace_partial_title_match(self):
+        self.subsection_1.body = "This is for Test NOFO program"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Test NOFO",
+            "Updated NOFO Title",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("Updated NOFO Title program", self.subsection_1.body)
+
+    # NOTE - Additional tests for replacing number
+    def test_replace_number_case_insensitive(self):
+        self.subsection_1.body = "The NOFO number is HRSA-24-019"
+        self.subsection_1.save()
+        self.subsection_2.body = "Apply for hrsa-24-019 now"
+        self.subsection_2.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id, self.subsection_2.id],
+            "HRSA-24-019",
+            "HRSA-24-020",
+        )
+        self.assertEqual(len(updated), 2)
+        self.subsection_1.refresh_from_db()
+        self.subsection_2.refresh_from_db()
+        self.assertIn("HRSA-24-020", self.subsection_1.body)
+        self.assertIn("HRSA-24-020", self.subsection_2.body)
+        self.assertNotIn("HRSA-24-019", self.subsection_1.body)
+        self.assertNotIn("hrsa-24-019", self.subsection_2.body)
+
+    def test_replace_number_with_hyphens_and_spaces(self):
+        self.subsection_1.body = "Apply to HRSA - 24 - 019"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "HRSA-24-019",
+            "HRSA-24-020",
+        )
+        # NOTE - This should not match due to different formatting
+        self.assertEqual(len(updated), 0)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("HRSA - 24 - 019", self.subsection_1.body)
+
+    def test_replace_multiple_occurrences_in_single_subsection(self):
+        self.subsection_1.body = "Test NOFO is great. I love Test NOFO!"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Test NOFO",
+            "New Title",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("New Title is great. I love New Title!", self.subsection_1.body)
+        self.assertNotIn("Test NOFO", self.subsection_1.body)
+
+    def test_replace_with_empty_value(self):
+        self.subsection_1.body = "The title is Test NOFO"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Test NOFO",
+            "",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("The title is ", self.subsection_1.body)
+        self.assertNotIn("Test NOFO", self.subsection_1.body)
+
+    def test_replace_empty_old_value_does_nothing(self):
+        original_body = self.subsection_1.body
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "",
+            "New Value",
+        )
+        self.assertEqual(len(updated), 0)
+        self.subsection_1.refresh_from_db()
+        self.assertEqual(self.subsection_1.body, original_body)
