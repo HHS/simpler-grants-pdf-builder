@@ -818,6 +818,50 @@ class NofoEditTitleView(BaseNofoEditView):
     form_class = NofoNameForm
     template_name = "nofos/nofo_edit_title.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection_matches"] = find_subsections_with_nofo_field_value(
+            self.object, "title"
+        )
+        return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        old_title = Nofo.objects.get(pk=self.object.pk).title
+
+        response = super().form_valid(form)
+
+        new_title = form.cleaned_data.get("title")
+        subsection_ids = self.request.POST.getlist("replace_subsections")
+
+        updated_subsections = replace_value_in_subsections(
+            subsection_ids,
+            old_value=old_title,
+            new_value=new_title,
+        )
+
+        success_message = "Updated title to “{}”".format(new_title)
+
+        if updated_subsections:
+            subsection_list_html = "".join(
+                "<li><a href='#{}'>{}</a></li>".format(
+                    sub.html_id, 
+                    sub.name or "(#){}".format(sub.order)
+                )
+                for sub in updated_subsections
+            )
+
+            success_message += format_html(
+                ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                len(updated_subsections),
+                "" if len(updated_subsections) == 1 else "s",
+                format_html(subsection_list_html)
+            )
+
+        messages.success(self.request, success_message)
+
+        return response
+
 
 class NofoEditCoachDesignerView(BaseNofoEditView):
     form_class = NofoCoachDesignerForm
@@ -832,6 +876,50 @@ class NofoEditCoachDesignerView(BaseNofoEditView):
 class NofoEditNumberView(BaseNofoEditView):
     form_class = NofoNumberForm
     template_name = "nofos/nofo_edit_number.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection_matches"] = find_subsections_with_nofo_field_value(
+            self.object, "number"
+        )
+        return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        old_number = Nofo.objects.get(pk=self.object.pk).number
+
+        response = super().form_valid(form)
+
+        new_number = form.cleaned_data.get("number")
+        subsection_ids = self.request.POST.getlist("replace_subsections")
+
+        updated_subsections = replace_value_in_subsections(
+            subsection_ids,
+            old_value=old_number,
+            new_value=new_number,
+        )
+
+        success_message = "Updated opportunity number to “{}”".format(new_number)
+
+        if updated_subsections:
+            subsection_list_html = "".join(
+                "<li><a href='#{}'>{}</a></li>".format(
+                    sub.html_id,
+                    sub.name or "(#){}".format(sub.order)
+                )
+                for sub in updated_subsections
+            )
+
+            success_message += format_html(
+                ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                len(updated_subsections),
+                "" if len(updated_subsections) == 1 else "s",
+                format_html(subsection_list_html)
+            )
+
+        messages.success(self.request, success_message)
+
+        return response
 
 
 class NofoEditGroupView(BaseNofoEditView):
