@@ -6744,6 +6744,50 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         )
         self.assertEqual(results, [])
 
+    def test_returns_match_for_title(self):
+        self.matching_subsection.body = "This NOFO is titled Test NOFO"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "title"
+        )
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>Test NOFO</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.section, match["section"])
+        self.assertEqual(1, match["subsection"].id)
+
+    def test_returns_empty_list_when_no_title_matches(self):
+        self.matching_subsection.body = "No title mentioned here."
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "title"
+        )
+        self.assertEqual(results, [])
+
+    def test_returns_match_for_number(self):
+        self.nofo.number = "HRSA-24-019"
+        self.nofo.save()
+        self.matching_subsection.body = "The NOFO number is HRSA-24-019"
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "number"
+        )
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertIn("<mark>HRSA-24-019</mark>", match["subsection_body_highlight"])
+        self.assertEqual(self.section, match["section"])
+        self.assertEqual(1, match["subsection"].id)
+
+    def test_returns_empty_list_when_no_number_matches(self):
+        self.nofo.number = "HRSA-24-019"
+        self.nofo.save()
+        self.matching_subsection.body = "No number mentioned here."
+        self.matching_subsection.save()
+        results = find_subsections_with_nofo_field_value(
+            self.nofo, "number"
+        )
+        self.assertEqual(results, [])
+
 
 class ReplaceValueInSubsectionsTests(TestCase):
     def setUp(self):
@@ -6815,3 +6859,29 @@ class ReplaceValueInSubsectionsTests(TestCase):
     def test_empty_id_list_returns_empty_list(self):
         updated = replace_value_in_subsections([], "June 1, 2025", "August 1, 2025")
         self.assertEqual(updated, [])
+
+    def test_replace_title(self):
+        self.subsection_1.body = "The NOFO title is Test NOFO"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Test NOFO",
+            "Updated NOFO Title",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("Updated NOFO Title", self.subsection_1.body)
+        self.assertNotIn("Test NOFO", self.subsection_1.body)
+
+    def test_replace_number(self):
+        self.subsection_1.body = "The NOFO number is HRSA-24-019"
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "HRSA-24-019",
+            "HRSA-24-020",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("HRSA-24-020", self.subsection_1.body)
+        self.assertNotIn("HRSA-24-019", self.subsection_1.body)
