@@ -31,7 +31,8 @@ help:
 	@echo "  make makemigrations  Create new migrations"
 
 build:
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	docker build -t  $(IMAGE_NAME):latest .
+	docker image tag $(IMAGE_NAME):latest $(IMAGE_NAME):$(IMAGE_TAG) .
 	@echo "Built image: $(IMAGE_NAME):$(IMAGE_TAG)"
 
 test:
