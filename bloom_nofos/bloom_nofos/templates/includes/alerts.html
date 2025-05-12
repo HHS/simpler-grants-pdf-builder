@@ -2,6 +2,9 @@
   {% if "success" in message.tags and success_heading %}
     <div class="usa-alert usa-alert--success margin-bottom-3" role="alert" aria-live="polite">
       <div class="usa-alert__body">
+        <button type="button" class="usa-alert__close" aria-label="Dismiss success message" tabindex="0">
+          <span aria-hidden="true">×</span>
+        </button>
         <h4 class="usa-alert__heading">{{ success_heading }}</h4>
         <p class="usa-alert__text">
           {{ message | safe }}
@@ -11,6 +14,9 @@
   {% elif "error" in message.tags and error_heading %}
     <div class="usa-alert usa-alert--error margin-bottom-3" role="alert" aria-live="assertive">
       <div class="usa-alert__body">
+        <button type="button" class="usa-alert__close" aria-label="Dismiss error message" tabindex="0">
+          <span aria-hidden="true">×</span>
+        </button>
         <h4 class="usa-alert__heading">{{ error_heading }}</h4>
         <p class="usa-alert__text">
           {{ message | safe }}
@@ -19,3 +25,37 @@
     </div>
   {% endif %}
 {% endfor %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle close button clicks and keyboard events
+    document.querySelectorAll('.usa-alert__close').forEach(button => {
+      button.addEventListener('click', dismissAlert);
+      button.addEventListener('keydown', function(e) {
+        // Handle Enter or Space key
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          dismissAlert.call(this);
+        }
+      });
+    });
+
+    // Auto-dismiss alerts after 4 seconds
+    document.querySelectorAll('.usa-alert').forEach(alert => {
+      setTimeout(() => {
+        if (alert && alert.parentNode) {
+          dismissAlert.call(alert.querySelector('.usa-alert__close'));
+        }
+      }, 4000);
+    });
+
+    // Helper function to dismiss alert
+    function dismissAlert() {
+      const alert = this.closest('.usa-alert');
+      if (alert) {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300); // Remove after fade animation
+      }
+    }
+  });
+</script>
