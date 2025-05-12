@@ -44,8 +44,8 @@ RUN poetry config virtualenvs.in-project true && \
 COPY . .
 
 # Collect static files
-RUN poetry run python bloom_nofos/manage.py collectstatic --noinput --verbosity 0
+RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
 # Expose port and run server
 EXPOSE $PORT
-CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir bloom_nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]
+CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]

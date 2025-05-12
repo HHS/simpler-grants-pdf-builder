@@ -89,7 +89,7 @@ You will need a `.env` file to run this application.
 
 ```bash
 # create .env file from example file
-cp ./bloom_nofos/bloom_nofos/.env.example ./bloom_nofos/bloom_nofos/.env
+cp ./nofos/bloom_nofos/.env.example ./nofos/bloom_nofos/.env
 ```
 
 If you are running locally, the example file will work just fine.
@@ -98,14 +98,14 @@ If you are running locally, the example file will work just fine.
 
 Just install the dependencies and boot it up. Pretty slick. 😎
 
-Important: make sure to run poetry commands from the `./bloom_nofos` directory.
+Important: make sure to run poetry commands from the `./nofos` directory.
 
 ```bash
 # install dependencies
 poetry install
 
-# make sure you are in the "./bloom_nofos" directory
-cd ./bloom_nofos
+# make sure you are in the "./nofos" directory
+cd ./nofos
 
 # run migrations (needed when first booting up the app)
 poetry run migrate
@@ -136,7 +136,7 @@ Superusers are the only accounts able to access the admin backend at [http://loc
 
 Django's default commands can be run by calling `python manage.py {command}`. In this repo, we are using poetry to run them.
 
-Important: make sure to run poetry commands from the `./bloom_nofos` directory.
+Important: make sure to run poetry commands from the `./nofos` directory.
 
 ```bash
 # running default django commands
@@ -159,7 +159,7 @@ I've made a couple of tweaks so that they work in this app.
 
 No additional environment variables are needed to run the application in dev mode, but to run in production, several are needed.
 
-To manually deploy to production, create a new file `./bloom_nofos/bloom_nofos/.env.production`.
+To manually deploy to production, create a new file `./nofos/bloom_nofos/.env.production`.
 
 - `DEBUG=false`: Never run in production with debug mode turned on.
 
@@ -223,7 +223,7 @@ For local development, the application will:
 
 #### Option 1: Using Local Certificate Files
 
-1. Place your Login.gov certificate files in `bloom_nofos/bloom_nofos/certs/`:
+1. Place your Login.gov certificate files in `./nofos/bloom_nofos/certs/`:
 
    - `login-gov-private.pem`
    - `login-gov-public.crt`
@@ -246,7 +246,7 @@ For local development, the application will:
    gcloud config set project bloom-nofos-1
    gcloud auth application-default set-quota-project bloom-nofos-1
    ```
-4. This will fetch the private key for you to use, the public keys should be commited to the bloom_nofos/bloom_nofos/certs directory
+4. This will fetch the private key for you to use, the public keys should be commited to the ./nofos/bloom_nofos/certs directory
 
 ## Build and run as a Docker container
 

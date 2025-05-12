@@ -12,7 +12,7 @@ nofos.json
 users.json
 
 # other static folder
-bloom_nofos/static
+nofos/static
 
 # debug file
 debug_output.html
