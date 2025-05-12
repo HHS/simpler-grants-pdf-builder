@@ -483,6 +483,73 @@ label.usa-label {
   z-index: 10;
 }
 
+/* Alert styles */
+.usa-alert {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  transition: opacity 0.3s ease-out;
+  margin-bottom: 1rem !important;
+  background: white;
+  isolation: isolate;
+}
+
+.usa-alert__body {
+  position: relative;
+}
+
+.usa-alert__heading {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.usa-alert__text {
+  margin: 0;
+}
+
+/* Ensure warning messages stay on top */
+.usa-site-alert--broken-links .usa-alert,
+.usa-site-alert--heading-errors .usa-alert,
+.usa-site-alert--h7-headers .usa-alert {
+  z-index: inherit;
+}
+
+/* Summary box should be below alerts */
+.usa-summary-box {
+  position: relative;
+  z-index: 1;
+}
+
+.usa-alert__close {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  opacity: 0.7;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.usa-alert__close:hover,
+.usa-alert__close:focus {
+  opacity: 1;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.usa-alert__close:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .nofo_edit caption {
   top: 46px;
 }
@@ -1002,26 +1069,31 @@ main .back-link a::before,
 
 /* Nofo edit properties pages */
 
-.edit__application-deadline form table h2 {
+.edit__application-deadline form table h2,
+.edit__nofo-number form table h2,
+.edit__nofo-title form table h2 {
   margin: 0;
 }
 
 .edit__application-deadline form table tr > th:first-of-type,
-.edit__application-deadline form table tr > td:first-of-type {
+.edit__application-deadline form table tr > td:first-of-type,
+.edit__nofo-number form table tr > th:first-of-type,
+.edit__nofo-number form table tr > td:first-of-type,
+.edit__nofo-title form table tr > th:first-of-type,
+.edit__nofo-title form table tr > td:first-of-type {
   padding-left: 0.5rem;
   padding-right: 0;
 }
 
-.edit__application-deadline
-  form
-  table
-  tr
-  > td:first-of-type
-  .usa-checkbox__label {
+.edit__application-deadline form table tr > td:first-of-type .usa-checkbox__label,
+.edit__nofo-number form table tr > td:first-of-type .usa-checkbox__label,
+.edit__nofo-title form table tr > td:first-of-type .usa-checkbox__label {
   margin-top: 0;
 }
 
-.edit__application-deadline form table tr.subsection--selected td {
+.edit__application-deadline form table tr.subsection--selected td,
+.edit__nofo-number form table tr.subsection--selected td,
+.edit__nofo-title form table tr.subsection--selected td {
   background-color: #f2e4d4;
 }
 

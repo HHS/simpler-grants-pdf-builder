@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
-{% load nofo_name %}
+{% load nofo_name subsection_name_or_order %}
+
+{% block body_class %}edit__nofo-number{% endblock %}
 
 {% block title %}
   NOFO Opportunity number
@@ -19,5 +21,101 @@
     {% include "includes/form_macro.html" with hint2="eg: “HRSA-24-019”" %}
 
     <button class="usa-button margin-top-3" type="submit">Save number</button>
+
+  {% if subsection_matches %}
+    <table class="usa-table usa-table--borderless margin-top-4">
+      <caption>
+        <h2 class="h4">{{ subsection_matches|length }} subsection{{ subsection_matches|length|pluralize }} found with "{{ form.number.value }}"</h2>
+      </caption>
+      <thead>
+        <tr class="usa-sr-only">
+          <th scope="col">Replace?</th>
+          <th scope="col">Section</th>
+          <th scope="col">Subsection</th>
+          <th scope="col">Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in subsection_matches %}
+        <tr>
+          <td>
+            <div class="usa-checkbox">
+              <input
+                class="usa-checkbox__input"
+                id="replace-{{ match.subsection.id }}"
+                type="checkbox"
+                name="replace_subsections"
+                value="{{ match.subsection.id }}"
+              />
+              <label class="usa-checkbox__label" for="replace-{{ match.subsection.id }}">
+                <span class="usa-sr-only">Replace number in subsection: {{ match.subsection|subsection_name_or_order }}</span>
+              </label>
+            </div>
+          </td>
+          <td>{{ match.section.name }}</td>
+          <td>
+            <a class="usa-link usa-link--external" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
+              {{ match.subsection|subsection_name_or_order }}
+            </a>
+          </td>
+          <td>
+            {{ match.subsection_body_highlight|safe|linebreaksbr }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
   </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('nofo-number--form');
+      const button = form.querySelector('button[type="submit"]');
+      const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
+      const originalButtonText = button.textContent.trim();
+
+      if (checkboxes.length === 0) {
+        // No subsection matches, nothing to do
+        return;
+      }
+
+      function updateButtonText() {
+        const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
+        if (checkedCount === 0) {
+          button.textContent = originalButtonText;
+        } else if (checkedCount === 1) {
+          button.textContent = `${originalButtonText} + 1 subsection`;
+        } else {
+          button.textContent = `${originalButtonText} + ${checkedCount} subsections`;
+        }
+      }
+
+      function updateRowHighlight(checkbox) {
+        const row = checkbox.closest('tr');
+        const className = 'subsection--selected'
+        if (checkbox.checked) {
+          row.classList.add(className);
+        } else {
+          row.classList.remove(className);
+        }
+      }
+
+      // Attach listener to each checkbox
+      checkboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+          updateButtonText();
+          updateRowHighlight(checkbox);
+        });
+
+        // run once when page loads
+        updateRowHighlight(checkbox);
+      });
+
+      // run once when page loads
+      updateButtonText();
+    });
+  </script>
 {% endblock %}
