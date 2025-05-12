@@ -9,12 +9,22 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.1.0] - 2025-05-12
+
+### Added
+
 - Add configuration in settings.py for AWS database connection
 
 ### Changed
 
+- Changed top-level app directory from `./bloom_nofos/` to `./nofos`
 - IHS not-selected top nav link borders on section pages are white
 - Tag docker images built with Makefile with latest git sha (or "latest")
+- Show sticky flash message for edits on nofo_edit page
 
 ### Fixed
 
