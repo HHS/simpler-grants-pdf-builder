@@ -483,6 +483,43 @@ label.usa-label {
   z-index: 10;
 }
 
+/* Alert styles */
+.usa-alert {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  transition: opacity 0.3s ease-out;
+  margin-bottom: 1rem !important;
+  background: white;
+  isolation: isolate;
+}
+
+.usa-alert__body {
+  position: relative;
+}
+
+.usa-alert__heading {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.usa-alert__text {
+  margin: 0;
+}
+
+/* Ensure warning messages stay on top */
+.usa-site-alert--broken-links .usa-alert,
+.usa-site-alert--heading-errors .usa-alert,
+.usa-site-alert--h7-headers .usa-alert {
+  z-index: inherit;
+}
+
+/* Summary box should be below alerts */
+.usa-summary-box {
+  position: relative;
+  z-index: 1;
+}
+
 .nofo_edit caption {
   top: 46px;
 }

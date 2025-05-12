@@ -1203,8 +1203,7 @@ class NofoSubsectionEditView(
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            "Updated subsection: “<a href='#{}'>{}</a>” in ‘{}’".format(
-                self.object.html_id,
+            "Updated subsection: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
                 self.object.name or "(#{})".format(self.object.order),
                 self.object.section.name,
             ),
