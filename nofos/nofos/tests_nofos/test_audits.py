@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.utils import timezone
 from easyaudit.models import CRUDEvent
+
 from nofos.models import Nofo, Section, Subsection
 
 from ..audits import (
@@ -242,3 +243,37 @@ class GetAuditEventsForNofoTests(TestCase):
         timestamps = [event.datetime for event in events]
 
         self.assertEqual(timestamps, sorted(timestamps))
+
+    def test_includes_deleted_subsection_event(self):
+        # Delete the subsection (this removes it from the database)
+        self.subsection.delete()
+
+        # Create a DELETE event for the subsection
+        # event.object_json_repr still contains subsection info despite it not being in the DB
+        delete_event = CRUDEvent.objects.create(
+            content_type=self.subsection_ct,
+            object_id=str(self.subsection.id),
+            object_json_repr=json.dumps(
+                [
+                    {
+                        "model": "nofos.subsection",
+                        "pk": str(self.subsection.id),
+                        "fields": {
+                            "name": self.subsection.name,
+                            "section": str(self.section.id),
+                        },
+                    }
+                ]
+            ),
+            event_type=CRUDEvent.DELETE,
+            user=self.user,
+            datetime=timezone.now(),
+        )
+
+        # Fetch audit events for the NOFO
+        results = get_audit_events_for_nofo(self.nofo)
+
+        # Should include only the delete event, not the active subsection
+        self.assertEqual(len(results), 1)
+        self.assertIn(delete_event, results)
+        self.assertEqual(results[0].event_type, CRUDEvent.DELETE)
