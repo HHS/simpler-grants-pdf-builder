@@ -190,11 +190,13 @@ class GetAuditEventsForNofoTests(TestCase):
         event_type=CRUDEvent.UPDATE,
         changed_fields=None,
         dt_offset=0,
+        object_json_repr=None,
     ):
         return CRUDEvent.objects.create(
             content_type=content_type,
             object_id=str(obj.id),
             object_repr=str(obj),
+            object_json_repr=json.dumps(object_json_repr or str(obj)),
             event_type=event_type,
             user=self.user,
             datetime=timezone.now() + timedelta(minutes=dt_offset),
@@ -250,24 +252,20 @@ class GetAuditEventsForNofoTests(TestCase):
 
         # Create a DELETE event for the subsection
         # event.object_json_repr still contains subsection info despite it not being in the DB
-        delete_event = CRUDEvent.objects.create(
-            content_type=self.subsection_ct,
-            object_id=str(self.subsection.id),
-            object_json_repr=json.dumps(
-                [
-                    {
-                        "model": "nofos.subsection",
-                        "pk": str(self.subsection.id),
-                        "fields": {
-                            "name": self.subsection.name,
-                            "section": str(self.section.id),
-                        },
-                    }
-                ]
-            ),
-            event_type=CRUDEvent.DELETE,
-            user=self.user,
-            datetime=timezone.now(),
+        delete_event = self.create_event(
+            self.subsection,
+            self.subsection_ct,
+            CRUDEvent.DELETE,
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
         )
 
         # Fetch audit events for the NOFO
@@ -277,3 +275,74 @@ class GetAuditEventsForNofoTests(TestCase):
         self.assertEqual(len(results), 1)
         self.assertIn(delete_event, results)
         self.assertEqual(results[0].event_type, CRUDEvent.DELETE)
+
+    def test_includes_create_update_delete_subsection_events(self):
+        # Create an initial CREATE event for the subsection
+        create_event = self.create_event(
+            self.subsection,
+            self.subsection_ct,
+            CRUDEvent.CREATE,
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
+            dt_offset=-2,  # 2 minutes ago
+        )
+
+        # Simulate an UPDATE event for the subsection
+        update_event = self.create_event(
+            self.subsection,
+            self.subsection_ct,
+            CRUDEvent.UPDATE,
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
+            changed_fields={"name": ["Subsection 1", "Updated Subsection"]},
+            dt_offset=-1,  # 1 minute ago
+        )
+
+        # Delete the subsection (this removes it from the database)
+        self.subsection.delete()
+
+        delete_event = self.create_event(
+            self.subsection,
+            self.subsection_ct,
+            CRUDEvent.DELETE,
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
+        )
+
+        # Fetch audit events for the NOFO
+        results = get_audit_events_for_nofo(self.nofo)
+
+        # Ensure all three events (CREATE, UPDATE, DELETE) are included
+        self.assertEqual(len(results), 3)
+        self.assertIn(create_event, results)
+        self.assertIn(update_event, results)
+        self.assertIn(delete_event, results)
+
+        # Ensure reverse chronological order is correct (delete -> update -> create)
+        self.assertEqual(results[2], create_event)
+        self.assertEqual(results[1], update_event)
+        self.assertEqual(results[0], delete_event)
