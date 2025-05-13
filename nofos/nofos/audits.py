@@ -141,13 +141,13 @@ def get_audit_events_for_nofo(nofo, reverse=True):
         content_type__model="subsection",
     )
 
-    # Get DELETE events for Subsections (they aren't included in "subsection_ids")
+    # Get ALL events for Subsections that have been deleted
     subsection_delete_filter = Q()
     for section_id in section_ids:
         subsection_delete_filter |= Q(object_json_repr__contains=str(section_id))
 
     deleted_subsection_events = CRUDEvent.objects.filter(
-        content_type__model="subsection", event_type=CRUDEvent.DELETE
+        content_type__model="subsection"
     ).filter(subsection_delete_filter)
 
     return sorted(
