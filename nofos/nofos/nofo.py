@@ -2263,6 +2263,7 @@ def add_final_subsection_to_step_3(sections):
     or "Step 3: Write Your Application" (case-insensitive).
 
     If found, then looks for a subsection called "Other required forms", "Standard forms", or "Application components".
+    It looks in reverse order for a matching subsection name, so it matches the one closest to the end of the section.
 
         If either of those are found, then a new subsection is added immediately afterwards.
         If none are found, then the new subsection is added as the final subsection.
@@ -2331,13 +2332,13 @@ def add_final_subsection_to_step_3(sections):
 
             order_number = None
 
-            # find the new subsection to insert after
-            for subsection in subsections:
+            # find the new subsection to insert after (starting from the last match)
+            for subsection in reversed(subsections):
                 if subsection.get("name", "").lower() in [
                     name.lower() for name in subsection_names
                 ]:
                     order_number = subsection.get("order") + 1
-                    break  # Stop loop once a matching subsection name is found
+                    break  # Stop loop once the LAST matching subsection name is found
 
             if not order_number:
                 # set as last order if not yet set

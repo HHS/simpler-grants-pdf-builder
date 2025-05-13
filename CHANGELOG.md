@@ -25,6 +25,7 @@ Versioning since version 1.0.0.
 - IHS not-selected top nav link borders on section pages are white
 - Tag docker images built with Makefile with latest git sha (or "latest")
 - Show sticky flash message for edits on nofo_edit page
+- Add the "Important: public information" subsection after _last_ matching subsection
 
 ### Fixed
 
