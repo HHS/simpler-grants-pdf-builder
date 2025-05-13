@@ -1300,9 +1300,9 @@ class AddFinalSubsectionTests(TestCase):
                     sections[2]["subsections"][2]["name"], "Subsection 3.1"
                 )
 
-    def test_add_public_information_section_after_first_specific_subsection_title(self):
+    def test_add_public_information_section_after_LAST_specific_subsection_title(self):
         """
-        Test that the public information subsection is added _after_ the first subsection title matched.
+        Test that the public information subsection is added _after_ the last subsection title matched.
         """
         sections = self._get_sections_1_2_3()
 
@@ -1358,20 +1358,21 @@ class AddFinalSubsectionTests(TestCase):
 
         # first subsection is "Standard forms"
         self.assertEqual(sections[2]["subsections"][0]["name"], "Standard forms")
-        # second subsection is public information one
+
+        # second subsection is "Other required forms"
+        self.assertEqual(sections[2]["subsections"][1]["name"], "Other required forms")
+        # third subsection is "Application components"
         self.assertEqual(
-            sections[2]["subsections"][1]["name"],
+            sections[2]["subsections"][2]["name"], "Application components"
+        )
+        # fourth subsection is public information one
+        self.assertEqual(
+            sections[2]["subsections"][3]["name"],
             PUBLIC_INFORMATION_SUBSECTION["name"],
         )
         self.assertEqual(
-            sections[2]["subsections"][1]["body"],
+            sections[2]["subsections"][3]["body"],
             PUBLIC_INFORMATION_SUBSECTION["body"],
-        )
-        # third subsection is "Other required forms"
-        self.assertEqual(sections[2]["subsections"][2]["name"], "Other required forms")
-        # fourth subsection is "Application components"
-        self.assertEqual(
-            sections[2]["subsections"][3]["name"], "Application components"
         )
         # last subsection is the initial one
         self.assertEqual(sections[2]["subsections"][4]["name"], "Subsection 3.1")
