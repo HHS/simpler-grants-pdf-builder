@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict
 
+from django.db.models import Q
 from easyaudit.models import CRUDEvent
 
 from .models import Subsection
@@ -140,8 +141,20 @@ def get_audit_events_for_nofo(nofo, reverse=True):
         content_type__model="subsection",
     )
 
+    # Get DELETE events for Subsections (they aren't included in "subsection_ids")
+    subsection_delete_filter = Q()
+    for section_id in section_ids:
+        subsection_delete_filter |= Q(object_json_repr__contains=str(section_id))
+
+    deleted_subsection_events = CRUDEvent.objects.filter(
+        content_type__model="subsection", event_type=CRUDEvent.DELETE
+    ).filter(subsection_delete_filter)
+
     return sorted(
-        list(nofo_events) + list(section_events) + list(subsection_events),
+        list(nofo_events)
+        + list(section_events)
+        + list(subsection_events)
+        + list(deleted_subsection_events),
         key=lambda e: e.datetime,
         reverse=reverse,
     )
