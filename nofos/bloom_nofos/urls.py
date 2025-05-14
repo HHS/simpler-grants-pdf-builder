@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
-from nofos.api.api import api
+from nofos.api.api import api, health_api
 
 from . import views
 
@@ -49,5 +49,6 @@ urlpatterns = [
     path("test-mode", views.TestModeView.as_view(), name="test_mode"),
     path("", views.index, name="index"),
     path("404/", views.page_not_found),
-    path("api/", api.urls),
+    path("", health_api.urls),  # Mount health check at root
+    path("api/", api.urls),     # Mount main API under /api/
 ]
