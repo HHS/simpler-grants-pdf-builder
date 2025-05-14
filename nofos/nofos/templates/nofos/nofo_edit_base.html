@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load nofo_name subsection_name_or_order %}
+
+{% block body_class %}{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title=page_title back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <form id="{{ form_id|default:'nofo-edit-form' }}" method="post">
+    {% csrf_token %}
+
+    {% block form_content %}{% endblock %}
+
+    <button class="usa-button margin-top-3" type="submit">{{ button_text }}</button>
+
+  {% if subsection_matches %}
+    <table class="usa-table usa-table--borderless margin-top-4">
+      <caption>
+        <h2 class="h4">
+          {{ subsection_matches|length }} subsection{{ subsection_matches|length|pluralize }} found with 
+          "{% firstof match_value form.title.value form.number.value form.application_deadline.value '(no value)' %}"
+        </h2>
+      </caption>
+      <thead>
+        <tr class="usa-sr-only">
+          <th scope="col">Replace?</th>
+          <th scope="col">Section</th>
+          <th scope="col">Subsection</th>
+          <th scope="col">Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in subsection_matches %}
+        <tr class="{% if checkbox_checked|default:"True" %}subsection--selected{% endif %}">
+          <td>
+            <div class="usa-checkbox">
+              <input
+                class="usa-checkbox__input"
+                id="replace-{{ match.subsection.id }}"
+                type="checkbox"
+                name="replace_subsections"
+                value="{{ match.subsection.id }}"
+                {% if checkbox_checked|default:"True" %}checked{% endif %}
+              />
+              <label class="usa-checkbox__label" for="replace-{{ match.subsection.id }}">
+                <span class="usa-sr-only">Replace {{ replace_text }} in subsection: {{ match.subsection|subsection_name_or_order }}</span>
+              </label>
+            </div>
+          </td>
+          <td>{{ match.section.name }}</td>
+          <td>
+            <a class="usa-link usa-link--external" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
+              {{ match.subsection|subsection_name_or_order }}
+            </a>
+          </td>
+          <td>
+            {{ match.subsection_body_highlight|safe|linebreaksbr }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+  </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        const formId = '{{ form_id|default:"nofo-edit-form" }}';
+        const form = document.getElementById(formId);
+        
+        if (!form) {
+          console.error('Form not found:', formId);
+          return;
+        }
+
+        const button = form.querySelector('button[type="submit"]');
+        if (!button) {
+          console.error('Submit button not found');
+          return;
+        }
+
+        const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
+        const originalButtonText = button.textContent.trim() || '{{ button_text|default:"Save" }}';
+
+        if (checkboxes.length === 0) {
+          // No subsection matches, nothing to do
+          return;
+        }
+
+        function updateButtonText() {
+          const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
+          const baseText = originalButtonText || 'Save';
+          if (checkedCount === 0) {
+            button.textContent = baseText;
+          } else if (checkedCount === 1) {
+            button.textContent = `${baseText} + 1 subsection`;
+          } else {
+            button.textContent = `${baseText} + ${checkedCount} subsections`;
+          }
+          
+        }
+
+        function updateRowHighlight(checkbox) {
+          const row = checkbox.closest('tr');
+          if (!row) return;
+          
+          // Remove highlight from all rows first
+          form.querySelectorAll('tr').forEach(tr => {
+            tr.classList.remove('subsection--selected');
+          });
+          
+          // Add highlight to checked rows
+          form.querySelectorAll('input[name="replace_subsections"]:checked').forEach(cb => {
+            const checkedRow = cb.closest('tr');
+            if (checkedRow) {
+              checkedRow.classList.add('subsection--selected');
+            }
+          });
+        }
+
+        // Attach listener to each checkbox
+        checkboxes.forEach(function (checkbox) {
+          checkbox.addEventListener('change', function () {
+            updateButtonText();
+            updateRowHighlight(this);
+          });
+        });
+
+        // Initialize state
+        updateButtonText();
+        // Initialize highlighting for all checked checkboxes
+        checkboxes.forEach(checkbox => {
+          if (checkbox.checked) {
+            updateRowHighlight(checkbox);
+          }
+        });
+      } catch (error) {
+        console.error('Error in form initialization:', error);
+      }
+    });
+  </script>
+{% endblock %}
