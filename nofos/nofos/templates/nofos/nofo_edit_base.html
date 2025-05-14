@@ -56,7 +56,7 @@
           </td>
           <td>{{ match.section.name }}</td>
           <td>
-            <a class="usa-link usa-link--external" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
+            <a class="usa-link usa-link--external" target="_blank" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
               {{ match.subsection|subsection_name_or_order }}
             </a>
           </td>
