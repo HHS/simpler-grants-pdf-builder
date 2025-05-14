@@ -115,6 +115,16 @@ class NofoHistoryViewTests(TestCase):
             object_id=self.subsection.id,
             content_type=self.subsection_content_type,
             object_repr=str(self.subsection),
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
             user=self.user,
             datetime=timezone.now(),
         )
