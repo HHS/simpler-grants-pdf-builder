@@ -9,7 +9,7 @@ from nofos.models import Nofo, Section, Subsection
 class HealthCheckAPITest(TestCase):
     def test_health_check(self):
         """Test that health check endpoint returns 200 OK with correct response"""
-        response = self.client.get("/api/health")
+        response = self.client.get("/health")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok"})
 
