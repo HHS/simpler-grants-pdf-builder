@@ -1004,6 +1004,32 @@ class CreateNOFOTests(TestCase):
         self.assertEqual(nofo.title, "")
         self.assertEqual(len(nofo.sections.all()), 0)
 
+    def test_replace_value_in_subsections_empty_value(self):
+        """Test that empty values are not allowed as replacement values"""
+        nofo = Nofo.objects.create(title="Test NOFO", opdiv="Test OpDiv")
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+        subsection = Subsection.objects.create(
+            section=section,
+            name="Test Subsection",
+            order=1,
+            tag="h3",
+            body="The deadline is June 1, 2025"
+        )
+        
+        # Attempt to replace with empty value
+        updated = replace_value_in_subsections(
+            [subsection.id],
+            "June 1, 2025",
+            ""
+        )
+        
+        # No updates should occur
+        self.assertEqual(len(updated), 0)
+        
+        # Verify subsection was not changed
+        subsection.refresh_from_db()
+        self.assertEqual(subsection.body, "The deadline is June 1, 2025")
+
     def test_create_nofo_subsection_body_is_markdown(self):
         """
         Test creating a nofo object with markdown strings (not HTML) as body
@@ -7058,15 +7084,15 @@ class ReplaceValueInSubsectionsTests(TestCase):
 
     # NOTE - Commenting our for the time being. This feels like we should
     # conditionally check this in the function behavior.
-    # def test_replace_empty_old_value_behavior(self):
-    #     # Since the function appears to process empty strings (based on the test failure),
-    #     # we should test the actual behavior rather than what we initially expected
-    #     original_body = self.subsection_1.body
-    #     updated = replace_value_in_subsections(
-    #         [self.subsection_1.id],
-    #         "",
-    #         "New Value",
-    #     )
-    #     self.assertEqual(len(updated), 1)
-    #     self.subsection_1.refresh_from_db()
-    #     self.assertNotEqual(self.subsection_1.body, original_body)
+    def test_replace_empty_old_value_behavior(self):
+        # Since the function appears to process empty strings (based on the test failure),
+        # we should test the actual behavior rather than what we initially expected
+        original_body = self.subsection_1.body
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "",
+            "New Value",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertNotEqual(self.subsection_1.body, original_body)
