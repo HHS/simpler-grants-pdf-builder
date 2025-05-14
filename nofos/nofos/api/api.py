@@ -23,6 +23,11 @@ api = NinjaAPI(
     docs_url="/docs",
 )
 
+@api.get("/health", auth=None)
+def health_check(request):
+    """Health check endpoint that returns 200 OK."""
+    return 200, {"status": "ok"}
+
 
 @api.post("/nofos", response={201: SuccessSchema, 400: ErrorSchema})
 def create_nofo(request, payload: NofoSchema):
