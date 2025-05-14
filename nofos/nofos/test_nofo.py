@@ -1015,17 +1015,16 @@ class CreateNOFOTests(TestCase):
             tag="h3",
             body="The deadline is June 1, 2025"
         )
-        
+
         # Attempt to replace with empty value
         updated = replace_value_in_subsections(
             [subsection.id],
             "June 1, 2025",
             ""
         )
-        
-        # No updates should occur
+
         self.assertEqual(len(updated), 0)
-        
+
         # Verify subsection was not changed
         subsection.refresh_from_db()
         self.assertEqual(subsection.body, "The deadline is June 1, 2025")
@@ -7070,29 +7069,25 @@ class ReplaceValueInSubsectionsTests(TestCase):
         self.assertNotIn("Test NOFO", self.subsection_1.body)
 
     def test_replace_with_empty_value(self):
-        self.subsection_1.body = "The title is Test NOFO"
+        original_body = "The title is Test NOFO"
+        self.subsection_1.body = original_body
         self.subsection_1.save()
         updated = replace_value_in_subsections(
             [self.subsection_1.id],
             "Test NOFO",
             "",
         )
-        self.assertEqual(len(updated), 1)
+        self.assertEqual(len(updated), 0)
         self.subsection_1.refresh_from_db()
-        self.assertIn("The title is ", self.subsection_1.body)
-        self.assertNotIn("Test NOFO", self.subsection_1.body)
+        self.assertEqual(self.subsection_1.body, original_body)
 
-    # NOTE - Commenting our for the time being. This feels like we should
-    # conditionally check this in the function behavior.
     def test_replace_empty_old_value_behavior(self):
-        # Since the function appears to process empty strings (based on the test failure),
-        # we should test the actual behavior rather than what we initially expected
         original_body = self.subsection_1.body
         updated = replace_value_in_subsections(
             [self.subsection_1.id],
             "",
             "New Value",
         )
-        self.assertEqual(len(updated), 1)
+        self.assertEqual(len(updated), 0)
         self.subsection_1.refresh_from_db()
-        self.assertNotEqual(self.subsection_1.body, original_body)
+        self.assertEqual(self.subsection_1.body, original_body)

@@ -2427,7 +2427,7 @@ def replace_value_in_subsections(subsection_ids, old_value, new_value):
     
     If new_value is empty, no replacements will be made and an empty list will be returned.
     """
-    if not subsection_ids or not new_value:
+    if not subsection_ids or not new_value or not old_value:
         return []
 
     updated_subsections = []
