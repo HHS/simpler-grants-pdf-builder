@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load nofo_name subsection_name_or_order %}
 
-{% block body_class %}{% endblock %}
+{% block body_class %}nofo_edit{% endblock %}
 
 {% block title %}{% endblock %}
 
@@ -13,7 +13,7 @@
   {% endwith %}
   {% endwith %}
 
-  <form id="{{ form_id|default:'nofo-edit-form' }}" method="post">
+  <form id="{{ form_id|default:'nofo_edit_form' }}" class="nofo_edit_form" method="post">
     {% csrf_token %}
 
     {% block form_content %}{% endblock %}
@@ -73,80 +73,7 @@
 
 {% block js_footer %}
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      try {
-        const formId = '{{ form_id|default:"nofo-edit-form" }}';
-        const form = document.getElementById(formId);
-        
-        if (!form) {
-          console.error('Form not found:', formId);
-          return;
-        }
-
-        const button = form.querySelector('button[type="submit"]');
-        if (!button) {
-          console.error('Submit button not found');
-          return;
-        }
-
-        const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
-        const originalButtonText = button.textContent.trim() || '{{ button_text|default:"Save" }}';
-
-        if (checkboxes.length === 0) {
-          // No subsection matches, nothing to do
-          return;
-        }
-
-        function updateButtonText() {
-          const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
-          const baseText = originalButtonText || 'Save';
-          if (checkedCount === 0) {
-            button.textContent = baseText;
-          } else if (checkedCount === 1) {
-            button.textContent = `${baseText} + 1 subsection`;
-          } else {
-            button.textContent = `${baseText} + ${checkedCount} subsections`;
-          }
-          
-        }
-
-        function updateRowHighlight(checkbox) {
-          const row = checkbox.closest('tr');
-          if (!row) return;
-          
-          // Remove highlight from all rows first
-          form.querySelectorAll('tr').forEach(tr => {
-            tr.classList.remove('subsection--selected');
-          });
-          
-          // Add highlight to checked rows
-          form.querySelectorAll('input[name="replace_subsections"]:checked').forEach(cb => {
-            const checkedRow = cb.closest('tr');
-            if (checkedRow) {
-              checkedRow.classList.add('subsection--selected');
-            }
-          });
-        }
-
-        // Attach listener to each checkbox
-        checkboxes.forEach(function (checkbox) {
-          checkbox.addEventListener('change', function () {
-            updateButtonText();
-            updateRowHighlight(this);
-          });
-        });
-
-        // Initialize state
-        updateButtonText();
-        // Initialize highlighting for all checked checkboxes
-        checkboxes.forEach(checkbox => {
-          if (checkbox.checked) {
-            updateRowHighlight(checkbox);
-          }
-        });
-      } catch (error) {
-        console.error('Error in form initialization:', error);
-      }
-    });
+    window.nofoEditFormId = '{{ form_id|default:"nofo_edit_form" }}';
   </script>
+  <script src="/static/js/nofo_edit_form.js"></script>
 {% endblock %}
