@@ -2424,8 +2424,10 @@ def replace_value_in_subsections(subsection_ids, old_value, new_value):
     Replaces `old_value` with `new_value` in bodies of given subsection_ids.
     Note that old_value uses a case-insensitive compare, so "JUNE 1" will match "June 1".
     Returns the list of updated Subsection objects.
+    
+    If new_value is empty, no replacements will be made and an empty list will be returned.
     """
-    if not subsection_ids:
+    if not subsection_ids or not new_value:
         return []
 
     updated_subsections = []
