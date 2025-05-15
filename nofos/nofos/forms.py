@@ -33,45 +33,12 @@ def create_object_model_form(model_class):
 create_nofo_form_class = create_object_model_form(Nofo)
 
 
-# Creating form classes with validation
-class NofoNameForm(forms.ModelForm):
-    class Meta:
-        model = Nofo
-        fields = ["title", "short_name"]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["short_name"].required = False
-
-    def clean_title(self):
-        title = self.cleaned_data.get("title")
-        if title is None or not title.strip():
-            raise forms.ValidationError("Title cannot be empty.")
-        return title.strip()
-
-class NofoNumberForm(forms.ModelForm):
-    class Meta:
-        model = Nofo
-        fields = ["number"]
-
-    def clean_number(self):
-        number = self.cleaned_data.get("number")
-        if number is None or not number.strip():
-            raise forms.ValidationError("Number cannot be empty.")
-        return number.strip()
-
-class NofoApplicationDeadlineForm(forms.ModelForm):
-    class Meta:
-        model = Nofo
-        fields = ["application_deadline"]
-
-    def clean_application_deadline(self):
-        deadline = self.cleaned_data.get("application_deadline")
-        if deadline is None or not deadline.strip():
-            raise forms.ValidationError("Application deadline cannot be empty.")
-        return deadline.strip()
-
+NofoNameForm = create_nofo_form_class(
+    ["title", "short_name"], not_required_labels=["Short name"]
+)
 NofoAgencyForm = create_nofo_form_class(["agency"])
+NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
+NofoNumberForm = create_nofo_form_class(["number"])
 NofoCoverForm = create_nofo_form_class(["cover"])
 NofoGroupForm = create_nofo_form_class(["group"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])

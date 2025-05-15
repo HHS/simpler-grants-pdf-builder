@@ -1,31 +1,27 @@
-{% extends 'nofos/nofo_edit_base.html' %}
+{% extends 'base.html' %}
+{% load nofo_name subsection_name_or_order %}
 
 {% block body_class %}edit__nofo-number{% endblock %}
 
 {% block title %}NOFO Opportunity number{% endblock %}
 
-{% with page_title="NOFO Opportunity number" %}
-{% with form_id="nofo_edit_number_form" %}
-{% with button_text="Save number" %}
-{% with match_value=form.number.value %}
-{% with replace_text="number" %}
-{% with checkbox_checked=True %}
-
-{% block form_content %}
-  {% include "includes/form_macro.html" with hint2='eg: "HRSA-24-019"' %}
-{% endblock %}
-
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-
 {% block content %}
-{% with match_value=form.number.value %}
-{% with button_text="Save number" %}
-{{ block.super }}
-{% endwith %}
-{% endwith %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% with form_id="nofo_edit_number_form" %}
+      {% include "includes/page_heading.html" with title="NOFO Opportunity number" back_text=back_text back_href=back_href only %}
+
+      <form id="{{ form_id }}" class="nofo_edit_form" method="post">
+        {% csrf_token %}
+
+        {% include "includes/form_macro.html" with hint2='eg: "HRSA-24-019"' %}
+
+        <button class="usa-button margin-top-3" type="submit">Save number</button>
+
+        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=form.number.value replace_text="number" checkbox_checked=True %}
+      </form>
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
 {% endblock %}
