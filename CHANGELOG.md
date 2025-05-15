@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add healthcheck endpoint at /health
+
 ### Changed
 
 - Add the "Important: public information" subsection after _last_ matching subsection
