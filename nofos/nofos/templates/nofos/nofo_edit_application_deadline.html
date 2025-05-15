@@ -1,31 +1,27 @@
-{% extends 'nofos/nofo_edit_base.html' %}
+{% extends 'base.html' %}
+{% load nofo_name subsection_name_or_order %}
 
 {% block body_class %}edit__application-deadline{% endblock %}
 
 {% block title %}NOFO Application Deadline{% endblock %}
 
-{% with page_title="NOFO Application Deadline" %}
-{% with form_id="nofo_edit_application_deadline_form" %}
-{% with button_text="Save application deadline" %}
-{% with match_value=form.application_deadline.value %}
-{% with replace_text="application deadline" %}
-{% with checkbox_checked=True %}
-
-{% block form_content %}
-  {% include "includes/form_macro.html" with hint2='eg: "Monday, January 1, 2024"' %}
-{% endblock %}
-
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
-
 {% block content %}
-{% with match_value=form.application_deadline.value %}
-{% with button_text="Save application deadline" %}
-{{ block.super }}
-{% endwith %}
-{% endwith %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% with form_id="nofo_edit_application_deadline_form" %}
+      {% include "includes/page_heading.html" with title="NOFO Application Deadline" back_text=back_text back_href=back_href only %}
+
+      <form id="{{ form_id }}" class="nofo_edit_form" method="post">
+        {% csrf_token %}
+
+        {% include "includes/form_macro.html" with hint2='eg: "Monday, January 1, 2024"' %}
+
+        <button class="usa-button margin-top-3" type="submit">Save application deadline</button>
+
+        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=form.application_deadline.value replace_text="application deadline" checkbox_checked=True %}
+      </form>
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
 {% endblock %}
