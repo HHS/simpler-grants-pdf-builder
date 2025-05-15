@@ -1,0 +1,55 @@
+{% load nofo_name subsection_name_or_order %}
+
+{% if subsection_matches %}
+  <table class="usa-table usa-table--borderless margin-top-4">
+    <caption>
+      <h2 class="h4">
+        {{ subsection_matches|length }} subsection{{ subsection_matches|length|pluralize }} found with 
+        "{{ match_value|default:'(no value)' }}"
+      </h2>
+    </caption>
+    <thead>
+      <tr class="usa-sr-only">
+        <th scope="col">Replace?</th>
+        <th scope="col">Section</th>
+        <th scope="col">Subsection</th>
+        <th scope="col">Content</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for match in subsection_matches %}
+      <tr class="{% if checkbox_checked|default:"True" %}subsection--selected{% endif %}">
+        <td>
+          <div class="usa-checkbox">
+            <input
+              class="usa-checkbox__input"
+              id="replace-{{ match.subsection.id }}"
+              type="checkbox"
+              name="replace_subsections"
+              value="{{ match.subsection.id }}"
+              {% if checkbox_checked|default:"True" %}checked{% endif %}
+            />
+            <label class="usa-checkbox__label" for="replace-{{ match.subsection.id }}">
+              <span class="usa-sr-only">Replace {{ replace_text }} in subsection: {{ match.subsection|subsection_name_or_order }}</span>
+            </label>
+          </div>
+        </td>
+        <td>{{ match.section.name }}</td>
+        <td>
+          <a class="usa-link usa-link--external" target="_blank" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
+            {{ match.subsection|subsection_name_or_order }}
+          </a>
+        </td>
+        <td>
+          {{ match.subsection_body_highlight|safe|linebreaksbr }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    window.nofoEditFormId = '{{ form_id }}';
+  </script>
+  <script src="/static/js/nofo_edit_form.js"></script>
+{% endif %}
