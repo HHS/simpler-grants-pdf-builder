@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add healthcheck endpoint at /health
+
 ### Changed
 
 ### Fixed
