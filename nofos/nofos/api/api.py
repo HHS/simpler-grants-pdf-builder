@@ -17,6 +17,15 @@ class BearerAuth(HttpBearer):
         return None
 
 
+# Create a separate API instance for health check without namespace
+health_api = NinjaAPI(auth=None, urls_namespace=None)
+
+@health_api.get("/health", auth=None)
+def health_check(request):
+    """Health check endpoint that returns 200 OK."""
+    return 200, {"status": "ok"}
+
+# Main API instance for other endpoints
 api = NinjaAPI(
     auth=BearerAuth(),
     urls_namespace="api",
