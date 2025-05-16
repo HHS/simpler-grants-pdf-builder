@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
+from socket import gethostbyname, gethostname
+
 from datetime import datetime
 from pathlib import Path
 
@@ -71,6 +73,7 @@ SECRET_KEY = env("SECRET_KEY", default="bad-secret-key-please-change")
 
 API_TOKEN = env("API_TOKEN", default=None)
 
+# ALLOWED HOSTS
 ALLOWED_HOSTS = [
     "0.0.0.0",
     "127.0.0.1",
@@ -81,6 +84,10 @@ allowed_domain_string = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
 if allowed_domain_string:
     ALLOWED_HOSTS.extend(allowed_domain_string.split(","))
 
+# Automatically add internal IP if it starts with "10." (private IP range)
+internal_ip = gethostbyname(gethostname())
+if internal_ip.startswith("10."):
+    ALLOWED_HOSTS.append(internal_ip)
 
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod

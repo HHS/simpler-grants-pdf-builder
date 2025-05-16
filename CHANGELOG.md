@@ -19,6 +19,7 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Show audit events for deleted subsections on the "All updates for NOFO" page
+- Add current hostname to ALLOWED_HOSTS if using a private IP range starting with "10."
 
 ## [3.1.0] - 2025-05-12
 
