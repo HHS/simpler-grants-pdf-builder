@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
+import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -249,6 +250,18 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "bloom_nofos", "static"),
 ]
+
+if "test" in sys.argv:
+    # Suppress 'static directory' warnings while running tests
+    # > UserWarning: No directory at: /**/**/simpler-nofos-pdf-builder/nofos/static/
+    #
+    # Before running the 'collectstatic' command, the static directory doesn't exist
+    # None of our test rely on this but the warning is distracting, so let's hide it
+    warnings.filterwarnings(
+        "ignore",
+        message=r"No directory at: .*/nofos/static/",
+        category=UserWarning,
+    )
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
