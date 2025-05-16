@@ -28,8 +28,15 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    const ALERT_SELECTORS = '#nofo-editor-success-alert, #nofo-editor-error-alert';
+    const ANIMATION_DURATION = 300; // Duration of fade animation in ms
+    const AUTO_DISMISS_DELAY = 4000; // Time before auto-dismissal in ms
+
     // Handle close button clicks and keyboard events
-    const alerts = document.querySelectorAll('#nofo-editor-success-alert, #nofo-editor-error-alert');
+    const alerts = document.querySelectorAll(ALERT_SELECTORS);
+    requestAnimationFrame(() => {
+      alerts.forEach(alert => alert.style.opacity = '1');
+    });
     alerts.forEach(alert => {
       const closeButton = alert.querySelector('.usa-alert__close');
       if (closeButton) {
@@ -44,21 +51,20 @@
       }
     });
 
-    // Helper function to dismiss alert
     function dismissAlert(alert) {
       if (alert && alert.parentNode) {
         alert.style.opacity = '0';
-        setTimeout(() => alert.remove(), 300); // Remove after fade animation
+        setTimeout(() => alert.remove(), ANIMATION_DURATION);
       }
     }
 
-    // Auto-dismiss alerts after 4 seconds
+    // Auto-dismiss alerts
     alerts.forEach(alert => {
       setTimeout(() => {
         if (alert && alert.parentNode) {
           dismissAlert(alert);
         }
-      }, 4000);
+      }, AUTO_DISMISS_DELAY);
     });
   });
 </script>

@@ -484,14 +484,28 @@ label.usa-label {
 }
 
 /* Alert styles */
-.usa-alert {
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  transition: opacity 0.3s ease-out;
-  margin-bottom: 1rem !important;
+#nofo-editor-success-alert,
+#nofo-editor-error-alert {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 99999;
+  margin: 0 !important;
   background: white;
-  isolation: isolate;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+#nofo-editor-success-alert.fade-out,
+#nofo-editor-error-alert.fade-out {
+  opacity: 0;
+}
+
+#nofo-editor-success-alert .usa-alert__body,
+#nofo-editor-error-alert .usa-alert__body {
+  max-width: none;
 }
 
 .usa-alert__body {
