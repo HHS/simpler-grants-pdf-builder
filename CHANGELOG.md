@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add healthcheck endpoint at /health
+- Add `db-migrate` command that can be run from built container
 
 ### Changed
 
