@@ -44,6 +44,9 @@ RUN poetry config virtualenvs.in-project true && \
 # Copy the rest of the app
 COPY . .
 
+# Make "db-migrate" a shell command in the container
+RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && chmod +x /usr/local/bin/db-migrate
+
 # Collect static files
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
