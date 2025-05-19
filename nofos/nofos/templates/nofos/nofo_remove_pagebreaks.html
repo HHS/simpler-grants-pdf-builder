@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Remove Pagebreaks - {{ nofo.title }}
+{% endblock %}
+
+{% block content %}
+<div class="back-link font-body-md margin-bottom-4">
+  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Back to NOFO</a>
+</div>
+
+<h1>Remove All Pagebreaks</h1>
+
+<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+  <div class="usa-summary-box__body">
+    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      Remove pagebreaks from "{{ nofo.title }}"
+    </h2>
+    <div class="usa-summary-box__text">
+      <p>
+        {% if pagebreak_count == 1 %}
+          There is <strong>1</strong> pagebreak in this document.
+        {% else %}
+          There are <strong>{{ pagebreak_count }}</strong> pagebreaks in this document.
+        {% endif %}
+      </p>
+      <form method="post" class="usa-form">
+        {% csrf_token %}
+        <div class="margin-top-3">
+          <button class="usa-button" type="submit">Remove All Pagebreaks</button>
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
