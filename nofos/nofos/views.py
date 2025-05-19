@@ -732,6 +732,122 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
+class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_find_replace.html"
+    context_object_name = "nofo"
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        find_text = request.POST.get('find_text', '').strip()
+        replace_text = request.POST.get('replace_text', '').strip()
+
+        if not find_text:
+            messages.error(request, "Please enter text to find.")
+            return self.get(request, *args, **kwargs)
+
+        # TODO: Implement find and replace logic here
+
+        messages.success(request, f"Replaced all instances of '{find_text}' with '{replace_text}'")
+        return redirect('nofos:nofo_edit', pk=nofo.id)
+
+
+class NofoRemovePagebreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_remove_pagebreaks.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nofo = self.get_object()
+        
+        # Count page breaks across all subsections
+        pagebreak_count = 0
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                # Look for markdown-style pagebreaks
+                markdown_breaks = (
+                    subsection.body.count('\n---\n') +
+                    subsection.body.count('\n----\n') +
+                    subsection.body.count('\n-----\n')
+                )
+                # Look for HTML-style pagebreaks
+                html_breaks = subsection.body.count('<div class="page-break--hr--container">')
+                
+                # Look for CSS class pagebreaks
+                css_breaks = 0
+                if subsection.html_class:
+                    css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+                
+                # TODO - Remove this helpful logging at some point.
+                if markdown_breaks > 0:
+                    print(f"Found {markdown_breaks} markdown pagebreaks in subsection {subsection.id}")
+                if html_breaks > 0:
+                    print(f"Found {html_breaks} HTML pagebreaks in subsection {subsection.id}")
+                if css_breaks > 0:
+                    print(f"Found {css_breaks} CSS pagebreaks in subsection {subsection.id}")
+                
+                pagebreak_count += markdown_breaks + html_breaks + css_breaks
+        
+        context['pagebreak_count'] = pagebreak_count
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        
+        # Remove pagebreaks from all subsections
+        pagebreaks_removed = 0
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                original_body = subsection.body
+                original_html_class = subsection.html_class or ''
+                
+                # Count and remove markdown-style pagebreaks
+                markdown_breaks = (
+                    original_body.count('\n---\n') +
+                    original_body.count('\n----\n') +
+                    original_body.count('\n-----\n')
+                )
+                
+                # Remove markdown-style pagebreaks
+                body = original_body.replace('\n---\n', '\n')
+                body = body.replace('\n----\n', '\n')
+                body = body.replace('\n-----\n', '\n')
+                
+                # Count and remove HTML-style pagebreaks
+                html_breaks = original_body.count('<div class="page-break--hr--container">')
+                
+                # Remove HTML-style pagebreaks
+                body = body.replace(
+                    '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>',
+                    ''
+                )
+                
+                # Count and remove CSS class pagebreaks
+                css_breaks = 0
+                if original_html_class:
+                    # Get all non-pagebreak classes
+                    classes = [c for c in original_html_class.split() if not c.startswith('page-break')]
+                    css_breaks = len(original_html_class.split()) - len(classes)
+                    # Update html_class with only non-pagebreak classes
+                    html_class = ' '.join(classes) if classes else ''
+                else:
+                    html_class = ''
+                
+                # If anything changed, save and increment counter
+                if body != original_body or html_class != original_html_class:
+                    subsection.body = body
+                    subsection.html_class = html_class
+                    subsection.save()
+                    pagebreaks_removed += markdown_breaks + html_breaks + css_breaks
+
+        if pagebreaks_removed == 1:
+            messages.success(request, "1 pagebreak has been removed.")
+        else:
+            messages.success(request, f"{pagebreaks_removed} pagebreaks have been removed.")
+        return redirect('nofos:nofo_edit', pk=nofo.id)
+
+
 ###########################################################
 ################### NOFO METADATA VIEWS ###################
 ###########################################################
