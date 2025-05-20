@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+from socket import gethostbyname, gethostname, gaierror
 
 from django.conf import settings
 from django.utils.timezone import now, timedelta
@@ -42,6 +43,13 @@ def is_docraptor_live_mode_active(last_updated):
 
 def get_timedelta_for_docraptor_live_mode():
     return timedelta(minutes=5)
+
+
+def get_internal_ip():
+    try:
+        return gethostbyname(gethostname())
+    except gaierror:
+        return ""
 
 
 def parse_docraptor_ip_addresses(ip_string: str):
