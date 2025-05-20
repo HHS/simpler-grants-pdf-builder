@@ -220,6 +220,7 @@ if is_aws_db(env):
             "HOST": env.get_value("DB_HOST"),
             "PORT": int(env.get_value("DB_PORT", default=5432)),
             "OPTIONS": {
+                "sslmode": "require",
                 "connect_timeout": 10,
             },
         }
