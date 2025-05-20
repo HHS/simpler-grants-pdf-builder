@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
-from socket import gethostbyname, gethostname
 
 import warnings
 from datetime import datetime
@@ -23,7 +22,7 @@ import tomli
 from django.utils.timezone import now
 
 from .aws import is_aws_db, generate_iam_auth_token
-from .utils import cast_to_boolean, get_login_gov_keys
+from .utils import cast_to_boolean, get_login_gov_keys, get_internal_ip
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -86,7 +85,7 @@ if allowed_domain_string:
     ALLOWED_HOSTS.extend(allowed_domain_string.split(","))
 
 # Automatically add internal IP if it starts with "10." (private IP range)
-internal_ip = gethostbyname(gethostname())
+internal_ip = get_internal_ip()
 if internal_ip.startswith("10."):
     ALLOWED_HOSTS.append(internal_ip)
 
