@@ -89,6 +89,10 @@ internal_ip = get_internal_ip()
 if internal_ip.startswith("10."):
     ALLOWED_HOSTS.append(internal_ip)
 
+aws_dns_name = env.get_value("LOAD_BALANCER_DNS_NAME", default="")
+if aws_dns_name:
+    ALLOWED_HOSTS.append(aws_dns_name)
+
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
 SESSION_COOKIE_SECURE = is_prod
