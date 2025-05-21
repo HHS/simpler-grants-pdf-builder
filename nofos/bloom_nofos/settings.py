@@ -210,7 +210,7 @@ database_url = (
 if is_aws_db(env):
     DATABASES = {
         "default": {
-            "ENGINE": "bloom_nofos.aws",  # points to your custom backend
+            "ENGINE": "bloom_nofos.db.backends.postgresql_iam",
             "NAME": env.get_value("DB_NAME"),
             "USER": env.get_value("DB_USER"),
             "HOST": env.get_value("DB_HOST"),
@@ -219,6 +219,8 @@ if is_aws_db(env):
                 "sslmode": "require",
                 "generate_iam_auth_token": generate_iam_auth_token_func(env),
             },
+            "CONN_MAX_AGE": 600,  # 10 minutes
+            "CONN_HEALTH_CHECKS": True,
         }
     }
 
