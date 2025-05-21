@@ -48,7 +48,9 @@ COPY . .
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && chmod +x /usr/local/bin/db-migrate
 
 # Collect static files
-RUN poetry run python nofos/manage.py collectstatic --noinput
+RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
+
+RUN ls -la /app/nofos/static/img/cover-img/
 
 # Expose port and run server
 EXPOSE $PORT
