@@ -6,7 +6,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         super().__init__(*args, **kwargs)
 
         options = self.settings_dict.get("OPTIONS", {})
-        self.generate_iam_auth_token = options.get("generate_iam_auth_token", False)
+        self.generate_iam_auth_token = options.pop("generate_iam_auth_token", None)
 
     def get_connection_params(self):
         params = super().get_connection_params()
