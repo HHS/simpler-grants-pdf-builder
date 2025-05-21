@@ -1234,8 +1234,7 @@ class NofoSubsectionCreateView(
 
         messages.success(
             self.request,
-            "Created new subsection: “<a href='#{}'>{}</a>” in ‘{}’".format(
-                form.instance.html_id,
+            "Created new subsection: “{}” in ‘{}’".format(
                 form.instance.name or "(#{})".format(form.instance.order),
                 section.name,
             ),
