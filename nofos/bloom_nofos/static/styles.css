@@ -1093,7 +1093,8 @@ main .back-link a::before,
 
 .edit__application-deadline form table tr.subsection--selected td,
 .edit__nofo-number form table tr.subsection--selected td,
-.edit__nofo-title form table tr.subsection--selected td {
+.edit__nofo-title form table tr.subsection--selected td,
+.edit__remove-page-breaks form table tr.subsection--selected td {
   background-color: #f2e4d4;
 }
 
