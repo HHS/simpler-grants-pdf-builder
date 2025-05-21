@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
+
+import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -20,7 +22,7 @@ import tomli
 from django.utils.timezone import now
 
 from .aws import is_aws_db, generate_iam_auth_token
-from .utils import cast_to_boolean, get_login_gov_keys
+from .utils import cast_to_boolean, get_login_gov_keys, get_internal_ip
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -71,6 +73,7 @@ SECRET_KEY = env("SECRET_KEY", default="bad-secret-key-please-change")
 
 API_TOKEN = env("API_TOKEN", default=None)
 
+# ALLOWED HOSTS
 ALLOWED_HOSTS = [
     "0.0.0.0",
     "127.0.0.1",
@@ -81,6 +84,14 @@ allowed_domain_string = env.get_value("DJANGO_ALLOWED_HOSTS", default="")
 if allowed_domain_string:
     ALLOWED_HOSTS.extend(allowed_domain_string.split(","))
 
+# Automatically add internal IP if it starts with "10." (private IP range)
+internal_ip = get_internal_ip()
+if internal_ip.startswith("10."):
+    ALLOWED_HOSTS.append(internal_ip)
+
+aws_dns_name = env.get_value("LOAD_BALANCER_DNS_NAME", default="")
+if aws_dns_name:
+    ALLOWED_HOSTS.append(aws_dns_name)
 
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
@@ -212,6 +223,7 @@ if is_aws_db(env):
             "HOST": env.get_value("DB_HOST"),
             "PORT": int(env.get_value("DB_PORT", default=5432)),
             "OPTIONS": {
+                "sslmode": "require",
                 "connect_timeout": 10,
             },
         }
@@ -249,6 +261,18 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "bloom_nofos", "static"),
 ]
+
+if "test" in sys.argv:
+    # Suppress 'static directory' warnings while running tests
+    # > UserWarning: No directory at: /**/**/simpler-nofos-pdf-builder/nofos/static/
+    #
+    # Before running the 'collectstatic' command, the static directory doesn't exist
+    # None of our test rely on this but the warning is distracting, so let's hide it
+    warnings.filterwarnings(
+        "ignore",
+        message=r"No directory at: .*/nofos/static/",
+        category=UserWarning,
+    )
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

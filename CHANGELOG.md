@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add healthcheck endpoint at /health
+- Add `db-migrate` command that can be run from built container
 
 ### Changed
 
@@ -18,6 +19,8 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Show audit events for deleted subsections on the "All updates for NOFO" page
+- Add AWS Load Balancer domain to ALLOWED_HOSTS
+- Add current hostname to ALLOWED_HOSTS if using a private IP range starting with "10."
 
 ## [3.1.0] - 2025-05-12
 
