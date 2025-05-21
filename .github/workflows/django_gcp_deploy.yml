@@ -55,7 +55,7 @@ jobs:
         run: |-
           DOCKER_TAG="${{ env.AR_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_AR_REPO_NAME }}/${{ secrets.GCP_SERVICE_NAME }}:${{ inputs.github_sha }}"
           echo $DOCKER_TAG
-          docker build --no-cache --tag "${DOCKER_TAG}" --build-arg IS_PROD_ARG=1 --build-arg GITHUB_SHA_ARG="${{ inputs.github_sha }}" .
+          docker build --tag "${DOCKER_TAG}" --build-arg IS_PROD_ARG=1 --build-arg GITHUB_SHA_ARG="${{ inputs.github_sha }}" .
           docker push "${DOCKER_TAG}"
         # END - Docker auth and build
 
