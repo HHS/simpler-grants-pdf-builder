@@ -167,8 +167,8 @@ urlpatterns = [
         name="nofo_find_replace",
     ),
     path(
-        "<uuid:pk>/remove-pagebreaks",
-        views.NofoRemovePagebreaksView.as_view(),
-        name="nofo_remove_pagebreaks",
+        "<uuid:pk>/remove-page-breaks",
+        views.NofoRemovePageBreaksView.as_view(),
+        name="nofo_remove_page_breaks",
     ),
 ]
