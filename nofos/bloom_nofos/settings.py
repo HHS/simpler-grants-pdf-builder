@@ -21,7 +21,7 @@ import environ
 import tomli
 from django.utils.timezone import now
 
-from .aws import is_aws_db, generate_iam_auth_token
+from .aws import is_aws_db, generate_iam_auth_token_func
 from .utils import cast_to_boolean, get_login_gov_keys, get_internal_ip
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -208,23 +208,16 @@ database_url = (
 )
 
 if is_aws_db(env):
-    # Generate IAM auth token if no password provided
-    db_password = env.get_value("DB_PASSWORD", default=None)
-    if db_password is None:
-        db_password = generate_iam_auth_token(env)
-
-    # Assuming the "connect_timeout" is needed because it is also here: https://github.com/HHS/simpler-grants-gov/blob/main/api/src/adapters/db/clients/postgres_client.py#L98
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "bloom_nofos.aws",  # points to your custom backend
             "NAME": env.get_value("DB_NAME"),
             "USER": env.get_value("DB_USER"),
-            "PASSWORD": db_password,
             "HOST": env.get_value("DB_HOST"),
             "PORT": int(env.get_value("DB_PORT", default=5432)),
             "OPTIONS": {
                 "sslmode": "require",
-                "connect_timeout": 10,
+                "generate_iam_auth_token": generate_iam_auth_token_func(env),
             },
         }
     }
