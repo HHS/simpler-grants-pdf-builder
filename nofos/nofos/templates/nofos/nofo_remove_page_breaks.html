@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load nofo_name subsection_name_or_order %}
+
+{% block body_class %}edit__remove-page-breaks{% endblock %}
+
+{% block title %}Remove Page Breaks{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% with form_id="nofo_remove_page_breaks_form" %}
+      {% include "includes/page_heading.html" with title="Remove Page Breaks" back_text=back_text back_href=back_href only %}
+
+      <form id="{{ form_id }}" class="nofo_edit_form" method="post">
+        {% csrf_token %}
+
+        <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
+          <div class="usa-summary-box__body">
+            <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+              Remove page breaks from "{{ nofo.title }}"
+            </h2>
+            <div class="usa-summary-box__text">
+              <p>
+                {% if pagebreak_count == 1 %}
+                  There is <strong>1</strong> page break in this document.
+                {% else %}
+                  There are <strong>{{ pagebreak_count }}</strong> page breaks in this document.
+                {% endif %}
+              </p>
+
+              <div class="usa-button-group">
+                <button class="usa-button" type="submit">Remove All Page Breaks</button>
+                <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id match_value="page breaks" replace_text="page breaks" checkbox_checked=True %}
+      </form>
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
+{% endblock %}
