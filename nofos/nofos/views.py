@@ -752,17 +752,19 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
         return redirect('nofos:nofo_edit', pk=nofo.id)
 
 
-class NofoRemovePagebreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
     model = Nofo
-    template_name = "nofos/nofo_remove_pagebreaks.html"
+    template_name = "nofos/nofo_remove_page_breaks.html"
     context_object_name = "nofo"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         nofo = self.get_object()
         
-        # Count page breaks across all subsections
+        # Count page breaks and collect subsections with page breaks
         pagebreak_count = 0
+        subsections_with_breaks = []
+        
         for section in nofo.sections.all():
             for subsection in section.subsections.all():
                 # Look for markdown-style pagebreaks
@@ -779,17 +781,17 @@ class NofoRemovePagebreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
                 if subsection.html_class:
                     css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
                 
-                # TODO - Remove this helpful logging at some point.
-                if markdown_breaks > 0:
-                    print(f"Found {markdown_breaks} markdown pagebreaks in subsection {subsection.id}")
-                if html_breaks > 0:
-                    print(f"Found {html_breaks} HTML pagebreaks in subsection {subsection.id}")
-                if css_breaks > 0:
-                    print(f"Found {css_breaks} CSS pagebreaks in subsection {subsection.id}")
-                
-                pagebreak_count += markdown_breaks + html_breaks + css_breaks
+                total_breaks = markdown_breaks + html_breaks + css_breaks
+                if total_breaks > 0:
+                    subsections_with_breaks.append({
+                        'section': section,
+                        'subsection': subsection,
+                        'subsection_body_highlight': subsection.body,
+                    })
+                    pagebreak_count += total_breaks
         
         context['pagebreak_count'] = pagebreak_count
+        context['subsection_matches'] = subsections_with_breaks
         return context
 
     def post(self, request, *args, **kwargs):
@@ -842,9 +844,9 @@ class NofoRemovePagebreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
                     pagebreaks_removed += markdown_breaks + html_breaks + css_breaks
 
         if pagebreaks_removed == 1:
-            messages.success(request, "1 pagebreak has been removed.")
+            messages.success(request, "1 page break has been removed.")
         else:
-            messages.success(request, f"{pagebreaks_removed} pagebreaks have been removed.")
+            messages.success(request, f"{pagebreaks_removed} page breaks have been removed.")
         return redirect('nofos:nofo_edit', pk=nofo.id)
 
 
