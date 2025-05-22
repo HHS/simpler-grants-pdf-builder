@@ -11,9 +11,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
     def get_connection_params(self):
         params = super().get_connection_params()
 
-        print("--- GET PARAMS")
         if self.generate_iam_auth_token:
-            print("--- GET PARAMS: generate_iam_auth_token")
             params["password"] = self.generate_iam_auth_token()
 
         return params
