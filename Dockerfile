@@ -28,6 +28,17 @@ RUN apt-get update && \
   libpq-dev \
   && rm -rf /var/lib/apt/lists/*
 
+# Patch system libraries to address known CVEs:
+# - libcap2: CVE-2025-1390
+# - login, passwd: CVE-2023-4641, CVE-2023-29383
+RUN apt-get update && \
+  apt-get install -y --only-upgrade \
+  libcap2 \
+  login \
+  passwd && \
+  rm -rf /var/lib/apt/lists/*
+
+
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
   ln -s /root/.local/bin/poetry /usr/local/bin/poetry
