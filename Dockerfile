@@ -61,12 +61,6 @@ RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && chmod +x /usr/
 # Collect static files
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
-# Create non-root user and give ownership of app directory
-RUN useradd --create-home appuser && \
-  chown -R appuser:appuser /app
-
-USER appuser
-
 # Expose port and run server
 EXPOSE $PORT
 CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]
