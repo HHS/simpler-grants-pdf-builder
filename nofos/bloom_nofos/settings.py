@@ -219,8 +219,6 @@ if is_aws_db(env):
                 "sslmode": "require",
                 "generate_iam_auth_token": generate_iam_auth_token_func(env),
             },
-            "CONN_MAX_AGE": 600,  # 10 minutes
-            "CONN_HEALTH_CHECKS": True,
         }
     }
 
