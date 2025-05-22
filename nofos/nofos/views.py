@@ -756,6 +756,129 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
     model = Nofo
     template_name = "nofos/nofo_remove_page_breaks.html"
     context_object_name = "nofo"
+    
+    def extract_page_break_context(self, body, html_class=None):
+        """
+        Extract and highlight the context around page breaks in the subsection body.
+        
+        This method:
+        1. Identifies different types of page breaks
+        2. Detects if page breaks are at the top or bottom of the section/subsection
+        3. Extracts only the relevant paragraphs containing page breaks
+        4. Adds visual markers to highlight where page breaks are located
+        
+        Returns a highlighted HTML string showing only the relevant parts of the content.
+        """
+        import re
+        
+        # Initialize the result
+        highlighted_parts = []
+        
+        # Check if there's a page break at the top of the section/subsection
+        has_top_page_break = False
+        
+        # Check for CSS class page breaks at the top
+        if html_class and any(c.startswith('page-break') for c in html_class.split()):
+            has_top_page_break = True
+            highlighted_parts.append(
+                '<div class="usa-alert usa-alert--warning margin-bottom-1">'
+                '<div class="usa-alert__body">'
+                '<p class="usa-alert__text"><strong>Page break at the top</strong> of this subsection (CSS class)</p>'
+                '</div></div>'
+            )
+        
+        # Check for HTML-style page breaks at the top
+        if body.lstrip().startswith('<div class="page-break--hr--container">'):
+            has_top_page_break = True
+            highlighted_parts.append(
+                '<div class="usa-alert usa-alert--warning margin-bottom-1">'
+                '<div class="usa-alert__body">'
+                '<p class="usa-alert__text"><strong>Page break at the top</strong> of this subsection (HTML)</p>'
+                '</div></div>'
+            )
+        
+        # Check for markdown-style page breaks at the top
+        markdown_breaks = ['\n---\n', '\n----\n', '\n-----\n']
+        for break_pattern in markdown_breaks:
+            # Check if the body starts with the pattern (after optional whitespace)
+            if re.match(r'^\s*' + re.escape(break_pattern), body):
+                has_top_page_break = True
+                highlighted_parts.append(
+                    '<div class="usa-alert usa-alert--warning margin-bottom-1">'
+                    '<div class="usa-alert__body">'
+                    '<p class="usa-alert__text"><strong>Page break at the top</strong> of this subsection (Markdown)</p>'
+                    '</div></div>'
+                )
+                break
+        
+        # Check if there's a page break at the bottom of the section/subsection
+        has_bottom_page_break = False
+        
+        # Check for HTML-style page breaks at the bottom
+        if body.rstrip().endswith('<div class="page-break--hr--container">') or \
+           body.rstrip().endswith('<div class="page-break--hr--container"></div>'):
+            has_bottom_page_break = True
+            highlighted_parts.append(
+                '<div class="usa-alert usa-alert--warning margin-bottom-1">'
+                '<div class="usa-alert__body">'
+                '<p class="usa-alert__text"><strong>Page break at the bottom</strong> of this subsection (HTML)</p>'
+                '</div></div>'
+            )
+        
+        # Check for markdown-style page breaks at the bottom
+        for break_pattern in markdown_breaks:
+            # Check if the body ends with the pattern (after trimming whitespace)
+            if re.search(re.escape(break_pattern) + r'\s*$', body):
+                has_bottom_page_break = True
+                highlighted_parts.append(
+                    '<div class="usa-alert usa-alert--warning margin-bottom-1">'
+                    '<div class="usa-alert__body">'
+                    '<p class="usa-alert__text"><strong>Page break at the bottom</strong> of this subsection (Markdown)</p>'
+                    '</div></div>'
+                )
+                break
+        
+        # Split the body into paragraphs
+        paragraphs = re.split(r'\n\n+', body)
+        
+        # Check for markdown-style page breaks (not at the top)
+        if not has_top_page_break:
+            for break_pattern in markdown_breaks:
+                if break_pattern in body:
+                    highlighted_parts.append(
+                        '<div class="usa-alert usa-alert--info margin-bottom-1">'
+                        '<div class="usa-alert__body">'
+                        '<p class="usa-alert__text"><strong>Markdown page break</strong> found</p>'
+                        '</div></div>'
+                    )
+                    break
+        
+        # Check for HTML-style page breaks (not at the top)
+        if not has_top_page_break and '<div class="page-break--hr--container">' in body:
+            highlighted_parts.append(
+                '<div class="usa-alert usa-alert--info margin-bottom-1">'
+                '<div class="usa-alert__body">'
+                '<p class="usa-alert__text"><strong>HTML page break</strong> found</p>'
+                '</div></div>'
+            )
+        
+        # Look for paragraphs containing the word "page-break"
+        for paragraph in paragraphs:
+            if re.search(r'page-break', paragraph, re.IGNORECASE):
+                # Highlight the word "page-break" in the paragraph
+                highlighted_paragraph = re.sub(
+                    r'(page-break)',
+                    r'<mark class="bg-yellow">\1</mark>',
+                    paragraph,
+                    flags=re.IGNORECASE
+                )
+                highlighted_parts.append(f'<p>{highlighted_paragraph}</p>')
+        
+        # If no specific highlights were found, return a generic message
+        if not highlighted_parts:
+            return '<p><em>Page break found in CSS classes or other locations</em></p>'
+        
+        return ''.join(highlighted_parts)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -781,12 +904,18 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
                 if subsection.html_class:
                     css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
                 
-                total_breaks = markdown_breaks + html_breaks + css_breaks
+                # Look for the word "page-break" in the subsection content
+                word_breaks = subsection.body.lower().count('page-break')
+                
+                total_breaks = markdown_breaks + html_breaks + css_breaks + word_breaks
                 if total_breaks > 0:
+                    # Extract and highlight the context around page breaks
+                    highlighted_body = self.extract_page_break_context(subsection.body, subsection.html_class)
+                    
                     subsections_with_breaks.append({
                         'section': section,
                         'subsection': subsection,
-                        'subsection_body_highlight': subsection.body,
+                        'subsection_body_highlight': highlighted_body,
                     })
                     pagebreak_count += total_breaks
         
@@ -836,12 +965,23 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
                 else:
                     html_class = ''
                 
+                # Count occurrences of the word "page-break" in the content
+                word_breaks = original_body.lower().count('page-break')
+                
+                # Remove the word "page-break" from the content
+                # This is a simple replacement that might affect legitimate content,
+                # so we'll only do it if there are actual page breaks to remove
+                if word_breaks > 0:
+                    # Use case-insensitive replacement to catch all variations
+                    import re
+                    body = re.sub(r'page-break', '', body, flags=re.IGNORECASE)
+                
                 # If anything changed, save and increment counter
                 if body != original_body or html_class != original_html_class:
                     subsection.body = body
                     subsection.html_class = html_class
                     subsection.save()
-                    pagebreaks_removed += markdown_breaks + html_breaks + css_breaks
+                    pagebreaks_removed += markdown_breaks + html_breaks + css_breaks + word_breaks
 
         if pagebreaks_removed == 1:
             messages.success(request, "1 page break has been removed.")
