@@ -73,6 +73,7 @@ Versioning since version 1.0.0.
 ### Changed
 
 - Dockerfile now uses python -slim image, not python -alpine image
+- Dockerfile runs as non-root user, which is a security best-practice
 
 ### Migrations
 

@@ -9,14 +9,10 @@ ARG GITHUB_SHA_ARG
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1s
-ENV PORT=8000
 
 ENV IS_DOCKER=1
 ENV IS_PROD=${IS_PROD_ARG}
 ENV GITHUB_SHA=${GITHUB_SHA_ARG}
-
-# copy project
-COPY . .
 
 # Install system dependencies (Debian-based)
 RUN apt-get update && \
@@ -28,7 +24,7 @@ RUN apt-get update && \
   libpq-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# Patch system libraries to address known CVEs:
+# Patch system libraries to address known CVEs
 # - libcap2: CVE-2025-1390
 # - login, passwd: CVE-2023-4641, CVE-2023-29383
 RUN apt-get update && \
@@ -38,35 +34,26 @@ RUN apt-get update && \
   passwd && \
   rm -rf /var/lib/apt/lists/*
 
+# Install Poetry and create user
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
+  useradd --create-home --shell /bin/bash appuser && \
+  chown -R appuser:appuser /app
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-  ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+# Make "db-migrate" a shell command in the container
+RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
+  chmod +x /usr/local/bin/db-migrate
 
-# Copy dependency files first
-COPY pyproject.toml poetry.lock ./
+USER appuser
 
-# Configure Poetry and install dependencies
+# Copy dependency files and install
+COPY --chown=appuser:appuser pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && \
   poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
-
-# Copy the rest of the app
-COPY . .
-
-# Make "db-migrate" a shell command in the container
-RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && chmod +x /usr/local/bin/db-migrate
-
-# Collect static files
+# Copy app and collect static files
+COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
-# Create non-root user and give ownership of app directory
-RUN useradd --create-home appuser && \
-  chown -R appuser:appuser /app
-
-USER appuser
-
-# Expose port and run server
-EXPOSE $PORT
-CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:$PORT bloom_nofos.wsgi:application"]
+EXPOSE ${PORT:-8000}
+CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application"]
