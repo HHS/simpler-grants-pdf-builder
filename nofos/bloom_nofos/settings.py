@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     "djversion",
     "django_mirror",
     "ninja",
+    "import_export",
 ]
 
 MIDDLEWARE = [
