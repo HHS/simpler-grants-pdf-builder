@@ -10,6 +10,9 @@ from .models import Nofo, Section, Subsection
 from .views import duplicate_nofo, insert_order_space_view
 from .admin_resources import NofoResource, SectionResource, SubsectionResource
 
+# TODO: remove once migration is over
+from . import admin_audit
+
 
 # Remove Groups from admin
 admin.site.unregister(Group)
