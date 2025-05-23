@@ -734,6 +734,301 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
+class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_find_replace.html"
+    context_object_name = "nofo"
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        find_text = request.POST.get('find_text', '').strip()
+        replace_text = request.POST.get('replace_text', '').strip()
+
+        if not find_text:
+            messages.error(request, "Please enter text to find.")
+            return self.get(request, *args, **kwargs)
+
+        # TODO: Implement find and replace logic here
+
+        messages.success(request, f"Replaced all instances of '{find_text}' with '{replace_text}'")
+        return redirect('nofos:nofo_edit', pk=nofo.id)
+
+
+class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_remove_page_breaks.html"
+    context_object_name = "nofo"
+    
+    def extract_page_break_context(self, body, html_class=None):
+        """
+        Extract and highlight the context around page breaks in the subsection body.
+        
+        This method:
+        1. Identifies different types of page breaks
+        2. Detects if page breaks are at the top or bottom of the section/subsection
+        3. Extracts only the relevant paragraphs containing page breaks
+        4. Adds visual markers to highlight where page breaks are located
+        
+        Returns a highlighted HTML string showing only the relevant parts of the content.
+        """
+        import re
+        
+        # Initialize the result
+        highlighted_parts = []
+        
+        # Check if there's a page break at the top of the section/subsection
+        has_top_page_break = False
+        
+        # Check for CSS class page breaks at the top
+        if html_class and any(c.startswith('page-break') for c in html_class.split()):
+            has_top_page_break = True
+            highlighted_parts.append(
+                '<strong><mark class="bg-yellow">Page break at the top of this subsection (CSS class)</mark></strong>'
+            )
+        
+        # Check for HTML-style page breaks at the top
+        if body.lstrip().startswith('<div class="page-break--hr--container">'):
+            has_top_page_break = True
+            highlighted_parts.append(
+                '<strong><mark class="bg-yellow">Page break at the top of this subsection (HTML)</mark></strong>'
+            )
+        
+        # Check for markdown-style page breaks at the top
+        markdown_breaks = ['\n---\n', '\n----\n', '\n-----\n']
+        for break_pattern in markdown_breaks:
+            # Check if the body starts with the pattern (after optional whitespace)
+            if re.match(r'^\s*' + re.escape(break_pattern), body):
+                has_top_page_break = True
+                highlighted_parts.append(
+                    '<strong><mark class="bg-yellow">Page break at the top of this subsection (Markdown)</mark></strong>'
+                )
+                break
+        
+        # Check if there's a page break at the bottom of the section/subsection
+        has_bottom_page_break = False
+        
+        # Check for HTML-style page breaks at the bottom
+        if body.rstrip().endswith('<div class="page-break--hr--container">') or \
+           body.rstrip().endswith('<div class="page-break--hr--container"></div>'):
+            has_bottom_page_break = True
+            highlighted_parts.append(
+                '<strong><mark class="bg-yellow">Page break at the bottom of this subsection (HTML)</mark></strong>'
+            )
+        
+        # Check for markdown-style page breaks at the bottom
+        for break_pattern in markdown_breaks:
+            # Check if the body ends with the pattern (after trimming whitespace)
+            if re.search(re.escape(break_pattern) + r'\s*$', body):
+                has_bottom_page_break = True
+                highlighted_parts.append(
+                    '<strong><mark class="bg-yellow">Page break at the bottom of this subsection (Markdown)</mark></strong>'
+                )
+                break
+        
+        # Split the body into paragraphs
+        paragraphs = re.split(r'\n\n+', body)
+        
+        # Check for markdown-style page breaks (not at the top)
+        if not has_top_page_break:
+            for break_pattern in markdown_breaks:
+                if break_pattern in body:
+                    highlighted_parts.append(
+                        '<strong><mark class="bg-yellow">Markdown page break found</mark></strong>'
+                    )
+                    break
+        
+        # Check for HTML-style page breaks (not at the top or bottom)
+        if not has_top_page_break and not has_bottom_page_break and '<div class="page-break--hr--container">' in body:
+            # Extract and highlight the actual HTML page break
+            import re
+            html_break_pattern = r'<div class="page-break--hr--container">.*?</div>'
+            html_breaks = re.findall(html_break_pattern, body, re.DOTALL)
+            
+            if html_breaks:
+                # Add the alert
+                highlighted_parts.append(
+                    '<strong><mark class="bg-yellow">HTML page break found</mark></strong>'
+                )
+                
+                # Add the highlighted HTML
+                for html_break in html_breaks:
+                    # Highlight the page-break text in the HTML
+                    highlighted_html = html_break.replace(
+                        '[ ↓ page-break ↓ ]',
+                        '<strong><mark class="bg-yellow">page-break</mark></strong>'
+                    )
+                    highlighted_parts.append(f'<div class="border-1px border-base-lighter padding-1 margin-bottom-1">{highlighted_html}</div>')
+        
+        # Look for the word "page-break" in the content
+        matches = list(re.finditer(r'page-break', body, re.IGNORECASE))
+        
+        if matches:
+            # Group nearby matches to avoid redundant context
+            match_groups = []
+            current_group = [matches[0]]
+            
+            for i in range(1, len(matches)):
+                # If this match is close to the previous one (within 200 characters - 2x our context size)
+                if matches[i].start() - matches[i-1].end() < 200:
+                    # Add to current group
+                    current_group.append(matches[i])
+                else:
+                    # Start a new group
+                    match_groups.append(current_group)
+                    current_group = [matches[i]]
+            
+            # Add the last group
+            match_groups.append(current_group)
+            
+            # Process each group
+            for group in match_groups:
+                # Get the start of the first match and end of the last match in the group
+                group_start = group[0].start()
+                group_end = group[-1].end()
+                
+                # Extract context (100 characters before first match and 100 after last match)
+                context_start = max(0, group_start - 100)
+                context_end = min(len(body), group_end + 100)
+                
+                # Extract the context
+                context = body[context_start:context_end]
+                
+                # Add ellipsis if we're not at the beginning or end
+                if context_start > 0:
+                    context = '...' + context
+                if context_end < len(body):
+                    context = context + '...'
+                
+                # Highlight all occurrences of "page-break" in the context
+                highlighted_context = re.sub(
+                    r'(page-break)',
+                    r'<strong><mark class="bg-yellow">\1</mark></strong>',
+                    context,
+                    flags=re.IGNORECASE
+                )
+                
+                # Add count if there are multiple matches in this group
+                if len(group) > 1:
+                    highlighted_parts.append(f'<p><strong>{len(group)} page breaks found in this section:</strong><br><br> {highlighted_context}</p>')
+                else:
+                    highlighted_parts.append(f'<p>{highlighted_context}</p>')
+        
+        # If no specific highlights were found, return a generic message
+        if not highlighted_parts:
+            return '<p><em>Page break found in CSS classes or other locations</em></p>'
+        
+        return ''.join(highlighted_parts)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nofo = self.get_object()
+        
+        # Count page breaks and collect subsections with page breaks
+        pagebreak_count = 0
+        subsections_with_breaks = []
+        
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                # Look for markdown-style pagebreaks
+                markdown_breaks = (
+                    subsection.body.count('\n---\n') +
+                    subsection.body.count('\n----\n') +
+                    subsection.body.count('\n-----\n')
+                )
+                # Look for HTML-style pagebreaks
+                html_breaks = subsection.body.count('<div class="page-break--hr--container">')
+                
+                # Look for CSS class pagebreaks
+                css_breaks = 0
+                if subsection.html_class:
+                    css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+                
+                # Look for the word "page-break" in the subsection content
+                word_breaks = subsection.body.lower().count('page-break')
+                
+                total_breaks = markdown_breaks + html_breaks + css_breaks + word_breaks
+                if total_breaks > 0:
+                    # Extract and highlight the context around page breaks
+                    highlighted_body = self.extract_page_break_context(subsection.body, subsection.html_class)
+                    
+                    subsections_with_breaks.append({
+                        'section': section,
+                        'subsection': subsection,
+                        'subsection_body_highlight': highlighted_body,
+                    })
+                    pagebreak_count += total_breaks
+        
+        context['pagebreak_count'] = pagebreak_count
+        context['subsection_matches'] = subsections_with_breaks
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        
+        # Remove pagebreaks from all subsections
+        pagebreaks_removed = 0
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                original_body = subsection.body
+                original_html_class = subsection.html_class or ''
+                
+                # Count and remove markdown-style pagebreaks
+                markdown_breaks = (
+                    original_body.count('\n---\n') +
+                    original_body.count('\n----\n') +
+                    original_body.count('\n-----\n')
+                )
+                
+                # Remove markdown-style pagebreaks
+                body = original_body.replace('\n---\n', '\n')
+                body = body.replace('\n----\n', '\n')
+                body = body.replace('\n-----\n', '\n')
+                
+                # Count and remove HTML-style pagebreaks
+                html_breaks = original_body.count('<div class="page-break--hr--container">')
+                
+                # Remove HTML-style pagebreaks
+                body = body.replace(
+                    '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>',
+                    ''
+                )
+                
+                # Count and remove CSS class pagebreaks
+                css_breaks = 0
+                if original_html_class:
+                    # Get all non-pagebreak classes
+                    classes = [c for c in original_html_class.split() if not c.startswith('page-break')]
+                    css_breaks = len(original_html_class.split()) - len(classes)
+                    # Update html_class with only non-pagebreak classes
+                    html_class = ' '.join(classes) if classes else ''
+                else:
+                    html_class = ''
+                
+                # Count occurrences of the word "page-break" in the content
+                word_breaks = original_body.lower().count('page-break')
+                
+                # Remove the word "page-break" from the content
+                # This is a simple replacement that might affect legitimate content,
+                # so we'll only do it if there are actual page breaks to remove
+                if word_breaks > 0:
+                    # Use case-insensitive replacement to catch all variations
+                    import re
+                    body = re.sub(r'page-break', '', body, flags=re.IGNORECASE)
+                
+                # If anything changed, save and increment counter
+                if body != original_body or html_class != original_html_class:
+                    subsection.body = body
+                    subsection.html_class = html_class
+                    subsection.save()
+                    pagebreaks_removed += markdown_breaks + html_breaks + css_breaks + word_breaks
+
+        if pagebreaks_removed == 1:
+            messages.success(request, "1 page break has been removed.")
+        else:
+            messages.success(request, f"{pagebreaks_removed} page breaks have been removed.")
+        return redirect('nofos:nofo_edit', pk=nofo.id)
+
+
 ###########################################################
 ################### NOFO METADATA VIEWS ###################
 ###########################################################

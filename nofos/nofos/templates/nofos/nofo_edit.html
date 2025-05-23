@@ -157,6 +157,11 @@ Edit “{{ nofo|nofo_name }}”
           </p>
         </li>
         {% endif %}
+        <li>
+          <p>
+            <a class="usa-button" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove all Page Breaks</a>
+          </p>
+        </li>
       </ul>
     </div>
   </div>
