@@ -2,7 +2,17 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from easy_audit.models import CRUDEvent, LoginEvent, RequestEvent
+from easyaudit.models import CRUDEvent, LoginEvent, RequestEvent
+
+
+def safe_unregister(model):
+    if model in admin.site._registry:
+        admin.site.unregister(model)
+
+
+safe_unregister(CRUDEvent)
+safe_unregister(LoginEvent)
+safe_unregister(RequestEvent)
 
 
 # Resources
@@ -26,12 +36,34 @@ class RequestEventResource(resources.ModelResource):
 class CRUDEventAdmin(ImportExportModelAdmin):
     resource_classes = [CRUDEventResource]
 
+    list_display = [
+        "event_type",
+        "content_type",
+        "object_id",
+        "object_repr",
+        "user",
+        "datetime",
+    ]
+    date_hierarchy = "datetime"
+
 
 @admin.register(LoginEvent)
 class LoginEventAdmin(ImportExportModelAdmin):
     resource_classes = [LoginEventResource]
 
+    list_display = [
+        "datetime",
+        "login_type",
+        "user",
+        "username",
+        "remote_ip",
+    ]
+    date_hierarchy = "datetime"
+
 
 @admin.register(RequestEvent)
 class RequestEventAdmin(ImportExportModelAdmin):
     resource_classes = [RequestEventResource]
+
+    list_display = ["datetime", "user", "method", "url", "remote_ip"]
+    date_hierarchy = "datetime"
