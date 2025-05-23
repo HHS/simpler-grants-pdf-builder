@@ -34,6 +34,7 @@ google-cloud-secret-manager = "^2.23.2"
 boto3 = "^1.38.12"
 
 # sortable = "@3", check nofo_index.html
+django-import-export = "^4.3.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
