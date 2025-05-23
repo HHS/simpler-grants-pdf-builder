@@ -1,12 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from import_export.admin import ExportMixin
+from import_export import resources
 from django.utils.timezone import localtime
 
 from .forms import BloomUserChangeForm, BloomUserCreationForm
 from .models import BloomUser
 
 
-class BloomUserAdmin(UserAdmin):
+class BloomUserResource(resources.ModelResource):
+    class Meta:
+        model = BloomUser
+
+
+class BloomUserAdmin(ExportMixin, UserAdmin):
+    resource_class = BloomUserResource
     add_form = BloomUserCreationForm
     form = BloomUserChangeForm
     model = BloomUser
