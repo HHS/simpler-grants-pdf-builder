@@ -10,8 +10,12 @@ class NofoResource(resources.ModelResource):
 class SectionResource(resources.ModelResource):
     class Meta:
         model = Section
+        use_bulk = True
+        batch_size = 1000
 
 
 class SubsectionResource(resources.ModelResource):
     class Meta:
         model = Subsection
+        use_bulk = True
+        batch_size = 1000
