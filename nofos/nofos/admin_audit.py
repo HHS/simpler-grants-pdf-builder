@@ -19,16 +19,22 @@ safe_unregister(RequestEvent)
 class CRUDEventResource(resources.ModelResource):
     class Meta:
         model = CRUDEvent
+        use_bulk = True
+        batch_size = 10000
 
 
 class LoginEventResource(resources.ModelResource):
     class Meta:
         model = LoginEvent
+        use_bulk = True
+        batch_size = 10000
 
 
 class RequestEventResource(resources.ModelResource):
     class Meta:
         model = RequestEvent
+        use_bulk = True
+        batch_size = 10000
 
 
 # Admin classes with import/export enabled
