@@ -484,7 +484,10 @@ ALLOWED_HTML_ATTRIBUTES = [
 # https://github.com/soynatan/django-easy-audit
 
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+# TODO: remove this once migration finishes
+DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = False
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
+
 # If the header is set it must be available on the request or an Error will be thrown
 if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
