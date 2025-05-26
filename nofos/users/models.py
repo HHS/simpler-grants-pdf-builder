@@ -47,6 +47,10 @@ class BloomUser(AbstractUser):
         if self.email:
             self.email = self.email.lower()
 
+        # Normalize empty Login.gov ID to None
+        if not self.login_gov_user_id:
+            self.login_gov_user_id = None
+
         if (self.is_superuser or self.is_staff) and self.group != "bloom":
             raise ValidationError(
                 "Only users in the 'bloom' group can be staff or superusers."
