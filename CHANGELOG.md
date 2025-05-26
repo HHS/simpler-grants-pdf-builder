@@ -12,9 +12,12 @@ Versioning since version 1.0.0.
 - Add cover image for HHS-2025-ACF-OCS-EF-0177
 - Add healthcheck endpoint at /health
 - Add `db-migrate` command that can be run from built container
+- Add "import" and "export" buttons to NOFO models and audit events
 
 ### Changed
 
+- Temporarily stop logging audit events for model updates
+- Temporarily set the app timeout time for 15 minutes
 - Add the "Important: public information" subsection after _last_ matching subsection
 
 ### Fixed
