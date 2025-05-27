@@ -209,6 +209,11 @@ database_url = (
 )
 
 if is_aws_db(env):
+    pre_generated_token = None
+    if "test" in sys.argv:
+        # Generate a token string early for test environments (Django won't call our hook)
+        pre_generated_token = generate_iam_auth_token_func(env)()
+
     DATABASES = {
         "default": {
             "ENGINE": "bloom_nofos.db.backends.postgresql_iam",
@@ -216,6 +221,7 @@ if is_aws_db(env):
             "USER": env.get_value("DB_USER"),
             "HOST": env.get_value("DB_HOST"),
             "PORT": int(env.get_value("DB_PORT", default=5432)),
+            "PASSWORD": pre_generated_token,  # Fallback for test
             "OPTIONS": {
                 "sslmode": "require",
                 "generate_iam_auth_token": generate_iam_auth_token_func(env),
