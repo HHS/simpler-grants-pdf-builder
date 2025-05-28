@@ -1,4 +1,4 @@
-.PHONY: help build test lint format collectstatic migrate makemigrations showmigrations sqlflush_db
+.PHONY: help build test lint format collectstatic migrate makemigrations showmigrations sqlflush_db join_chunks decrypt_data load_data reset_and_load
 
 WORKDIR = nofos
 USE_DOCKER ?= 0
@@ -31,6 +31,10 @@ help:
 	@echo "  make makemigrations  Create new migrations"
 	@echo "  make showmigrations  Check DB connection and show migrations"
 	@echo "  make sqlflush_db     Generate SQL command to flush all data from the database"
+	@echo "  make join_chunks			Reassemble data file"
+	@echo "  make decrypt_data    Decrypt data/all_data_clean.json.enc into data/all_data_clean.json"
+	@echo "  make load_data       Load data/all_data_clean.json into the database"
+	@echo "  make reset_and_load  Run everything we need to get new data"
 
 build:
 	docker build -t  $(IMAGE_NAME):latest .
@@ -62,3 +66,25 @@ showmigrations:
 
 sqlflush_db:
 	cd $(WORKDIR) && $(MANAGE) sqlflush
+
+join_chunks: 		# Join chunked data in /data directory
+	cat data/enc_chunk_* > data/all_data_clean.json.enc
+
+decrypt_data: 	# Decrypt all_data_clean.json.enc to all_data_clean.json using pbkdf2
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 \
+		-in data/all_data_clean.json.enc \
+		-out data/all_data_clean.json \
+		-pass pass:$(DECRYPT_PASS)
+
+load_data: 			# Load decrypted all_data_clean.json into the database
+	cd $(WORKDIR) && $(MANAGE) loaddata ../data/all_data_clean.json
+
+reset_and_load: # This is runs the 4 commands in a since call
+	cat data/enc_chunk_* > data/all_data_clean.json.enc && \
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 \
+		-in data/all_data_clean.json.enc \
+		-out data/all_data_clean.json \
+		-pass pass:$(DECRYPT_PASS) && \
+	cd $(WORKDIR) && \
+		$(MANAGE) migrate && \
+		$(MANAGE) loaddata ../data/all_data_clean.json
