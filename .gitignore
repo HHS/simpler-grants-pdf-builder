@@ -23,3 +23,7 @@ export_links.csv
 # Login.gov certificates
 certs/*.pem
 *.pem
+
+# all_data_clean files
+all_data_clean.json
+all_data_clean.json.enc
