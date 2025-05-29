@@ -21,6 +21,58 @@ document.addEventListener('DOMContentLoaded', function () {
       // No subsection matches, nothing to do
       return;
     }
+    
+    // Initialize Select All / Deselect All button if it exists
+    const toggleButton = document.getElementById('toggle-all-checkboxes');
+    if (toggleButton) {
+      const selectAllText = toggleButton.querySelector('.select-all-text');
+      const deselectAllText = toggleButton.querySelector('.deselect-all-text');
+      
+      // Function to update the button text based on checkbox states
+      function updateToggleButtonText() {
+        let allChecked = true;
+        checkboxes.forEach(checkbox => {
+          if (!checkbox.checked) {
+            allChecked = false;
+          }
+        });
+        
+        if (allChecked) {
+          selectAllText.style.display = 'none';
+          deselectAllText.style.display = 'inline';
+        } else {
+          selectAllText.style.display = 'inline';
+          deselectAllText.style.display = 'none';
+        }
+      }
+      
+      // Initialize toggle button text
+      updateToggleButtonText();
+      
+      // Toggle all checkboxes when button is clicked
+      toggleButton.addEventListener('click', function() {
+        let allChecked = true;
+        
+        // Check if all checkboxes are currently checked
+        checkboxes.forEach(checkbox => {
+          if (!checkbox.checked && !checkbox.disabled) {
+            allChecked = false;
+          }
+        });
+        
+        // Toggle checkboxes based on current state
+        checkboxes.forEach(checkbox => {
+          if (!checkbox.disabled) {
+            checkbox.checked = !allChecked;
+            updateRowHighlight(checkbox);
+          }
+        });
+        
+        // Update button texts
+        updateToggleButtonText();
+        updateButtonText();
+      });
+    }
 
     function updateButtonText() {
       const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
@@ -51,6 +103,27 @@ document.addEventListener('DOMContentLoaded', function () {
       checkbox.addEventListener('change', function () {
         updateButtonText();
         updateRowHighlight(this);
+        
+        // Update toggle button text if it exists
+        if (toggleButton) {
+          const selectAllText = toggleButton.querySelector('.select-all-text');
+          const deselectAllText = toggleButton.querySelector('.deselect-all-text');
+          
+          let allChecked = true;
+          checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+              allChecked = false;
+            }
+          });
+          
+          if (allChecked) {
+            selectAllText.style.display = 'none';
+            deselectAllText.style.display = 'inline';
+          } else {
+            selectAllText.style.display = 'inline';
+            deselectAllText.style.display = 'none';
+          }
+        }
       });
     });
 

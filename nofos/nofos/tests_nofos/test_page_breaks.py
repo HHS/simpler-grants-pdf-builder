@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.contrib.messages import get_messages
 from nofos.models import Nofo, Section, Subsection
 from users.models import BloomUser
+from nofos.nofo import add_page_breaks_to_headings
 
 
 class NofoRemovePagebreaksViewTest(TestCase):
@@ -48,20 +49,14 @@ class NofoRemovePagebreaksViewTest(TestCase):
         # Log in the user
         self.client.force_login(self.user)
 
-    def create_subsection_with_pagebreaks(self, markdown_breaks=True, html_breaks=True, css_breaks=True):
-        """Helper method to create a subsection with different types of pagebreaks"""
-        body = ""
+    def create_subsection_with_pagebreaks(self, css_breaks=True):
+        """Helper method to create a subsection with approved types of pagebreaks"""
+        body = "Content with page-break word\n"
+        body += "More content with PAGE-BREAK word\n"
+        body += "Final content with Page-Break word\n"
+        body += "Content with multiple page-break words: page-break page-break"
+        
         html_class = ""
-        
-        if markdown_breaks:
-            body += "Content before\n---\nContent after\n"
-            body += "More content\n----\nEven more content\n"
-            body += "Final content\n-----\nVery final content"
-        
-        if html_breaks:
-            body += '<div class="page-break--hr--container"><hr class="page-break-before page-break--hr">' + \
-                   '<span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>'
-        
         if css_breaks:
             html_class = "page-break-before page-break-after other-class"
         
@@ -75,16 +70,17 @@ class NofoRemovePagebreaksViewTest(TestCase):
         )
 
     def test_get_context_data_counts_pagebreaks(self):
-        """Test that get_context_data correctly counts all types of pagebreaks"""
-        subsection = self.create_subsection_with_pagebreaks()
+        """Test that get_context_data correctly counts approved types of pagebreaks"""
+        # Create a subsection with page breaks - this is used implicitly by the view
+        self.create_subsection_with_pagebreaks()
         
         response = self.client.get(reverse('nofos:nofo_remove_page_breaks', kwargs={'pk': self.nofo.pk}))
         
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['pagebreak_count'], 11)  # 3 markdown + 1 HTML + 2 CSS + 5 word occurrences
+        self.assertEqual(response.context['pagebreak_count'], 8)  # 2 CSS + 6 word occurrences (ignoring markdown and HTML)
 
-    def test_post_removes_all_pagebreaks(self):
-        """Test that POST request removes all types of pagebreaks"""
+    def test_post_removes_approved_pagebreaks(self):
+        """Test that POST request removes approved types of pagebreaks"""
         subsection = self.create_subsection_with_pagebreaks()
         
         response = self.client.post(reverse('nofos:nofo_remove_page_breaks', kwargs={'pk': self.nofo.pk}))
@@ -95,20 +91,20 @@ class NofoRemovePagebreaksViewTest(TestCase):
         # Refresh subsection from database
         subsection.refresh_from_db()
         
-        # Check that pagebreaks were removed
-        self.assertNotIn('---', subsection.body)
-        self.assertNotIn('----', subsection.body)
-        self.assertNotIn('-----', subsection.body)
-        self.assertNotIn('page-break--hr--container', subsection.body)
+        # Check that CSS page breaks were removed
         self.assertNotIn('page-break', subsection.html_class or '')
         self.assertEqual(subsection.html_class, 'other-class')
+        
+        # Check that the word "page-break" was removed from content
+        self.assertNotIn('page-break', subsection.body.lower())
 
     def test_success_message_single_pagebreak(self):
         """Test that correct success message is shown when removing one pagebreak"""
-        subsection = Subsection.objects.create(
+        # Create a subsection with one page break - this is used implicitly by the view
+        Subsection.objects.create(
             section=self.section,
             name="Test Subsection",
-            body="Content\n---\nMore content",
+            body="Content with the word page-break in it",
             order=1,
             tag="h3"
         )
@@ -120,12 +116,13 @@ class NofoRemovePagebreaksViewTest(TestCase):
 
     def test_success_message_multiple_pagebreaks(self):
         """Test that correct success message is shown when removing multiple pagebreaks"""
-        subsection = self.create_subsection_with_pagebreaks()
+        # Create a subsection with multiple page breaks - this is used implicitly by the view
+        self.create_subsection_with_pagebreaks()
         
         response = self.client.post(reverse('nofos:nofo_remove_page_breaks', kwargs={'pk': self.nofo.pk}))
         
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(str(messages[0]), "11 page breaks have been removed.")
+        self.assertEqual(str(messages[0]), "8 page breaks have been removed.")
 
     def test_archived_nofo_access_denied(self):
         """Test that archived NOFOs cannot be accessed"""
@@ -151,7 +148,8 @@ class NofoRemovePagebreaksViewTest(TestCase):
 
     def test_no_pagebreaks_to_remove(self):
         """Test behavior when there are no pagebreaks to remove"""
-        subsection = Subsection.objects.create(
+        # Create a subsection without any page breaks
+        Subsection.objects.create(
             section=self.section,
             name="Test Subsection",
             body="Regular content without any pagebreaks",
@@ -218,33 +216,35 @@ class NofoRemovePagebreaksViewTest(TestCase):
         # The text should be modified with all instances removed
         self.assertEqual(subsection.body, " at the start,  in the middle, and  at the end.")
     
-    def test_page_break_at_top_detection(self):
-        """Test detection of page breaks at the top of a subsection"""
-        # Test markdown page break at top
+    def test_css_page_break_detection(self):
+        """Test detection of CSS page breaks in a subsection"""
+        # Test CSS page break with page-break-before
         subsection1 = Subsection.objects.create(
             section=self.section,
-            name="Top Markdown",
-            body="\n---\nContent after page break",
-            order=2,
-            tag="h3"
-        )
-        
-        # Test HTML page break at top
-        subsection2 = Subsection.objects.create(
-            section=self.section,
-            name="Top HTML",
-            body='<div class="page-break--hr--container"></div>Content after page break',
-            order=3,
-            tag="h3"
-        )
-        
-        # Test CSS page break at top
-        subsection3 = Subsection.objects.create(
-            section=self.section,
-            name="Top CSS",
+            name="CSS Before",
             body="Content with CSS page break",
             html_class="page-break-before other-class",
             order=4,
+            tag="h3"
+        )
+        
+        # Test CSS page break with page-break-after
+        subsection2 = Subsection.objects.create(
+            section=self.section,
+            name="CSS After",
+            body="Content with CSS page break",
+            html_class="other-class page-break-after",
+            order=5,
+            tag="h3"
+        )
+        
+        # Test CSS page break with both
+        subsection3 = Subsection.objects.create(
+            section=self.section,
+            name="CSS Both",
+            body="Content with CSS page break",
+            html_class="page-break-before page-break-after other-class",
+            order=6,
             tag="h3"
         )
         
@@ -253,61 +253,20 @@ class NofoRemovePagebreaksViewTest(TestCase):
         # Check that all subsections are included in subsection_matches
         self.assertEqual(len(response.context['subsection_matches']), 3)
         
-        # Check that extract_page_break_context method identifies these as top page breaks
+        # Check that extract_page_break_context method identifies the CSS page breaks
         view = response.context['view']
         
-        # Test markdown page break at top
-        highlighted1 = view.extract_page_break_context(subsection1.body)
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', highlighted1)
-        self.assertIn('Markdown', highlighted1)
+        # Test page-break-before
+        highlighted1 = view.extract_page_break_context(subsection1.body, subsection1.html_class)
+        self.assertIn('Page break at top of section found', highlighted1)
         
-        # Test HTML page break at top
-        highlighted2 = view.extract_page_break_context(subsection2.body)
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', highlighted2)
-        self.assertIn('HTML', highlighted2)
+        # Test page-break-after
+        highlighted2 = view.extract_page_break_context(subsection2.body, subsection2.html_class)
+        self.assertIn('Page break at top of section found', highlighted2)
         
-        # Test CSS page break at top
+        # Test both
         highlighted3 = view.extract_page_break_context(subsection3.body, subsection3.html_class)
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', highlighted3)
-        self.assertIn('CSS class', highlighted3)
-    
-    def test_page_break_at_bottom_detection(self):
-        """Test detection of page breaks at the bottom of a subsection"""
-        # Test markdown page break at bottom
-        subsection1 = Subsection.objects.create(
-            section=self.section,
-            name="Bottom Markdown",
-            body="Content before page break\n---\n",
-            order=5,
-            tag="h3"
-        )
-        
-        # Test HTML page break at bottom
-        subsection2 = Subsection.objects.create(
-            section=self.section,
-            name="Bottom HTML",
-            body='Content before page break<div class="page-break--hr--container"></div>',
-            order=6,
-            tag="h3"
-        )
-        
-        response = self.client.get(reverse('nofos:nofo_remove_page_breaks', kwargs={'pk': self.nofo.pk}))
-        
-        # Check that all subsections are included in subsection_matches
-        self.assertEqual(len(response.context['subsection_matches']), 2)
-        
-        # Check that extract_page_break_context method identifies these as bottom page breaks
-        view = response.context['view']
-        
-        # Test markdown page break at bottom
-        highlighted1 = view.extract_page_break_context(subsection1.body)
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the bottom', highlighted1)
-        self.assertIn('Markdown', highlighted1)
-        
-        # Test HTML page break at bottom
-        highlighted2 = view.extract_page_break_context(subsection2.body)
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the bottom', highlighted2)
-        self.assertIn('HTML', highlighted2)
+        self.assertIn('Page break at top of section found', highlighted3)
     
     def test_extract_page_break_context_method(self):
         """Test the extract_page_break_context method directly"""
@@ -323,36 +282,62 @@ class NofoRemovePagebreaksViewTest(TestCase):
         result = view.extract_page_break_context("Content with page-break word")
         self.assertIn('<strong><mark class="bg-yellow">page-break</mark></strong>', result)
         
-        # Test with markdown page break in middle
-        result = view.extract_page_break_context("Before\n---\nAfter")
-        self.assertIn('<strong><mark class="bg-yellow">Markdown page break found</mark></strong>', result)
-        
-        # Test with HTML page break in middle
-        result = view.extract_page_break_context('Before<div class="page-break--hr--container"><hr class="page-break-before page-break--hr"><span class="page-break--hr--text">[ ↓ page-break ↓ ]</span></div>After')
-        self.assertIn('HTML page break', result)
-        self.assertIn('<mark class="bg-yellow">page-break</mark>', result)
-        
-        # Test with page break at top (markdown)
-        result = view.extract_page_break_context("\n---\nContent")
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', result)
-        self.assertIn('Markdown', result)
-        
-        # Test with page break at top (HTML)
-        result = view.extract_page_break_context('<div class="page-break--hr--container"></div>Content')
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', result)
-        self.assertIn('HTML', result)
-        
-        # Test with page break at top (CSS)
+        # Test with CSS page break
         result = view.extract_page_break_context("Content", "page-break-before other-class")
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the top', result)
-        self.assertIn('CSS class', result)
+        self.assertIn('Page break at top of section found', result)
         
-        # Test with page break at bottom (markdown)
-        result = view.extract_page_break_context("Content\n---\n")
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the bottom', result)
-        self.assertIn('Markdown', result)
+        # Test with multiple page-break words
+        result = view.extract_page_break_context("This has page-break once and page-break twice")
+        self.assertIn('2 page breaks found in this section', result)
+
+    def test_add_page_breaks_to_headings(self):
+        """Test that add_page_breaks_to_headings adds page breaks to specific headings"""
+        # Create subsections with specific names that should get page breaks
+        eligibility_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Eligibility",
+            body="Eligibility content",
+            order=2,
+            tag="h3"
+        )
         
-        # Test with page break at bottom (HTML)
-        result = view.extract_page_break_context('Content<div class="page-break--hr--container"></div>')
-        self.assertIn('<strong><mark class="bg-yellow">Page break at the bottom', result)
-        self.assertIn('HTML', result)
+        program_description_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Program Description",
+            body="Program description content",
+            order=3,
+            tag="h3"
+        )
+        
+        application_checklist_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Application Checklist",
+            body="Application checklist content",
+            order=4,
+            tag="h3"
+        )
+        
+        regular_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Regular Section",
+            body="Regular content",
+            order=5,
+            tag="h3"
+        )
+        
+        # Call the function
+        add_page_breaks_to_headings(self.nofo)
+        
+        # Refresh from database
+        eligibility_subsection.refresh_from_db()
+        program_description_subsection.refresh_from_db()
+        application_checklist_subsection.refresh_from_db()
+        regular_subsection.refresh_from_db()
+        
+        # Check that page breaks were added to the right subsections
+        self.assertEqual(eligibility_subsection.html_class, "page-break-before")
+        self.assertEqual(program_description_subsection.html_class, "page-break-before")
+        self.assertEqual(application_checklist_subsection.html_class, "page-break-before")
+        
+        # Check that regular subsection didn't get a page break
+        self.assertEqual(regular_subsection.html_class, "")
