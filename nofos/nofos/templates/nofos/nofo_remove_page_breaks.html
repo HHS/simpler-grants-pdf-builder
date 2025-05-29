@@ -30,14 +30,14 @@
               </p>
 
               <div class="usa-button-group">
-                <button class="usa-button" type="submit">Remove All Page Breaks</button>
+                <button class="usa-button" type="submit">Remove Page Breaks</button>
                 <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
               </div>
             </div>
           </div>
         </div>
 
-        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id match_value="page breaks" replace_text="page breaks" checkbox_checked=True checkbox_disabled=True %}
+        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id match_value="page breaks" replace_text="page breaks" checkbox_checked=True show_select_all_button=True %}
       </form>
     {% endwith %}
   {% endwith %}
