@@ -1,4 +1,4 @@
-.PHONY: help build test lint format collectstatic migrate makemigrations
+.PHONY: help build test lint format collectstatic migrate makemigrations showmigrations sqlflush_db
 
 WORKDIR = nofos
 USE_DOCKER ?= 0
@@ -29,6 +29,8 @@ help:
 	@echo "  make collectstatic   Run collectstatic"
 	@echo "  make migrate         Run database migrations"
 	@echo "  make makemigrations  Create new migrations"
+	@echo "  make showmigrations  Check DB connection and show migrations"
+	@echo "  make sqlflush_db     Generate SQL command to flush all data from the database"
 
 build:
 	docker build -t  $(IMAGE_NAME):latest .
@@ -54,3 +56,9 @@ migrate:
 
 makemigrations:
 	cd $(WORKDIR) && $(MANAGE) makemigrations
+
+showmigrations:
+	cd $(WORKDIR) && $(MANAGE) showmigrations
+
+sqlflush_db:
+	cd $(WORKDIR) && $(MANAGE) sqlflush
