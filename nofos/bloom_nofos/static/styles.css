@@ -1383,3 +1383,9 @@ del + ins > br {
   height: 2.6rem;
   border: 2px solid;
 }
+
+/* Subsection matches table checkbox positioning */
+#subsection-matches-table > tbody > tr > td > div.usa-checkbox {
+  position: relative;
+  top: -1rem;
+}

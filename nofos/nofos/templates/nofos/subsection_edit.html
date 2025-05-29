@@ -151,7 +151,6 @@
       <!-- html_class -->
       <div class="form-group">
         <fieldset class="usa-fieldset">
-          <legend class="usa-legend">Has page break{% if 'landscape' in nofo.theme %} or column break{% endif %}?</legend>
           {% if form.html_class.value %}
             {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' and form.html_class.value != 'none' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
@@ -172,9 +171,9 @@
               onclick="handleCheckboxClick(this)"
             />
             <label class="usa-checkbox__label" for="page-break-before">
-              Add page break
+              Add a page break
               <span class="usa-checkbox__label-description">
-                This subsection starts on a new page in the printed PDF.
+                Start this subsection on a new page in the PDF.
               </span>
             </label>
           </div>
