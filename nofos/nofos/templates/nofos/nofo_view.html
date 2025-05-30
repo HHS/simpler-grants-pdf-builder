@@ -96,7 +96,11 @@
             <p>{{ nofo.agency }}</p>
             <p>{% if nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
-            <p>{% if nofo.subagency and nofo_opdiv != 'hrsa' %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
+            {% if nofo.number == 'HHS-2025-ACF-OCS-EF-0177' %}
+              <p>{{ nofo.agency }}</p>
+            {% else %}
+              <p>{% if nofo.subagency and nofo_opdiv != 'hrsa' %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
+            {% endif %}
           {% endif %}
         </div>
       </div>
