@@ -161,4 +161,14 @@ urlpatterns = [
         views.CheckNOFOLinkSingleView.as_view(),
         name="nofo_check_link_single",
     ),
+    path(
+        "<uuid:pk>/find-replace",
+        views.NofoFindReplaceView.as_view(),
+        name="nofo_find_replace",
+    ),
+    path(
+        "<uuid:pk>/remove-page-breaks",
+        views.NofoRemovePageBreaksView.as_view(),
+        name="nofo_remove_page_breaks",
+    ),
 ]
