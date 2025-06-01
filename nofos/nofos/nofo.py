@@ -2233,6 +2233,149 @@ def normalize_whitespace_img_alt_text(soup):
             img["alt"] = img["alt"].replace("\n\n", "\n")
 
 
+def extract_page_break_context(body, html_class=None):
+    """
+    Extract and highlight the context around page breaks in the subsection body.
+    
+    This function:
+    1. Identifies CSS classes page breaks and the word "page-break" page break
+    2. Extracts only the relevant context around page breaks
+    3. Adds visual markers to highlight where page breaks are located
+    
+    Returns a highlighted HTML string showing only the relevant parts of the content.
+    """
+    import re
+    
+    # Initialize the result
+    highlighted_parts = []
+    
+    # Check for CSS class page breaks
+    if html_class and any(c.startswith('page-break') for c in html_class.split()):
+        highlighted_parts.append(
+            '<strong><mark class="bg-yellow">Page break at top of section found.</mark></strong>'
+        )
+    
+    # Look for the word "page-break" in the content
+    matches = list(re.finditer(r'page-break', body))
+    
+    if matches:
+        # Group nearby matches to avoid redundant context
+        match_groups = []
+        current_group = [matches[0]]
+        
+        for i in range(1, len(matches)):
+            # If this match is close to the previous one (within 200 characters - 2x our context size)
+            if matches[i].start() - matches[i-1].end() < 200:
+                # Add to current group
+                current_group.append(matches[i])
+            else:
+                # Start a new group
+                match_groups.append(current_group)
+                current_group = [matches[i]]
+        
+        # Add the last group
+        match_groups.append(current_group)
+        
+        # Process each group
+        for group in match_groups:
+            # Get the start of the first match and end of the last match in the group
+            group_start = group[0].start()
+            group_end = group[-1].end()
+            
+            # Extract context (100 characters before first match and 100 after last match)
+            context_start = max(0, group_start - 100)
+            context_end = min(len(body), group_end + 100)
+            
+            # Extract the context
+            context = body[context_start:context_end]
+            
+            # Add ellipsis if we're not at the beginning or end
+            if context_start > 0:
+                context = '…' + context
+            if context_end < len(body):
+                context = context + '…'
+            
+            # Highlight all occurrences of "page-break" in the context
+            highlighted_context = re.sub(
+                r'(page-break)',
+                r'<strong><mark class="bg-yellow">\1</mark></strong>',
+                context,
+                flags=re.IGNORECASE
+            )
+            
+            # Add count if there are multiple matches in this group
+            if len(group) > 1:
+                highlighted_parts.append(f'<p><strong>{len(group)} page breaks found in this section:</strong><br><br> {highlighted_context}</p>')
+            else:
+                highlighted_parts.append(f'<p>{highlighted_context}</p>')
+    
+    # If no specific highlights were found, return a generic message
+    if not highlighted_parts:
+        return '<p><em>Page break found in CSS classes or other locations</em></p>'
+    
+    return ''.join(highlighted_parts)
+
+
+def count_page_breaks(subsection):
+    """
+    Count the number of page breaks in a subsection.
+
+    Args:
+        subsection: The subsection object to check for page breaks
+
+    Returns:
+        int: The total number of page breaks (CSS class + word occurrences)
+    """
+    import re
+    
+    # Count CSS class page breaks
+    css_breaks = 0
+    if subsection.html_class:
+        css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+
+    body = subsection.body
+    
+    # # Add newlines at beginning and end if not present to handle edge cases
+    # if not body.startswith('\n'):
+    #     body = '\n' + body
+    # if not body.endswith('\n'):
+    #     body = body + '\n'
+    
+    # Count page breaks
+    newline_breaks = len(re.findall(r'page-break', body))
+
+    return css_breaks + newline_breaks
+
+
+def remove_page_breaks_from_subsection(subsection):
+    """
+    Remove page breaks from a subsection.
+    
+    Only removes lowercase 'page-break'.
+    Page breaks that appear within sentences (like "what if there is a page-break here?") are also removed.
+    Uppercase 'PAGE-BREAK' or mixed case variations are preserved.
+
+    Args:
+        subsection: The subsection object to remove page breaks from
+
+    Returns:
+        subsection: The updated subsection object
+    """
+    import re
+
+    # 1. Remove CSS class page breaks
+    if subsection.html_class:
+        # Get all non-pagebreak classes
+        classes = [c for c in subsection.html_class.split() if not c.startswith('page-break')]
+        # Update html_class with only non-pagebreak classes
+        subsection.html_class = ' '.join(classes) if classes else ''
+
+    # 2. Remove all `page-breaks`
+    subsection.body = re.sub(r'page-break', '', subsection.body)
+
+    return subsection
+
+
 ###########################################################
 #################### ADD TO HTML FUNCS ####################
 ###########################################################
