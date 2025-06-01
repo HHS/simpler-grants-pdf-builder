@@ -36,7 +36,6 @@
               name="replace_subsections"
               value="{{ match.subsection.id }}"
               {% if checkbox_checked|default:"True" %}checked{% endif %}
-              {% if checkbox_disabled %}disabled{% endif %}
             />
             <label class="usa-checkbox__label" for="replace-{{ match.subsection.id }}">
               <span class="usa-sr-only">Replace {{ replace_text }} in subsection: {{ match.subsection|subsection_name_or_order }}</span>

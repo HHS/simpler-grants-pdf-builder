@@ -2,32 +2,30 @@ document.addEventListener('DOMContentLoaded', function () {
   try {
     const formId = window.nofoEditFormId || 'nofo_edit_form';
     const form = document.getElementById(formId);
-    
+
     if (!form) {
-      console.error('Form not found:', formId);
       return;
     }
 
     const button = form.querySelector('button[type="submit"]');
     if (!button) {
-      console.error('Submit button not found');
       return;
     }
 
     const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
+    
     const originalButtonText = button.textContent.trim() || 'Save';
 
     if (checkboxes.length === 0) {
-      // No subsection matches, nothing to do
       return;
     }
-    
+
     // Initialize Select All / Deselect All button if it exists
     const toggleButton = document.getElementById('toggle-all-checkboxes');
     if (toggleButton) {
       const selectAllText = toggleButton.querySelector('.select-all-text');
       const deselectAllText = toggleButton.querySelector('.deselect-all-text');
-      
+
       // Function to update the button text based on checkbox states
       function updateToggleButtonText() {
         let allChecked = true;
@@ -36,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             allChecked = false;
           }
         });
-        
+
         if (allChecked) {
           selectAllText.style.display = 'none';
           deselectAllText.style.display = 'inline';
@@ -45,10 +43,10 @@ document.addEventListener('DOMContentLoaded', function () {
           deselectAllText.style.display = 'none';
         }
       }
-      
+
       // Initialize toggle button text
       updateToggleButtonText();
-      
+
       // Toggle all checkboxes when button is clicked
       toggleButton.addEventListener('click', function() {
         let allChecked = true;
@@ -59,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
             allChecked = false;
           }
         });
-        
+
         // Toggle checkboxes based on current state
         checkboxes.forEach(checkbox => {
           if (!checkbox.disabled) {
@@ -67,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateRowHighlight(checkbox);
           }
         });
-        
+
         // Update button texts
         updateToggleButtonText();
         updateButtonText();
@@ -89,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateRowHighlight(checkbox) {
       const row = checkbox.closest('tr');
       if (!row) return;
-      
+
       // Toggle the highlight class based on checkbox state
       if (checkbox.checked) {
         row.classList.add('subsection--selected');
@@ -103,19 +101,19 @@ document.addEventListener('DOMContentLoaded', function () {
       checkbox.addEventListener('change', function () {
         updateButtonText();
         updateRowHighlight(this);
-        
+
         // Update toggle button text if it exists
         if (toggleButton) {
           const selectAllText = toggleButton.querySelector('.select-all-text');
           const deselectAllText = toggleButton.querySelector('.deselect-all-text');
-          
+
           let allChecked = true;
           checkboxes.forEach(checkbox => {
             if (!checkbox.checked) {
               allChecked = false;
             }
           });
-          
+
           if (allChecked) {
             selectAllText.style.display = 'none';
             deselectAllText.style.display = 'inline';
@@ -124,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
             deselectAllText.style.display = 'none';
           }
         }
+
       });
     });
 
@@ -134,6 +133,12 @@ document.addEventListener('DOMContentLoaded', function () {
       if (checkbox.checked) {
         updateRowHighlight(checkbox);
       }
+    });
+
+    // Add form submission handler
+    form.addEventListener('submit', function(event) {
+      const selectedCheckboxes = form.querySelectorAll('input[name="replace_subsections"]:checked');
+      const selectedSubsections = Array.from(selectedCheckboxes).map(cb => cb.value);
     });
   } catch (error) {
     console.error('Error in form initialization:', error);
