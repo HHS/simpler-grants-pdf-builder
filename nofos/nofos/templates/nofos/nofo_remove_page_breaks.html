@@ -15,29 +15,18 @@
       <form id="{{ form_id }}" class="nofo_edit_form" method="post">
         {% csrf_token %}
 
-        <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-          <div class="usa-summary-box__body">
-            <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-              Remove page breaks from "{{ nofo.title }}"
-            </h2>
-            <div class="usa-summary-box__text">
-              <p>
-                {% if pagebreak_count == 1 %}
-                  There is <strong>1</strong> page break in this document.
-                {% else %}
-                  There are <strong>{{ pagebreak_count }}</strong> page breaks in this document.
-                {% endif %}
-              </p>
-
-              <div class="usa-button-group">
-                <button class="usa-button" type="submit">Remove Page Breaks</button>
-                <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
-              </div>
-            </div>
-          </div>
+        <label class="usa-label" for="page_breaks_info">Page breaks information</label>
+        <div class="usa-hint" id="page_breaks_info--hint-1">
+          {% if pagebreak_count == 1 %}
+            There is <strong>1</strong> page break in this document.
+          {% else %}
+            There are <strong>{{ pagebreak_count }}</strong> page breaks in this document.
+          {% endif %}
         </div>
 
-        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id match_value="page breaks" replace_text="page breaks" checkbox_checked=True show_select_all_button=True %}
+        <button class="usa-button margin-top-3" type="submit">Remove Page Breaks</button>
+
+        {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value="page breaks" replace_text="page breaks" checkbox_checked=True show_select_all_button=True %}
       </form>
     {% endwith %}
   {% endwith %}
