@@ -2,8 +2,10 @@ import re
 
 from bs4 import BeautifulSoup
 from django.test import TestCase
+from django.utils.safestring import SafeString
 from nofos.models import Nofo, Section, Subsection
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
+from nofos.templatetags.safe_br import safe_br
 from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tag,
     _add_class_if_not_exists_to_tags,
@@ -691,6 +693,37 @@ class ModifyHtmlTests(TestCase):
         convert_paragraph_to_searchable_hr(soup.p)
         self.assertEqual(str(soup), expected_html)
 
+
+class SafeBrOnlyFilterTests(TestCase):
+
+    def test_all_html_is_escaped_except_br(self):
+        input_text = 'Line 1<br>Line 2<b>bold</b><script>alert("hi")</script>'
+        expected = SafeString('Line 1<br>Line 2&lt;b&gt;bold&lt;/b&gt;&lt;script&gt;alert(&quot;hi&quot;)&lt;/script&gt;')
+        result = safe_br(input_text)
+        self.assertEqual(result, expected)
+
+    def test_br_variants_are_normalized(self):
+        input_text = 'Line 1<BR/>Line 2<Br >Line 3<br >Line 4<BR >'
+        expected = SafeString('Line 1<br>Line 2<br>Line 3<br>Line 4<br>')
+        result = safe_br(input_text)
+        self.assertEqual(result, expected)
+
+    def test_escaping_angle_brackets(self):
+        input_text = 'This is <not a tag> and should be escaped'
+        expected = SafeString('This is &lt;not a tag&gt; and should be escaped')
+        result = safe_br(input_text)
+        self.assertEqual(result, expected)
+
+    def test_plain_text_remains_unchanged(self):
+        input_text = 'Just some normal text here.'
+        expected = SafeString('Just some normal text here.')
+        result = safe_br(input_text)
+        self.assertEqual(result, expected)
+
+    def test_non_string_input_is_returned_as_is(self):
+        self.assertEqual(safe_br(None), None)
+        self.assertEqual(safe_br(42), 42)
+        self.assertEqual(safe_br(True), True)
 
 class TestFindElementsWithChar(TestCase):
     def test_single_element_with_char(self):
