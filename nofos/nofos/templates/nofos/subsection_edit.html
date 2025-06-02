@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name input_type whitespaceless %}
+{% load static nofo_name input_type whitespaceless safe_br %}
 
 {% block title %}
   Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
@@ -20,7 +20,7 @@
       <a href="{% url 'nofos:nofo_edit' nofo.id %}#{{ subsection.html_id }}">Edit “{{ nofo_name_str }}”</a>
     </div>
     <div class="subsection_edit--header">
-      <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+      <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
       {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base"><span aria-hidden="true">📦</span> Callout box</h2>{% endif %}
       {% if subsection.name %}
       <div class="subsection_edit--header--view font-sans-md">
