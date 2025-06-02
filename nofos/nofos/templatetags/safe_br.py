@@ -7,6 +7,7 @@ register = template.Library()
 # Allow <br>, <br />, <BR>, <BR />
 BR_TAG_RE = re.compile(r'<br\s*/?>', flags=re.IGNORECASE)
 
+# This filter escapes all HTML except <br> tags
 @register.filter
 def safe_br(value):
     if not isinstance(value, str):
@@ -24,3 +25,12 @@ def safe_br(value):
 
     return mark_safe(result)
 
+
+# This filter removes <br> tags from a string
+@register.filter
+def strip_br(value):
+    if not isinstance(value, str):
+        return value
+
+    # Just remove all <br>, <br/>, <br />, <BR>, etc.
+    return BR_TAG_RE.sub('', value)

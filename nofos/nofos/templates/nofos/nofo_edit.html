@@ -523,7 +523,7 @@ Edit “{{ nofo|nofo_name }}”
           </td>
           <td class="nofo-edit-table--subsection--manage">
             <span class="floating">
-              <a href="{% url 'nofos:subsection_edit' nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
+              <a href="{% url 'nofos:subsection_edit' nofo.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name|strip_br }}</span></a>
             </span>
           </td>
         </tr>

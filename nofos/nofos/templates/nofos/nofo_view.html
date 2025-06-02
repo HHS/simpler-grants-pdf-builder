@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_classes_to_lists add_classes_to_headings add_classes_to_toc add_captions_to_tables split_char_and_remove get_breadcrumb convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section %}
+{% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_classes_to_lists add_classes_to_headings add_classes_to_toc add_captions_to_tables split_char_and_remove get_breadcrumb convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section safe_br %}
 
 {% block metadata %}
   {% if nofo.author %}
@@ -194,14 +194,14 @@
               {% include "includes/icon_macro.html" with section_name=section.name|lower icon_style=nofo.icon_style only %}
             </div>
             <div class="toc--section-name--wrapper">
-              <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name }}</a>
+              <a href="#{{ section.html_id }}" class="toc--section-name--a">{{ section.name|strip_br }}</a>
 
               {% if section.name|lower != "contacts & support" and section.name|lower != "contacts and support" %}
                 <ol class="usa-list usa-list--unstyled">
                   {% for subsection in section.subsections.all|dictsort:"order" %}
                     {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                       {% if tag == 'h3' %}
-                        <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
+                        <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content|strip_br }}</a></li>
                       {% endif %}
                     {% endwith %}
                   {% endfor %}
@@ -305,7 +305,7 @@
                   <span>Step {{ section_name.number }}:</span>
                   <br>
                 {% endif %}
-                <span>{{ section_name.name }}</span>
+                <span>{{ section_name.name|safe_br }}</span>
               {% endwith %}
             </h2>
           </div>
@@ -316,7 +316,7 @@
               {% for subsection in section.subsections.all|dictsort:"order" %}
                 {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                   {% if tag == 'h3' %}
-                    <li><a href="#{{ subsection.html_id }}">{{ content }}</a></li>
+                    <li><a href="#{{ subsection.html_id }}">{{ content|strip_br }}</a></li>
                   {% endif %}
                 {% endwith %}
               {% endfor %}
