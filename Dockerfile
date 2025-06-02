@@ -26,12 +26,15 @@ RUN apt-get update && \
 
 # Patch system libraries to address known CVEs
 # - libcap2: CVE-2025-1390
-# - login, passwd: CVE-2023-4641, CVE-2023-29383
+# - login, passwd: CVE-2023-4641, CVE-2023-29383, 
+# - libsystemd0, libudev1: CVE-2025-4598
 RUN apt-get update && \
   apt-get install -y --only-upgrade \
   libcap2 \
   login \
-  passwd && \
+  passwd \
+  libsystemd0 \
+  libudev1 && \
   rm -rf /var/lib/apt/lists/*
 
 # Install Poetry and create user
