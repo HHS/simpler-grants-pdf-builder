@@ -1,15 +1,15 @@
-{% load static add_classes_to_headings %}
+{% load static add_classes_to_headings safe_br %}
 
 {% if tag == "h2" %}
-  <h2 {% if id %}id="{{ id }}"{% endif %}>{{ content }}</h2>
+  <h2 {% if id %}id="{{ id }}"{% endif %}>{{ content|safe_br }}</h2>
 {% elif tag == "h3" %}
-  <h3 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content }}</h3>
+  <h3 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content|safe_br }}</h3>
 {% elif tag == "h4" %}
-  <h4 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content }}</h4>
+  <h4 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content|safe_br }}</h4>
 {% elif tag == "h5" %}
-  <h5 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content }}</h5>
+  <h5 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content|safe_br }}</h5>
 {% elif tag == "h6" %}
-  <h6 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content }}</h6>
+  <h6 {% if id %}id="{{ id }}"{% endif %} {% if class %}class="{{ class }}"{% elif content|add_classes_to_headings %}class="{{ content| add_classes_to_headings }}"{% endif %}>{{ content|safe_br }}</h6>
 {% elif tag == "h7" %}
-  <div {% if id %}id="{{ id }}"{% endif %} role="heading" aria-level="7" {% if class %}class="{{ class }}"{% endif %}>{{ content }}</div>
+  <div {% if id %}id="{{ id }}"{% endif %} role="heading" aria-level="7" {% if class %}class="{{ class }}"{% endif %}>{{ content|safe_br }}</div>
 {% endif %}
