@@ -443,9 +443,9 @@ Edit “{{ nofo|nofo_name }}”
 
 {% for section in nofo.sections.all|dictsort:"order" %}
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived table--section">
-  <caption aria-label="{{ section.name }}">
+  <caption aria-label="{{ section.name|strip_br }}">
     <div>
-      <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
+      <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name|safe_br }}</h2>
       <span class="section--copy-button">
         <button
           type="button"
