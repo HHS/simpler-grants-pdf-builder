@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static tz martortags nofo_name subsection_name_or_order get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs split_char_and_remove %}
+{% load static tz martortags nofo_name subsection_name_or_order get_value_or_none add_classes_to_tables add_classes_to_links convert_paragraphs_to_hrs split_char_and_remove safe_br %}
 
 {% block title %}
 Edit “{{ nofo|nofo_name }}”
@@ -484,7 +484,7 @@ Edit “{{ nofo|nofo_name }}”
             <span class="floating">
               {% if subsection.name %}
                 <span {% if subsection|has_heading_error:heading_errors %}class="usa-tooltip" data-position="bottom" title="{{ subsection|get_heading_error:heading_errors|split_char_and_remove:":" }}."{% endif %}>
-                  {{ subsection.name }}
+                  {{ subsection.name|safe_br }}
                 </span>
               {% else %}
                 <span class="text-base">(#{{ subsection.order}})</span>
