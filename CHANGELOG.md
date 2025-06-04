@@ -10,7 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Allow `<br>` tags in heading strings
-- Add cover image for HHS-2025-ACF-OCS-EF-0177
+- Add cover images for HHS-2025-ACF-OCS-EF-0177, ACF-OCS-EE-0118
 - Add healthcheck endpoint at /health
 - Add `db-migrate` command that can be run from built container
 - Add "import" and "export" buttons to NOFO models and audit events
