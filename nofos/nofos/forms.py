@@ -127,6 +127,19 @@ class NofoIconStyleForm(forms.ModelForm):
                 self.instance.theme
             )
 
+class NofoThemeCoverIconStyleForm(forms.ModelForm):
+    class Meta:
+        model = Nofo
+        fields = ["theme", "cover", "icon_style"]
+
+    def __init__(self, *args, **kwargs):
+        super(NofoThemeCoverIconStyleForm, self).__init__(*args, **kwargs)
+
+        # Only customize icon_style choices if a theme is already selected
+        if self.instance and self.instance.theme:
+            self.fields["icon_style"].choices = get_icon_path_choices(
+                self.instance.theme
+            )
 
 class NofoCoverImageForm(forms.ModelForm):
     class Meta:
