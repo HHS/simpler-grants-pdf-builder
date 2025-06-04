@@ -52,6 +52,7 @@ from .forms import (
     NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeForm,
+    NofoThemeCoverIconStyleForm,
     SubsectionCreateForm,
     SubsectionEditForm,
 )
@@ -1058,6 +1059,11 @@ class NofoEditCoverImageView(BaseNofoEditView):
 class NofoEditIconStyleView(BaseNofoEditView):
     form_class = NofoIconStyleForm
     template_name = "nofos/nofo_edit_icon_style.html"
+
+
+class NofoEditThemeCoverIconStyleView(BaseNofoEditView):
+    form_class = NofoThemeCoverIconStyleForm
+    template_name = "nofos/nofo_edit_theme_cover_icon_style.html"
 
 
 class NofoEditStatusView(BaseNofoEditView):

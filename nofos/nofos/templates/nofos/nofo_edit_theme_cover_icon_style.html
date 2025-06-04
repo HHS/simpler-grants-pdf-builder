@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+NOFO Theme, Cover, Icon Style
+{% endblock %}
+
+{% block content %}
+{% with nofo|nofo_name as nofo_name_str %}
+{% with "Back to “"|add:nofo_name_str|add:"”" as back_text %}
+{% url 'nofos:nofo_edit' nofo.id as back_href %}
+{% include "includes/page_heading.html" with title="NOFO Theme, Cover, Icon Style" back_text=back_text back_href=back_href only %}
+{% endwith %}
+{% endwith %}
+
+<p>All of your theme options in 1 place.</p>
+
+<form id="nofo-icon-style--form" method="post">
+  {% csrf_token %}
+
+  {% include "includes/form_macro.html" %}
+
+  <button class="usa-button margin-top-3" type="submit">Save everything</button>
+</form>
+{% endblock %}
