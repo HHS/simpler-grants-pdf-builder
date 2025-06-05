@@ -101,29 +101,14 @@ urlpatterns = [
         name="nofo_edit_subagency2",
     ),
     path(
-        "<uuid:pk>/edit/theme",
-        views.NofoEditThemeView.as_view(),
-        name="nofo_edit_theme",
-    ),
-    path(
-        "<uuid:pk>/edit/cover",
-        views.NofoEditCoverView.as_view(),
-        name="nofo_edit_cover",
+        "<uuid:pk>/edit/theme-options",
+        views.NofoEditThemeOptionsView.as_view(),
+        name="nofo_edit_theme_options",
     ),
     path(
         "<uuid:pk>/edit/cover-image",
         views.NofoEditCoverImageView.as_view(),
         name="nofo_edit_cover_image",
-    ),
-    path(
-        "<uuid:pk>/edit/icon-style",
-        views.NofoEditIconStyleView.as_view(),
-        name="nofo_edit_icon_style",
-    ),
-    path(
-        "<uuid:pk>/edit/theme-cover-icon-style",
-        views.NofoEditThemeCoverIconStyleView.as_view(),
-        name="nofo_edit_theme_cover_icon_style",
     ),
     path(
         "<uuid:pk>/edit/status",
