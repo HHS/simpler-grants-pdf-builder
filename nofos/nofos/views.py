@@ -39,10 +39,8 @@ from .forms import (
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
     NofoCoachDesignerForm,
-    NofoCoverForm,
     NofoCoverImageForm,
     NofoGroupForm,
-    NofoIconStyleForm,
     NofoMetadataForm,
     NofoNameForm,
     NofoNumberForm,
@@ -51,8 +49,7 @@ from .forms import (
     NofoSubagency2Form,
     NofoSubagencyForm,
     NofoTaglineForm,
-    NofoThemeForm,
-    NofoThemeCoverIconStyleForm,
+    NofoThemeOptionsForm,
     SubsectionCreateForm,
     SubsectionEditForm,
 )
@@ -1009,41 +1006,14 @@ class NofoEditSubagency2View(BaseNofoEditView):
     template_name = "nofos/nofo_edit_subagency2.html"
 
 
-class NofoEditThemeView(BaseNofoEditView):
-    form_class = NofoThemeForm
-    template_name = "nofos/nofo_edit_theme.html"
+class NofoEditThemeOptionsView(BaseNofoEditView):
+    form_class = NofoThemeOptionsForm
+    template_name = "nofos/nofo_edit_theme_options.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        theme_categories_dict = {}
-        for theme in THEME_CHOICES:
-            opdiv = theme[1].split(" ")[0]
-
-            if not theme_categories_dict.get(opdiv):
-                theme_categories_dict[opdiv] = []
-
-            theme_categories_dict[opdiv].append(theme)
-
-        # Get user group, defaulting to None if user or user group does not exist
-        user = self.request.user
-        group_key = user.group.upper() if user and user.group else None
-
-        # Check if the user group exists, is not 'bloom', and is in the theme categories dictionary
-        if group_key and group_key != "BLOOM" and group_key in theme_categories_dict:
-            # Only show themes related to a user's group
-            filtered_theme_categories = {group_key: theme_categories_dict[group_key]}
-            context["theme_categories"] = filtered_theme_categories
-        else:
-            # Show all themes
-            context["theme_categories"] = theme_categories_dict
-
-        return context
-
-
-class NofoEditCoverView(BaseNofoEditView):
-    form_class = NofoCoverForm
-    template_name = "nofos/nofo_edit_cover.html"
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user  # pass user to form
+        return kwargs
 
 
 class NofoEditCoverImageView(BaseNofoEditView):
@@ -1054,17 +1024,6 @@ class NofoEditCoverImageView(BaseNofoEditView):
         context = super().get_context_data(**kwargs)
         context["nofo_cover_image"] = get_cover_image(self.object)
         return context
-
-
-class NofoEditIconStyleView(BaseNofoEditView):
-    form_class = NofoIconStyleForm
-    template_name = "nofos/nofo_edit_icon_style.html"
-
-
-class NofoEditThemeCoverIconStyleView(BaseNofoEditView):
-    form_class = NofoThemeCoverIconStyleForm
-    template_name = "nofos/nofo_edit_theme_cover_icon_style.html"
-
 
 class NofoEditStatusView(BaseNofoEditView):
     form_class = NofoStatusForm

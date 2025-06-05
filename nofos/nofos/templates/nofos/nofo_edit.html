@@ -380,12 +380,12 @@ Edit “{{ nofo|nofo_name }}”
     <tr>
       <th scope="row">Theme</th>
       <td>{{ nofo.get_theme_display|get_value_or_none:"theme" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_theme' nofo.id %}">Edit<span class="usa-sr-only"> theme</span></a></td>
+      <td><a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}">Edit<span class="usa-sr-only"> theme options: NOFO theme, cover style, and icon style</span></a></td>
     </tr>
     <tr>
       <th scope="row">Cover style</th>
-      <td>{{ nofo.get_cover_display|get_value_or_none:"Medium" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_cover' nofo.id %}">Edit<span class="usa-sr-only"> cover style</span></a></td>
+      <td>{{ nofo.get_cover_display|get_value_or_none:"Standard image" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}" aria-hidden="true">Edit<span class="usa-sr-only"> theme options</span></a></td>
     </tr>
     {% if nofo.cover_image and nofo.cover != 'nofo--cover-page--text' %}
       <tr>
@@ -396,10 +396,10 @@ Edit “{{ nofo|nofo_name }}”
     {% endif %}
     <tr>
       <th scope="row">Icon style</th>
-      <td>{{ nofo.get_icon_style_display|get_value_or_none:"Bordered" }}</td>
+      <td>{{ nofo.get_icon_style_display|get_value_or_none:"Outlined" }}</td>
       <td>
         {% if "-acl" not in nofo.theme %}
-          <a href="{% url 'nofos:nofo_edit_icon_style' nofo.id %}">Edit<span class="usa-sr-only"> icon style</span></a>
+          <a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}" aria-hidden="true">Edit<span class="usa-sr-only"> theme options</span></a>
         {% endif %}
       </td>
     </tr>

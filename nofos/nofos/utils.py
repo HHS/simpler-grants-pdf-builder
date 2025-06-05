@@ -83,7 +83,7 @@ def get_icon_path_choices(theme):
             ),
             (
                 "nofo--icons--solid",
-                "(Standard) White background, color icon, color outline",
+                "(Outlined) White background, color icon, color outline",
             ),
             (
                 "nofo--icons--thin",
@@ -95,7 +95,7 @@ def get_icon_path_choices(theme):
         ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
         (
             "nofo--icons--solid",
-            "(Standard) White background, color icon, color outline",
+            "(Outlined) White background, color icon, color outline",
         ),
     ]
 

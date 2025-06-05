@@ -1,7 +1,7 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import DESIGNER_CHOICES, STATUS_CHOICES, Nofo, Section, Subsection
+from .models import DESIGNER_CHOICES, STATUS_CHOICES, THEME_CHOICES, Nofo, Section, Subsection
 from .utils import get_icon_path_choices
 
 
@@ -39,7 +39,6 @@ NofoNameForm = create_nofo_form_class(
 NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoNumberForm = create_nofo_form_class(["number"])
-NofoCoverForm = create_nofo_form_class(["cover"])
 NofoGroupForm = create_nofo_form_class(["group"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoSubagencyForm = create_nofo_form_class(
@@ -49,7 +48,6 @@ NofoSubagency2Form = create_nofo_form_class(
     ["subagency2"], not_required_labels=["Subagency 2"]
 )
 NofoTaglineForm = create_nofo_form_class(["tagline"])
-NofoThemeForm = create_nofo_form_class(["theme"])
 
 
 # Nofo status form: same options but with a divider inserted after "published"
@@ -114,28 +112,34 @@ class NofoCoachDesignerForm(forms.ModelForm):
             ]
 
 
-# we want to change the available icon style options based on the nofo theme
-class NofoIconStyleForm(forms.ModelForm):
-    class Meta:
-        model = Nofo
-        fields = ["icon_style"]
-
-    def __init__(self, *args, **kwargs):
-        super(NofoIconStyleForm, self).__init__(*args, **kwargs)
-        if self.instance and self.instance.theme:
-            self.fields["icon_style"].choices = get_icon_path_choices(
-                self.instance.theme
-            )
-
-class NofoThemeCoverIconStyleForm(forms.ModelForm):
+class NofoThemeOptionsForm(forms.ModelForm):
     class Meta:
         model = Nofo
         fields = ["theme", "cover", "icon_style"]
 
-    def __init__(self, *args, **kwargs):
-        super(NofoThemeCoverIconStyleForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, user=None, **kwargs):
+        super(NofoThemeOptionsForm, self).__init__(*args, **kwargs)
 
-        # Only customize icon_style choices if a theme is already selected
+        # -------- Filter theme choices into optgroups by OpDiv
+        theme_categories_dict = {}
+        for value, label in THEME_CHOICES:
+            opdiv = label.split(" ")[0]
+            theme_categories_dict.setdefault(opdiv, []).append((value, label))
+
+        group_key = user.group.upper() if user and hasattr(user, "group") else None
+
+        if group_key and group_key != "BLOOM" and group_key in theme_categories_dict:
+            theme_categories = {group_key: theme_categories_dict[group_key]}
+        else:
+            theme_categories = theme_categories_dict
+
+        # Convert optgroup dict into Django-style optgroup choices
+        optgroup_choices = [
+            (opdiv, options) for opdiv, options in theme_categories.items()
+        ]
+        self.fields["theme"].choices = optgroup_choices
+
+        # -------- Filter icon_style choices based on selected theme
         if self.instance and self.instance.theme:
             self.fields["icon_style"].choices = get_icon_path_choices(
                 self.instance.theme
