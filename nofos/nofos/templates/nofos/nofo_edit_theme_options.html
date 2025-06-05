@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+NOFO theme options
+{% endblock %}
+
+{% block content %}
+{% with nofo|nofo_name as nofo_name_str %}
+{% with "Back to “"|add:nofo_name_str|add:"”" as back_text %}
+{% url 'nofos:nofo_edit' nofo.id as back_href %}
+{% include "includes/page_heading.html" with title="NOFO theme options" back_text=back_text back_href=back_href only %}
+{% endwith %}
+{% endwith %}
+
+<p>Customize the look and feel of your NOFO.</p>
+
+<form id="nofo-theme-options--form" method="post">
+  {% csrf_token %}
+
+  <label class="usa-label" for="{{ form.theme.name }}">{{ form.theme.label }}</label>
+  <div class="usa-hint" id="{{ form.theme.name }}--hint-1">
+    {{ form.theme.help_text }}
+  </div>
+  <select class="usa-select border-2px" name="{{ form.theme.name }}" id="{{ form.theme.name }}" aria-describedby="{{ form.theme.name }}--hint-1">
+    {% for optgroup_label, options in form.theme.field.choices %}
+      <optgroup label="{{ optgroup_label }}">
+        {% for value, label in options %}
+          <option value="{{ value }}" {% if form.theme.value == value %}selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </optgroup>
+    {% endfor %}
+  </select>
+
+  {% with id=form.cover.name label=form.cover.label hint=form.cover.help_text value=form.cover.value choices=form.cover.field.choices error=form.cover.errors.0 %}
+    {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+  {% endwith %}
+
+  {% with id=form.icon_style.name label=form.icon_style.label hint=form.icon_style.help_text value=form.icon_style.value choices=form.icon_style.field.choices error=form.icon_style.errors.0 %}
+    {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
+  {% endwith %}
+
+  <button class="usa-button margin-top-3" type="submit">Save theme options</button>
+</form>
+{% endblock %}

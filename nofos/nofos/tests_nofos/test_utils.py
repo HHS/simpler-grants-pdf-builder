@@ -100,7 +100,7 @@ class TestGetIconPathChoices(TestCase):
             ),
             (
                 "nofo--icons--solid",
-                "(Standard) White background, color icon, color outline",
+                "(Outlined) White background, color icon, color outline",
             ),
             ("nofo--icons--thin", "(Thin) White background, color icon, color outline"),
         ]
@@ -116,7 +116,7 @@ class TestGetIconPathChoices(TestCase):
             ),
             (
                 "nofo--icons--solid",
-                "(Standard) White background, color icon, color outline",
+                "(Outlined) White background, color icon, color outline",
             ),
         ]
         result = get_icon_path_choices("portrait-hrsa-white")

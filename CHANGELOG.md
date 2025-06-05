@@ -17,6 +17,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Consolidate Theme options (Theme, Cover, Icon style) on one page
+  - This means we removed the 3 individual edit pages (and views, forms, etc)
 - Temporarily stop logging audit events for model updates
 - Temporarily set the app timeout time for 15 minutes
 - Add the "Important: public information" subsection after _last_ matching subsection
