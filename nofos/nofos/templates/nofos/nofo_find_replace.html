@@ -1,37 +1,53 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load nofo_name subsection_name_or_order %}
 
-{% block title %}
-Find & Replace - {{ nofo.title }}
-{% endblock %}
+{% block body_class %}edit__find-replace{% endblock %}
+
+{% block title %}Find & Replace{% endblock %}
 
 {% block content %}
-<div class="back-link font-body-md margin-bottom-4">
-  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Back to NOFO</a>
-</div>
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% with form_id="nofo_find_replace_form" %}
+      {% include "includes/page_heading.html" with title="Find & Replace" back_text=back_text back_href=back_href only %}
 
-<h1>Find & Replace</h1>
-
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      Find and replace text in "{{ nofo.title }}"
-    </h2>
-    <div class="usa-summary-box__text">
-      <form method="post" class="usa-form">
+      <form id="{{ form_id }}" class="nofo_edit_form" method="post">
         {% csrf_token %}
-        <label class="usa-label" for="find-text">Find text</label>
-        <input class="usa-input" id="find-text" name="find_text" type="text" required>
+        <div class="margin-bottom-4">
+          <label class="usa-label" for="find-text">Find text</label>
+          <input class="usa-input" id="find-text" name="find_text" type="text" required {% if find_text %}value="{{ find_text }}"{% endif %}>
 
-        <label class="usa-label" for="replace-text">Replace with</label>
-        <input class="usa-input" id="replace-text" name="replace_text" type="text" required>
-
-        <div class="margin-top-3">
-          <button class="usa-button" type="submit">Replace All</button>
-          <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
+          <div class="margin-top-3">
+            <button class="usa-button" type="submit" name="action" value="find">Find</button>
+          </div>
         </div>
+
+        {% if find_text %}
+          {% if subsection_matches %}
+            <div class="margin-top-4">
+              <label class="usa-label" for="replace-text">Replace with</label>
+              <input class="usa-input" id="replace-text" name="replace_text" type="text" {% if replace_text %}value="{{ replace_text }}"{% endif %}>
+
+              <div class="margin-top-2">
+                <button id="replace-button" class="usa-button usa-button--accent-warm" type="submit" name="action" value="replace" data-base-text="Replace">Replace Nothing</button>
+                <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
+              </div>
+            </div>
+
+            {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=find_text replace_text=replace_text checkbox_checked=True show_select_all_button=True target_button_id="replace-button" %}
+          {% else %}
+            <div class="usa-alert usa-alert--info margin-top-4" role="alert">
+              <div class="usa-alert__body">
+                <p class="usa-alert__text">
+                  No matches found for "{{ find_text }}". Try searching for something else.
+                </p>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
       </form>
-    </div>
-  </div>
-</div>
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
 {% endblock %}

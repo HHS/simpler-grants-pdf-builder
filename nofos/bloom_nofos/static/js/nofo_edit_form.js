@@ -8,14 +8,19 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const button = form.querySelector('button[type="submit"]');
-    if (!button) {
+    const buttons = form.querySelectorAll('button[type="submit"]');
+    const replaceButton = form.querySelector('#replace-button');
+    if (!buttons.length) {
       return;
     }
 
     const checkboxes = form.querySelectorAll('input[name="replace_subsections"]');
-    
-    const originalButtonText = button.textContent.trim() || 'Save';
+
+    // Store original text for each button
+    const buttonTexts = {};
+    buttons.forEach(btn => {
+      buttonTexts[btn.id || btn.getAttribute('name') || 'default'] = btn.dataset.baseText || btn.textContent.trim() || 'Save';
+    });
 
     // Nothing checked
     if (checkboxes.length === 0) {
@@ -52,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Toggle all checkboxes when button is clicked
       toggleButton.addEventListener('click', function() {
         let allChecked = true;
-        
+
         // Check if all checkboxes are currently checked
         checkboxes.forEach(checkbox => {
           if (!checkbox.checked && !checkbox.disabled) {
@@ -76,14 +81,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateButtonText() {
       const checkedCount = form.querySelectorAll('input[name="replace_subsections"]:checked').length;
-      const baseText = originalButtonText || 'Save';
-      if (checkedCount === 0) {
-        button.textContent = baseText;
-      } else if (checkedCount === 1) {
-        button.textContent = `${baseText} + 1 subsection`;
-      } else {
-        button.textContent = `${baseText} + ${checkedCount} subsections`;
-      }
+
+      buttons.forEach(button => {
+        const baseText = buttonTexts[button.id || button.getAttribute('name') || 'default'];
+
+        // Only update replace button or buttons without explicit action
+        if (button.id === 'replace-button' || !button.getAttribute('name')) {
+          if (button.id === 'replace-button') {
+            // Special handling for replace button
+            if (checkedCount === 1) {
+              button.textContent = `${baseText} 1 subsection`;
+            } else if (checkedCount === checkboxes.length) {
+              button.textContent = `${baseText} All`;
+            } else if (checkedCount > 1) {
+              button.textContent = `${baseText} ${checkedCount} subsections`;
+            } else {
+              button.textContent = baseText;
+            }
+          } else {
+            // Default handling for other buttons without explicit action
+            if (checkedCount === 0) {
+              button.textContent = baseText;
+            } else if (checkedCount === 1) {
+              button.textContent = `${baseText} + 1 subsection`;
+            } else {
+              button.textContent = `${baseText} + ${checkedCount} subsections`;
+            }
+          }
+        }
+      });
     }
 
     function updateRowHighlight(checkbox) {
@@ -124,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function () {
             deselectAllText.style.display = 'none';
           }
         }
-
       });
     });
 
@@ -141,6 +166,13 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function(event) {
       const selectedCheckboxes = form.querySelectorAll('input[name="replace_subsections"]:checked');
       const selectedSubsections = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+      // If no subsections selected and it's a replace action, trigger cancel button click
+      if (selectedSubsections.length === 0 && event.submitter && event.submitter.id === 'replace-button') {
+        event.preventDefault();
+        form.querySelector('a.usa-button--outline').click();
+        return;
+      }
     });
   } catch (error) {
     console.error('Error in form initialization:', error);

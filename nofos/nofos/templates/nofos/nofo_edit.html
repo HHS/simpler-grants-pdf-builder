@@ -159,6 +159,12 @@ Edit “{{ nofo|nofo_name }}”
         {% endif %}
         <li>
           <p>
+            <a class="usa-button" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+            — Search and replace text across all sections
+          </p>
+        </li>
+        <li>
+          <p>
             <a class="usa-button" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a>
           </p>
         </li>
