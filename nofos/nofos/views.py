@@ -1,5 +1,6 @@
 import io
 import json
+import uuid
 from datetime import datetime
 
 import docraptor
@@ -65,12 +66,15 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_page_breaks_to_headings,
+    count_page_breaks,
     create_nofo,
+    extract_page_break_context,
     find_broken_links,
     find_external_link,
     find_external_links,
     find_h7_headers,
     find_incorrectly_nested_heading_levels,
+    find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
     get_cover_image,
@@ -82,6 +86,7 @@ from .nofo import (
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
     process_nofo_html,
+    remove_page_breaks_from_subsection,
     replace_chars,
     replace_links,
     replace_value_in_subsections,
@@ -730,6 +735,154 @@ class NofoImportNumberView(BaseNofoEditView):
 
     def get_success_url(self):
         return reverse_lazy("nofos:nofo_index")
+
+
+class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_find_replace.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get find_text from either POST or GET parameters
+        find_text = self.request.POST.get('find_text', '') or self.request.GET.get('find_text', '')
+        if find_text:
+            context['find_text'] = find_text
+            context['replace_text'] = self.request.POST.get('replace_text', '')
+
+            # Find matches if find_text is provided
+            if find_text.strip():
+                context['subsection_matches'] = find_matches_with_context(self.object, find_text)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        find_text = request.POST.get('find_text', '').strip()
+        replace_text = request.POST.get('replace_text', '').strip()
+        action = request.POST.get('action', '')
+
+        if not find_text:
+            messages.error(request, "Please enter text to find.")
+            return self.get(request, *args, **kwargs)
+
+        if action == 'find':
+            # Show preview with matches
+            return self.get(request, *args, **kwargs)
+
+        elif action == 'replace':
+            # Only validate replace_text if subsections are selected
+            selected_subsections = request.POST.getlist('replace_subsections')
+            if selected_subsections and not replace_text:
+                messages.error(request, "Please enter text to replace with.")
+                return self.get(request, *args, **kwargs)
+
+            # Get selected subsection IDs from the form
+            selected_subsections = request.POST.getlist('replace_subsections')
+
+            # Use the existing replace_value_in_subsections function with only selected subsections
+            updated_subsections = replace_value_in_subsections(selected_subsections, find_text, replace_text)
+
+            if updated_subsections:
+                subsection_list_html = "".join(
+                    "<li><a href='#{}'>{}</a></li>".format(
+                        sub.html_id,
+                        sub.name or "(#){}".format(sub.order)
+                    )
+                    for sub in updated_subsections
+                )
+
+                success_message = format_html(
+                    "Replaced all instances of '{}' with '{}' in {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                    find_text,
+                    replace_text,
+                    len(updated_subsections),
+                    "" if len(updated_subsections) == 1 else "s",
+                    format_html(subsection_list_html)
+                )
+                messages.success(request, success_message)
+            else:
+                messages.info(request, f"No instances of '{find_text}' were found.")
+
+            return redirect('nofos:nofo_edit', pk=nofo.id)
+
+        return self.get(request, *args, **kwargs)
+
+
+class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_remove_page_breaks.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nofo = self.get_object()
+
+        # Count page breaks and collect subsections with page breaks
+        pagebreak_count = 0
+        subsections_with_breaks = []
+
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                # Look for CSS class pagebreaks
+                css_breaks = 0
+                if subsection.html_class:
+                    css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+
+                # Look for the word "page-break" in the subsection content
+                word_breaks = subsection.body.lower().count('page-break')
+
+                total_breaks = css_breaks + word_breaks
+                if total_breaks > 0:
+                    # Extract and highlight the context around page breaks
+                    highlighted_body = extract_page_break_context(subsection.body, subsection.html_class)
+
+                    subsections_with_breaks.append({
+                        'section': section,
+                        'subsection': subsection,
+                        'subsection_body_highlight': highlighted_body,
+                    })
+                    pagebreak_count += total_breaks
+
+        context['pagebreak_count'] = pagebreak_count
+        context['subsection_matches'] = subsections_with_breaks
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+
+        # Get the list of subsection IDs that should have page breaks removed
+        subsections_to_remove = request.POST.getlist('replace_subsections')
+
+        # Convert string UUIDs to actual UUID objects for comparison
+        subsections_to_remove = [uuid.UUID(id) for id in subsections_to_remove if id]
+
+        # Remove pagebreaks from selected subsections
+        pagebreaks_removed = 0
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                if subsection.id in subsections_to_remove:
+                    # Count page breaks before removal
+                    subsection_page_breaks = count_page_breaks(subsection)
+                    if subsection_page_breaks > 0:
+                        # Store the count of page breaks before removal
+                        pagebreaks_removed += subsection_page_breaks
+
+                        # Use the remove_page_breaks_from_subsection function and capture the returned subsection
+                        subsection = remove_page_breaks_from_subsection(subsection)
+
+                        # Save the updated subsection
+                        subsection.save()
+
+        # Restore the original page breaks that should be there
+        add_page_breaks_to_headings(nofo)
+
+        if pagebreaks_removed == 1:
+            messages.success(request, "1 page break has been removed.")
+        else:
+            messages.success(request, f"{pagebreaks_removed} page breaks have been removed.")
+        return redirect('nofos:nofo_edit', pk=nofo.id)
 
 
 ###########################################################

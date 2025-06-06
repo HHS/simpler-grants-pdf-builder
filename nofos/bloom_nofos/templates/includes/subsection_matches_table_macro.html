@@ -1,12 +1,20 @@
 {% load nofo_name subsection_name_or_order %}
 
 {% if subsection_matches %}
-  <table class="usa-table usa-table--borderless margin-top-4">
+  <table id="subsection-matches-table" class="usa-table usa-table--borderless margin-top-4">
     <caption>
       <h2 class="h4">
         {{ subsection_matches|length }} subsection{{ subsection_matches|length|pluralize }} found with 
         "{{ match_value|default:'(no value)' }}"
       </h2>
+      {% if show_select_all_button|default:False %}
+      <div class="margin-top-1">
+        <button type="button" id="toggle-all-checkboxes" class="usa-button usa-button--outline">
+          <span class="select-all-text">Select All</span>
+          <span class="deselect-all-text" style="display: none;">Deselect All</span>
+        </button>
+      </div>
+      {% endif %}
     </caption>
     <thead>
       <tr class="usa-sr-only">
