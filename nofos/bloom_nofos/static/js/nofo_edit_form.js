@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const formId = window.nofoEditFormId || 'nofo_edit_form';
     const form = document.getElementById(formId);
 
+    // No form found
     if (!form) {
       return;
     }
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     const originalButtonText = button.textContent.trim() || 'Save';
 
+    // Nothing checked
     if (checkboxes.length === 0) {
       return;
     }
