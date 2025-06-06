@@ -24,7 +24,10 @@
           {% endif %}
         </div>
 
-        <button class="usa-button margin-top-3" type="submit">Remove Page Breaks</button>
+        <div class="margin-top-3">
+          <button id="replace-button" class="usa-button" type="submit" data-base-text="Remove">Remove Page Breaks</button>
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
+        </div>
 
         {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value="page breaks" replace_text="page breaks" checkbox_checked=True show_select_all_button=True %}
       </form>

@@ -2528,6 +2528,43 @@ def modifications_update_announcement_text(nofo):
                 subsection.save()
 
 
+def find_matches_with_context(nofo, find_text):
+    """
+    Find all occurrences of text in NOFO subsections with context.
+
+    Args:
+        nofo: The NOFO object to search in
+        find_text: The text to find (case-insensitive)
+
+    Returns:
+        list: A list of dictionaries containing:
+            - section: The Section object
+            - subsection: The Subsection object
+            - subsection_body_highlight: The subsection body with matches highlighted
+    """
+    import re
+    matches = []
+
+    for section in nofo.sections.all():
+        for subsection in section.subsections.all():
+            if find_text.lower() in subsection.body.lower():
+                # Add highlighting to matched text
+                highlighted_body = re.sub(
+                    f'({re.escape(find_text)})',
+                    r'<strong><mark class="bg-yellow">\1</mark></strong>',
+                    subsection.body,
+                    flags=re.IGNORECASE
+                )
+
+                matches.append({
+                    'section': section,
+                    'subsection': subsection,
+                    'subsection_body_highlight': highlighted_body
+                })
+
+    return matches
+
+
 def find_subsections_with_nofo_field_value(nofo, field_name):
     def _is_basic_info_first_subsection(subsection):
         return (
