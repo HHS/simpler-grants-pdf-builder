@@ -74,6 +74,7 @@ from .nofo import (
     find_external_links,
     find_h7_headers,
     find_incorrectly_nested_heading_levels,
+    find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
     get_cover_image,
@@ -741,19 +742,72 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
     template_name = "nofos/nofo_find_replace.html"
     context_object_name = "nofo"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get find_text from either POST or GET parameters
+        find_text = self.request.POST.get('find_text', '') or self.request.GET.get('find_text', '')
+        if find_text:
+            context['find_text'] = find_text
+            context['replace_text'] = self.request.POST.get('replace_text', '')
+
+            # Find matches if find_text is provided
+            if find_text.strip():
+                context['subsection_matches'] = find_matches_with_context(self.object, find_text)
+
+        return context
+
     def post(self, request, *args, **kwargs):
         nofo = self.get_object()
         find_text = request.POST.get('find_text', '').strip()
         replace_text = request.POST.get('replace_text', '').strip()
+        action = request.POST.get('action', '')
 
         if not find_text:
             messages.error(request, "Please enter text to find.")
             return self.get(request, *args, **kwargs)
 
-        # TODO: Implement find and replace logic in the nofos/nofos/nofo.py file
+        if action == 'find':
+            # Show preview with matches
+            return self.get(request, *args, **kwargs)
 
-        messages.success(request, f"Replaced all instances of '{find_text}' with '{replace_text}'")
-        return redirect('nofos:nofo_edit', pk=nofo.id)
+        elif action == 'replace':
+            # Only validate replace_text if subsections are selected
+            selected_subsections = request.POST.getlist('replace_subsections')
+            if selected_subsections and not replace_text:
+                messages.error(request, "Please enter text to replace with.")
+                return self.get(request, *args, **kwargs)
+
+            # Get selected subsection IDs from the form
+            selected_subsections = request.POST.getlist('replace_subsections')
+
+            # Use the existing replace_value_in_subsections function with only selected subsections
+            updated_subsections = replace_value_in_subsections(selected_subsections, find_text, replace_text)
+
+            if updated_subsections:
+                subsection_list_html = "".join(
+                    "<li><a href='#{}'>{}</a></li>".format(
+                        sub.html_id,
+                        sub.name or "(#){}".format(sub.order)
+                    )
+                    for sub in updated_subsections
+                )
+
+                success_message = format_html(
+                    "Replaced all instances of '{}' with '{}' in {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                    find_text,
+                    replace_text,
+                    len(updated_subsections),
+                    "" if len(updated_subsections) == 1 else "s",
+                    format_html(subsection_list_html)
+                )
+                messages.success(request, success_message)
+            else:
+                messages.info(request, f"No instances of '{find_text}' were found.")
+
+            return redirect('nofos:nofo_edit', pk=nofo.id)
+
+        return self.get(request, *args, **kwargs)
 
 
 class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
