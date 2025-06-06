@@ -22,10 +22,10 @@ Find & Replace - {{ nofo.title }}
         {% csrf_token %}
         <label class="usa-label" for="find-text">Find text</label>
         <input class="usa-input" id="find-text" name="find_text" type="text" required>
-        
+
         <label class="usa-label" for="replace-text">Replace with</label>
         <input class="usa-input" id="replace-text" name="replace_text" type="text" required>
-        
+
         <div class="margin-top-3">
           <button class="usa-button" type="submit">Replace All</button>
           <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
