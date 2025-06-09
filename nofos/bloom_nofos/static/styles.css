@@ -1083,32 +1083,21 @@ main .back-link a::before,
 
 /* Nofo edit properties pages */
 
-.edit__application-deadline form table h2,
-.edit__nofo-number form table h2,
-.edit__nofo-title form table h2 {
+[class^="edit__"] form table h2 {
   margin: 0;
 }
 
-.edit__application-deadline form table tr > th:first-of-type,
-.edit__application-deadline form table tr > td:first-of-type,
-.edit__nofo-number form table tr > th:first-of-type,
-.edit__nofo-number form table tr > td:first-of-type,
-.edit__nofo-title form table tr > th:first-of-type,
-.edit__nofo-title form table tr > td:first-of-type {
+[class^="edit__"] form table tr > th:first-of-type,
+[class^="edit__"] form table tr > td:first-of-type {
   padding-left: 0.5rem;
   padding-right: 0;
 }
 
-.edit__application-deadline form table tr > td:first-of-type .usa-checkbox__label,
-.edit__nofo-number form table tr > td:first-of-type .usa-checkbox__label,
-.edit__nofo-title form table tr > td:first-of-type .usa-checkbox__label {
+[class^="edit__"] form table tr > td:first-of-type .usa-checkbox__label {
   margin-top: 0;
 }
 
-.edit__application-deadline form table tr.subsection--selected td,
-.edit__nofo-number form table tr.subsection--selected td,
-.edit__nofo-title form table tr.subsection--selected td,
-.edit__remove-page-breaks form table tr.subsection--selected td {
+[class^="edit__"] form table tr.subsection--selected td {
   background-color: #f2e4d4;
 }
 
