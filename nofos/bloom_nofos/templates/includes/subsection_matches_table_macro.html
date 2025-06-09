@@ -1,4 +1,4 @@
-{% load nofo_name subsection_name_or_order %}
+{% load martortags nofo_name subsection_name_or_order %}
 
 {% if subsection_matches %}
   <table id="subsection-matches-table" class="usa-table usa-table--borderless margin-top-4">
@@ -49,7 +49,7 @@
           </a>
         </td>
         <td>
-          {{ match.subsection_body_highlight|safe|linebreaksbr }}
+          {{ match.subsection_body_highlight|safe_markdown|linebreaksbr }}
         </td>
       </tr>
       {% endfor %}
