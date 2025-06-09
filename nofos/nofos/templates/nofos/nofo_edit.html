@@ -163,11 +163,13 @@ Edit “{{ nofo|nofo_name }}”
             — search and replace text across the entire NOFO
           </p>
         </li>
+        {% if page_breaks_count > 3 %}
         <li>
           <p>
             <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
           </p>
         </li>
+        {% endif %}
       </ul>
     </div>
   </div>
