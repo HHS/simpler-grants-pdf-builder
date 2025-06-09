@@ -65,7 +65,7 @@ blockquote {
   font-variant: small-caps;
 }
 
-/* General USDS CSS */
+/* General USWDS CSS */
 
 footer .usa-footer__primary-link:visited {
   color: var(--color--text-default);
@@ -76,6 +76,30 @@ footer .usa-footer__primary-link:visited {
 .usa-input-group,
 .usa-select {
   height: 2.6rem;
+}
+
+.usa-button--cyan {
+  background-color: #00819e;
+}
+
+.usa-button--cyan:hover {
+  background-color: #006177;
+}
+
+.usa-button--cyan:active {
+  background-color: #005466;
+}
+
+.usa-button--indigo {
+  background-color: #676cc8;
+}
+
+.usa-button--indigo:hover {
+  background-color: #4e5296;
+}
+
+.usa-button--indigo:active {
+  background-color: #444782;
 }
 
 /* Make sure header is evenly spaced */
