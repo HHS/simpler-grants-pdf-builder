@@ -16,10 +16,17 @@
   {% endwith %}
 
   {% with form_id="nofo_remove_page_breaks_form" %}
+    <p>Note that page breaks can’t be removed the following 3 subsections:</p>
+    <ul class="usa-list">
+      <li>Eligibility</li>
+      <li>Program description</li>
+      <li>Application checklist</li>
+    </ul>
+
     <form id="{{ form_id }}" class="nofo_edit_form" method="post">
       {% csrf_token %}
 
-      <label class="usa-label" for="page_breaks_info">Page breaks information</label>
+      <label class="usa-label" for="page_breaks_info">Remove page breaks from highlighted subsections</label>
       <div class="usa-hint" id="page_breaks_info--hint-1">
         {% if pagebreak_count == 1 %}
           There is <strong>1</strong> page break in this document.
