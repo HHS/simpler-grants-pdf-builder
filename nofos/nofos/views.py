@@ -66,7 +66,8 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_page_breaks_to_headings,
-    count_page_breaks,
+    count_page_breaks_nofo,
+    count_page_breaks_subsection,
     create_nofo,
     extract_page_break_context,
     find_broken_links,
@@ -290,6 +291,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
         context["h7_headers"] = find_h7_headers(self.object)
+        context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
             config.DOCRAPTOR_LIVE_MODE
@@ -861,7 +863,7 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
             for subsection in section.subsections.all():
                 if subsection.id in subsections_to_remove:
                     # Count page breaks before removal
-                    subsection_page_breaks = count_page_breaks(subsection)
+                    subsection_page_breaks = count_page_breaks_subsection(subsection)
                     if subsection_page_breaks > 0:
                         # Store the count of page breaks before removal
                         pagebreaks_removed += subsection_page_breaks

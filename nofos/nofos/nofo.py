@@ -2244,8 +2244,6 @@ def extract_page_break_context(body, html_class=None):
 
     Returns a highlighted HTML string showing only the relevant parts of the content.
     """
-    import re
-
     # Initialize the result
     highlighted_parts = []
 
@@ -2316,7 +2314,23 @@ def extract_page_break_context(body, html_class=None):
     return ''.join(highlighted_parts)
 
 
-def count_page_breaks(subsection):
+def count_page_breaks_nofo(nofo):
+    """
+    Count the total number of page breaks in all subsections of a NOFO.
+
+    Args:
+        nofo: A Nofo instance
+
+    Returns:
+        int: Total number of page breaks across all subsections
+    """
+    return sum(
+        count_page_breaks_subsection(subsection)
+        for section in nofo.sections.all()
+        for subsection in section.subsections.all()
+    )
+
+def count_page_breaks_subsection(subsection):
     """
     Count the number of page breaks in a subsection.
 
@@ -2326,8 +2340,6 @@ def count_page_breaks(subsection):
     Returns:
         int: The total number of page breaks (CSS class + word occurrences)
     """
-    import re
-
     # Count CSS class page breaks
     css_breaks = 0
     if subsection.html_class:
@@ -2361,8 +2373,6 @@ def remove_page_breaks_from_subsection(subsection):
     Returns:
         subsection: The updated subsection object
     """
-    import re
-
     # 1. Remove CSS class page breaks
     if subsection.html_class:
         # Get all non-pagebreak classes
