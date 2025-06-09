@@ -2599,6 +2599,7 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
     return matches
 
 
+@transaction.atomic
 def replace_value_in_subsections(subsection_ids, old_value, new_value):
     """
     Replaces `old_value` with `new_value` in bodies of given subsection_ids.

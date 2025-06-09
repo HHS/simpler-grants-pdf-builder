@@ -778,9 +778,6 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
                 messages.error(request, "Please enter text to replace with.")
                 return self.get(request, *args, **kwargs)
 
-            # Get selected subsection IDs from the form
-            selected_subsections = request.POST.getlist('replace_subsections')
-
             # Use the existing replace_value_in_subsections function with only selected subsections
             updated_subsections = replace_value_in_subsections(selected_subsections, find_text, replace_text)
 
