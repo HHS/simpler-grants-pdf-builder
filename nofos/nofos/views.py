@@ -753,8 +753,8 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
             context['find_text'] = find_text
             context['replace_text'] = self.request.POST.get('replace_text', '')
 
-            # Find matches if find_text is provided
-            if find_text.strip():
+            # Find matches if find_text is provided and at least 3 chars
+            if len(find_text.strip()) > 2:
                 context['subsection_matches'] = find_matches_with_context(self.object, find_text)
 
         return context
@@ -767,6 +767,10 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
 
         if not find_text:
             messages.error(request, "Please enter text to find.")
+            return self.get(request, *args, **kwargs)
+
+        if len(find_text) <= 2:
+            messages.error(request, "Error: Search terms must be at least 3 characters.")
             return self.get(request, *args, **kwargs)
 
         if action == 'find':

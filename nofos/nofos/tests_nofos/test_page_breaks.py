@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.messages import get_messages
 from nofos.models import Nofo, Section, Subsection
 from users.models import BloomUser
-from nofos.nofo import add_page_breaks_to_headings, count_page_breaks, remove_page_breaks_from_subsection
+from nofos.nofo import add_page_breaks_to_headings, count_page_breaks_subsection, remove_page_breaks_from_subsection
 
 
 class NofoRemovePagebreaksViewTest(TestCase):
@@ -493,11 +493,11 @@ class NofoRemovePagebreaksViewTest(TestCase):
         for subsection in [empty_subsection, css_only_subsection, content_only_subsection]:
             # Count page breaks before removal
             if subsection == empty_subsection:
-                self.assertEqual(count_page_breaks(subsection), 0)
+                self.assertEqual(count_page_breaks_subsection(subsection), 0)
             elif subsection == css_only_subsection:
-                self.assertEqual(count_page_breaks(subsection), 2)  # 2 CSS classes
+                self.assertEqual(count_page_breaks_subsection(subsection), 2)  # 2 CSS classes
             elif subsection == content_only_subsection:
-                self.assertEqual(count_page_breaks(subsection), 1)  # 1 word occurrence
+                self.assertEqual(count_page_breaks_subsection(subsection), 1)  # 1 word occurrence
 
             # Remove page breaks
             updated_subsection = remove_page_breaks_from_subsection(subsection)
@@ -507,4 +507,4 @@ class NofoRemovePagebreaksViewTest(TestCase):
             subsection.refresh_from_db()
 
             # Check that page breaks were removed
-            self.assertEqual(count_page_breaks(subsection), 0)
+            self.assertEqual(count_page_breaks_subsection(subsection), 0)
