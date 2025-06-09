@@ -9,6 +9,19 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.2.0] - 2025-06-09
+
+### Added
+
+- Add "Find and replace" functionality
+  - Allows you to find a term within the body of the NOFO and change it everywhere
+- Add "Remove page breaks" functionality
+  - Allows you to bulk remove page breaks you may have added
+  - Note that the original 3 page breaks can't be removed this way
 - Allow `<br>` tags in heading strings
 - Add cover images for HHS-2025-ACF-OCS-EF-0177, ACF-OCS-EE-0118
 - Add healthcheck endpoint at /health
