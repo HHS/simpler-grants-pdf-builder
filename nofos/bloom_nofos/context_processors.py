@@ -2,6 +2,7 @@ from constance import config
 from django.conf import settings
 
 from .utils import is_docraptor_live_mode_active
+from .version import get_version
 
 
 def template_context(request):
@@ -20,4 +21,5 @@ def template_context(request):
         "DOCRAPTOR_LIVE_MODE": docraptor_live_mode,
         "GITHUB_SHA": settings.GITHUB_SHA,
         "LOGIN_GOV_ENABLED": login_gov_enabled,
+        "VERSION": get_version(),
     }
