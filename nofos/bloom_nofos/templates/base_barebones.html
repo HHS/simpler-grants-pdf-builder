@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-{% load static djversion_tags %}
+{% load static %}
 <html lang="en" class="{% block html_class %}{% endblock %}">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
 
-    {% project_version as VERSION %}
     <meta name="version" content="{{ VERSION }}" >
     <meta name="github_sha" content="{{ GITHUB_SHA }}" >
 
