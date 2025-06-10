@@ -13,6 +13,15 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.2.1] - 2025-06-10
+
+### Changed
+
+- Removed django-version-number
+  - This library was preventing us from upgrading Django beyond 5.1
+- Updated most of the libraries:
+  - Can't update markdown past 3.5 because of martor
+
 ## [3.2.0] - 2025-06-09
 
 ### Added
