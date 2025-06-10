@@ -54,14 +54,6 @@ if DEBUG:
     else:
         print("No .env file found at {}".format(env_path))
 
-# Project version
-
-DJVERSION_VERSION = None
-
-with open(os.path.join(BASE_DIR, "..", "pyproject.toml"), "rb") as f:
-    pyproject_data = tomli.load(f)
-    DJVERSION_VERSION = pyproject_data["tool"]["poetry"]["version"]
-
 # GitHub SHA
 
 GITHUB_SHA = os.getenv("GITHUB_SHA", None)
@@ -131,7 +123,6 @@ INSTALLED_APPS = [
     "nofos.apps.NofosConfig",
     "guides.apps.GuidesConfig",
     "users.apps.UsersConfig",
-    "djversion",
     "django_mirror",
     "ninja",
     "import_export",
@@ -166,7 +157,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "djversion.context_processors.version",
                 "bloom_nofos.context_processors.template_context",
             ],
         },
