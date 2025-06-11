@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 import docraptor
+from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -26,8 +27,6 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
-from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 
 from .audits import (
     deduplicate_audit_events_by_day_and_object,
@@ -739,59 +738,68 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
-class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+class NofoFindReplaceView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
     model = Nofo
     template_name = "nofos/nofo_find_replace.html"
     context_object_name = "nofo"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Get find_text from either POST or GET parameters
-        find_text = self.request.POST.get('find_text', '') or self.request.GET.get('find_text', '')
+        find_text = self.request.POST.get("find_text", "") or self.request.GET.get(
+            "find_text", ""
+        )
         if find_text:
-            context['find_text'] = find_text
-            context['replace_text'] = self.request.POST.get('replace_text', '')
+            context["find_text"] = find_text
+            context["replace_text"] = self.request.POST.get("replace_text", "")
 
             # Find matches if find_text is provided and at least 3 chars
             if len(find_text.strip()) > 2:
-                context['subsection_matches'] = find_matches_with_context(self.object, find_text)
+                context["subsection_matches"] = find_matches_with_context(
+                    self.object, find_text
+                )
 
         return context
 
     def post(self, request, *args, **kwargs):
         nofo = self.get_object()
-        find_text = request.POST.get('find_text', '').strip()
-        replace_text = request.POST.get('replace_text', '').strip()
-        action = request.POST.get('action', '')
+        find_text = request.POST.get("find_text", "").strip()
+        replace_text = request.POST.get("replace_text", "").strip()
+        action = request.POST.get("action", "")
 
         if not find_text:
             messages.error(request, "Please enter text to find.")
             return self.get(request, *args, **kwargs)
 
         if len(find_text) <= 2:
-            messages.error(request, "Error: Search terms must be at least 3 characters.")
+            messages.error(
+                request, "Error: Search terms must be at least 3 characters."
+            )
             return self.get(request, *args, **kwargs)
 
-        if action == 'find':
+        if action == "find":
             # Show preview with matches
             return self.get(request, *args, **kwargs)
 
-        elif action == 'replace':
+        elif action == "replace":
             # Only validate replace_text if subsections are selected
-            selected_subsections = request.POST.getlist('replace_subsections')
+            selected_subsections = request.POST.getlist("replace_subsections")
             if selected_subsections and not replace_text:
                 messages.error(request, "Please enter text to replace with.")
                 return self.get(request, *args, **kwargs)
 
             # Use the existing replace_value_in_subsections function with only selected subsections
-            updated_subsections = replace_value_in_subsections(selected_subsections, find_text, replace_text)
+            updated_subsections = replace_value_in_subsections(
+                selected_subsections, find_text, replace_text
+            )
 
             if updated_subsections:
                 subsection_list_html = "".join(
                     "<li><a href='#{}'>{}</a></li>".format(
-                        sub.html_id,
-                        sub.name or "(#){}".format(sub.order)
+                        sub.html_id, sub.name or "(#){}".format(sub.order)
                     )
                     for sub in updated_subsections
                 )
@@ -802,18 +810,20 @@ class NofoFindReplaceView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMi
                     replace_text,
                     len(updated_subsections),
                     "" if len(updated_subsections) == 1 else "s",
-                    format_html(subsection_list_html)
+                    format_html(subsection_list_html),
                 )
                 messages.success(request, success_message)
             else:
                 messages.info(request, f"No instances of '{find_text}' were found.")
 
-            return redirect('nofos:nofo_edit', pk=nofo.id)
+            return redirect("nofos:nofo_edit", pk=nofo.id)
 
         return self.get(request, *args, **kwargs)
 
 
-class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView):
+class NofoRemovePageBreaksView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
     model = Nofo
     template_name = "nofos/nofo_remove_page_breaks.html"
     context_object_name = "nofo"
@@ -831,32 +841,40 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
                 # Look for CSS class pagebreaks
                 css_breaks = 0
                 if subsection.html_class:
-                    css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+                    css_breaks = sum(
+                        1
+                        for c in subsection.html_class.split()
+                        if c.startswith("page-break")
+                    )
 
                 # Look for the word "page-break" in the subsection content
-                word_breaks = subsection.body.lower().count('page-break')
+                word_breaks = subsection.body.lower().count("page-break")
 
                 total_breaks = css_breaks + word_breaks
                 if total_breaks > 0:
                     # Extract and highlight the context around page breaks
-                    highlighted_body = extract_page_break_context(subsection.body, subsection.html_class)
+                    highlighted_body = extract_page_break_context(
+                        subsection.body, subsection.html_class
+                    )
 
-                    subsections_with_breaks.append({
-                        'section': section,
-                        'subsection': subsection,
-                        'subsection_body_highlight': highlighted_body,
-                    })
+                    subsections_with_breaks.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "subsection_body_highlight": highlighted_body,
+                        }
+                    )
                     pagebreak_count += total_breaks
 
-        context['pagebreak_count'] = pagebreak_count
-        context['subsection_matches'] = subsections_with_breaks
+        context["pagebreak_count"] = pagebreak_count
+        context["subsection_matches"] = subsections_with_breaks
         return context
 
     def post(self, request, *args, **kwargs):
         nofo = self.get_object()
 
         # Get the list of subsection IDs that should have page breaks removed
-        subsections_to_remove = request.POST.getlist('replace_subsections')
+        subsections_to_remove = request.POST.getlist("replace_subsections")
 
         # Convert string UUIDs to actual UUID objects for comparison
         subsections_to_remove = [uuid.UUID(id) for id in subsections_to_remove if id]
@@ -884,8 +902,10 @@ class NofoRemovePageBreaksView(PreventIfArchivedOrCancelledMixin, GroupAccessObj
         if pagebreaks_removed == 1:
             messages.success(request, "1 page break has been removed.")
         else:
-            messages.success(request, f"{pagebreaks_removed} page breaks have been removed.")
-        return redirect('nofos:nofo_edit', pk=nofo.id)
+            messages.success(
+                request, f"{pagebreaks_removed} page breaks have been removed."
+            )
+        return redirect("nofos:nofo_edit", pk=nofo.id)
 
 
 ###########################################################
@@ -999,8 +1019,7 @@ class NofoEditTitleView(BaseNofoEditView):
         if updated_subsections:
             subsection_list_html = "".join(
                 "<li><a href='#{}'>{}</a></li>".format(
-                    sub.html_id, 
-                    sub.name or "(#){}".format(sub.order)
+                    sub.html_id, sub.name or "(#){}".format(sub.order)
                 )
                 for sub in updated_subsections
             )
@@ -1009,7 +1028,7 @@ class NofoEditTitleView(BaseNofoEditView):
                 ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
                 len(updated_subsections),
                 "" if len(updated_subsections) == 1 else "s",
-                format_html(subsection_list_html)
+                format_html(subsection_list_html),
             )
 
         messages.success(self.request, success_message)
@@ -1058,8 +1077,7 @@ class NofoEditNumberView(BaseNofoEditView):
         if updated_subsections:
             subsection_list_html = "".join(
                 "<li><a href='#{}'>{}</a></li>".format(
-                    sub.html_id,
-                    sub.name or "(#){}".format(sub.order)
+                    sub.html_id, sub.name or "(#){}".format(sub.order)
                 )
                 for sub in updated_subsections
             )
@@ -1068,7 +1086,7 @@ class NofoEditNumberView(BaseNofoEditView):
                 ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
                 len(updated_subsections),
                 "" if len(updated_subsections) == 1 else "s",
-                format_html(subsection_list_html)
+                format_html(subsection_list_html),
             )
 
         messages.success(self.request, success_message)
@@ -1180,6 +1198,7 @@ class NofoEditCoverImageView(BaseNofoEditView):
         context = super().get_context_data(**kwargs)
         context["nofo_cover_image"] = get_cover_image(self.object)
         return context
+
 
 class NofoEditStatusView(BaseNofoEditView):
     form_class = NofoStatusForm

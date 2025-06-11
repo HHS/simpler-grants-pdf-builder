@@ -7065,15 +7065,11 @@ class ReplaceValueInSubsectionsTests(TestCase):
             name="Test Subsection",
             order=1,
             tag="h3",
-            body="The deadline is June 1, 2025"
+            body="The deadline is June 1, 2025",
         )
 
         # Attempt to replace with empty value
-        updated = replace_value_in_subsections(
-            [subsection.id],
-            "June 1, 2025",
-            ""
-        )
+        updated = replace_value_in_subsections([subsection.id], "June 1, 2025", "")
 
         self.assertEqual(len(updated), 0)
 

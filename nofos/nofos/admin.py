@@ -3,16 +3,14 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
-from martor.widgets import AdminMartorWidget
 from import_export.admin import ImportExportModelAdmin
-
-from .models import Nofo, Section, Subsection
-from .views import duplicate_nofo, insert_order_space_view
-from .admin_resources import NofoResource, SectionResource, SubsectionResource
+from martor.widgets import AdminMartorWidget
 
 # TODO: remove once migration is over
 from . import admin_audit
-
+from .admin_resources import NofoResource, SectionResource, SubsectionResource
+from .models import Nofo, Section, Subsection
+from .views import duplicate_nofo, insert_order_space_view
 
 # Remove Groups from admin
 admin.site.unregister(Group)

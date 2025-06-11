@@ -381,11 +381,14 @@ class Nofo(BaseNofo):
         # Validate title or number is present and not just whitespace
         title_empty = not self.title or not self.title.strip()
         number_empty = not self.number or not self.number.strip()
-        
-        if title_empty and number_empty:
-            errors["title"] = "Either title or number must be provided and cannot be empty"
-            errors["number"] = "Either title or number must be provided and cannot be empty"
 
+        if title_empty and number_empty:
+            errors["title"] = (
+                "Either title or number must be provided and cannot be empty"
+            )
+            errors["number"] = (
+                "Either title or number must be provided and cannot be empty"
+            )
 
         if errors:
             raise ValidationError(errors)

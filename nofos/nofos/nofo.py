@@ -2248,13 +2248,13 @@ def extract_page_break_context(body, html_class=None):
     highlighted_parts = []
 
     # Check for CSS class page breaks
-    if html_class and any(c.startswith('page-break') for c in html_class.split()):
+    if html_class and any(c.startswith("page-break") for c in html_class.split()):
         highlighted_parts.append(
             '<strong><mark class="bg-yellow">Page break at top of section found.</mark></strong>'
         )
 
     # Look for the word "page-break" in the content
-    matches = list(re.finditer(r'page-break', body))
+    matches = list(re.finditer(r"page-break", body))
 
     if matches:
         # Group nearby matches to avoid redundant context
@@ -2263,7 +2263,7 @@ def extract_page_break_context(body, html_class=None):
 
         for i in range(1, len(matches)):
             # If this match is close to the previous one (within 200 characters - 2x our context size)
-            if matches[i].start() - matches[i-1].end() < 200:
+            if matches[i].start() - matches[i - 1].end() < 200:
                 # Add to current group
                 current_group.append(matches[i])
             else:
@@ -2289,29 +2289,31 @@ def extract_page_break_context(body, html_class=None):
 
             # Add ellipsis if we're not at the beginning or end
             if context_start > 0:
-                context = '…' + context
+                context = "…" + context
             if context_end < len(body):
-                context = context + '…'
+                context = context + "…"
 
             # Highlight all occurrences of "page-break" in the context
             highlighted_context = re.sub(
-                r'(page-break)',
+                r"(page-break)",
                 r'<strong><mark class="bg-yellow">\1</mark></strong>',
                 context,
-                flags=re.IGNORECASE
+                flags=re.IGNORECASE,
             )
 
             # Add count if there are multiple matches in this group
             if len(group) > 1:
-                highlighted_parts.append(f'<p><strong>{len(group)} page breaks found in this section:</strong><br><br> {highlighted_context}</p>')
+                highlighted_parts.append(
+                    f"<p><strong>{len(group)} page breaks found in this section:</strong><br><br> {highlighted_context}</p>"
+                )
             else:
-                highlighted_parts.append(f'<p>{highlighted_context}</p>')
+                highlighted_parts.append(f"<p>{highlighted_context}</p>")
 
     # If no specific highlights were found, return a generic message
     if not highlighted_parts:
-        return '<p><em>Page break found in CSS classes or other locations</em></p>'
+        return "<p><em>Page break found in CSS classes or other locations</em></p>"
 
-    return ''.join(highlighted_parts)
+    return "".join(highlighted_parts)
 
 
 def count_page_breaks_nofo(nofo):
@@ -2330,6 +2332,7 @@ def count_page_breaks_nofo(nofo):
         for subsection in section.subsections.all()
     )
 
+
 def count_page_breaks_subsection(subsection):
     """
     Count the number of page breaks in a subsection.
@@ -2343,18 +2346,20 @@ def count_page_breaks_subsection(subsection):
     # Count CSS class page breaks
     css_breaks = 0
     if subsection.html_class:
-        css_breaks = sum(1 for c in subsection.html_class.split() if c.startswith('page-break'))
+        css_breaks = sum(
+            1 for c in subsection.html_class.split() if c.startswith("page-break")
+        )
 
     body = subsection.body
 
     # Add newlines at beginning and end if not present to handle edge cases
-    if not body.startswith('\n'):
-        body = '\n' + body
-    if not body.endswith('\n'):
-        body = body + '\n'
+    if not body.startswith("\n"):
+        body = "\n" + body
+    if not body.endswith("\n"):
+        body = body + "\n"
 
     # Count page breaks
-    newline_breaks = len(re.findall(r'page-break', body))
+    newline_breaks = len(re.findall(r"page-break", body))
 
     return css_breaks + newline_breaks
 
@@ -2376,12 +2381,14 @@ def remove_page_breaks_from_subsection(subsection):
     # 1. Remove CSS class page breaks
     if subsection.html_class:
         # Get all non-pagebreak classes
-        classes = [c for c in subsection.html_class.split() if not c.startswith('page-break')]
+        classes = [
+            c for c in subsection.html_class.split() if not c.startswith("page-break")
+        ]
         # Update html_class with only non-pagebreak classes
-        subsection.html_class = ' '.join(classes) if classes else ''
+        subsection.html_class = " ".join(classes) if classes else ""
 
     # 2. Remove all `page-breaks`
-    subsection.body = re.sub(r'page-break', '', subsection.body)
+    subsection.body = re.sub(r"page-break", "", subsection.body)
 
     return subsection
 
@@ -2553,6 +2560,7 @@ def find_matches_with_context(nofo, find_text):
             - subsection_body_highlight: The subsection body with matches highlighted
     """
     import re
+
     matches = []
 
     for section in nofo.sections.all():
@@ -2560,17 +2568,19 @@ def find_matches_with_context(nofo, find_text):
             if find_text.lower() in subsection.body.lower():
                 # Add highlighting to matched text
                 highlighted_body = re.sub(
-                    f'({re.escape(find_text)})',
+                    f"({re.escape(find_text)})",
                     r'<strong><mark class="bg-yellow">\1</mark></strong>',
                     subsection.body,
-                    flags=re.IGNORECASE
+                    flags=re.IGNORECASE,
                 )
 
-                matches.append({
-                    'section': section,
-                    'subsection': subsection,
-                    'subsection_body_highlight': highlighted_body
-                })
+                matches.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "subsection_body_highlight": highlighted_body,
+                    }
+                )
 
     return matches
 
@@ -2615,7 +2625,7 @@ def replace_value_in_subsections(subsection_ids, old_value, new_value):
     Replaces `old_value` with `new_value` in bodies of given subsection_ids.
     Note that old_value uses a case-insensitive compare, so "JUNE 1" will match "June 1".
     Returns the list of updated Subsection objects.
-    
+
     If new_value is empty, no replacements will be made and an empty list will be returned.
     """
     if not subsection_ids or not new_value or not old_value:

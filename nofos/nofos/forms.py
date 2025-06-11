@@ -1,7 +1,14 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import DESIGNER_CHOICES, STATUS_CHOICES, THEME_CHOICES, Nofo, Section, Subsection
+from .models import (
+    DESIGNER_CHOICES,
+    STATUS_CHOICES,
+    THEME_CHOICES,
+    Nofo,
+    Section,
+    Subsection,
+)
 from .utils import get_icon_path_choices
 
 
@@ -144,6 +151,7 @@ class NofoThemeOptionsForm(forms.ModelForm):
             self.fields["icon_style"].choices = get_icon_path_choices(
                 self.instance.theme
             )
+
 
 class NofoCoverImageForm(forms.ModelForm):
     class Meta:

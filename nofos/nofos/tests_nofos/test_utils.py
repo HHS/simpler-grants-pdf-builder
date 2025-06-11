@@ -5,6 +5,8 @@ from constance.test import override_config
 from django.test import TestCase
 from django.utils.timezone import now
 from easyaudit.models import CRUDEvent
+from users.models import BloomUser as User
+
 from nofos.models import Nofo
 from nofos.utils import (
     StyleMapManager,
@@ -15,7 +17,6 @@ from nofos.utils import (
     get_icon_path_choices,
     match_view_url,
 )
-from users.models import BloomUser as User
 
 from ..models import Nofo, Section, Subsection
 
