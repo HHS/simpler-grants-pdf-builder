@@ -56,9 +56,9 @@ jobs:
         run: |
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.0/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
-          ./cloud-sql-proxy ${{ secrets.GCP_CLOUD_CONNECTION_NAME }} &
+          ./cloud-sql-proxy ${{ secrets.GCP_CLOUD_CONNECTION_NAME_2 }} &
 
       - name: Run migration
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_2 }}
         run: poetry run python manage.py migrate
