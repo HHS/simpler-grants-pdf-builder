@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - main
+      - test-migrations
 
 jobs:
   ci:
@@ -18,7 +19,7 @@ jobs:
     secrets: inherit
 
   migrate:
-    if: github.event_name == 'push' && github.ref_name == 'main'
+    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'test-migrations')
     needs: ci
     uses: ./.github/workflows/django_gcp_migrate.yml
     secrets:
