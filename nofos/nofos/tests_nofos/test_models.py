@@ -5,8 +5,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
-from nofos.models import HeadingValidationError, Nofo, Section, Subsection
 from users.models import BloomUser
+
+from nofos.models import HeadingValidationError, Nofo, Section, Subsection
 
 
 class NofoModelTest(TestCase):

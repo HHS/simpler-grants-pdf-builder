@@ -3,9 +3,10 @@ from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
+from users.models import BloomUser
+
 from nofos.models import Nofo, Section, Subsection
 from nofos.views import duplicate_nofo
-from users.models import BloomUser
 
 
 def create_test_html_file(opportunity_number="NOFO-ACF-001"):

@@ -2,8 +2,9 @@ import json
 
 from django.core.management.base import BaseCommand
 from easyaudit.models import CRUDEvent
-from nofos.models import Nofo, Subsection
 from users.models import BloomUser
+
+from nofos.models import Nofo, Subsection
 
 
 class Command(BaseCommand):

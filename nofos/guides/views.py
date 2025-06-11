@@ -9,6 +9,7 @@ from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.models import HeadingValidationError
 from nofos.nofo import (
