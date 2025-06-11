@@ -1,8 +1,9 @@
 from django.contrib.messages import get_messages
 from django.test import Client, TestCase
 from django.urls import reverse
-from nofos.models import Nofo, Section
 from users.models import BloomUser
+
+from nofos.models import Nofo, Section
 
 
 class NofoEditModificationViewTest(TestCase):

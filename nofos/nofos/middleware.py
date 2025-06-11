@@ -1,10 +1,9 @@
+from bloom_nofos.utils import parse_docraptor_ip_addresses
 from constance import config
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.urls import resolve
-
-from bloom_nofos.utils import parse_docraptor_ip_addresses
 
 from .utils import match_view_url
 

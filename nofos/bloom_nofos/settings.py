@@ -12,17 +12,15 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import sys
-
 import warnings
 from datetime import datetime
 from pathlib import Path
 
 import environ
-import tomli
 from django.utils.timezone import now
 
-from .aws import is_aws_db, generate_iam_auth_token_func
-from .utils import cast_to_boolean, get_login_gov_keys, get_internal_ip
+from .aws import generate_iam_auth_token_func, is_aws_db
+from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

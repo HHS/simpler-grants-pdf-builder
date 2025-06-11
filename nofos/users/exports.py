@@ -4,6 +4,7 @@ from datetime import datetime
 from django.db.models import Q
 from django.utils.timezone import make_aware
 from easyaudit.models import CRUDEvent
+
 from nofos.models import Nofo, Subsection
 
 from .models import BloomUser

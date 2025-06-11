@@ -1,7 +1,8 @@
 import os
-import tomli
 
+import tomli
 from django.conf import settings
+
 
 def get_version():
     try:

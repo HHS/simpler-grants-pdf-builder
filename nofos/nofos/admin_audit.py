@@ -1,8 +1,7 @@
 from django.contrib import admin
+from easyaudit.models import CRUDEvent, LoginEvent, RequestEvent
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-
-from easyaudit.models import CRUDEvent, LoginEvent, RequestEvent
 
 
 def safe_unregister(model):

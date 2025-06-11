@@ -2,14 +2,13 @@ import json
 import re
 import uuid
 
+from bloom_nofos.utils import is_docraptor_live_mode_active
 from constance import config
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.utils import timezone
 from easyaudit.models import CRUDEvent
 from slugify import slugify
-
-from bloom_nofos.utils import is_docraptor_live_mode_active
 
 
 def clean_string(string):

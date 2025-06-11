@@ -1,7 +1,7 @@
 import os
 import re
 import sys
-from socket import gethostbyname, gethostname, gaierror
+from socket import gaierror, gethostbyname, gethostname
 
 from django.conf import settings
 from django.utils.timezone import now, timedelta
