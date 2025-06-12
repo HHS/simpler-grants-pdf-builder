@@ -32,10 +32,13 @@ help:
 	@echo "  make showmigrations  Check DB connection and show migrations"
 	@echo "  make sqlflush_db     Generate SQL command to flush all data from the database"
 
+# Default build arg value
+IS_PROD_ARG ?= 0
+
 build:
-	docker build -t  $(IMAGE_NAME):latest .
+	docker build --build-arg IS_PROD_ARG=$(IS_PROD_ARG) -t $(IMAGE_NAME):latest .
 	docker image tag $(IMAGE_NAME):latest $(IMAGE_NAME):$(IMAGE_TAG)
-	@echo "Built image: $(IMAGE_NAME):$(IMAGE_TAG)"
+	@echo "Built image: $(IMAGE_NAME):$(IMAGE_TAG) with IS_PROD_ARG=$(IS_PROD_ARG)"
 
 test:
 	cd $(WORKDIR) && $(MANAGE) test
