@@ -13,6 +13,13 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.2.2] - 2025-06-16
+
+### Added
+
+- Add a warning message to ".rodeo" domain and ".dev" domain
+  - Now that we have multiple versions of the NOFO Builder up, we want to prevent people from using the wrong one
+
 ## [3.2.1] - 2025-06-10
 
 ### Changed

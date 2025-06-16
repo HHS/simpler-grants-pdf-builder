@@ -5,67 +5,94 @@
 {% endblock %}
 
 {% block content %}
-{% include "includes/page_heading.html" with title="Login" only %}
-
-{% if messages %}
-<div class="messages margin-top-4">
-    {% for message in messages %}
-    <div class="usa-alert usa-alert--{{ message.tags }}">
-        <div class="usa-alert__body">
-            <p class="usa-alert__text">{{ message }}</p>
-        </div>
+  {% if ".rodeo" in request.get_host %}
+    <div class="usa-alert usa-alert--error margin-bottom-4"" role="alert">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">YOU ARE ON THE WRONG WEBSITE</h4>
+        <p class="usa-alert__text">
+          The NOFO Builder has moved.
+        </p>
+        <p class="usa-alert__text">
+          To log in, go to
+          <a class="usa-link" href="http://nofos.simpler.grants.gov">nofos.simpler.grants.gov</a>.
+        </p>
+      </div>
     </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-{% if next %}
-  {% if user.is_authenticated %}
-    <p>
-        Your account doesn't have access to this page. To proceed, please login with an account that has access.
-    </p>
-  {% else %}
-    <p>Please login to see this page.</p>
+  {% elif ".dev" in request.get_host %}
+    <div class="usa-alert usa-alert--warning margin-bottom-4">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">YOU ARE ON THE DEVELOPMENT SITE</h4>
+        <p class="usa-alert__text">
+          This is a <strong>test</strong> version of the NOFO Builder.
+        </p>
+        <p class="usa-alert__text">
+          Go to the live site at <a class="usa-link" href="http://nofos.simpler.grants.gov">nofos.simpler.grants.gov</a>.
+        </p>
+      </div>
+    </div>
   {% endif %}
-{% endif %}
 
-<!-- Email/password login form -->
-<form method="post" action="{% url 'users:login' %}">
-    {% csrf_token %}
-    <fieldset class="usa-fieldset">
+  {% include "includes/page_heading.html" with title="Login" only %}
 
-        {% if form.non_field_errors %}
-        <legend>
-            <div class="usa-error-message">
-                Error: {{ form.non_field_errors.0 }}
-            </div>
-        </legend>
-        {% endif %}
+  {% if messages %}
+  <div class="messages margin-top-4">
+      {% for message in messages %}
+      <div class="usa-alert usa-alert--{{ message.tags }}">
+          <div class="usa-alert__body">
+              <p class="usa-alert__text">{{ message }}</p>
+          </div>
+      </div>
+      {% endfor %}
+  </div>
+  {% endif %}
 
-        {% include "includes/form_macro.html" %}
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>
+          Your account doesn't have access to this page. To proceed, please login with an account that has access.
+      </p>
+    {% else %}
+      <p>Please login to see this page.</p>
+    {% endif %}
+  {% endif %}
 
-    </fieldset>
-    <input type="hidden" name="next" value="{{ next }}">
+  <!-- Email/password login form -->
+  <form method="post" action="{% url 'users:login' %}">
+      {% csrf_token %}
+      <fieldset class="usa-fieldset">
 
-    <button class="usa-button margin-top-3" type="submit">Login</button>
-</form>
+          {% if form.non_field_errors %}
+          <legend>
+              <div class="usa-error-message">
+                  Error: {{ form.non_field_errors.0 }}
+              </div>
+          </legend>
+          {% endif %}
 
-{% if LOGIN_GOV_ENABLED %}
-    <!-- Login.gov login button -->
-    <div class="margin-top-4 login-gov-container">
-        <p class="text-center">- or -</p>
-        <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
-            Sign in with Login.gov
-        </a>
+          {% include "includes/form_macro.html" %}
 
-        <div class="margin-top-2 text-center">
-            <small class="text-base-dark">
-                Don't have a Login.gov account?
-                <a href="https://idp.int.identitysandbox.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
-                    Create one here
-                </a>
-            </small>
-        </div>
-    </div>
-{% endif %}
+      </fieldset>
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <button class="usa-button margin-top-3" type="submit">Login</button>
+  </form>
+
+  {% if LOGIN_GOV_ENABLED %}
+      <!-- Login.gov login button -->
+      <div class="margin-top-4 login-gov-container">
+          <p class="text-center">- or -</p>
+          <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
+              Sign in with Login.gov
+          </a>
+
+          <div class="margin-top-2 text-center">
+              <small class="text-base-dark">
+                  Don't have a Login.gov account?
+                  <a href="https://idp.int.identitysandbox.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
+                      Create one here
+                  </a>
+              </small>
+          </div>
+      </div>
+  {% endif %}
 {% endblock %}
