@@ -56,6 +56,11 @@ urlpatterns = [
         name="nofo_edit_title",
     ),
     path(
+        "<uuid:pk>/edit/short-name",
+        views.NofoEditShortNameView.as_view(),
+        name="nofo_edit_short_name",
+    ),
+    path(
         "<uuid:pk>/edit/number",
         views.NofoEditNumberView.as_view(),
         name="nofo_edit_number",

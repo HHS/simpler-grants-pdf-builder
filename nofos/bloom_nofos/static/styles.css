@@ -1159,6 +1159,10 @@ main .back-link a::before,
   color: var(--color--text-default);
 }
 
+.usa-textarea#title {
+  height: 5.5em;
+}
+
 .subsection_edit .usa-legend + .usa-hint {
   margin-bottom: 1rem;
 }

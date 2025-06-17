@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Nofo title and short name are separated now
+  - It made sense to group them before, but the "matched values" logic for the title field makes the double inputs really messy.
+
 ### Fixed
 
 ## [3.2.2] - 2025-06-16
