@@ -41,15 +41,17 @@ from .forms import (
     NofoCoachDesignerForm,
     NofoCoverImageForm,
     NofoGroupForm,
+    NofoImportTitleForm,
     NofoMetadataForm,
-    NofoNameForm,
     NofoNumberForm,
     NofoOpDivForm,
+    NofoShortNameForm,
     NofoStatusForm,
     NofoSubagency2Form,
     NofoSubagencyForm,
     NofoTaglineForm,
     NofoThemeOptionsForm,
+    NofoTitleForm,
     SubsectionCreateForm,
     SubsectionEditForm,
 )
@@ -707,7 +709,7 @@ class BaseNofoEditView(
 
 
 class NofoImportTitleView(BaseNofoEditView):
-    form_class = NofoNameForm
+    form_class = NofoImportTitleForm
     template_name = "nofos/nofo_import_title.html"
 
     def form_valid(self, form):
@@ -989,7 +991,7 @@ class NofoEditModificationView(
 
 
 class NofoEditTitleView(BaseNofoEditView):
-    form_class = NofoNameForm
+    form_class = NofoTitleForm
     template_name = "nofos/nofo_edit_title.html"
 
     def get_context_data(self, **kwargs):
@@ -1034,6 +1036,11 @@ class NofoEditTitleView(BaseNofoEditView):
         messages.success(self.request, success_message)
 
         return response
+
+
+class NofoEditShortNameView(BaseNofoEditView):
+    form_class = NofoShortNameForm
+    template_name = "nofos/nofo_edit_short_name.html"
 
 
 class NofoEditCoachDesignerView(BaseNofoEditView):

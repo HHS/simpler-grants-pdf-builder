@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load nofo_name subsection_name_or_order %}
+
+{% block body_class %}edit__nofo-short_name{% endblock %}
+
+{% block title %}NOFO short name{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% with form_id="nofo_edit_title_form" %}
+      {% include "includes/page_heading.html" with title="NOFO short name" back_text=back_text back_href=back_href only %}
+
+      <form id="{{ form_id }}" class="nofo_edit_form" method="post">
+        {% csrf_token %}
+
+        {% with "Opportunity number for this NOFO: "|add:nofo.number as hint_2 %}
+          {% include "includes/form_macro.html" with hint2=hint_2 hint2for="short_name" %}
+        {% endwith%}
+
+        <button class="usa-button margin-top-3" type="submit">Save short name</button>
+      </form>
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
+{% endblock %}

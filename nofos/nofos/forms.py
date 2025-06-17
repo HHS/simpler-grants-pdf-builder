@@ -40,9 +40,11 @@ def create_object_model_form(model_class):
 create_nofo_form_class = create_object_model_form(Nofo)
 
 
-NofoNameForm = create_nofo_form_class(
+NofoImportTitleForm = create_nofo_form_class(
     ["title", "short_name"], not_required_labels=["Short name"]
 )
+NofoTitleForm = create_nofo_form_class(["title"])
+NofoShortNameForm = create_nofo_form_class(["short_name"])
 NofoAgencyForm = create_nofo_form_class(["agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoNumberForm = create_nofo_form_class(["number"])
