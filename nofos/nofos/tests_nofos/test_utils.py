@@ -14,6 +14,7 @@ from nofos.utils import (
     clean_string,
     create_nofo_audit_event,
     create_subsection_html_id,
+    extract_highlighted_context,
     get_icon_path_choices,
     match_view_url,
 )
@@ -178,6 +179,50 @@ class TestCreateSubsectionHtmlId(TestCase):
         result = create_subsection_html_id(5, subsection)
         expected_id = "5----"
         self.assertEqual(result, expected_id)
+
+
+class ExtractHighlightedContextTests(TestCase):
+    def test_no_matches_returns_empty_list(self):
+        body = "This is some text with no target."
+        result = extract_highlighted_context(body, "missing")
+        self.assertEqual(result, [])
+
+    def test_single_match_highlights_correctly(self):
+        body = "Welcome to the jungle."
+        result = extract_highlighted_context(body, "jungle")
+        self.assertEqual(len(result), 1)
+        self.assertIn('<mark class="bg-yellow">jungle</mark>', result[0])
+
+    def test_multiple_distant_matches_produce_multiple_snippets(self):
+        body = "First match here. " + ("x" * 300) + "Second match way later."
+        result = extract_highlighted_context(
+            body, "match", context_chars=20, group_distance=50
+        )
+        self.assertEqual(len(result), 2)
+        self.assertIn("…", result[0])  # Ellipsis should appear on truncated text
+        self.assertIn('<mark class="bg-yellow">match</mark>', result[1])
+
+    def test_multiple_close_matches_are_grouped(self):
+        body = "match one, and then match two just a bit later."
+        result = extract_highlighted_context(
+            body, "match", context_chars=10, group_distance=50
+        )
+        self.assertEqual(len(result), 1)
+        self.assertIn('<mark class="bg-yellow">match</mark>', result[0])
+        self.assertGreater(result[0].count("mark class"), 1)  # Multiple highlights
+
+    def test_ellipses_added_for_trimmed_context(self):
+        body = "a" * 150 + "match" + "b" * 150
+        result = extract_highlighted_context(body, "match", context_chars=50)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(result[0].startswith("…"))
+        self.assertTrue(result[0].endswith("…"))
+
+    def test_case_insensitive_match(self):
+        body = "Match me if you can."
+        result = extract_highlighted_context(body, "match")
+        self.assertIn("Match", result[0])
+        self.assertIn('<mark class="bg-yellow">Match</mark>', result[0])
 
 
 class TestAddHtmlIdToSubsection(TestCase):

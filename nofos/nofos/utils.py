@@ -73,6 +73,57 @@ def add_html_id_to_subsection(subsection):
         subsection.html_id = create_subsection_html_id(counter, subsection)
 
 
+def extract_highlighted_context(body, pattern, context_chars=100, group_distance=200):
+    """
+    Extracts and highlights context around matches in a string.
+
+    Args:
+        body (str): The full text to search in.
+        pattern (str or compiled regex): Pattern to search for (case-insensitive).
+        context_chars (int): Characters of context before/after each match group.
+        group_distance (int): Max character distance between matches to be grouped.
+
+    Returns:
+        list of str: List of context HTML snippets with highlights.
+    """
+    if isinstance(pattern, str):
+        pattern = re.compile(re.escape(pattern), re.IGNORECASE)
+
+    matches = list(pattern.finditer(body))
+    if not matches:
+        return []
+
+    highlight = (
+        lambda m: f'<strong><mark class="bg-yellow">{m.group(0)}</mark></strong>'
+    )
+
+    # Group nearby matches
+    groups = []
+    group = [matches[0]]
+
+    for prev, curr in zip(matches, matches[1:]):
+        if curr.start() - prev.end() < group_distance:
+            group.append(curr)
+        else:
+            groups.append(group)
+            group = [curr]
+    groups.append(group)
+
+    # Build highlighted context snippets
+    results = []
+    for g in groups:
+        start = max(0, g[0].start() - context_chars)
+        end = min(len(body), g[-1].end() + context_chars)
+        snippet = body[start:end]
+        if start > 0:
+            snippet = "…" + snippet
+        if end < len(body):
+            snippet += "…"
+        results.append(pattern.sub(highlight, snippet))
+
+    return results
+
+
 def get_icon_path_choices(theme):
     if theme == "portrait-acf-white":
         return [

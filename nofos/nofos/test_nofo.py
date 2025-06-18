@@ -6680,7 +6680,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         )
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>July 15, 2025</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">July 15, 2025</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertIn("Deadline Details", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
@@ -6703,7 +6706,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         )
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>July 15, 2025</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">July 15, 2025</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertIn("Basic information", match["subsection"].name)
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
@@ -6725,7 +6731,8 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         self.assertEqual(self.section, results[0]["section"])
         self.assertEqual(self.matching_subsection.id, results[0]["subsection"].id)
         self.assertIn(
-            "<mark>JULY 15, 2025</mark>", results[0]["subsection_body_highlight"]
+            '<strong><mark class="bg-yellow">JULY 15, 2025</mark></strong>',
+            results[0]["subsection_body_highlight"],
         )
 
     def test_returns_empty_list_when_no_value(self):
@@ -6750,7 +6757,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "title")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>Test NOFO</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">Test NOFO</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
@@ -6768,7 +6778,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>HRSA-24-019</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">HRSA-24-019</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.section, match["section"])
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
@@ -6789,7 +6802,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "title")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>TEST NOFO</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">TEST NOFO</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     def test_ignores_title_match_if_basic_information(self):
@@ -6807,7 +6823,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "title")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>Test NOFO</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">Test NOFO</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     # Additional tests for number field
@@ -6819,7 +6838,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>hrsa-24-019</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">hrsa-24-019</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     def test_ignores_number_match_if_basic_information(self):
@@ -6841,7 +6863,10 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(len(results), 1)
         match = results[0]
-        self.assertIn("<mark>HRSA-24-019</mark>", match["subsection_body_highlight"])
+        self.assertIn(
+            '<strong><mark class="bg-yellow">HRSA-24-019</mark></strong>',
+            match["subsection_body_highlight"],
+        )
         self.assertEqual(self.matching_subsection.id, match["subsection"].id)
 
     def test_returns_multiple_matches_for_same_field(self):
