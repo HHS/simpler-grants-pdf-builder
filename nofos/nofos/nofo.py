@@ -2498,12 +2498,28 @@ def find_matches_with_context(nofo, find_text):
             - subsection: The Subsection object
             - subsection_body_highlight: The subsection body with matches highlighted
     """
+
+    def _is_basic_info_first_subsection(subsection):
+        """
+        Returns True if the subsection is the 'Basic Information' subsection
+        (with order 1 in section order 1), which we want to skip.
+        """
+        return (
+            subsection.name
+            and subsection.name.lower() == "basic information"
+            and subsection.order == 1
+            and subsection.section.order == 1
+        )
+
+
     matches = []
     pattern = re.compile(re.escape(find_text), re.IGNORECASE)
 
     for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
-            if pattern.search(subsection.body):
+            if pattern.search(subsection.body) and not _is_basic_info_first_subsection(
+                subsection
+            ):
                 snippets = extract_highlighted_context(subsection.body, pattern)
 
                 matches.append(
@@ -2533,40 +2549,11 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
             - subsection: The Subsection object
             - subsection_body_highlight: The subsection body with matches highlighted
     """
-
-    def _is_basic_info_first_subsection(subsection):
-        return (
-            subsection.name
-            and subsection.name.lower() == "basic information"
-            and subsection.order == 1
-            and subsection.section.order == 1
-        )
-
     value = getattr(nofo, field_name, None)
     if not value:
         return []
 
-    pattern = re.compile(re.escape(str(value)), re.IGNORECASE)
-    matches = []
-
-    for section in nofo.sections.prefetch_related("subsections").all():
-        for subsection in section.subsections.all():
-            if pattern.search(subsection.body) and not _is_basic_info_first_subsection(
-                subsection
-            ):
-                snippets = extract_highlighted_context(subsection.body, pattern)
-
-                matches.append(
-                    {
-                        "subsection": subsection,
-                        "section": section,
-                        "subsection_body_highlight": "".join(
-                            f"<p>{s}</p>" for s in snippets
-                        ),
-                    }
-                )
-
-    return matches
+    return find_matches_with_context(nofo, find_text=value)
 
 
 @transaction.atomic
