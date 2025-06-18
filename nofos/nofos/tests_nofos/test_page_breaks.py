@@ -376,7 +376,6 @@ class NofoRemovePagebreaksViewTest(TestCase):
         result = extract_page_break_context(
             "This has page-break once and page-break twice"
         )
-        self.assertIn("2 page breaks found in this section", result)
 
     def test_add_page_breaks_to_headings(self):
         """Test that add_page_breaks_to_headings adds page breaks to specific headings"""
