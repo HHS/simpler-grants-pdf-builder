@@ -2233,87 +2233,77 @@ def normalize_whitespace_img_alt_text(soup):
             img["alt"] = img["alt"].replace("\n\n", "\n")
 
 
+def extract_highlighted_context(body, pattern, context_chars=100, group_distance=200):
+    """
+    Extracts and highlights context around matches in a string.
+
+    Args:
+        body (str): The full text to search in.
+        pattern (str or compiled regex): Pattern to search for (case-insensitive).
+        context_chars (int): Number of characters to include before and after each group of matches.
+        group_distance (int): Max character distance between matches to group them.
+
+    Returns:
+        list of str: List of context HTML snippets with highlights.
+    """
+    import re
+
+    if isinstance(pattern, str):
+        pattern = re.compile(re.escape(pattern), re.IGNORECASE)
+
+    matches = list(pattern.finditer(body))
+    if not matches:
+        return []
+
+    # Group close matches
+    match_groups = []
+    current_group = [matches[0]]
+
+    for i in range(1, len(matches)):
+        if matches[i].start() - matches[i - 1].end() < group_distance:
+            current_group.append(matches[i])
+        else:
+            match_groups.append(current_group)
+            current_group = [matches[i]]
+
+    match_groups.append(current_group)
+
+    highlight_fn = lambda m: f'<strong><mark class="bg-yellow">{m.group(0)}</mark></strong>'
+
+    results = []
+
+    for group in match_groups:
+        start = max(0, group[0].start() - context_chars)
+        end = min(len(body), group[-1].end() + context_chars)
+        context = body[start:end]
+
+        if start > 0:
+            context = "…" + context
+        if end < len(body):
+            context = context + "…"
+
+        highlighted = pattern.sub(highlight_fn, context)
+        results.append(highlighted)
+
+    return results
+
 def extract_page_break_context(body, html_class=None):
-    """
-    Extract and highlight the context around page breaks in the subsection body.
+    results = []
 
-    This function:
-    1. Identifies CSS classes page breaks and the word "page-break" page break
-    2. Extracts only the relevant context around page breaks
-    3. Adds visual markers to highlight where page breaks are located
-
-    Returns a highlighted HTML string showing only the relevant parts of the content.
-    """
-    # Initialize the result
-    highlighted_parts = []
-
-    # Check for CSS class page breaks
     if html_class and any(c.startswith("page-break") for c in html_class.split()):
-        highlighted_parts.append(
+        results.append(
             '<strong><mark class="bg-yellow">Page break at top of section found.</mark></strong>'
         )
 
-    # Look for the word "page-break" in the content
-    matches = list(re.finditer(r"page-break", body))
+    contexts = extract_highlighted_context(body, r"page-break")
 
-    if matches:
-        # Group nearby matches to avoid redundant context
-        match_groups = []
-        current_group = [matches[0]]
+    if contexts:
+        for ctx in contexts:
+            results.append(f"<p>{ctx}</p>")
+    elif not results:
+        results.append("<p><em>Page break found in CSS classes or other locations</em></p>")
 
-        for i in range(1, len(matches)):
-            # If this match is close to the previous one (within 200 characters - 2x our context size)
-            if matches[i].start() - matches[i - 1].end() < 200:
-                # Add to current group
-                current_group.append(matches[i])
-            else:
-                # Start a new group
-                match_groups.append(current_group)
-                current_group = [matches[i]]
-
-        # Add the last group
-        match_groups.append(current_group)
-
-        # Process each group
-        for group in match_groups:
-            # Get the start of the first match and end of the last match in the group
-            group_start = group[0].start()
-            group_end = group[-1].end()
-
-            # Extract context (100 characters before first match and 100 after last match)
-            context_start = max(0, group_start - 100)
-            context_end = min(len(body), group_end + 100)
-
-            # Extract the context
-            context = body[context_start:context_end]
-
-            # Add ellipsis if we're not at the beginning or end
-            if context_start > 0:
-                context = "…" + context
-            if context_end < len(body):
-                context = context + "…"
-
-            # Highlight all occurrences of "page-break" in the context
-            highlighted_context = re.sub(
-                r"(page-break)",
-                r'<strong><mark class="bg-yellow">\1</mark></strong>',
-                context,
-                flags=re.IGNORECASE,
-            )
-
-            # Add count if there are multiple matches in this group
-            if len(group) > 1:
-                highlighted_parts.append(
-                    f"<p><strong>{len(group)} page breaks found in this section:</strong><br><br> {highlighted_context}</p>"
-                )
-            else:
-                highlighted_parts.append(f"<p>{highlighted_context}</p>")
-
-    # If no specific highlights were found, return a generic message
-    if not highlighted_parts:
-        return "<p><em>Page break found in CSS classes or other locations</em></p>"
-
-    return "".join(highlighted_parts)
+    return "".join(results)
 
 
 def count_page_breaks_nofo(nofo):
@@ -2559,26 +2549,21 @@ def find_matches_with_context(nofo, find_text):
             - subsection: The Subsection object
             - subsection_body_highlight: The subsection body with matches highlighted
     """
-    import re
-
     matches = []
+    pattern = re.compile(re.escape(find_text), re.IGNORECASE)
 
-    for section in nofo.sections.all():
+    for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
-            if find_text.lower() in subsection.body.lower():
-                # Add highlighting to matched text
-                highlighted_body = re.sub(
-                    f"({re.escape(find_text)})",
-                    r'<strong><mark class="bg-yellow">\1</mark></strong>',
-                    subsection.body,
-                    flags=re.IGNORECASE,
-                )
+            if pattern.search(subsection.body):
+                snippets = extract_highlighted_context(subsection.body, pattern)
 
                 matches.append(
                     {
                         "section": section,
                         "subsection": subsection,
-                        "subsection_body_highlight": highlighted_body,
+                        "subsection_body_highlight": "".join(
+                            f"<div>{s}</div>" for s in snippets
+                        ),
                     }
                 )
 
@@ -2586,6 +2571,19 @@ def find_matches_with_context(nofo, find_text):
 
 
 def find_subsections_with_nofo_field_value(nofo, field_name):
+    """
+    Find all subsections containing the value of a specific NOFO field.
+
+    Args:
+        nofo: The NOFO object to search in
+        field_name: The field name whose value will be searched for
+
+    Returns:
+        list: A list of dictionaries containing:
+            - section: The Section object
+            - subsection: The Subsection object
+            - subsection_body_highlight: The subsection body with matches highlighted
+    """
     def _is_basic_info_first_subsection(subsection):
         return (
             subsection.name
@@ -2598,23 +2596,21 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
     if not value:
         return []
 
+    pattern = re.compile(re.escape(str(value)), re.IGNORECASE)
     matches = []
-    pattern = re.compile(re.escape(value), re.IGNORECASE)
 
     for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
-            if pattern.search(subsection.body):
-                if not _is_basic_info_first_subsection(subsection):
-                    highlighted = pattern.sub(
-                        lambda m: f"<mark>{m.group(0)}</mark>", subsection.body
-                    )
-                    matches.append(
-                        {
-                            "subsection": subsection,
-                            "subsection_body_highlight": highlighted,
-                            "section": subsection.section,
-                        }
-                    )
+            if pattern.search(subsection.body) and not _is_basic_info_first_subsection(subsection):
+                snippets = extract_highlighted_context(subsection.body, pattern)
+
+                matches.append(
+                    {
+                        "subsection": subsection,
+                        "section": section,
+                        "subsection_body_highlight": "".join(f"<p>{s}</p>" for s in snippets),
+                    }
+                )
 
     return matches
 
