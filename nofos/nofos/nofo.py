@@ -290,6 +290,33 @@ def add_page_breaks_to_headings(document):
 
 
 def _build_document(document, sections, SectionModel, SubsectionModel):
+    def _get_validation_message(validation_error, obj):
+        obj_type = obj._meta.verbose_name.title()
+        name_max_length = obj._meta.get_field("name").max_length
+
+        if validation_error.message_dict.get("name", []):
+            intro_message = (
+                f"<strong>Found a {obj_type} name exceeding {name_max_length} characters in length.</strong> "
+                "This often means a paragraph was incorrectly styled as a heading.\n\n"
+            )
+            error_message = f"- **Error message**: {validation_error.messages}\n"
+            object_type_message = f"- **Type**: {obj_type}\n"
+            object_order_message = f"- **{obj_type} order**: {obj.order}\n"
+            object_name_message = f"- **{obj_type} name**: {obj.name}\n\n"
+            outro_message = f"Note that there may also be other mistagged headings further down in this document."
+
+            return (
+                f"{intro_message}"
+                f"{error_message}"
+                f"{object_type_message}"
+                f"{object_order_message}"
+                f"{object_name_message}"
+                f"{outro_message}"
+            )
+
+        # Generic fallback if it's not a name-related length error
+        return str(validation_error)
+
     sections_to_create = []
     subsections_to_create = []
 
@@ -310,8 +337,8 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         try:
             section_obj.full_clean()
         except ValidationError as e:
-            e.document = document
-            raise e
+            raise ValidationError(_get_validation_message(e, section_obj)) from e
+
         sections_to_create.append(section_obj)
 
     # Bulk create sections and retrieve them
@@ -361,8 +388,8 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             try:
                 subsection_obj.full_clean()
             except ValidationError as e:
-                e.document = document
-                raise e
+                raise ValidationError(_get_validation_message(e, subsection_obj)) from e
+
             subsections_to_create.append(subsection_obj)
 
     SubsectionModel.objects.bulk_create(subsections_to_create)
@@ -2510,7 +2537,6 @@ def find_matches_with_context(nofo, find_text):
             and subsection.order == 1
             and subsection.section.order == 1
         )
-
 
     matches = []
     pattern = re.compile(re.escape(find_text), re.IGNORECASE)

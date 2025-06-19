@@ -542,11 +542,6 @@ class Section(BaseSection):
         return Subsection
 
 
-# Custom exception for heading validation errors
-class HeadingValidationError(Exception):
-    pass
-
-
 class BaseSubsection(models.Model):
     class Meta:
         abstract = True
@@ -562,6 +557,7 @@ class BaseSubsection(models.Model):
         "Subsection name",
         max_length=400,
         blank=True,
+        validators=[MaxLengthValidator(400)],
     )
 
     html_id = models.CharField(
@@ -611,19 +607,12 @@ class BaseSubsection(models.Model):
         """Return the document object (Nofo or ContentGuide) this subsection belongs to."""
         return self.section.get_document()
 
-    def clean(self):
+    def clean(self, *args, **kwargs):
         # Enforce 'tag' when 'name' is False
         if self.name and not self.tag:
             raise ValidationError("Tag is required when 'name' is present.")
 
-        # Check name length with additional context
-        if self.name and len(self.name) > 400:
-            raise HeadingValidationError(
-                "Heading too long: Found a heading exceeding 400 characters in the "
-                f"'{self.section.name}' section (subsection #{self.order}).\n\n"
-                "This often means a paragraph was incorrectly styled as a heading. "
-                "Please check this section and ensure only actual headings are marked as headings."
-            )
+        super().clean(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         add_html_id_to_subsection(self)

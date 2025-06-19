@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import HeadingValidationError, Nofo, Section, Subsection
+from nofos.models import Nofo, Section, Subsection
 
 
 class NofoModelTest(TestCase):
@@ -140,8 +140,13 @@ class SectionModelTest(TestCase):
         section_data = self.valid_section_data.copy()
         section_data["name"] = "x" * 251  # One character more than max_length
         section = Section(**section_data)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValidationError) as e:
             section.full_clean()
+
+        expected_message = {
+            "name": ["Ensure this value has at most 250 characters (it has 251)."]
+        }
+        self.assertEqual(str(e.exception), str(expected_message))
 
     def test_empty_section_is_okay(self):
         section = Section.objects.create(**self.valid_section_data)
@@ -272,16 +277,13 @@ class SubsectionModelTest(TestCase):
         subsection_data["name"] = "x" * 401  # One character more than max_length
         subsection = Subsection(**subsection_data)
 
-        with self.assertRaises(HeadingValidationError) as cm:
+        with self.assertRaises(ValidationError) as e:
             subsection.full_clean()
 
-        expected_message = (
-            "Heading too long: Found a heading exceeding 400 characters in the "
-            "'Test Section' section (subsection #2).\n\n"
-            "This often means a paragraph was incorrectly styled as a heading. "
-            "Please check this section and ensure only actual headings are marked as headings."
-        )
-        self.assertEqual(str(cm.exception), expected_message)
+        expected_message = {
+            "name": ["Ensure this value has at most 400 characters (it has 401)."]
+        }
+        self.assertEqual(str(e.exception), str(expected_message))
 
     def test_subsection_tag_required_with_name(self):
         subsection_data = self.valid_subsection_data.copy()
