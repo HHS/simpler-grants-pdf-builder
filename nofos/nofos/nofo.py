@@ -404,6 +404,7 @@ def create_nofo(title, sections, opdiv):
     try:
         return _build_document(nofo, sections, Section, Subsection)
     except ValidationError as e:
+        nofo.delete()
         e.nofo = nofo
         raise e
 
