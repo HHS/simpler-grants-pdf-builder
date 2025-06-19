@@ -5,13 +5,12 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView, View
+from django.views.generic import DetailView, ListView, UpdateView
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 from nofos.mixins import GroupAccessObjectMixinFactory
-from nofos.models import HeadingValidationError
 from nofos.nofo import (
     add_headings_to_document,
     add_page_breaks_to_headings,
@@ -66,8 +65,10 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             )
             return redirect("guides:guide_edit_title", pk=guide.pk)
 
-        except (ValidationError, HeadingValidationError) as e:
-            return HttpResponseBadRequest(f"Error creating Content Guide: {e}")
+        except ValidationError as e:
+            return HttpResponseBadRequest(
+                f"<p><strong>Error creating Content Guide:</strong></p> {e.message}"
+            )
         except Exception as e:
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
