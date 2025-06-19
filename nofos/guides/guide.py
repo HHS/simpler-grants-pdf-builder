@@ -13,5 +13,6 @@ def create_content_guide(title, sections, opdiv):
             guide, sections, ContentGuideSection, ContentGuideSubsection
         )
     except ValidationError as e:
+        guide.delete()
         e.guide = guide
         raise e
