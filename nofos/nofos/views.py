@@ -62,7 +62,7 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
-from .models import THEME_CHOICES, HeadingValidationError, Nofo, Section, Subsection
+from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
@@ -476,8 +476,10 @@ class NofosImportNewView(BaseNofoImportView):
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
-        except (ValidationError, HeadingValidationError) as e:
-            return HttpResponseBadRequest(f"Error creating NOFO: {e}")
+        except ValidationError as e:
+            return HttpResponseBadRequest(
+                f"<p><strong>Error creating NOFO:</strong></p> {e.message}"
+            )
         except Exception as e:
             return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
@@ -572,7 +574,9 @@ class NofosImportOverwriteView(
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
         except ValidationError as e:
-            return HttpResponseBadRequest(f"Error re-importing NOFO: {e}")
+            return HttpResponseBadRequest(
+                f"<p><strong>Error re-importing NOFO:</strong></p> {e.message}"
+            )
         except Exception as e:
             return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
 
@@ -647,7 +651,9 @@ class NofosImportCompareView(NofosImportOverwriteView):
             )
 
         except ValidationError as e:
-            return HttpResponseBadRequest(f"Error importing NOFO: {e}")
+            return HttpResponseBadRequest(
+                f"<p><strong>Error importing NOFO:</strong></p> {e.message}"
+            )
         except Exception as e:
             return HttpResponseBadRequest(f"Error importing NOFO: {str(e)}")
 

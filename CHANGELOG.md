@@ -11,6 +11,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- More comprehensive error messages for section.name and subsection.name validation errors
 - Use "extract content" function in all find+replace types of interfaces
 - Nofo title and short name are separated now
   - It made sense to group them before, but the "matched values" logic for the title field makes the double inputs really messy.

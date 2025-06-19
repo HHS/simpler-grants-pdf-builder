@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load martortags %}
 
 {% block title %}
 	{% if status %}{{ status }}{% else %}400{% endif %} - Bad Request
@@ -8,9 +9,13 @@
 {% block content %}
 	<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} Error</h1>
 	{% if error_message %}
-		<p><strong>{{ error_message }}</strong></p>
+		{% if '<p>' in error_message %}
+			{{ error_message | safe_markdown }}
+		{% else %}
+			<p><strong>{{ error_message }}</strong></p>
+		{% endif %}
 	{% elif error_message_html %}
-		{{ error_message_html | safe }}
+		{{ error_message_html | safe_markdown }}
 	{% else %}
 		<p><strong>{% if status %}{{ status }}{% else %}400{% endif %} error.</strong></p>
 	{% endif %}
