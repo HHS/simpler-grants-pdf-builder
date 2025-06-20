@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- DO find and replace subsection.name values on Find + Replace page
+- DO NOT replace URLs on Find + Replace page
 - More comprehensive error messages for section.name and subsection.name validation errors
   - Delete NOFOs with heading errors now, don't keep them
 - Use "extract content" function in all find+replace types of interfaces
@@ -18,6 +20,8 @@ Versioning since version 1.0.0.
   - It made sense to group them before, but the "matched values" logic for the title field makes the double inputs really messy.
 
 ### Fixed
+
+- Fix contextual button text for "Save" title, "Remove" page breaks, and "Replace" values
 
 ## [3.2.2] - 2025-06-16
 

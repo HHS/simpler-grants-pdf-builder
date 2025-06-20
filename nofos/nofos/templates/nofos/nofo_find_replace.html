@@ -46,7 +46,7 @@
             <label class="usa-label" for="replace_text">Replace with</label>
             <input class="usa-input border-2px" id="replace_text" name="replace_text" type="text" {% if replace_text %}value="{{ replace_text }}"{% endif %}>
             <div class="margin-top-2">
-              <button id="replace_button" class="usa-button usa-button--accent-warm" type="submit" name="action" value="replace" data-base-text="Replace">Replace Nothing</button>
+              <button id="replace_button" class="usa-button usa-button--accent-warm" type="submit" name="action" value="replace" data-base-text="Replace" data-preposition="in">Replace</button>
               <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-button usa-button--outline">Cancel</a>
             </div>
           </div>
