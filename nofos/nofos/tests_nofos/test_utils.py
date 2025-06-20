@@ -17,6 +17,7 @@ from nofos.utils import (
     extract_highlighted_context,
     get_icon_path_choices,
     match_view_url,
+    strip_markdown_links
 )
 
 from ..models import Nofo, Section, Subsection
@@ -224,6 +225,35 @@ class ExtractHighlightedContextTests(TestCase):
         self.assertIn("Match", result[0])
         self.assertIn('<mark class="bg-yellow">Match</mark>', result[0])
 
+class StripMarkdownLinksTests(TestCase):
+    def test_removes_markdown_link_url(self):
+        text = "Visit [the saloon](https://the-saloon.rodeo)"
+        expected = "Visit [the saloon]"
+        self.assertEqual(strip_markdown_links(text), expected)
+
+    def test_multiple_links(self):
+        text = "Links: [one](http://a.com) and [two](http://b.com)"
+        expected = "Links: [one] and [two]"
+        self.assertEqual(strip_markdown_links(text), expected)
+
+    def test_no_links(self):
+        text = "Just plain text."
+        self.assertEqual(strip_markdown_links(text), text)
+
+    def test_incomplete_link_syntax(self):
+        text = "Here is a [link without closing"
+        self.assertEqual(strip_markdown_links(text), text)
+
+    def test_empty_string(self):
+        self.assertEqual(strip_markdown_links(""), "")
+
+    def test_none_input(self):
+        self.assertIsNone(strip_markdown_links(None))
+
+    def test_nested_like_links(self):
+        text = "Check [this [nested](http://nested.com)](http://outer.com)"
+        expected = "Check [this [nested]]"
+        self.assertEqual(strip_markdown_links(text), expected)
 
 class TestAddHtmlIdToSubsection(TestCase):
     def setUp(self):

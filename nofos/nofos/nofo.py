@@ -25,6 +25,7 @@ from .utils import (
     clean_string,
     create_subsection_html_id,
     extract_highlighted_context,
+    strip_markdown_links,
     style_map_manager,
 )
 
@@ -2270,7 +2271,8 @@ def extract_page_break_context(body, html_class=None):
             '<strong><mark class="bg-yellow">Page break at top of section found.</mark></strong>'
         )
 
-    contexts = extract_highlighted_context(body, r"page-break")
+    cleaned_body = strip_markdown_links(body) if body else ""
+    contexts = extract_highlighted_context(cleaned_body, r"page-break")
 
     if contexts:
         for ctx in contexts:
@@ -2544,18 +2546,21 @@ def find_matches_with_context(nofo, find_text):
 
     for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
-            if pattern.search(subsection.body) and not _is_basic_info_first_subsection(
-                subsection
-            ):
-                snippets = extract_highlighted_context(subsection.body, pattern)
+            # Strip markdown links before searching
+            cleaned_body = strip_markdown_links(subsection.body) if subsection.body else ""
+
+            # Check if the pattern matches in either the cleaned body or name
+            body_match = pattern.search(cleaned_body) if cleaned_body else False
+
+            if body_match and not _is_basic_info_first_subsection(subsection):
+                body_snippets = extract_highlighted_context(cleaned_body, pattern)
+                subsection_body_highlight = "".join(f"<div>{s}</div>" for s in body_snippets)
 
                 matches.append(
                     {
                         "section": section,
                         "subsection": subsection,
-                        "subsection_body_highlight": "".join(
-                            f"<div>{s}</div>" for s in snippets
-                        ),
+                        "subsection_body_highlight": subsection_body_highlight,
                     }
                 )
 

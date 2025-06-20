@@ -123,6 +123,15 @@ def extract_highlighted_context(body, pattern, context_chars=100, group_distance
 
     return results
 
+def strip_markdown_links(text):
+    """
+    Remove markdown links of the format ](...) from text.
+    This removes the link portion but keeps the link text.
+    """
+    if not text:
+        return text
+    # Remove link URLs: ](anything)
+    return re.sub(r'\]\([^)]*\)', ']', text)
 
 def get_icon_path_choices(theme):
     if theme == "portrait-acf-white":
