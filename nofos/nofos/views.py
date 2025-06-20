@@ -801,7 +801,7 @@ class NofoFindReplaceView(
 
             # Use the existing replace_value_in_subsections function with only selected subsections
             updated_subsections = replace_value_in_subsections(
-                selected_subsections, find_text, replace_text
+                selected_subsections, find_text, replace_text, include_name=True
             )
 
             if updated_subsections:
