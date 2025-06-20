@@ -36,6 +36,7 @@ from .nofo import (
     find_external_links,
     find_h7_headers,
     find_incorrectly_nested_heading_levels,
+    find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
     get_cover_image,
@@ -6894,6 +6895,93 @@ class FindSubsectionsWithFieldValueTests(TestCase):
         self.nofo.save()
         results = find_subsections_with_nofo_field_value(self.nofo, "number")
         self.assertEqual(results, [])
+
+
+class FindMatchesWithContextTests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO", opdiv="AHA", application_deadline="July 15, 2025"
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Important Dates", order=1
+        )
+
+        self.matching_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Deadline Details",
+            order=3,
+            tag="h3",
+            body="All applications are due by July 15, 2025. Late submissions will not be accepted.",
+        )
+
+        self.non_matching_subsection = Subsection.objects.create(
+            section=self.section,
+            name="Other Info",
+            order=4,
+            tag="h3",
+            body="This section does not mention any deadlines.",
+        )
+
+    def test_finds_body_match(self):
+        results = find_matches_with_context(self.nofo, "July 15, 2025")
+        self.assertEqual(len(results), 1)
+        match = results[0]
+        self.assertEqual(match["subsection"], self.matching_subsection)
+        self.assertIn("July 15, 2025", match["subsection_body_highlight"])
+        self.assertIsNone(match["subsection_name_highlight"])
+
+    def test_finds_name_match_with_flag(self):
+        self.matching_subsection.body = "No deadline info here."
+        self.matching_subsection.name = "Deadline July 15, 2025"
+        self.matching_subsection.save()
+        results = find_matches_with_context(
+            self.nofo, "July 15, 2025", include_name=True
+        )
+        self.assertEqual(len(results), 1)
+        self.assertIn("July 15, 2025", results[0]["subsection_name_highlight"])
+
+    def test_finds_both_body_and_name_match(self):
+        self.matching_subsection.name = "Deadline July 15, 2025"
+        self.matching_subsection.save()
+        results = find_matches_with_context(
+            self.nofo, "July 15, 2025", include_name=True
+        )
+        self.assertEqual(len(results), 1)
+        self.assertIn("July 15, 2025", results[0]["subsection_body_highlight"])
+        self.assertIn("July 15, 2025", results[0]["subsection_name_highlight"])
+
+    def test_does_not_return_basic_info_subsection(self):
+        self.matching_subsection.name = "Basic Information"
+        self.matching_subsection.order = 1
+        self.matching_subsection.section.order = 1
+        self.matching_subsection.section.save()
+        self.matching_subsection.save()
+        results = find_matches_with_context(
+            self.nofo, "July 15, 2025", include_name=True
+        )
+        self.assertEqual(results, [])
+
+    def test_returns_basic_info_if_not_first(self):
+        self.matching_subsection.name = "Basic Information"
+        self.matching_subsection.order = 2
+        self.matching_subsection.save()
+        results = find_matches_with_context(
+            self.nofo, "July 15, 2025", include_name=True
+        )
+        self.assertEqual(len(results), 1)
+
+    def test_returns_empty_list_if_no_matches(self):
+        results = find_matches_with_context(
+            self.nofo, "Nonexistent String", include_name=True
+        )
+        self.assertEqual(results, [])
+
+    def test_case_insensitive_matching(self):
+        self.matching_subsection.body = "The DEADLINE is JULY 15, 2025."
+        self.matching_subsection.save()
+        results = find_matches_with_context(self.nofo, "july 15, 2025")
+        self.assertEqual(len(results), 1)
+        self.assertIn("JULY 15, 2025", results[0]["subsection_body_highlight"])
 
 
 class ReplaceValueInSubsectionsTests(TestCase):
