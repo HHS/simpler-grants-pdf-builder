@@ -17,7 +17,7 @@
 
         {% include "includes/form_macro.html" with hint2='eg: "Physician Assistant Rural Training in Mental and Behavioral Health (PCTE-PARM) Program"' hint2for="title" %}
 
-        <button class="usa-button margin-top-3" type="submit">Save title</button>
+        <button class="usa-button margin-top-3" type="submit" data-base-text="Save title" data-preposition="+">Save title</button>
 
         {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=form.title.value replace_text="title" checkbox_checked=True %}
       </form>
