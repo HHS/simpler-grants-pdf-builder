@@ -2514,7 +2514,7 @@ def modifications_update_announcement_text(nofo):
                 subsection.save()
 
 
-def find_matches_with_context(nofo, find_text):
+def find_matches_with_context(nofo, find_text, include_name=False):
     """
     Find all occurrences of text in NOFO subsections with context.
 
@@ -2546,21 +2546,30 @@ def find_matches_with_context(nofo, find_text):
 
     for section in nofo.sections.prefetch_related("subsections").all():
         for subsection in section.subsections.all():
-            # Strip markdown links before searching
-            cleaned_body = strip_markdown_links(subsection.body) if subsection.body else ""
+            if _is_basic_info_first_subsection(subsection):
+                continue
 
-            # Check if the pattern matches in either the cleaned body or name
-            body_match = pattern.search(cleaned_body) if cleaned_body else False
+            body_highlight = None
+            name_highlight = None
 
-            if body_match and not _is_basic_info_first_subsection(subsection):
+            # --- Match body ---
+            cleaned_body = strip_markdown_links(subsection.body or "")
+            if cleaned_body and pattern.search(cleaned_body):
                 body_snippets = extract_highlighted_context(cleaned_body, pattern)
-                subsection_body_highlight = "".join(f"<div>{s}</div>" for s in body_snippets)
+                body_highlight = "".join(f"<div>{s}</div>" for s in body_snippets)
 
+            # --- Match name ---
+            if include_name and subsection.name and pattern.search(subsection.name):
+                name_snippets = extract_highlighted_context(subsection.name, pattern)
+                name_highlight = "".join(f"<span>{s}</span>" for s in name_snippets)
+
+            if body_highlight or name_highlight:
                 matches.append(
                     {
                         "section": section,
                         "subsection": subsection,
-                        "subsection_body_highlight": subsection_body_highlight,
+                        "subsection_body_highlight": body_highlight,
+                        "subsection_name_highlight": name_highlight,
                     }
                 )
 

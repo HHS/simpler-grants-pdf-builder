@@ -767,7 +767,7 @@ class NofoFindReplaceView(
             # Find matches if find_text is provided and at least 3 chars
             if len(find_text.strip()) > 2:
                 context["subsection_matches"] = find_matches_with_context(
-                    self.object, find_text
+                    self.object, find_text, include_name=True
                 )
 
         return context

@@ -45,11 +45,19 @@
         <td>{{ match.section.name }}</td>
         <td>
           <a class="usa-link usa-link--external" target="_blank" href="{% url "nofos:subsection_edit" nofo.id match.section.id match.subsection.id %}">
-            {{ match.subsection|subsection_name_or_order }}
+            {% if match.subsection_name_highlight %}
+              {{ match.subsection_name_highlight|safe }}
+            {% else %}
+              {{ match.subsection|subsection_name_or_order }}
+            {% endif %}
           </a>
         </td>
         <td>
-          {{ match.subsection_body_highlight|safe_markdown|linebreaksbr }}
+          {% if match.subsection_body_highlight %}
+            {{ match.subsection_body_highlight|safe_markdown|linebreaksbr }}
+          {% else %}
+            <i class="text-base">No matches in body text</i>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
