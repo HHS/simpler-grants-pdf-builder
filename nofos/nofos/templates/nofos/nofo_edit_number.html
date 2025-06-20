@@ -17,7 +17,7 @@
 
         {% include "includes/form_macro.html" with hint2='eg: "HRSA-24-019"' %}
 
-        <button class="usa-button margin-top-3" type="submit">Save number</button>
+        <button class="usa-button margin-top-3" type="submit" data-base-text="Save number" data-preposition="+">Save number</button>
 
         {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=form.number.value replace_text="number" checkbox_checked=True %}
       </form>

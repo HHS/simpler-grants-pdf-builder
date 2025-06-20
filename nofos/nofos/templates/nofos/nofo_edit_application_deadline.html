@@ -17,7 +17,7 @@
 
         {% include "includes/form_macro.html" with hint2='eg: "Monday, January 1, 2024"' %}
 
-        <button class="usa-button margin-top-3" type="submit">Save application deadline</button>
+        <button class="usa-button margin-top-3" type="submit" data-base-text="Save application deadline" data-preposition="+">Save application deadline</button>
 
         {% include "includes/subsection_matches_table_macro.html" with form_id=form_id subsection_matches=subsection_matches match_value=form.application_deadline.value replace_text="application deadline" checkbox_checked=True %}
       </form>
