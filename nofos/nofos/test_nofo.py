@@ -7200,3 +7200,95 @@ class ReplaceValueInSubsectionsTests(TestCase):
         self.assertEqual(len(updated), 0)
         self.subsection_1.refresh_from_db()
         self.assertEqual(self.subsection_1.body, original_body)
+
+    def test_replace_in_name_with_include_name(self):
+        self.subsection_1.name = "Important Dates"
+        self.subsection_1.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Important",
+            "Key",
+            include_name=True,
+        )
+
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertEqual(self.subsection_1.name, "Key Dates")
+
+    def test_replace_in_name_is_case_insensitive(self):
+        self.subsection_2.name = "REMINDER"
+        self.subsection_2.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_2.id],
+            "reminder",
+            "Heads Up",
+            include_name=True,
+        )
+
+        self.assertEqual(len(updated), 1)
+        self.subsection_2.refresh_from_db()
+        self.assertEqual(self.subsection_2.name, "Heads Up")
+
+    def test_replace_in_name_but_include_name_false(self):
+        self.subsection_1.name = "Important Dates"
+        self.subsection_1.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "Important",
+            "Key",
+            include_name=False,  # should skip name
+        )
+
+        self.assertEqual(len(updated), 0)
+        self.subsection_1.refresh_from_db()
+        self.assertEqual(self.subsection_1.name, "Important Dates")
+
+    def test_replace_in_name_and_body(self):
+        self.subsection_1.name = "Important Dates"
+        self.subsection_1.body = "June 1, 2025 is an important date."
+        self.subsection_1.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "important",
+            "critical",
+            include_name=True,
+        )
+
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertEqual(self.subsection_1.name, "critical Dates")
+        self.assertEqual(self.subsection_1.body, "June 1, 2025 is an critical date.")
+
+    def test_replace_in_name_no_match(self):
+        self.subsection_3.name = "No Match Here"
+        self.subsection_3.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_3.id],
+            "Something Else",
+            "Updated",
+            include_name=True,
+        )
+
+        self.assertEqual(len(updated), 0)
+        self.subsection_3.refresh_from_db()
+        self.assertEqual(self.subsection_3.name, "No Match Here")
+
+    def test_replace_name_with_multiple_matches(self):
+        self.subsection_3.name = "Important dates that are important"
+        self.subsection_3.save()
+
+        updated = replace_value_in_subsections(
+            [self.subsection_3.id],
+            "Important",
+            "Critical",
+            include_name=True,
+        )
+
+        self.assertEqual(len(updated), 1)
+        self.subsection_3.refresh_from_db()
+        self.assertEqual(self.subsection_3.name, "Critical dates that are Critical")

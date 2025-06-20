@@ -2598,15 +2598,18 @@ def find_subsections_with_nofo_field_value(nofo, field_name):
 
 
 @transaction.atomic
-def replace_value_in_subsections(subsection_ids, old_value, new_value):
+def replace_value_in_subsections(
+    subsection_ids, old_value, new_value, include_name=False
+):
     """
-    Replaces `old_value` with `new_value` in bodies of given subsection_ids.
-    Note that old_value uses a case-insensitive compare, so "JUNE 1" will match "June 1".
+    Replaces `old_value` with `new_value` in the bodies (and optionally names) of given subsection_ids.
+    Uses case-insensitive replacement (e.g., "JUNE 1" will match "June 1").
+
     Returns the list of updated Subsection objects.
 
-    If new_value is empty, no replacements will be made and an empty list will be returned.
+    If new_value or old_value is empty, returns an empty list.
     """
-    if not subsection_ids or not new_value or not old_value:
+    if not subsection_ids or not old_value or not new_value:
         return []
 
     updated_subsections = []
@@ -2619,15 +2622,24 @@ def replace_value_in_subsections(subsection_ids, old_value, new_value):
         except Subsection.DoesNotExist:
             continue
 
-        original_body = subsection.body
-        new_body = re.sub(
-            re.escape(old_value),
-            new_value,
-            subsection.body,
-            flags=re.IGNORECASE,
-        )
-        if new_body != original_body:
-            subsection.body = new_body
+        updated = False
+        pattern = re.compile(re.escape(old_value), flags=re.IGNORECASE)
+
+        # Update body
+        if subsection.body:
+            new_body = pattern.sub(new_value, subsection.body)
+            if new_body != subsection.body:
+                subsection.body = new_body
+                updated = True
+
+        # Update name (optional)
+        if include_name and subsection.name:
+            new_name = pattern.sub(new_value, subsection.name)
+            if new_name != subsection.name:
+                subsection.name = new_name
+                updated = True
+
+        if updated:
             subsection.save()
             updated_subsections.append(subsection)
 
