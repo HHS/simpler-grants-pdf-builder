@@ -123,6 +123,39 @@ def extract_highlighted_context(body, pattern, context_chars=100, group_distance
 
     return results
 
+
+def replace_text_not_markdown_links(text, old_value, new_value):
+    if not text:
+        return text
+
+    # Find all markdown links: [text](url)
+    link_pattern = re.compile(r"\[.*?\]\([^)]+\)", re.DOTALL)
+    matches = list(link_pattern.finditer(text))
+
+    # Build a list of protected ranges (the URLs only)
+    protected_ranges = []
+    for match in matches:
+        link_text = match.group()
+        # Find the position of the URL inside the link
+        url_start = match.start() + link_text.find("](") + 2
+        url_end = match.end() - 1  # exclude closing )
+        protected_ranges.append((url_start, url_end))
+
+    def is_inside_protected(pos):
+        return any(start <= pos < end for start, end in protected_ranges)
+
+    # Do a regex replacement, skipping protected ranges
+    pattern = re.compile(re.escape(old_value), re.IGNORECASE)
+
+    def replacement(match):
+        start = match.start()
+        if is_inside_protected(start):
+            return match.group(0)  # Don't replace inside URLs
+        return new_value
+
+    return pattern.sub(replacement, text)
+
+
 def strip_markdown_links(text):
     """
     Remove markdown links of the format ](...) from text.
@@ -131,7 +164,8 @@ def strip_markdown_links(text):
     if not text:
         return text
     # Remove link URLs: ](anything)
-    return re.sub(r'\]\([^)]*\)', ']', text)
+    return re.sub(r"\]\([^)]*\)", "]", text)
+
 
 def get_icon_path_choices(theme):
     if theme == "portrait-acf-white":
