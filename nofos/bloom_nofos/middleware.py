@@ -1,6 +1,7 @@
 from django.http import HttpResponseBadRequest
 from django.template import loader
 from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
 import time
 import logging
 import re
@@ -78,12 +79,14 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         if hasattr(request, "user") and request.user.is_authenticated:
             extra_data["user_id"] = str(request.user.id)
 
+        is_prod = getattr(settings, "is_prod", False)
+
         # User agent - very useful for identifying bots, mobile users
-        if request.META.get("HTTP_USER_AGENT"):
+        if is_prod and request.META.get("HTTP_USER_AGENT"):
             extra_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
 
         # Referrer - shows where users came from
-        if request.META.get("HTTP_REFERER"):
+        if is_prod and request.META.get("HTTP_REFERER"):
             extra_data["referrer"] = request.META.get("HTTP_REFERER")
 
         # Log at appropriate level
