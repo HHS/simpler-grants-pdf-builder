@@ -16,9 +16,11 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 
+import logging
 import environ
 from django.utils.timezone import now
 
+from pythonjsonlogger import jsonlogger
 from .aws import generate_iam_auth_token_func, is_aws_db
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
@@ -138,6 +140,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
     "bloom_nofos.middleware.BadRequestMiddleware",
+    "bloom_nofos.middleware.JSONRequestLoggingMiddleware",
     "nofos.middleware.NofosLoginRequiredMiddleware",
 ]
 
@@ -167,25 +170,35 @@ WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 # login backend
 
 # Logging
-# In production, log all errors to console
-if not DEBUG:
-    LOGGING = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "handlers": {
-            "console": {
-                "level": "ERROR",
-                "class": "logging.StreamHandler",
-            },
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "()": jsonlogger.JsonFormatter,
+            "format": "%(levelname)s %(method)s %(url)s %(status)s %(response_time)s",
         },
-        "loggers": {
-            "django": {
-                "handlers": ["console"],
-                "level": "ERROR",
-                "propagate": True,
-            },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
         },
-    }
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Suppress Django's default request logging
+        "django.server": {
+            "handlers": [],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

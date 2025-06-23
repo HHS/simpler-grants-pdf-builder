@@ -31,9 +31,10 @@ cryptography = "^45.0.4"
 pyjwt = "^2.10.1"
 google-cloud-secret-manager = "^2.24.0"
 boto3 = "^1.38.33"
+django-import-export = "^4.3.7"
+python-json-logger = "^3.3.0"
 
 # sortable = "@3", check nofo_index.html
-django-import-export = "^4.3.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
