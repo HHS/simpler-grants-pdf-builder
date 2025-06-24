@@ -22,6 +22,7 @@ from django.utils.timezone import now
 from pythonjsonlogger import jsonlogger
 
 from .aws import generate_iam_auth_token_func, is_aws_db
+from .logs import PrintLoggerNameFilter, SuppressWellKnown404Filter
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -176,36 +177,51 @@ LOGGING = {
     "formatters": {
         "json": {
             "()": jsonlogger.JsonFormatter,
-            "format": "%(levelname)s %(method)s %(url)s %(status)s %(response_time)s",
+            "format": "%(levelname)s %(method)s %(url)s %(status)s %(response_time)s %(exception_type)s %(exception_message)s",
+        },
+    },
+    "filters": {
+        "suppress_well_known_404s": {
+            "()": SuppressWellKnown404Filter,
+        },
+        "print_logger_name": {
+            "()": PrintLoggerNameFilter,
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "json",
+            "filters": ["suppress_well_known_404s", "print_logger_name"],
+        },
+        "null": {
+            "class": "logging.NullHandler",
         },
     },
     "loggers": {
-        # Our custom request logger
         "django.request": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
-        # Suppress ALL other Django loggers with a blanket rule
-        "django": {
-            "handlers": [],
-            "level": "CRITICAL",  # Only CRITICAL and above (essentially nothing)
+        # Try different variations of the django.server logger
+        "django.server": {
+            "handlers": ["null"],
+            "level": "CRITICAL",
             "propagate": False,
         },
-        # Suppress root logger
-        "": {
-            "handlers": [],
+        "django.contrib.staticfiles": {
+            "handlers": ["null"],
             "level": "CRITICAL",
+            "propagate": False,
+        },
+        # Suppress ALL other loggers aggressively
+        "": {
+            "handlers": ["null"],
+            "level": "ERROR",  # Only ERROR and above get through
         },
     },
 }
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
