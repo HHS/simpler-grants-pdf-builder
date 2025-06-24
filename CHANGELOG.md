@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add new image(s) for HHS-2026-IHS-​IPP​-​0001​
+
 ### Changed
 
 - DO find and replace subsection.name values on Find + Replace page
