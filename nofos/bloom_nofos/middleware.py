@@ -1,10 +1,12 @@
+import logging
+import re
+import time
+import traceback
+
+from django.conf import settings
 from django.http import HttpResponseBadRequest
 from django.template import loader
 from django.utils.deprecation import MiddlewareMixin
-from django.conf import settings
-import time
-import logging
-import re
 
 
 class BadRequestMiddleware(MiddlewareMixin):
@@ -53,6 +55,42 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         request._start_time = time.time()
         return None
 
+    def process_exception(self, request, exception):
+        """Log exceptions with full context"""
+        # Calculate response time if we have a start time
+        start_time = getattr(request, "_start_time", time.time())
+        response_time_ms = (time.time() - start_time) * 1000
+
+        # Build structured error data
+        error_data = {
+            "method": request.method,
+            "url": request.get_full_path(),
+            "status": 500,  # Exceptions typically result in 500
+            "response_time": f"{response_time_ms:.3f}ms",
+            "exception_type": exception.__class__.__name__,
+            "exception_message": str(exception),
+            "traceback": traceback.format_exc(),
+        }
+
+        # Add user info if available
+        if hasattr(request, "user") and request.user.is_authenticated:
+            error_data["user_id"] = str(request.user.id)
+
+        is_prod = getattr(settings, "is_prod", False)
+
+        # Add production-only fields
+        if is_prod:
+            if request.META.get("HTTP_USER_AGENT"):
+                error_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
+            if request.META.get("HTTP_REFERER"):
+                error_data["referrer"] = request.META.get("HTTP_REFERER")
+
+        # Log the structured exception
+        self.logger.error("Unhandled Exception", extra=error_data, exc_info=False)
+
+        # Don't return anything - let Django handle the exception normally
+        return None
+
     def process_response(self, request, response):
         """Log the request using structured logging"""
 
@@ -81,13 +119,14 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
 
         is_prod = getattr(settings, "is_prod", False)
 
-        # User agent - very useful for identifying bots, mobile users
-        if is_prod and request.META.get("HTTP_USER_AGENT"):
-            extra_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
+        if is_prod:
+            # User agent - useful for identifying bots, mobile users
+            if request.META.get("HTTP_USER_AGENT"):
+                extra_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
 
-        # Referrer - shows where users came from
-        if is_prod and request.META.get("HTTP_REFERER"):
-            extra_data["referrer"] = request.META.get("HTTP_REFERER")
+            # Referrer - shows where users came from
+            if request.META.get("HTTP_REFERER"):
+                extra_data["referrer"] = request.META.get("HTTP_REFERER")
 
         # Log at appropriate level
         if status_code >= 500:
