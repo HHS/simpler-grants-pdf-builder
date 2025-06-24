@@ -40,6 +40,7 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         r"\.map$",
         r"/static/",
         r"/media/",
+        r"/\.well-known/",
     ]
 
     def __init__(self, get_response):
@@ -57,6 +58,9 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
 
     def process_exception(self, request, exception):
         """Log exceptions with full context"""
+        # add a flag to indicate we have processed this exception
+        request._exception_handled_by_json_middleware = True
+
         # Calculate response time if we have a start time
         start_time = getattr(request, "_start_time", time.time())
         response_time_ms = (time.time() - start_time) * 1000
@@ -130,6 +134,9 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
 
         # Log at appropriate level
         if status_code >= 500:
+            # catch exceptions we have already processed
+            if getattr(request, "_exception_handled_by_json_middleware", False):
+                return response
             self.logger.error("HTTP Request", extra=extra_data)
         elif status_code >= 400:
             self.logger.warning("HTTP Request", extra=extra_data)
