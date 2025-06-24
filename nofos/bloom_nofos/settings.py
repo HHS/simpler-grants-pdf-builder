@@ -10,17 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import logging
 import os
 import sys
 import warnings
 from datetime import datetime
 from pathlib import Path
 
-import logging
 import environ
 from django.utils.timezone import now
-
 from pythonjsonlogger import jsonlogger
+
 from .aws import generate_iam_auth_token_func, is_aws_db
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
@@ -186,16 +186,22 @@ LOGGING = {
         },
     },
     "loggers": {
+        # Our custom request logger
         "django.request": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
-        # Suppress Django's default request logging
-        "django.server": {
+        # Suppress ALL other Django loggers with a blanket rule
+        "django": {
             "handlers": [],
-            "level": "INFO",
+            "level": "CRITICAL",  # Only CRITICAL and above (essentially nothing)
             "propagate": False,
+        },
+        # Suppress root logger
+        "": {
+            "handlers": [],
+            "level": "CRITICAL",
         },
     },
 }
