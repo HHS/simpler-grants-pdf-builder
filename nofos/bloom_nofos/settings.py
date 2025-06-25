@@ -22,7 +22,7 @@ from django.utils.timezone import now
 from pythonjsonlogger import jsonlogger
 
 from .aws import generate_iam_auth_token_func, is_aws_db
-from .logs import PrintLoggerNameFilter, SuppressWellKnown404Filter
+from .logs import CustomJsonFormatter, PrintLoggerNameFilter, SuppressWellKnown404Filter
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -175,10 +175,7 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "json": {
-            "()": jsonlogger.JsonFormatter,
-            "format": "%(levelname)s %(method)s %(url)s %(status)s %(response_time)s %(exception_type)s %(exception_message)s",
-        },
+        "json": {"()": CustomJsonFormatter, "format": None},
     },
     "filters": {
         "suppress_well_known_404s": {

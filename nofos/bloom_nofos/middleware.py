@@ -4,7 +4,8 @@ import time
 import traceback
 
 from django.conf import settings
-from django.http import HttpResponseBadRequest
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.template import loader
 from django.utils.deprecation import MiddlewareMixin
 
@@ -57,43 +58,39 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         return None
 
     def process_exception(self, request, exception):
-        """Log exceptions with full context"""
-        # add a flag to indicate we have processed this exception
-        request._exception_handled_by_json_middleware = True
-
-        # Calculate response time if we have a start time
         start_time = getattr(request, "_start_time", time.time())
         response_time_ms = (time.time() - start_time) * 1000
 
-        # Build structured error data
         error_data = {
             "method": request.method,
             "url": request.get_full_path(),
-            "status": 500,  # Exceptions typically result in 500
+            "status": 500,
             "response_time": f"{response_time_ms:.3f}ms",
             "exception_type": exception.__class__.__name__,
             "exception_message": str(exception),
             "traceback": traceback.format_exc(),
         }
 
-        # Add user info if available
         if hasattr(request, "user") and request.user.is_authenticated:
             error_data["user_id"] = str(request.user.id)
 
-        is_prod = getattr(settings, "is_prod", False)
+        # Mark that we've handled this exception
+        request._exception_handled_by_json_middleware = True
 
-        # Add production-only fields
-        if is_prod:
-            if request.META.get("HTTP_USER_AGENT"):
-                error_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
-            if request.META.get("HTTP_REFERER"):
-                error_data["referrer"] = request.META.get("HTTP_REFERER")
+        # Handle expected errors differently
+        if isinstance(exception, ValidationError):
+            error_data["status"] = 400
+            self.logger.warning("Validation Error", extra=error_data)
+            return HttpResponseBadRequest("Validation failed")
 
-        # Log the structured exception
-        self.logger.error("Unhandled Exception", extra=error_data, exc_info=False)
+        elif isinstance(exception, PermissionDenied):
+            error_data["status"] = 403
+            self.logger.warning("Permission Denied", extra=error_data)
+            return HttpResponseForbidden("Permission denied")
 
-        # Don't return anything - let Django handle the exception normally
-        return None
+        # Default for all other exceptions
+        self.logger.error("Unhandled Exception", extra=error_data)
+        return None  # Let Django handle it normally (500)
 
     def process_response(self, request, response):
         """Log the request using structured logging"""
