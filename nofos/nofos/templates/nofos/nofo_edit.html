@@ -115,15 +115,21 @@ Edit “{{ nofo|nofo_name }}”
     </div>
   </div>
 </div>
-{% elif nofo.status == 'review' or nofo.status == 'paused' %}
+{% elif nofo.status == 'review' or nofo.status == 'paused' or nofo.status == 'doge' %}
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
       NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
-    <div class="usa-summary-box__text">
-      <p>NOFOs that are {{ nofo.get_status_display|lower }} can’t be re-imported or deleted, but they can be edited as needed.</p>
-    </div>
+    {% if nofo.status == 'doge' %}
+      <div class="usa-summary-box__text">
+        <p>NOFOs that are in DOGE review can’t be re-imported or deleted, but they can be edited as needed.</p>
+      </div>
+    {% else %}
+      <div class="usa-summary-box__text">
+        <p>NOFOs that are {{ nofo.get_status_display|lower }} can’t be re-imported or deleted, but they can be edited as needed.</p>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% else %}

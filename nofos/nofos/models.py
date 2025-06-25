@@ -49,6 +49,7 @@ STATUS_CHOICES = [
     ("active", "Active"),
     ("ready-for-qa", "Ready for QA"),
     ("review", "In review"),
+    ("doge", "DOGE"),
     ("published", "Published"),
     ("paused", "Paused"),
     ("cancelled", "Cancelled"),
