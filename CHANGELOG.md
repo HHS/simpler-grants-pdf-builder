@@ -9,6 +9,15 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.3.0] - 2025-06-25
+
+### Added
+
+- Add new theme: CDC Portrait (DGHP)
 - Add new image(s) for HHS-2026-IHS-​IPP​-​0001​
 
 ### Changed
@@ -24,6 +33,10 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Fix contextual button text for "Save" title, "Remove" page breaks, and "Replace" values
+
+### Migrations
+
+- Add migration for new DGHP theme
 
 ## [3.2.2] - 2025-06-16
 
