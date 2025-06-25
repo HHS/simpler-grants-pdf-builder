@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add cover image for DGHP FY25 NOFOs
+
 ### Changed
 
 ### Fixed
@@ -27,7 +29,7 @@ Versioning since version 1.0.0.
 - More comprehensive error messages for section.name and subsection.name validation errors
   - Delete NOFOs with heading errors now, don't keep them
 - Use "extract content" function in all find+replace types of interfaces
-- Nofo title and short name are separated now
+- NOFO title and short name are separated now
   - It made sense to group them before, but the "matched values" logic for the title field makes the double inputs really messy.
 
 ### Fixed
@@ -113,7 +115,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add script to download all Nofos and ContentGuides to a .csv
+- Add script to download all NOFOs and ContentGuides to a .csv
 
 ### Changed
 
@@ -122,7 +124,7 @@ Versioning since version 1.0.0.
 ### Migrations
 
 - Change id fields from integers to UUIDs for our main models
-  - Includes: Nofo, Section, Subsection, ContentGuide, ContentGuideSection, and Subsection
+  - Includes: NOFO, Section, Subsection, ContentGuide, ContentGuideSection, and Subsection
 - Remove the separate `uuid` field that is no longer needed
 
 ## [2.17.0] - 2025-05-05
@@ -138,7 +140,7 @@ Versioning since version 1.0.0.
 
 ### Migrations
 
-- Add `uuid` field to Nofos, Sections, and Subsections (and ContentGuide equivalents)
+- Add `uuid` field to NOFOs, Sections, and Subsections (and ContentGuide equivalents)
   - Note that the `uuid` field is not being used for anything yet, it just exists
 
 ## [2.16.0] - 2025-05-04
