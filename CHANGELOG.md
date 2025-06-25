@@ -9,11 +9,20 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add cover image for DGHP FY25 NOFOs
-
 ### Changed
 
 ### Fixed
+
+## [3.4.0] - 2025-06-25
+
+### Added
+
+- Add cover image for DGHP FY25 NOFOs
+- Add a new status: "DOGE"
+
+### Migrations
+
+- Add migration for new "DOGE" status
 
 ## [3.3.0] - 2025-06-25
 

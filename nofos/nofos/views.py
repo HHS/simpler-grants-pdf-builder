@@ -517,7 +517,7 @@ class NofosImportOverwriteView(
         Overwrite an existing NOFO with the new sections.
         """
         nofo = self.nofo
-        if nofo.status in ["published", "review", "paused"]:
+        if nofo.status in ["published", "review", "doge", "paused"]:
             return HttpResponseBadRequest(
                 "{} NOFOs can’t be re-imported.".format(nofo.get_status_display())
             )
