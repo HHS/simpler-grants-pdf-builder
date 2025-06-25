@@ -1,4 +1,16 @@
 import logging
+from pythonjsonlogger import jsonlogger
+
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super().add_fields(log_record, record, message_dict)
+
+        # Always include these base fields
+        if "levelname" not in log_record:
+            log_record["levelname"] = record.levelname
+        if "message" not in log_record:
+            log_record["message"] = record.getMessage()
 
 
 class PrintLoggerNameFilter(logging.Filter):
