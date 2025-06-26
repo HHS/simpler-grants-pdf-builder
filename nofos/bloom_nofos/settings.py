@@ -169,60 +169,78 @@ TEMPLATES = [
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
 # Logging
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "json": {"()": CustomJsonFormatter, "format": None},
-    },
-    "filters": {
-        "suppress_well_known_404s": {
-            "()": SuppressWellKnown404Filter,
+if "test" in sys.argv:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "null": {
+                "class": "logging.NullHandler",
+            }
         },
-        "print_logger_name": {
-            "()": PrintLoggerNameFilter,
+        "loggers": {
+            "django.request": {
+                "handlers": ["null"],
+                "level": "CRITICAL",
+                "propagate": False,
+            },
         },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "json",
-            "filters": ["suppress_well_known_404s"],
+    }
+else:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "json": {"()": CustomJsonFormatter, "format": None},
         },
-        "null": {
-            "class": "logging.NullHandler",
+        "filters": {
+            "suppress_well_known_404s": {
+                "()": SuppressWellKnown404Filter,
+            },
+            "print_logger_name": {
+                "()": PrintLoggerNameFilter,
+            },
         },
-    },
-    "loggers": {
-        "django.request": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "json",
+                "filters": ["suppress_well_known_404s"],
+            },
+            "null": {
+                "class": "logging.NullHandler",
+            },
         },
-        # Try different variations of the django.server logger
-        "django.server": {
-            "handlers": ["null"],
-            "level": "CRITICAL",
-            "propagate": False,
+        "loggers": {
+            "django.request": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            # Try different variations of the django.server logger
+            "django.server": {
+                "handlers": ["null"],
+                "level": "CRITICAL",
+                "propagate": False,
+            },
+            "django.contrib.staticfiles": {
+                "handlers": ["null"],
+                "level": "CRITICAL",
+                "propagate": False,
+            },
+            # Suppress ALL other loggers aggressively
+            "": {
+                "handlers": ["null"],
+                "level": "ERROR",  # Only ERROR and above get through
+            },
         },
-        "django.contrib.staticfiles": {
-            "handlers": ["null"],
-            "level": "CRITICAL",
-            "propagate": False,
-        },
-        # Suppress ALL other loggers aggressively
-        "": {
-            "handlers": ["null"],
-            "level": "ERROR",  # Only ERROR and above get through
-        },
-    },
-}
+    }
 
-if DEBUG:
-    LOGGING["handlers"]["console"]["filters"] = [
-        "suppress_well_known_404s",
-        "print_logger_name",
-    ]
+    if DEBUG:
+        LOGGING["handlers"]["console"]["filters"] = [
+            "suppress_well_known_404s",
+            "print_logger_name",
+        ]
 
 
 # Database
