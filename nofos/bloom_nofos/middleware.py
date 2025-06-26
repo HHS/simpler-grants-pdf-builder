@@ -52,6 +52,25 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         self.logger = logging.getLogger("django.request")
         super().__init__(get_response)
 
+    def _build_log_metadata(self, request, status, response_time_ms):
+        metadata = {
+            "method": request.method,
+            "url": request.get_full_path(),
+            "status": status,
+            "response_time": f"{response_time_ms:.3f}ms",
+        }
+
+        if hasattr(request, "user") and request.user.is_authenticated:
+            metadata["user_id"] = str(request.user.id)
+
+        if getattr(settings, "is_prod", False):
+            # User agent - useful for identifying bots, mobile users
+            metadata["user_agent"] = request.META.get("HTTP_USER_AGENT", "")
+            # Referrer - shows where users came from
+            metadata["referrer"] = request.META.get("HTTP_REFERER", "")
+
+        return metadata
+
     def process_request(self, request):
         """Store the start time"""
         request._start_time = time.time()
@@ -61,18 +80,15 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         start_time = getattr(request, "_start_time", time.time())
         response_time_ms = (time.time() - start_time) * 1000
 
-        error_data = {
-            "method": request.method,
-            "url": request.get_full_path(),
-            "status": 500,
-            "response_time": f"{response_time_ms:.3f}ms",
-            "exception_type": exception.__class__.__name__,
-            "exception_message": str(exception),
-            "traceback": traceback.format_exc(),
-        }
-
-        if hasattr(request, "user") and request.user.is_authenticated:
-            error_data["user_id"] = str(request.user.id)
+        error_data = self._build_log_metadata(request, 500, response_time_ms)
+        # add error-specific keys
+        error_data.update(
+            {
+                "exception_type": exception.__class__.__name__,
+                "exception_message": str(exception),
+                "traceback": traceback.format_exc(),
+            }
+        )
 
         # Mark that we've handled this exception
         request._exception_handled_by_json_middleware = True
@@ -106,28 +122,7 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         # Determine log level based on status code
         status_code = response.status_code
 
-        # Log with structured data
-        extra_data = {
-            "method": request.method,
-            "url": request.get_full_path(),
-            "status": status_code,
-            "response_time": f"{response_time_ms:.3f}ms",
-        }
-
-        # Add optional fields
-        if hasattr(request, "user") and request.user.is_authenticated:
-            extra_data["user_id"] = str(request.user.id)
-
-        is_prod = getattr(settings, "is_prod", False)
-
-        if is_prod:
-            # User agent - useful for identifying bots, mobile users
-            if request.META.get("HTTP_USER_AGENT"):
-                extra_data["user_agent"] = request.META.get("HTTP_USER_AGENT")
-
-            # Referrer - shows where users came from
-            if request.META.get("HTTP_REFERER"):
-                extra_data["referrer"] = request.META.get("HTTP_REFERER")
+        extra_data = self._build_log_metadata(request, status_code, response_time_ms)
 
         # Log at appropriate level
         if status_code >= 500:
