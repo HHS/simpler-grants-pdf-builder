@@ -192,7 +192,7 @@ class ContentGuideArchiveViewTests(TestCase):
         self.client.logout()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
-        self.assertIn(b"403 Forbidden", response.content)
+        self.assertIn(b"Permission denied", response.content)
 
 
 class ContentGuideEditViewTests(TestCase):
