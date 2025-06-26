@@ -11,6 +11,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Change all app logs to JSON strings
+  - Fixes very long multi-line console output in our app logs in prod
+
 ### Fixed
 
 ## [3.4.0] - 2025-06-25
