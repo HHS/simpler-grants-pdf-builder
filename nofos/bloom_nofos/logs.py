@@ -1,5 +1,39 @@
 import logging
+import traceback
+
 from pythonjsonlogger import jsonlogger
+
+logger = logging.getLogger("django.request")
+
+
+def log_exception(request, e, level="error", context=None, status=None):
+    """
+    Logs a structured JSON error using the same format as the middleware.
+
+    Args:
+        request: Django request object
+        e: Exception instance
+        level: "error" or "warning"
+        context: Optional string to describe what failed
+        status: Optional HTTP status code (e.g. 400)
+    """
+    log_data = {
+        "exception_type": e.__class__.__name__,
+        "exception_message": str(e),
+        "traceback": traceback.format_exc(),
+        "method": request.method,
+        "url": request.get_full_path(),
+    }
+
+    if status:
+        log_data["status"] = status
+    if context:
+        log_data["context"] = context
+    if hasattr(request, "user") and request.user.is_authenticated:
+        log_data["user_id"] = str(request.user.id)
+
+    log_func = logger.warning if level == "warning" else logger.error
+    log_func(context or "Unhandled exception", extra=log_data)
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):

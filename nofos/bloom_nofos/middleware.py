@@ -42,6 +42,7 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         r"/static/",
         r"/media/",
         r"/\.well-known/",
+        r"/admin/jsi18n/",
     ]
 
     def __init__(self, get_response):
