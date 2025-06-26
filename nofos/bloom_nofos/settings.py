@@ -168,8 +168,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
-# login backend
-
 # Logging
 LOGGING = {
     "version": 1,
@@ -189,7 +187,7 @@ LOGGING = {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "json",
-            "filters": ["suppress_well_known_404s", "print_logger_name"],
+            "filters": ["suppress_well_known_404s"],
         },
         "null": {
             "class": "logging.NullHandler",
@@ -219,6 +217,14 @@ LOGGING = {
         },
     },
 }
+
+if DEBUG:
+    LOGGING["handlers"]["console"]["filters"] = [
+        "suppress_well_known_404s",
+        "print_logger_name",
+    ]
+
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
