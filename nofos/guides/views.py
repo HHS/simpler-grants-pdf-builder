@@ -1,3 +1,4 @@
+from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
@@ -66,10 +67,22 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             return redirect("guides:guide_edit_title", pk=guide.pk)
 
         except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="ContentGuideImportView:ValidationError",
+                status=400,
+            )
             return HttpResponseBadRequest(
                 f"<p><strong>Error creating Content Guide:</strong></p> {e.message}"
             )
         except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="ContentGuideImportView:Exception",
+                status=500,
+            )
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 

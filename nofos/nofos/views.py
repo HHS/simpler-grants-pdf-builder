@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 import docraptor
+from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
 from bs4 import BeautifulSoup
 from constance import config
@@ -418,6 +419,12 @@ class BaseNofoImportView(View):
             )
 
         except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="BaseNofoImportView:Exception",
+                status=500,
+            )
             return HttpResponseBadRequest(f"500 error: {str(e)}")
 
         filename = uploaded_file.name.strip()
@@ -477,10 +484,22 @@ class NofosImportNewView(BaseNofoImportView):
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
         except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportNewView:ValidationError",
+                status=400,
+            )
             return HttpResponseBadRequest(
                 f"<p><strong>Error creating NOFO:</strong></p> {e.message}"
             )
         except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportNewView:Exception",
+                status=500,
+            )
             return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
 
 
@@ -574,10 +593,22 @@ class NofosImportOverwriteView(
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
         except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportOverwriteView:ValidationError",
+                status=400,
+            )
             return HttpResponseBadRequest(
                 f"<p><strong>Error re-importing NOFO:</strong></p> {e.message}"
             )
         except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportOverwriteView:Exception",
+                status=500,
+            )
             return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
 
 
@@ -651,10 +682,22 @@ class NofosImportCompareView(NofosImportOverwriteView):
             )
 
         except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportCompareView:ValidationError",
+                status=400,
+            )
             return HttpResponseBadRequest(
                 f"<p><strong>Error importing NOFO:</strong></p> {e.message}"
             )
         except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportCompareView:Exception",
+                status=500,
+            )
             return HttpResponseBadRequest(f"Error importing NOFO: {str(e)}")
 
 
@@ -1287,10 +1330,13 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             )
 
             return response
-        except docraptor.rest.ApiException as error:
-            print("docraptor.rest.ApiException")
-            print(error.status)
-            print(error.reason)
+        except docraptor.rest.ApiException as e:
+            log_exception(
+                request,
+                e,
+                context="PrintNofoAsPDFView:docraptor.rest.ApiException",
+                status=400,
+            )
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
