@@ -240,6 +240,7 @@ def get_breadcrumb_text(section_name):
         "write your application": "Write",
         "understand review": "Understand",
         "prepare your application": "Prepare",
+        "build your application": "Build",
         "learn about review": "Learn",
         "submit": "Submit",
         "learn what happens": "Award",
