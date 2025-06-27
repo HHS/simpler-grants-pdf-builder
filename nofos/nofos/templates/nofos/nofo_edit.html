@@ -121,15 +121,28 @@ Edit “{{ nofo|nofo_name }}”
     <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
       NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
     </h2>
+    <div class="usa-summary-box__text">
     {% if nofo.status == 'doge' %}
-      <div class="usa-summary-box__text">
         <p>NOFOs that are in DOGE review can’t be re-imported or deleted, but they can be edited as needed.</p>
-      </div>
     {% else %}
-      <div class="usa-summary-box__text">
         <p>NOFOs that are {{ nofo.get_status_display|lower }} can’t be re-imported or deleted, but they can be edited as needed.</p>
-      </div>
     {% endif %}
+      <ul class="usa-list usa-list--unstyled">
+        <li>
+          <p>
+            <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+            — search and replace text across the entire NOFO
+          </p>
+        </li>
+        {% if page_breaks_count > 3 %}
+        <li>
+          <p>
+            <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+          </p>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
   </div>
 </div>
 {% else %}
