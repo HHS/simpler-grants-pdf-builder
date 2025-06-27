@@ -790,7 +790,10 @@ class NofoImportNumberView(BaseNofoEditView):
 
 
 class NofoFindReplaceView(
-    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    DetailView,
 ):
     model = Nofo
     template_name = "nofos/nofo_find_replace.html"
@@ -873,7 +876,10 @@ class NofoFindReplaceView(
 
 
 class NofoRemovePageBreaksView(
-    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    DetailView,
 ):
     model = Nofo
     template_name = "nofos/nofo_remove_page_breaks.html"
