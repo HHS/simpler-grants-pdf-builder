@@ -274,6 +274,29 @@ Edit “{{ nofo|nofo_name }}”
 </section>
 {% endif %}
 
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
+  <caption>
+    <div>
+      <h2 class="margin-bottom-0">NOFO status</h2>
+    </div>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+      <th scope="col">Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">NOFO status</th>
+      <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
   <caption>
     <div>
@@ -352,30 +375,29 @@ Edit “{{ nofo|nofo_name }}”
   <caption>
     <div>
       <h2 class="margin-bottom-0">NOFO metadata</h2>
+      <span class="padding-right-2 font-sans-sm">
+        <a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata: NOFO theme, cover style, and icon style</span></a>
+      </span>
     </div>
   </caption>
   <thead class="usa-sr-only">
     <tr>
       <th scope="col">Key</th>
       <th scope="col">Value</th>
-      <th scope="col">Manage</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody class="no-edit-link">
     <tr>
       <th scope="row">Author</th>
       <td>{{ nofo.author|get_value_or_none:"author" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
     </tr>
     <tr>
       <th scope="row">Subject</th>
       <td>{{ nofo.subject|get_value_or_none:"subject" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
     </tr>
     <tr>
       <th scope="row">Keywords</th>
       <td>{{ nofo.keywords|get_value_or_none:"keywords" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit<span class="usa-sr-only"> metadata</span></a></td>
     </tr>
   </tbody>
 </table>
@@ -384,41 +406,35 @@ Edit “{{ nofo|nofo_name }}”
   <caption>
     <div>
       <h2 class="margin-bottom-0">NOFO theme options</h2>
+      <span class="padding-right-2 font-sans-sm">
+        <a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}">Edit<span class="usa-sr-only">: NOFO theme, cover style, and icon style</span></a>
+      </span>
     </div>
   </caption>
   <thead class="usa-sr-only">
     <tr>
       <th scope="col">Key</th>
       <th scope="col">Value</th>
-      <th scope="col">Manage</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody class="no-edit-link">
     <tr>
       <th scope="row">Theme</th>
       <td>{{ nofo.get_theme_display|get_value_or_none:"theme" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}">Edit<span class="usa-sr-only"> theme options: NOFO theme, cover style, and icon style</span></a></td>
     </tr>
     <tr>
       <th scope="row">Cover style</th>
       <td>{{ nofo.get_cover_display|get_value_or_none:"Standard image" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}" aria-hidden="true">Edit<span class="usa-sr-only"> theme options</span></a></td>
     </tr>
     {% if nofo.cover_image and nofo.cover != 'nofo--cover-page--text' %}
       <tr>
         <th scope="row">Cover alt text</th>
         <td>{% if nofo.cover_image_alt_text %}“{% endif%}{{ nofo.cover_image_alt_text|get_value_or_none:"alt text" }}{% if nofo.cover_image_alt_text %}”{% endif %}</td>
-        <td><a href="{% url 'nofos:nofo_edit_cover_image' nofo.id %}">Edit<span class="usa-sr-only"> cover image alt text</span></a></td>
       </tr>
     {% endif %}
     <tr>
       <th scope="row">Icon style</th>
       <td>{{ nofo.get_icon_style_display|get_value_or_none:"Outlined" }}</td>
-      <td>
-        {% if "-acl" not in nofo.theme %}
-          <a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}" aria-hidden="true">Edit<span class="usa-sr-only"> theme options</span></a>
-        {% endif %}
-      </td>
     </tr>
   </tbody>
 </table>
@@ -426,34 +442,26 @@ Edit “{{ nofo|nofo_name }}”
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
   <caption>
     <div>
-      <h2 class="margin-bottom-0">NOFO management options</h2>
+      <h2 class="margin-bottom-0">NOFO coach and designer</h2>
+      <span class="padding-right-2 font-sans-sm">
+        <a href="{% url 'nofos:nofo_edit_coach_designer' nofo.id %}">Edit<span class="usa-sr-only">: NOFO theme, cover style, and icon style</span></a>
+      </span>
     </div>
   </caption>
   <thead class="usa-sr-only">
     <tr>
       <th scope="col">Key</th>
       <th scope="col">Value</th>
-      <th scope="col">Manage</th>
     </tr>
   </thead>
-  <tbody>
-    <tr>
-      <th scope="row">NOFO status</th>
-      <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a>
-      </td>
-    </tr>
+  <tbody class="no-edit-link">
     <tr>
       <th scope="row">Coach name</th>
       <td>{{ nofo.get_coach_display|get_value_or_none:"coach" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_coach_designer' nofo.id %}">Edit<span class="usa-sr-only"> coach</span></a>
-      </td>
     </tr>
     <tr>
       <th scope="row">Designer name</th>
       <td>{{ nofo.get_designer_display|get_value_or_none:"designer" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_coach_designer' nofo.id %}">Edit<span class="usa-sr-only"> designer</span></a>
-      </td>
     </tr>
   </tbody>
 </table>
