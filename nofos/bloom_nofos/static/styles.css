@@ -952,7 +952,12 @@ _:future,
   padding: 0;
 }
 
-.nofo_edit main table.usa-table > tbody > tr:first-of-type > td:last-of-type {
+.nofo_edit
+  main
+  table.usa-table
+  > tbody:not(.no-edit-link)
+  > tr:first-of-type
+  > td:last-of-type {
   width: 5%;
   text-align: right;
 }

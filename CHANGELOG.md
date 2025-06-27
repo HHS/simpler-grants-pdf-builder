@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Create "Edit" links for tables where all values are on 1 page
+  - This means we remove the "Edit" links from table rows (for individual values)
 - Change all app logs to JSON strings
   - Fixes very long multi-line console output in our app logs in prod
 
