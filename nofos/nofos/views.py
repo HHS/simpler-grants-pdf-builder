@@ -789,182 +789,6 @@ class NofoImportNumberView(BaseNofoEditView):
         return reverse_lazy("nofos:nofo_index")
 
 
-class NofoFindReplaceView(
-    PreventIfArchivedOrCancelledMixin,
-    PreventIfPublishedMixin,
-    GroupAccessObjectMixin,
-    DetailView,
-):
-    model = Nofo
-    template_name = "nofos/nofo_find_replace.html"
-    context_object_name = "nofo"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Get find_text from either POST or GET parameters
-        find_text = self.request.POST.get("find_text", "") or self.request.GET.get(
-            "find_text", ""
-        )
-        if find_text:
-            context["find_text"] = find_text
-            context["replace_text"] = self.request.POST.get("replace_text", "")
-
-            # Find matches if find_text is provided and at least 3 chars
-            if len(find_text.strip()) > 2:
-                context["subsection_matches"] = find_matches_with_context(
-                    self.object, find_text, include_name=True
-                )
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        nofo = self.get_object()
-        find_text = request.POST.get("find_text", "").strip()
-        replace_text = request.POST.get("replace_text", "").strip()
-        action = request.POST.get("action", "")
-
-        if not find_text:
-            messages.error(request, "Please enter text to find.")
-            return self.get(request, *args, **kwargs)
-
-        if len(find_text) <= 2:
-            messages.error(
-                request, "Error: Search terms must be at least 3 characters."
-            )
-            return self.get(request, *args, **kwargs)
-
-        if action == "find":
-            # Show preview with matches
-            return self.get(request, *args, **kwargs)
-
-        elif action == "replace":
-            # Only validate replace_text if subsections are selected
-            selected_subsections = request.POST.getlist("replace_subsections")
-            if selected_subsections and not replace_text:
-                messages.error(request, "Please enter text to replace with.")
-                return self.get(request, *args, **kwargs)
-
-            # Use the existing replace_value_in_subsections function with only selected subsections
-            updated_subsections = replace_value_in_subsections(
-                selected_subsections, find_text, replace_text, include_name=True
-            )
-
-            if updated_subsections:
-                subsection_list_html = "".join(
-                    "<li><a href='#{}'>{}</a></li>".format(
-                        sub.html_id, sub.name or "(#){}".format(sub.order)
-                    )
-                    for sub in updated_subsections
-                )
-
-                success_message = format_html(
-                    "Replaced all instances of '{}' with '{}' in {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
-                    find_text,
-                    replace_text,
-                    len(updated_subsections),
-                    "" if len(updated_subsections) == 1 else "s",
-                    format_html(subsection_list_html),
-                )
-                messages.success(request, success_message)
-            else:
-                messages.info(request, f"No instances of '{find_text}' were found.")
-
-            return redirect("nofos:nofo_edit", pk=nofo.id)
-
-        return self.get(request, *args, **kwargs)
-
-
-class NofoRemovePageBreaksView(
-    PreventIfArchivedOrCancelledMixin,
-    PreventIfPublishedMixin,
-    GroupAccessObjectMixin,
-    DetailView,
-):
-    model = Nofo
-    template_name = "nofos/nofo_remove_page_breaks.html"
-    context_object_name = "nofo"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        nofo = self.get_object()
-
-        # Count page breaks and collect subsections with page breaks
-        pagebreak_count = 0
-        subsections_with_breaks = []
-
-        for section in nofo.sections.all():
-            for subsection in section.subsections.all():
-                # Look for CSS class pagebreaks
-                css_breaks = 0
-                if subsection.html_class:
-                    css_breaks = sum(
-                        1
-                        for c in subsection.html_class.split()
-                        if c.startswith("page-break")
-                    )
-
-                # Look for the word "page-break" in the subsection content
-                word_breaks = subsection.body.lower().count("page-break")
-
-                total_breaks = css_breaks + word_breaks
-                if total_breaks > 0:
-                    # Extract and highlight the context around page breaks
-                    highlighted_body = extract_page_break_context(
-                        subsection.body, subsection.html_class
-                    )
-
-                    subsections_with_breaks.append(
-                        {
-                            "section": section,
-                            "subsection": subsection,
-                            "subsection_body_highlight": highlighted_body,
-                        }
-                    )
-                    pagebreak_count += total_breaks
-
-        context["pagebreak_count"] = pagebreak_count
-        context["subsection_matches"] = subsections_with_breaks
-        return context
-
-    def post(self, request, *args, **kwargs):
-        nofo = self.get_object()
-
-        # Get the list of subsection IDs that should have page breaks removed
-        subsections_to_remove = request.POST.getlist("replace_subsections")
-
-        # Convert string UUIDs to actual UUID objects for comparison
-        subsections_to_remove = [uuid.UUID(id) for id in subsections_to_remove if id]
-
-        # Remove pagebreaks from selected subsections
-        pagebreaks_removed = 0
-        for section in nofo.sections.all():
-            for subsection in section.subsections.all():
-                if subsection.id in subsections_to_remove:
-                    # Count page breaks before removal
-                    subsection_page_breaks = count_page_breaks_subsection(subsection)
-                    if subsection_page_breaks > 0:
-                        # Store the count of page breaks before removal
-                        pagebreaks_removed += subsection_page_breaks
-
-                        # Use the remove_page_breaks_from_subsection function and capture the returned subsection
-                        subsection = remove_page_breaks_from_subsection(subsection)
-
-                        # Save the updated subsection
-                        subsection.save()
-
-        # Restore the original page breaks that should be there
-        add_page_breaks_to_headings(nofo)
-
-        if pagebreaks_removed == 1:
-            messages.success(request, "1 page break has been removed.")
-        else:
-            messages.success(
-                request, f"{pagebreaks_removed} page breaks have been removed."
-            )
-        return redirect("nofos:nofo_edit", pk=nofo.id)
-
-
 ###########################################################
 ################### NOFO METADATA VIEWS ###################
 ###########################################################
@@ -1270,6 +1094,335 @@ class NofoEditStatusView(BaseNofoEditView):
     )
 
 
+###########################################################
+##################### NOFO HISTORY ########################
+###########################################################
+
+
+class NofoHistoryView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
+    model = Nofo
+    template_name = "nofos/nofo_history.html"
+    events_per_page = 25  # Show 25 events per batch
+
+    archived_error_message = "Archived NOFOs don’t have an audit history."
+    cancelled_error_message = None  # setting None allows us to view for cancelled NOFOs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offset = int(self.request.GET.get("offset", 0))
+        self.nofo = self.object
+
+        # Get audit events for this NOFO
+        all_events = [
+            format_audit_event(event) for event in get_audit_events_for_nofo(self.nofo)
+        ]
+
+        # Slice the results for pagination
+        end_offset = offset + self.events_per_page
+        context["audit_events"] = all_events[offset:end_offset]
+        context["has_more"] = len(all_events) > end_offset
+        context["next_offset"] = end_offset
+
+        # find previous versions, if any
+        context["ancestor_nofos"] = Nofo.objects.filter(successor=self.object).order_by(
+            "created"
+        )
+
+        return context
+
+
+class NofoModificationsHistoryView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
+    model = Nofo
+    template_name = "nofos/nofo_history_modifications.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        all_events = get_audit_events_for_nofo(self.object, reverse=False)
+        modifications_date = None
+
+        for event in all_events:
+            try:
+                changed = json.loads(event.changed_fields)
+            except Exception:
+                continue
+
+            # set modifications_date by finding the "modifications" change event
+            if changed and "modifications" in changed:
+                modifications_date = event.datetime
+                break
+
+        # If no modifications_date, there are no post-modification events, return nothing
+        if not modifications_date:
+            context["modification_events"] = []
+            return context
+
+        # Gather relevant events after the modifications flag was added
+        filtered_events = []
+        for event in all_events:
+            # skip events happening before modifications date
+            if event.datetime <= modifications_date:
+                continue
+
+            # Skip custom audit events
+            try:
+                changed = json.loads(event.changed_fields)
+                if changed.get("action") in [
+                    "nofo_import",
+                    "nofo_print",
+                    "nofo_reimport",
+                ]:
+                    continue
+            except Exception:
+                pass
+
+            # Skip events related to "Modifications" section
+            if event.content_type.model == "section":
+                if "Modifications" in event.object_repr:
+                    continue
+
+            # Skip events for subsections belonging to "Modifications" section
+            if event.content_type.model == "subsection":
+                try:
+                    subsection = Subsection.objects.get(id=event.object_id)
+                    if subsection.section.name == "Modifications":
+                        continue  # Skip this event
+                except Subsection.DoesNotExist:
+                    continue  # Skip if the subsection is gone
+
+            filtered_events.append(format_audit_event(event))
+
+        filtered_events = deduplicate_audit_events_by_day_and_object(filtered_events)
+
+        context["modification_events"] = filtered_events
+        context["modification_date"] = modifications_date
+
+        # Find the first subsection under the "Modifications" section
+        try:
+            modifications_section = self.object.sections.get(name="Modifications")
+            modifications_subsection = modifications_section.subsections.order_by(
+                "order"
+            ).first()
+        except Section.DoesNotExist:
+            modifications_subsection = None
+
+        context["modifications_subsection"] = modifications_subsection
+        return context
+
+
+###########################################################
+################## NOFO FUNCTION VIEWS ####################
+###########################################################
+
+
+class NofoFindReplaceView(
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    DetailView,
+):
+    model = Nofo
+    template_name = "nofos/nofo_find_replace.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get find_text from either POST or GET parameters
+        find_text = self.request.POST.get("find_text", "") or self.request.GET.get(
+            "find_text", ""
+        )
+        if find_text:
+            context["find_text"] = find_text
+            context["replace_text"] = self.request.POST.get("replace_text", "")
+
+            # Find matches if find_text is provided and at least 3 chars
+            if len(find_text.strip()) > 2:
+                context["subsection_matches"] = find_matches_with_context(
+                    self.object, find_text, include_name=True
+                )
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        find_text = request.POST.get("find_text", "").strip()
+        replace_text = request.POST.get("replace_text", "").strip()
+        action = request.POST.get("action", "")
+
+        if not find_text:
+            messages.error(request, "Please enter text to find.")
+            return self.get(request, *args, **kwargs)
+
+        if len(find_text) <= 2:
+            messages.error(
+                request, "Error: Search terms must be at least 3 characters."
+            )
+            return self.get(request, *args, **kwargs)
+
+        if action == "find":
+            # Show preview with matches
+            return self.get(request, *args, **kwargs)
+
+        elif action == "replace":
+            # Only validate replace_text if subsections are selected
+            selected_subsections = request.POST.getlist("replace_subsections")
+            if selected_subsections and not replace_text:
+                messages.error(request, "Please enter text to replace with.")
+                return self.get(request, *args, **kwargs)
+
+            # Use the existing replace_value_in_subsections function with only selected subsections
+            updated_subsections = replace_value_in_subsections(
+                selected_subsections, find_text, replace_text, include_name=True
+            )
+
+            if updated_subsections:
+                subsection_list_html = "".join(
+                    "<li><a href='#{}'>{}</a></li>".format(
+                        sub.html_id, sub.name or "(#){}".format(sub.order)
+                    )
+                    for sub in updated_subsections
+                )
+
+                success_message = format_html(
+                    "Replaced all instances of '{}' with '{}' in {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                    find_text,
+                    replace_text,
+                    len(updated_subsections),
+                    "" if len(updated_subsections) == 1 else "s",
+                    format_html(subsection_list_html),
+                )
+                messages.success(request, success_message)
+            else:
+                messages.info(request, f"No instances of '{find_text}' were found.")
+
+            return redirect("nofos:nofo_edit", pk=nofo.id)
+
+        return self.get(request, *args, **kwargs)
+
+
+class NofoRemovePageBreaksView(
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    DetailView,
+):
+    model = Nofo
+    template_name = "nofos/nofo_remove_page_breaks.html"
+    context_object_name = "nofo"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nofo = self.get_object()
+
+        # Count page breaks and collect subsections with page breaks
+        pagebreak_count = 0
+        subsections_with_breaks = []
+
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                # Look for CSS class pagebreaks
+                css_breaks = 0
+                if subsection.html_class:
+                    css_breaks = sum(
+                        1
+                        for c in subsection.html_class.split()
+                        if c.startswith("page-break")
+                    )
+
+                # Look for the word "page-break" in the subsection content
+                word_breaks = subsection.body.lower().count("page-break")
+
+                total_breaks = css_breaks + word_breaks
+                if total_breaks > 0:
+                    # Extract and highlight the context around page breaks
+                    highlighted_body = extract_page_break_context(
+                        subsection.body, subsection.html_class
+                    )
+
+                    subsections_with_breaks.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "subsection_body_highlight": highlighted_body,
+                        }
+                    )
+                    pagebreak_count += total_breaks
+
+        context["pagebreak_count"] = pagebreak_count
+        context["subsection_matches"] = subsections_with_breaks
+        return context
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+
+        # Get the list of subsection IDs that should have page breaks removed
+        subsections_to_remove = request.POST.getlist("replace_subsections")
+
+        # Convert string UUIDs to actual UUID objects for comparison
+        subsections_to_remove = [uuid.UUID(id) for id in subsections_to_remove if id]
+
+        # Remove pagebreaks from selected subsections
+        pagebreaks_removed = 0
+        for section in nofo.sections.all():
+            for subsection in section.subsections.all():
+                if subsection.id in subsections_to_remove:
+                    # Count page breaks before removal
+                    subsection_page_breaks = count_page_breaks_subsection(subsection)
+                    if subsection_page_breaks > 0:
+                        # Store the count of page breaks before removal
+                        pagebreaks_removed += subsection_page_breaks
+
+                        # Use the remove_page_breaks_from_subsection function and capture the returned subsection
+                        subsection = remove_page_breaks_from_subsection(subsection)
+
+                        # Save the updated subsection
+                        subsection.save()
+
+        # Restore the original page breaks that should be there
+        add_page_breaks_to_headings(nofo)
+
+        if pagebreaks_removed == 1:
+            messages.success(request, "1 page break has been removed.")
+        else:
+            messages.success(
+                request, f"{pagebreaks_removed} page breaks have been removed."
+            )
+        return redirect("nofos:nofo_edit", pk=nofo.id)
+
+
+class CheckNOFOLinkSingleView(SuperuserRequiredMixin, FormView):
+    template_name = "nofos/nofo_check_link_single.html"
+    form_class = CheckNOFOLinkSingleForm
+
+    def form_valid(self, form):
+        url = form.cleaned_data["url"]
+        response_data = find_external_link(url)
+
+        # Add information to the context
+        context = self.get_context_data(form=form)
+        context.update(response_data)
+
+        return self.render_to_response(context)
+
+
+class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_check_links.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
+        context["links"] = find_external_links(self.object, with_status)
+        context["with_status"] = with_status
+        return context
+
+
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
@@ -1549,151 +1702,3 @@ class NofoSubsectionDeleteView(
             ),
         )
         return super().form_valid(form)
-
-
-###########################################################
-###################### ADMIN VIEWS ########################
-###########################################################
-
-
-class CheckNOFOLinkSingleView(SuperuserRequiredMixin, FormView):
-    template_name = "nofos/nofo_check_link_single.html"
-    form_class = CheckNOFOLinkSingleForm
-
-    def form_valid(self, form):
-        url = form.cleaned_data["url"]
-        response_data = find_external_link(url)
-
-        # Add information to the context
-        context = self.get_context_data(form=form)
-        context.update(response_data)
-
-        return self.render_to_response(context)
-
-
-class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
-    model = Nofo
-    template_name = "nofos/nofo_check_links.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
-        context["links"] = find_external_links(self.object, with_status)
-        context["with_status"] = with_status
-        return context
-
-
-class NofoHistoryView(
-    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
-):
-    model = Nofo
-    template_name = "nofos/nofo_history.html"
-    events_per_page = 25  # Show 25 events per batch
-
-    archived_error_message = "Archived NOFOs don’t have an audit history."
-    cancelled_error_message = None  # setting None allows us to view for cancelled NOFOs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        offset = int(self.request.GET.get("offset", 0))
-        self.nofo = self.object
-
-        # Get audit events for this NOFO
-        all_events = [
-            format_audit_event(event) for event in get_audit_events_for_nofo(self.nofo)
-        ]
-
-        # Slice the results for pagination
-        end_offset = offset + self.events_per_page
-        context["audit_events"] = all_events[offset:end_offset]
-        context["has_more"] = len(all_events) > end_offset
-        context["next_offset"] = end_offset
-
-        # find previous versions, if any
-        context["ancestor_nofos"] = Nofo.objects.filter(successor=self.object).order_by(
-            "created"
-        )
-
-        return context
-
-
-class NofoModificationsHistoryView(
-    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
-):
-    model = Nofo
-    template_name = "nofos/nofo_history_modifications.html"
-    context_object_name = "nofo"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        all_events = get_audit_events_for_nofo(self.object, reverse=False)
-        modifications_date = None
-
-        for event in all_events:
-            try:
-                changed = json.loads(event.changed_fields)
-            except Exception:
-                continue
-
-            # set modifications_date by finding the "modifications" change event
-            if changed and "modifications" in changed:
-                modifications_date = event.datetime
-                break
-
-        # If no modifications_date, there are no post-modification events, return nothing
-        if not modifications_date:
-            context["modification_events"] = []
-            return context
-
-        # Gather relevant events after the modifications flag was added
-        filtered_events = []
-        for event in all_events:
-            # skip events happening before modifications date
-            if event.datetime <= modifications_date:
-                continue
-
-            # Skip custom audit events
-            try:
-                changed = json.loads(event.changed_fields)
-                if changed.get("action") in [
-                    "nofo_import",
-                    "nofo_print",
-                    "nofo_reimport",
-                ]:
-                    continue
-            except Exception:
-                pass
-
-            # Skip events related to "Modifications" section
-            if event.content_type.model == "section":
-                if "Modifications" in event.object_repr:
-                    continue
-
-            # Skip events for subsections belonging to "Modifications" section
-            if event.content_type.model == "subsection":
-                try:
-                    subsection = Subsection.objects.get(id=event.object_id)
-                    if subsection.section.name == "Modifications":
-                        continue  # Skip this event
-                except Subsection.DoesNotExist:
-                    continue  # Skip if the subsection is gone
-
-            filtered_events.append(format_audit_event(event))
-
-        filtered_events = deduplicate_audit_events_by_day_and_object(filtered_events)
-
-        context["modification_events"] = filtered_events
-        context["modification_date"] = modifications_date
-
-        # Find the first subsection under the "Modifications" section
-        try:
-            modifications_section = self.object.sections.get(name="Modifications")
-            modifications_subsection = modifications_section.subsections.order_by(
-                "order"
-            ).first()
-        except Section.DoesNotExist:
-            modifications_subsection = None
-
-        context["modifications_subsection"] = modifications_subsection
-        return context

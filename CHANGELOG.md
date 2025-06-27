@@ -13,6 +13,9 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Show "Find & Replace" and "Page breaks" button in review states
+- Don't allow "Find & Replace" or "Page breaks" after publishing
+  - Once published, NOFOs should generally not be edited
 - Create "Edit" links for tables where all values are on 1 page
   - This means we remove the "Edit" links from table rows (for individual values)
 - Change all app logs to JSON strings
