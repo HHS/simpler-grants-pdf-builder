@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add new nav breadcrumb for "Build your application"
+
 ### Changed
 
 - Create "Edit" links for tables where all values are on 1 page
