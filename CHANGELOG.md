@@ -20,6 +20,8 @@ Versioning since version 1.0.0.
   - This means we remove the "Edit" links from table rows (for individual values)
 - Change all app logs to JSON strings
   - Fixes very long multi-line console output in our app logs in prod
+- Remove "import" and "export" buttons to NOFO models and audit events
+- Set app timeout time in gunicorn to 90 seconds (was previously 900 seconds)
 
 ### Fixed
 
