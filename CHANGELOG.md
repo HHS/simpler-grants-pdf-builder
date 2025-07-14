@@ -9,6 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.4.1] - 2025-07-14
+
+### Added
+
 - Add new nav breadcrumb for "Build your application"
 
 ### Changed
@@ -23,7 +31,9 @@ Versioning since version 1.0.0.
 - Remove "import" and "export" buttons to NOFO models and audit events
 - Set app timeout time in gunicorn to 90 seconds (was previously 900 seconds)
 
-### Fixed
+### Migrations
+
+- Change "DOGE" status to "Dep Sec" (Deputy Secretary) status
 
 ## [3.4.0] - 2025-06-25
 
