@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, Tag
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -105,6 +105,16 @@ def is_sublist(td):
 
 
 def replace_unicode_with_svg(root_element, icon, svg_html):
+    icon_count = root_element.get_text().count(icon)
+
+    if icon_count > 1:
+        # Look for child elements with exactly one icon
+        for child in root_element.find_all(recursive=True):
+            if isinstance(child, Tag) and child.get_text().count(icon) == 1:
+                # Recursively call replace_unicode_with_svg on elements with just 1 icon
+                replace_unicode_with_svg(child, icon, svg_html)
+        return
+
     found = False
     # Iterate over all elements to find the icon and remove it
     for content in root_element.contents:
@@ -113,7 +123,7 @@ def replace_unicode_with_svg(root_element, icon, svg_html):
             new_content = parts[0] + (parts[1] if len(parts) > 1 else "")
             content.replace_with(NavigableString(new_content))
             found = True
-            break  # Assuming only one icon per element
+            break
 
     if found:
         # Create the SVG soup
@@ -176,9 +186,6 @@ def replace_unicode_with_icon(html_string):
 
         for td in tds:
             elements_with_char = []
-
-            if td.get_text().count(icon) > 1:
-                continue  # Skip this td if it contains multiple instances of the icon
 
             find_elements_with_character(td, elements_with_char, icon)
             root_elements.extend(elements_with_char)
