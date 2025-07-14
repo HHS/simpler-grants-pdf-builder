@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Replace multiple icons in a table cell, should it come to that
+
 ### Fixed
 
 ## [3.4.1] - 2025-07-14
