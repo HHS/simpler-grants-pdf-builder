@@ -3,12 +3,8 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
-from import_export.admin import ImportExportModelAdmin
 from martor.widgets import AdminMartorWidget
 
-# TODO: remove once migration is over
-from . import admin_audit
-from .admin_resources import NofoResource, SectionResource, SubsectionResource
 from .models import Nofo, Section, Subsection
 from .views import duplicate_nofo, insert_order_space_view
 
@@ -74,17 +70,15 @@ class SubsectionLinkInline(admin.StackedInline):
 
 
 # Admin classes
-class SubsectionAdmin(ImportExportModelAdmin):
+class SubsectionAdmin(admin.ModelAdmin):
     model = Subsection
     list_display = ["id", "name", "callout_box", "section"]
-    resource_classes = [SubsectionResource]
 
 
-class SectionAdmin(ImportExportModelAdmin):
+class SectionAdmin(admin.ModelAdmin):
     inlines = [SubsectionLinkInline]
     model = Section
     list_display = ["id", "nofo_number", "name"]
-    resource_classes = [SectionResource]
 
     @admin.display(ordering="nofo__number")
     def nofo_number(self, obj):
@@ -104,11 +98,10 @@ class SectionAdmin(ImportExportModelAdmin):
         return custom_urls + urls
 
 
-class NofoAdmin(MirrorAdmin, ImportExportModelAdmin):
+class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     form = NofoModelForm
     inlines = [SectionLinkInline]
     actions = ["duplicate_nofo_admin"]
-    resource_classes = [NofoResource]
 
     list_display = [
         "title",
