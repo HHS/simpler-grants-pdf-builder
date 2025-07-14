@@ -23,7 +23,6 @@ ICONS = [
 ]
 
 
-# TODO add some tests
 def has_link_in_above_rows(td):
     # Find the parent row of the cell
     parent_row = td.find_parent("tr")

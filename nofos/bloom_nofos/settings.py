@@ -127,7 +127,6 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "django_mirror",
     "ninja",
-    "import_export",
 ]
 
 MIDDLEWARE = [
@@ -535,12 +534,6 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 # If the header is set it must be available on the request or an Error will be thrown
 if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
-
-# TODO: REMOVE AFTER MIGRATION
-# IMPORT EXPORT
-IMPORT_EXPORT_SKIP_ADMIN_LOG = True
-IMPORT_EXPORT_CHUNK_SIZE = 1000
-IMPORT_EXPORT_SKIP_ADMIN_CONFIRM = True
 
 # Document IPs for our PDF generating app
 DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
