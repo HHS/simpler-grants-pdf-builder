@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Uploaded Images</h1>
+  <ul>
+    {% for image in images %}
+      <li>
+        <a href="https://{{ AWS_STORAGE_BUCKET_NAME }}.s3.amazonaws.com/{{ image }}" target="_blank">
+          {{ image }}
+        </a>
+      </li>
+    {% empty %}
+      <li>No images found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
