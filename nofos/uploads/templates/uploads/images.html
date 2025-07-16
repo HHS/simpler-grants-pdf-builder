@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+  {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" only %}
+
   <h1>Uploaded Images</h1>
+  {% for image in images %}
   <ul>
-    {% for image in images %}
-      <li>
-        <a href="https://{{ AWS_STORAGE_BUCKET_NAME }}.s3.amazonaws.com/{{ image }}" target="_blank">
-          {{ image }}
-        </a>
-      </li>
-    {% empty %}
-      <li>No images found.</li>
-    {% endfor %}
+    <li>
+      <a href="https://{{ AWS_STORAGE_BUCKET_NAME }}.s3.amazonaws.com/{{ image }}" target="_blank">
+        {{ image }}
+      </a>
+    </li>
   </ul>
+  {% empty %}
+  <p>No images returned.</p>
+  {% endfor %}
 {% endblock %}
