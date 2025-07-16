@@ -86,6 +86,10 @@ aws_dns_name = env.get_value("LOAD_BALANCER_DNS_NAME", default="")
 if aws_dns_name:
     ALLOWED_HOSTS.append(aws_dns_name)
 
+# AWS CONFIG
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default=None)
+AWS_REGION = env("AWS_REGION", default="us-east-1")
+
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
 SECURE_REDIRECT_EXEMPT = [r"^health/?$"]
@@ -125,6 +129,7 @@ INSTALLED_APPS = [
     "nofos.apps.NofosConfig",
     "guides.apps.GuidesConfig",
     "users.apps.UsersConfig",
+    "uploads.apps.UploadsConfig",
     "django_mirror",
     "ninja",
 ]
