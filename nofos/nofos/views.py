@@ -102,11 +102,39 @@ from .nofo import (
 from .nofo_compare import compare_nofos, compare_nofos_metadata
 from .utils import create_nofo_audit_event, create_subsection_html_id
 
+import boto3
+from django.http import JsonResponse
+import re
+import os
+
+
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
 
 ###########################################################
 ######### NOFO UTILS (used in views and admin) ############
 ###########################################################
+
+
+def list_image_files(request):
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+
+    # session = boto3.Session(profile_name=os.getenv("AWS_PROFILE", "default"))
+    # s3 = session.client("s3")
+    s3 = boto3.client("s3")
+
+    # Optional: Set a prefix like "uploads/" if your files are inside a folder
+    prefix = ""
+
+    # List files in the bucket
+    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+
+    files = []
+    for obj in response.get("Contents", []):
+        key = obj["Key"]
+        if re.search(r"\.(jpe?g|png)$", key, re.IGNORECASE):
+            files.append(key)
+
+    return JsonResponse({"images": files})
 
 
 def duplicate_nofo(original_nofo, is_successor=False):

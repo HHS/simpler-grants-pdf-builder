@@ -166,4 +166,5 @@ urlpatterns = [
         views.NofoRemovePageBreaksView.as_view(),
         name="nofo_remove_page_breaks",
     ),
+    path("list-images/", views.list_image_files, name="list_image_files"),
 ]

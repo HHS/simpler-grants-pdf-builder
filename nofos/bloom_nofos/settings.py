@@ -45,7 +45,7 @@ if env_exists:
     environ.Env.read_env(env_path)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
+DEBUG = True  # cast_to_boolean(env.get_value("DEBUG", default=True))
 print("=====")
 print("DEBUG: {}".format(DEBUG))
 if DEBUG:
@@ -85,6 +85,13 @@ if internal_ip.startswith("10."):
 aws_dns_name = env.get_value("LOAD_BALANCER_DNS_NAME", default="")
 if aws_dns_name:
     ALLOWED_HOSTS.append(aws_dns_name)
+
+# AWS CONFIG
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default=None)
+AWS_REGION = env("AWS_REGION", default="us-east-1")
+# AWS_PROFILE = env("AWS_PROFILE", default="default")
 
 # SECURITY HEADERS
 SECURE_SSL_REDIRECT = is_prod
