@@ -1411,3 +1411,60 @@ del + ins > br {
   position: relative;
   top: -1rem;
 }
+
+/* Side Navigation Styles */
+.side-nav-container {
+    top: 50%;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+    transform: translateY(-50%);
+}
+
+.side-nav-container.is-open {
+    pointer-events: auto;
+}
+
+.side-nav-toggle {
+    transform: translateY(-50%);
+    pointer-events: auto;
+    transition: left 0.3s ease;
+}
+
+.side-nav-pipe.current {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.side-nav-content {
+    left: -330px;
+    width: 320px;
+    transition: left 0.3s ease, transform 0.3s ease;
+    transform: translateY(-50%);
+}
+
+.side-nav-container.is-open .side-nav-content {
+    left: 60px;
+    transform: translateY(-50%);
+}
+
+/* Navigation List Styles */
+#side-nav-list {
+    padding: 1rem;
+    margin: 0;
+    list-style: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .side-nav-content {
+        width: 100vw;
+        height: 100vh;
+        left: -100vw;
+        top: 0;
+    }
+
+    .side-nav-container.is-open .side-nav-content {
+        left: 0;
+        top: 0;
+    }
+}

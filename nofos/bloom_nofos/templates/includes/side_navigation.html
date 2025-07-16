@@ -1,0 +1,255 @@
+<!-- Side Navigation Component -->
+<div id="side-nav-container" class="side-nav-container position-fixed left-1 z-top height-auto width-auto" aria-hidden="true">
+    <!-- Toggle Button -->
+    <button id="side-nav-toggle" class="side-nav-toggle position-fixed left-1 z-top padding-1 radius-md display-flex flex-align-center flex-justify-center text-primary border-primary bg-white hover:bg-gray-10 " aria-expanded="false"
+        aria-controls="side-nav-content" aria-label="Toggle table of contents navigation" type="button">
+        <div id="side-nav-pipes" class="side-nav-pipes display-flex flex-column flex-align-center gap-1">
+            <!-- Pipe characters will be populated dynamically by JavaScript -->
+        </div>
+    </button>
+
+    <!-- Side Navigation Content -->
+    <div id="side-nav-content" class="side-nav-content position-fixed top-50 z-top height-auto width-card maxh-viewport bg-white border-white border-1px shadow-2 overflow-y-auto overflow-x-hidden radius-lg">
+        <div class="display-flex flex-align-center flex-justify border-bottom-1px border-base-lighter bg-base-lightest">
+            <span class="padding-left-2 text-bold text-ink">Contents</span>
+            <button id="side-nav-close" class="usa-button usa-modal__close margin-top-05"
+                aria-label="Close page contents navigation" type="button">
+                <svg class="usa-icon" aria-hidden="true" focusable="false" role="img">
+                    <use href="/static/img/usa-icons/close.svg"></use>
+                  </svg>
+            </button>
+
+        </div>
+
+        <!-- Navigation List -->
+        <nav aria-label="Table of contents navigation">
+            <ul id="side-nav-list" class="usa-sidenav">
+                <!-- Navigation items will be populated dynamically by JavaScript -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sideNavContainer = document.getElementById('side-nav-container');
+        const sideNavToggle = document.getElementById('side-nav-toggle');
+        const sideNavClose = document.getElementById('side-nav-close');
+        const sideNavList = document.getElementById('side-nav-list');
+
+        // Store original positions of headings
+        const originalPositions = {};
+
+        // Function to populate navigation from h2 headings
+        function populateNavigation() {
+            const headings = document.querySelectorAll('h2[id]');
+            const navItems = [];
+            const sideNavPipes = document.getElementById('side-nav-pipes');
+
+            // Clear existing items
+            sideNavList.innerHTML = '';
+            sideNavPipes.innerHTML = '';
+
+            // Store current scroll position
+            const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+            // STICKY Workaround: This is a workaround to get accurate positions when there are sticky elements. Scroll to top to get accurate positions
+            window.scrollTo(0, 0);
+
+            headings.forEach(function (heading, index) {
+                const id = heading.getAttribute('id');
+                const headingText = heading.textContent.trim();
+
+                if (!id) return;
+
+                const headingRect = heading.getBoundingClientRect();
+                const elementOffset = 100; // Additional offset to ensure content below heading is visible
+                originalPositions[id] = headingRect.top + window.pageYOffset - elementOffset;
+
+
+                const listItem = document.createElement('li');
+                listItem.className = 'usa-sidenav__item';
+
+                const link = document.createElement('a');
+                link.href = '#' + id;
+                link.textContent = '      ' + headingText;
+                link.setAttribute('data-section-id', id);
+
+                listItem.appendChild(link);
+                navItems.push(listItem);
+
+                const pipe = document.createElement('span');
+                pipe.className = 'side-nav-pipe';
+                pipe.textContent = '—';
+                pipe.setAttribute('data-section-id', id);
+                pipe.title = headingText;
+                sideNavPipes.appendChild(pipe);
+            });
+
+            // STICKY Workaround: Scroll back to original position of page load
+            window.scrollTo(0, currentScrollPosition);
+
+            // Add navigation items to sidebar
+            navItems.forEach(function (item) {
+                sideNavList.appendChild(item);
+            });
+
+            // Add click handlers for smooth scrolling and active state
+            const navLinks = sideNavList.querySelectorAll('a');
+            navLinks.forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-section-id');
+                    const storedPosition = originalPositions[targetId];
+
+                    if (storedPosition !== undefined) {
+                        // Use stored original position
+                        window.scrollTo({
+                            top: storedPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Update active state
+                        navLinks.forEach(function (l) { l.classList.remove('usa-current'); });
+                        this.classList.add('usa-current');
+
+                        // Close nav on mobile
+                        if (window.innerWidth <= 768) {
+                            closeNav();
+                        }
+                    }
+                });
+            });
+        }
+
+        function openNav() {
+            sideNavContainer.classList.add('is-open');
+            sideNavContainer.setAttribute('aria-hidden', 'false');
+            sideNavToggle.setAttribute('aria-expanded', 'true');
+
+            // Set focus to the first navigation link for better accessibility
+            setTimeout(function() {
+                const firstLink = sideNavList.querySelector('a');
+                if (firstLink) {
+                    firstLink.focus();
+                }
+            }, 100);
+        }
+
+        function closeNav() {
+            sideNavContainer.classList.remove('is-open');
+            sideNavContainer.setAttribute('aria-hidden', 'true');
+            sideNavToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        // Event listeners
+        sideNavToggle.addEventListener('click', function () {
+            if (sideNavContainer.classList.contains('is-open')) {
+                closeNav();
+            } else {
+                openNav();
+            }
+        });
+
+        sideNavClose.addEventListener('click', closeNav);
+
+        // Close on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && sideNavContainer.classList.contains('is-open')) {
+                closeNav();
+            }
+        });
+
+        // Close navigation when focus leaves the navigation area
+        sideNavContainer.addEventListener('focusout', function (e) {
+            // Use setTimeout to allow focus to move to the next element
+            setTimeout(function () {
+                // Check if the new focused element is still within the navigation
+                const focusedElement = document.activeElement;
+                const isWithinNav = sideNavContainer.contains(focusedElement);
+                const isToggleButton = focusedElement === sideNavToggle;
+
+                // Close if focus is outside navigation and navigation is open
+                // Don't close if focus is on the toggle button (part of the navigation system)
+                if (!isWithinNav && !isToggleButton && sideNavContainer.classList.contains('is-open')) {
+                    closeNav();
+                }
+            }, 100);
+        });
+
+        // Update active state on scroll
+        function updateActiveState() {
+            const navLinks = sideNavList.querySelectorAll('a');
+            const pipes = document.querySelectorAll('.side-nav-pipe');
+            const headings = document.querySelectorAll('h2[id]');
+
+            let currentSection = null;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Find the current section based on scroll position
+            headings.forEach(function (heading) {
+                const rect = heading.getBoundingClientRect();
+                const offsetTop = rect.top + scrollTop;
+
+                if (scrollTop >= offsetTop - 100) {
+                    currentSection = heading.getAttribute('id');
+                }
+            });
+
+            // Update active state for sidebar links
+            navLinks.forEach(function (link) {
+                const sectionId = link.getAttribute('data-section-id');
+                if (sectionId === currentSection) {
+                    link.classList.add('usa-current');
+                } else {
+                    link.classList.remove('usa-current');
+                }
+            });
+
+            // Update active state for pipe characters
+            pipes.forEach(function (pipe) {
+                const sectionId = pipe.getAttribute('data-section-id');
+                if (sectionId === currentSection) {
+                    pipe.classList.add('current');
+                } else {
+                    pipe.classList.remove('current');
+                }
+            });
+        }
+
+        // Initialize
+        populateNavigation();
+        updateActiveState();
+
+        // Update active state on scroll (throttled)
+        let scrollTimeout;
+        window.addEventListener('scroll', function () {
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            scrollTimeout = setTimeout(updateActiveState, 100);
+        });
+
+        // Re-populate navigation if content changes
+        const observer = new MutationObserver(function (mutations) {
+            let shouldUpdate = false;
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'childList' && mutation.target.tagName === 'H2') {
+                    shouldUpdate = true;
+                }
+            });
+            if (shouldUpdate) {
+                populateNavigation();
+                updateActiveState();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+</script>
