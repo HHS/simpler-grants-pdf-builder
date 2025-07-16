@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
 from django.contrib import messages
 from botocore.exceptions import TokenRetrievalError
+from botocore.client import Config
 import boto3
 import re
 
@@ -28,16 +29,31 @@ class ImageListView(UserPassesTestMixin, TemplateView):
             return context
 
         try:
-            s3 = boto3.client("s3")
+            s3 = boto3.client("s3", config=Config(signature_version="s3v4"))
             response = s3.list_objects_v2(Bucket=bucket_name)
-
             images = []
+
             for obj in response.get("Contents", []):
                 key = obj["Key"]
                 if re.search(r"\.(jpe?g|png)$", key, re.IGNORECASE):
-                    images.append(key)
 
-            context["images"] = images
+                    url = s3.generate_presigned_url(
+                        "get_object",
+                        Params={"Bucket": bucket_name, "Key": key},
+                        ExpiresIn=3600,
+                    )
+
+                    images.append(
+                        {
+                            "key": key,
+                            "url": url,
+                            "size_kb": round(obj["Size"] / 1024, 1),
+                            "last_modified": obj["LastModified"],
+                            "etag": obj["ETag"].strip('"'),
+                        }
+                    )
+
+                context["images"] = images
 
         # Token error (eg, for an expired token)
         except TokenRetrievalError:
