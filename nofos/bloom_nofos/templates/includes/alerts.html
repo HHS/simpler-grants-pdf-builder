@@ -1,10 +1,12 @@
 {% for message in messages %}
   {% if "success" in message.tags and success_heading %}
-    <div id="nofo-editor-success-alert" class="usa-alert usa-alert--success margin-bottom-3" role="alert" aria-live="polite">
+    <div id="nofo-editor-success-alert" class="usa-alert usa-alert--success margin-bottom-3{% if stick_to_bottom %} usa-alert--fixed{% endif %}" role="alert" aria-live="polite">
       <div class="usa-alert__body">
-        <button type="button" class="usa-alert__close" aria-label="Dismiss success message" tabindex="0">
-          <span aria-hidden="true">×</span>
-        </button>
+        {% if stick_to_bottom %}
+          <button type="button" class="usa-alert__close" aria-label="Dismiss success message" tabindex="0">
+            <span aria-hidden="true">×</span>
+          </button>
+        {% endif %}
         <h4 class="usa-alert__heading">{{ success_heading }}</h4>
         <p class="usa-alert__text">
           {{ message | safe }}
@@ -12,11 +14,13 @@
       </div>
     </div>
   {% elif "error" in message.tags and error_heading %}
-    <div id="nofo-editor-error-alert" class="usa-alert usa-alert--error margin-bottom-3" role="alert" aria-live="assertive">
+    <div id="nofo-editor-error-alert" class="usa-alert usa-alert--error margin-bottom-3{% if stick_to_bottom %} usa-alert--fixed{% endif %}" role="alert" aria-live="assertive">
       <div class="usa-alert__body">
-        <button type="button" class="usa-alert__close" aria-label="Dismiss error message" tabindex="0">
-          <span aria-hidden="true">×</span>
-        </button>
+        {% if stick_to_bottom %}
+          <button type="button" class="usa-alert__close" aria-label="Dismiss error message" tabindex="0">
+            <span aria-hidden="true">×</span>
+          </button>
+        {% endif %}
         <h4 class="usa-alert__heading">{{ error_heading }}</h4>
         <p class="usa-alert__text">
           {{ message | safe }}
@@ -28,12 +32,12 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const ALERT_SELECTORS = '#nofo-editor-success-alert, #nofo-editor-error-alert';
+    const ALERT_SELECTOR = '.usa-alert--fixed';
     const ANIMATION_DURATION = 300; // Duration of fade animation in ms
     const AUTO_DISMISS_DELAY = 4000; // Time before auto-dismissal in ms
 
     // Handle close button clicks and keyboard events
-    const alerts = document.querySelectorAll(ALERT_SELECTORS);
+    const alerts = document.querySelectorAll(ALERT_SELECTOR);
     requestAnimationFrame(() => {
       alerts.forEach(alert => alert.style.opacity = '1');
     });
