@@ -19,6 +19,14 @@ class ImageListView(UserPassesTestMixin, TemplateView):
         context["images"] = []
         context["AWS_STORAGE_BUCKET_NAME"] = bucket_name
 
+        # Missing bucket config
+        if not bucket_name:
+            messages.error(
+                self.request,
+                "No AWS bucket configured. Please set <code>AWS_STORAGE_BUCKET_NAME</code> in your environment.",
+            )
+            return context
+
         try:
             s3 = boto3.client("s3")
             response = s3.list_objects_v2(Bucket=bucket_name)
@@ -31,8 +39,8 @@ class ImageListView(UserPassesTestMixin, TemplateView):
 
             context["images"] = images
 
-        except TokenRetrievalError as e:
-            # Handle SSO token expiration gracefully
+        # Token error (eg, for an expired token)
+        except TokenRetrievalError:
             messages.error(
                 self.request,
                 "Your AWS SSO token has expired. Please run <code>aws sso login</code> in your terminal to refresh it.",
