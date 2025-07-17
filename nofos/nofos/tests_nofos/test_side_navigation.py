@@ -112,8 +112,8 @@ class SideNavigationTemplateTest(TestCase):
         soup = BeautifulSoup(response.content, "html.parser")
 
         # Check ARIA attributes
-        side_nav_container = soup.find("div", {"id": "side-nav-container"})
-        self.assertEqual(side_nav_container.get("aria-hidden"), "true")
+        side_nav_content = soup.find("div", {"id": "side-nav-content"})
+        self.assertEqual(side_nav_content.get("aria-hidden"), "true")
 
         toggle_button = soup.find("button", {"id": "side-nav-toggle"})
         self.assertEqual(toggle_button.get("aria-expanded"), "false")
