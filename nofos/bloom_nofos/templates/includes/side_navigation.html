@@ -1,10 +1,17 @@
 <!-- Side Navigation Component -->
+{% load math_filters %}
+
+{% with num_headings=side_nav_headings|length %}
+{% if num_headings > 0 %}
 <div id="side-nav-container" class="side-nav-container position-fixed left-1 z-top height-auto width-auto" aria-hidden="true">
     <!-- Toggle Button -->
-    <button id="side-nav-toggle" class="side-nav-toggle position-fixed left-1 z-top padding-1 radius-md display-flex flex-align-center flex-justify-center text-primary border-primary bg-white hover:bg-gray-10 " aria-expanded="false"
+    <button id="side-nav-toggle" class="side-nav-toggle position-fixed left-1 z-top width-5 maxw-5 padding-1 radius-md display-flex flex-align-center flex-justify-center text-primary border-primary bg-white hover:bg-gray-10 " aria-expanded="false"
         aria-controls="side-nav-content" aria-label="Toggle table of contents navigation" type="button">
-        <div id="side-nav-pipes" class="side-nav-pipes display-flex flex-column flex-align-center gap-1">
-            <!-- Pipe characters will be populated dynamically by JavaScript -->
+
+        <div id="side-nav-pipes" class="side-nav-pipes display-flex flex-column flex-align-center gap-1" style="height: {{ num_headings|multiply:1.25 }}rem;">
+            {% for heading in side_nav_headings %}
+                <span class="side-nav-pipe" data-section-id="{{ heading.id }}" title="{{ heading.name }}">—</span>
+            {% endfor %}
         </div>
     </button>
 
@@ -24,14 +31,17 @@
         <!-- Navigation List -->
         <nav aria-label="Table of contents navigation">
             <ul id="side-nav-list" class="usa-sidenav">
-                <!-- Navigation items will be populated dynamically by JavaScript -->
+                {% for heading in side_nav_headings %}
+                    <li class="usa-sidenav__item">
+                        <a href="#{{ heading.id }}" data-section-id="{{ heading.id }}" tabindex="-1">
+                            {{ heading.name }}
+                        </a>
+                    </li>
+                {% endfor %}
             </ul>
         </nav>
     </div>
 </div>
-
-
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -43,15 +53,9 @@
         // Store original positions of headings
         const originalPositions = {};
 
-        // Function to populate navigation from h2 headings
-        function populateNavigation() {
+        // Function to initialize navigation positions and click handlers
+        function initializeNavigation() {
             const headings = document.querySelectorAll('h2[id]');
-            const navItems = [];
-            const sideNavPipes = document.getElementById('side-nav-pipes');
-
-            // Clear existing items
-            sideNavList.innerHTML = '';
-            sideNavPipes.innerHTML = '';
 
             // Store current scroll position
             const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
@@ -59,45 +63,17 @@
             // STICKY Workaround: This is a workaround to get accurate positions when there are sticky elements. Scroll to top to get accurate positions
             window.scrollTo(0, 0);
 
-            headings.forEach(function (heading, index) {
+            headings.forEach(function (heading) {
                 const id = heading.getAttribute('id');
-                const headingText = heading.textContent.trim();
-
                 if (!id) return;
 
                 const headingRect = heading.getBoundingClientRect();
                 const elementOffset = 95; // Additional offset to ensure content below heading is visible
                 originalPositions[id] = headingRect.top + window.pageYOffset - elementOffset;
-
-
-                const listItem = document.createElement('li');
-                listItem.className = 'usa-sidenav__item';
-
-                const link = document.createElement('a');
-                link.href = '#' + id;
-                link.textContent = '      ' + headingText;
-                link.setAttribute('data-section-id', id);
-                link.setAttribute('tabindex', '-1'); // Start with no tab access since nav is closed
-
-                listItem.appendChild(link);
-                navItems.push(listItem);
-
-                const pipe = document.createElement('span');
-                pipe.className = 'side-nav-pipe';
-                pipe.textContent = '—';
-                pipe.setAttribute('data-section-id', id);
-                pipe.setAttribute('tabindex', '-1');
-                pipe.title = headingText;
-                sideNavPipes.appendChild(pipe);
             });
 
             // STICKY Workaround: Scroll back to original position of page load
             window.scrollTo(0, currentScrollPosition);
-
-            // Add navigation items to sidebar
-            navItems.forEach(function (item) {
-                sideNavList.appendChild(item);
-            });
 
             // Add click handlers for smooth scrolling and active state
             const navLinks = sideNavList.querySelectorAll('a');
@@ -236,7 +212,7 @@
         }
 
         // Initialize
-        populateNavigation();
+        initializeNavigation();
         updateActiveState();
 
         // Set initial tabindex for close button (nav starts closed)
@@ -251,7 +227,7 @@
             scrollTimeout = setTimeout(updateActiveState, 100);
         });
 
-        // Re-populate navigation if content changes
+        // Re-initialize navigation if content changes
         const observer = new MutationObserver(function (mutations) {
             let shouldUpdate = false;
             mutations.forEach(function (mutation) {
@@ -260,7 +236,7 @@
                 }
             });
             if (shouldUpdate) {
-                populateNavigation();
+                initializeNavigation();
                 updateActiveState();
             }
         });
@@ -271,3 +247,5 @@
         });
     });
 </script>
+{% endif %}
+{% endwith %}

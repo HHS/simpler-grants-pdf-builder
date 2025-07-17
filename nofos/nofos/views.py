@@ -76,6 +76,7 @@ from .nofo import (
     find_external_link,
     find_external_links,
     find_h7_headers,
+    get_side_nav_links,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
@@ -298,6 +299,8 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
             config.DOCRAPTOR_LIVE_MODE
         )
+
+        context["side_nav_headings"] = get_side_nav_links(self.object)
 
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
