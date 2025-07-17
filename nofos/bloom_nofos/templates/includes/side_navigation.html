@@ -3,7 +3,7 @@
 
 {% with num_headings=side_nav_headings|length %}
 {% if num_headings > 0 %}
-<div id="side-nav-container" class="side-nav-container position-fixed left-1 z-top height-auto width-auto" aria-hidden="true">
+<div id="side-nav-container" class="side-nav-container position-fixed left-1 z-top height-auto width-auto">
     <!-- Toggle Button -->
     <button id="side-nav-toggle" class="side-nav-toggle position-fixed left-1 z-top width-5 maxw-5 padding-1 radius-md display-flex flex-align-center flex-justify-center text-primary border-primary bg-white hover:bg-gray-10 " aria-expanded="false"
         aria-controls="side-nav-content" aria-label="Toggle table of contents navigation" type="button">
@@ -16,7 +16,7 @@
     </button>
 
     <!-- Side Navigation Content -->
-    <div id="side-nav-content" class="side-nav-content position-fixed top-50 z-top height-auto width-card maxh-viewport bg-white border-white border-1px shadow-2 overflow-y-auto overflow-x-hidden radius-lg">
+    <div id="side-nav-content" class="side-nav-content position-fixed top-50 z-top height-auto width-card maxh-viewport bg-white border-white border-1px shadow-2 overflow-y-auto overflow-x-hidden radius-lg" aria-hidden="true">
         <div class="display-flex flex-align-center flex-justify border-bottom-1px border-base-lighter bg-base-lightest">
             <span class="padding-left-2 text-bold text-ink">Contents</span>
             <button id="side-nav-close" class="usa-button usa-modal__close margin-top-05"
@@ -25,7 +25,6 @@
                     <use href="/static/img/usa-icons/close.svg"></use>
                   </svg>
             </button>
-
         </div>
 
         <!-- Navigation List -->
@@ -46,6 +45,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const sideNavContainer = document.getElementById('side-nav-container');
+        const sideNavContent = document.getElementById('side-nav-content');
         const sideNavToggle = document.getElementById('side-nav-toggle');
         const sideNavClose = document.getElementById('side-nav-close');
         const sideNavList = document.getElementById('side-nav-list');
@@ -105,7 +105,7 @@
 
         function openNav() {
             sideNavContainer.classList.add('is-open');
-            sideNavContainer.setAttribute('aria-hidden', 'false');
+            sideNavContent.setAttribute('aria-hidden', 'false');
             sideNavToggle.setAttribute('aria-expanded', 'true');
 
             // Make navigation elements tabbable
@@ -126,7 +126,7 @@
 
         function closeNav() {
             sideNavContainer.classList.remove('is-open');
-            sideNavContainer.setAttribute('aria-hidden', 'true');
+            sideNavContent.setAttribute('aria-hidden', 'true');
             sideNavToggle.setAttribute('aria-expanded', 'false');
 
             // Remove navigation elements from tab order
