@@ -1,9 +1,11 @@
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
+
+from botocore.exceptions import TokenRetrievalError
+from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-from unittest.mock import patch, MagicMock
-from botocore.exceptions import TokenRetrievalError
-from datetime import datetime, timezone
+
 from .utils import get_display_size
 
 User = get_user_model()
