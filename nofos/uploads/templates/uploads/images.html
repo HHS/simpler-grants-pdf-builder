@@ -10,8 +10,9 @@
   {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" only %}
 
   <h1>Uploaded Images</h1>
-  <p>These images are available to be used as cover images for NOFO documents.</p>
   {% if images %}
+    <p>These images are available to be used as cover images for NOFO documents.</p>
+
     <table class="usa-table usa-table--borderless width-full">
       <caption>
         Table: {{ images | length }} images returned
