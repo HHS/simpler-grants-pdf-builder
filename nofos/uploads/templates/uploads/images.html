@@ -10,8 +10,12 @@
   {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" only %}
 
   <h1>Uploaded Images</h1>
+  <p>These images are available to be used as cover images for NOFO documents.</p>
   {% if images %}
     <table class="usa-table usa-table--borderless width-full">
+      <caption>
+        Table: {{ images | length }} images returned
+      </caption>
       <thead>
         <tr>
           <th scope="col">Filename</th>
@@ -25,7 +29,7 @@
         <tr>
           <th scope="row"><a href="{{ image.url }}" target="_blank">{{ image.key }}</a></th>
           <td>
-            {{ image.size_kb }} KB
+            {{ image.size_display }}
           </td>
           <td>{{ image.last_modified|date:"Y-m-d" }}</td>
           <td>
