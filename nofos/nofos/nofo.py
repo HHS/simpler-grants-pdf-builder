@@ -2585,7 +2585,12 @@ def find_matches_with_context(nofo, find_text, include_name=False):
             name_highlight = None
 
             # --- Match body ---
-            cleaned_body = strip_markdown_links(subsection.body or "")
+            # Strip links unless search term starts with "http" or "#"
+            if find_text.lower().startswith(("http", "#")):
+                cleaned_body = subsection.body or ""
+            else:
+                cleaned_body = strip_markdown_links(subsection.body or "")
+
             if cleaned_body and pattern.search(cleaned_body):
                 body_snippets = extract_highlighted_context(cleaned_body, pattern)
                 body_highlight = "".join(f"<div>{s}</div>" for s in body_snippets)
