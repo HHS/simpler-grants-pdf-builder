@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
 from django.contrib import messages
-from botocore.exceptions import TokenRetrievalError
+from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError
 from botocore.client import Config
 import boto3
 import re
@@ -64,6 +64,12 @@ class ImageListView(UserPassesTestMixin, TemplateView):
             messages.error(
                 self.request,
                 "Your AWS SSO token has expired. Please run <code>aws sso login</code> in your terminal to refresh it.",
+            )
+
+        except SSOTokenLoadError:
+            messages.error(
+                self.request,
+                "No AWS SSO token found. Please run <code>aws sso login</code> in your terminal to authenticate.",
             )
 
         return context
