@@ -1235,6 +1235,37 @@ def find_h7_headers(nofo):
     return h7_headers
 
 
+def get_side_nav_links(nofo):
+    """
+    Generate a list of dictionaries for the side navigation menu in the NOFO editor.
+
+    Args:
+        nofo: The NOFO instance whose sections will be included in the navigation.
+
+    Returns:
+        list: A list of dictionaries, each representing a navigation link. Each dictionary
+              contains:
+                - 'id': The HTML id of the section (used as an anchor in the page).
+                - 'name': The display name of the section.
+
+    Example:
+        [
+            {'id': 'summary-box-key-information', 'name': 'NOFO Summary'},
+            {'id': 'section-1-html-id', 'name': 'Section 1 Name'},
+            ...
+        ]
+    """
+    if nofo.sections.count() == 0:
+        return []
+
+    side_nav_links = [{"id": "summary-box-key-information", "name": "NOFO Summary"}]
+
+    for section in nofo.sections.all().order_by("order"):
+        side_nav_links.append({"id": section.html_id, "name": section.name})
+
+    return side_nav_links
+
+
 ###########################################################
 #################### SUGGEST VAR FUNCS ####################
 ###########################################################
@@ -2487,8 +2518,8 @@ def modifications_update_announcement_text(nofo):
     Update announcement text in all subsection bodies of a given NOFO.
     Usually this is just in 1 subsection ("Key facts"), but I guess it could be in others.
 
-    - Looks for "Announcement version: New" or "Announcement type: New" (case insensitive).
-    - Replaces them with "Announcement version: Modified" or "Announcement type: Modified".
+    - Looks for "Announcement version: New" or "Announcement type: New" (case insensitive).
+    - Replaces them with "Announcement version: Modified" or "Announcement type: Modified".
     - Mutates the NOFO object in place.
 
     :param nofo: The NOFO object containing sections and subsections.

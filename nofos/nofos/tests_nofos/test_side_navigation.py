@@ -127,21 +127,49 @@ class SideNavigationTemplateTest(TestCase):
         nav_element = soup.find("nav", {"aria-label": "Table of contents navigation"})
         self.assertIsNotNone(nav_element)
 
-    def test_side_navigation_with_h2_headings(self):
-        """Test that h2 headings are available for JavaScript to populate navigation."""
+    def test_side_navigation_html_elements(self):
+        """Test that side navigation HTML elements are generated correctly."""
         response = self.client.get(self.url)
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # Check for h2 headings with IDs (these will be used by JavaScript)
-        h2_headings = soup.find_all("h2", {"id": True})
-        self.assertGreater(len(h2_headings), 0)
+        # Test pipe characters and links are generated correctly
+        pipes = soup.find_all("span", {"class": "side-nav-pipe"})
+        nav_links = soup.select("#side-nav-list a")
 
-        # Verify specific section headings are present
-        section_headings = [h2.get("id") for h2 in h2_headings]
-        self.assertIn("section-1-overview", section_headings)
-        self.assertIn("section-2-requirements", section_headings)
-        self.assertIn("section-3-application-process", section_headings)
+        # Should have 4 pipes  and 4 links (summary + 3 sections)
+        self.assertEqual(len(pipes), 4)
+        self.assertEqual(len(nav_links), 4)
 
-    # TODO: This should actually hide the side nav container
-    def test_side_navigation_with_no_h2_headings(self):
-        pass
+        # Should populate attributes for each pipe and link
+        for heading, pipe, link in zip(
+            response.context["side_nav_headings"], pipes, nav_links
+        ):
+            self.assertEqual(pipe.get("data-section-id"), heading["id"])
+            self.assertEqual(pipe.get("title"), heading["name"])
+            self.assertEqual(link.get("href"), f"#{heading['id']}")
+            self.assertEqual(link.get("data-section-id"), heading["id"])
+            self.assertEqual(link.get("tabindex"), "-1")
+
+    def test_side_navigation_with_no_sections(self):
+        """Test side navigation behavior when NOFO has no sections."""
+        # Create a NOFO with no sections
+        empty_nofo = Nofo.objects.create(
+            title="Empty NOFO",
+            short_name="empty-nofo",
+            number="NOFO-EMPTY-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
+        )
+
+        empty_nofo_url = reverse("nofos:nofo_edit", kwargs={"pk": empty_nofo.id})
+        response = self.client.get(empty_nofo_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that side_nav_headings is empty
+        side_nav_headings = response.context["side_nav_headings"]
+        self.assertEqual(len(side_nav_headings), 0)
+
+        # Assert that there is no element with id "side-nav-container"
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertIsNone(soup.find("div", {"id": "side-nav-container"}))

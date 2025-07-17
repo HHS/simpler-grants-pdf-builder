@@ -45,7 +45,7 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 </div>
 
-{% include "includes/side_navigation.html" %}
+{% include "includes/side_navigation.html" with side_nav_headings=side_nav_headings %}
 
 <div class="nofo_edit--audit-widget">
   {% timezone "America/New_York" %}
