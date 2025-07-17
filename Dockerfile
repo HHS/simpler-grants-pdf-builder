@@ -28,13 +28,15 @@ RUN apt-get update && \
 # - libcap2: CVE-2025-1390
 # - login, passwd: CVE-2023-4641, CVE-2023-29383, 
 # - libsystemd0, libudev1: CVE-2025-4598
+# - libgnutls30: CVE-2025-32990
 RUN apt-get update && \
   apt-get install -y --only-upgrade \
   libcap2 \
   login \
   passwd \
   libsystemd0 \
-  libudev1 && \
+  libudev1 \
+  libgnutls30 && \
   rm -rf /var/lib/apt/lists/*
 
 # Install Poetry and create user
