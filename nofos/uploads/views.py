@@ -6,6 +6,7 @@ from botocore.exceptions import TokenRetrievalError
 from botocore.client import Config
 import boto3
 import re
+from .utils import get_display_size
 
 
 class ImageListView(UserPassesTestMixin, TemplateView):
@@ -47,11 +48,14 @@ class ImageListView(UserPassesTestMixin, TemplateView):
                         {
                             "key": key,
                             "url": url,
-                            "size_kb": round(obj["Size"] / 1024, 1),
+                            "size_display": get_display_size(obj["Size"]),
                             "last_modified": obj["LastModified"],
                             "etag": obj["ETag"].strip('"'),
                         }
                     )
+
+                # Sort by last modified, descending. More recent image is first.
+                images.sort(key=lambda img: img["last_modified"], reverse=True)
 
                 context["images"] = images
 
