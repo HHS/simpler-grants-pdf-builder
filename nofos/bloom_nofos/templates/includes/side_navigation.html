@@ -66,7 +66,7 @@
                 if (!id) return;
 
                 const headingRect = heading.getBoundingClientRect();
-                const elementOffset = 100; // Additional offset to ensure content below heading is visible
+                const elementOffset = 95; // Additional offset to ensure content below heading is visible
                 originalPositions[id] = headingRect.top + window.pageYOffset - elementOffset;
 
 
@@ -77,6 +77,7 @@
                 link.href = '#' + id;
                 link.textContent = '      ' + headingText;
                 link.setAttribute('data-section-id', id);
+                link.setAttribute('tabindex', '-1'); // Start with no tab access since nav is closed
 
                 listItem.appendChild(link);
                 navItems.push(listItem);
@@ -85,6 +86,7 @@
                 pipe.className = 'side-nav-pipe';
                 pipe.textContent = '—';
                 pipe.setAttribute('data-section-id', id);
+                pipe.setAttribute('tabindex', '-1');
                 pipe.title = headingText;
                 sideNavPipes.appendChild(pipe);
             });
@@ -130,6 +132,13 @@
             sideNavContainer.setAttribute('aria-hidden', 'false');
             sideNavToggle.setAttribute('aria-expanded', 'true');
 
+            // Make navigation elements tabbable
+            sideNavClose.setAttribute('tabindex', '0');
+            const navLinks = sideNavList.querySelectorAll('a');
+            navLinks.forEach(function(link) {
+                link.setAttribute('tabindex', '0');
+            });
+
             // Set focus to the first navigation link for better accessibility
             setTimeout(function() {
                 const firstLink = sideNavList.querySelector('a');
@@ -143,6 +152,13 @@
             sideNavContainer.classList.remove('is-open');
             sideNavContainer.setAttribute('aria-hidden', 'true');
             sideNavToggle.setAttribute('aria-expanded', 'false');
+
+            // Remove navigation elements from tab order
+            sideNavClose.setAttribute('tabindex', '-1');
+            const navLinks = sideNavList.querySelectorAll('a');
+            navLinks.forEach(function(link) {
+                link.setAttribute('tabindex', '-1');
+            });
         }
 
         // Event listeners
@@ -185,7 +201,6 @@
             const navLinks = sideNavList.querySelectorAll('a');
             const pipes = document.querySelectorAll('.side-nav-pipe');
             const headings = document.querySelectorAll('h2[id]');
-
             let currentSection = null;
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
@@ -223,6 +238,9 @@
         // Initialize
         populateNavigation();
         updateActiveState();
+
+        // Set initial tabindex for close button (nav starts closed)
+        sideNavClose.setAttribute('tabindex', '-1');
 
         // Update active state on scroll (throttled)
         let scrollTimeout;
