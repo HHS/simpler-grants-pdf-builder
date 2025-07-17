@@ -41,6 +41,7 @@ from .nofo import (
     find_subsections_with_nofo_field_value,
     get_cover_image,
     get_sections_from_soup,
+    get_side_nav_links,
     get_step_2_section,
     get_subsections_from_sections,
     is_callout_box_table,
@@ -2829,6 +2830,81 @@ class TestFindH7Headers(TestCase):
         )
         self.assertEqual(h7_headers[1]["section"], nofo.sections.first())
         self.assertEqual(h7_headers[1]["subsection"], subsections[3])
+
+
+class TestGetSideNavLinks(TestCase):
+    def setUp(self):
+        self.sections = [
+            {
+                "name": "Section 1",
+                "order": 1,
+                "html_id": "section-1",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 1",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "subsection-1",
+                        "body": ["<p>Section 1 body</p>"],
+                    }
+                ],
+            },
+            {
+                "name": "Section 2",
+                "order": 2,
+                "html_id": "section-2",
+                "has_section_page": True,
+                "subsections": [
+                    {
+                        "name": "Subsection 2",
+                        "order": 1,
+                        "tag": "h3",
+                        "html_id": "subsection-2",
+                        "body": ["<p>Section 2 body</p>"],
+                    }
+                ],
+            },
+            {
+                "name": "Section 3",
+                "order": 3,
+                "html_id": "section-3",
+                "has_section_page": True,
+                "subsections": [],
+            },
+        ]
+
+    def test_get_side_nav_links_with_sections(self):
+        """Test that get_side_nav_links returns correct structure with sections"""
+        nofo = create_nofo("Test NOFO", self.sections, opdiv="Test OpDiv")
+
+        result = get_side_nav_links(nofo)
+
+        # Should have summary plus 3 sections
+        self.assertEqual(len(result), 4)
+
+        # First item should always be the summary
+        self.assertEqual(result[0]["id"], "summary-box-key-information")
+        self.assertEqual(result[0]["name"], "NOFO Summary")
+
+        # Check section data
+        self.assertEqual(result[1]["id"], "section-1")
+        self.assertEqual(result[1]["name"], "Section 1")
+
+        self.assertEqual(result[2]["id"], "section-2")
+        self.assertEqual(result[2]["name"], "Section 2")
+
+        self.assertEqual(result[3]["id"], "section-3")
+        self.assertEqual(result[3]["name"], "Section 3")
+
+    def test_get_side_nav_links_with_no_sections(self):
+        """Test that get_side_nav_links returns only summary when no sections exist"""
+        nofo = create_nofo("Empty NOFO", [], opdiv="Test OpDiv")
+
+        result = get_side_nav_links(nofo)
+
+        # Should only have the summary
+        self.assertEqual(len(result), 0)
 
 
 class TestUpdateLinkStatuses(TestCase):
