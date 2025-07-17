@@ -7059,6 +7059,40 @@ class FindMatchesWithContextTests(TestCase):
         self.assertEqual(len(results), 1)
         self.assertIn("JULY 15, 2025", results[0]["subsection_body_highlight"])
 
+    def test_strips_markdown_links_in_normal_search(self):
+        self.matching_subsection.body = (
+            "See [the details](https://example.com/details)."
+        )
+        self.matching_subsection.save()
+        results = find_matches_with_context(self.nofo, "details")
+        self.assertEqual(len(results), 1)
+        self.assertIn("details", results[0]["subsection_body_highlight"])
+        self.assertNotIn(
+            "href=", results[0]["subsection_body_highlight"]
+        )  # Confirm link stripped
+
+    def test_preserves_anchor_links_when_searching_for_hash(self):
+        self.matching_subsection.body = "See [the FAQ](#faq-section) for details."
+        self.matching_subsection.save()
+        results = find_matches_with_context(self.nofo, "#faq")
+        self.assertEqual(len(results), 1)
+        self.assertIn(
+            'See [the FAQ](<strong><mark class="bg-yellow">#faq</mark></strong>-section) for details.',
+            results[0]["subsection_body_highlight"],
+        )
+
+    def test_preserves_http_links_when_searching_for_http(self):
+        self.matching_subsection.body = (
+            "See [the details](https://example.com/details)."
+        )
+        self.matching_subsection.save()
+        results = find_matches_with_context(self.nofo, "https://example")
+        self.assertEqual(len(results), 1)
+        self.assertIn(
+            'See [the details](<strong><mark class="bg-yellow">https://example</mark></strong>.com/details).',
+            results[0]["subsection_body_highlight"],
+        )
+
 
 class ReplaceValueInSubsectionsTests(TestCase):
     def setUp(self):
