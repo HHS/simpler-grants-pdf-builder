@@ -1,11 +1,13 @@
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import UserPassesTestMixin
+import re
+
+import boto3
+from botocore.client import Config
+from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError
 from django.conf import settings
 from django.contrib import messages
-from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError
-from botocore.client import Config
-import boto3
-import re
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.views.generic import TemplateView
+
 from .utils import get_display_size
 
 
