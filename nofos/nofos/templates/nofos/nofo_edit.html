@@ -45,6 +45,8 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 </div>
 
+{% include "includes/side_navigation.html" %}
+
 <div class="nofo_edit--audit-widget">
   {% timezone "America/New_York" %}
     <span>
@@ -571,7 +573,6 @@ Edit “{{ nofo|nofo_name }}”
 </table>
 {% endfor %}
 
-{% include "includes/side_navigation.html" %}
 {% endblock %}
 
 {% block js_footer %}
