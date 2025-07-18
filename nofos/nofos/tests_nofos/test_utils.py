@@ -17,7 +17,8 @@ from nofos.utils import (
     extract_highlighted_context,
     get_icon_path_choices,
     match_view_url,
-    replace_text_not_markdown_links,
+    replace_text_exclude_markdown_links,
+    replace_text_include_markdown_links,
     strip_markdown_links,
 )
 
@@ -227,22 +228,77 @@ class ExtractHighlightedContextTests(TestCase):
         self.assertIn('<mark class="bg-yellow">Match</mark>', result[0])
 
 
-class ReplaceOutsideMarkdownLinksTests(TestCase):
+class ReplaceIncludeMarkdownLinksTests(TestCase):
+    def test_simple_replacement(self):
+        text = "The application deadline is June 1, 2025."
+        result = replace_text_include_markdown_links(
+            text, "June 1, 2025", "August 1, 2025"
+        )
+        self.assertEqual(result, "The application deadline is August 1, 2025.")
+
+    def test_replacement_inside_markdown_link_text(self):
+        text = "Visit [the deadline](https://grants.gov/deadline) for info."
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        self.assertEqual(result, "Visit [the date](https://grants.gov/date) for info.")
+
+    def test_replacement_inside_url(self):
+        text = "Check out [this link](https://example.com/deadline-info)"
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        self.assertEqual(result, "Check out [this link](https://example.com/date-info)")
+
+    def test_case_insensitive_replacement(self):
+        text = "Apply before the DEADLINE. Visit [Deadline Info](https://example.com/DEADLINE)."
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        expected = "Apply before the date. Visit [date Info](https://example.com/date)."
+        self.assertEqual(result, expected)
+
+    def test_multiple_occurrences(self):
+        text = (
+            "Apply by the deadline. See [the deadline](https://example.com/deadline) "
+            "and [deadline info](#section-deadline)."
+        )
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        expected = (
+            "Apply by the date. See [the date](https://example.com/date) "
+            "and [date info](#section-date)."
+        )
+        self.assertEqual(result, expected)
+
+    def test_no_links(self):
+        text = "The deadline is approaching."
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        self.assertEqual(result, "The date is approaching.")
+
+    def test_empty_input(self):
+        self.assertEqual(replace_text_include_markdown_links("", "foo", "bar"), "")
+        self.assertIsNone(replace_text_include_markdown_links(None, "foo", "bar"))
+
+    def test_special_characters_in_link(self):
+        text = "Click [this (weird) deadline](https://example.com/deadline-stuff)"
+        result = replace_text_include_markdown_links(text, "deadline", "date")
+        self.assertEqual(
+            result, "Click [this (weird) date](https://example.com/date-stuff)"
+        )
+
+
+class ReplaceExcludeMarkdownLinksTests(TestCase):
     def test_simple_replacement_outside_link(self):
         text = "The application deadline is June 1, 2025."
-        result = replace_text_not_markdown_links(text, "June 1, 2025", "August 1, 2025")
+        result = replace_text_exclude_markdown_links(
+            text, "June 1, 2025", "August 1, 2025"
+        )
         self.assertEqual(result, "The application deadline is August 1, 2025.")
 
     def test_replacement_inside_markdown_text_only(self):
         text = "Visit [the deadline](https://grants.gov/deadline) for info."
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         self.assertEqual(
             result, "Visit [the date](https://grants.gov/deadline) for info."
         )
 
     def test_no_change_inside_url(self):
         text = "Check out [this link](https://example.com/deadline-info)"
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         self.assertEqual(
             result, "Check out [this link](https://example.com/deadline-info)"
         )
@@ -252,7 +308,7 @@ class ReplaceOutsideMarkdownLinksTests(TestCase):
             "Apply by the deadline. See [the deadline](https://example.com/deadline) "
             "and [deadline info](#section-deadline)."
         )
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         expected = (
             "Apply by the date. See [the date](https://example.com/deadline) "
             "and [date info](#section-deadline)."
@@ -261,7 +317,7 @@ class ReplaceOutsideMarkdownLinksTests(TestCase):
 
     def test_case_insensitive(self):
         text = "Apply before the DEADLINE. Visit [Deadline Info](https://example.com/deadline)."
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         expected = (
             "Apply before the date. Visit [date Info](https://example.com/deadline)."
         )
@@ -269,16 +325,16 @@ class ReplaceOutsideMarkdownLinksTests(TestCase):
 
     def test_no_links(self):
         text = "The deadline is approaching."
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         self.assertEqual(result, "The date is approaching.")
 
     def test_empty_input(self):
-        self.assertEqual(replace_text_not_markdown_links("", "foo", "bar"), "")
-        self.assertEqual(replace_text_not_markdown_links(None, "foo", "bar"), None)
+        self.assertEqual(replace_text_exclude_markdown_links("", "foo", "bar"), "")
+        self.assertEqual(replace_text_exclude_markdown_links(None, "foo", "bar"), None)
 
     def test_link_with_special_chars(self):
         text = "Click [this (weird) deadline](https://example.com/deadline-stuff)"
-        result = replace_text_not_markdown_links(text, "deadline", "date")
+        result = replace_text_exclude_markdown_links(text, "deadline", "date")
         self.assertEqual(
             result, "Click [this (weird) date](https://example.com/deadline-stuff)"
         )

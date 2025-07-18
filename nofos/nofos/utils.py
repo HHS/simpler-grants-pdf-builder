@@ -124,7 +124,15 @@ def extract_highlighted_context(body, pattern, context_chars=100, group_distance
     return results
 
 
-def replace_text_not_markdown_links(text, old_value, new_value):
+def replace_text_include_markdown_links(text, old_value, new_value):
+    if not text:
+        return text
+
+    pattern = re.compile(re.escape(old_value), re.IGNORECASE)
+    return pattern.sub(new_value, text)
+
+
+def replace_text_exclude_markdown_links(text, old_value, new_value):
     if not text:
         return text
 
