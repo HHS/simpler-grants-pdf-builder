@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add left-hand floating menu for in-page navigation of a NOFO's major (H2) headings
+
 ### Changed
 
 - Replace multiple icons in a table cell, should it come to that

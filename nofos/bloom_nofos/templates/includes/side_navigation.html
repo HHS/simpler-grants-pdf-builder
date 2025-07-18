@@ -128,6 +128,7 @@
             sideNavContainer.classList.remove('is-open');
             sideNavContent.setAttribute('aria-hidden', 'true');
             sideNavToggle.setAttribute('aria-expanded', 'false');
+            sideNavToggle.focus(); // focus back on toggle
 
             // Remove navigation elements from tab order
             sideNavClose.setAttribute('tabindex', '-1');
