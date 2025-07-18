@@ -1,7 +1,7 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
-from django.urls import reverse
 from bs4 import BeautifulSoup
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+from django.urls import reverse
 from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection

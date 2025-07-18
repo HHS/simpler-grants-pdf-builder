@@ -25,7 +25,8 @@ from .utils import (
     clean_string,
     create_subsection_html_id,
     extract_highlighted_context,
-    replace_text_not_markdown_links,
+    replace_text_exclude_markdown_links,
+    replace_text_include_markdown_links,
     strip_markdown_links,
     style_map_manager,
 )
@@ -2664,9 +2665,16 @@ def replace_value_in_subsections(
 
         # Update body
         if subsection.body:
-            new_body = replace_text_not_markdown_links(
-                subsection.body, old_value, new_value
-            )
+            # Strip links unless "old value" starts with "http" or "#"
+            if old_value.lower().startswith(("http", "#")):
+                new_body = replace_text_include_markdown_links(
+                    subsection.body, old_value, new_value
+                )
+            else:
+                new_body = replace_text_exclude_markdown_links(
+                    subsection.body, old_value, new_value
+                )
+
             if new_body != subsection.body:
                 subsection.body = new_body
                 updated = True
