@@ -46,6 +46,7 @@ urlpatterns = [
     path("nofos/", include("nofos.urls")),
     path("guides/", include("guides.urls")),
     path("users/", include("users.urls")),
+    path("uploads/", include("uploads.urls")),
     path("admin/", admin.site.urls),
     path("test-mode", views.TestModeView.as_view(), name="test_mode"),
     path("", views.index, name="index"),

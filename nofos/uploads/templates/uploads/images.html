@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Uploaded images
+{% endblock %}
+
+{% block body_class %}uploaded-images{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" only %}
+
+  <h1>Uploaded Images</h1>
+  {% if images %}
+    <p>These images are available to be used as cover images for NOFO documents.</p>
+
+    <table class="usa-table usa-table--borderless width-full">
+      <caption>
+        Table: {{ images | length }} images returned
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Filename</th>
+          <th scope="col">Size</th>
+          <th scope="col">Last modified</th>
+          <th scope="col">Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for image in images %}
+        <tr>
+          <th scope="row"><a href="{{ image.url }}" target="_blank">{{ image.key }}</a></th>
+          <td>
+            {{ image.size_display }}
+          </td>
+          <td>{{ image.last_modified|date:"Y-m-d" }}</td>
+          <td>
+            <img class="border-2px radius-md maxh-card" src="{{ image.url }}" alt="{{ image.key }}" />
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No images returned.</p>
+  {% endif %}
+{% endblock %}
