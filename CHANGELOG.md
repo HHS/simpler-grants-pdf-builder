@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add left-hand floating menu for in-page navigation of a NOFO's major (H2) headings
+- Add cover image for CDC-RFA-DP-25-0014
 
 ### Changed
 
