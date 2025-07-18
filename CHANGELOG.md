@@ -13,6 +13,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Find and replace functions can replace hrefs if formatted as links
 - Replace multiple icons in a table cell, should it come to that
 
 ### Fixed

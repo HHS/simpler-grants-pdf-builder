@@ -7402,3 +7402,43 @@ class ReplaceValueInSubsectionsTests(TestCase):
         self.assertEqual(len(updated), 1)
         self.subsection_3.refresh_from_db()
         self.assertEqual(self.subsection_3.name, "Critical dates that are Critical")
+
+    def test_term_in_markdown_link_not_replaced_if_not_url_or_anchor(self):
+        self.subsection_1.body = "Click [here](https://example.com/june-1-2025) to learn more about June-1-2025."
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id], "June-1-2025", "August-1-2025"
+        )
+        self.assertEqual(len(updated), 1)  # body has visible match, not in URL
+        self.subsection_1.refresh_from_db()
+        self.assertIn("https://example.com/june-1-2025", self.subsection_1.body)
+        self.assertIn("August-1-2025", self.subsection_1.body)
+        self.assertNotIn("June-1-2025", self.subsection_1.body)
+
+    def test_term_starting_with_hash_replaces_markdown_link(self):
+        self.subsection_1.body = (
+            "Click [anchor](#deadline-june-1-2025) to jump to deadline."
+        )
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id], "#deadline-june-1-2025", "#deadline-august-1-2025"
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("#deadline-august-1-2025", self.subsection_1.body)
+        self.assertNotIn("#deadline-june-1-2025", self.subsection_1.body)
+
+    def test_term_starting_with_http_replaces_markdown_link(self):
+        self.subsection_1.body = (
+            "Click [external site](http://example.com/june-1-2025) to view details."
+        )
+        self.subsection_1.save()
+        updated = replace_value_in_subsections(
+            [self.subsection_1.id],
+            "http://example.com/june-1-2025",
+            "http://example.com/august-1-2025",
+        )
+        self.assertEqual(len(updated), 1)
+        self.subsection_1.refresh_from_db()
+        self.assertIn("http://example.com/august-1-2025", self.subsection_1.body)
+        self.assertNotIn("http://example.com/june-1-2025", self.subsection_1.body)
