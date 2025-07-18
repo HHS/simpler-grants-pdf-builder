@@ -1414,62 +1414,66 @@ del + ins > br {
 
 /* Side Navigation Styles */
 .side-nav-container {
-    top: 50%;
-    pointer-events: none;
-    transition: transform 0.3s ease;
-    transform: translateY(-50%);
+  top: 50%;
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 
 .side-nav-container.is-open {
-    pointer-events: auto;
+  transition: transform 0.3s ease;
+  pointer-events: auto;
 }
 
 .side-nav-toggle {
-    transform: translateY(-50%);
-    pointer-events: auto;
-    transition: left 0.3s ease;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  transition: left 0.3s ease;
+  cursor: pointer;
 }
 
 .side-nav-pipe {
-    height: 1.25rem;
-    max-height: 1.25rem;
-    overflow: hidden;
+  line-height: 1.15;
+  height: 1.25rem;
+  max-height: 1.25rem;
+  overflow: hidden;
 }
 
 .side-nav-pipe.current {
-    font-weight: bold;
+  font-size: 1.25em;
+  line-height: 0.8;
+  font-weight: bold;
 }
 
 .side-nav-content {
-    left: -330px;
-    width: 320px;
-    transition: left 0.3s ease, transform 0.3s ease;
-    transform: translateY(-50%);
+  left: -330px;
+  width: 320px;
+  transform: translateY(-50%);
 }
 
 .side-nav-container.is-open .side-nav-content {
-    left: 60px;
-    transform: translateY(-50%);
+  transition: left 0.3s ease, transform 0.3s ease;
+  left: 60px;
+  transform: translateY(-50%);
 }
 
 /* Navigation List Styles */
 #side-nav-list {
-    padding: 1rem;
-    margin: 0;
-    list-style: none;
+  padding: 1rem;
+  margin: 0;
+  list-style: none;
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    .side-nav-content {
-        width: 100vw;
-        height: 100vh;
-        left: -100vw;
-        top: 0;
-    }
+@media (max-width: 48em) {
+  .side-nav-content {
+    width: 100vw;
+    height: 100vh;
+    left: -101vw;
+    top: 0;
+  }
 
-    .side-nav-container.is-open .side-nav-content {
-        left: 0;
-        top: 0;
-    }
+  .side-nav-container.is-open .side-nav-content {
+    left: -1vw;
+    top: 0;
+  }
 }
