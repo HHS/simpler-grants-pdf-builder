@@ -14,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, dateparse, timezone
@@ -60,6 +60,7 @@ from .mixins import (
     GroupAccessObjectMixinFactory,
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
+    JsonResponseBadRequestMixin,
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
@@ -1533,6 +1534,58 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
         # Use section_pk to fetch the section
         section_pk = self.kwargs.get("section_pk")
         return get_object_or_404(Section, pk=section_pk)
+
+
+class SectionToggleTablesView(
+    JsonResponseBadRequestMixin,
+    PreventIfPublishedMixin,
+    PreventIfArchivedOrCancelledMixin,
+    GroupAccessObjectMixin,
+    View,
+):
+    """View to handle toggling table width for all tables in a section."""
+
+    published_error_message = "Published NOFOs can't be edited. Change the status of this NOFO or add modifications to it."
+    archived_error_message = "Archived NOFOs can't be edited."
+
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo_id = kwargs.get("pk")
+        section_pk = kwargs.get("section_pk")
+
+        try:
+            self.section = get_object_or_404(
+                Section, pk=section_pk, nofo_id=self.nofo_id
+            )
+        except Section.DoesNotExist:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Section with id {} not found".format(section_pk),
+                }
+            )
+
+        self.nofo = self.section.nofo
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk, section_pk):
+        # Toggle the table width class
+        is_expanded = (
+            self.section.html_class
+            and "section--tables-full-width" in self.section.html_class
+        )
+
+        if is_expanded:
+            self.section.html_class = ""
+            message = f"Tables in '{self.section.name}' are now using default widths"
+            new_state = "default"
+        else:
+            self.section.html_class = "section--tables-full-width"
+            message = f"Tables in '{self.section.name}' are now expanded to full width"
+            new_state = "full-width"
+
+        self.section.save()
+
+        return JsonResponse({"success": True, "message": message, "state": new_state})
 
 
 ###########################################################

@@ -17,7 +17,123 @@
   <h2 class="font-heading-lg margin-y-1 text-base" aria-hidden="true">{{ section.name }}</h2>
 </div>
 
-<div class="margin-top-4">  
+{% if nofo.status != 'published' and nofo.status != 'cancelled' and not nofo.archived %}
+<div
+  class="usa-summary-box margin-top-4"
+  role="region"
+  aria-labelledby="summary-box-key-information"
+>
+  <div class="usa-summary-box__body">
+    <h4 class="usa-summary-box__heading" id="summary-box-key-information">
+      Section options
+    </h4>
+    <div class="usa-summary-box__text">
+      <ul class="usa-list usa-list--unstyled">
+        <li>
+          <p>
+            <button type="button"
+                    id="toggle-tables-btn"
+                    class="usa-button {% if section.html_class and 'section--tables-full-width' in section.html_class %}usa-button--secondary{% else %}usa-button--cyan{% endif %}"
+                    data-url="{% url 'nofos:section_toggle_tables' section.nofo.id section.id %}"
+                    data-csrf-token="{{ csrf_token }}">
+              {% if section.html_class and 'section--tables-full-width' in section.html_class %}
+                Default Tables
+              {% else %}
+                Full-width Tables
+              {% endif %}
+            </button>
+            —
+            <span id="toggle-tables-description">
+              {% if section.html_class and 'section--tables-full-width' in section.html_class %}
+                Restore all tables to their default widths
+              {% else %}
+                Expand all tables in this section to full width
+              {% endif %}
+            </span>
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggle-tables-btn');
+        const toggleTablesDescription = document.getElementById('toggle-tables-description');
+
+        toggleBtn.addEventListener('click', function() {
+            // Disable button during request
+            toggleBtn.disabled = true;
+            const originalText = toggleBtn.textContent;
+            toggleBtn.textContent = 'Loading...';
+
+            fetch(toggleBtn.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': toggleBtn.dataset.csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update button appearance
+                    const state = data.state;
+                    if (state === 'default') {
+                        toggleBtn.textContent = 'Full-width Tables';
+                        toggleBtn.className = 'usa-button usa-button--cyan';
+                        toggleTablesDescription.textContent = 'Expand all tables in this section to full width';
+                    } else {
+                        toggleBtn.textContent = 'Default Tables';
+                        toggleBtn.className = 'usa-button usa-button--secondary';
+                        toggleTablesDescription.textContent = 'Restore all tables to their default widths';
+                    }
+
+                    showMessage(data.message, 'success');
+                } else {
+                    const message = data.message || 'An error occurred. Please try again.';
+                    showMessage(message, 'error');
+                    toggleBtn.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+                toggleBtn.textContent = originalText;
+            })
+            .finally(() => {
+                toggleBtn.disabled = false;
+            });
+        });
+
+        function showMessage(message, type) {
+            // Create a simple message div
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `usa-alert usa-alert--${type === 'success' ? 'success' : 'error'} usa-alert--slim margin-top-2`;
+            messageDiv.innerHTML = `
+                <div class="usa-alert__body">
+                    <p class="usa-alert__text">${message}</p>
+                </div>
+            `;
+
+            // Insert after the summary box
+            const summaryBox = document.querySelector('.usa-summary-box');
+            summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
+
+            // Remove message after 4 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 4000);
+        }
+    });
+    </script>
+  </div>
+</div>
+{% endif %}
+
+<div class="margin-top-4">
   <details class="usa-accordion usa-accordion--bordered" open>
     <summary class="usa-accordion__button">
       <h3 class="usa-accordion--heading margin-top-0">
