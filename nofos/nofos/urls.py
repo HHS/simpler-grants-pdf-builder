@@ -137,6 +137,11 @@ urlpatterns = [
         name="section_detail",
     ),
     path(
+        "<uuid:pk>/section/<uuid:section_pk>/toggle-full-width-tables",
+        views.SectionToggleTablesView.as_view(),
+        name="section_toggle_tables",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.NofoSubsectionEditView.as_view(),
         name="subsection_edit",

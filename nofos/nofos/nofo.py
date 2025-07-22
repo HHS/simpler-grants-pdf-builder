@@ -335,6 +335,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             order=section_order,
             html_id=section.get("html_id") or default_html_id,
             has_section_page=section.get("has_section_page"),
+            html_class=section.get("html_class", ""),
             **{object_name: document},
         )
         try:

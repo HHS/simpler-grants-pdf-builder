@@ -18,6 +18,7 @@
       "html_id": "step-1-review-the-opportunity",
       "order": 1,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Basic information",
@@ -224,6 +225,7 @@
       "html_id": "step-2-get-ready-to-apply",
       "order": 2,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Get registered",
@@ -439,6 +441,7 @@
       "html_id": "step-4-learn-about-review-and-award",
       "order": 3,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Application review",
@@ -510,6 +513,7 @@
       "html_id": "step-5-submit-your-application",
       "order": 4,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Application submission and deadlines",
@@ -608,6 +612,7 @@
       "html_id": "step-6-learn-what-happens-after-award",
       "order": 5,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Post-award requirements and administration",
@@ -679,6 +684,7 @@
       "html_id": "contacts-and-support",
       "order": 6,
       "has_section_page": true,
+      "html_class": "",
       "subsections": [
         {
           "name": "Agency contacts",
@@ -741,6 +747,7 @@
       "html_id": "endnotes",
       "order": 7,
       "has_section_page": false,
+      "html_class": "",
       "subsections": [
         {
           "name": "",

@@ -188,6 +188,44 @@ class SectionModelTest(TestCase):
         next_order = Section.get_next_order(self.nofo)
         self.assertEqual(next_order, 6)
 
+    def test_section_html_class_field_exists(self):
+        """Test that Section model has html_class field."""
+        section = Section.objects.create(**self.valid_section_data)
+        self.assertTrue(hasattr(section, "html_class"))
+        self.assertEqual(section.html_class, "")  # Default should be empty
+
+    def test_section_html_class_can_be_set(self):
+        """Test that html_class field can be set and retrieved."""
+        section_data = self.valid_section_data.copy()
+        section_data["html_class"] = "section--tables-full-width"
+        section = Section.objects.create(**section_data)
+
+        self.assertEqual(section.html_class, "section--tables-full-width")
+
+        # Test that it persists to database
+        section.refresh_from_db()
+        self.assertEqual(section.html_class, "section--tables-full-width")
+
+    def test_section_html_class_max_length(self):
+        """Test that html_class field respects max_length validation."""
+        section_data = self.valid_section_data.copy()
+        section_data["html_class"] = "x" * 1024  # One character more than max_length
+        section = Section(**section_data)
+
+        with self.assertRaises(ValidationError) as e:
+            section.full_clean()
+
+        self.assertIn("html_class", str(e.exception))
+
+    def test_section_html_class_blank_allowed(self):
+        """Test that html_class field can be blank."""
+        section_data = self.valid_section_data.copy()
+        section_data["html_class"] = ""
+        section = Section.objects.create(**section_data)
+
+        section.full_clean()  # Should not raise ValidationError
+        self.assertEqual(section.html_class, "")
+
 
 class SectionModelInsertOrderSpaceTests(TestCase):
     def setUp(self):
