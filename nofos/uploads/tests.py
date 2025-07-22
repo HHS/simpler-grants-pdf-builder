@@ -39,7 +39,7 @@ class ImageListViewTests(TestCase):
         )
         self.url = reverse("uploads_images")
 
-    @override_settings(AWS_STORAGE_BUCKET_NAME="fake-bucket")
+    @override_settings(GENERAL_S3_BUCKET_URL="fake-bucket")
     @patch("uploads.views.boto3.client")
     def test_superuser_sees_images(self, mock_boto_client):
         # Mock S3 client and response
@@ -65,13 +65,13 @@ class ImageListViewTests(TestCase):
         self.assertContains(response, "1.0 MB")
         self.assertContains(response, "https://fake-url/photo1.jpg")
 
-    @override_settings(AWS_STORAGE_BUCKET_NAME=None)
+    @override_settings(GENERAL_S3_BUCKET_URL=None)
     def test_missing_bucket_shows_error(self):
         self.client.force_login(self.superuser)
         response = self.client.get(self.url)
         self.assertContains(response, "No AWS bucket configured", status_code=200)
 
-    @override_settings(AWS_STORAGE_BUCKET_NAME="fake-bucket")
+    @override_settings(GENERAL_S3_BUCKET_URL="fake-bucket")
     @patch("uploads.views.boto3.client")
     def test_token_missing_shows_message(self, mock_boto_client):
         from botocore.exceptions import SSOTokenLoadError
@@ -88,7 +88,7 @@ class ImageListViewTests(TestCase):
 
         self.assertContains(response, "No AWS SSO token found")
 
-    @override_settings(AWS_STORAGE_BUCKET_NAME="fake-bucket")
+    @override_settings(GENERAL_S3_BUCKET_URL="fake-bucket")
     @patch("uploads.views.boto3.client")
     def test_token_retrieval_error_shows_message(self, mock_boto_client):
         from django.core.cache import cache

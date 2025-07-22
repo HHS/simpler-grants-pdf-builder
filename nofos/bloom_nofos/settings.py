@@ -87,7 +87,7 @@ if aws_dns_name:
     ALLOWED_HOSTS.append(aws_dns_name)
 
 # AWS CONFIG
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default=None)
+GENERAL_S3_BUCKET_URL = env("GENERAL_S3_BUCKET_URL", default=None)
 AWS_REGION = env("AWS_REGION", default="us-east-1")
 
 # SECURITY HEADERS

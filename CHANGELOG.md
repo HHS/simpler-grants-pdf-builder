@@ -11,6 +11,7 @@ Versioning since version 1.0.0.
 
 - Add left-hand floating menu for in-page navigation of a NOFO's major (H2) headings
 - Add cover image for CDC-RFA-DP-25-0014
+- Add a page for superusers to see manually uploaded images
 
 ### Changed
 
