@@ -7,3 +7,7 @@ def get_display_size(size_bytes):
     else:
         size_mb = size_bytes / (1024 * 1024)
         return "{:.1f} MB".format(size_mb)
+
+
+def strip_s3_hostname_suffix(value):
+    return value.split(".", 1)[0] if value else value
