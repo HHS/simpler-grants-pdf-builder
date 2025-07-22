@@ -34,7 +34,7 @@
           </td>
           <td>{{ image.last_modified|date:"Y-m-d" }}</td>
           <td>
-            <img class="border-2px radius-md maxh-card" src="{{ image.url }}" alt="{{ image.key }}" />
+            <img class="border-2px radius-md maxh-card" src="{{ image.url }}" alt="{{ image.key }}" loading="lazy" />
           </td>
         </tr>
         {% endfor %}
