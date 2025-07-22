@@ -64,6 +64,7 @@ class NofoAPITest(TestCase):
                     "html_id": "1--step-1",
                     "order": 1,
                     "has_section_page": True,
+                    "html_class": "",
                     "subsections": [],
                 }
             ],
@@ -103,6 +104,7 @@ class NofoAPITest(TestCase):
         self.assertEqual(data["id"], str(self.nofo.id))
         self.assertEqual(data["title"], self.nofo.title)
         self.assertEqual(data["sections"][0]["name"], self.section.name)
+        self.assertEqual(data["sections"][0]["html_class"], "")
         self.assertEqual(data["sections"][0]["subsections"], [])
 
     def test_export_archived_nofo_returns_404(self):

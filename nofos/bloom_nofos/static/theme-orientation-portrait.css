@@ -319,3 +319,10 @@ section.section--appendix > .section--content > table {
 table tr td.usa-icon__td--sublist {
   padding-left: 30px;
 }
+
+/* Section-level table width override for portrait mode */
+.section--tables-full-width table.table--small,
+.section--tables-full-width table.table--large,
+.section--tables-full-width table.table--criterion {
+  width: calc(216mm - 40mm) !important; /* Match large table full-width behavior */
+}

@@ -429,6 +429,13 @@ class BaseSection(models.Model):
         help_text="If true, this section will have its own page and icon in the ToC.",
     )
 
+    html_class = models.CharField(
+        "HTML class attribute",
+        max_length=1023,
+        validators=[MaxLengthValidator(1023)],
+        blank=True,
+    )
+
     def __str__(self):
         return "({}) {}".format(self.document_id or "999", self.name)
 

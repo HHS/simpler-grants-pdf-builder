@@ -227,6 +227,13 @@ table tr td.usa-icon__td--sublist:not(.usa-icon__td--link) img.usa-icon {
   column-span: all;
 }
 
+/* Section-level table width override for landscape mode */
+.section--tables-full-width table.table--small,
+.section--tables-full-width table.table--large,
+.section--tables-full-width table.table--criterion {
+  column-span: all;
+}
+
 /* Media queries */
 
 @media screen {

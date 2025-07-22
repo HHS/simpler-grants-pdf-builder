@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 
 from .models import Nofo
@@ -51,31 +51,77 @@ class SuperuserRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class PreventIfPublishedMixin:
-    published_error_message = "This object is published and can’t be changed."
+class BaseResponseMixin:
+    def render_response(self, response):
+        raise NotImplementedError("Subclasses must implement render_response")
+
+
+class HttpResponseBadRequestMixin(BaseResponseMixin):
+    def render_response(self, response):
+        return HttpResponseBadRequest(response)
+
+
+class JsonResponseBadRequestMixin(BaseResponseMixin):
+    def render_response(self, response):
+        return JsonResponse({"success": False, "message": response})
+
+
+class PreventIfPublishedBaseMixin(BaseResponseMixin):
+    """Base mixin that prevents editing published objects. Subclasses override response format."""
+
+    published_error_message = "This object is published and can't be changed."
 
     def dispatch(self, request, *args, **kwargs):
         nofo = getattr(self, "nofo", None) or self.get_object()
 
         # Throw exception if the object is published and not modified
         if nofo.status == "published" and not nofo.modifications:
-            return HttpResponseBadRequest(self.published_error_message)
+            return self.render_response(self.published_error_message)
 
         return super().dispatch(request, *args, **kwargs)
 
 
-class PreventIfArchivedOrCancelledMixin:
-    archived_error_message = "This NOFO is archived and can’t be changed."
-    cancelled_error_message = "This NOFO was cancelled and can’t be changed."
+class PreventIfPublishedMixin(PreventIfPublishedBaseMixin, HttpResponseBadRequestMixin):
+    """Prevents editing published objects, returns HttpResponseBadRequest."""
+
+    pass
+
+
+class PreventIfArchivedBaseMixin(BaseResponseMixin):
+    """Prevents editing archived objects, returns HttpResponseBadRequest."""
+
+    archived_error_message = "This NOFO is archived and can't be changed."
 
     def dispatch(self, request, *args, **kwargs):
         nofo = getattr(self, "nofo", None) or self.get_object()
-        # Throw exception if the object is archived
-        if nofo.archived:
-            return HttpResponseBadRequest(self.archived_error_message)
 
-        # Throw exception if the object is cancelled _and there is_ an error message
-        if nofo.status == "cancelled" and self.cancelled_error_message:
-            return HttpResponseBadRequest(self.cancelled_error_message)
+        # Check if the object is archived
+        if nofo.archived:
+            return self.render_response(self.archived_error_message)
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class PreventIfCancelledBaseMixin(BaseResponseMixin):
+    """Base mixin that prevents editing cancelled objects. Subclasses override response format."""
+
+    cancelled_error_message = "This NOFO was cancelled and can't be changed."
+
+    def dispatch(self, request, *args, **kwargs):
+        nofo = getattr(self, "nofo", None) or self.get_object()
+
+        # Check if the object is cancelled _and there is_ an error message
+        if nofo.status == "cancelled" and self.cancelled_error_message:
+            return self.render_response(self.cancelled_error_message)
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PreventIfArchivedOrCancelledMixin(
+    PreventIfArchivedBaseMixin,
+    PreventIfCancelledBaseMixin,
+    HttpResponseBadRequestMixin,
+):
+    """Prevents editing archived or cancelled objects, returns HttpResponseBadRequest."""
+
+    pass

@@ -1210,3 +1210,15 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     min-height: calc(100vh + 36mm - 0.01px);
   }
 }
+
+/* Section-level table width override */
+.section--tables-full-width table.table--small,
+.section--tables-full-width table.table--large,
+.section--tables-full-width table.table--criterion {
+  width: 100% !important;
+}
+
+/* Ensure consistency with existing large table styling */
+.section--tables-full-width table {
+  margin-top: 10px;
+}

@@ -23,7 +23,8 @@ class SubsectionSchema(ModelSchema):
 class SectionBaseSchema(ModelSchema):
     class Config:
         model = Section
-        model_fields = ["name", "html_id", "order", "has_section_page"]
+        model_fields = ["name", "html_id", "order", "has_section_page", "html_class"]
+        model_fields_optional = ["html_class"]
 
 
 class SectionSchema(SectionBaseSchema):
