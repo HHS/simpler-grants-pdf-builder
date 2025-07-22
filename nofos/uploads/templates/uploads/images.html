@@ -7,7 +7,7 @@
 {% block body_class %}uploaded-images{% endblock %}
 
 {% block content %}
-  {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" only %}
+  {% include "includes/alerts.html" with messages=messages error_heading="SSO token error" success_heading="Image cache reset" only %}
 
   <h1>Uploaded Images</h1>
   {% if images %}
