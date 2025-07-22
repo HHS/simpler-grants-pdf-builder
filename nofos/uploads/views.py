@@ -27,15 +27,15 @@ class ImageListView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        bucket_name = settings.GENERAL_S3_BUCKET_URL
         context["images"] = []
-        context["AWS_STORAGE_BUCKET_NAME"] = bucket_name
+        context["GENERAL_S3_BUCKET_URL"] = bucket_name
 
         # Missing bucket config
         if not bucket_name:
             messages.error(
                 self.request,
-                "No AWS bucket configured. Please set <code>AWS_STORAGE_BUCKET_NAME</code> in your environment.",
+                "No AWS bucket configured. Please set <code>GENERAL_S3_BUCKET_URL</code> in your environment.",
             )
             return context
 
