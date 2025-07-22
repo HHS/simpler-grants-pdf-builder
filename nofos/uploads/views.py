@@ -74,4 +74,10 @@ class ImageListView(UserPassesTestMixin, TemplateView):
                 "No AWS SSO token found. Please run <code>aws sso login</code> in your terminal to authenticate.",
             )
 
+        except Exception as e:
+            messages.error(
+                self.request,
+                f"An error occurred while accessing the AWS bucket: {e}",
+            )
+
         return context

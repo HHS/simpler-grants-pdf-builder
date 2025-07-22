@@ -1,11 +1,8 @@
 import io
 import json
-import os
-import re
 import uuid
 from datetime import datetime
 
-import boto3
 import docraptor
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
@@ -17,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, dateparse, timezone
