@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.cache import cache
 from django.views.generic import TemplateView
 
-from .utils import get_display_size
+from .utils import get_display_size, strip_s3_hostname_suffix
 
 
 class ImageListView(UserPassesTestMixin, TemplateView):
@@ -27,7 +27,7 @@ class ImageListView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        bucket_name = settings.GENERAL_S3_BUCKET_URL
+        bucket_name = strip_s3_hostname_suffix(settings.GENERAL_S3_BUCKET_URL)
         context["images"] = []
         context["GENERAL_S3_BUCKET_URL"] = bucket_name
 

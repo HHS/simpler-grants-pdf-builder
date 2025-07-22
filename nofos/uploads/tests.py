@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
-from .utils import get_display_size
+from .utils import get_display_size, strip_s3_hostname_suffix
 
 User = get_user_model()
 
@@ -27,6 +27,26 @@ class GetDisplaySizeTests(SimpleTestCase):
         self.assertEqual(get_display_size(1024 * 1024), "1.0 MB")
         self.assertEqual(get_display_size(5 * 1024 * 1024), "5.0 MB")
         self.assertEqual(get_display_size(3145728), "3.0 MB")  # 3 MB
+
+
+class StripS3HostnameSuffixTests(TestCase):
+    def test_full_hostname_strips_suffix(self):
+        value = "nofos-dev-general-purpose20250513180715444700000002.s3.us-east-1.amazonaws.com"
+        result = strip_s3_hostname_suffix(value)
+        self.assertEqual(result, "nofos-dev-general-purpose20250513180715444700000002")
+
+    def test_value_with_no_dot_returns_original(self):
+        value = "nofos-bucket-name"
+        result = strip_s3_hostname_suffix(value)
+        self.assertEqual(result, value)
+
+    def test_none_value_returns_none(self):
+        result = strip_s3_hostname_suffix(None)
+        self.assertIsNone(result)
+
+    def test_empty_string_returns_empty(self):
+        result = strip_s3_hostname_suffix("")
+        self.assertEqual(result, "")
 
 
 class ImageListViewTests(TestCase):
