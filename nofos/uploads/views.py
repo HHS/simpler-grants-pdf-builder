@@ -6,6 +6,7 @@ from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.core.cache import cache
 from django.views.generic import TemplateView
 
 from .utils import get_display_size
@@ -16,6 +17,13 @@ class ImageListView(UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         return self.request.user.is_superuser
+
+    def get(self, request, *args, **kwargs):
+        if request.GET.get("cache") == "false":
+            cache.delete("uploads_images")
+            messages.success(request, "Image cache has been cleared.")
+
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -29,6 +37,12 @@ class ImageListView(UserPassesTestMixin, TemplateView):
                 self.request,
                 "No AWS bucket configured. Please set <code>AWS_STORAGE_BUCKET_NAME</code> in your environment.",
             )
+            return context
+
+        # Try to get cached images
+        cached_images = cache.get("uploads_images")
+        if cached_images:
+            context["images"] = cached_images
             return context
 
         try:
@@ -56,10 +70,13 @@ class ImageListView(UserPassesTestMixin, TemplateView):
                         }
                     )
 
-                # Sort by last modified, descending. More recent image is first.
-                images.sort(key=lambda img: img["last_modified"], reverse=True)
+            # Sort by last modified, descending. More recent image is first.
+            images.sort(key=lambda img: img["last_modified"], reverse=True)
 
-                context["images"] = images
+            context["images"] = images
+
+            # Cache for 15 minutes
+            cache.set("uploads_images", images, timeout=60 * 15)
 
         # Token error (eg, for an expired token)
         except TokenRetrievalError:

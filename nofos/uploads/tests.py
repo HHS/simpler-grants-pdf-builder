@@ -75,6 +75,9 @@ class ImageListViewTests(TestCase):
     @patch("uploads.views.boto3.client")
     def test_token_missing_shows_message(self, mock_boto_client):
         from botocore.exceptions import SSOTokenLoadError
+        from django.core.cache import cache
+
+        cache.delete("uploads_images")  # Ensure it hits boto3
 
         mock_boto_client.side_effect = SSOTokenLoadError(
             profile_name="grants", error_msg="Token for grants does not exist"
@@ -88,6 +91,10 @@ class ImageListViewTests(TestCase):
     @override_settings(AWS_STORAGE_BUCKET_NAME="fake-bucket")
     @patch("uploads.views.boto3.client")
     def test_token_retrieval_error_shows_message(self, mock_boto_client):
+        from django.core.cache import cache
+
+        cache.delete("uploads_images")  # Ensure it hits boto3
+
         mock_boto_client.side_effect = TokenRetrievalError(
             provider="sso", error_msg="Token has expired and refresh failed"
         )
