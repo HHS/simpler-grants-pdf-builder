@@ -434,6 +434,7 @@ class BaseSection(models.Model):
         max_length=1023,
         validators=[MaxLengthValidator(1023)],
         blank=True,
+        default="",
     )
 
     def __str__(self):
@@ -581,6 +582,7 @@ class BaseSubsection(models.Model):
         max_length=1023,
         validators=[MaxLengthValidator(1023)],
         blank=True,
+        default="",
     )
 
     order = models.IntegerField(null=True)

@@ -149,7 +149,6 @@ class SectionToggleTablesViewTest(TestCase):
         )
 
         response = self.client.post(mismatched_url)
-        # The view uses get_object_or_404, so it should return 404
         self.assertEqual(response.status_code, 404)
 
     def test_toggle_tables_prevents_published_nofo_edit(self):
@@ -158,7 +157,7 @@ class SectionToggleTablesViewTest(TestCase):
         self.nofo.save()
 
         response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
 
         data = json.loads(response.content)
         self.assertFalse(data["success"])
@@ -174,7 +173,7 @@ class SectionToggleTablesViewTest(TestCase):
         self.nofo.save()
 
         response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
 
         data = json.loads(response.content)
         self.assertFalse(data["success"])
