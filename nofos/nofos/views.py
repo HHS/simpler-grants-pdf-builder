@@ -1553,16 +1553,16 @@ class SectionToggleTablesView(
         section_pk = kwargs.get("section_pk")
 
         try:
-            self.section = get_object_or_404(
-                Section, pk=section_pk, nofo_id=self.nofo_id
-            )
+            self.section = Section.objects.get(pk=section_pk, nofo_id=self.nofo_id)
         except Section.DoesNotExist:
-            return JsonResponse(
+            response = JsonResponse(
                 {
                     "success": False,
                     "message": "Section with id {} not found".format(section_pk),
-                }
+                },
+                status=404,
             )
+            return response
 
         self.nofo = self.section.nofo
         return super().dispatch(request, *args, **kwargs)

@@ -63,7 +63,7 @@ class HttpResponseBadRequestMixin(BaseResponseMixin):
 
 class JsonResponseBadRequestMixin(BaseResponseMixin):
     def render_response(self, response):
-        return JsonResponse({"success": False, "message": response})
+        return JsonResponse({"success": False, "message": response}, status=400)
 
 
 class PreventIfPublishedBaseMixin(BaseResponseMixin):
