@@ -28,31 +28,27 @@
       Section options
     </h4>
     <div class="usa-summary-box__text">
-      <ul class="usa-list usa-list--unstyled">
-        <li>
-          <p>
-            <button type="button"
-                    id="toggle-tables-btn"
-                    class="usa-button {% if section.html_class and 'section--tables-full-width' in section.html_class %}usa-button--secondary{% else %}usa-button--cyan{% endif %}"
-                    data-url="{% url 'nofos:section_toggle_tables' section.nofo.id section.id %}"
-                    data-csrf-token="{{ csrf_token }}">
-              {% if section.html_class and 'section--tables-full-width' in section.html_class %}
-                Default Tables
-              {% else %}
-                Full-width Tables
-              {% endif %}
-            </button>
-            —
-            <span id="toggle-tables-description">
-              {% if section.html_class and 'section--tables-full-width' in section.html_class %}
-                Restore all tables to their default widths
-              {% else %}
-                Expand all tables in this section to full width
-              {% endif %}
-            </span>
-          </p>
-        </li>
-      </ul>
+      <p class="margin-bottom-0">
+        <button type="button"
+                id="toggle-tables-btn"
+                class="usa-button {% if section.html_class and 'section--tables-full-width' in section.html_class %}usa-button--secondary{% else %}usa-button--cyan{% endif %}"
+                data-url="{% url 'nofos:section_toggle_tables' section.nofo.id section.id %}"
+                data-csrf-token="{{ csrf_token }}">
+          {% if section.html_class and 'section--tables-full-width' in section.html_class %}
+            Default Tables
+          {% else %}
+            Full-width Tables
+          {% endif %}
+        </button>
+        —
+        <span id="toggle-tables-description">
+          {% if section.html_class and 'section--tables-full-width' in section.html_class %}
+            Restore all tables to their default widths
+          {% else %}
+            Expand all tables in this section to full width
+          {% endif %}
+        </span>
+      </p>
     </div>
 
     <script>
