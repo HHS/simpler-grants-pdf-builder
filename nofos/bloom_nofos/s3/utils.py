@@ -25,12 +25,12 @@ def get_image_url_from_s3(path):
 
     except TokenRetrievalError:
         logger.warning(
-            "Your AWS SSO token has expired. Please run <code>aws sso login</code> in your terminal to refresh it.",
+            "Your AWS SSO token has expired.",
         )
 
     except SSOTokenLoadError:
         logger.warning(
-            "No AWS SSO token found. Please run <code>aws sso login</code> in your terminal to authenticate.",
+            "No AWS SSO token found.",
         )
 
     except Exception as e:
