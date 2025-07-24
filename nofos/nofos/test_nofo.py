@@ -1795,23 +1795,25 @@ class AddPageBreaksToHeadingsTests(TestCase):
             )
 
 
+@patch("nofos.nofo.get_image_url_from_s3", return_value=None)
 class NofoCoverImageTests(TestCase):
-    def test_image_path_with_static_prefix(self):
+
+    def test_image_path_with_static_prefix(self, _mock_get_image_url_from_s3):
         """Test cover image paths that start with '/static/img/'"""
         nofo = Nofo(cover_image="/static/img/cover1.jpg")
         self.assertEqual(get_cover_image(nofo), "img/cover1.jpg")
 
-    def test_image_path_with_img_prefix(self):
+    def test_image_path_with_img_prefix(self, _mock_get_image_url_from_s3):
         """Test cover image paths that start with '/img/'"""
         nofo = Nofo(cover_image="/img/cover2.jpg")
         self.assertEqual(get_cover_image(nofo), "img/cover2.jpg")
 
-    def test_image_path_filename_only(self):
+    def test_image_path_filename_only(self, _mock_get_image_url_from_s3):
         """Test cover image paths that are just filenames"""
         nofo = Nofo(cover_image="cover3.jpg")
         self.assertEqual(get_cover_image(nofo), "img/cover-img/cover3.jpg")
 
-    def test_image_path_full_http_url(self):
+    def test_image_path_full_http_url(self, _mock_get_image_url_from_s3):
         """Test cover image paths that are full URLs"""
         nofo = Nofo(
             cover_image="https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg"
@@ -1821,15 +1823,25 @@ class NofoCoverImageTests(TestCase):
             "https://raw.githubusercontent.com/pcraig3/ghog-day/refs/heads/main/public/images/ghogs/buckeye-chuck.jpeg",
         )
 
-    def test_image_path_default(self):
+    def test_image_path_default(self, _mock_get_image_url_from_s3):
         """Test default cover image when no image is set"""
         nofo = Nofo(cover_image="")
         self.assertEqual(get_cover_image(nofo), "img/cover.jpg")
 
-    def test_image_path_returns_unmodified_if_none_of_conditions_met(self):
+    def test_image_path_returns_unmodified_if_none_of_conditions_met(
+        self, _mock_get_image_url_from_s3
+    ):
         """Test paths that do not meet any specific condition are returned as is"""
         nofo = Nofo(cover_image="/some/other/path/cover5.jpg")
         self.assertEqual(get_cover_image(nofo), "/some/other/path/cover5.jpg")
+
+    def test_image_path_from_s3_returns_s3_url(self, mock_get_image_url_from_s3):
+        """Test that S3 URL is returned when available"""
+        s3_url = "https://test-bucket.s3.amazonaws.com/cover-image.jpg?signature=xyz"
+        mock_get_image_url_from_s3.return_value = s3_url
+        nofo = Nofo(cover_image="cover-image.jpg")
+        self.assertEqual(get_cover_image(nofo), s3_url)
+        mock_get_image_url_from_s3.assert_called_once_with("cover-image.jpg")
 
 
 class TestGetAllIdAttrsForNofo(TestCase):
