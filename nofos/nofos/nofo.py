@@ -782,30 +782,53 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
 def get_cover_image(nofo):
     """
-    Returns a cover_image string based on specific conditions to ensure it is correctly formatted for web display or template rendering:
+    Returns a cover_image string based on specific conditions to ensure it is correctly formatted for web display or template rendering.
 
-    1. If the image path starts with "/static/img/", it removes the "/static/" prefix, adjusting paths set with static files in mind.
-    2. If the image path starts with "/img/", it corrects it to start with "img/".
-    3. If the image path contains no slashes, it is assumed to be a filename only, and is prefixed with "img/cover-img/" to point to a default storage location.
-    4. If the image path starts with "http", or "img/", it is returned unchanged, as these are already correct URLs or relative paths.
-    5. If the path does not meet any of the above conditions but has a value, it returns the path as is.
+    This function follows a priority order for resolving cover images:
 
-    If no cover image is set (i.e., `nofo.cover_image` is None or empty), it defaults to "img/cover.jpg".
+    1. **S3 Images (Highest Priority)**: First attempts to retrieve the image from S3 using get_image_url_from_s3().
+       - Only valid image files are returned (ContentType must start with "image/")
+       - Supports all image formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, etc.
+       - Returns a presigned S3 URL if the image exists and is valid
+
+    2. **External URLs**: If the image path starts with "http", it's treated as an external URL and returned as-is.
+
+    3. **Static Asset Processing**: For local static assets, the path is normalized:
+       - If starts with "/static/img/", removes the "/static/" prefix
+       - If starts with "/img/", corrects it to start with "img/"
+       - If contains no slashes, assumes filename only and prefixes with "img/cover-img/"
+       - Otherwise returns the path unchanged
+
+    4. **Default Fallback**: If no cover image is set, defaults to "img/cover.jpg"
+
+    Args:
+        nofo: NOFO object with cover_image attribute
+
+    Returns:
+        str: The resolved cover image path/URL
+
+    Security:
+        S3 images are validated for security - only files with image ContentType are accessible.
     """
+    logger = logging.getLogger("s3")
+
     if nofo.cover_image:
         s3_url = get_image_url_from_s3(nofo.cover_image)
         if s3_url:
             return s3_url
 
-        if nofo.cover_image.startswith("/static/img/"):
-            return nofo.cover_image.replace("/static/", "")
-        if nofo.cover_image.startswith("/img/"):
-            return nofo.cover_image.replace("/img/", "img/")
-        if "/" not in nofo.cover_image:
-            return "img/cover-img/{}".format(nofo.cover_image)
-        if nofo.cover_image.startswith("http") or nofo.cover_image.startswith("img/"):
+        if nofo.cover_image.startswith("http"):
+            logger.warning(f"Cover image is provided by external source: {nofo.cover_image}")
             return nofo.cover_image
-        return nofo.cover_image
+
+        asset = nofo.cover_image
+        if nofo.cover_image.startswith("/"):
+            asset = asset.replace("/static/", "").replace("/img/", "img/")
+        elif "/" not in nofo.cover_image:
+            asset = "img/cover-img/{}".format(asset)
+
+        logger.warning(f"Cover image provided by static asset: {asset}")
+        return asset
 
     return "img/cover.jpg"
 
