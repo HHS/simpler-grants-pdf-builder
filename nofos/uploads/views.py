@@ -1,6 +1,7 @@
 import re
 
 import boto3
+from bloom_nofos.s3.utils import strip_s3_hostname_suffix
 from botocore.client import Config
 from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.cache import cache
 from django.views.generic import TemplateView
 
-from .utils import get_display_size, strip_s3_hostname_suffix
+from .utils import get_display_size
 
 
 class ImageListView(UserPassesTestMixin, TemplateView):

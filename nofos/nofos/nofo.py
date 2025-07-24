@@ -10,6 +10,7 @@ import cssutils
 import mammoth
 import markdown
 import requests
+from bloom_nofos.s3.utils import get_image_url_from_s3
 from bs4 import BeautifulSoup, NavigableString, Tag
 from constance import config
 from django.conf import settings
@@ -792,6 +793,10 @@ def get_cover_image(nofo):
     If no cover image is set (i.e., `nofo.cover_image` is None or empty), it defaults to "img/cover.jpg".
     """
     if nofo.cover_image:
+        s3_url = get_image_url_from_s3(nofo.cover_image)
+        if s3_url:
+            return s3_url
+
         if nofo.cover_image.startswith("/static/img/"):
             return nofo.cover_image.replace("/static/", "")
         if nofo.cover_image.startswith("/img/"):
