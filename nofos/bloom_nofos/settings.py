@@ -232,6 +232,11 @@ else:
                 "level": "CRITICAL",
                 "propagate": False,
             },
+            "s3": {
+                "handlers": ["console"],
+                "level": "WARNING",
+                "propagate": False,
+            },
             # Suppress ALL other loggers aggressively
             "": {
                 "handlers": ["null"],
