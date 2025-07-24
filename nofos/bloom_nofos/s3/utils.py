@@ -13,6 +13,32 @@ def strip_s3_hostname_suffix(value):
 
 
 def get_image_url_from_s3(path):
+    """
+    Generate a presigned URL for an image file stored in S3.
+
+    This function validates that the object at the given path is an image by checking
+    its ContentType metadata. Only objects with ContentType starting with "image/"
+    are allowed, ensuring security by preventing access to non-image files.
+
+    Supported image formats include:
+    - JPEG (image/jpeg)
+    - PNG (image/png)
+    - And any other valid image/* MIME types, including those with parameters
+
+    Args:
+        path (str): The S3 object key/path to the image file
+
+    Returns:
+        str: A presigned URL for the image if valid, None otherwise
+
+    Security:
+        - Only image ContentTypes are accepted (must start with "image/")
+
+    Errors:
+        - Logs warnings for authentication errors (expired/missing tokens)
+        - Logs warnings for S3 access errors
+        - Returns None for any errors or invalid content types
+    """
     bucket_name = strip_s3_hostname_suffix(settings.GENERAL_S3_BUCKET_URL)
 
     try:
