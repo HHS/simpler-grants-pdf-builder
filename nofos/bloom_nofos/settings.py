@@ -234,7 +234,7 @@ else:
             },
             "s3": {
                 "handlers": ["console"],
-                "level": "WARNING",
+                "level": "INFO",
                 "propagate": False,
             },
             # Suppress ALL other loggers aggressively
