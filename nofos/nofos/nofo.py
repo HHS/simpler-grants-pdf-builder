@@ -815,10 +815,11 @@ def get_cover_image(nofo):
     if nofo.cover_image:
         s3_url = get_image_url_from_s3(nofo.cover_image)
         if s3_url:
+            logger.info(f"Cover image found in S3")
             return s3_url
 
-        if nofo.cover_image.startswith("http") and not "test" in sys.argv:
-            logger.warning(f"Cover image is provided by external source: {nofo.cover_image}")
+        if nofo.cover_image.startswith("http"):
+            logger.info(f"Cover image provided by external source: {nofo.cover_image}")
             return nofo.cover_image
 
         asset = nofo.cover_image
@@ -827,9 +828,7 @@ def get_cover_image(nofo):
         elif "/" not in nofo.cover_image:
             asset = "img/cover-img/{}".format(asset)
 
-        if not "test" in sys.argv:
-            logger.warning(f"Cover image provided by static asset: {asset}")
-
+        logger.info(f"Cover image provided by static asset: {asset}")
         return asset
 
     return "img/cover.jpg"

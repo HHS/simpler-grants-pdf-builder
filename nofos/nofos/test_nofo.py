@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from django.test import TestCase
 from freezegun import freeze_time
+import logging
 
 from .models import Nofo, Section, Subsection
 from .nofo import (
@@ -1797,6 +1798,16 @@ class AddPageBreaksToHeadingsTests(TestCase):
 
 @patch("nofos.nofo.get_image_url_from_s3", return_value=None)
 class NofoCoverImageTests(TestCase):
+
+    def setUp(self):
+        # Silence the 's3' logger by raising log level to error (below error nothing happens)
+        self._s3_logger = logging.getLogger("s3")
+        self._original_level = self._s3_logger.level
+        self._s3_logger.setLevel(logging.ERROR)
+
+    def tearDown(self):
+        # Restore original logging level
+        self._s3_logger.setLevel(self._original_level)
 
     def test_image_path_with_static_prefix(self, _mock_get_image_url_from_s3):
         """Test cover image paths that start with '/static/img/'"""
