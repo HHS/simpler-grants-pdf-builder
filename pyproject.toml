@@ -32,6 +32,7 @@ pyjwt = "^2.10.1"
 google-cloud-secret-manager = "^2.24.0"
 boto3 = "^1.38.33"
 python-json-logger = "^3.3.0"
+diff-match-patch = "^20241021"
 
 # sortable = "@3", check nofo_index.html
 
