@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-orientation-portait.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
@@ -47,8 +48,7 @@
         <div class="nofo_view">
           {% for section in comparison %}
             <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
-              <div>Section: {{ section.name }}</div>
-              <br />
+              <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
               <div class="section--content">
 
                 {% for subsection in section.subsections %}
