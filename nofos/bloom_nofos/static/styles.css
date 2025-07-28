@@ -950,6 +950,24 @@ _:future,
   transform: none;
 }
 
+/* Safari fix for add-button positioning - ensure proper table cell context */
+_::-webkit-full-page-media,
+_:future,
+:root .section_edit table.table--section td.nofo-edit-table--subsection--manage {
+  position: relative;
+}
+
+_::-webkit-full-page-media,
+_:future,
+:root .section_edit table.table--section td.nofo-edit-table--subsection--manage .add-button {
+  position: absolute;
+  bottom: 0;
+  white-space: nowrap;
+  transform-origin: center;
+  left: calc(-1* var(--safari-tr-width)/2 + 100%);
+  right: unset;
+}
+
 .nofo_edit table th.nofo-edit-table--subsection--name.column-break-before,
 .nofo_edit table th.nofo-edit-table--subsection--name.column-break-before ~ td {
   border-top: 1px dotted #5c5c5c;

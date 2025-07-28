@@ -497,7 +497,12 @@ Edit “{{ nofo|nofo_name }}”
           <span class="usa-sr-only">Copy link to this section</span>
         </button>
       </span>
-      <span class="add-or-remove-subsections"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Add or remove subsections</a></span>
+
+      {% if "section--tables-full-width" in section.html_class %}
+        <span class="usa-tooltip" data-position="bottom" title="This section contains full-width tables">↔️</span>
+      {% endif %}
+
+      <span class="add-or-remove-subsections"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Configure Section</a></span>
       <span>
         <a class="back-to-top" href="#back-to-top">Top</a>
       </span>
