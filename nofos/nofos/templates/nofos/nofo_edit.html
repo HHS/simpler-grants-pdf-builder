@@ -499,7 +499,7 @@ Edit “{{ nofo|nofo_name }}”
       </span>
 
       {% if "section--tables-full-width" in section.html_class %}
-        <span class="usa-tooltip" data-position="bottom" title="This section contains full-width tables">↔️</span>
+        <span class="usa-tooltip" data-position="bottom" title="This section contains full-width tables" aria-label="Full-width tables">↔️</span>
       {% endif %}
 
       <span class="add-or-remove-subsections"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Configure Section</a></span>
