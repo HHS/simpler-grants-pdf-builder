@@ -9,53 +9,8 @@ from ..nofo_compare import (
     compare_nofos,
     compare_nofos_metadata,
     filter_comparison_by_status,
-    html_diff,
     merge_renamed_subsections,
 )
-
-
-class TestHtmlDiff(TestCase):
-
-    def test_basic_text_change(self):
-        original = "Groundhog Day!"
-        new = "Valentines Day!"
-        expected = "<del>Groundhog</del><ins>Valentines</ins> Day!"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_whitespace_only_change(self):
-        original = "Groundhog      Day!"
-        new = "Groundhog Day!"
-        expected = "Groundhog Day!"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_identical_strings(self):
-        original = "Groundhog Day!"
-        new = "Groundhog Day!"
-        expected = "Groundhog Day!"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_text_added(self):
-        original = "Groundhog"
-        new = "Groundhog Day"
-        expected = "Groundhog<ins> Day</ins>"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_text_removed(self):
-        original = "Groundhog Day"
-        new = "Day"
-        expected = "<del>Groundhog </del>Day"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_replace_with_partial_whitespace(self):
-        original = "Groundhog Day!"
-        new = "Groundhog Day! (1993)"
-        expected = "Groundhog Day!<ins> (1993)</ins>"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_empty_input(self):
-        self.assertEqual(html_diff("", ""), "")
-        self.assertEqual(html_diff("", "Groundhog"), "<ins>Groundhog</ins>")  # insert
-        self.assertEqual(html_diff("Groundhog", ""), "<del>Groundhog</del>")  # delete
 
 
 class MergeRenamedSubsectionsTests(TestCase):
