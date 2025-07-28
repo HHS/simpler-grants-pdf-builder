@@ -56,7 +56,7 @@
                       {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
                   {% endwith %}
                     {% if subsection.diff %}
-                      {{ subsection.diff|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {{ subsection.diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
                     {% elif subsection.new_value %}
                       {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
                     {% elif subsection.old_value %}
