@@ -200,23 +200,23 @@
         <a class="usa-button usa-button--outline add-button" type="button" href="{% url 'nofos:subsection_create' section.nofo.id subsection.section.id %}?prev_subsection={{subsection.id}}">
           Add subsection
         </a>
-        <script>
-          // Function to set table width CSS custom property for Safari compatibility dealing with the add-button positioning
-          function setTableWidthVariable() {
-              const table = document.querySelector('table.table--section');
-              if (table) {
-                  const tableWidth = table.offsetWidth + 'px';
-                  document.documentElement.style.setProperty('--safari-tr-width', tableWidth);
-              }
-          }
-
-          // Set table width variable on page load and window resize
-          document.addEventListener('DOMContentLoaded', setTableWidthVariable);
-          window.addEventListener('resize', setTableWidthVariable);
-          </script>
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+<script>
+  // Function to set table width CSS custom property for Safari compatibility dealing with the add-button positioning
+  function setTableWidthVariable() {
+      const table = document.querySelector('table.table--section');
+      if (table) {
+          const tableWidth = table.offsetWidth + 'px';
+          document.documentElement.style.setProperty('--safari-tr-width', tableWidth);
+      }
+  }
+
+  // Set table width variable on page load and window resize
+  document.addEventListener('DOMContentLoaded', setTableWidthVariable);
+  window.addEventListener('resize', setTableWidthVariable);
+</script>
 {% endblock %}
