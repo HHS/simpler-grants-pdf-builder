@@ -69,58 +69,7 @@
           {% endfor %}
         </div>
 
-        {% for section in comparison %}
-          <table class="usa-table usa-table--borderless w-100">
-            <caption>
-              <div>
-                <h2>{{ section.name }}</h2>
-              </div>
-            </caption>
-            <thead class="usa-sr-only">
-              <tr>
-                <th scope="col" class="w-20">Subsection</th>
-                <th scope="col" class="w-10">Status</th>
-                <th scope="col" class="w-10">Comp type</th>
-                <th scope="col" class="w-65">Content</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for subsection in section.subsections %}
-              {% if subsection.name|lower != 'basic information' %}
-                <tr>
-                  <th scope="row">
-                    {# if the subsection.name value starts with "(#" #}
-                    {% if subsection.name|slice:":2" == "(#" %}
-                        <span class="text-base">{{ subsection.name }}</span>
-                    {% else %}
-                        {{ subsection.name|safe }}
-                    {% endif %}
-                  </th>
-                  <td>
-                    {{ subsection.status }}
-                  </td>
-                  <td>
-                    {{ subsection.comparison_type }}
-                  </td>
-                  <td>
-                    <div class="diff">
-                      {% if not subsection.diff %}
-                        <span class="text-base text-italic">No change</span>
-                      {% elif subsection.status == 'ADD' %}
-                        <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                      {% elif  subsection.status == 'DELETE' %}
-                        <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                      {% elif subsection.status == 'UPDATE' %}
-                        {{ subsection.diff|safe|linebreaks }}
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
-        {% endfor %}
+
       {% endif %}
 
     <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
