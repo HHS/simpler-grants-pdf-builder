@@ -229,9 +229,7 @@ class ContentGuideCompareView(BaseNofoImportView):
             new_nofo.save()
 
             # Compare against the existing Content Guide
-            comparison = compare_nofos(
-                guide, new_nofo, statuses_to_ignore=["MATCH", "ADD"]
-            )
+            comparison = compare_nofos(guide, new_nofo)
 
             # Number of changes
             num_changed_sections = len(comparison)
