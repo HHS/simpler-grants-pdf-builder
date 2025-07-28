@@ -18,6 +18,8 @@ class SubsectionDiff:
     diff: Optional[str] = None
     comparison_type: str = "body"
     diff_strings: List[str] = field(default_factory=list)
+    tag: Optional[str] = ""  # metadata diffs don't have a tag (eg, nofo.number)
+    html_id: Optional[str] = ""  # metadata diffs don't have an id
 
 
 def find_matching_subsection(new_subsection, old_subsections, matched_ids):
@@ -57,6 +59,8 @@ def result_match(original_subsection):
         old_value=original_subsection.body,
         new_value=original_subsection.body,
         diff="",  # explicitly setting for template compatibility
+        tag=original_subsection.tag,
+        html_id=original_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
@@ -71,6 +75,8 @@ def result_update(original_subsection, new_subsection):
             markdownify(original_subsection.body), markdownify(new_subsection.body)
         )
         or "",
+        tag=new_subsection.tag,
+        html_id=new_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
@@ -94,6 +100,8 @@ def result_add(new_subsection):
         old_value="",
         new_value=new_subsection.body,
         diff=html_diff("", markdownify(new_subsection.body)) or "",
+        tag=new_subsection.tag,
+        html_id=new_subsection.html_id,
     )
 
 
@@ -104,6 +112,8 @@ def result_delete(original_subsection):
         old_value=original_subsection.body,
         new_value="",
         diff=html_diff(markdownify(original_subsection.body), "") or "",
+        tag=original_subsection.tag,
+        html_id=original_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 

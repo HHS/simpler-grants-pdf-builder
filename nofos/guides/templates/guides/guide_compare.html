@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
+{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
 
 {% block title %}
   Content Guide comparison result
 {% endblock %}
 
+{% block css %}
+  <link href="{% static "theme-orientation-portait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
 {% block body_class %}nofo_compare nofo_compare--content-guide{% endblock %}
 
-  {% block content %}
+{% block content %}
   <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
     <div class="usa-alert__body bg-base-lightest">
       <p class="usa-alert__text">
@@ -37,6 +44,31 @@
       </p>
 
       {% if comparison %}
+        <div class="nofo_view">
+          {% for section in comparison %}
+            <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+              <div>Section: {{ section.name }}</div>
+              <br />
+              <div class="section--content">
+
+                {% for subsection in section.subsections %}
+                  {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                      {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                  {% endwith %}
+                    {% if subsection.diff %}
+                      {{ subsection.diff|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    {% elif subsection.new_value %}
+                      {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    {% elif subsection.old_value %}
+                      {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    {% endif %}
+                {% endfor %}
+
+              </div>
+            </section>
+          {% endfor %}
+        </div>
+
         {% for section in comparison %}
           <table class="usa-table usa-table--borderless w-100">
             <caption>
