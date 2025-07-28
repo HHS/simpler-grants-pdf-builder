@@ -1399,16 +1399,27 @@ del {
   background-color: #ffebe9;
 }
 
-.nofo_compare--content-guide del {
-  text-decoration: none;
+del p,
+del li {
+  background-color: #ffebe9;
 }
 
 ins {
   background-color: #aceebb;
 }
 
+ins p,
+ins li {
+  background-color: #aceebb;
+}
+
 del + ins > br {
   display: none;
+}
+
+.section--content > ins,
+.section--content > del {
+  display: block;
 }
 
 .login-gov-container {
