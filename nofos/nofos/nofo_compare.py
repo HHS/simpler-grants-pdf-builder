@@ -188,6 +188,7 @@ def compare_sections(old_section, new_section):
 
     return {
         "name": new_section.name,
+        "html_id": new_section.html_id,
         "subsections": subsections,
     }
 

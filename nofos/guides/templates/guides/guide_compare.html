@@ -40,6 +40,27 @@
     <button class="usa-button">Set up compare settings</button>
   </div>
 
+    {% if num_changed_sections > 0 %}
+      <details class="margin-bottom-5">
+        <summary>
+          <span class="font-sans-lg"><strong>Sections with changes</strong></span>
+        </summary>
+
+        <ul>
+          {% for section in comparison %}
+          <p>Section: {{ section.name }}</a></p>
+            {% for subsection in section.subsections %}
+              <li>
+                {% if subsection.status != 'MATCH' %}<strong>{% endif %}
+                  <a href="#{{ subsection.html_id }}">{{ subsection.name }}</a>: {{ subsection.status }}
+                {% if subsection.status != 'MATCH' %}</strong>{% endif %}
+              </li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+
     {% if num_changed_sections == 0 %}
       <h2>No changes</h2>
       <p>
