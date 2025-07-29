@@ -28,11 +28,12 @@
   {% include "includes/page_heading.html" with title="Check out the differences" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
 
   <div class="usa-prose margin-bottom-5">
-    <p>Get a breakdown of what content has changed between the current version and your newly uploaded one.</p>
+    <p>Get a breakdown of what content has changed between the current version and{% if not num_changed_subsections %} another one that you upload{% else %} your newly uploaded one{% endif %}.</p>
 
     <p class="font-sans-lg"><strong>Compare overview</strong></p>
     <ul>
-      {% if num_changed_subsections == 0 %}
+      {% if not num_changed_subsections %}
+      {% elif num_changed_subsections == 0 %}
         <li>There are <strong>no changes</strong> in this new document.</li>
       {% else %}
         <li>There are <strong>{{ num_changed_subsections }}</strong> section{{ num_changed_subsections|pluralize }} with changes.</li>
@@ -41,7 +42,7 @@
       <li><ins>Green with an underline</ins> is an addition</li>
     </ul>
 
-    <button class="usa-button">Set up compare settings</button>
+    <a class="usa-button" href="{% url 'guides:guide_edit' guide.pk %}">Set up compare settings</a>
   </div>
   
   {% if comparison %}
@@ -152,11 +153,9 @@
           {% endfor %}
         </div>
         <div class="nofo_view--new nofo_view--new--empty">
-
             <p class="margin-top-6">Ready to compare to this content guide?</p>
             <p>Upload a NOFO to see it here.</p>
-            <button class="usa-button margin-top-2">Upload a NOFO to compare</button>
-
+            <p class="margin-top-2"><a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a></p>
         </div>
       </div>
     </div>
