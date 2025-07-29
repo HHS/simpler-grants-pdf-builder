@@ -6,11 +6,12 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
+from nofos.models import Nofo
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
     add_headings_to_document,
@@ -188,7 +189,7 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})
 
 
-class ContentGuideCompareView(BaseNofoImportView):
+class ContentGuideCompareUploadView(BaseNofoImportView):
     template_name = "guides/guide_import_compare.html"
     redirect_url_name = "guides:guide_compare"
 
@@ -228,24 +229,35 @@ class ContentGuideCompareView(BaseNofoImportView):
             new_nofo.archived = timezone.now()
             new_nofo.save()
 
-            # Compare against the existing Content Guide
-            comparison = compare_nofos(guide, new_nofo)
-
-            # Number of changes
-            num_changed_sections = len(comparison)
-            num_changed_subsections = sum(len(s["subsections"]) for s in comparison)
-
-            return render(
-                request,
-                "guides/guide_compare.html",  # You’ll need to create this!
-                {
-                    "guide": guide,
-                    "new_nofo": new_nofo,
-                    "comparison": comparison,
-                    "num_changed_sections": num_changed_sections,
-                    "num_changed_subsections": num_changed_subsections,
-                },
+            return redirect(
+                "guides:guide_compare_result", pk=self.guide.pk, new_nofo_id=new_nofo.pk
             )
 
         except Exception as e:
             return HttpResponseBadRequest(f"Error comparing NOFO: {str(e)}")
+
+
+class ContentGuideCompareView(View):
+    def get(self, request, pk, new_nofo_id=None):
+        guide = get_object_or_404(ContentGuide, pk=pk)
+
+        context = {
+            "guide": guide,
+        }
+
+        if new_nofo_id:
+            new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
+
+            comparison = compare_nofos(guide, new_nofo)
+            context.update(
+                {
+                    "new_nofo": new_nofo,
+                    "comparison": comparison,
+                    "num_changed_sections": len(comparison),
+                    "num_changed_subsections": sum(
+                        len(s["subsections"]) for s in comparison
+                    ),
+                }
+            )
+
+        return render(request, "guides/guide_compare.html", context)

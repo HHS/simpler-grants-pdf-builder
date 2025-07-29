@@ -1403,9 +1403,29 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare--content-guide .nofo_view {
+  display: flex;
+  gap: 1rem;
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--old,
+.nofo_compare--content-guide .nofo_view .nofo_view--new {
   border: 1px solid #dfe1e2;
   background-color: #ffffff;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
+  gap: 1rem;
+  flex: 1; /* Each child takes 50% of container */
+  min-width: 0; /* Prevent overflow issues with long content */
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--new.nofo_view--new--empty {
+  background: #d9d9d9;
+  text-align: center;
+}
+
+.nofo_compare.nofo_compare--content-guide.nofo_compare--content-guide--comparison
+  .section--content
+  > *:not(.section--content--right-col) {
+  width: auto;
 }
 
 .nofo_compare .nofo_view--menu-bar {
