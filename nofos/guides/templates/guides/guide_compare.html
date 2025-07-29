@@ -25,8 +25,20 @@
   </div>
 
   {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Content Guide comparison result" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Check out the differences" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
 
+  <div class="usa-prose margin-bottom-5">
+    <p>Get a breakdown of what content has changed between the current version and your newly uploaded one.</p>
+
+    <p class="font-sans-lg"><strong>Compare overview</strong></p>
+    <ul>
+      <li>There are <strong>{{ num_changed_subsections }}</strong> section{{ num_changed_subsections|pluralize }} with changes.</li>
+      <li><del>Red with a strikethrough</del> is a deletion</li>
+      <li><ins>Green with an underline</ins> is an addition</li>
+    </ul>
+
+    <button class="usa-button">Set up compare settings</button>
+  </div>
 
     {% if num_changed_sections == 0 %}
       <h2>No changes</h2>
@@ -40,44 +52,34 @@
       </a>
 
     {% else %}
-      <p>
-        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes across {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-      </p>
 
       {% if comparison %}
-        <div class="nofo_view">
-          {% for section in comparison %}
-            <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
-              <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
-              <div class="section--content">
+        <div class="nofo_view--wrapper">
+          <div class="nofo_view nofo_view--old">
+            {% for section in comparison %}
+              <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                <div class="section--content">
 
-                {% for subsection in section.subsections %}
-                  {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                      {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
-                  {% endwith %}
-                    {% if subsection.diff %}
-                      {{ subsection.diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                    {% elif subsection.new_value %}
-                      {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                    {% elif subsection.old_value %}
-                      {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                    {% endif %}
-                {% endfor %}
+                  {% for subsection in section.subsections %}
+                    {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                        {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                    {% endwith %}
+                      {% if subsection.diff %}
+                        {{ subsection.diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% elif subsection.new_value %}
+                        {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% elif subsection.old_value %}
+                        {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% endif %}
+                  {% endfor %}
 
-              </div>
-            </section>
-          {% endfor %}
+                </div>
+              </section>
+            {% endfor %}
+          </div>
         </div>
 
-
       {% endif %}
-
-    <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
-    <ul class="usa-button-group margin-top-3">
-      <li class="usa-button-group__item">
-        <a href="{% url 'guides:guide_edit' guide.id %}" class="usa-button usa-button--outline">Back to “{{ guide.title }}”</a>
-      </li>
-    </ul>
-    <p class="font-body-sm">Have thoughts on this page? {% include "includes/feedback_link.html" %}.</p>
-  {% endif %}
+    {% endif %}
 {% endblock %}
