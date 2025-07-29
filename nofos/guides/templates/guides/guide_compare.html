@@ -7,7 +7,7 @@
 
 {% block css %}
   <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-orientation-portait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
@@ -55,6 +55,21 @@
 
       {% if comparison %}
         <div class="nofo_view--wrapper">
+          <div class="nofo_view--menu-bar">
+            <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy">
+              Side-by-side view
+            </button>
+            <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file">
+              Single view
+            </button>
+            <div class="nofo_view--menu-bar--vertical-space"></div>
+            <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more">
+              Previous section
+            </button>
+            <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less">
+              Next section
+            </button>
+          </div>
           <div class="nofo_view nofo_view--old">
             {% for section in comparison %}
               <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
