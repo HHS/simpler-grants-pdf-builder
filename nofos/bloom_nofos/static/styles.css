@@ -953,18 +953,25 @@ _:future,
 /* Safari fix for add-button positioning - ensure proper table cell context */
 _::-webkit-full-page-media,
 _:future,
-:root .section_edit table.table--section td.nofo-edit-table--subsection--manage {
+:root
+  .section_edit
+  table.table--section
+  td.nofo-edit-table--subsection--manage {
   position: relative;
 }
 
 _::-webkit-full-page-media,
 _:future,
-:root .section_edit table.table--section td.nofo-edit-table--subsection--manage .add-button {
+:root
+  .section_edit
+  table.table--section
+  td.nofo-edit-table--subsection--manage
+  .add-button {
   position: absolute;
   bottom: 0;
   white-space: nowrap;
   transform-origin: center;
-  left: calc(-1* var(--safari-tr-width)/2 + 100%);
+  left: calc(-1 * var(--safari-tr-width) / 2 + 100%);
   right: unset;
 }
 
@@ -1402,9 +1409,18 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   position: relative;
 }
 
-.nofo_compare--content-guide .nofo_view {
+.nofo_compare--content-guide .nofo_view,
+.nofo_compare--content-guide .nofo_view--title-bar {
   display: flex;
   gap: 1rem;
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--old,
+.nofo_compare--content-guide .nofo_view .nofo_view--new,
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new {
+  flex: 1; /* Each child takes 50% of container */
+  min-width: 0; /* Prevent overflow issues with long content */
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--old,
@@ -1412,14 +1428,16 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border: 1px solid #dfe1e2;
   background-color: #ffffff;
   padding: 0.75rem 1.5rem;
-  gap: 1rem;
-  flex: 1; /* Each child takes 50% of container */
-  min-width: 0; /* Prevent overflow issues with long content */
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--new.nofo_view--new--empty {
   background: #d9d9d9;
   text-align: center;
+}
+
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new {
+  padding: 0.5rem 0;
 }
 
 .nofo_compare.nofo_compare--content-guide.nofo_compare--content-guide--comparison
