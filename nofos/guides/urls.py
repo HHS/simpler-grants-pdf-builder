@@ -33,6 +33,16 @@ urlpatterns = [
         name="guide_compare",
     ),
     path(
+        "<uuid:pk>/compare/upload",
+        views.ContentGuideCompareUploadView.as_view(),
+        name="guide_compare_upload",
+    ),
+    path(
+        "<uuid:pk>/compare/<uuid:new_nofo_id>",
+        views.ContentGuideCompareView.as_view(),
+        name="guide_compare_result",
+    ),
+    path(
         "guides/<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.ContentGuideSubsectionEditView.as_view(),
         name="subsection_edit",
