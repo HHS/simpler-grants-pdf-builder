@@ -1394,6 +1394,19 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   word-break: break-word;
 }
 
+.nofo_compare--content-guide .nofo_view--wrapper {
+  border: 1px solid #dfe1e2;
+  background-color: #f9fbfc;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.nofo_compare--content-guide .nofo_view {
+  border: 1px solid #dfe1e2;
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+}
+
 del {
   color: var(--color--usa-error-message);
   background-color: #ffebe9;
@@ -1424,6 +1437,10 @@ del + ins > br {
 
 .login-gov-container {
   max-width: 30rem;
+}
+
+.nofo_compare h1 {
+  color: #1b1b1b;
 }
 
 /* User pages */
