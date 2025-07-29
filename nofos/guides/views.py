@@ -249,14 +249,18 @@ class ContentGuideCompareView(View):
             new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
 
             comparison = compare_nofos(guide, new_nofo)
+            changed_subsections = [
+                sub
+                for section in comparison
+                for sub in section["subsections"]
+                if sub.status != "MATCH"
+            ]
             context.update(
                 {
                     "new_nofo": new_nofo,
                     "comparison": comparison,
-                    "num_changed_sections": len(comparison),
-                    "num_changed_subsections": sum(
-                        len(s["subsections"]) for s in comparison
-                    ),
+                    "changed_subsections": changed_subsections,
+                    "num_changed_subsections": len(changed_subsections),
                 }
             )
 
