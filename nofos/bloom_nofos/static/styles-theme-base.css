@@ -120,14 +120,13 @@ p + p {
   margin-top: 10px;
 }
 
-a,
-table td a {
+.nofo_view a,
+.nofo_view table td a {
   color: var(--color--cdc-blue);
 }
 
-.section--before-you-begin--psuedo-header + p,
-div[role="heading"] + p,
-.section--content--intro p + p {
+.nofo_view div[role="heading"] + p,
+.nofo_view .section--content--intro p + p {
   margin-top: 5px;
 }
 
@@ -135,120 +134,120 @@ div[role="heading"] + p,
   font-size: 9pt;
 }
 
-li {
+.nofo_view li {
   margin: 5px 0;
 }
 
-table {
+.nofo_view table {
   border-collapse: collapse;
   border-spacing: 0;
   margin: 10px 0 20px;
   text-align: left;
 }
 
-table.table--large {
+.nofo_view table.table--large {
   padding-top: 0px;
   width: 100%;
 }
 
-table.table--with-caption caption {
+.nofo_view table.table--with-caption caption {
   font-weight: 700;
   margin-bottom: 10px;
   text-align: left;
 }
 
-table tr.light-blue-bg td,
-table tr td.light-blue-bg,
-table tr td.light-blue-bg ~ td {
+.nofo_view table tr.light-blue-bg td,
+.nofo_view table tr td.light-blue-bg,
+.nofo_view table tr td.light-blue-bg ~ td {
   background-color: var(--color--light-table-blue);
 }
 
-table th,
-table td,
-table caption {
+.nofo_view table th,
+.nofo_view table td,
+.nofo_view table caption {
   font-size: 10pt;
 }
 
-table th,
-table td {
+.nofo_view table th,
+.nofo_view table td {
   padding: 0.4rem 0.8rem;
 }
 
-table td {
+.nofo_view table td {
   vertical-align: baseline;
 }
 
-table th.align-top,
-table td.align-top {
+.nofo_view table th.align-top,
+.nofo_view table td.align-top {
   vertical-align: top;
 }
 
-table th.align-bottom,
-table td.align-bottom {
+.nofo_view table th.align-bottom,
+.nofo_view table td.align-bottom {
   vertical-align: bottom;
 }
 
-table tr.table-row--empty {
+.nofo_view table tr.table-row--empty {
   height: 28px;
 }
 
-table th.header-row-empty[colspan] {
+.nofo_view table th.header-row-empty[colspan] {
   height: 31px;
   background-color: var(--color--table-blue);
 }
 
-table thead th,
-table tbody tr:first-of-type th {
+.nofo_view table thead th,
+.nofo_view table tbody tr:first-of-type th {
   background-clip: padding-box;
   font-weight: 600;
   line-height: 1.3;
   text-align: left;
 }
 
-table thead th p,
-table tbody tr:first-of-type th p {
+.nofo_view table thead th p,
+.nofo_view table tbody tr:first-of-type th p {
   font-weight: 400;
 }
 
-table thead th p:first-child,
-table tbody tr:first-of-type th p:first-child {
+.nofo_view table thead th p:first-child,
+.nofo_view table tbody tr:first-of-type th p:first-child {
   font-weight: 600;
 }
 
-table thead th > p,
-table tbody tr:first-of-type th > p {
+.nofo_view table thead th > p,
+.nofo_view table tbody tr:first-of-type th > p {
   margin-top: 0;
   margin-bottom: 8px;
 }
 
-table thead th > strong + p:first-of-type,
-table tbody tr:first-of-type th > strong + p:first-of-type {
+.nofo_view table thead th > strong + p:first-of-type,
+.nofo_view table tbody tr:first-of-type th > strong + p:first-of-type {
   margin-top: 8px;
 }
 
-table thead th > p:last-of-type,
-table tbody tr:first-of-type th > p:last-of-type {
+.nofo_view table thead th > p:last-of-type,
+.nofo_view table tbody tr:first-of-type th > p:last-of-type {
   margin-bottom: 0;
 }
 
-table thead th a,
-table tbody tr:first-of-type th a {
+.nofo_view table thead th a,
+.nofo_view table tbody tr:first-of-type th a {
   color: currentColor;
 }
 
-table td > *:first-child,
-table td > *:first-child {
+.nofo_view table td > *:first-child,
+.nofo_view table td > *:first-child {
   margin-top: 0;
 }
 
-table td ul,
-table td ol {
+.nofo_view table td ul,
+.nofo_view table td ol {
   padding-left: 20px;
   margin-left: 0;
 }
 
-table td ul li:first-of-type,
-table td ol li:first-of-type {
+.nofo_view table td ul li:first-of-type,
+.nofo_view table td ol li:first-of-type {
   margin-top: 0;
 }
 
@@ -297,8 +296,8 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   margin-top: 5px;
 }
 
-ul,
-ol {
+.nofo_view ul,
+.nofo_view ol {
   margin-bottom: 12px;
   margin-top: 4px;
   line-height: 1.5;
@@ -306,13 +305,13 @@ ol {
   margin-left: 0;
 }
 
-ul:last-child,
-ol:last-child {
+.nofo_view ul:last-child,
+.nofo_view ol:last-child {
   margin-bottom: 0;
 }
 
-ul ul:last-child,
-ol ol:last-child {
+.nofo_view ul ul:last-child,
+.nofo_view ol ol:last-child {
   margin-bottom: 0.5rem;
 }
 
@@ -322,28 +321,28 @@ img.usa-icon--check_box_outline_blank {
   margin-right: 5px;
 }
 
-td.usa-icon__td ul,
-td.usa-icon__td ol {
+.nofo_view td.usa-icon__td ul,
+.nofo_view td.usa-icon__td ol {
   list-style: none;
 }
 
-ul.disc,
-ol.disc,
-td.usa-icon__td ul.disc,
-td.usa-icon__td ol.disc {
+.nofo_view ul.disc,
+.nofo_view ol.disc,
+.nofo_view td.usa-icon__td ul.disc,
+.nofo_view td.usa-icon__td ol.disc {
   list-style: disc;
 }
 
-td.usa-icon__td p + ul,
-td.usa-icon__td p + ol {
+.nofo_view td.usa-icon__td p + ul,
+.nofo_view td.usa-icon__td p + ol {
   padding-left: 25px;
 }
 
-.usa-icon__list-element {
+.nofo_view .usa-icon__list-element {
   position: relative;
 }
 
-.usa-icon__list-element .usa-icon {
+.nofo_view .usa-icon__list-element .usa-icon {
   position: absolute;
   left: -25px;
   height: 17px;
@@ -354,15 +353,15 @@ td.usa-icon__td p + ol {
 
 /* Headings */
 
-h2,
-h3,
-h4,
-h5,
-h6 {
+.nofo_view h2,
+.nofo_view h3,
+.nofo_view h4,
+.nofo_view h5,
+.nofo_view h6 {
   margin-bottom: 5px;
 }
 
-h2 {
+.nofo_view h2 {
   font-size: 23pt;
   font-weight: 700;
   margin-top: 20px;
@@ -370,27 +369,27 @@ h2 {
   border-top: 2px dashed var(--color--dark-blue);
 }
 
-h3 {
+.nofo_view h3 {
   font-size: 20pt;
   font-weight: 700;
   margin-top: 20px;
   line-height: 1.2;
 }
 
-h4 {
+.nofo_view h4 {
   font-size: 18pt;
   font-weight: 600;
   margin-top: 15px;
   line-height: 1.4;
 }
 
-h5 {
+.nofo_view h5 {
   font-size: 16pt;
   font-weight: 600;
   margin-top: 15px;
 }
 
-h6 {
+.nofo_view h6 {
   font-size: 14pt;
   font-weight: 500;
   margin-top: 12px;
@@ -398,20 +397,20 @@ h6 {
 
 /* Headings which follow headings have less top spacing */
 
-h3 + h4 {
+.nofo_view h3 + h4 {
   margin-top: 12px;
 }
 
-h4 + h5 {
+.nofo_view h4 + h5 {
   margin-top: 8px;
 }
 
-h5 + h6 {
+.nofo_view h5 + h6 {
   margin-top: 8px;
 }
 
 /* this functions as an h7 */
-div[role="heading"] {
+.nofo_view div[role="heading"] {
   margin: 10px 0 5px;
   font-size: 12.5pt;
   font-weight: 500;
