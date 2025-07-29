@@ -1399,12 +1399,91 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-color: #f9fbfc;
   padding: 1rem;
   border-radius: 4px;
+  position: relative;
 }
 
 .nofo_compare--content-guide .nofo_view {
   border: 1px solid #dfe1e2;
   background-color: #ffffff;
   padding: 1rem 2rem;
+}
+
+.nofo_compare .nofo_view--menu-bar {
+  position: sticky;
+  top: 0;
+  margin-bottom: 1rem;
+  z-index: 1;
+  display: flex;
+}
+
+.nofo_compare .nofo_view--menu-bar--button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem;
+  color: var(--color--cdc-blue);
+  border: 1px solid var(--color--cdc-blue);
+  border-radius: 4px;
+  background-color: white;
+  width: 75px;
+  margin-right: 1rem;
+}
+
+.nofo_compare .nofo_view--menu-bar--button:hover {
+  color: var(--color--dark-blue);
+  border: 1px solid var(--color--dark-blue);
+  background-color: #fcfcfc;
+  cursor: pointer;
+}
+
+.nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button::before {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+
+  filter: brightness(0) saturate(100%) invert(16%) sepia(93%) saturate(6087%)
+    hue-rotate(203deg) brightness(89%) contrast(102%);
+  width: 22px;
+  height: 21px;
+  margin-bottom: 8px;
+}
+
+.nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button:hover::before {
+  filter: brightness(0) saturate(100%) invert(14%) sepia(20%) saturate(6652%)
+    hue-rotate(187deg) brightness(103%) contrast(103%);
+}
+
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button__content_copy::before {
+  background-image: url("/static/img/usa-icons/content_copy.svg");
+}
+
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button__upload_file::before {
+  background-image: url("/static/img/usa-icons/upload_file.svg");
+}
+
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button__expand_more::before {
+  background-image: url("/static/img/usa-icons/expand_more.svg");
+}
+
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button__expand_less::before {
+  background-image: url("/static/img/usa-icons/expand_less.svg");
+}
+
+.nofo_compare .nofo_view--menu-bar--vertical-space {
+  border: 1px solid #dfe1e2;
+  margin-right: 1rem;
 }
 
 del {
