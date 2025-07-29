@@ -65,7 +65,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             create_nofo_audit_event(
                 event_type="nofo_import", document=guide, user=request.user
             )
-            return redirect("guides:guide_edit_title", pk=guide.pk)
+            return redirect("guides:guide_import_title", pk=guide.pk)
 
         except ValidationError as e:
             log_exception(
@@ -102,7 +102,7 @@ class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
             f"View Content Guide: <a href='{reverse_lazy('guides:guide_edit', args=[guide.id])}'>{guide.title}</a>",
         )
 
-        return redirect("guides:guide_index")
+        return redirect("guides:guide_compare", pk=guide.id)
 
 
 class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
@@ -156,11 +156,6 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
         guide = self.object
         guide.title = form.cleaned_data["title"]
         guide.save()
-
-        messages.success(
-            self.request,
-            f"Updated title to “{guide.title}”.",
-        )
 
         return redirect("guides:guide_edit", pk=guide.id)
 
