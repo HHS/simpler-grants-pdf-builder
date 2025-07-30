@@ -1502,3 +1502,43 @@ del + ins > br {
     top: 0;
   }
 }
+
+
+/* Image aspect ratio utilities */
+.cover-image {
+  width: 100%;
+  object-fit: cover;
+  object-position: left;
+}
+
+.usa-button.usa-button--icon {
+  margin: 0 !important;
+}
+
+.usa-button--icon {
+  margin: 0;
+  /* min-width: 5rem; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.usa-button--icon::before {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center left;
+  background-size: cover;
+  display: inline-flex;
+  height: 18px;
+  width: 18px;
+  filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
+    brightness(102%) contrast(101%);
+}
+
+.usa-button--icon.usa-button--file-upload::before {
+  background-image: url("/static/img/usa-icons/file_upload.svg");
+}
+
+.usa-button--icon.usa-button--delete::before {
+  background-image: url("/static/img/usa-icons/delete.svg");
+}

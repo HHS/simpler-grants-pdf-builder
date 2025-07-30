@@ -100,6 +100,8 @@ from .nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
+    upload_cover_image_to_s3,
+    remove_cover_image_from_s3,
 )
 from .nofo_compare import compare_nofos, compare_nofos_metadata
 from .utils import create_nofo_audit_event, create_subsection_html_id
@@ -1088,6 +1090,59 @@ class NofoEditCoverImageView(BaseNofoEditView):
         context = super().get_context_data(**kwargs)
         context["nofo_cover_image"] = get_cover_image(self.object)
         return context
+
+
+class NofoUploadCoverImageView(BaseNofoEditView):
+    form_class = NofoCoverImageForm
+    template_name = "nofos/nofo_upload_cover_image.html"
+    context_object_name = "nofo"
+
+    # def get_object(self):
+    #     """Return the NOFO instance for this view."""
+    #     return get_object_or_404(Nofo, pk=self.kwargs.get("pk"))
+
+    def post(self, request, *args, **kwargs):
+        """Handle POST request with file upload using the upload_cover_image_to_s3 function."""
+
+        self.object = self.get_object()
+
+        # Get the uploaded file directly from request.FILES
+        uploaded_file = request.FILES.get("cover_image")
+        alt_text = request.POST.get("cover_image_alt_text", "")
+
+        if not uploaded_file:
+            messages.error(request, "Please select a file to upload.")
+            return self.get(request, *args, **kwargs)
+
+        # Use the upload function from nofo.py
+        try:
+            success, message, s3_key = upload_cover_image_to_s3(
+                self.object, uploaded_file, alt_text
+            )
+
+            if success:
+                messages.success(request, message)
+
+                return redirect("nofos:nofo_edit", pk=self.object.pk)
+            else:
+                messages.error(request, message)
+                return self.get(request, *args, **kwargs)
+
+        except Exception as e:
+            messages.error(request, f"Failed to upload cover image: {str(e)}")
+            return self.get(request, *args, **kwargs)
+
+
+class NofoDeleteCoverImageView(BaseNofoEditView):
+    def post(self, request, *args, **kwargs):
+        """Handle DELETE request to remove cover image."""
+        self.object = self.get_object()
+        try:
+            remove_cover_image_from_s3(self.object)
+            messages.success(request, "Cover image removed successfully.")
+        except Exception as e:
+            messages.error(request, f"Failed to remove cover image: {str(e)}")
+        return redirect("nofos:nofo_edit", pk=self.object.pk)
 
 
 class NofoEditStatusView(BaseNofoEditView):

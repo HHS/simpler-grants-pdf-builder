@@ -10,7 +10,7 @@ Edit “{{ nofo|nofo_name }}”
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% if nofo.modifications %} nofo--modifications{% endif %}{% if nofo.archived %} nofo--archived{% endif %}{% endblock %}
 
 {% block content %}
-{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Subsection deleted" stick_to_bottom=True only %}
+{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Error" stick_to_bottom=True only %}
 
 <!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
 {% if nofo.archived %}
@@ -450,6 +450,37 @@ Edit “{{ nofo|nofo_name }}”
     <tr>
       <th scope="row">Icon style</th>
       <td>{{ nofo.get_icon_style_display|get_value_or_none:"Outlined" }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
+  <caption>
+    <div>
+      <h2 class="margin-bottom-0">NOFO cover image</h2>
+      <span class="padding-right-2 font-sans-sm">
+        {% if nofo.cover_image %}
+          <a href="{% url 'nofos:nofo_edit_cover_image' nofo.id %}">Edit<span class="usa-sr-only">: NOFO cover image</span></a>
+        {% else %}
+          <a href="{% url 'nofos:nofo_upload_cover_image' nofo.id %}">Edit<span class="usa-sr-only">: NOFO cover image</span></a>
+        {% endif %}
+      </span>
+    </div>
+  </caption>
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+    </tr>
+  </thead>
+  <tbody class="no-edit-link">
+    <tr>
+      <th scope="row">Cover image</th>
+      <td>{{ nofo.cover_image|get_value_or_none:"cover image" }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Cover alt text</th>
+      <td>{{ nofo.cover_image_alt_text|get_value_or_none:"cover alt text" }}</td>
     </tr>
   </tbody>
 </table>
