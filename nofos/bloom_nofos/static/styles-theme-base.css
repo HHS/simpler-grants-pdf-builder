@@ -120,7 +120,7 @@ p + p {
   margin-top: 10px;
 }
 
-.nofo_view a,
+.nofo_view a:not(.usa-button),
 .nofo_view table td a {
   color: var(--color--cdc-blue);
 }

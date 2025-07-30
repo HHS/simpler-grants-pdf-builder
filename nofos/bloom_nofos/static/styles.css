@@ -1467,6 +1467,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-color: white;
   width: 75px;
   margin-right: 1rem;
+  line-height: 1.15;
+  text-decoration: none;
 }
 
 .nofo_compare .nofo_view--menu-bar--button:hover {

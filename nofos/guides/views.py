@@ -236,8 +236,12 @@ class ContentGuideCompareView(View):
     def get(self, request, pk, new_nofo_id=None):
         guide = get_object_or_404(ContentGuide, pk=pk)
 
+        # Get display mode from query param (default to "double", which is side-by-side)
+        display_mode = request.GET.get("display", "double")
+
         context = {
             "guide": guide,
+            "display_mode": display_mode,
         }
 
         if new_nofo_id:
