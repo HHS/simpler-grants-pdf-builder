@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static nofo_name %}
+
+{% block title %}
+  Upload a cover image for "{{ nofo|nofo_name }}"
+{% endblock %}
+
+{% block body_class %}nofo_import{% endblock %}
+
+{% block content %}
+
+{% with nofo|nofo_name as nofo_name_str %}
+{% with "Back to "|add:nofo_name_str|add:"" as back_text %}
+  {% url 'nofos:nofo_edit' nofo.id as back_href %}
+  {% include "includes/page_heading.html" with title="Upload a cover image for "|add:nofo_name_str|add:"" back_text=back_text back_href=back_href only %}
+{% endwith %}
+{% endwith %}
+
+<form id="nofo-upload-cover-image--form" class="form-import--loading" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% with id="cover_image" label="Select an image file. We recommend the images of at least 1000px by 1500px (2:3 aspect ratio)." hint="Accepts .jpg or .png files." accept=".png,.jpg" %}
+    {% for message in messages %}
+      {% if "error" in message.tags %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message required=True only %}
+      {% endif %}
+    {% empty %}
+      {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept required=True only %}
+    {% endfor %}
+  {% endwith %}
+  {% include "includes/loading_horse.html" %}
+
+  {% with id="cover_image_alt_text" label="Enter a short description of the image for screen readers." hint="(Optional) This will be used as the alt text for the image. Good alt text concisely describes the image’s content, providing context and meaning for users who can’t see it." value=nofo.cover_image_alt_text %}
+    {% include "includes/_text_input.html" with id=id label=label hint=hint value=value only %}
+  {% endwith %}
+
+
+  <button class="usa-button margin-top-3 submit-button" type="submit">Upload</button>
+</form>
+{% endblock %}

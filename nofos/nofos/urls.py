@@ -116,6 +116,16 @@ urlpatterns = [
         name="nofo_edit_cover_image",
     ),
     path(
+        "<uuid:pk>/upload/cover-image",
+        views.NofoUploadCoverImageView.as_view(),
+        name="nofo_upload_cover_image",
+    ),
+    path(
+        "<uuid:pk>/delete/cover-image",
+        views.NofoDeleteCoverImageView.as_view(),
+        name="nofo_delete_cover_image",
+    ),
+    path(
         "<uuid:pk>/edit/status",
         views.NofoEditStatusView.as_view(),
         name="nofo_edit_status",
