@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from bs4 import BeautifulSoup
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from freezegun import freeze_time
 import logging
@@ -57,6 +58,7 @@ from .nofo import (
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
+    remove_cover_image_from_s3,
     replace_value_in_subsections,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
@@ -75,6 +77,7 @@ from .nofo import (
     suggest_nofo_title,
     unwrap_empty_elements,
     unwrap_nested_lists,
+    upload_cover_image_to_s3,
 )
 from .nofo_markdown import md
 
@@ -1853,6 +1856,183 @@ class NofoCoverImageTests(TestCase):
         nofo = Nofo(cover_image="cover-image.jpg")
         self.assertEqual(get_cover_image(nofo), s3_url)
         mock_get_image_url_from_s3.assert_called_once_with("cover-image.jpg")
+
+
+@patch("nofos.nofo.upload_file_to_s3")
+class UploadCoverImageToS3Tests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO Title", short_name="TEST-001", opdiv="Test Agency"
+        )
+
+        # Create valid test file
+        self.valid_jpg_file = SimpleUploadedFile(
+            "test_image.jpg", b"fake image content", content_type="image/jpeg"
+        )
+
+    def test_successful_upload_with_jpg(self, mock_upload_to_s3):
+        """Test successful upload of JPG file"""
+        mock_upload_to_s3.return_value = "img/cover-img/test-001.jpg"
+
+        success, message, s3_key = upload_cover_image_to_s3(
+            self.nofo, self.valid_jpg_file, "Test alt text"
+        )
+
+        self.assertTrue(success)
+        self.assertIn("successfully uploaded", message)
+        self.assertEqual(s3_key, "img/cover-img/test-001.jpg")
+
+        # Check NOFO was updated
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover_image, "img/cover-img/test-001.jpg")
+        self.assertEqual(self.nofo.cover_image_alt_text, "Test alt text")
+
+        # Check S3 upload was called with correct parameters
+        mock_upload_to_s3.assert_called_once()
+        call_args = mock_upload_to_s3.call_args
+        uploaded_file = call_args[0][0]
+        key_prefix = call_args[1]["key_prefix"]
+        self.assertEqual(uploaded_file.name, "test-001.jpg")
+        self.assertEqual(key_prefix, "img/cover-img")
+
+    def test_upload_preserves_existing_alt_text_when_none_provided(
+        self, mock_upload_to_s3
+    ):
+        """Test that existing alt text is preserved when none is provided"""
+        self.nofo.cover_image_alt_text = "Existing alt text"
+        self.nofo.save()
+
+        mock_upload_to_s3.return_value = "img/cover-img/test-001.jpg"
+
+        success, message, s3_key = upload_cover_image_to_s3(
+            self.nofo, self.valid_jpg_file, ""
+        )
+
+        self.assertTrue(success)
+
+        # Check existing alt text was preserved
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover_image_alt_text, "Existing alt text")
+
+    def test_file_size_validation_too_large(self, mock_upload_to_s3):
+        """Test file size validation fails for files over 5MB"""
+        large_file = SimpleUploadedFile(
+            "large_image.jpg",
+            b"x" * (6 * 1024 * 1024),  # 6MB
+            content_type="image/jpeg",
+        )
+
+        success, message, s3_key = upload_cover_image_to_s3(self.nofo, large_file)
+
+        self.assertFalse(success)
+        self.assertIn("exceeds maximum allowed size", message)
+        self.assertIsNone(s3_key)
+        mock_upload_to_s3.assert_not_called()
+
+    def test_file_type_validation_invalid_content_type(self, mock_upload_to_s3):
+        """Test file type validation fails for invalid content types"""
+        invalid_file = SimpleUploadedFile(
+            "document.pdf", b"fake pdf content", content_type="application/pdf"
+        )
+
+        success, message, s3_key = upload_cover_image_to_s3(self.nofo, invalid_file)
+
+        self.assertFalse(success)
+        self.assertIn("Invalid file type", message)
+        self.assertIsNone(s3_key)
+        mock_upload_to_s3.assert_not_called()
+
+    def test_file_extension_validation_invalid_extension(self, mock_upload_to_s3):
+        """Test file extension validation fails for invalid extensions"""
+        # Use valid content type but invalid extension
+        invalid_file = SimpleUploadedFile(
+            "image.gif",
+            b"fake gif content",
+            content_type="image/jpeg",  # Valid content type but .gif extension
+        )
+
+        success, message, s3_key = upload_cover_image_to_s3(self.nofo, invalid_file)
+
+        self.assertFalse(success)
+        self.assertIn("Invalid file extension", message)
+        self.assertIsNone(s3_key)
+        mock_upload_to_s3.assert_not_called()
+
+    def test_s3_upload_exception(self, mock_upload_to_s3):
+        """Test handling of S3 upload exception"""
+        mock_upload_to_s3.side_effect = Exception("S3 connection failed")
+
+        success, message, s3_key = upload_cover_image_to_s3(
+            self.nofo, self.valid_jpg_file
+        )
+
+        self.assertFalse(success)
+        self.assertIn("Failed to upload cover image", message)
+        self.assertIn("S3 connection failed", message)
+        self.assertIsNone(s3_key)
+
+
+@patch("nofos.nofo.remove_file_from_s3")
+class RemoveCoverImageFromS3Tests(TestCase):
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO Title",
+            short_name="TEST-001",
+            opdiv="Test Agency",
+            cover_image="img/cover-img/test-001.jpg",
+            cover_image_alt_text="Test alt text",
+        )
+
+    def test_remove_cover_image_with_existing_image(self, mock_remove_from_s3):
+        """Test removing cover image when one exists"""
+        original_cover_image = self.nofo.cover_image
+
+        remove_cover_image_from_s3(self.nofo)
+
+        # Check NOFO fields were cleared
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover_image, "")
+        self.assertEqual(self.nofo.cover_image_alt_text, "")
+
+        # Check S3 removal was called with correct key
+        mock_remove_from_s3.assert_called_once_with(original_cover_image)
+
+    def test_remove_cover_image_with_no_existing_image(self, mock_remove_from_s3):
+        """Test removing cover image when none exists"""
+        self.nofo.cover_image = ""
+        self.nofo.cover_image_alt_text = "Some alt text"
+        self.nofo.save()
+
+        remove_cover_image_from_s3(self.nofo)
+
+        # Check NOFO fields were cleared
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover_image, "")
+        self.assertEqual(self.nofo.cover_image_alt_text, "")
+
+        # Check S3 removal was not called since there was no image
+        mock_remove_from_s3.assert_not_called()
+
+    def test_remove_cover_image_s3_exception_still_clears_nofo(
+        self, mock_remove_from_s3
+    ):
+        """Test that NOFO is cleared even if S3 removal fails"""
+        mock_remove_from_s3.side_effect = Exception("S3 removal failed")
+
+        # The function should raise the exception from S3 removal
+        with self.assertRaises(Exception) as context:
+            remove_cover_image_from_s3(self.nofo)
+
+        self.assertEqual(str(context.exception), "S3 removal failed")
+
+        # Check NOFO fields were still cleared despite S3 failure
+        # (because they're cleared before attempting S3 removal)
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover_image, "")
+        self.assertEqual(self.nofo.cover_image_alt_text, "")
+
+        # Check S3 removal was attempted
+        mock_remove_from_s3.assert_called_once()
 
 
 class TestGetAllIdAttrsForNofo(TestCase):

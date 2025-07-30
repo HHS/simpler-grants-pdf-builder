@@ -160,18 +160,6 @@ class NofoCoverImageForm(forms.ModelForm):
         model = Nofo
         fields = ["cover_image", "cover_image_alt_text"]
 
-    def __init__(self, *args, **kwargs):
-        super(NofoCoverImageForm, self).__init__(*args, **kwargs)
-
-        # Disable the 'cover_image' field so it cannot be modified
-        self.fields["cover_image"].disabled = True
-        self.fields["cover_image"].widget.attrs[
-            "is_disabled"
-        ] = "disabled"  # Custom attribute to use in the template
-
-        # Make 'cover_image_alt_text' optional
-        self.fields["cover_image_alt_text"].required = False
-
 
 # this one needs a custom field and a custom widget so don't use the factory function
 class NofoMetadataForm(forms.ModelForm):

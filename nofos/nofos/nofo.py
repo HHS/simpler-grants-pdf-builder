@@ -10,7 +10,11 @@ import cssutils
 import mammoth
 import markdown
 import requests
-from bloom_nofos.s3.utils import get_image_url_from_s3
+from bloom_nofos.s3.utils import (
+    get_image_url_from_s3,
+    remove_file_from_s3,
+    upload_file_to_s3,
+)
 from bs4 import BeautifulSoup, NavigableString, Tag
 from constance import config
 from django.conf import settings
@@ -135,7 +139,6 @@ def process_nofo_html(soup, top_heading_level):
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
-    replace_src_for_inline_images(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
@@ -780,6 +783,11 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
     return sections
 
 
+###########################################################
+#################### NOFO COVER IMAGE FUNCS ###############
+###########################################################
+
+
 def get_cover_image(nofo):
     """
     Returns a cover_image string based on specific conditions to ensure it is correctly formatted for web display or template rendering.
@@ -832,6 +840,84 @@ def get_cover_image(nofo):
         return asset
 
     return "img/cover.jpg"
+
+
+def upload_cover_image_to_s3(nofo, uploaded_file, alt_text=""):
+    """
+    Uploads a cover image to S3 and updates the NOFO.
+
+    Args:
+        nofo: The NOFO object to update
+        uploaded_file: The uploaded file from request.FILES
+        alt_text: Optional alt text for the image
+
+    Returns:
+        tuple: (success: bool, message: str, s3_key: str or None)
+
+    Raises:
+        ValidationError: If file validation fails
+    """
+    try:
+        # Validate file size (5MB limit)
+        max_size = 5 * 1024 * 1024  # 5MB in bytes
+        if uploaded_file.size > max_size:
+            raise ValidationError(
+                f"File size ({uploaded_file.size / (1024*1024):.1f}MB) exceeds maximum allowed size (5MB)."
+            )
+
+        # Validate file type
+        allowed_types = ["image/png", "image/jpg", "image/jpeg"]
+        if uploaded_file.content_type not in allowed_types:
+            raise ValidationError(
+                f"Invalid file type: {uploaded_file.content_type}. Please upload a valid image file."
+            )
+
+        # Validate file extension
+        allowed_extensions = [".png", ".jpg", ".jpeg"]
+        file_extension = "." + uploaded_file.name.lower().split(".")[-1]
+        if file_extension not in allowed_extensions:
+            raise ValidationError(
+                f"Invalid file extension: {file_extension}. Allowed extensions: {', '.join(allowed_extensions)}"
+            )
+
+        # Rename file to have NOFO name
+        uploaded_file.name = f"{nofo.short_name or nofo.title}{file_extension}".lower()
+
+        # Upload file to S3
+        s3_key = upload_file_to_s3(uploaded_file, key_prefix="img/cover-img")
+
+        if s3_key:
+            # Update the NOFO with the S3 key and alt text
+            nofo.cover_image = s3_key
+            nofo.cover_image_alt_text = alt_text or nofo.cover_image_alt_text or ""
+            nofo.save()
+
+            return (
+                True,
+                f"Cover image '{uploaded_file.name}' has been successfully uploaded and saved.",
+                s3_key,
+            )
+        else:
+            return False, "Failed to upload image to storage.", None
+
+    except ValidationError as e:
+        return False, str(e), None
+    except Exception as e:
+        return False, f"Failed to upload cover image: {str(e)}", None
+
+
+def remove_cover_image_from_s3(nofo):
+    """
+    Removes the cover image from S3 and updates the NOFO.
+    """
+    cover_image = nofo.cover_image
+
+    nofo.cover_image = ""
+    nofo.cover_image_alt_text = ""
+    nofo.save()
+
+    if cover_image:
+        remove_file_from_s3(cover_image)
 
 
 ###########################################################

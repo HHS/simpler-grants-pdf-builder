@@ -1,9 +1,16 @@
 from unittest.mock import MagicMock, patch
+from io import BytesIO
 
 from botocore.exceptions import ClientError, SSOTokenLoadError, TokenRetrievalError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from .utils import get_image_url_from_s3, strip_s3_hostname_suffix
+from .utils import (
+    get_image_url_from_s3,
+    strip_s3_hostname_suffix,
+    upload_file_to_s3,
+    remove_file_from_s3,
+)
 
 
 class StripS3HostnameSuffixTests(TestCase):
@@ -114,22 +121,10 @@ class GetImageUrlFromS3Test(TestCase):
         self.assertIsNone(result)
 
     @override_settings(GENERAL_S3_BUCKET_URL="")
-    @patch("bloom_nofos.s3.utils.boto3.client")
-    def test_empty_bucket_url(self, mock_boto_client):
-        """Test with empty bucket URL setting."""
-        mock_s3_client = MagicMock()
-        mock_s3_client.generate_presigned_url.return_value = "https://test-url"
-        mock_boto_client.return_value = mock_s3_client
-
-        result = get_image_url_from_s3("test-path")
-
-        # Should still work with empty bucket name
-        self.assertEqual(result, "https://test-url")
-        mock_s3_client.generate_presigned_url.assert_called_once_with(
-            "get_object",
-            Params={"Bucket": "", "Key": "test-path"},
-            ExpiresIn=3600,
-        )
+    def test_empty_bucket_url_raises_exception(self):
+        """Test that empty bucket URL raises exception."""
+        with self.assertRaisesMessage(Exception, "No AWS bucket configured"):
+            get_image_url_from_s3("test-path")
 
     def test_empty_path(self):
         """Test with empty path parameter."""
@@ -247,3 +242,157 @@ class GetImageUrlFromS3Test(TestCase):
         result = get_image_url_from_s3("nonexistent-file")
 
         self.assertIsNone(result, "Should return None when file doesn't exist")
+
+
+class UploadFileToS3Test(TestCase):
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_file_content = b"Test file content"
+        self.mock_file = SimpleUploadedFile(
+            "test_image.jpg", self.test_file_content, content_type="image/jpeg"
+        )
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_successful_upload(self, mock_boto_client):
+        """Test successful file upload to S3."""
+        mock_s3_client = MagicMock()
+        mock_boto_client.return_value = mock_s3_client
+
+        result = upload_file_to_s3(self.mock_file, "cover-images")
+
+        self.assertEqual(result, "cover-images/test_image.jpg")
+        mock_boto_client.assert_called_once()
+        mock_s3_client.upload_fileobj.assert_called_once()
+
+        # Verify upload parameters
+        call_args = mock_s3_client.upload_fileobj.call_args
+        self.assertEqual(call_args[0][0], self.mock_file)  # file object
+        self.assertEqual(call_args[0][1], "test-bucket")  # bucket name
+        self.assertEqual(call_args[0][2], "cover-images/test_image.jpg")  # s3 key
+
+        # Check ExtraArgs
+        extra_args = call_args[1]["ExtraArgs"]
+        self.assertEqual(extra_args["ContentType"], "image/jpeg")
+        self.assertIn("original_filename", extra_args["Metadata"])
+        self.assertIn("uploaded_at", extra_args["Metadata"])
+        self.assertEqual(extra_args["Metadata"]["original_filename"], "test_image.jpg")
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_aws_authentication_errors(self, mock_boto_client):
+        """Test handling of various AWS authentication errors."""
+        error_scenarios = [
+            (
+                TokenRetrievalError(provider="test", error_msg="Token expired"),
+                "AWS authentication failed. Please contact an administrator.",
+            ),
+            (
+                SSOTokenLoadError(error_msg="No SSO token found"),
+                "AWS authentication failed. Please contact an administrator.",
+            ),
+        ]
+
+        for exception, expected_message in error_scenarios:
+            with self.subTest(exception=exception.__class__.__name__):
+                mock_boto_client.side_effect = exception
+
+                with self.assertRaisesMessage(Exception, expected_message):
+                    upload_file_to_s3(self.mock_file, "test-prefix")
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_client_error_handling(self, mock_boto_client):
+        """Test handling of AWS ClientError."""
+        mock_boto_client.side_effect = ClientError(
+            error_response={
+                "Error": {"Code": "AccessDenied", "Message": "Access denied"}
+            },
+            operation_name="PutObject",
+        )
+
+        with self.assertRaisesMessage(
+            Exception,
+            "File upload failed: An error occurred (AccessDenied) when calling the PutObject operation: Access denied",
+        ):
+            upload_file_to_s3(self.mock_file, "test-prefix")
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_upload_fileobj_exception(self, mock_boto_client):
+        """Test handling of exception during upload_fileobj call."""
+        mock_s3_client = MagicMock()
+        mock_s3_client.upload_fileobj.side_effect = Exception("Upload failed")
+        mock_boto_client.return_value = mock_s3_client
+
+        with self.assertRaisesMessage(Exception, "File upload failed: Upload failed"):
+            upload_file_to_s3(self.mock_file, "test-prefix")
+
+
+class RemoveFileFromS3Test(TestCase):
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_successful_removal(self, mock_boto_client):
+        """Test successful file removal from S3."""
+        mock_s3_client = MagicMock()
+        mock_boto_client.return_value = mock_s3_client
+
+        # Should not raise any exception
+        remove_file_from_s3("test-key/image.jpg")
+
+        mock_boto_client.assert_called_once()
+        mock_s3_client.delete_object.assert_called_once_with(
+            Bucket="test-bucket", Key="test-key/image.jpg"
+        )
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_aws_authentication_errors(self, mock_boto_client):
+        """Test handling of various AWS authentication errors."""
+        error_scenarios = [
+            (
+                TokenRetrievalError(provider="test", error_msg="Token expired"),
+                "AWS authentication failed. Please contact an administrator.",
+            ),
+            (
+                SSOTokenLoadError(error_msg="No SSO token found"),
+                "AWS authentication failed. Please contact an administrator.",
+            ),
+        ]
+
+        for exception, expected_message in error_scenarios:
+            with self.subTest(exception=exception.__class__.__name__):
+                mock_boto_client.side_effect = exception
+
+                with self.assertRaisesMessage(Exception, expected_message):
+                    remove_file_from_s3("test-key")
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_client_error_handling(self, mock_boto_client):
+        """Test handling of AWS ClientError."""
+        mock_s3_client = MagicMock()
+        mock_s3_client.delete_object.side_effect = ClientError(
+            error_response={"Error": {"Code": "NoSuchKey", "Message": "Key not found"}},
+            operation_name="DeleteObject",
+        )
+        mock_boto_client.return_value = mock_s3_client
+
+        with self.assertRaisesMessage(
+            Exception,
+            "File removal failed: An error occurred (NoSuchKey) when calling the DeleteObject operation: Key not found",
+        ):
+            remove_file_from_s3("nonexistent-key")
+
+        mock_s3_client.delete_object.assert_called_once()
+
+    @override_settings(GENERAL_S3_BUCKET_URL="test-bucket.s3.amazonaws.com")
+    @patch("bloom_nofos.s3.utils.boto3.client")
+    def test_delete_object_exception(self, mock_boto_client):
+        """Test handling of exception during delete_object call."""
+        mock_s3_client = MagicMock()
+        mock_s3_client.delete_object.side_effect = Exception("Delete failed")
+        mock_boto_client.return_value = mock_s3_client
+
+        with self.assertRaisesMessage(Exception, "File removal failed: Delete failed"):
+            remove_file_from_s3("test-key")
