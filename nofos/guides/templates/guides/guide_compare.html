@@ -79,17 +79,27 @@
   {% if comparison %}
     <div class="nofo_view--wrapper">
       <div class="nofo_view--menu-bar">
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy">
-          Side-by-side view
-        </button>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file">
-          Single view
-        </button>
+        {% with current_view=request.path %}
+          <a
+            href="{{ current_view }}?display=double"
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy {% if display_mode == 'double' %}is-disabled{% endif %}"
+            {% if display_mode == "double" %}aria-disabled="true"{% endif %}
+          >
+            Side-by-side view
+          </a>
+          <a
+            href="{{ current_view }}?display=single"
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file {% if display_mode == 'single' %}is-disabled{% endif %}"
+            {% if display_mode == "single" %}aria-disabled="true"{% endif %}
+          >
+            Single view
+          </a>
+        {% endwith %}
         <div class="nofo_view--menu-bar--vertical-space"></div>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more">
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less">
           Previous section
         </button>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less">
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more">
           Next section
         </button>
       </div>
@@ -117,7 +127,6 @@
                       {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
                     {% endif %}
                 {% endfor %}
-
               </div>
             </section>
           {% endfor %}
