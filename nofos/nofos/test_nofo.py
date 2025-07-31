@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from bs4 import BeautifulSoup
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from freezegun import freeze_time
@@ -1862,7 +1863,7 @@ class NofoCoverImageTests(TestCase):
 class UploadCoverImageToS3Tests(TestCase):
     def setUp(self):
         self.nofo = Nofo.objects.create(
-            title="Test NOFO Title", short_name="TEST-001", opdiv="Test Agency"
+            title="Test NOFO Title", short_name="TEST-001", number="TEST-001", opdiv="Test Agency"
         )
 
         # Create valid test file
@@ -1874,13 +1875,11 @@ class UploadCoverImageToS3Tests(TestCase):
         """Test successful upload of JPG file"""
         mock_upload_to_s3.return_value = "img/cover-img/test-001.jpg"
 
-        success, message, s3_key = upload_cover_image_to_s3(
+        result = upload_cover_image_to_s3(
             self.nofo, self.valid_jpg_file, "Test alt text"
         )
 
-        self.assertTrue(success)
-        self.assertIn("successfully uploaded", message)
-        self.assertEqual(s3_key, "img/cover-img/test-001.jpg")
+        self.assertTrue(result)
 
         # Check NOFO was updated
         self.nofo.refresh_from_db()
@@ -1904,11 +1903,11 @@ class UploadCoverImageToS3Tests(TestCase):
 
         mock_upload_to_s3.return_value = "img/cover-img/test-001.jpg"
 
-        success, message, s3_key = upload_cover_image_to_s3(
+        result = upload_cover_image_to_s3(
             self.nofo, self.valid_jpg_file, ""
         )
 
-        self.assertTrue(success)
+        self.assertTrue(result)
 
         # Check existing alt text was preserved
         self.nofo.refresh_from_db()
@@ -1922,11 +1921,10 @@ class UploadCoverImageToS3Tests(TestCase):
             content_type="image/jpeg",
         )
 
-        success, message, s3_key = upload_cover_image_to_s3(self.nofo, large_file)
+        with self.assertRaises(ValidationError) as context:
+            upload_cover_image_to_s3(self.nofo, large_file)
 
-        self.assertFalse(success)
-        self.assertIn("exceeds maximum allowed size", message)
-        self.assertIsNone(s3_key)
+        self.assertIn("exceeds maximum allowed size", str(context.exception))
         mock_upload_to_s3.assert_not_called()
 
     def test_file_type_validation_invalid_content_type(self, mock_upload_to_s3):
@@ -1935,11 +1933,10 @@ class UploadCoverImageToS3Tests(TestCase):
             "document.pdf", b"fake pdf content", content_type="application/pdf"
         )
 
-        success, message, s3_key = upload_cover_image_to_s3(self.nofo, invalid_file)
+        with self.assertRaises(ValidationError) as context:
+            upload_cover_image_to_s3(self.nofo, invalid_file)
 
-        self.assertFalse(success)
-        self.assertIn("Invalid file type", message)
-        self.assertIsNone(s3_key)
+        self.assertIn("Invalid file type", str(context.exception))
         mock_upload_to_s3.assert_not_called()
 
     def test_file_extension_validation_invalid_extension(self, mock_upload_to_s3):
@@ -1951,25 +1948,20 @@ class UploadCoverImageToS3Tests(TestCase):
             content_type="image/jpeg",  # Valid content type but .gif extension
         )
 
-        success, message, s3_key = upload_cover_image_to_s3(self.nofo, invalid_file)
+        with self.assertRaises(ValidationError) as context:
+            upload_cover_image_to_s3(self.nofo, invalid_file)
 
-        self.assertFalse(success)
-        self.assertIn("Invalid file extension", message)
-        self.assertIsNone(s3_key)
+        self.assertIn("Invalid file extension", str(context.exception))
         mock_upload_to_s3.assert_not_called()
 
     def test_s3_upload_exception(self, mock_upload_to_s3):
         """Test handling of S3 upload exception"""
         mock_upload_to_s3.side_effect = Exception("S3 connection failed")
 
-        success, message, s3_key = upload_cover_image_to_s3(
-            self.nofo, self.valid_jpg_file
-        )
+        with self.assertRaises(Exception) as context:
+            upload_cover_image_to_s3(self.nofo, self.valid_jpg_file)
 
-        self.assertFalse(success)
-        self.assertIn("Failed to upload cover image", message)
-        self.assertIn("S3 connection failed", message)
-        self.assertIsNone(s3_key)
+        self.assertIn("S3 connection failed", str(context.exception))
 
 
 @patch("nofos.nofo.remove_file_from_s3")
