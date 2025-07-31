@@ -10,7 +10,7 @@ Edit “{{ nofo|nofo_name }}”
 {% block body_class %}nofo_edit nofo_status--{{ nofo.status }}{% if nofo.modifications %} nofo--modifications{% endif %}{% if nofo.archived %} nofo--archived{% endif %}{% endblock %}
 
 {% block content %}
-{% include "includes/alerts.html" with messages=messages success_heading="NOFO saved successfully" error_heading="Error" stick_to_bottom=True only %}
+{% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
 
 <!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
 {% if nofo.archived %}
@@ -441,12 +441,6 @@ Edit “{{ nofo|nofo_name }}”
       <th scope="row">Cover style</th>
       <td>{{ nofo.get_cover_display|get_value_or_none:"Standard image" }}</td>
     </tr>
-    {% if nofo.cover_image and nofo.cover != 'nofo--cover-page--text' %}
-      <tr>
-        <th scope="row">Cover alt text</th>
-        <td>{% if nofo.cover_image_alt_text %}“{% endif%}{{ nofo.cover_image_alt_text|get_value_or_none:"alt text" }}{% if nofo.cover_image_alt_text %}”{% endif %}</td>
-      </tr>
-    {% endif %}
     <tr>
       <th scope="row">Icon style</th>
       <td>{{ nofo.get_icon_style_display|get_value_or_none:"Outlined" }}</td>
@@ -478,10 +472,12 @@ Edit “{{ nofo|nofo_name }}”
       <th scope="row">Cover image</th>
       <td>{{ nofo.cover_image|get_value_or_none:"cover image" }}</td>
     </tr>
+    {% if nofo.cover_image %}
     <tr>
       <th scope="row">Cover alt text</th>
       <td>{{ nofo.cover_image_alt_text|get_value_or_none:"cover alt text" }}</td>
     </tr>
+    {% endif %}
   </tbody>
 </table>
 

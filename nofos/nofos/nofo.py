@@ -852,58 +852,48 @@ def upload_cover_image_to_s3(nofo, uploaded_file, alt_text=""):
         alt_text: Optional alt text for the image
 
     Returns:
-        tuple: (success: bool, message: str, s3_key: str or None)
+        bool: True if upload and update succeed.
 
     Raises:
-        ValidationError: If file validation fails
+        ValidationError: If file validation fails for the following reasons:
+        - File size exceeds 5MB
+        - File type is not allowed
+        - File extension is not allowed
     """
-    try:
-        # Validate file size (5MB limit)
-        max_size = 5 * 1024 * 1024  # 5MB in bytes
-        if uploaded_file.size > max_size:
-            raise ValidationError(
-                f"File size ({uploaded_file.size / (1024*1024):.1f}MB) exceeds maximum allowed size (5MB)."
-            )
+    # Validate file size (5MB limit)
+    max_size = 5 * 1024 * 1024  # 5MB in bytes
+    if uploaded_file.size > max_size:
+        raise ValidationError(
+            f"File size ({uploaded_file.size / (1024*1024):.1f}MB) exceeds maximum allowed size (5MB)."
+        )
 
-        # Validate file type
-        allowed_types = ["image/png", "image/jpg", "image/jpeg"]
-        if uploaded_file.content_type not in allowed_types:
-            raise ValidationError(
-                f"Invalid file type: {uploaded_file.content_type}. Please upload a valid image file."
-            )
+    # Validate file type
+    allowed_types = ["image/png", "image/jpg", "image/jpeg"]
+    if uploaded_file.content_type not in allowed_types:
+        raise ValidationError(
+            f"Invalid file type: {uploaded_file.content_type}. Please upload a valid image file."
+        )
 
-        # Validate file extension
-        allowed_extensions = [".png", ".jpg", ".jpeg"]
-        file_extension = "." + uploaded_file.name.lower().split(".")[-1]
-        if file_extension not in allowed_extensions:
-            raise ValidationError(
-                f"Invalid file extension: {file_extension}. Allowed extensions: {', '.join(allowed_extensions)}"
-            )
+    # Validate file extension
+    allowed_extensions = [".png", ".jpg", ".jpeg"]
+    file_extension = "." + uploaded_file.name.lower().split(".")[-1]
+    if file_extension not in allowed_extensions:
+        raise ValidationError(
+            f"Invalid file extension: {file_extension}. Allowed extensions: {', '.join(allowed_extensions)}"
+        )
 
-        # Rename file to have NOFO name
-        uploaded_file.name = f"{nofo.short_name or nofo.title}{file_extension}".lower()
+    # Rename file to have NOFO name
+    uploaded_file.name = f"{nofo.number}{file_extension}".lower()
 
-        # Upload file to S3
-        s3_key = upload_file_to_s3(uploaded_file, key_prefix="img/cover-img")
+    # Upload file to S3
+    s3_key = upload_file_to_s3(uploaded_file, key_prefix="img/cover-img")
 
-        if s3_key:
-            # Update the NOFO with the S3 key and alt text
-            nofo.cover_image = s3_key
-            nofo.cover_image_alt_text = alt_text or nofo.cover_image_alt_text or ""
-            nofo.save()
+    # Update the NOFO with the S3 key and alt text
+    nofo.cover_image = s3_key
+    nofo.cover_image_alt_text = alt_text or nofo.cover_image_alt_text or ""
+    nofo.save()
 
-            return (
-                True,
-                f"Cover image '{uploaded_file.name}' has been successfully uploaded and saved.",
-                s3_key,
-            )
-        else:
-            return False, "Failed to upload image to storage.", None
-
-    except ValidationError as e:
-        return False, str(e), None
-    except Exception as e:
-        return False, f"Failed to upload cover image: {str(e)}", None
+    return True
 
 
 def remove_cover_image_from_s3(nofo):
