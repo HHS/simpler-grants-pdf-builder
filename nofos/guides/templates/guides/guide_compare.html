@@ -12,7 +12,7 @@
   <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
-{% block body_class %}nofo_compare nofo_compare--content-guide{% if not comparison %} nofo_compare--content-guide--comparison{% endif %}{% endblock %}
+{% block body_class %}nofo_compare nofo_compare--content-guide{% if comparison %} nofo_compare--content-guide--comparison{% endif %}{% if display_mode == 'single' %} nofo_compare--content-guide--display-single{% else %} nofo_compare--content-guide--display-double{% endif %}{% endblock %}
 
 {% block content %}
   <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
