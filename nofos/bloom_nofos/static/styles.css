@@ -1644,6 +1644,24 @@ del + ins > br {
   color: #1b1b1b;
 }
 
+@media (min-width: 64em) {
+  .nofo_compare--content-guide .nofo_view--wrapper {
+    position: relative;
+    left: 50%;
+    right: 50%;
+    transform: translateX(-50%);
+    min-width: 60rem; /* matches .grid-container */
+  }
+
+  .nofo_compare--content-guide--display-double .nofo_view--wrapper {
+    width: 85vw;
+  }
+
+  .nofo_compare--content-guide--display-single .nofo_view--wrapper {
+    width: 70vw;
+  }
+}
+
 /* User pages */
 
 .user_view .form--export-report .form-group {
