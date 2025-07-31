@@ -81,15 +81,15 @@
         {% with current_view=request.path %}
           <a
             href="{{ current_view }}?display=double"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy {% if display_mode == 'double' %}is-disabled{% endif %}"
-            {% if display_mode == "double" %}aria-disabled="true"{% endif %}
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy{% if display_mode == 'single' %} is-disabled{% else %} is-active{% endif %}"
+            {% if display_mode == "single" %}aria-disabled="true"{% endif %}
           >
             Side-by-side view
           </a>
           <a
             href="{{ current_view }}?display=single"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file {% if display_mode == 'single' %}is-disabled{% endif %}"
-            {% if display_mode == "single" %}aria-disabled="true"{% endif %}
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file{% if display_mode == 'double' %} is-disabled{% else %} is-active{% endif %}"
+            {% if display_mode == "double" %}aria-disabled="true"{% endif %}
           >
             Single view
           </a>
