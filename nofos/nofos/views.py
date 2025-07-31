@@ -305,6 +305,11 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
 
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "NOFO saved successfully"
+        )
+
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
 
@@ -1089,6 +1094,9 @@ class NofoEditCoverImageView(BaseNofoEditView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo_cover_image"] = get_cover_image(self.object)
+        messages.success(
+            self.request, "NOFO cover image has been successfully updated."
+        )
         return context
 
 
@@ -1097,16 +1105,11 @@ class NofoUploadCoverImageView(BaseNofoEditView):
     template_name = "nofos/nofo_upload_cover_image.html"
     context_object_name = "nofo"
 
-    # def get_object(self):
-    #     """Return the NOFO instance for this view."""
-    #     return get_object_or_404(Nofo, pk=self.kwargs.get("pk"))
-
     def post(self, request, *args, **kwargs):
         """Handle POST request with file upload using the upload_cover_image_to_s3 function."""
 
         self.object = self.get_object()
 
-        # Get the uploaded file directly from request.FILES
         uploaded_file = request.FILES.get("cover_image")
         alt_text = request.POST.get("cover_image_alt_text", "")
 
@@ -1114,22 +1117,15 @@ class NofoUploadCoverImageView(BaseNofoEditView):
             messages.error(request, "Please select a file to upload.")
             return self.get(request, *args, **kwargs)
 
-        # Use the upload function from nofo.py
         try:
-            success, message, s3_key = upload_cover_image_to_s3(
-                self.object, uploaded_file, alt_text
-            )
-
-            if success:
-                messages.success(request, message)
-
-                return redirect("nofos:nofo_edit", pk=self.object.pk)
-            else:
-                messages.error(request, message)
-                return self.get(request, *args, **kwargs)
-
+            upload_cover_image_to_s3(self.object, uploaded_file, alt_text)
+            messages.success(request, f"Cover image has been successfully uploaded.")
+            return redirect("nofos:nofo_edit", pk=self.object.pk)
+        except ValidationError as e:
+            messages.error(request, f"Failed to upload cover image: {e.message}")
+            return self.get(request, *args, **kwargs)
         except Exception as e:
-            messages.error(request, f"Failed to upload cover image: {str(e)}")
+            messages.error(request, f"Failed to upload cover image. Contact an administrator.")
             return self.get(request, *args, **kwargs)
 
 
@@ -1806,10 +1802,14 @@ class NofoSubsectionDeleteView(
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        # Store custom error heading in session for the redirect page
+        self.request.session["error_heading"] = "Subsection deleted"
+
         messages.error(
             self.request,
             "You deleted subsection: “{}” from “{}”".format(
                 self.object.name or self.object.id, self.object.section.name
             ),
         )
+
         return super().form_valid(form)
