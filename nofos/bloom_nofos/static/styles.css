@@ -1418,6 +1418,14 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-top: 2px solid var(--color--light-grey);
 }
 
+.nofo_compare--content-guide .nofo_view h2,
+.nofo_compare--content-guide .nofo_view h3,
+.nofo_compare--content-guide .nofo_view h4,
+.nofo_compare--content-guide .nofo_view h5,
+.nofo_compare--content-guide .nofo_view h6 {
+  scroll-margin-top: 125px;
+}
+
 .nofo_compare--content-guide .nofo_view,
 .nofo_compare--content-guide .nofo_view--title-bar {
   display: flex;
