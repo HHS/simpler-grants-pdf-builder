@@ -78,7 +78,7 @@ class ContentGuideSubsection(BaseSubsection):
     comparison_type = models.CharField(
         max_length=20,
         choices=COMPARISON_CHOICES,
-        default="name",
+        default="body",
     )
 
     diff_strings = models.JSONField(
