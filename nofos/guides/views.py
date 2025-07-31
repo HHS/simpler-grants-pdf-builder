@@ -97,11 +97,6 @@ class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
         guide.title = form.cleaned_data["title"]
         guide.save()
 
-        messages.success(
-            self.request,
-            f"View Content Guide: <a href='{reverse_lazy('guides:guide_edit', args=[guide.id])}'>{guide.title}</a>",
-        )
-
         return redirect("guides:guide_compare", pk=guide.id)
 
 

@@ -1470,6 +1470,11 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   text-align: center;
 }
 
+.guide_compare_upload {
+  position: sticky;
+  top: 150px;
+}
+
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes {
@@ -1514,6 +1519,12 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .nofo_compare .nofo_view--menu-bar--button.is-active {
   color: var(--color--cdc-blue);
   border: 1.5px solid var(--color--cdc-blue);
+}
+
+.nofo_compare .nofo_view--menu-bar--button[aria-disabled] {
+  pointer-events: none;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .nofo_compare .nofo_view--menu-bar--button:hover {
