@@ -5,6 +5,7 @@ from django.test import TestCase
 from ..models import Nofo, Section, Subsection
 from ..nofo_compare import (
     SubsectionDiff,
+    annotate_side_by_side_diffs,
     apply_comparison_types,
     compare_nofos,
     compare_nofos_metadata,
@@ -396,6 +397,59 @@ class TestApplyComparisonTypes(TestCase):
         result = apply_comparison_types([item])[0]
         self.assertEqual(result.status, "UPDATE")
         self.assertEqual(result.diff, "—")
+
+
+class AnnotateSideBySideDiffsTests(TestCase):
+    def test_empty_diff(self):
+        diff = SubsectionDiff(name="Empty", status="MATCH", diff="")
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual(annotated.old_diff, None)
+        self.assertEqual(annotated.new_diff, None)
+
+    def test_only_insertion(self):
+        diff_html = "<p>Intro</p><p>Second <ins>added</ins> sentence.</p>"
+        diff = SubsectionDiff(name="Add only", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual("<p>Intro</p><p>Second  sentence.</p>", annotated.old_diff)
+        self.assertEqual(
+            "<p>Intro</p><p>Second <ins>added</ins> sentence.</p>", annotated.new_diff
+        )
+
+    def test_only_deletion(self):
+        diff_html = "<p>Intro</p><p>Second <del>removed</del> sentence.</p>"
+        diff = SubsectionDiff(name="Del only", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual("<p>Intro</p><p>Second  sentence.</p>", annotated.new_diff)
+        self.assertEqual(
+            "<p>Intro</p><p>Second <del>removed</del> sentence.</p>", annotated.old_diff
+        )
+
+    def test_update_with_add_and_delete(self):
+        diff_html = "<p>Start <del>old</del><ins>new</ins> middle</p>"
+        diff = SubsectionDiff(name="Update", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertIn("old", annotated.old_diff)
+        self.assertEqual("<p>Start <del>old</del> middle</p>", annotated.old_diff)
+        self.assertEqual("<p>Start <ins>new</ins> middle</p>", annotated.new_diff)
+
+    def test_no_diff_tags_present(self):
+        diff_html = "<p>This is unchanged content</p>"
+        diff = SubsectionDiff(name="No diff", status="MATCH", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual(annotated.old_diff, diff_html)
+        self.assertEqual(annotated.new_diff, diff_html)
+
+    def test_section_dict_with_subsections(self):
+        subsection = SubsectionDiff(
+            name="Subsection",
+            status="UPDATE",
+            diff="<p>Original <del>deleted</del> <ins>added</ins></p>",
+        )
+        section = {"name": "Section A", "subsections": [subsection]}
+        result = annotate_side_by_side_diffs([section])[0]
+        annotated = result["subsections"][0]
+        self.assertEqual("<p>Original <del>deleted</del> </p>", annotated.old_diff)
+        self.assertEqual("<p>Original  <ins>added</ins></p>", annotated.new_diff)
 
 
 class TestCompareNofos(TestCase):

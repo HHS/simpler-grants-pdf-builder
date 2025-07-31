@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from bloom_nofos.html_diff import has_diff, html_diff
+from bs4 import BeautifulSoup
 from django.utils.html import escape
 from martor.utils import markdownify
 
@@ -16,6 +17,8 @@ class SubsectionDiff:
     old_value: Optional[str] = ""
     new_value: Optional[str] = ""
     diff: Optional[str] = None
+    old_diff: Optional[str] = None  # just the diff for the "old" document
+    new_diff: Optional[str] = None  # just the diff for the "new" document
     comparison_type: str = "body"
     diff_strings: List[str] = field(default_factory=list)
     tag: Optional[str] = ""  # metadata diffs don't have a tag (eg, nofo.number)
@@ -333,6 +336,34 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
 
     # Flat list metadata comparison (compare_nofos_metadata)
     return [item for item in comparison if item.status not in statuses_to_ignore]
+
+
+def annotate_side_by_side_diffs(comparison):
+    def extract_old_diff(diff_html: str) -> str:
+        soup = BeautifulSoup(diff_html, "html.parser")
+        for ins in soup.find_all("ins"):
+            ins.decompose()
+        return str(soup) or ""
+
+    def extract_new_diff(diff_html: str) -> str:
+        soup = BeautifulSoup(diff_html, "html.parser")
+        for delete in soup.find_all("del"):
+            delete.decompose()
+        return str(soup) or ""
+
+    for item in comparison:
+        # Section-based comparison (has subsections)
+        if isinstance(item, dict) and "subsections" in item:
+            for s in item["subsections"]:
+                if s.diff:
+                    s.old_diff = extract_old_diff(s.diff)
+                    s.new_diff = extract_new_diff(s.diff)
+        # Metadata or flat comparison
+        elif isinstance(item, SubsectionDiff):
+            if item.diff:
+                item.old_diff = extract_old_diff(item.diff)
+                item.new_diff = extract_new_diff(item.diff)
+    return comparison
 
 
 def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):
