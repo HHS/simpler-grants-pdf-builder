@@ -1374,7 +1374,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   font-size: 1rem;
 }
 
-/* compare page */
+/* NOFO Compare page */
 
 .usa-alert--warning.usa-alert--alpha .usa-alert__body {
   border-left: 2px solid black;
@@ -1423,14 +1423,31 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   display: flex;
   gap: 1rem;
   padding-bottom: 1rem;
+  align-items: stretch; /* ensures all children match the tallest */
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--old,
-.nofo_compare--content-guide .nofo_view .nofo_view--new,
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new {
-  flex: 1; /* Each child takes 50% of container */
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
+.nofo_compare--content-guide .nofo_view .nofo_view--old,
+.nofo_compare--content-guide .nofo_view .nofo_view--new {
+  flex: 1 1 40%; /* Start with 40% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
+}
+
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes,
+.nofo_compare--content-guide .nofo_view .nofo_view--changes {
+  flex: 0 1 20%; /* 20% width, can shrink and grow but fixed max width of 180px */
+  max-width: 180px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
+  overflow-y: auto;
+  max-height: 100%;
+  position: sticky;
+  top: 124px;
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--old,
@@ -1446,7 +1463,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new {
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
+.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes {
   padding: 0.5rem 0;
 }
 
@@ -1553,9 +1571,41 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-image: url("/static/img/usa-icons/expand_less.svg");
 }
 
-.nofo_compare .nofo_view--menu-bar--vertical-space {
-  border: 1px solid #dfe1e2;
+.nofo_compare .nofo_view--vertical-divider {
+  border: 1px solid var(--color--light-grey);
   margin-right: 1rem;
+}
+
+.nofo_compare .nofo_view--vertical-divider.mr-0 {
+  margin-right: 0;
+}
+
+.nofo_view .nofo_view--changes--list ol {
+  padding-left: 0;
+  margin-top: 0;
+}
+
+.nofo_view .nofo_view--changes--list ol li {
+  margin-bottom: 0.5rem;
+}
+
+.nofo_view .nofo_view--changes--list ol li:first-of-type {
+  margin-top: 0;
+}
+
+.nofo_view .nofo_view--changes--list ol li a {
+  display: block;
+  border: 1.5px solid var(--color--light-grey);
+  background-color: white;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  color: var(--color--text-grey);
+  text-decoration: none;
+}
+
+.nofo_view .nofo_view--changes--list ol li a:hover {
+  border: 1.5px solid var(--color--med-grey);
+  color: inherit;
 }
 
 del {

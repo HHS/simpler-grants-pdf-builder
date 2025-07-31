@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs safe_br %}
 
 {% block title %}
   Content Guide comparison result
@@ -44,27 +44,6 @@
 
     <a class="usa-button" href="{% url 'guides:guide_edit' guide.pk %}">Set up compare settings</a>
   </div>
-  
-  {% if comparison %}
-    <details class="margin-bottom-5">
-      <summary>
-        <span class="font-sans-lg"><strong>Sections with changes</strong></span>
-      </summary>
-
-      <ul>
-        {% for section in comparison %}
-        <p>Section: {{ section.name }}</a></p>
-          {% for subsection in section.subsections %}
-            <li>
-              {% if subsection.status != 'MATCH' %}<strong>{% endif %}
-                <a href="#{{ subsection.html_id }}">{{ subsection.name }}</a>: {{ subsection.status }}
-              {% if subsection.status != 'MATCH' %}</strong>{% endif %}
-            </li>
-          {% endfor %}
-        {% endfor %}
-      </ul>
-    </details>
-  {% endif %}
 
   {% if num_changed_subsections == 0 %}
   <div class="usa-alert usa-alert--info usa-alert--slim margin-bottom-5">
@@ -94,7 +73,7 @@
             Single view
           </a>
         {% endwith %}
-        <div class="nofo_view--menu-bar--vertical-space"></div>
+        <div class="nofo_view--vertical-divider"></div>
         <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less">
           Previous section
         </button>
@@ -117,6 +96,10 @@
             <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
           </div>
         {% endif %}
+          <div class="nofo_view--vertical-divider mr-0"></div>
+          <div class="nofo_view--title-changes">
+            <h2 class="margin-0">All changes</h2>
+          </div>
       </div>
       <div class="nofo_view">
         {% if display_mode == 'double' %}
@@ -162,6 +145,18 @@
                   </div>
                 </section>
               {% endfor %}
+            </div>
+            <div class="nofo_view--vertical-divider mr-0"></div>
+            <div class="nofo_view--changes">
+              <div class="nofo_view--changes--list">
+                <ol>
+                  {% for changed_subsection in changed_subsections %}
+                    <li>
+                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
             </div>
           {% else %}
           {# comparison does not exist, show original guide and column with upload button #}
@@ -210,6 +205,18 @@
               </section>
             {% endfor %}
           </div>
+          <div class="nofo_view--vertical-divider mr-0"></div>
+            <div class="nofo_view--changes">
+              <div class="nofo_view--changes--list">
+                <ol>
+                  {% for changed_subsection in changed_subsections %}
+                    <li>
+                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            </div>
         {% endif %}
       </div>
     </div>

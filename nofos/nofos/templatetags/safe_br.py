@@ -79,3 +79,14 @@ def safe_br_ins_del(value):
     )
 
     return mark_safe(restored)
+
+
+@register.filter
+def strip_br_ins_del(value):
+    if not isinstance(value, str):
+        return value
+
+    TAG_RE = re.compile(r"</?(br\s*/?|ins|del)>", flags=re.IGNORECASE)
+
+    # Just remove all <br>, <br/>, <br />, <BR>, etc.
+    return TAG_RE.sub("", value)
