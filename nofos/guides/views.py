@@ -11,8 +11,8 @@ from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
-from nofos.models import Nofo
 from nofos.mixins import GroupAccessObjectMixinFactory
+from nofos.models import Nofo
 from nofos.nofo import (
     add_headings_to_document,
     add_page_breaks_to_headings,
@@ -21,7 +21,7 @@ from nofos.nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_title,
 )
-from nofos.nofo_compare import compare_nofos
+from nofos.nofo_compare import annotate_side_by_side_diffs, compare_nofos
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
@@ -248,6 +248,9 @@ class ContentGuideCompareView(View):
             new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
 
             comparison = compare_nofos(guide, new_nofo)
+            # add old_diff and new_diff
+            comparison = annotate_side_by_side_diffs(comparison)
+
             changed_subsections = [
                 sub
                 for section in comparison
