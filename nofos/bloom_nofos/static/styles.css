@@ -1402,17 +1402,27 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare--content-guide .nofo_view--wrapper {
-  border: 1px solid #dfe1e2;
-  background-color: #f9fbfc;
-  padding: 1rem;
+  border: 2px solid var(--color--light-grey);
   border-radius: 4px;
   position: relative;
+}
+
+.nofo_compare--content-guide .nofo_view--wrapper > * {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.nofo_compare--content-guide .nofo_view {
+  padding-top: 1rem;
+  background-color: #f5f5f5;
+  border-top: 2px solid var(--color--light-grey);
 }
 
 .nofo_compare--content-guide .nofo_view,
 .nofo_compare--content-guide .nofo_view--title-bar {
   display: flex;
   gap: 1rem;
+  padding-bottom: 1rem;
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--old,
@@ -1449,9 +1459,13 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .nofo_compare .nofo_view--menu-bar {
   position: sticky;
   top: 0;
+  padding-bottom: 1rem;
+  padding-top: 1rem;
   margin-bottom: 1rem;
   z-index: 1;
   display: flex;
+  border-bottom: 1px solid var(--color--light-grey);
+  background-color: white;
 }
 
 .nofo_compare .nofo_view--menu-bar--button {
@@ -1461,21 +1475,30 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   justify-content: center;
   text-align: center;
   padding: 0.5rem;
-  color: var(--color--cdc-blue);
-  border: 1px solid var(--color--cdc-blue);
+  color: var(--color--text-grey);
   border-radius: 4px;
   background-color: white;
-  width: 75px;
+  width: 80px;
   margin-right: 1rem;
   line-height: 1.15;
   text-decoration: none;
+  border: 1.5px transparent solid;
+}
+
+.nofo_compare .nofo_view--menu-bar--button.is-active {
+  color: var(--color--cdc-blue);
+  border: 1.5px solid var(--color--cdc-blue);
 }
 
 .nofo_compare .nofo_view--menu-bar--button:hover {
-  color: var(--color--dark-blue);
-  border: 1px solid var(--color--dark-blue);
-  background-color: #fcfcfc;
+  color: var(--color--cdc-blue);
+  border: 1.5px solid var(--color--cdc-blue);
   cursor: pointer;
+}
+
+.nofo_compare .nofo_view--menu-bar--button.is-active:hover {
+  color: var(--color--dark-blue);
+  border: 1.5px solid var(--color--dark-blue);
 }
 
 .nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button::before {
@@ -1484,15 +1507,24 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-position: center center;
   background-size: cover;
   display: inline-flex;
-
-  filter: brightness(0) saturate(100%) invert(16%) sepia(93%) saturate(6087%)
-    hue-rotate(203deg) brightness(89%) contrast(102%);
+  filter: brightness(0) saturate(100%) invert(49%) sepia(6%) saturate(369%)
+    hue-rotate(164deg) brightness(92%) contrast(86%);
   width: 22px;
   height: 21px;
   margin-bottom: 8px;
 }
 
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button.is-active::before,
 .nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button:hover::before {
+  filter: brightness(0) saturate(100%) invert(16%) sepia(93%) saturate(6087%)
+    hue-rotate(203deg) brightness(89%) contrast(102%);
+}
+
+.nofo_compare
+  .nofo_view--menu-bar
+  .nofo_view--menu-bar--button.is-active:hover::before {
   filter: brightness(0) saturate(100%) invert(14%) sepia(20%) saturate(6652%)
     hue-rotate(187deg) brightness(103%) contrast(103%);
 }
