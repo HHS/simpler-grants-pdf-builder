@@ -55,20 +55,19 @@
   </div>
   {% endif %}
 
-    <div class="nofo_view--wrapper">
+    <div id="nofo_view--wrapper" class="nofo_view--wrapper">
       <div class="nofo_view--menu-bar">
         {% with current_view=request.path %}
           <a
             href="{{ current_view }}?display=double"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy{% if display_mode == 'single' %} is-disabled{% else %} is-active{% endif %}"
-            {% if display_mode == "single" %}aria-disabled="true"{% endif %}
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy{% if display_mode == 'double' %} is-active{% endif %}"
           >
             Side-by-side view
           </a>
           <a
             href="{{ current_view }}?display=single"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file{% if display_mode == 'double' %} is-disabled{% else %} is-active{% endif %}"
-            {% if display_mode == "double" %}aria-disabled="true"{% endif %}
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file{% if display_mode == 'single' %} is-active{% endif %}"
+            {% if not comparison %}aria-disabled="true"{% endif %}
           >
             Single view
           </a>
@@ -96,12 +95,14 @@
             <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
           </div>
         {% endif %}
+        {% if comparison %}
           <div class="nofo_view--vertical-divider mr-0"></div>
           <div class="nofo_view--title-changes">
             <h2 class="margin-0">All changes</h2>
           </div>
+        {% endif %}
       </div>
-      <div class="nofo_view">
+      <div id="nofo_view" class="nofo_view">
         {% if display_mode == 'double' %}
           {% if comparison %}
             <div class="nofo_view--old">
@@ -176,9 +177,11 @@
               {% endfor %}
             </div>
             <div class="nofo_view--new nofo_view--new--empty">
-              <p class="margin-top-6">Ready to compare to this content guide?</p>
-              <p>Upload a NOFO to see it here.</p>
-              <p class="margin-top-2"><a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a></p>
+              <div class="guide_compare_upload">
+                <p class="margin-top-6">Ready to compare to this content guide?</p>
+                <p>Upload a NOFO to see it here.</p>
+                <p class="margin-top-2"><a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a></p>
+              </div>
             </div>
           {% endif %}
         </div>
