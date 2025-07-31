@@ -22,6 +22,7 @@
           <th scope="col">Filename</th>
           <th scope="col">Size</th>
           <th scope="col">Last modified</th>
+          <th scope="col">Used by NOFOs</th>
           <th scope="col">Image</th>
         </tr>
       </thead>
@@ -33,6 +34,25 @@
             {{ image.size_display }}
           </td>
           <td>{{ image.last_modified|date:"Y-m-d" }}</td>
+          <td>
+            {% if image.used_by_nofos %}
+              <ul class="usa-list usa-list--unstyled">
+                {% for nofo in image.used_by_nofos %}
+                  <li>
+                    <a href="{% url 'nofos:nofo_edit' pk=nofo.id %}" class="usa-link">
+                      {% if nofo.short_name %}
+                        {{ nofo.short_name }}
+                      {% else %}
+                        {{ nofo.title|default:"Untitled NOFO" }}
+                      {% endif %}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <span class="text-base-light">Not used</span>
+            {% endif %}
+          </td>
           <td>
             <img class="border-2px radius-md maxh-card" src="{{ image.url }}" alt="{{ image.key }}" loading="lazy" />
           </td>
