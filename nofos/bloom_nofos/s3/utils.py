@@ -107,8 +107,9 @@ def upload_file_to_s3(file, key_prefix):
 
     try:
         # Generate unique filename to prevent conflicts
-        s3_key = f"{key_prefix}/{file.name}"
+        s3_key = f"{key_prefix}/{format_filename_for_s3(file.name)}"
 
+        logger.error(f"Uploading file to S3: {s3_key}")
         # Initialize S3 client
         s3 = boto3.client("s3", config=Config(signature_version="s3v4"))
 
@@ -144,6 +145,42 @@ def upload_file_to_s3(file, key_prefix):
     except Exception as e:
         logger.error(f"Unexpected error uploading to S3: {e}")
         raise Exception(f"File upload failed: {e}")
+
+
+def format_filename_for_s3(filename):
+    """
+    Format a filename for safe use as an S3 object key following the [AWS S3 naming conventions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-guidelines)
+
+    Replaces unsafe characters with hyphens, keeping only alphanumeric characters
+    and AWS S3 safe special characters: ! - _ . * ' ( )
+
+    Args:
+        filename (str): Original filename to format
+
+    Returns:
+        str: S3-safe filename with unsafe characters replaced by hyphens
+
+    Examples:
+        format_filename_for_s3("my file@#$%.txt") -> "my-file----.txt"
+        format_filename_for_s3("document_with spaces.pdf") -> "document_with-spaces.pdf"
+    """
+    import re
+
+    if not filename:
+        return filename
+
+    # Define safe characters: alphanumeric + ! - _ . * ' ( )
+    # Replace any character that is NOT in this safe set with a hyphen
+    safe_pattern = r"[^a-zA-Z0-9!\-_.*'()]"
+    formatted = re.sub(safe_pattern, "-", filename)
+
+    # Collapse multiple consecutive hyphens into single hyphens
+    formatted = re.sub(r"-+", "-", formatted)
+
+    # Remove leading/trailing hyphens but preserve other safe characters
+    formatted = formatted.strip("-")
+
+    return formatted
 
 
 def remove_file_from_s3(key):

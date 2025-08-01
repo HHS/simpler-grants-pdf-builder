@@ -1125,7 +1125,9 @@ class NofoUploadCoverImageView(BaseNofoEditView):
             messages.error(request, f"Failed to upload cover image: {e.message}")
             return self.get(request, *args, **kwargs)
         except Exception as e:
-            messages.error(request, f"Failed to upload cover image. Contact an administrator.")
+            messages.error(
+                request, f"Failed to upload cover image. Contact an administrator."
+            )
             return self.get(request, *args, **kwargs)
 
 

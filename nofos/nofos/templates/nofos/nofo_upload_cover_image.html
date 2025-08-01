@@ -24,7 +24,7 @@
 
 <form id="nofo-upload-cover-image--form" class="form-import--loading" method="post" enctype="multipart/form-data">
   {% csrf_token %}
-  {% with id="cover_image" label="Select an image file." hint="Accepts .jpg, .jpeg or .png files." accept=".png,.jpg,.jpeg" %}
+  {% with id="cover_image" label="Select an image file." hint="Accepts .jpg or .png files." accept=".png,.jpg,.jpeg" %}
     {% for message in messages %}
       {% if "error" in message.tags %}
         {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message required=True only %}

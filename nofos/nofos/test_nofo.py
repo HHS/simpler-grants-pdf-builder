@@ -1863,7 +1863,10 @@ class NofoCoverImageTests(TestCase):
 class UploadCoverImageToS3Tests(TestCase):
     def setUp(self):
         self.nofo = Nofo.objects.create(
-            title="Test NOFO Title", short_name="TEST-001", number="TEST-001", opdiv="Test Agency"
+            title="Test NOFO Title",
+            short_name="TEST-001",
+            number="TEST-001",
+            opdiv="Test Agency",
         )
 
         # Create valid test file
@@ -1903,9 +1906,7 @@ class UploadCoverImageToS3Tests(TestCase):
 
         mock_upload_to_s3.return_value = "img/cover-img/test-001.jpg"
 
-        result = upload_cover_image_to_s3(
-            self.nofo, self.valid_jpg_file, ""
-        )
+        result = upload_cover_image_to_s3(self.nofo, self.valid_jpg_file, "")
 
         self.assertTrue(result)
 
