@@ -388,7 +388,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
 
             if hasattr(SubsectionModel, "comparison_type"):
                 subsection_fields["comparison_type"] = subsection.get(
-                    "comparison_type", "name"
+                    "comparison_type", "body"
                 )
 
             subsection_obj = SubsectionModel(**subsection_fields)

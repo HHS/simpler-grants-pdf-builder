@@ -1,9 +1,11 @@
 import re
 from dataclasses import dataclass, field
-from difflib import SequenceMatcher
 from typing import List, Optional
 
+from bloom_nofos.html_diff import has_diff, html_diff
+from bs4 import BeautifulSoup
 from django.utils.html import escape
+from martor.utils import markdownify
 
 from .models import Nofo
 
@@ -15,48 +17,12 @@ class SubsectionDiff:
     old_value: Optional[str] = ""
     new_value: Optional[str] = ""
     diff: Optional[str] = None
+    old_diff: Optional[str] = None  # just the diff for the "old" document
+    new_diff: Optional[str] = None  # just the diff for the "new" document
     comparison_type: str = "body"
     diff_strings: List[str] = field(default_factory=list)
-
-
-def html_diff(original, new):
-    def _tokenize(text):
-        """Splits text into words while keeping punctuation and spaces intact."""
-        return re.findall(r"\s+|\w+|\W", text)
-
-    def _is_whitespace_only(text):
-        return re.fullmatch(r"\s*", text) is not None  # Matches only whitespace
-
-    original_tokens = _tokenize(original)
-    new_tokens = _tokenize(new)
-
-    matcher = SequenceMatcher(None, original_tokens, new_tokens)
-    result = []
-
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        # Rebuild text from tokens
-        old_text = "".join(original_tokens[i1:i2])
-        new_text = "".join(new_tokens[j1:j2])
-
-        if tag == "replace":
-            if not _is_whitespace_only(old_text):
-                result.append(f"<del>{old_text}</del>")
-            if not _is_whitespace_only(new_text):
-                result.append(f"<ins>{new_text}</ins>")
-            if _is_whitespace_only(old_text) and _is_whitespace_only(new_text):
-                result.append(new_text)
-        elif tag == "delete":
-            if not _is_whitespace_only(old_text):
-                result.append(f"<del>{old_text}</del>")
-        elif tag == "insert":
-            if not _is_whitespace_only(new_text):
-                result.append(f"<ins>{new_text}</ins>")
-        else:  # "equal" case
-            result.append(old_text)
-
-    diff_result = "".join(result)
-
-    return diff_result if "<del>" in diff_result or "<ins>" in diff_result else None
+    tag: Optional[str] = ""  # metadata diffs don't have a tag (eg, nofo.number)
+    html_id: Optional[str] = ""  # metadata diffs don't have an id
 
 
 def find_matching_subsection(new_subsection, old_subsections, matched_ids):
@@ -96,6 +62,8 @@ def result_match(original_subsection):
         old_value=original_subsection.body,
         new_value=original_subsection.body,
         diff="",  # explicitly setting for template compatibility
+        tag=original_subsection.tag,
+        html_id=original_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
@@ -106,7 +74,12 @@ def result_update(original_subsection, new_subsection):
         status="UPDATE",
         old_value=original_subsection.body,
         new_value=new_subsection.body,
-        diff=html_diff(original_subsection.body, new_subsection.body) or "",
+        diff=html_diff(
+            markdownify(original_subsection.body), markdownify(new_subsection.body)
+        )
+        or "",
+        tag=new_subsection.tag,
+        html_id=new_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
@@ -117,7 +90,7 @@ def result_merged_update(name, old_value, new_value, old_sub):
         status="UPDATE",
         old_value=old_value,
         new_value=new_value,
-        diff=html_diff(old_value, new_value),
+        diff=html_diff(markdownify(old_value), markdownify(new_value)),
         comparison_type=old_sub.comparison_type,
         diff_strings=old_sub.diff_strings or [],
     )
@@ -129,7 +102,9 @@ def result_add(new_subsection):
         status="ADD",
         old_value="",
         new_value=new_subsection.body,
-        diff=html_diff("", new_subsection.body) or "",
+        diff=html_diff("", markdownify(new_subsection.body)) or "",
+        tag=new_subsection.tag,
+        html_id=new_subsection.html_id,
     )
 
 
@@ -139,7 +114,9 @@ def result_delete(original_subsection):
         status="DELETE",
         old_value=original_subsection.body,
         new_value="",
-        diff=html_diff(original_subsection.body, "") or "",
+        diff=html_diff(markdownify(original_subsection.body), "") or "",
+        tag=original_subsection.tag,
+        html_id=original_subsection.html_id,
     )
     return add_content_guide_comparison_metadata(result, original_subsection)
 
@@ -186,9 +163,12 @@ def compare_sections(old_section, new_section):
                 # add ids from both subsections to the "matched_subsections" set
                 matched_subsections.update([new_sub.id, matched_old_sub.id])
 
-                # Check if body does not match and diff is not None
-                if new_sub.body != matched_old_sub.body and html_diff(
-                    matched_old_sub.body.strip(), new_sub.body.strip()
+                # Check if html_diff contains insert or deletes
+                if has_diff(
+                    html_diff(
+                        markdownify(matched_old_sub.body.strip()),
+                        markdownify(new_sub.body.strip()),
+                    )
                 ):
                     # UPDATE
                     subsections.append(result_update(matched_old_sub, new_sub))
@@ -211,6 +191,7 @@ def compare_sections(old_section, new_section):
 
     return {
         "name": new_section.name,
+        "html_id": new_section.html_id,
         "subsections": subsections,
     }
 
@@ -355,6 +336,34 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
 
     # Flat list metadata comparison (compare_nofos_metadata)
     return [item for item in comparison if item.status not in statuses_to_ignore]
+
+
+def annotate_side_by_side_diffs(comparison):
+    def extract_old_diff(diff_html: str) -> str:
+        soup = BeautifulSoup(diff_html, "html.parser")
+        for ins in soup.find_all("ins"):
+            ins.decompose()
+        return str(soup) or ""
+
+    def extract_new_diff(diff_html: str) -> str:
+        soup = BeautifulSoup(diff_html, "html.parser")
+        for delete in soup.find_all("del"):
+            delete.decompose()
+        return str(soup) or ""
+
+    for item in comparison:
+        # Section-based comparison (has subsections)
+        if isinstance(item, dict) and "subsections" in item:
+            for s in item["subsections"]:
+                if s.diff:
+                    s.old_diff = extract_old_diff(s.diff)
+                    s.new_diff = extract_new_diff(s.diff)
+        # Metadata or flat comparison
+        elif isinstance(item, SubsectionDiff):
+            if item.diff:
+                item.old_diff = extract_old_diff(item.diff)
+                item.new_diff = extract_new_diff(item.diff)
+    return comparison
 
 
 def compare_nofos(old_nofo, new_nofo, statuses_to_ignore=[]):

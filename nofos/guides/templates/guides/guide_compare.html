@@ -1,12 +1,20 @@
 {% extends 'base.html' %}
+{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs safe_br %}
 
 {% block title %}
   Content Guide comparison result
 {% endblock %}
 
-{% block body_class %}nofo_compare nofo_compare--content-guide{% endblock %}
+{% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
 
-  {% block content %}
+{% block body_class %}nofo_compare nofo_compare--content-guide{% if comparison %} nofo_compare--content-guide--comparison{% endif %}{% if display_mode == 'single' %} nofo_compare--content-guide--display-single{% else %} nofo_compare--content-guide--display-double{% endif %}{% endblock %}
+
+{% block content %}
   <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
     <div class="usa-alert__body bg-base-lightest">
       <p class="usa-alert__text">
@@ -17,86 +25,202 @@
   </div>
 
   {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Content Guide comparison result" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Check out the differences" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
 
+  <div class="usa-prose margin-bottom-5">
+    <p>Get a breakdown of what content has changed between the current version and{% if not num_changed_subsections %} another one that you upload{% else %} your newly uploaded one{% endif %}.</p>
 
-    {% if num_changed_sections == 0 %}
-      <h2>No changes</h2>
-      <p>
-        This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) matches your Content Guide: “{{ guide.title }}”.
-      </p>
-
-      <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
-      <a href="{% url 'guides:guide_edit' guide.id %}" class="usa-button">
-        Back to “{{ guide.title }}”
-      </a>
-
-    {% else %}
-      <p>
-        There are <strong>{{ num_changed_subsections }}</strong> subsection{{ num_changed_subsections|pluralize }} with changes across {{ num_changed_sections }} section{{ num_changed_sections|pluralize }}.
-      </p>
-
-      {% if comparison %}
-        {% for section in comparison %}
-          <table class="usa-table usa-table--borderless w-100">
-            <caption>
-              <div>
-                <h2>{{ section.name }}</h2>
-              </div>
-            </caption>
-            <thead class="usa-sr-only">
-              <tr>
-                <th scope="col" class="w-20">Subsection</th>
-                <th scope="col" class="w-10">Status</th>
-                <th scope="col" class="w-10">Comp type</th>
-                <th scope="col" class="w-65">Content</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for subsection in section.subsections %}
-              {% if subsection.name|lower != 'basic information' %}
-                <tr>
-                  <th scope="row">
-                    {# if the subsection.name value starts with "(#" #}
-                    {% if subsection.name|slice:":2" == "(#" %}
-                        <span class="text-base">{{ subsection.name }}</span>
-                    {% else %}
-                        {{ subsection.name|safe }}
-                    {% endif %}
-                  </th>
-                  <td>
-                    {{ subsection.status }}
-                  </td>
-                  <td>
-                    {{ subsection.comparison_type }}
-                  </td>
-                  <td>
-                    <div class="diff">
-                      {% if not subsection.diff %}
-                        <span class="text-base text-italic">No change</span>
-                      {% elif subsection.status == 'ADD' %}
-                        <ins>{{ subsection.diff|safe|linebreaksbr }}</ins>
-                      {% elif  subsection.status == 'DELETE' %}
-                        <del>{{ subsection.diff|safe|linebreaksbr }}</del>
-                      {% elif subsection.status == 'UPDATE' %}
-                        {{ subsection.diff|safe|linebreaks }}
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
-        {% endfor %}
+    <p class="font-sans-lg"><strong>Compare overview</strong></p>
+    <ul>
+      {% if not num_changed_subsections %}
+      {% elif num_changed_subsections == 0 %}
+        <li>There are <strong>no changes</strong> in this new document.</li>
+      {% else %}
+        <li>There are <strong>{{ num_changed_subsections }}</strong> section{{ num_changed_subsections|pluralize }} with changes.</li>
       {% endif %}
-
-    <h3 class="margin-top-4" id="follow-up-actions">Follow-up actions</h3>
-    <ul class="usa-button-group margin-top-3">
-      <li class="usa-button-group__item">
-        <a href="{% url 'guides:guide_edit' guide.id %}" class="usa-button usa-button--outline">Back to “{{ guide.title }}”</a>
-      </li>
+      <li><del>Red with a strikethrough</del> is a deletion</li>
+      <li><ins>Green with an underline</ins> is an addition</li>
     </ul>
-    <p class="font-body-sm">Have thoughts on this page? {% include "includes/feedback_link.html" %}.</p>
+
+    <a class="usa-button" href="{% url 'guides:guide_edit' guide.pk %}">Set up compare settings</a>
+  </div>
+
+  {% if num_changed_subsections == 0 %}
+  <div class="usa-alert usa-alert--info usa-alert--slim margin-bottom-5">
+    <div class="usa-alert__body">
+      <p class="usa-alert__text">
+        <strong>No changes</strong>: This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) matches your Content Guide: “{{ guide.title }}”.
+      </p>
+    </div>
+  </div>
   {% endif %}
+
+    <div id="nofo_view--wrapper" class="nofo_view--wrapper">
+      <div class="nofo_view--menu-bar">
+        {% with current_view=request.path %}
+          <a
+            href="{{ current_view }}?display=double"
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy{% if display_mode == 'double' %} is-active{% endif %}"
+          >
+            Side-by-side view
+          </a>
+          <a
+            href="{{ current_view }}?display=single"
+            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__upload_file{% if display_mode == 'single' %} is-active{% endif %}"
+            {% if not comparison %}aria-disabled="true"{% endif %}
+          >
+            Single view
+          </a>
+        {% endwith %}
+        <div class="nofo_view--vertical-divider"></div>
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less">
+          Previous section
+        </button>
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more">
+          Next section
+        </button>
+      </div>
+      <div class="nofo_view--title-bar">
+        {% if display_mode == 'double' %}
+          <div class="nofo_view--title-old">
+            <h2 class="margin-0">{{ guide.title }}</h2>
+          </div>
+          <div class="nofo_view--title-new">
+            {% if comparison %}
+              <h2 class="margin-0">[Agency] NOFO</h2>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="nofo_view--title-old">
+            <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
+          </div>
+        {% endif %}
+        {% if comparison %}
+          <div class="nofo_view--vertical-divider mr-0"></div>
+          <div class="nofo_view--title-changes">
+            <h2 class="margin-0">All changes</h2>
+          </div>
+        {% endif %}
+      </div>
+      <div id="nofo_view" class="nofo_view">
+        {% if display_mode == 'double' %}
+          {% if comparison %}
+            <div class="nofo_view--old">
+              {% for section in comparison %}
+                <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                  <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                  <div class="section--content">
+                    {% for subsection in section.subsections %}
+                      {% if subsection.status == 'MATCH' or subsection.status == 'DELETE' or subsection.status == 'UPDATE' %}
+                        {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                            {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                        {% endwith %}
+                        {% if subsection.old_diff %}
+                          {{ subsection.old_diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                        {% elif subsection.old_value %}
+                          {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </section>
+              {% endfor %}
+            </div>
+            <div class="nofo_view--new">
+              {% for section in comparison %}
+                <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                  <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                  <div class="section--content">
+                    {% for subsection in section.subsections %}
+                      {% if subsection.status == 'MATCH' or subsection.status == 'ADD' or subsection.status == 'UPDATE' %}
+                        {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                            {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                        {% endwith %}
+                          {% if subsection.new_diff %}
+                            {{ subsection.new_diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                          {% elif subsection.new_value %}
+                            {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                          {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </section>
+              {% endfor %}
+            </div>
+            <div class="nofo_view--vertical-divider mr-0"></div>
+            <div class="nofo_view--changes">
+              <div class="nofo_view--changes--list">
+                <ol>
+                  {% for changed_subsection in changed_subsections %}
+                    <li>
+                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            </div>
+          {% else %}
+          {# comparison does not exist, show original guide and column with upload button #}
+            <div class="nofo_view--old">
+              {% for section in guide.sections.all|dictsort:"order" %}
+                <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                  <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                  <div class="section--content">
+                    {% for subsection in section.subsections.all|dictsort:"order" %}
+                      {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                          {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                      {% endwith %}
+                      {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    {% endfor %}
+                  </div>
+                </section>
+              {% endfor %}
+            </div>
+            <div class="nofo_view--new nofo_view--new--empty">
+              <div class="guide_compare_upload">
+                <p class="margin-top-6">Ready to compare to this content guide?</p>
+                <p>Upload a NOFO to see it here.</p>
+                <p class="margin-top-2"><a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a></p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        {% else %}
+        {# display_mode="single": Show consolidated view #}
+          <div class="nofo_view--old">
+            {% for section in comparison %}
+              <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                <div class="section--content">
+                  {% for subsection in section.subsections %}
+                      {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                          {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                      {% endwith %}
+                      {% if subsection.diff %}
+                        {{ subsection.diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% elif subsection.old_value %}
+                        {{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% elif subsection.new_value %}
+                        {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      {% endif %}
+                  {% endfor %}
+                </div>
+              </section>
+            {% endfor %}
+          </div>
+          <div class="nofo_view--vertical-divider mr-0"></div>
+            <div class="nofo_view--changes">
+              <div class="nofo_view--changes--list">
+                <ol>
+                  {% for changed_subsection in changed_subsections %}
+                    <li>
+                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            </div>
+        {% endif %}
+      </div>
+    </div>
 {% endblock %}

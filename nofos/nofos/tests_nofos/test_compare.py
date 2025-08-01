@@ -5,55 +5,13 @@ from django.test import TestCase
 from ..models import Nofo, Section, Subsection
 from ..nofo_compare import (
     SubsectionDiff,
+    annotate_side_by_side_diffs,
     apply_comparison_types,
     compare_nofos,
     compare_nofos_metadata,
     filter_comparison_by_status,
-    html_diff,
     merge_renamed_subsections,
 )
-
-
-class TestHtmlDiff(TestCase):
-
-    def test_basic_text_change(self):
-        original = "Groundhog Day!"
-        new = "Valentines Day!"
-        expected = "<del>Groundhog</del><ins>Valentines</ins> Day!"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_whitespace_only_change(self):
-        original = "Groundhog      Day!"
-        new = "Groundhog Day!"
-        self.assertIsNone(html_diff(original, new))  # Whitespace only = None
-
-    def test_identical_strings(self):
-        original = "Groundhog Day!"
-        new = "Groundhog Day!"
-        self.assertIsNone(html_diff(original, new))  # No changes = None
-
-    def test_text_added(self):
-        original = "Groundhog"
-        new = "Groundhog Day"
-        expected = "Groundhog<ins> Day</ins>"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_text_removed(self):
-        original = "Groundhog Day"
-        new = "Day"
-        expected = "<del>Groundhog </del>Day"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_replace_with_partial_whitespace(self):
-        original = "Groundhog Day!"
-        new = "Groundhog Day! (1993)"
-        expected = "Groundhog Day!<ins> (1993)</ins>"
-        self.assertEqual(html_diff(original, new), expected)
-
-    def test_empty_input(self):
-        self.assertIsNone(html_diff("", ""))  # No changes
-        self.assertEqual(html_diff("", "Groundhog"), "<ins>Groundhog</ins>")  # insert
-        self.assertEqual(html_diff("Groundhog", ""), "<del>Groundhog</del>")  # delete
 
 
 class MergeRenamedSubsectionsTests(TestCase):
@@ -78,7 +36,7 @@ class MergeRenamedSubsectionsTests(TestCase):
         self.assertEqual(result[0].status, "UPDATE")
         self.assertIn("<ins>Overview</ins>", result[0].name)
         self.assertIn("<del>Summary</del>", result[0].name)
-        self.assertEqual(result[0].diff, None)
+        self.assertEqual(result[0].diff, "<p>This is some content.</p>")
 
     def test_renamed_title_and_changed_body(self):
         input_data = [
@@ -139,7 +97,7 @@ class MergeRenamedSubsectionsTests(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].status, "UPDATE")
         self.assertIn("<ins> b</ins>", result[0].name)
-        self.assertEqual(result[0].diff, "Groundhog<ins> Day</ins>")
+        self.assertEqual(result[0].diff, "<p>Groundhog<ins> Day</ins></p>")
 
 
 class FilterComparisonByStatusTests(TestCase):
@@ -441,6 +399,59 @@ class TestApplyComparisonTypes(TestCase):
         self.assertEqual(result.diff, "—")
 
 
+class AnnotateSideBySideDiffsTests(TestCase):
+    def test_empty_diff(self):
+        diff = SubsectionDiff(name="Empty", status="MATCH", diff="")
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual(annotated.old_diff, None)
+        self.assertEqual(annotated.new_diff, None)
+
+    def test_only_insertion(self):
+        diff_html = "<p>Intro</p><p>Second <ins>added</ins> sentence.</p>"
+        diff = SubsectionDiff(name="Add only", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual("<p>Intro</p><p>Second  sentence.</p>", annotated.old_diff)
+        self.assertEqual(
+            "<p>Intro</p><p>Second <ins>added</ins> sentence.</p>", annotated.new_diff
+        )
+
+    def test_only_deletion(self):
+        diff_html = "<p>Intro</p><p>Second <del>removed</del> sentence.</p>"
+        diff = SubsectionDiff(name="Del only", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual("<p>Intro</p><p>Second  sentence.</p>", annotated.new_diff)
+        self.assertEqual(
+            "<p>Intro</p><p>Second <del>removed</del> sentence.</p>", annotated.old_diff
+        )
+
+    def test_update_with_add_and_delete(self):
+        diff_html = "<p>Start <del>old</del><ins>new</ins> middle</p>"
+        diff = SubsectionDiff(name="Update", status="UPDATE", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertIn("old", annotated.old_diff)
+        self.assertEqual("<p>Start <del>old</del> middle</p>", annotated.old_diff)
+        self.assertEqual("<p>Start <ins>new</ins> middle</p>", annotated.new_diff)
+
+    def test_no_diff_tags_present(self):
+        diff_html = "<p>This is unchanged content</p>"
+        diff = SubsectionDiff(name="No diff", status="MATCH", diff=diff_html)
+        annotated = annotate_side_by_side_diffs([diff])[0]
+        self.assertEqual(annotated.old_diff, diff_html)
+        self.assertEqual(annotated.new_diff, diff_html)
+
+    def test_section_dict_with_subsections(self):
+        subsection = SubsectionDiff(
+            name="Subsection",
+            status="UPDATE",
+            diff="<p>Original <del>deleted</del> <ins>added</ins></p>",
+        )
+        section = {"name": "Section A", "subsections": [subsection]}
+        result = annotate_side_by_side_diffs([section])[0]
+        annotated = result["subsections"][0]
+        self.assertEqual("<p>Original <del>deleted</del> </p>", annotated.old_diff)
+        self.assertEqual("<p>Original  <ins>added</ins></p>", annotated.new_diff)
+
+
 class TestCompareNofos(TestCase):
     def setUp(self):
         """
@@ -595,7 +606,7 @@ class TestCompareNofos(TestCase):
         )
         self.assertEqual(subsection_update.new_value, "Go to 'Contacts and Support")
         self.assertIn(
-            "<del>Need</del><ins>Go</ins> <del>help?</del><ins>to</ins> <del>Visit contacts</del><ins>'Contacts</ins> and <del>support</del><ins>Support</ins>",
+            "<p><del>Need help? Visit c</del><ins>Go to ‘C</ins>ontacts and <del>s</del><ins>S</ins>upport</p>",
             subsection_update.diff,
         )
 
@@ -633,7 +644,9 @@ class TestCompareNofos(TestCase):
         self.assertEqual(subsection_delete.name, "<del>Old NOFO Fee Requirements</del>")
         self.assertEqual(subsection_delete.old_value, "Processing fee is $50.")
         self.assertEqual(subsection_delete.new_value, "")
-        self.assertIn("<del>Processing fee is $50.</del>", subsection_delete.diff)
+        self.assertIn(
+            "<del><p>Processing fee is $50.</p></del>", subsection_delete.diff
+        )
 
         # Merged update test (renamed + updated content)
         subsection_merge = subsections[6]
@@ -714,7 +727,7 @@ class TestCompareNofosMetadata(TestCase):
             subagency_update.new_value, "Department of Groundhog Excellence (DOGE)"
         )
         self.assertIn(
-            "Department of <del>Guessing</del><ins>Groundhog</ins> <del>Groundhogs</del><ins>Excellence</ins> (<del>DGG</del><ins>DOGE</ins>)",
+            "Department of G<del>uessing Groundhogs (DGG</del><ins>roundhog Excellence (DOGE</ins>)",
             subagency_update.diff,
         )
 

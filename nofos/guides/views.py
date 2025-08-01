@@ -6,12 +6,13 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 from nofos.mixins import GroupAccessObjectMixinFactory
+from nofos.models import Nofo
 from nofos.nofo import (
     add_headings_to_document,
     add_page_breaks_to_headings,
@@ -20,7 +21,7 @@ from nofos.nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_title,
 )
-from nofos.nofo_compare import compare_nofos
+from nofos.nofo_compare import annotate_side_by_side_diffs, compare_nofos
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
@@ -64,7 +65,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
             create_nofo_audit_event(
                 event_type="nofo_import", document=guide, user=request.user
             )
-            return redirect("guides:guide_edit_title", pk=guide.pk)
+            return redirect("guides:guide_import_title", pk=guide.pk)
 
         except ValidationError as e:
             log_exception(
@@ -96,12 +97,7 @@ class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
         guide.title = form.cleaned_data["title"]
         guide.save()
 
-        messages.success(
-            self.request,
-            f"View Content Guide: <a href='{reverse_lazy('guides:guide_edit', args=[guide.id])}'>{guide.title}</a>",
-        )
-
-        return redirect("guides:guide_index")
+        return redirect("guides:guide_compare", pk=guide.id)
 
 
 class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
@@ -156,11 +152,6 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
         guide.title = form.cleaned_data["title"]
         guide.save()
 
-        messages.success(
-            self.request,
-            f"Updated title to “{guide.title}”.",
-        )
-
         return redirect("guides:guide_edit", pk=guide.id)
 
 
@@ -188,7 +179,7 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})
 
 
-class ContentGuideCompareView(BaseNofoImportView):
+class ContentGuideCompareUploadView(BaseNofoImportView):
     template_name = "guides/guide_import_compare.html"
     redirect_url_name = "guides:guide_compare"
 
@@ -228,26 +219,46 @@ class ContentGuideCompareView(BaseNofoImportView):
             new_nofo.archived = timezone.now()
             new_nofo.save()
 
-            # Compare against the existing Content Guide
-            comparison = compare_nofos(
-                guide, new_nofo, statuses_to_ignore=["MATCH", "ADD"]
-            )
-
-            # Number of changes
-            num_changed_sections = len(comparison)
-            num_changed_subsections = sum(len(s["subsections"]) for s in comparison)
-
-            return render(
-                request,
-                "guides/guide_compare.html",  # You’ll need to create this!
-                {
-                    "guide": guide,
-                    "new_nofo": new_nofo,
-                    "comparison": comparison,
-                    "num_changed_sections": num_changed_sections,
-                    "num_changed_subsections": num_changed_subsections,
-                },
+            return redirect(
+                "guides:guide_compare_result", pk=self.guide.pk, new_nofo_id=new_nofo.pk
             )
 
         except Exception as e:
             return HttpResponseBadRequest(f"Error comparing NOFO: {str(e)}")
+
+
+class ContentGuideCompareView(View):
+    def get(self, request, pk, new_nofo_id=None):
+        guide = get_object_or_404(ContentGuide, pk=pk)
+
+        # Get display mode from query param (default to "double", which is side-by-side)
+        display_mode = request.GET.get("display", "double")
+
+        context = {
+            "guide": guide,
+            "display_mode": display_mode,
+        }
+
+        if new_nofo_id:
+            new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
+
+            comparison = compare_nofos(guide, new_nofo)
+            # add old_diff and new_diff
+            comparison = annotate_side_by_side_diffs(comparison)
+
+            changed_subsections = [
+                sub
+                for section in comparison
+                for sub in section["subsections"]
+                if sub.status != "MATCH"
+            ]
+            context.update(
+                {
+                    "new_nofo": new_nofo,
+                    "comparison": comparison,
+                    "changed_subsections": changed_subsections,
+                    "num_changed_subsections": len(changed_subsections),
+                }
+            )
+
+        return render(request, "guides/guide_compare.html", context)
