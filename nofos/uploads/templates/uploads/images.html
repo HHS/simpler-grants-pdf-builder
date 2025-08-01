@@ -36,19 +36,45 @@
           <td>{{ image.last_modified|date:"Y-m-d" }}</td>
           <td>
             {% if image.used_by_nofos %}
-              <ul class="usa-list usa-list--unstyled">
-                {% for nofo in image.used_by_nofos %}
-                  <li>
-                    <a href="{% url 'nofos:nofo_edit' pk=nofo.id %}" class="usa-link">
-                      {% if nofo.short_name %}
-                        {{ nofo.short_name }}
-                      {% else %}
-                        {{ nofo.title|default:"Untitled NOFO" }}
-                      {% endif %}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
+              {% if image.used_by_nofos|length == 1 %}
+                {% with nofo=image.used_by_nofos|first %}
+                  <a href="{% url 'nofos:nofo_edit' pk=nofo.id %}" class="usa-link">
+                    {% if nofo.short_name %}
+                      {{ nofo.short_name }}
+                    {% else %}
+                      {{ nofo.title|default:"Untitled NOFO" }}
+                    {% endif %}
+                  </a>
+                {% endwith %}
+              {% else %}
+                <div class="usa-accordion">
+                  <h4 class="usa-accordion__heading">
+                    <button
+                      class="usa-accordion__button"
+                      aria-expanded="false"
+                      aria-controls="accordion-content-{{ forloop.counter }}"
+                      type="button"
+                    >
+                      Used by {{ image.used_by_nofos|length }} NOFOs
+                    </button>
+                  </h4>
+                  <div id="accordion-content-{{ forloop.counter }}" class="usa-accordion__content usa-prose">
+                    <ul class="usa-list">
+                      {% for nofo in image.used_by_nofos %}
+                        <li>
+                          <a href="{% url 'nofos:nofo_edit' pk=nofo.id %}" class="usa-link">
+                            {% if nofo.short_name %}
+                              {{ nofo.short_name }}
+                            {% else %}
+                              {{ nofo.title|default:"Untitled NOFO" }}
+                            {% endif %}
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              {% endif %}
             {% else %}
               <span class="text-base-light">Not used</span>
             {% endif %}

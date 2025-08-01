@@ -883,7 +883,9 @@ def upload_cover_image_to_s3(nofo, uploaded_file, alt_text=""):
         )
 
     # Rename file to have NOFO name
-    uploaded_file.name = f"{nofo.number}{file_extension}".lower()
+    uploaded_file.name = (
+        f"{nofo.number or nofo.title.replace(' ', '-')}{file_extension}".lower()
+    )
 
     # Upload file to S3
     s3_key = upload_file_to_s3(uploaded_file, key_prefix="img/cover-img")
