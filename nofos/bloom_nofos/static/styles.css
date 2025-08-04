@@ -1472,6 +1472,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   > table:first-of-type
   .section--content:first-of-type
   > td {
+  padding-top: 1rem;
   border-top: 1px solid #dfe1e2;
 }
 
@@ -1481,11 +1482,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   > table:last-of-type
   .section--content:last-of-type
   > td {
+  padding-bottom: 1rem;
   border-bottom: 1px solid #dfe1e2;
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
 .nofo_compare--content-guide .nofo_view .nofo_view--old,
 .nofo_compare--content-guide .nofo_view .nofo_view--new {
   flex: 1 1 40%; /* Start with 40% but can grow */
