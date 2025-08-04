@@ -1434,17 +1434,54 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   align-items: stretch; /* ensures all children match the tallest */
 }
 
+.nofo_compare--content-guide
+  .nofo_view--title-bar
+  .nofo_view--title--table-container,
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container {
   flex: 1 1 80%; /* Start with 40% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container table {
+.nofo_compare--content-guide
+  .nofo_view--title-bar
+  .nofo_view--title--table-container
+  table,
+.nofo_compare--content-guide .nofo_view .nofo_view--table-container > table {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
-  border-spacing: 1rem 0; /* creates the visual gap between columns */
+  border-spacing: 2rem 0; /* creates the visual gap between columns */
   min-width: 0;
+}
+
+.nofo_compare--content-guide
+  .nofo_view
+  .nofo_view--table-container
+  > table
+  .section--content
+  > td {
+  border-left: 1px solid #dfe1e2;
+  border-right: 1px solid #dfe1e2;
+  background-color: #ffffff;
+  padding: 0px 2rem;
+}
+
+.nofo_compare--content-guide
+  .nofo_view
+  .nofo_view--table-container
+  > table:first-of-type
+  .section--content:first-of-type
+  > td {
+  border-top: 1px solid #dfe1e2;
+}
+
+.nofo_compare--content-guide
+  .nofo_view
+  .nofo_view--table-container
+  > table:last-of-type
+  .section--content:last-of-type
+  > td {
+  border-bottom: 1px solid #dfe1e2;
 }
 
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
@@ -1471,12 +1508,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   top: 124px;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container {
-  border: 1px solid #dfe1e2;
-  background-color: #ffffff;
-  padding: 0.75rem 1.5rem;
-}
-
 .nofo_compare--content-guide .nofo_view .nofo_view--new.nofo_view--new--empty {
   background: #d9d9d9;
   text-align: center;
@@ -1487,8 +1518,9 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   top: 150px;
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
+.nofo_compare--content-guide
+  .nofo_view--title-bar
+  .nofo_view--title--table-container,
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes {
   padding: 0.5rem 0;
 }
