@@ -84,7 +84,7 @@ def result_update(original_subsection, new_subsection):
     return add_content_guide_comparison_metadata(result, original_subsection)
 
 
-def result_merged_update(name, old_value, new_value, old_sub):
+def result_merged_update(name, old_value, new_value, old_sub, html_id):
     return SubsectionDiff(
         name=name,
         status="UPDATE",
@@ -93,6 +93,7 @@ def result_merged_update(name, old_value, new_value, old_sub):
         diff=html_diff(markdownify(old_value), markdownify(new_value)),
         comparison_type=old_sub.comparison_type,
         diff_strings=old_sub.diff_strings or [],
+        html_id=html_id,
     )
 
 
@@ -215,6 +216,7 @@ def merge_renamed_subsections(
             old_body = (next_item.old_value or "").strip()
             new_name = current.name
             old_name = re.sub(r"<.*?>", "", next_item.name)  # strip <del> tags
+            html_id = current.html_id  # use the old html_id
 
             heading_diff = html_diff(old_name, new_name)
 
@@ -231,6 +233,7 @@ def merge_renamed_subsections(
                         old_value=old_body,
                         new_value=new_body,
                         old_sub=next_item,
+                        html_id=html_id,
                     )
                 )
                 i += 2

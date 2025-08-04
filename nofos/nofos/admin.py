@@ -16,7 +16,7 @@ admin.site.unregister(Group)
 class SubsectionModelForm(forms.ModelForm):
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "order", "callout_box", "body"]
+        fields = ["name", "html_id", "tag", "order", "callout_box", "body"]
         widgets = {
             "name": forms.TextInput(),
             "body": AdminMartorWidget,
