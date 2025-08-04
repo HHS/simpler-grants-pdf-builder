@@ -23,6 +23,24 @@ class TestHtmlDiffStrings(TestCase):
         expected = "Groundhog Day!"
         self.assertEqual(html_diff(original, new), expected)
 
+    def test_empty_strings(self):
+        original = ""
+        new = ""
+        expected = ""
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_Nones(self):
+        original = None
+        new = None
+        expected = ""
+        self.assertEqual(html_diff(original, new), expected)
+
+    def test_None_and_empty(self):
+        original = None
+        new = ""
+        expected = ""
+        self.assertEqual(html_diff(original, new), expected)
+
     def test_text_added(self):
         original = "Groundhog"
         new = "Groundhog Day"
