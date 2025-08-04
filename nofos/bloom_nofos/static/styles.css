@@ -1682,7 +1682,11 @@ del {
 }
 
 del p,
-del li {
+del li,
+del h3,
+del h4,
+del h5,
+del h6 {
   background-color: #ffebe9;
 }
 
@@ -1691,7 +1695,11 @@ ins {
 }
 
 ins p,
-ins li {
+ins li,
+ins h3,
+ins h4,
+ins h5,
+ins h6 {
   background-color: #aceebb;
 }
 
