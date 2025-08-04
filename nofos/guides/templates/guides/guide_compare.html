@@ -184,22 +184,28 @@
             </div>
           {% else %}
           {# comparison does not exist, show original guide and column with upload button #}
-            <div class="nofo_view--old">
+            <div class="nofo_view--table-container nofo_view--table-container--no-comparison">
               {% for section in guide.sections.all|dictsort:"order" %}
-                <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
-                  <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
-                  <div class="section--content">
+                <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                  <tr class="section--content">
+                    <td>
+                      <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                    </td>
                     {% for subsection in section.subsections.all|dictsort:"order" %}
+                      <tr class="section--content">
                       {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                          {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                        <td>{% include "includes/heading.html" with tag=tag content=content id=id class=class only %}</td>
                       {% endwith %}
-                      {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      </tr>
+                      <tr class="section--content">
+                        <td>{{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
+                      </tr>
                     {% endfor %}
-                  </div>
-                </section>
+                  </tr>
+                </table>
               {% endfor %}
             </div>
-            <div class="nofo_view--new nofo_view--new--empty">
+            <div class="nofo_view--table-container nofo_view--table-container--empty">
               <div class="guide_compare_upload">
                 <p class="margin-top-6">Ready to compare to this content guide?</p>
                 <p>Upload a NOFO to see it here.</p>
