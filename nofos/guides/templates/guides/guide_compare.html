@@ -265,17 +265,53 @@
 {% block js_footer %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const OFFSET = 130; // matches your scroll-margin-top
-
-    const navLinks = Array.from(
-      document.querySelectorAll(".nofo_view--changes--list a")
-    );
+    const OFFSET = 130; // 5px more than scroll-margin-top
+    const navLinks = Array.from(document.querySelectorAll(".nofo_view--changes--list a"));
+    const prevBtn = document.querySelector(".nofo_view--menu-bar--button__expand_less");
+    const nextBtn = document.querySelector(".nofo_view--menu-bar--button__expand_more");
 
     const sections = navLinks.map(link => {
       const id = link.getAttribute("href").substring(1);
       const heading = document.querySelector(`#${CSS.escape(id)}`);
       return { link, heading };
     }).filter(item => item.heading);
+
+    function setButtonState() {
+      if (navLinks.length === 0) {
+        prevBtn.setAttribute("aria-disabled", "true");
+        nextBtn.setAttribute("aria-disabled", "true");
+        return;
+      }
+
+      const activeIndex = navLinks.findIndex(link => link.parentElement.classList.contains("is-active"));
+
+      // If no active link yet
+      if (activeIndex === -1) {
+        prevBtn.setAttribute("aria-disabled", "true");
+        nextBtn.removeAttribute("aria-disabled");
+        nextBtn.onclick = () => navLinks[0].click();
+        return;
+      }
+
+      // Previous button
+      if (activeIndex > 0) {
+        prevBtn.removeAttribute("aria-disabled");
+        prevBtn.onclick = () => navLinks[activeIndex - 1].click();
+      } else {
+        prevBtn.setAttribute("aria-disabled", "true");
+        prevBtn.onclick = null;
+      }
+
+      // Next button
+      if (activeIndex < navLinks.length - 1) {
+        nextBtn.removeAttribute("aria-disabled");
+        nextBtn.onclick = () => navLinks[activeIndex + 1].click();
+      } else {
+        nextBtn.setAttribute("aria-disabled", "true");
+        nextBtn.onclick = null;
+      }
+    }
+
 
     function updateActiveNav() {
       let current = null;
@@ -289,23 +325,22 @@
         }
       }
 
-      // If we're above the first section's trigger point, no active link
-      if (sections.length > 0) {
-        const firstRect = sections[0].heading.getBoundingClientRect();
-        if (firstRect.top - OFFSET > 0) {
-          current = null;
-        }
+      // No active if above first section
+      if (sections.length > 0 && sections[0].heading.getBoundingClientRect().top - OFFSET > 0) {
+        current = null;
       }
 
       navLinks.forEach(link => link.parentElement.classList.remove("is-active"));
       if (current) {
         current.link.parentElement.classList.add("is-active");
       }
+
+      setButtonState();
     }
 
     // "passive: true" improves scroll performance
     window.addEventListener("scroll", updateActiveNav, { passive: true });
-    updateActiveNav();
+    updateActiveNav(); // run on page load
   });
 </script>
 {% endblock %}
