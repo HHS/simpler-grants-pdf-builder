@@ -1486,12 +1486,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-bottom: 1px solid #dfe1e2;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--old,
-.nofo_compare--content-guide .nofo_view .nofo_view--new {
-  flex: 1 1 40%; /* Start with 40% but can grow */
-  min-width: 0; /* Prevent overflow issues with long content */
-}
-
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes,
 .nofo_compare--content-guide .nofo_view .nofo_view--changes {
   flex: 0 1 20%; /* 20% width, can shrink and grow but fixed max width of 180px */
@@ -1502,10 +1496,20 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
-  overflow-y: auto;
-  max-height: 100%;
   position: sticky;
   top: 124px;
+  height: calc(100vh - 124px);
+  display: flex;
+  flex-direction: column;
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--changes--list ol {
+  overflow-y: auto; /* scroll only the list */
+  flex: 1; /* take up all available space in the container */
+  padding-left: 0;
+  margin-top: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container--empty {
@@ -1642,11 +1646,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare .nofo_view--vertical-divider.mr-0 {
   margin-right: 0;
-}
-
-.nofo_view .nofo_view--changes--list ol {
-  padding-left: 0;
-  margin-top: 0;
 }
 
 .nofo_view .nofo_view--changes--list ol li {
