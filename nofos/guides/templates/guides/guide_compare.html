@@ -133,26 +133,37 @@
                     <tr class="section--content">
                       {% if subsection.status == 'MATCH' or subsection.status == 'DELETE' or subsection.status == 'UPDATE' %}
                         {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                          <td>{% include "includes/heading.html" with tag=tag content=content id=id class=class only %}</td>
+                          <td>
+                            {% if subsection.status == 'DELETE' %}<del>{% endif %}
+                              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                            {% if subsection.status == 'DELETE' %}</del>{% endif %}
+                          </td>
                         {% endwith %}
+                      {% else %}
+                          <td></td>
                       {% endif %}
                       {% if subsection.status == 'MATCH' or subsection.status == 'ADD' or subsection.status == 'UPDATE' %}
                         {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                          <td>{% include "includes/heading.html" with tag=tag content=content id=id class=class only %}</td>
+                          <td>
+                            {% if subsection.status == 'ADD' %}<ins>{% endif %}
+                              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                            {% if subsection.status == 'ADD' %}</ins>{% endif %}
+                          </td>
                         {% endwith %}
                       {% else %}
                         <td></td>
                       {% endif %}
                     </tr>
-                    <tr class="section--content">
-
+                    <tr class="section--content" {% if not subsection.tag %}id="{{ subsection.html_id }}"{% endif %}>
                       {# old diff cell #}
                       {% if subsection.status == 'MATCH' or subsection.status == 'DELETE' or subsection.status == 'UPDATE' %}
                         {% if subsection.old_diff %}
-                            <td>{{ subsection.old_diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
-                          {% elif subsection.old_value %}
-                            <td>{{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
-                          {% endif %}
+                          <td>{{ subsection.old_diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
+                        {% elif subsection.old_value %}
+                          <td>{{ subsection.old_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
+                        {% endif %}
+                      {% else %}
+                        <td></td>
                       {% endif %}
 
                       {# new diff cell #}
