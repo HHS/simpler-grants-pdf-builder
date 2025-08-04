@@ -1434,6 +1434,19 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   align-items: stretch; /* ensures all children match the tallest */
 }
 
+.nofo_compare--content-guide .nofo_view .nofo_view--table-container {
+  flex: 1 1 80%; /* Start with 40% but can grow */
+  min-width: 0; /* Prevent overflow issues with long content */
+}
+
+.nofo_compare--content-guide .nofo_view .nofo_view--table-container table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 1rem 0; /* creates the visual gap between columns */
+  min-width: 0;
+}
+
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-old,
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-new,
 .nofo_compare--content-guide .nofo_view .nofo_view--old,
@@ -1458,8 +1471,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   top: 124px;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--old,
-.nofo_compare--content-guide .nofo_view .nofo_view--new {
+.nofo_compare--content-guide .nofo_view .nofo_view--table-container {
   border: 1px solid #dfe1e2;
   background-color: #ffffff;
   padding: 0.75rem 1.5rem;
@@ -1768,7 +1780,6 @@ del + ins > br {
     top: 0;
   }
 }
-
 
 /* Image aspect ratio utilities */
 .cover-image {

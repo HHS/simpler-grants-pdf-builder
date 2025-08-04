@@ -138,116 +138,128 @@ p + p {
   margin: 5px 0;
 }
 
-.nofo_view table {
+.nofo_view table td {
+  background-color: transparent;
+  border: none;
+}
+
+.nofo_view .section--content table {
   border-collapse: collapse;
   border-spacing: 0;
   margin: 10px 0 20px;
   text-align: left;
 }
 
-.nofo_view table.table--large {
+.nofo_view .section--content table.table--large {
   padding-top: 0px;
   width: 100%;
 }
 
-.nofo_view table.table--with-caption caption {
+.nofo_view .section--content table.table--with-caption caption {
   font-weight: 700;
   margin-bottom: 10px;
   text-align: left;
 }
 
-.nofo_view table tr.light-blue-bg td,
-.nofo_view table tr td.light-blue-bg,
-.nofo_view table tr td.light-blue-bg ~ td {
+.nofo_view .section--content table tr.light-blue-bg td,
+.nofo_view .section--content table tr td.light-blue-bg,
+.nofo_view .section--content table tr td.light-blue-bg ~ td {
   background-color: var(--color--light-table-blue);
 }
 
-.nofo_view table th,
-.nofo_view table td,
-.nofo_view table caption {
+.nofo_view .section--content table th,
+.nofo_view .section--content table td,
+.nofo_view .section--content table caption {
   font-size: 10pt;
 }
 
-.nofo_view table th,
-.nofo_view table td {
+.nofo_view .section--content table th,
+.nofo_view .section--content table td {
   padding: 0.4rem 0.8rem;
 }
 
-.nofo_view table td {
+.nofo_view .section--content table td {
   vertical-align: baseline;
 }
 
-.nofo_view table th.align-top,
-.nofo_view table td.align-top {
+.nofo_view .section--content table th.align-top,
+.nofo_view .section--content table td.align-top {
   vertical-align: top;
 }
 
-.nofo_view table th.align-bottom,
-.nofo_view table td.align-bottom {
+.nofo_view .section--content table th.align-bottom,
+.nofo_view .section--content table td.align-bottom {
   vertical-align: bottom;
 }
 
-.nofo_view table tr.table-row--empty {
+.nofo_view .section--content table tr.table-row--empty {
   height: 28px;
 }
 
-.nofo_view table th.header-row-empty[colspan] {
+.nofo_view .section--content table th.header-row-empty[colspan] {
   height: 31px;
   background-color: var(--color--table-blue);
 }
 
-.nofo_view table thead th,
-.nofo_view table tbody tr:first-of-type th {
+.nofo_view .section--content table thead th,
+.nofo_view .section--content table tbody tr:first-of-type th {
   background-clip: padding-box;
   font-weight: 600;
   line-height: 1.3;
   text-align: left;
 }
 
-.nofo_view table thead th p,
-.nofo_view table tbody tr:first-of-type th p {
+.nofo_view .section--content table thead th p,
+.nofo_view .section--content table tbody tr:first-of-type th p {
   font-weight: 400;
 }
 
-.nofo_view table thead th p:first-child,
-.nofo_view table tbody tr:first-of-type th p:first-child {
+.nofo_view .section--content table thead th p:first-child,
+.nofo_view .section--content table tbody tr:first-of-type th p:first-child {
   font-weight: 600;
 }
 
-.nofo_view table thead th > p,
-.nofo_view table tbody tr:first-of-type th > p {
+.nofo_view .section--content table thead th > p,
+.nofo_view .section--content table tbody tr:first-of-type th > p {
   margin-top: 0;
   margin-bottom: 8px;
 }
 
-.nofo_view table thead th > strong + p:first-of-type,
-.nofo_view table tbody tr:first-of-type th > strong + p:first-of-type {
+.nofo_view .section--content table thead th > strong + p:first-of-type,
+.nofo_view
+  .section--content
+  table
+  tbody
+  tr:first-of-type
+  th
+  > strong
+  + p:first-of-type {
   margin-top: 8px;
 }
 
-.nofo_view table thead th > p:last-of-type,
-.nofo_view table tbody tr:first-of-type th > p:last-of-type {
+.nofo_view .section--content table thead th > p:last-of-type,
+.nofo_view .section--content table tbody tr:first-of-type th > p:last-of-type {
   margin-bottom: 0;
 }
 
-.nofo_view table thead th a,
-.nofo_view table tbody tr:first-of-type th a {
+.nofo_view .section--content table thead th a,
+.nofo_view .section--content table tbody tr:first-of-type th a {
   color: currentColor;
 }
 
-.nofo_view table td > *:first-child,
-.nofo_view table td > *:first-child {
+.nofo_view .section--content table td > *:first-child,
+.nofo_view .section--content table td > *:first-child {
   margin-top: 0;
 }
 
-.nofo_view table td ul,
-.nofo_view table td ol {
+.nofo_view .section--content table td ul,
+.nofo_view .section--content table td ol {
   padding-left: 20px;
   margin-left: 0;
 }
 
-.nofo_view table td ul li:first-of-type,
-.nofo_view table td ol li:first-of-type {
+.nofo_view .section--content table td ul li:first-of-type,
+.nofo_view .section--content table td ol li:first-of-type {
   margin-top: 0;
 }
 
