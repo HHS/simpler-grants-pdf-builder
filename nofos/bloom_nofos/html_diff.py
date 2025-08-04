@@ -13,6 +13,16 @@ def has_diff(diff_string):
 
 
 def html_diff(original_html, modified_html):
+    # Input validation
+    if original_html is None:
+        original_html = ""
+    if modified_html is None:
+        modified_html = ""
+
+    # Handle identical content early
+    if original_html == modified_html:
+        return original_html
+
     dmp = diff_match_patch()
 
     # Treat as plain text if no tags
