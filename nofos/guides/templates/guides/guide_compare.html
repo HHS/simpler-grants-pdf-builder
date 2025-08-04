@@ -97,8 +97,14 @@
             </table>
           </div>
         {% else %}
-          <div class="nofo_view--title-old">
-            <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
+          <div class="nofo_view--title--table-container">
+            <table>
+              <tr>
+                <td>
+                  <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
+                </td>
+              </tr>
+            </table>
           </div>
         {% endif %}
         {% if comparison %}
@@ -204,15 +210,22 @@
         </div>
         {% else %}
         {# display_mode="single": Show consolidated view #}
-          <div class="nofo_view--old">
+          <div class="nofo_view--table-container">
             {% for section in comparison %}
-              <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
-                <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
-                <div class="section--content">
-                  {% for subsection in section.subsections %}
-                      {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                          {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
-                      {% endwith %}
+              <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+                <tr class="section--content">
+                  <td>
+                    <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+                  </td>
+                </tr>
+                {% for subsection in section.subsections %}
+                  <tr class="section--content">
+                    {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                      <td>{% include "includes/heading.html" with tag=tag content=content id=id class=class only %}</td>
+                    {% endwith %}
+                  </tr>
+                  <tr class="section--content">
+                    <td>
                       {% if subsection.diff %}
                         {{ subsection.diff|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
                       {% elif subsection.old_value %}
@@ -220,9 +233,10 @@
                       {% elif subsection.new_value %}
                         {{ subsection.new_value|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
                       {% endif %}
-                  {% endfor %}
-                </div>
-              </section>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </table>
             {% endfor %}
           </div>
           <div class="nofo_view--vertical-divider mr-0"></div>
