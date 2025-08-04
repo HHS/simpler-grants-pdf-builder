@@ -138,7 +138,8 @@ p + p {
   margin: 5px 0;
 }
 
-.nofo_view table td {
+.nofo_view--title-bar table td,
+.nofo_view table .section--content > td {
   background-color: transparent;
   border: none;
 }
