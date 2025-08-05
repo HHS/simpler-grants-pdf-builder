@@ -49,7 +49,11 @@
           {% endif %}
           {% if user.is_authenticated %}
             <li class="usa-nav__primary-item">
-              <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
+              {% if '/guides/' not in request.path %}
+                <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
+              {% else %}
+                <a href="{% url 'guides:guide_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'guide_index' %}aria-current="page"{% endif %}>All content guides</a>
+              {% endif %}
             </li>
           {% endif %}
           <li class="usa-nav__primary-item">
