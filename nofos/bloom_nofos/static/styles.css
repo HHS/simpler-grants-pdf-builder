@@ -1284,6 +1284,11 @@ main .back-link a::before,
 }
 
 /* Content guides */
+.nofo_guide_edit--header .nofo_guide_edit--header--h1 h1 {
+  white-space: normal;
+  font-size: 1.95rem;
+  line-height: normal;
+}
 
 .content_guide_edit .nofo_edit--header--subheading {
   margin-bottom: -10px;
@@ -1292,6 +1297,51 @@ main .back-link a::before,
   margin-top: 15px;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.content_guide_edit .usa-accordion__compare-heading {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.content_guide_edit .usa-accordion__compare-checkbox {
+  position: absolute !important;
+  right: 3rem !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+  flex-direction: row-reverse !important;
+}
+
+.content_guide_edit .usa-accordion__compare-checkbox-label {
+  margin: 0 !important;
+  background-color: transparent !important;
+}
+
+.flipped-label .usa-checkbox__label::before {
+  left: unset !important;
+  right: 1rem !important;
+}
+
+.flipped-label .usa-checkbox__label {
+  padding-right: 3rem !important;
+  padding-left: 0 !important;
+  font-weight: 700 !important;
+}
+
+.content_guide_edit main table.table--section .nofo-edit-table--subsection--manage {
+  vertical-align: top;
+  padding-right: 1.8rem !important;
+}
+
+.content_guide_edit .compare-all-sections-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-right: 3rem;
 }
 
 .subsection_edit--diff-subsection
