@@ -1919,3 +1919,7 @@ del + ins > br {
 .usa-button--icon.usa-button--delete::before {
   background-image: url("/static/img/usa-icons/delete.svg");
 }
+
+.usa-summary-box .usa-checkbox {
+  background: transparent;
+}

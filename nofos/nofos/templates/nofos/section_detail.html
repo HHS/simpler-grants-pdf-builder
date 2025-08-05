@@ -28,44 +28,34 @@
       Section options
     </h4>
     <div class="usa-summary-box__text">
-      <p class="margin-bottom-0">
-        <button type="button"
-                id="toggle-tables-btn"
-                class="usa-button {% if section.html_class and 'section--tables-full-width' in section.html_class %}usa-button--secondary{% else %}usa-button--cyan{% endif %}"
-                data-url="{% url 'nofos:section_toggle_tables' section.nofo.id section.id %}"
-                data-csrf-token="{{ csrf_token }}">
-          {% if section.html_class and 'section--tables-full-width' in section.html_class %}
-            Default Tables
-          {% else %}
-            Full-width Tables
-          {% endif %}
-        </button>
-        —
-        <span id="toggle-tables-description">
-          {% if section.html_class and 'section--tables-full-width' in section.html_class %}
-            Restore all tables to their default widths
-          {% else %}
-            Expand all tables in this section to full width
-          {% endif %}
-        </span>
-      </p>
+      <div class="usa-checkbox">
+        <input class="usa-checkbox__input"
+               id="toggle-tables-checkbox"
+               name="toggle-tables"
+               type="checkbox"
+               value="full-width"
+               data-url="{% url 'nofos:section_toggle_tables' section.nofo.id section.id %}"
+               data-csrf-token="{{ csrf_token }}"
+               {% if section.html_class and 'section--tables-full-width' in section.html_class %}checked{% endif %}>
+        <label class="usa-checkbox__label" for="toggle-tables-checkbox">
+          Use full-width tables for this section
+        </label>
+      </div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const toggleBtn = document.getElementById('toggle-tables-btn');
-        const toggleTablesDescription = document.getElementById('toggle-tables-description');
+        const toggleCheckbox = document.getElementById('toggle-tables-checkbox');
 
-        toggleBtn.addEventListener('click', function() {
-            // Disable button during request
-            toggleBtn.disabled = true;
-            const originalText = toggleBtn.textContent;
-            toggleBtn.textContent = 'Loading...';
+        toggleCheckbox.addEventListener('change', function() {
+            // Disable checkbox during request
+            toggleCheckbox.disabled = true;
+            const originalChecked = toggleCheckbox.checked;
 
-            fetch(toggleBtn.dataset.url, {
+            fetch(toggleCheckbox.dataset.url, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': toggleBtn.dataset.csrfToken,
+                    'X-CSRFToken': toggleCheckbox.dataset.csrfToken,
                     'Content-Type': 'application/json',
                 },
                 credentials: 'same-origin'
@@ -73,33 +63,31 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update button appearance
+                    // Update checkbox state and tooltip based on response
                     const state = data.state;
                     if (state === 'default') {
-                        toggleBtn.textContent = 'Full-width Tables';
-                        toggleBtn.className = 'usa-button usa-button--cyan';
-                        toggleTablesDescription.textContent = 'Expand all tables in this section to full width';
+                        toggleCheckbox.checked = false;
                     } else {
-                        toggleBtn.textContent = 'Default Tables';
-                        toggleBtn.className = 'usa-button usa-button--secondary';
-                        toggleTablesDescription.textContent = 'Restore all tables to their default widths';
+                        toggleCheckbox.checked = true;
                     }
 
                     showMessage(data.message, 'success');
                 } else {
                     const message = data.message || 'An error occurred. Please try again.';
                     showMessage(message, 'error');
-                    toggleBtn.textContent = originalText;
+                    // Revert checkbox state on error
+                    toggleCheckbox.checked = originalChecked;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showMessage('An error occurred. Please try again.', 'error');
-                toggleBtn.textContent = originalText;
+                // Revert checkbox state on error
+                toggleCheckbox.checked = originalChecked;
             })
             .finally(() => {
-                toggleBtn.disabled = false;
-                toggleBtn.focus();
+                toggleCheckbox.disabled = false;
+                toggleCheckbox.focus();
             });
         });
 
