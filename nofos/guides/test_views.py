@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -280,6 +281,143 @@ class ContentGuideEditViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Archived Content Guide")
+
+    def test_post_updates_subsections(self):
+        """Test that POST request can handle multiple subsections at once"""
+        # Create multiple subsections that need to be updated
+        subsection1 = ContentGuideSubsection.objects.create(
+            section=self.section1,
+            name="Test Subsection 1",
+            order=1,
+            tag="h3",
+            comparison_type="none",
+        )
+        subsection2 = ContentGuideSubsection.objects.create(
+            section=self.section2,
+            name="Test Subsection 2",
+            order=1,
+            tag="h3",
+            comparison_type="body",
+        )
+        # Create a subsection that does not need to be updated
+        subsection3 = ContentGuideSubsection.objects.create(
+            section=self.section1,
+            name="Test Subsection 3",
+            order=2,
+            tag="h3",
+            comparison_type="body",
+        )
+
+        response = self.client.post(
+            self.url,
+            data=json.dumps(
+                {
+                    "subsections": {
+                        str(subsection1.id): True,
+                        str(subsection2.id): False,
+                        str(subsection3.id): True,
+                    }
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check JSON response
+        response_data = response.json()
+        self.assertEqual(response_data["status"], "success")
+        self.assertEqual(response_data["selections_count"], 3)
+        self.assertEqual(response_data["updated_count"], 2)
+        self.assertEqual(response_data["failed_subsection_ids"], [])
+
+        subsection1.refresh_from_db()
+        subsection2.refresh_from_db()
+        subsection3.refresh_from_db()
+        self.assertEqual(subsection1.comparison_type, "body")
+        self.assertEqual(subsection2.comparison_type, "none")
+        self.assertEqual(subsection3.comparison_type, "body")
+
+    def test_post_with_invalid_subsection_ids_returns_partial_status(self):
+        """Test that POST request handles invalid subsection IDs gracefully"""
+        # Create one valid subsection
+        subsection1 = ContentGuideSubsection.objects.create(
+            section=self.section1,
+            name="Valid Subsection",
+            order=1,
+            tag="h3",
+            comparison_type="none",
+        )
+
+        # Use one valid ID and one invalid ID
+        invalid_id = "99999"
+
+        response = self.client.post(
+            self.url,
+            data=json.dumps(
+                {
+                    "subsections": {
+                        str(subsection1.id): True,  # Valid subsection
+                        invalid_id: False,  # Invalid subsection
+                    }
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        # Check JSON response for partial failure
+        response_data = response.json()
+        self.assertEqual(response_data["status"], "partial")
+        self.assertEqual(response_data["selections_count"], 2)
+        self.assertEqual(response_data["updated_count"], 1)
+        self.assertEqual(response_data["failed_subsection_ids"], [invalid_id])
+        self.assertIn("Some comparison selections failed", response_data["message"])
+
+        # Verify valid subsection was updated
+        subsection1.refresh_from_db()
+        self.assertEqual(subsection1.comparison_type, "body")
+
+    def test_post_with_all_invalid_subsection_ids_returns_fail_status(self):
+        """Test that POST request with all invalid IDs returns fail status"""
+        response = self.client.post(
+            self.url,
+            data=json.dumps(
+                {
+                    "subsections": {
+                        "99999": True,  # Invalid subsection
+                        "88888": False,  # Invalid subsection
+                    }
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        # Check JSON response for complete failure
+        response_data = response.json()
+        self.assertEqual(response_data["status"], "fail")
+        self.assertEqual(response_data["selections_count"], 2)
+        self.assertEqual(response_data["updated_count"], 0)
+        self.assertEqual(
+            set(response_data["failed_subsection_ids"]), {"99999", "88888"}
+        )
+        self.assertIn("All comparison selections failed", response_data["message"])
+
+    def test_post_with_invalid_json_returns_error(self):
+        """Test that POST request with invalid JSON returns proper error"""
+        response = self.client.post(
+            self.url,
+            data="invalid json data",
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertFalse(response_data["success"])
+        self.assertEqual(response_data["message"], "Invalid JSON data.")
 
 
 class ContentGuideSubsectionEditViewTests(TestCase):
