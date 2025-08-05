@@ -13,6 +13,18 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.6.0] - 2025-08-05
+
+### Changed
+
+- Huge rewrite of HTML diffing engine
+- Content Guide Compare page now supports a side-by-side diff or consolidated diff
+- Content Guide import now defaults all "comparison_type" fields to "body"
+
+### Migrations
+
+- Add migration for setting all "comparison_type" fields to "body" on import
+
 ## [3.5.0] - 2025-08-05
 
 ### Added
