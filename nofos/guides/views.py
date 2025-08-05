@@ -43,6 +43,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
     """
 
     template_name = "guides/guide_import.html"
+    redirect_url_name = "guides:guide_import"
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
