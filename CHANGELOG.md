@@ -9,7 +9,20 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.5.0] - 2025-08-05
+
+### Added
+
+- Implement image uploads for NOFO cover images
+  - Users can now add, edit, or remove cover images their NOFOs
+  - Superusers can see a listing of all images uploaded and which NOFO they belong to
 - Add left-hand floating menu for in-page navigation of a NOFO's major (H2) headings
+- Add button for users to apply full-width tables per section
+  - Add emoji icon near the "Configure section" link if full-width tables are active
 - Add cover image for CDC-RFA-DP-25-0014
 - Add a page for superusers to see manually uploaded images
 - Add an ADR (Architecture Decision Record) for which diff library we are planning to use
