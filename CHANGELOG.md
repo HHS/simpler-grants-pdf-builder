@@ -11,6 +11,10 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Change site header to say "NOFO Boilerplate Compare" for "/guides" urls
+- Completely redo Content Guide edit page
+  - Add checkboxes to select/deselect which subsections to compare
+
 ### Fixed
 
 ## [3.6.0] - 2025-08-05
