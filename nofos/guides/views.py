@@ -182,7 +182,7 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
 class ContentGuideCompareUploadView(BaseNofoImportView):
     template_name = "guides/guide_import_compare.html"
-    redirect_url_name = "guides:guide_compare"
+    redirect_url_name = "guides:guide_compare_upload"
 
     def dispatch(self, request, *args, **kwargs):
         self.guide = get_object_or_404(ContentGuide, pk=kwargs.get("pk"))
