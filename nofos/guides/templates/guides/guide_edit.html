@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const compareAllCheckbox = document.getElementById('compare-all-sections');
     const sectionCheckboxes = document.querySelectorAll('input[name="compare_sections"]');
     const subsectionCheckboxes = document.querySelectorAll('input[name="compare_subsections"]');
+    const allCheckboxes = [compareAllCheckbox, ...sectionCheckboxes, ...subsectionCheckboxes];
 
     // Handle "Compare All Sections" checkbox
     compareAllCheckbox.addEventListener('change', function() {
@@ -250,12 +251,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = container.dataset.url;
         const csrfToken = container.dataset.csrfToken;
 
+        allCheckboxes.forEach(checkbox => {
+            checkbox.disabled = true;
+        });
+
         // Collect all subsection checkbox states
         const subsectionStates = {};
         subsectionCheckboxes.forEach(checkbox => {
             subsectionStates[checkbox.value] = checkbox.checked;
         });
-        subsectionStates['test'] = false;
 
         // Make POST request
         fetch(url, {
@@ -300,6 +304,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error saving subsection selections:', error);
+        });
+
+        allCheckboxes.forEach(checkbox => {
+            checkbox.disabled = false;
         });
     }
 
