@@ -22,122 +22,301 @@
   <div class="back-link font-body-md">
     <a href="{% url 'guides:guide_index' %}">All Content Guides</a>
   </div>
-  <div class="nofo_edit--header--subheading font-mono-sm text-base">Content Guide</div>
-  <div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
-    <div class="nofo_edit--header--h1 {% if guide.title|length > 40 %}nofo_edit--header--h1--smaller{% endif %}">
-      <h1 class="font-heading- margin-0">Configure Content Guide: “{{ guide.title }}”</h1>
+  <div class="nofo_guide_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
+    <div class="nofo_guide_edit--header--h1 ">
+      <h1 class="font-heading-md margin-top-1">Compare NOFO to "{{ guide.opdiv }}" Source Content Guide</h1>
     </div>
   </div>
 
   {% timezone "America/New_York" %}
     <p>
-      This Content Guide was created on {{ guide.updated|date:'F j' }} at {{ guide.updated|date:'g:i A' }}.
+      <em>This Content Guide was uploaded on <strong>{{ guide.created|date:'F j' }} at {{ guide.created|date:'g:i A' }}</strong></em>.
     </p>
   {% endtimezone %}
 
-  <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-    <div class="usa-summary-box__body">
-      <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-        Other actions
-      </h2>
-      <div class="usa-summary-box__text">
-        <p>Content Guides can be compared to existing NOFOs or new NOFO Word documents.</p>
-        <p>You can define what to compare, but you can’t directly edit the text of the Content Guide.</p>
-        <a class="usa-button usa-button--accent-warm" href="{% url 'guides:guide_compare_upload' guide.id %}">Compare to a NOFO</a>
-           — Check for differences between a NOFO document and this Content Guide.
-          </p>
-      </div>
+  <p>Click “Ready to Compare” to see the differences from your uploaded NOFO and Content Guide.</p>
+  <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to Compare</a>
+
+  <h2>Which sections of this content guide would you like to compare to a NOFO?</h2>
+
+  <ul class="usa-list">
+    <li>Selecting a section will compare all the content in that section.</li>
+    <li>Any sections you don't select won't be compared.</li>
+    <li>Headings within each section will always be compared.</li>
+    <li>Expand each section to see what content it includes.
+  </ul>
+
+  <div class="compare-all-sections-container"
+       data-url="{% url 'guides:guide_edit' guide.id %}"
+       data-csrf-token="{{ csrf_token }}">
+    <div class="usa-checkbox flipped-label">
+      <input
+        class="usa-checkbox__input"
+        id="compare-all-sections"
+        type="checkbox"
+        name="compare_all"
+        value="all"
+      />
+      <label class="usa-checkbox__label" for="compare-all-sections">
+        Compare All Sections
+      </label>
     </div>
   </div>
 
-  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
-    <caption>
-      <div>
-        <h2 class="margin-bottom-0">Basic information</h2>
-      </div>
-    </caption>
-    <thead class="usa-sr-only">
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Value</th>
-        <th scope="col">Manage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row" class="w-15">Name</th>
-        <td>{{ guide.title }}</td>
-        <td class="w-5 text-right"><a href="{% url 'guides:guide_edit_title' guide.id %}">Edit<span class="usa-sr-only"> name</span></a></td>
-      </tr>
-      <tr>
-        <th scope="row">Filename</th>
-        <td>{{ guide.filename }}</td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-
-
+  <div class="usa-accordion usa-accordion--bordered">
     {% for section in guide.sections.all|dictsort:"order" %}
-      <table class="usa-table usa-table--borderless width-full table--section">
-        <caption>
-          <div>
-            <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-          </div>
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Comparison type</th>
-            <th scope="col">Heading</th>
-            <th scope="col">Content</th>
-            <th scope="col">Manage</th>
-          </tr>
-        </thead>
-        <tbody>
-
-          {% for subsection in section.subsections.all|dictsort:"order" %}
-            {% if subsection.name != 'Basic information' %}
-            <tr class="row--comparison-type--{{ subsection.comparison_type }}">
-              <td class="w-20 nofo-edit-table--subsection--comparison_type">
-                {{ subsection.get_comparison_type_display }}
-              </td>
-              <th scope="row"
-                class="w-20 nofo-edit-table--subsection--name{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
-                <span class="floating">
-                  {% if subsection.name %}
-                    <span {% if subsection.comparison_type == 'none' %}class="text-base text-italic"{% endif %}>
-                      {{ subsection.name }}
-                    </span>
-                  {% else %}
-                    <span class="text-base">—</span>
-                  {% endif %}
-                </span>
-              </th>
-              <td class="nofo-edit-table--subsection--body">
-                {% if subsection.comparison_type == 'body' %}
-                  <div>
-                    {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
-                  </div>
-                {% elif subsection.comparison_type == 'diff_strings' %}
-                  <ul class="usa-list margin-top-0">
-                    {% for diff_string in subsection.diff_strings %}
-                      <li>{{ diff_string }}</li>
-                    {% endfor %}
-                  </ul>
-                {% else %}
-                  <span class="text-base text-italic">N/A</span>
-                {% endif %}
-              </td>
-              <td class="w-5 text-right nofo-edit-table--subsection--manage ">
-                <span class="floating">
-                  <a href="{% url 'guides:subsection_edit' guide.id section.id subsection.id %}">Edit<span class="usa-sr-only"> subsection: {{ subsection.name }}</span></a>
-                </span>
-              </td>
+      <h3 class="usa-accordion__heading usa-accordion__compare-heading">
+        <button
+          type="button"
+          class="usa-accordion__button"
+          aria-expanded="false"
+          aria-controls="section-{{ section.id }}"
+        >
+          {{ section.name }}
+        </button>
+        <div class="usa-checkbox usa-accordion__compare-checkbox flipped-label">
+          <input
+            class="usa-checkbox__input"
+            id="compare-section-{{ section.id }}"
+            type="checkbox"
+            name="compare_sections"
+            value="{{ section.id }}"
+            onclick="event.stopPropagation();"
+          />
+          <label class="usa-checkbox__label usa-accordion__compare-checkbox-label" for="compare-section-{{ section.id }}" onclick="event.stopPropagation();">
+            Compare Content
+          </label>
+        </div>
+      </h3>
+      <div id="section-{{ section.id }}" class="usa-accordion__content usa-prose">
+        <table class="usa-table usa-table--borderless width-full table--section">
+          <thead>
+            <tr>
+              <th scope="col">Heading</th>
+              <th scope="col">Content</th>
+              <th scope="col"></th>
             </tr>
-            {% endif %}
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for subsection in section.subsections.all|dictsort:"order" %}
+              {% if subsection.name != 'Basic information' %}
+              <tr class="row--comparison-type--{{ subsection.comparison_type }}">
+                <th scope="row"
+                  class="w-20 nofo-edit-table--subsection--name{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
+                  <span class="floating">
+                    {% if subsection.name %}
+                      <span {% if subsection.comparison_type == 'none' %}class="text-base text-italic"{% endif %}>
+                        {{ subsection.name }}
+                      </span>
+                    {% else %}
+                      <span class="text-base">—</span>
+                    {% endif %}
+                  </span>
+                </th>
+                <td class="nofo-edit-table--subsection--body">
+                  {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+                </td>
+                <td class="width-4 nofo-edit-table--subsection--manage">
+                  <div class="usa-checkbox ">
+                    <input
+                      class="usa-checkbox__input"
+                      id="compare-subsection-{{ subsection.id }}"
+                      type="checkbox"
+                      name="compare_subsections"
+                      value="{{ subsection.id }}"
+                      {% if subsection.comparison_type == 'body' %}checked{% endif %}
+                    />
+                    <label class="usa-checkbox__label" for="compare-subsection-{{ subsection.id }}">
+                      <span class="usa-sr-only">Compare subsection: {{ subsection.name }}</span>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% endfor %}
+  </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const compareAllCheckbox = document.getElementById('compare-all-sections');
+    const sectionCheckboxes = document.querySelectorAll('input[name="compare_sections"]');
+    const subsectionCheckboxes = document.querySelectorAll('input[name="compare_subsections"]');
+
+    // Handle "Compare All Sections" checkbox
+    compareAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+
+        // Check/uncheck all section checkboxes
+        sectionCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+
+        // Check/uncheck all subsection checkboxes
+        subsectionCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+
+        saveSubsectionSelections(subsectionCheckboxes);
+    });
+
+    // Handle individual section "Compare Content" checkboxes
+    sectionCheckboxes.forEach(sectionCheckbox => {
+        sectionCheckbox.addEventListener('change', function() {
+            const sectionId = this.value;
+            const isChecked = this.checked;
+
+            // Find all subsection checkboxes for this section
+            const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
+
+            // Check/uncheck all subsection checkboxes in this section
+            sectionSubsectionCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+
+            // Update "Compare All Sections" checkbox state
+            updateCompareAllSectionsCheckbox();
+            saveSubsectionSelections(sectionSubsectionCheckboxes);
+        });
+    });
+
+    // Handle individual subsection checkboxes
+    subsectionCheckboxes.forEach(subsectionCheckbox => {
+        subsectionCheckbox.addEventListener('change', function() {
+            // Find the section this subsection belongs to
+            const sectionElement = this.closest('[id^="section-"]');
+            if (sectionElement) {
+                const sectionId = sectionElement.id.replace('section-', '');
+                const sectionCheckbox = document.querySelector(`input[name="compare_sections"][value="${sectionId}"]`);
+
+                if (sectionCheckbox) {
+                    // Check if all subsections in this section are checked
+                    const sectionSubsectionCheckboxes = sectionElement.querySelectorAll('input[name="compare_subsections"]');
+                    const allSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).every(checkbox => checkbox.checked);
+
+                    // Update section checkbox based on subsection states
+                    sectionCheckbox.checked = allSectionSubsectionsChecked;
+                    saveSubsectionSelections([subsectionCheckbox]);
+                }
+            }
+
+            // Update "Compare All Sections" checkbox state
+            updateCompareAllSectionsCheckbox();
+        });
+    });
+
+    // Function to update the "Compare All Sections" checkbox state
+    function updateCompareAllSectionsCheckbox() {
+        const allCheckboxes = [...sectionCheckboxes, ...subsectionCheckboxes];
+        const allChecked = allCheckboxes.every(checkbox => checkbox.checked);
+        const anyChecked = allCheckboxes.some(checkbox => checkbox.checked);
+
+        if (allChecked) {
+            compareAllCheckbox.checked = true;
+            compareAllCheckbox.indeterminate = false;
+        } else if (anyChecked) {
+            compareAllCheckbox.checked = false;
+            compareAllCheckbox.indeterminate = true;
+        } else {
+            compareAllCheckbox.checked = false;
+            compareAllCheckbox.indeterminate = false;
+        }
+    }
+
+    // Function to update section checkboxes based on their subsection states
+    function updateCompareSectionCheckboxes() {
+        sectionCheckboxes.forEach(sectionCheckbox => {
+            const sectionId = sectionCheckbox.value;
+
+            // Find all subsection checkboxes for this section
+            const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
+
+            if (sectionSubsectionCheckboxes.length > 0) {
+                // Check if all subsections in this section are checked
+                const allSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).every(checkbox => checkbox.checked);
+
+                // Update section checkbox based on subsection states
+                sectionCheckbox.checked = allSectionSubsectionsChecked;
+            }
+        });
+    }
+
+    function saveSubsectionSelections(subsectionCheckboxes) {
+        // Get the container with data attributes
+        const container = document.querySelector('.compare-all-sections-container');
+        const url = container.dataset.url;
+        const csrfToken = container.dataset.csrfToken;
+
+        // Collect all subsection checkbox states
+        const subsectionStates = {};
+        subsectionCheckboxes.forEach(checkbox => {
+            subsectionStates[checkbox.value] = checkbox.checked;
+        });
+        subsectionStates['test'] = false;
+
+        // Make POST request
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                subsections: subsectionStates
+            })
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            if (data.status == 'success') {
+                console.log(`Subsection selections saved successfully. ${data.updated_count} subsections updated.`);
+            } else if (data.status == 'fail') {
+                console.error(data.message);
+            } else if (data.status == 'partial') {
+                console.warn(data.message);
+            }
+
+            // Handle failed subsection IDs by toggling their checkboxes to opposite value
+            if (data.failed_subsection_ids && data.failed_subsection_ids.length > 0) {
+                data.failed_subsection_ids.forEach(failedId => {
+                    const checkbox = document.querySelector(`input[name="compare_subsections"][value="${failedId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        indicateCheckboxError(checkbox);
+                    }
+                });
+
+                showFailureAlert(data.failed_subsection_ids);
+
+                // Update dependent checkboxes after toggling failed ones
+                updateCompareSectionCheckboxes();
+                updateCompareAllSectionsCheckbox();
+            }
+        })
+        .catch(error => {
+            console.error('Error saving subsection selections:', error);
+        });
+    }
+
+    function showFailureAlert(failedIds) {
+      // TODO: show a failure alert
+    }
+
+    function indicateCheckboxError(checkbox) {
+      // TODO: indicate the checkbox as having an error
+    }
+
+    // Expose the function globally so it can be called from other parts of the page
+    window.saveSubsectionSelections = saveSubsectionSelections;
+
+    // Initialize the state on page load
+    updateCompareSectionCheckboxes();
+    updateCompareAllSectionsCheckbox();
+});
+</script>
 {% endblock %}

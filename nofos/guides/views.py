@@ -2,11 +2,13 @@ from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView, View
+from django.db import transaction
+import json
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
@@ -135,6 +137,71 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
 
     def get_success_url(self):
         return reverse_lazy("guides:guide_edit", args=[self.object.pk])
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests for saving subsection selections.
+        """
+        self.object = self.get_object()
+
+        try:
+            data = json.loads(request.body)
+            subsections = data.get("subsections", {})
+
+            updated_count = 0
+            failed_subsection_ids = []
+            for subsection_id, is_checked in subsections.items():
+                try:
+                    subsection = ContentGuideSubsection.objects.get(
+                        id=subsection_id, section__content_guide=self.object
+                    )
+
+                    new_comparison_type = "body" if is_checked else "none"
+
+                    if subsection.comparison_type != new_comparison_type:
+                        subsection.comparison_type = new_comparison_type
+                        subsection.save()
+                        updated_count += 1
+
+                except Exception as e:
+                    failed_subsection_ids.append(subsection_id)
+                    continue
+
+            if len(subsections) == len(failed_subsection_ids):
+                message = f"All comparison selections failed to update."
+                status = "fail"
+            elif len(failed_subsection_ids) > 0:
+                message = f"Some comparison selections failed to update: {",".join(failed_subsection_ids)}"
+                status = "partial"
+            else:
+                message = f"Comparison selections saved successfully."
+                status = "success"
+
+            response = {
+                "message": message,
+                "status": status,
+                "selections_count": len(subsections),
+                "updated_count": updated_count,
+                "failed_subsection_ids": failed_subsection_ids,
+            }
+
+            return JsonResponse(response, status=200 if status == "success" else 400)
+
+        except json.JSONDecodeError:
+            messages.error(request, "Invalid JSON data.")
+            return JsonResponse(
+                {"success": False, "message": "Invalid JSON data."}, status=400
+            )
+        except Exception as e:
+            messages.error(request, "An error occurred while updating selections.")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"An error occurred while updating selections. {str(e)}",
+                },
+                status=500,
+            )
 
 
 class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
