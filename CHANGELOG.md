@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Export a CSV list of changes from the Content Guide compare page
+
 ### Changed
 
 - Change site header to say "NOFO Boilerplate Compare" for "/guides" urls

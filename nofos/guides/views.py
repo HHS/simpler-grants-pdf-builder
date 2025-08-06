@@ -252,7 +252,9 @@ class ContentGuideSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return reverse_lazy("guides:guide_edit", kwargs={"pk": self.kwargs["pk"]})
 
 
-class ContentGuideCompareUploadView(BaseNofoImportView):
+class ContentGuideCompareUploadView(
+    GroupAccessObjectMixin, LoginRequiredMixin, BaseNofoImportView
+):
     template_name = "guides/guide_import_compare.html"
     redirect_url_name = "guides:guide_compare_upload"
 
@@ -300,7 +302,7 @@ class ContentGuideCompareUploadView(BaseNofoImportView):
             return HttpResponseBadRequest(f"Error comparing NOFO: {str(e)}")
 
 
-class ContentGuideCompareView(View):
+class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
     def get(self, request, pk, new_nofo_id=None):
         guide = get_object_or_404(ContentGuide, pk=pk)
 
@@ -337,7 +339,7 @@ class ContentGuideCompareView(View):
         return render(request, "guides/guide_compare.html", context)
 
 
-class ContentGuideDiffCSVView(View):
+class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
     def get(self, request, pk, new_nofo_id):
         guide = get_object_or_404(ContentGuide, pk=pk)
         new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
