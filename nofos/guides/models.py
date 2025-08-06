@@ -11,11 +11,10 @@ class ContentGuide(BaseNofo):
         verbose_name_plural = "Content Guides"
 
     title = models.TextField(
-        "Content Guide title",
+        "Content guide name",
         max_length=250,
         validators=[MaxLengthValidator(250)],
         blank=True,
-        help_text="The title of this Content Guide template.",
     )
 
     def __str__(self):
