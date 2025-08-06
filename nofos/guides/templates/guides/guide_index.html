@@ -2,7 +2,7 @@
 {% load tz %}
 
 {% block title %}
-	Content Guides
+	Welcome to Boilerplate Compare!
 {% endblock %}
 
 {% block body_class %}content_guide_index{% endblock %}
@@ -10,50 +10,49 @@
 {% block content %}
   {% include "includes/alerts.html" with messages=messages success_heading="Content Guide saved successfully" error_heading="Content Guide deleted" only %}
 
-  <h1 class="font-heading-xl margin-y-0">Content Guides</h1>
-  <p>See your content guides or compare them to incoming NOFOs.</p>
+  <h1 class="font-heading-xl margin-y-0">Welcome to Boilerplate Compare!</h1>
+  <div class="usa-prose">
+    <p>This app lets you check NOFOs to find out whether any boilerplate language has been changed. It does that by comparing the NOFO to its content guide. Boilerplate language means any language that comes from the content guide and is supposed to stay the same in the finished NOFO.</p>
+    <p>To get started, choose the content guide that you want to compare to a NOFO. If you don't see the content guide that you need, you can upload a new one.</p>
+  </div>
 
   {% if content_guides %}
-      <table class="usa-table usa-table--borderless width-full table--section">
-        <caption>
-          <div>
-            <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name }}</h2>
-          </div>
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Updated</th>
-            <th scope="col">Comparison</th>
-            <th scope="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for guide in content_guides %}
-            <tr>
-              <th scope="row"><a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a></th>
-              {% timezone "America/New_York" %}
-							  <td>
-									{{ guide.updated|date:'M j' }}, {{ guide.updated|date:'g:i A' }}
-							  </td>
-						  {% endtimezone %}
-              <td>
-                <a href="{% url 'guides:guide_compare' guide.pk %}">Compare to a NOFO</a>
-              </td>
-              <td><a href="{% url 'guides:guide_archive' guide.pk %}" class="text-secondary-dark">Delete</a></td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-    {% else %}
-		<p>No Content Guides available. Sorry!</p>
-	  {% endif %}
+  <h2 class="font-heading-md margin-top-6">Pick a content guide</h2>
+  <table class="usa-table usa-table--borderless width-full table--section">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Updated</th>
+        <th scope="col">Compare</th>
+        <th scope="col">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for guide in content_guides %}
+        <tr>
+          <th scope="row"><a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a></th>
+          {% timezone "America/New_York" %}
+            <td>
+              {{ guide.updated|date:'M j' }}, {{ guide.updated|date:'g:i A' }}
+            </td>
+          {% endtimezone %}
+          <td>
+            <a href="{% url 'guides:guide_compare' guide.pk %}">Compare to a NOFO</a>
+          </td>
+          <td><a href="{% url 'guides:guide_archive' guide.pk %}" class="text-secondary-dark">Delete</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
 
-    <h2 class="font-heading-md margin-top-6">Upload a new Content Guide</h2>
-    <p>Upload your Content Guide file as a Word Document.</p>
+  <h2 class="font-heading-md margin-top-6">Upload a new content guide</h2>
+  <div class="usa-prose">
+    <p>Upload the Word version (.docx) of the content guide that you want to compare to a NOFO.</p>
     <p>
       <a class="usa-button" href="{% url 'guides:guide_import' %}">
       Upload Content Guide
       </a>
     </p>
+  </div>
 {% endblock %}
