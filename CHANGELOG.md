@@ -9,15 +9,27 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.7.0] - 2025-08-06
+
+### Added
+
 - Export a CSV list of changes from the Content Guide compare page
 
 ### Changed
 
+- Change Content Guide index page to add more onboarding help
+- Use filename without suffix as default Content Guide name
 - Change site header to say "NOFO Boilerplate Compare" for "/guides" urls
 - Completely redo Content Guide edit page
   - Add checkboxes to select/deselect which subsections to compare
 
-### Fixed
+### Migrations
+
+- Add migration to change label of content_guide.title to refer to "name", not "title"
 
 ## [3.6.0] - 2025-08-05
 
