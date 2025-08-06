@@ -14,6 +14,7 @@ from django.views.generic import DetailView, ListView, UpdateView, View
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from guides.utils import strip_file_suffix
 
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.models import Nofo
@@ -57,7 +58,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
         Create a new Content Guide with the parsed data.
         """
         try:
-            cg_title = suggest_nofo_title(soup)
+            cg_title = strip_file_suffix(filename)
             opdiv = suggest_nofo_opdiv(soup)
 
             guide = create_content_guide(cg_title, sections, opdiv)
