@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import MagicMock, patch
 
 import requests
@@ -6,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from freezegun import freeze_time
-import logging
 
 from .models import Nofo, Section, Subsection
 from .nofo import (
@@ -56,10 +56,10 @@ from .nofo import (
     preserve_bookmark_targets,
     preserve_heading_links,
     preserve_table_heading_links,
+    remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
-    remove_cover_image_from_s3,
     replace_value_in_subsections,
     suggest_all_nofo_fields,
     suggest_nofo_agency,

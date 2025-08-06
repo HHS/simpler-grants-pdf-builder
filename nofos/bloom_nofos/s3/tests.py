@@ -1,5 +1,5 @@
-from unittest.mock import MagicMock, patch
 from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError, SSOTokenLoadError, TokenRetrievalError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -7,9 +7,9 @@ from django.test import TestCase, override_settings
 
 from .utils import (
     get_image_url_from_s3,
+    remove_file_from_s3,
     strip_s3_hostname_suffix,
     upload_file_to_s3,
-    remove_file_from_s3,
 )
 
 

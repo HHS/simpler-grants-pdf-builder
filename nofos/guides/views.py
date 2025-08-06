@@ -1,14 +1,15 @@
+import json
+
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
+from django.db import transaction
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView, View
-from django.db import transaction
-import json
 from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
@@ -169,13 +170,13 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
                     continue
 
             if len(subsections) == len(failed_subsection_ids):
-                message = f"All comparison selections failed to update."
+                message = "All comparison selections failed to update."
                 status = "fail"
             elif len(failed_subsection_ids) > 0:
                 message = f"Some comparison selections failed to update: {",".join(failed_subsection_ids)}"
                 status = "partial"
             else:
-                message = f"Comparison selections saved successfully."
+                message = "Comparison selections saved successfully."
                 status = "success"
 
             response = {

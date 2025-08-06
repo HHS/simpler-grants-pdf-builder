@@ -5,7 +5,7 @@ from datetime import datetime
 
 import boto3
 from botocore.client import Config
-from botocore.exceptions import SSOTokenLoadError, TokenRetrievalError, ClientError
+from botocore.exceptions import ClientError, SSOTokenLoadError, TokenRetrievalError
 from django.conf import settings
 
 logger = logging.getLogger("s3")
