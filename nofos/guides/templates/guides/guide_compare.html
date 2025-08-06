@@ -73,12 +73,21 @@
           </a>
         {% endwith %}
         <div class="nofo_view--vertical-divider"></div>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less" {% if not comparison %}aria-disabled="true"{% endif %}>
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
           Previous section
         </button>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more" {% if not comparison %}aria-disabled="true"{% endif %}>
+        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
           Next section
         </button>
+
+        {% if comparison %}
+          <div class="nofo_view--menu-bar--file-download-button--container">
+            <a class="usa-button usa-button--outline usa-button--icon usa-button--file-download" type="button"
+              href="{% url 'guides:guide_compare_result_csv' pk=guide.pk new_nofo_id=new_nofo.pk %}">
+              <span class="margin-left-2">Export differences as CSV</span>
+            </a>
+          </div>
+        {% endif %}
       </div>
       <div class="nofo_view--title-bar">
         {% if display_mode == 'double' %}

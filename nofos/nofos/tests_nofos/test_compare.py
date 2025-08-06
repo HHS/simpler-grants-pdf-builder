@@ -34,8 +34,9 @@ class MergeRenamedSubsectionsTests(TestCase):
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].status, "UPDATE")
-        self.assertIn("<ins>Overview</ins>", result[0].name)
-        self.assertIn("<del>Summary</del>", result[0].name)
+        self.assertEqual("<del>Summary</del><ins>Overview</ins>", result[0].name)
+        self.assertEqual("Summary", result[0].old_name)
+        self.assertEqual("Overview", result[0].new_name)
         self.assertEqual(result[0].diff, "<p>This is some content.</p>")
 
     def test_renamed_title_and_changed_body(self):
@@ -55,6 +56,8 @@ class MergeRenamedSubsectionsTests(TestCase):
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 2)
+        self.assertEqual("Summary", result[0].name)
+        self.assertEqual("Overview", result[1].name)
         self.assertEqual(result[0].status, "ADD")
         self.assertEqual(result[1].status, "DELETE")
 
@@ -75,6 +78,8 @@ class MergeRenamedSubsectionsTests(TestCase):
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 2)
+        self.assertEqual("Eligibility", result[0].name)
+        self.assertEqual("Overview", result[1].name)
         self.assertEqual(result[0].status, "ADD")
         self.assertEqual(result[1].status, "DELETE")
 
@@ -96,7 +101,9 @@ class MergeRenamedSubsectionsTests(TestCase):
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].status, "UPDATE")
-        self.assertIn("<ins> b</ins>", result[0].name)
+        self.assertEqual("a<ins> b</ins>", result[0].name)
+        self.assertEqual("a", result[0].old_name)
+        self.assertEqual("a b", result[0].new_name)
         self.assertEqual(result[0].diff, "<p>Groundhog<ins> Day</ins></p>")
 
 

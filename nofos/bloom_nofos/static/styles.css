@@ -1603,6 +1603,11 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-color: white;
 }
 
+.nofo_view--menu-bar--file-download-button--container {
+  align-self: center;
+  margin-left: auto;
+}
+
 .nofo_compare .nofo_view--menu-bar--button {
   display: flex;
   flex-direction: column;
@@ -1912,8 +1917,27 @@ del + ins > br {
     brightness(102%) contrast(101%);
 }
 
+.usa-button--icon.usa-button--outline::before {
+  filter: brightness(0) saturate(100%) invert(19%) sepia(62%) saturate(3740%)
+    hue-rotate(190deg) brightness(93%) contrast(102%);
+}
+
+.usa-button--icon.usa-button--outline:hover::before {
+  filter: brightness(0) saturate(100%) invert(19%) sepia(94%) saturate(993%)
+    hue-rotate(192deg) brightness(94%) contrast(94%);
+}
+
+.usa-button--icon.usa-button--outline:active::before {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(33%) saturate(1347%)
+    hue-rotate(179deg) brightness(94%) contrast(96%);
+}
+
 .usa-button--icon.usa-button--file-upload::before {
   background-image: url("/static/img/usa-icons/file_upload.svg");
+}
+
+.usa-button--icon.usa-button--file-download::before {
+  background-image: url("/static/img/usa-icons/file_download.svg");
 }
 
 .usa-button--icon.usa-button--delete::before {
