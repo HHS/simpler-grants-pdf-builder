@@ -1,4 +1,7 @@
+import csv
+import io
 import json
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -6,6 +9,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+
+from nofos.models import Nofo
 
 User = get_user_model()
 
@@ -489,3 +494,145 @@ class ContentGuideSubsectionEditViewTests(TestCase):
         )
         self.subsection.refresh_from_db()
         self.assertEqual(self.subsection.diff_strings, [])
+
+
+class ContentGuideDiffCSVViewTests(TestCase):
+    def setUp(self):
+        self.guide = ContentGuide.objects.create(
+            title="Older", group="bloom", opdiv="CDC"
+        )
+        self.new_nofo = Nofo.objects.create(title="Newer", group="bloom", opdiv="CDC")
+
+    def parse_csv(self, content):
+        """Helper to parse CSV bytes into a list of rows"""
+        return list(csv.reader(io.StringIO(content.decode("utf-8"))))
+
+    @patch("guides.views.compare_nofos")
+    @patch("guides.views.annotate_side_by_side_diffs")
+    def test_csv_no_merged_subsections_add(self, mock_annotate, mock_compare):
+        subsection = MagicMock()
+        subsection.status = "ADD"
+        subsection.old_name = ""
+        subsection.new_name = "Summary added"
+        subsection.old_value = ""
+        subsection.new_value = "New body"
+
+        comparison = [{"subsections": [subsection]}]
+        mock_compare.return_value = comparison
+        mock_annotate.return_value = comparison
+
+        url = reverse(
+            "guides:guide_compare_result_csv", args=[self.guide.pk, self.new_nofo.pk]
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn(
+            f"content_guide_diff_{self.guide.pk}_{self.new_nofo.pk}.csv",
+            response["Content-Disposition"],
+        )
+
+        rows = self.parse_csv(response.content)
+        self.assertEqual(
+            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+        )
+        self.assertEqual(rows[1], ["ADD", "Summary added", "", "New body"])
+
+    @patch("guides.views.compare_nofos")
+    @patch("guides.views.annotate_side_by_side_diffs")
+    def test_csv_no_merged_subsections_delete(self, mock_annotate, mock_compare):
+        subsection = MagicMock()
+        subsection.status = "DELETE"
+        subsection.old_name = "Summary deleted"
+        subsection.new_name = ""
+        subsection.old_value = "Old body"
+        subsection.new_value = ""
+
+        comparison = [{"subsections": [subsection]}]
+        mock_compare.return_value = comparison
+        mock_annotate.return_value = comparison
+
+        url = reverse(
+            "guides:guide_compare_result_csv", args=[self.guide.pk, self.new_nofo.pk]
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn(
+            f"content_guide_diff_{self.guide.pk}_{self.new_nofo.pk}.csv",
+            response["Content-Disposition"],
+        )
+
+        rows = self.parse_csv(response.content)
+        self.assertEqual(
+            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+        )
+        self.assertEqual(rows[1], ["DELETE", "Summary deleted", "Old body", ""])
+
+    @patch("guides.views.compare_nofos")
+    @patch("guides.views.annotate_side_by_side_diffs")
+    def test_csv_no_merged_subsections_update(self, mock_annotate, mock_compare):
+        subsection = MagicMock()
+        subsection.status = "UPDATE"
+        subsection.old_name = "Summary"
+        subsection.new_name = "Summary"
+        subsection.old_value = "Old body"
+        subsection.new_value = "New body"
+
+        comparison = [{"subsections": [subsection]}]
+        mock_compare.return_value = comparison
+        mock_annotate.return_value = comparison
+
+        url = reverse(
+            "guides:guide_compare_result_csv", args=[self.guide.pk, self.new_nofo.pk]
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn(
+            f"content_guide_diff_{self.guide.pk}_{self.new_nofo.pk}.csv",
+            response["Content-Disposition"],
+        )
+
+        rows = self.parse_csv(response.content)
+        self.assertEqual(
+            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+        )
+        self.assertEqual(rows[1], ["UPDATE", "Summary", "Old body", "New body"])
+
+    @patch("guides.views.compare_nofos")
+    @patch("guides.views.annotate_side_by_side_diffs")
+    def test_csv_with_merged_subsections(self, mock_annotate, mock_compare):
+        subsection = MagicMock()
+        subsection.status = "UPDATE"
+        subsection.old_name = "Summary"
+        subsection.new_name = "Updated Summary"
+        subsection.old_value = "Old body"
+        subsection.new_value = "New body"
+
+        comparison = [{"subsections": [subsection]}]
+        mock_compare.return_value = comparison
+        mock_annotate.return_value = comparison
+
+        url = reverse(
+            "guides:guide_compare_result_csv", args=[self.guide.pk, self.new_nofo.pk]
+        )
+        response = self.client.get(url)
+
+        rows = self.parse_csv(response.content)
+        self.assertEqual(
+            rows[0],
+            [
+                "Status",
+                "Subsection name",
+                "Old value",
+                "New subsection name",
+                "New value",
+            ],
+        )
+        self.assertEqual(
+            rows[1], ["UPDATE", "Summary", "Old body", "Updated Summary", "New body"]
+        )

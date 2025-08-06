@@ -601,6 +601,8 @@ class TestCompareNofos(TestCase):
         subsection_match = subsections[0]
         self.assertEqual(subsection_match.status, "MATCH")
         self.assertEqual(subsection_match.name, "Budget Requirements")
+        self.assertEqual(subsection_match.old_name, "Budget Requirements")
+        self.assertEqual(subsection_match.new_name, "Budget Requirements")
         self.assertEqual(subsection_match.old_value, "Budget must not exceed $100K.")
         self.assertEqual(subsection_match.new_value, "Budget must not exceed $100K.")
 
@@ -621,6 +623,8 @@ class TestCompareNofos(TestCase):
         subsection_update_2 = subsections[2]
         self.assertEqual(subsection_update_2.status, "UPDATE")
         self.assertEqual(subsection_update_2.name, "Application Process")
+        self.assertEqual(subsection_update_2.old_name, "Application Process")
+        self.assertEqual(subsection_update_2.new_name, "Application Process")
         self.assertEqual(subsection_update_2.old_value, "Submit before Jan 1.")
         self.assertEqual(subsection_update_2.new_value, "Submit before Feb 1.")
         self.assertIn(
@@ -631,6 +635,8 @@ class TestCompareNofos(TestCase):
         subsection_add = subsections[3]
         self.assertEqual(subsection_add.status, "ADD")
         self.assertEqual(subsection_add.name, "New NOFO Funding Guidelines")
+        self.assertEqual(subsection_add.old_name, "")
+        self.assertEqual(subsection_add.new_name, "New NOFO Funding Guidelines")
         self.assertEqual(subsection_add.old_value, "")
         self.assertEqual(subsection_add.new_value, "Follow these new rules.")
 
@@ -638,6 +644,8 @@ class TestCompareNofos(TestCase):
         subsection_match_2 = subsections[4]
         self.assertEqual(subsection_match_2.status, "MATCH")
         self.assertEqual(subsection_match_2.name, "Permitting rules")
+        self.assertEqual(subsection_match_2.old_name, "Permitting rules")
+        self.assertEqual(subsection_match_2.new_name, "Permitting rules")
         self.assertEqual(
             subsection_match_2.old_value, "Of course permits must be obtained."
         )
@@ -649,6 +657,8 @@ class TestCompareNofos(TestCase):
         subsection_delete = subsections[5]
         self.assertEqual(subsection_delete.status, "DELETE")
         self.assertEqual(subsection_delete.name, "<del>Old NOFO Fee Requirements</del>")
+        self.assertEqual(subsection_delete.old_name, "Old NOFO Fee Requirements")
+        self.assertEqual(subsection_delete.new_name, "")
         self.assertEqual(subsection_delete.old_value, "Processing fee is $50.")
         self.assertEqual(subsection_delete.new_value, "")
         self.assertIn(
@@ -659,6 +669,8 @@ class TestCompareNofos(TestCase):
         subsection_merge = subsections[6]
         self.assertEqual(subsection_merge.status, "UPDATE")
         self.assertEqual(subsection_merge.name, "<ins>Visit </ins>SAM.gov")
+        self.assertEqual(subsection_merge.old_name, "SAM.gov")
+        self.assertEqual(subsection_merge.new_name, "Visit SAM.gov")
         self.assertEqual(subsection_merge.old_value, "Visit the website to sign up.")
         self.assertEqual(
             subsection_merge.new_value, "This is the website where you can sign up."
