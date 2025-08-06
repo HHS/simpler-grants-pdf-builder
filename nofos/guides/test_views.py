@@ -498,6 +498,14 @@ class ContentGuideSubsectionEditViewTests(TestCase):
 
 class ContentGuideDiffCSVViewTests(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
         self.guide = ContentGuide.objects.create(
             title="Older", group="bloom", opdiv="CDC"
         )
