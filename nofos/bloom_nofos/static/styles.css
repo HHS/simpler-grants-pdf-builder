@@ -102,6 +102,27 @@ footer .usa-footer__primary-link:visited {
   background-color: #444782;
 }
 
+/* expand width of usa-prose/usa-content */
+.usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
+.usa-content p,
+.usa-content ul:not(.usa-accordion):not(.usa-accordion--bordered) {
+  max-width: 80ex;
+}
+.usa-list li,
+.usa-prose > ol li,
+.usa-prose > ul li {
+  max-width: 80ex;
+}
+
+.usa-prose > p {
+  max-width: 80ex;
+}
+
+.usa-collection__item,
+.usa-prose .usa-collection__item {
+  max-width: 80ex;
+}
+
 @media (min-width: 64em) {
   /* Make sure header is evenly spaced */
   .usa-logo {
@@ -1334,7 +1355,10 @@ main .back-link a::before,
   font-weight: 700;
 }
 
-.content_guide_edit main table.table--section .nofo-edit-table--subsection--manage {
+.content_guide_edit
+  main
+  table.table--section
+  .nofo-edit-table--subsection--manage {
   vertical-align: top;
   padding-right: 1.8rem;
 }

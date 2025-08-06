@@ -9,13 +9,13 @@
     <div class="usa-alert__body">
       <h4 class="usa-alert__heading">Warning</h4>
       <p class="usa-alert__text">
-        Deleting a Content Guide removes it permanently from your active list.
+        Deleting a Content Guide removes it permanently.
       </p>
     </div>
   </div>
 
-  {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Delete “"|add:guide.title|add:"”" back_text="Configure Content Guide: “"|add:guide.title|add:"”" back_href=back_href only %}
+  {% url 'guides:guide_index' as back_href %}
+  {% include "includes/page_heading.html" with title="Delete “"|add:guide.title|add:"”" back_text="All content guides" back_href=back_href only %}
 
   <form method="post">
     {% csrf_token %}
