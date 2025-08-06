@@ -58,144 +58,254 @@ Edit “{{ nofo|nofo_name }}”
   </span>
 </div>
 
-{% if nofo.status == 'cancelled' %}
+<!-- Consolidated NOFO Status and Actions Summary Box -->
 <div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
-    </h2>
-    <div class="usa-summary-box__text">
-      <p>Cancelled NOFOs exist as a record for posterity but can’t be edited in any way. If you would like to restore this NOFO, <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its status</a> to something else.</p>
-    </div>
-  </div>
-</div>
-{% elif nofo.archived %}
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘Archived’.
-    </h2>
-    <div class="usa-summary-box__text">
-      <p>Archived NOFOs exist as a record for posterity but can’t be edited in any way. If you would like to restore this NOFO, please get in touch with Paul or Adam.</p>
-      {% if nofo.successor %}
-        <p>This is a past version of <a href="{% url 'nofos:nofo_edit' nofo.successor.id %}">{{ nofo.successor }}</a></p>
+    <h4 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      <!-- Status Dropdown Form -->
+      {% if not nofo.archived %}
+        <form id="nofo-status--form" method="post" action="{% url 'nofos:nofo_edit_status' nofo.id %}">
+          {% csrf_token %}
+          <div class="usa-form-group margin-bottom-3 margin-top-0">
+              <label class="usa-label display-inline-block font-sans-md margin-top-0" for="{{ status_form.status.name }}"><strong>Status:</strong></label>
+
+            <select
+              class="usa-select border-2px width-auto display-inline-block margin-top-0"
+              name="{{ status_form.status.name }}"
+              id="{{ status_form.status.name }}"
+              onchange="this.form.submit()"
+            >
+              {% for value, label in status_form.status.field.choices %}
+                {% if value == '' %}
+                  <option disabled>{{ label }}</option>
+                {% else %}
+                  <option value="{{ value }}" {% if status_form.status.value == value %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      {% else %}
+          NOFO is ‘Archived’.
       {% endif %}
-    </div>
-  </div>
-</div>
-{% elif nofo.status == 'published' and nofo.modifications %}
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’ with modifications.
-    </h2>
+    </h4>
+
     <div class="usa-summary-box__text">
-      <p>Make sure to update the “<a href="#modifications">Modifications</a>” section at the end of this NOFO with the changes you’ve made since publication.</p>
-      <p><a href="{% url 'nofos:nofo_history_modifications' nofo.id %}">See changes made since this NOFO was modified</a>.</p>
-      <p>Last modification date on cover page: <a href="{% url 'nofos:nofo_modifications' nofo.id %}">{{ nofo.modifications|date:"F j, Y" }}</a>.</p>
-    </div>
-  </div>
-</div>
-{% elif nofo.status == 'published' %}
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
-    </h2>
-    <div class="usa-summary-box__text">
-      <p>Ordinarily, published NOFOs can’t be edited, re-imported, or deleted. To edit this NOFO, you can <a href="{% url 'nofos:nofo_edit_status' nofo.id %}">change its
-        status</a>.</p>
+
+      <!-- Status-specific messages and actions -->
+      {% if nofo.archived %}
+        <!-- ARCHIVED NOFO -->
+        <p>Archived NOFOs exist as a record for posterity but can't be edited in any way. If you would like to restore this NOFO, please get in touch with Paul or Adam.</p>
+        {% if nofo.successor %}
+          <p>This is a past version of <a href="{% url 'nofos:nofo_edit' nofo.successor.id %}">{{ nofo.successor }}</a></p>
+        {% endif %}
+
+      {% elif nofo.status == 'cancelled' %}
+        <!-- CANCELLED NOFO -->
+        <p>Cancelled NOFOs exist as a record for posterity but can't be edited in any way. If you would like to restore this NOFO, change its status to something else using the dropdown above.</p>
+
+      {% elif nofo.status == 'published' and nofo.modifications %}
+        <!-- PUBLISHED WITH MODIFICATIONS -->
+        <p><strong>This NOFO is published with modifications.</strong></p>
+        <p>Make sure to update the "<a href="#modifications">Modifications</a>" section at the end of this NOFO with the changes you've made since publication.</p>
+        <p><a href="{% url 'nofos:nofo_history_modifications' nofo.id %}">See changes made since this NOFO was modified</a>.</p>
+        <p>Last modification date on cover page: <a href="{% url 'nofos:nofo_modifications' nofo.id %}">{{ nofo.modifications|date:"F j, Y" }}</a>.</p>
+
+      {% elif nofo.status == 'published' %}
+        <!-- PUBLISHED (NO MODIFICATIONS) -->
+        <p>Ordinarily, published NOFOs can't be edited, re-imported, or deleted. To edit this NOFO, you can change its status using the dropdown above.</p>
         <p class="margin-top-3">However, you can <strong>add modifications</strong> to a NOFO that has already been published.</p>
         <form id="nofo-modifications--form" method="post" action="{% url 'nofos:nofo_modifications' nofo.id %}">
           {% csrf_token %}
           <input type="hidden" name="modifications" value="{% now 'Y-m-d' %}" />
           <p>
           <button class="usa-button usa-button--accent-warm" type="submit">Add modifications</button>
-           — Adds a message to the cover page and a “Modifications” section to the end of the NOFO.
+           — Adds a message to the cover page and a "Modifications" section to the end of the NOFO.
           </p>
         </form>
+
+      {% elif nofo.status == 'review' %}
+        <!-- IN REVIEW -->
+        <p>NOFOs that are in review can't be re-imported or deleted, but they can be edited as needed.</p>
+
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% elif nofo.status == 'paused' %}
+        <!-- PAUSED -->
+        <p>NOFOs that are paused can't be re-imported or deleted, but they can be edited as needed.</p>
+
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% elif nofo.status == 'doge' %}
+        <!-- DEP SEC (DOGE) -->
+        <p>NOFOs that are in DOGE review can't be re-imported or deleted, but they can be edited as needed.</p>
+
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% elif nofo.status == 'ready-for-qa' %}
+        <!-- READY FOR QA -->
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+                  Check external links
+                </a>— There are {{ external_links|length }} external links in this NOFO
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+                  Re-import NOFO
+                </a>— upload an updated NOFO file
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% elif nofo.status == 'active' %}
+        <!-- ACTIVE -->
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+                  Check external links
+                </a>— There are {{ external_links|length }} external links in this NOFO
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+                  Re-import NOFO
+                </a>— upload an updated NOFO file
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% elif nofo.status == 'draft' %}
+        <!-- DRAFT -->
+        <div class="margin-top-3">
+          <ul class="usa-list usa-list--unstyled">
+            <li>
+              <p>
+                <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+                  Check external links
+                </a>— There are {{ external_links|length }} external links in this NOFO
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
+                  Re-import NOFO
+                </a>— upload an updated NOFO file
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_archive' nofo.id %}">
+                  Delete NOFO
+                </a>— remove this NOFO completely
+              </p>
+            </li>
+            <li>
+              <p>
+                <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
+                — search and replace text across the entire NOFO
+              </p>
+            </li>
+            {% if page_breaks_count > 3 %}
+            <li>
+              <p>
+                <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
+              </p>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+      {% endif %}
+
     </div>
   </div>
 </div>
-{% elif nofo.status == 'review' or nofo.status == 'paused' or nofo.status == 'doge' %}
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
-    </h2>
-    <div class="usa-summary-box__text">
-    {% if nofo.status == 'doge' %}
-        <p>NOFOs that are in DOGE review can’t be re-imported or deleted, but they can be edited as needed.</p>
-    {% else %}
-        <p>NOFOs that are {{ nofo.get_status_display|lower }} can’t be re-imported or deleted, but they can be edited as needed.</p>
-    {% endif %}
-      <ul class="usa-list usa-list--unstyled">
-        <li>
-          <p>
-            <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
-            — search and replace text across the entire NOFO
-          </p>
-        </li>
-        {% if page_breaks_count > 3 %}
-        <li>
-          <p>
-            <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
-          </p>
-        </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</div>
-{% else %}
-<div class="usa-summary-box" role="region" aria-labelledby="summary-box-key-information">
-  <div class="usa-summary-box__body">
-    <h2 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
-      NOFO is ‘<a href="{% url 'nofos:nofo_edit_status' nofo.id %}">{{ nofo.get_status_display }}</a>’.
-    </h2>
-    <div class="usa-summary-box__text">
-      <ul class="usa-list usa-list--unstyled">
-        <li>
-          <p>
-            <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
-              Check external links
-            </a>— There are {{ external_links|length }} external links in this NOFO
-          </p>
-        </li>
-        <li>
-          <p>
-            <a class="usa-button" href="{% url 'nofos:nofo_import_overwrite' nofo.id %}">
-              Re-import NOFO
-            </a>— upload an updated NOFO file
-          </p>
-        </li>
-        {% if nofo.status == 'draft' %}
-        <li>
-          <p>
-            <a class="usa-button usa-button--secondary" href="{% url 'nofos:nofo_archive' nofo.id %}">
-              Delete NOFO
-            </a>— remove this NOFO completely
-          </p>
-        </li>
-        {% endif %}
-        <li>
-          <p>
-            <a class="usa-button usa-button--cyan" href="{% url 'nofos:nofo_find_replace' nofo.id %}">Find & Replace</a>
-            — search and replace text across the entire NOFO
-          </p>
-        </li>
-        {% if page_breaks_count > 3 %}
-        <li>
-          <p>
-            <a class="usa-button usa-button--indigo" href="{% url 'nofos:nofo_remove_page_breaks' nofo.id %}">Remove Page Breaks</a> — find and remove page breaks added since import
-          </p>
-        </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</div>
-{% endif %}
 
 <!-- WARNING MESSAGE FOR BROKEN LINKS -->
 {% if broken_links|length %}
