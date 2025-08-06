@@ -14,6 +14,8 @@ from .models import Nofo
 class SubsectionDiff:
     name: str
     status: str  # "MATCH", "UPDATE", "ADD", "DELETE"
+    old_name: Optional[str] = ""
+    new_name: Optional[str] = ""
     old_value: Optional[str] = ""
     new_value: Optional[str] = ""
     diff: Optional[str] = None
@@ -56,8 +58,11 @@ def add_content_guide_comparison_metadata(
 
 
 def result_match(original_subsection):
+    name = get_subsection_name_or_order(original_subsection)
     result = SubsectionDiff(
-        name=get_subsection_name_or_order(original_subsection),
+        name=name,
+        old_name=name,
+        new_name=name,
         status="MATCH",
         old_value=original_subsection.body,
         new_value=original_subsection.body,
@@ -71,6 +76,8 @@ def result_match(original_subsection):
 def result_update(original_subsection, new_subsection):
     result = SubsectionDiff(
         name=get_subsection_name_or_order(original_subsection),
+        old_name=get_subsection_name_or_order(original_subsection),
+        new_name=get_subsection_name_or_order(new_subsection),
         status="UPDATE",
         old_value=original_subsection.body,
         new_value=new_subsection.body,
@@ -84,15 +91,19 @@ def result_update(original_subsection, new_subsection):
     return add_content_guide_comparison_metadata(result, original_subsection)
 
 
-def result_merged_update(name, old_value, new_value, old_sub, html_id):
+def result_merged_update(
+    name, old_value, new_value, old_subsection, new_subsection, html_id
+):
     return SubsectionDiff(
         name=name,
+        old_name=re.sub(r"<.*?>", "", old_subsection.name),
+        new_name=re.sub(r"<.*?>", "", new_subsection.name),
         status="UPDATE",
         old_value=old_value,
         new_value=new_value,
         diff=html_diff(markdownify(old_value), markdownify(new_value)),
-        comparison_type=old_sub.comparison_type,
-        diff_strings=old_sub.diff_strings or [],
+        comparison_type=old_subsection.comparison_type,
+        diff_strings=old_subsection.diff_strings or [],
         html_id=html_id,
     )
 
@@ -100,6 +111,8 @@ def result_merged_update(name, old_value, new_value, old_sub, html_id):
 def result_add(new_subsection):
     return SubsectionDiff(
         name=get_subsection_name_or_order(new_subsection),
+        old_name="",
+        new_name=get_subsection_name_or_order(new_subsection),
         status="ADD",
         old_value="",
         new_value=new_subsection.body,
@@ -109,17 +122,19 @@ def result_add(new_subsection):
     )
 
 
-def result_delete(original_subsection):
+def result_delete(old_subsection):
     result = SubsectionDiff(
-        name=html_diff(get_subsection_name_or_order(original_subsection), ""),
+        name=html_diff(get_subsection_name_or_order(old_subsection), ""),
+        old_name=get_subsection_name_or_order(old_subsection),
+        new_name="",
         status="DELETE",
-        old_value=original_subsection.body,
+        old_value=old_subsection.body,
         new_value="",
-        diff=html_diff(markdownify(original_subsection.body), "") or "",
-        tag=original_subsection.tag,
-        html_id=original_subsection.html_id,
+        diff=html_diff(markdownify(old_subsection.body), "") or "",
+        tag=old_subsection.tag,
+        html_id=old_subsection.html_id,
     )
-    return add_content_guide_comparison_metadata(result, original_subsection)
+    return add_content_guide_comparison_metadata(result, old_subsection)
 
 
 def contains_required_strings(diff_strings, body):
@@ -215,7 +230,7 @@ def merge_renamed_subsections(
             new_body = (current.new_value or "").strip()
             old_body = (next_item.old_value or "").strip()
             new_name = current.name
-            old_name = re.sub(r"<.*?>", "", next_item.name)  # strip <del> tags
+            old_name = re.sub(r"<.*?>", "", next_item.name)  # strip tags
             html_id = current.html_id  # use the old html_id
 
             heading_diff = html_diff(old_name, new_name)
@@ -232,7 +247,8 @@ def merge_renamed_subsections(
                         name=heading_diff or new_name,
                         old_value=old_body,
                         new_value=new_body,
-                        old_sub=next_item,
+                        old_subsection=next_item,
+                        new_subsection=current,
                         html_id=html_id,
                     )
                 )
