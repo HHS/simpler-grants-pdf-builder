@@ -1517,8 +1517,15 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   .nofo_view--title-bar
   .nofo_view--title--table-container,
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container {
-  flex: 1 1 80%; /* Start with 40% but can grow */
+  flex: 1 1 80%; /* Start with 80% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
+}
+
+.nofo_compare--content-guide
+  .nofo_view
+  .nofo_view--table-container--no-comparison,
+.nofo_compare--content-guide .nofo_view .nofo_view--table-container--empty {
+  flex: 1 1 40%; /* Start with 40% but can grow */
 }
 
 .nofo_compare--content-guide
@@ -1939,6 +1946,11 @@ del + ins > br {
   width: 18px;
   filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
     brightness(102%) contrast(101%);
+}
+
+.usa-button--icon[aria-disabled]::before {
+  filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
+    hue-rotate(216deg) brightness(100%) contrast(80%);
 }
 
 .usa-button--icon.usa-button--outline::before {

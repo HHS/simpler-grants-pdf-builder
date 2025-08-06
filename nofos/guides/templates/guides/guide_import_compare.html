@@ -17,11 +17,13 @@
   </div>
 
   {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_text="Configure Content Guide: “"|add:guide.title|add:"”" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Upload a NOFO to compare" back_text=guide.title back_href=back_href only %}
 
-  <p>Select a NOFO file to compare to <strong>{{ guide.title }}</strong>.</p>
+  <div class="usa-prose">
+    <p>Select a NOFO file to compare to <strong>{{ guide.title }}</strong>.</p>
 
-  <p>Get a breakdown of what content has changed between the current version and your newly-uploaded document.</p>
+    <p>After you upload the NOFO, we’ll show you whether any boilerplate is different from the content guide you chose.</p>
+  </div>
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
