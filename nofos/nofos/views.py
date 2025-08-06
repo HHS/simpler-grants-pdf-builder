@@ -310,6 +310,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             "success_heading", "NOFO saved successfully"
         )
 
+        # Add status form for dropdown in template
+        context["status_form"] = NofoStatusForm(instance=self.object)
+
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
 
