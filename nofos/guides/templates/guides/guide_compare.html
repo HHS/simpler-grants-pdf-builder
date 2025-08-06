@@ -25,24 +25,32 @@
   </div>
 
   {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Check out the differences" back_text="Compare a NOFO to Content Guide “"|add:guide.title|add:"”" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Review the differences" back_text=guide.title back_href=back_href only %}
 
-  <div class="usa-prose margin-bottom-5">
-    <p>Get a breakdown of what content has changed between the current version and{% if not num_changed_subsections %} another one that you upload{% else %} your newly uploaded one{% endif %}.</p>
+  <div class="usa-prose margin-bottom-1">
+    <p>
+      Your content guide is displayed here. 
+      When you upload a NOFO to compare, it'll be displayed next to the content guide and list places where the NOFO’s boilerplate does not match the content guide.
+    </p>
+  </div>
+    
+  <ul class="usa-button-group">
+    <li class="usa-button-group__item margin-right-2">
+      <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a>
+    </li>
+    <li class="usa-button-group__item">
+      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_edit' guide.pk %}">Choose sections to compare</a>
+    </li>
+  </ul>
 
-    <p class="font-sans-lg"><strong>Compare overview</strong></p>
+  <div class="usa-prose margin-top-4 margin-bottom-4">
+    <p class="font-sans-lg"><strong>Guide to differences</strong></p>
     <ul>
-      {% if not num_changed_subsections %}
-      {% elif num_changed_subsections == 0 %}
-        <li>There are <strong>no changes</strong> in this new document.</li>
-      {% else %}
-        <li>There are <strong>{{ num_changed_subsections }}</strong> section{{ num_changed_subsections|pluralize }} with changes.</li>
-      {% endif %}
       <li><del>Red with a strikethrough</del> is a deletion</li>
-      <li><ins>Green with an underline</ins> is an addition</li>
+      <li><ins>Green with an underline</ins> is content that has been added</li>
+      <li><strong>Side-by-side view</strong> shows both the content guide and NOFO next to each other highlighting the differences across both documents</li>
+      <li><strong>Single view</strong> shows the content guide with all the boilerplate differences between the NOFO and the content guide marked</li>
     </ul>
-
-    <a class="usa-button" href="{% url 'guides:guide_edit' guide.pk %}">Set up compare settings</a>
   </div>
 
   {% if num_changed_subsections == 0 %}
@@ -80,14 +88,18 @@
           Next section
         </button>
 
-        {% if comparison %}
           <div class="nofo_view--menu-bar--file-download-button--container">
-            <a class="usa-button usa-button--outline usa-button--icon usa-button--file-download" type="button"
-              href="{% url 'guides:guide_compare_result_csv' pk=guide.pk new_nofo_id=new_nofo.pk %}">
-              <span class="margin-left-2">Export spreadsheet of differences</span>
-            </a>
+            {% if comparison %}
+              <a class="usa-button usa-button--outline usa-button--icon usa-button--file-download" type="button"
+                href="{% url 'guides:guide_compare_result_csv' pk=guide.pk new_nofo_id=new_nofo.pk %}">
+                <span class="margin-left-2">Export spreadsheet of differences</span>
+              </a>
+            {% else %}
+              <a class="usa-button usa-button--icon usa-button--file-download" aria-disabled="true">
+                <span class="margin-left-2">Export spreadsheet of differences</span>
+              </a>
+            {% endif %}
           </div>
-        {% endif %}
       </div>
       <div class="nofo_view--title-bar">
         {% if display_mode == 'double' %}
@@ -116,12 +128,10 @@
             </table>
           </div>
         {% endif %}
-        {% if comparison %}
-          <div class="nofo_view--vertical-divider mr-0"></div>
-          <div class="nofo_view--title-changes">
-            <h2 class="margin-0">All changes</h2>
-          </div>
-        {% endif %}
+        <div class="nofo_view--vertical-divider mr-0"></div>
+        <div class="nofo_view--title-changes">
+          <h2 class="margin-0">All differences</h2>
+        </div>
       </div>
       <div id="nofo_view" class="nofo_view">
         {% if display_mode == 'double' %}
@@ -192,6 +202,19 @@
               </div>
             <div class="nofo_view--vertical-divider mr-0"></div>
             <div class="nofo_view--changes">
+              <div class="usa-alert usa-alert--info usa-alert--no-icon  margin-bottom-2">
+                <div class="usa-alert__body">
+                  <p class="usa-alert__text">
+                    {% if num_changed_subsections == 0 %}
+                      Your NOFO has no changes.
+                    {% elif num_changed_subsections == 1 %}
+                      Your NOFO has changes in 1 section.
+                    {% else %}
+                      Your NOFO has changes in {{ num_changed_subsections }} sections.
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
               <div class="nofo_view--changes--list">
                 <ol>
                   {% for changed_subsection in changed_subsections %}
@@ -203,7 +226,7 @@
               </div>
             </div>
           {% else %}
-          {# comparison does not exist, show original guide and column with upload button #}
+          {# comparison does not exist, show original guide and grey column #}
             <div class="nofo_view--table-container nofo_view--table-container--no-comparison">
               {% for section in guide.sections.all|dictsort:"order" %}
                 <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
@@ -227,9 +250,17 @@
             </div>
             <div class="nofo_view--table-container nofo_view--table-container--empty">
               <div class="guide_compare_upload">
-                <p class="margin-top-6">Ready to compare to this content guide?</p>
-                <p>Upload a NOFO to see it here.</p>
-                <p class="margin-top-2"><a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a></p>
+                <p class="margin-left-4 margin-right-4 margin-top-6 font-sans-md">Upload a NOFO to compare it to this content guide.</p>
+              </div>
+            </div>
+            <div class="nofo_view--vertical-divider mr-0"></div>
+            <div class="nofo_view--changes">
+              <div class="usa-alert usa-alert--info usa-alert--no-icon">
+                <div class="usa-alert__body">
+                  <p class="usa-alert__text">
+                    Upload NOFO to see differences.
+                  </p>
+                </div>
               </div>
             </div>
           {% endif %}
@@ -267,6 +298,19 @@
           </div>
           <div class="nofo_view--vertical-divider mr-0"></div>
             <div class="nofo_view--changes">
+              <div class="usa-alert usa-alert--info usa-alert--no-icon  margin-bottom-2">
+                <div class="usa-alert__body">
+                  <p class="usa-alert__text">
+                    {% if num_changed_subsections == 0 %}
+                      Your NOFO has no changes.
+                    {% elif num_changed_subsections == 1 %}
+                      Your NOFO has changes in 1 section.
+                    {% else %}
+                      Your NOFO has changes in {{ num_changed_subsections }} sections.
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
               <div class="nofo_view--changes--list">
                 <ol>
                   {% for changed_subsection in changed_subsections %}
