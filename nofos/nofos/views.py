@@ -58,9 +58,9 @@ from .forms import (
 )
 from .mixins import (
     GroupAccessObjectMixinFactory,
+    JsonResponseBadRequestMixin,
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
-    JsonResponseBadRequestMixin,
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
@@ -77,13 +77,13 @@ from .nofo import (
     find_external_link,
     find_external_links,
     find_h7_headers,
-    get_side_nav_links,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
     get_cover_image,
     get_sections_from_soup,
+    get_side_nav_links,
     get_step_2_section,
     get_subsections_from_sections,
     modifications_update_announcement_text,
@@ -91,6 +91,7 @@ from .nofo import (
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
     process_nofo_html,
+    remove_cover_image_from_s3,
     remove_page_breaks_from_subsection,
     replace_chars,
     replace_links,
@@ -101,7 +102,6 @@ from .nofo import (
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
     upload_cover_image_to_s3,
-    remove_cover_image_from_s3,
 )
 from .nofo_compare import compare_nofos, compare_nofos_metadata
 from .utils import create_nofo_audit_event, create_subsection_html_id

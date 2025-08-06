@@ -34,11 +34,19 @@
     </p>
   {% endtimezone %}
 
-  <p>Click “Ready to Compare” to see the differences from your uploaded NOFO and Content Guide.</p>
-  <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to Compare</a>
+  <p>Select “Ready to Compare” to review the differences between your content guide and an uploaded NOFO.
+    If you would like to upload a new version of your content guide, select “Replace this Content Guide.”</p>
+
+  <ul class="usa-button-group margin-top-2 margin-bottom-4">
+    <li class="usa-button-group__item">
+      <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to Compare</a>
+    </li>
+    <li class="usa-button-group__item">
+      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this Content Guide</a>
+    </li>
+  </ul>
 
   <h2>Which sections of this content guide would you like to compare to a NOFO?</h2>
-
   <ul class="usa-list">
     <li>Selecting a section will compare all the content in that section.</li>
     <li>Any sections you don't select won't be compared.</li>
@@ -94,7 +102,7 @@
             <tr>
               <th scope="col">Heading</th>
               <th scope="col">Content</th>
-              <th scope="col"></th>
+              <th scope="col"><span class="usa-sr-only">Manage comparison</span></th>
             </tr>
           </thead>
           <tbody>

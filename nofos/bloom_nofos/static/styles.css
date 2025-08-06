@@ -1300,38 +1300,38 @@ main .back-link a::before,
 }
 
 .content_guide_edit .usa-accordion__compare-heading {
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .content_guide_edit .usa-accordion__compare-checkbox {
-  position: absolute !important;
-  right: 3rem !important;
-  z-index: 10 !important;
-  background-color: transparent !important;
-  flex-direction: row-reverse !important;
+  position: absolute;
+  right: 3rem;
+  z-index: 1;
+  background-color: transparent;
+  flex-direction: row-reverse;
 }
 
 .content_guide_edit .usa-accordion__compare-checkbox-label {
-  margin: 0 !important;
-  background-color: transparent !important;
+  margin: 0;
+  background-color: transparent;
 }
 
 .flipped-label .usa-checkbox__label::before {
-  left: unset !important;
-  right: 1rem !important;
+  left: unset;
+  right: 1rem;
 }
 
 .flipped-label .usa-checkbox__label {
-  padding-right: 3rem !important;
-  padding-left: 0 !important;
-  font-weight: 700 !important;
+  padding-right: 3rem;
+  padding-left: 0;
+  font-weight: 700;
 }
 
 .content_guide_edit main table.table--section .nofo-edit-table--subsection--manage {
   vertical-align: top;
-  padding-right: 1.8rem !important;
+  padding-right: 1.8rem;
 }
 
 .content_guide_edit .compare-all-sections-container {

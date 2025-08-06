@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.views.generic import TemplateView
 
 from nofos.models import Nofo
+
 from .utils import get_display_size
 
 
