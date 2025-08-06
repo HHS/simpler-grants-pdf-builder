@@ -111,7 +111,7 @@
                 </td>
                 {% if comparison %}
                   <td>
-                    <h2 class="margin-0">[Agency] NOFO</h2>
+                    <h2 class="margin-0">{{ new_nofo.filename }}</h2>
                   </td>
                 {% endif %}
               </tr>
@@ -122,7 +122,7 @@
             <table>
               <tr>
                 <td>
-                  <h2 class="margin-0">{{ guide.title }} + [Agency] NOFO</h2>
+                  <h2 class="margin-0">{{ guide.title }} + {{ new_nofo.filename }}</h2>
                 </td>
               </tr>
             </table>
