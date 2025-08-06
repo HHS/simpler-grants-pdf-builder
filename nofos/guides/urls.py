@@ -43,7 +43,12 @@ urlpatterns = [
         name="guide_compare_result",
     ),
     path(
-        "guides/<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
+        "<uuid:pk>/compare/<uuid:new_nofo_id>/csv/",
+        views.ContentGuideDiffCSVView.as_view(),
+        name="guide_compare_result_csv",
+    ),
+    path(
+        "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.ContentGuideSubsectionEditView.as_view(),
         name="subsection_edit",
     ),
