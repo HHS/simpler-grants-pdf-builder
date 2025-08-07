@@ -371,13 +371,13 @@ img.usa-icon--check_box_outline_blank {
 .nofo_view h4,
 .nofo_view h5,
 .nofo_view h6 {
+  margin-top: 50px;
   margin-bottom: 5px;
 }
 
 .nofo_view h2 {
   font-size: 23pt;
   font-weight: 700;
-  margin-top: 20px;
   color: var(--color--dark-blue);
   border-top: 2px dashed var(--color--dark-blue);
 }
@@ -385,27 +385,23 @@ img.usa-icon--check_box_outline_blank {
 .nofo_view h3 {
   font-size: 20pt;
   font-weight: 700;
-  margin-top: 20px;
   line-height: 1.2;
 }
 
 .nofo_view h4 {
   font-size: 18pt;
   font-weight: 600;
-  margin-top: 15px;
   line-height: 1.4;
 }
 
 .nofo_view h5 {
   font-size: 16pt;
   font-weight: 600;
-  margin-top: 15px;
 }
 
 .nofo_view h6 {
   font-size: 14pt;
   font-weight: 500;
-  margin-top: 12px;
 }
 
 /* Headings which follow headings have less top spacing */
