@@ -1493,8 +1493,9 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare--content-guide .nofo_view {
   padding-top: 1rem;
+  padding-bottom: 1rem;
   background-color: #f5f5f5;
-  border-top: 2px solid var(--color--light-grey);
+  border-top: 1px solid var(--color--light-grey);
 }
 
 .nofo_compare--content-guide .nofo_view h2,
@@ -1507,10 +1508,21 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare--content-guide .nofo_view,
 .nofo_compare--content-guide .nofo_view--title-bar {
+  padding-left: 0;
+  padding-right: 1rem;
   display: flex;
   gap: 1rem;
-  padding-bottom: 1rem;
   align-items: stretch; /* ensures all children match the tallest */
+}
+
+.nofo_compare--content-guide .nofo_view--title-bar {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  position: sticky;
+  top: 110px;
+  z-index: 1;
+  border-bottom: 1px solid var(--color--light-grey);
+  background-color: white;
 }
 
 .nofo_compare--content-guide
@@ -1573,6 +1585,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-bottom: 1px solid #dfe1e2;
 }
 
+.nofo_compare--content-guide .nofo_view--title-bar h2 {
+  font-size: 1.2rem;
+}
+
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes,
 .nofo_compare--content-guide .nofo_view .nofo_view--changes {
   flex: 0 1 20%; /* 20% width, can shrink and grow but fixed max width of 180px */
@@ -1584,7 +1600,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
   position: sticky;
-  top: 124px;
+  top: 185px;
   height: calc(100vh - 124px);
   display: flex;
   flex-direction: column;
@@ -1628,7 +1644,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   top: 0;
   padding-bottom: 1rem;
   padding-top: 1rem;
-  margin-bottom: 1rem;
   z-index: 1;
   display: flex;
   border-bottom: 1px solid var(--color--light-grey);
