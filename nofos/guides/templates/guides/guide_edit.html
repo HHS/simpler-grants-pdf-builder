@@ -132,7 +132,7 @@
                 <td class="nofo-edit-table--subsection--body">
                   {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
                 </td>
-                <td class="width-4 nofo-edit-table--subsection--manage">
+                <td class="width-4 nofo-edit-table--subsection--manage width-10 height-6">
                   <div class="usa-checkbox ">
                     <input
                       class="usa-checkbox__input"
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             checkbox.checked = isChecked;
         });
 
-        saveSubsectionSelections(checkboxValueMap);
+        saveSubsectionSelections(checkboxValueMap, this);
     });
 
     // Handle individual section "Compare Content" checkboxes
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 checkbox.checked = isChecked;
             });
-            saveSubsectionSelections(checkboxValueMap);
+            saveSubsectionSelections(checkboxValueMap, this);
         });
     });
 
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Save the selection for this individual checkbox
-            saveSubsectionSelections(checkboxValueMap);
+            saveSubsectionSelections(checkboxValueMap, this);
         });
     });
 
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function saveSubsectionSelections(checkboxValueMap) {
+    function saveSubsectionSelections(checkboxValueMap, element) {
         // Get the container with data attributes
         const container = document.querySelector('.compare-all-sections-container');
         const url = container.dataset.url;
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             if (data.status !== 'success') {
-                showMessage(data);
+                showMessage(data, element);
             }
         })
         .catch(error => {
@@ -329,10 +329,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function showMessage(data) {
+    function showMessage(data, element) {
+            // Store the currently focused element
+            const previouslyFocusedElement = element;
+
             // Create a simple message div
             const messageDiv = document.createElement('div');
             messageDiv.className = `usa-alert usa-alert--${data.status === 'success' ? 'success' : data.status === 'fail' ? 'error' : 'warning'} usa-alert--slim margin-top-2`;
+            messageDiv.setAttribute('tabindex', '-1');
+            messageDiv.setAttribute('role', 'alert');
             messageDiv.innerHTML = `
                 <div class="usa-alert__body">
                     <p class="usa-alert__text">${data.message}</p>
@@ -342,17 +347,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Insert after the summary box
             const summaryBox = document.querySelector('.usa-list');
             summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
+            messageDiv.focus();
 
             // Remove message after 4 seconds
             setTimeout(() => {
                 if (messageDiv.parentNode) {
                     messageDiv.parentNode.removeChild(messageDiv);
                 }
+                previouslyFocusedElement.focus();
             }, 4000);
-    }
-
-    function indicateCheckboxError(checkbox) {
-        // TODO: indicate the checkbox as having an error
     }
 
     // Expose the function globally so it can be called from other parts of the page
