@@ -1758,10 +1758,18 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   text-decoration: none;
 }
 
-.nofo_view .nofo_view--changes--list ol li.is-active a,
 .nofo_view .nofo_view--changes--list ol li a:hover {
   border: 1.5px solid var(--color--med-grey);
   color: inherit;
+}
+
+.nofo_view .nofo_view--changes--list ol li.is-active a {
+  border: 1.5px solid var(--color--cdc-blue);
+  color: var(--color--cdc-blue);
+}
+
+.nofo_view .nofo_view--changes--list ol li.is-active a:hover {
+  color: var(--color--dark-blue);
 }
 
 .nofo_view .nofo_view--changes--list ol li a:focus {
