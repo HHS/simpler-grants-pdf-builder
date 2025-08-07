@@ -410,7 +410,7 @@ class ContentGuideEditViewTests(TestCase):
         self.assertEqual(
             set(response_data["failed_subsection_ids"]), {"99999", "88888"}
         )
-        self.assertIn("All comparison selections failed", response_data["message"])
+        self.assertIn("Comparison selections failed", response_data["message"])
 
     def test_post_with_invalid_json_returns_error(self):
         """Test that POST request with invalid JSON returns proper error"""
