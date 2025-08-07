@@ -159,6 +159,9 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
             failed_subsection_ids = []
             for subsection_id, is_checked in subsections.items():
                 try:
+                    if subsection_id == 'bbdb2c5c-87e7-4129-933e-3bdb6d4d6b48':
+                        raise Exception("Test exception")
+
                     subsection = ContentGuideSubsection.objects.get(
                         id=subsection_id, section__content_guide=self.object
                     )
@@ -175,7 +178,7 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
                     continue
 
             if len(subsections) == len(failed_subsection_ids):
-                message = "All comparison selections failed to update."
+                message = "Comparison selections failed to update."
                 status = "fail"
             elif len(failed_subsection_ids) > 0:
                 message = f"Some comparison selections failed to update: {",".join(failed_subsection_ids)}"

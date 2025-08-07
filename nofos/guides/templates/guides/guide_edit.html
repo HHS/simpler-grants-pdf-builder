@@ -165,11 +165,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Check/uncheck all subsection checkboxes
+        const checkboxValueMap = new Map();
         subsectionCheckboxes.forEach(checkbox => {
+            checkboxValueMap.set(checkbox, {
+                current: checkbox.checked,
+                desired: isChecked
+            });
             checkbox.checked = isChecked;
         });
 
-        saveSubsectionSelections(subsectionCheckboxes);
+        saveSubsectionSelections(checkboxValueMap);
     });
 
     // Handle individual section "Compare Content" checkboxes
@@ -181,39 +186,30 @@ document.addEventListener('DOMContentLoaded', function() {
             // Find all subsection checkboxes for this section
             const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
 
-            // Check/uncheck all subsection checkboxes in this section
+            const checkboxValueMap = new Map();
             sectionSubsectionCheckboxes.forEach(checkbox => {
+                checkboxValueMap.set(checkbox, {
+                    current: checkbox.checked,
+                    desired: isChecked
+                });
                 checkbox.checked = isChecked;
             });
-
-            // Update "Compare All Sections" checkbox state
-            updateCompareAllSectionsCheckbox();
-            saveSubsectionSelections(sectionSubsectionCheckboxes);
+            saveSubsectionSelections(checkboxValueMap);
         });
     });
 
     // Handle individual subsection checkboxes
     subsectionCheckboxes.forEach(subsectionCheckbox => {
         subsectionCheckbox.addEventListener('change', function() {
-            // Find the section this subsection belongs to
-            const sectionElement = this.closest('[id^="section-"]');
-            if (sectionElement) {
-                const sectionId = sectionElement.id.replace('section-', '');
-                const sectionCheckbox = document.querySelector(`input[name="compare_sections"][value="${sectionId}"]`);
+            // Create map for just this checkbox that was clicked
+            const checkboxValueMap = new Map();
+            checkboxValueMap.set(this, {
+                current: !this.checked, // Previous state (opposite of current after click)
+                desired: this.checked   // New state (current after click)
+            });
 
-                if (sectionCheckbox) {
-                    // Check if all subsections in this section are checked
-                    const sectionSubsectionCheckboxes = sectionElement.querySelectorAll('input[name="compare_subsections"]');
-                    const allSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).every(checkbox => checkbox.checked);
-
-                    // Update section checkbox based on subsection states
-                    sectionCheckbox.checked = allSectionSubsectionsChecked;
-                    saveSubsectionSelections([subsectionCheckbox]);
-                }
-            }
-
-            // Update "Compare All Sections" checkbox state
-            updateCompareAllSectionsCheckbox();
+            // Save the selection for this individual checkbox
+            saveSubsectionSelections(checkboxValueMap);
         });
     });
 
@@ -253,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function saveSubsectionSelections(subsectionCheckboxes) {
+    function saveSubsectionSelections(checkboxValueMap) {
         // Get the container with data attributes
         const container = document.querySelector('.compare-all-sections-container');
         const url = container.dataset.url;
@@ -263,11 +259,11 @@ document.addEventListener('DOMContentLoaded', function() {
             checkbox.disabled = true;
         });
 
-        // Collect all subsection checkbox states
+        // Collect all subsection checkbox states from the map
         const subsectionStates = {};
-        subsectionCheckboxes.forEach(checkbox => {
-            subsectionStates[checkbox.value] = checkbox.checked;
-        });
+        for (let [checkbox, values] of checkboxValueMap.entries()) {
+            subsectionStates[checkbox.value] = values.desired;
+        }
 
         // Make POST request
         fetch(url, {
@@ -293,38 +289,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.warn(data.message);
             }
 
-            // Handle failed subsection IDs by toggling their checkboxes to opposite value
+            // Handle failed subsection IDs by reverting their checkboxes to previous state
             if (data.failed_subsection_ids && data.failed_subsection_ids.length > 0) {
                 data.failed_subsection_ids.forEach(failedId => {
                     const checkbox = document.querySelector(`input[name="compare_subsections"][value="${failedId}"]`);
                     if (checkbox) {
-                        checkbox.checked = !checkbox.checked;
+                        // Find the checkbox in our value map and revert to current (previous) state
+                        for (let [mapCheckbox, values] of checkboxValueMap.entries()) {
+                            if (mapCheckbox.value === failedId) {
+                                checkbox.checked = values.current;
+                                break;
+                            }
+                        }
                         indicateCheckboxError(checkbox);
                     }
                 });
-
-                showFailureAlert(data.failed_subsection_ids);
-
-                // Update dependent checkboxes after toggling failed ones
-                updateCompareSectionCheckboxes();
-                updateCompareAllSectionsCheckbox();
+            }
+            if (data.status !== 'success') {
+                showMessage(data);
             }
         })
         .catch(error => {
             console.error('Error saving subsection selections:', error);
-        });
-
-        allCheckboxes.forEach(checkbox => {
-            checkbox.disabled = false;
+        })
+        .finally(() => {
+            updateCompareSectionCheckboxes();
+            updateCompareAllSectionsCheckbox();
+            allCheckboxes.forEach(checkbox => {
+                checkbox.disabled = false;
+            });
         });
     }
 
-    function showFailureAlert(failedIds) {
-      // TODO: show a failure alert
+    function showMessage(data) {
+            // Create a simple message div
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `usa-alert usa-alert--${data.status === 'success' ? 'success' : data.status === 'fail' ? 'error' : 'warning'} usa-alert--slim margin-top-2`;
+            messageDiv.innerHTML = `
+                <div class="usa-alert__body">
+                    <p class="usa-alert__text">${data.message}</p>
+                </div>
+            `;
+
+            // Insert after the summary box
+            const summaryBox = document.querySelector('.usa-list');
+            summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
+
+            // Remove message after 4 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 4000);
     }
 
     function indicateCheckboxError(checkbox) {
-      // TODO: indicate the checkbox as having an error
+        // TODO: indicate the checkbox as having an error
     }
 
     // Expose the function globally so it can be called from other parts of the page
