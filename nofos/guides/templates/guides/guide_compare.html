@@ -20,11 +20,11 @@
 
   <div class="usa-prose margin-bottom-1">
     <p>
-      Your content guide is displayed here. 
+      Your content guide is displayed here.
       When you upload a NOFO to compare, it'll be displayed next to the content guide and list places where the NOFO’s boilerplate does not match the content guide.
     </p>
   </div>
-    
+
   <ul class="usa-button-group">
     <li class="usa-button-group__item margin-right-2">
       <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a>
@@ -34,14 +34,22 @@
     </li>
   </ul>
 
-  <div class="usa-prose margin-top-4 margin-bottom-4">
-    <p class="font-sans-lg"><strong>Guide to differences</strong></p>
-    <ul>
-      <li><del>Red with a strikethrough</del> is a deletion</li>
-      <li><ins>Green with an underline</ins> is content that has been added</li>
-      <li><strong>Side-by-side view</strong> shows both the content guide and NOFO next to each other highlighting the differences across both documents</li>
-      <li><strong>Single view</strong> shows the content guide with all the boilerplate differences between the NOFO and the content guide marked</li>
-    </ul>
+  <div class="usa-accordion--bordered margin-top-4 margin-bottom-4" data-allow-multiple>
+    <h4 class="usa-accordion__heading">
+      <button class="usa-accordion__button"
+              aria-expanded="true"
+              aria-controls="guide-differences">
+        Guide to differences
+      </button>
+    </h4>
+    <div id="guide-differences" class="usa-accordion__content usa-prose">
+      <ul>
+        <li><del>Red with a strikethrough</del> is a deletion</li>
+        <li><ins>Green with an underline</ins> is content that has been added</li>
+        <li><strong>Side-by-side view</strong> shows both the content guide and NOFO next to each other highlighting the differences across both documents</li>
+        <li><strong>Single view</strong> shows the content guide with all the boilerplate differences between the NOFO and the content guide marked</li>
+      </ul>
+    </div>
   </div>
 
   {% if num_changed_subsections == 0 %}
