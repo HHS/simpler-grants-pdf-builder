@@ -1,6 +1,8 @@
 import csv
 import io
 import json
+import uuid
+
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
@@ -273,6 +275,7 @@ class ContentGuideEditViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f"Configure Content Guide: “{self.guide.title}”")
+        self.assertContains(response, "Upload NOFO to compare")
 
     def test_view_displays_section_names(self):
         response = self.client.get(self.url)
@@ -287,6 +290,44 @@ class ContentGuideEditViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Archived Content Guide")
+
+    def test_guide_edit_view_with_valid_new_nofo_param(self):
+        new_nofo = Nofo.objects.create(
+            title="Some NOFO",
+            number="NOFO-123",
+            opdiv="CDC",
+            group="bloom",
+        )
+
+        url = reverse("guides:guide_edit", kwargs={"pk": self.guide.pk})
+        response = self.client.get(f"{url}?new_nofo={new_nofo.pk}")
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "Return to comparison")
+        self.assertContains(
+            response,
+            reverse("guides:guide_compare_result", args=[self.guide.pk, new_nofo.pk]),
+        )
+
+        # Upload new NOFO button is gone
+        self.assertNotContains(response, "Upload NOFO to compare")
+
+    def test_guide_edit_view_with_invalid_new_nofo_param(self):
+        url = reverse("guides:guide_edit", kwargs={"pk": self.guide.pk})
+
+        # malformed UUID
+        response = self.client.get(f"{url}?new_nofo=not-a-real-id")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Upload NOFO to compare")
+
+        # well-formed UUID but not in DB
+        missing_id = uuid.uuid4()
+        response = self.client.get(f"{url}?new_nofo={missing_id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Upload NOFO to compare")
+
+        # Return to comparison button is gone
+        self.assertNotContains(response, "Return to comparison")
 
     def test_post_updates_subsections(self):
         """Test that POST request can handle multiple subsections at once"""

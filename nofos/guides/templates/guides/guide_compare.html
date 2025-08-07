@@ -30,7 +30,7 @@
       <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a>
     </li>
     <li class="usa-button-group__item">
-      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_edit' guide.pk %}">Choose sections to compare</a>
+      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_edit' guide.pk %}{% if new_nofo %}?new_nofo={{ new_nofo.id }}{% endif %}">Choose sections to compare</a>
     </li>
   </ul>
 

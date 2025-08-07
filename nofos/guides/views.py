@@ -144,6 +144,19 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
     def get_success_url(self):
         return reverse_lazy("guides:guide_edit", args=[self.object.pk])
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Add "new_nofo" to context if it is in the query param and it exists
+        new_nofo_id = self.request.GET.get("new_nofo")
+        if new_nofo_id:
+            try:
+                context["new_nofo"] = Nofo.objects.get(id=new_nofo_id)
+            except (ValueError, ValidationError, Nofo.DoesNotExist):
+                pass  # Silently ignore if the ID doesn't exist
+
+        return context
+
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         """
