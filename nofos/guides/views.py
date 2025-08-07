@@ -274,8 +274,6 @@ class ContentGuideCompareUploadView(
         )
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
-        guide = self.guide
-
         try:
             # Create a temporary NOFO for comparison
             new_nofo = create_nofo(
@@ -321,6 +319,13 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
             comparison = compare_nofos(guide, new_nofo)
             # add old_diff and new_diff
             comparison = annotate_side_by_side_diffs(comparison)
+
+            # Remove "Basic Information" if it's the first subsection of the first section
+            first_section = comparison[0]
+            if first_section["subsections"]:
+                first_sub = first_section["subsections"][0]
+                if first_sub.name.strip().lower() == "basic information":
+                    del first_section["subsections"][0]
 
             changed_subsections = [
                 sub
