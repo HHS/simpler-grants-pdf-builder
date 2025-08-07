@@ -1550,6 +1550,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-right: 1px solid #dfe1e2;
   background-color: #ffffff;
   padding: 0px 2rem;
+  vertical-align: baseline;
 }
 
 .nofo_compare--content-guide
