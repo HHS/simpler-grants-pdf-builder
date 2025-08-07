@@ -382,9 +382,9 @@ class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
         )
 
         # Write header
-        header = ["Status", "Subsection name", "Old value"]
+        header = ["Status", "Step name", "Section name", "Old value"]
         if has_merged_subsection:
-            header.append("New subsection name")
+            header.append("New section name")
         header.append("New value")
 
         writer.writerow(header)
@@ -399,6 +399,7 @@ class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 if has_merged_subsection:
                     row = [
                         subsection.status,
+                        section["name"],
                         subsection.old_name,
                         subsection.old_value,
                         subsection.new_name,  # add "New subsection name" string if has_merged_subsections
@@ -407,6 +408,7 @@ class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 else:
                     row = [
                         subsection.status,
+                        section["name"],
                         (
                             subsection.new_name
                             if subsection.status == "ADD"

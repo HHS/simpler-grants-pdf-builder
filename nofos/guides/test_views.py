@@ -566,7 +566,12 @@ class ContentGuideDiffCSVViewTests(TestCase):
         subsection.old_value = ""
         subsection.new_value = "New body"
 
-        comparison = [{"subsections": [subsection]}]
+        comparison = [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "subsections": [subsection],
+            }
+        ]
         mock_compare.return_value = comparison
         mock_annotate.return_value = comparison
 
@@ -584,9 +589,12 @@ class ContentGuideDiffCSVViewTests(TestCase):
 
         rows = self.parse_csv(response.content)
         self.assertEqual(
-            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+            rows[0], ["Status", "Step name", "Section name", "Old value", "New value"]
         )
-        self.assertEqual(rows[1], ["ADD", "Summary added", "", "New body"])
+        self.assertEqual(
+            rows[1],
+            ["ADD", "Step 1: Review the Opportunity", "Summary added", "", "New body"],
+        )
 
     @patch("guides.views.compare_nofos")
     @patch("guides.views.annotate_side_by_side_diffs")
@@ -598,7 +606,12 @@ class ContentGuideDiffCSVViewTests(TestCase):
         subsection.old_value = "Old body"
         subsection.new_value = ""
 
-        comparison = [{"subsections": [subsection]}]
+        comparison = [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "subsections": [subsection],
+            }
+        ]
         mock_compare.return_value = comparison
         mock_annotate.return_value = comparison
 
@@ -616,9 +629,18 @@ class ContentGuideDiffCSVViewTests(TestCase):
 
         rows = self.parse_csv(response.content)
         self.assertEqual(
-            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+            rows[0], ["Status", "Step name", "Section name", "Old value", "New value"]
         )
-        self.assertEqual(rows[1], ["DELETE", "Summary deleted", "Old body", ""])
+        self.assertEqual(
+            rows[1],
+            [
+                "DELETE",
+                "Step 1: Review the Opportunity",
+                "Summary deleted",
+                "Old body",
+                "",
+            ],
+        )
 
     @patch("guides.views.compare_nofos")
     @patch("guides.views.annotate_side_by_side_diffs")
@@ -630,7 +652,12 @@ class ContentGuideDiffCSVViewTests(TestCase):
         subsection.old_value = "Old body"
         subsection.new_value = "New body"
 
-        comparison = [{"subsections": [subsection]}]
+        comparison = [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "subsections": [subsection],
+            }
+        ]
         mock_compare.return_value = comparison
         mock_annotate.return_value = comparison
 
@@ -648,9 +675,18 @@ class ContentGuideDiffCSVViewTests(TestCase):
 
         rows = self.parse_csv(response.content)
         self.assertEqual(
-            rows[0], ["Status", "Subsection name", "Old value", "New value"]
+            rows[0], ["Status", "Step name", "Section name", "Old value", "New value"]
         )
-        self.assertEqual(rows[1], ["UPDATE", "Summary", "Old body", "New body"])
+        self.assertEqual(
+            rows[1],
+            [
+                "UPDATE",
+                "Step 1: Review the Opportunity",
+                "Summary",
+                "Old body",
+                "New body",
+            ],
+        )
 
     @patch("guides.views.compare_nofos")
     @patch("guides.views.annotate_side_by_side_diffs")
@@ -662,7 +698,12 @@ class ContentGuideDiffCSVViewTests(TestCase):
         subsection.old_value = "Old body"
         subsection.new_value = "New body"
 
-        comparison = [{"subsections": [subsection]}]
+        comparison = [
+            {
+                "name": "Step 1: Review the Opportunity",
+                "subsections": [subsection],
+            }
+        ]
         mock_compare.return_value = comparison
         mock_annotate.return_value = comparison
 
@@ -676,12 +717,21 @@ class ContentGuideDiffCSVViewTests(TestCase):
             rows[0],
             [
                 "Status",
-                "Subsection name",
+                "Step name",
+                "Section name",
                 "Old value",
-                "New subsection name",
+                "New section name",
                 "New value",
             ],
         )
         self.assertEqual(
-            rows[1], ["UPDATE", "Summary", "Old body", "Updated Summary", "New body"]
+            rows[1],
+            [
+                "UPDATE",
+                "Step 1: Review the Opportunity",
+                "Summary",
+                "Old body",
+                "Updated Summary",
+                "New body",
+            ],
         )
