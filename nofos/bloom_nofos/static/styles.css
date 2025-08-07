@@ -1359,8 +1359,17 @@ main .back-link a::before,
   main
   table.table--section
   .nofo-edit-table--subsection--manage {
-  vertical-align: top;
-  padding-right: 1.8rem;
+  position: relative;
+}
+
+.content_guide_edit
+  main
+  table.table--section
+  .nofo-edit-table--subsection--manage
+  .usa-checkbox .usa-checkbox__label {
+  position: absolute;
+  top: 0;
+  right: 1.8rem;
 }
 
 .content_guide_edit .compare-all-sections-container {
