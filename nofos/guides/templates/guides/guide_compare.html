@@ -15,15 +15,6 @@
 {% block body_class %}nofo_compare nofo_compare--content-guide{% if comparison %} nofo_compare--content-guide--comparison{% endif %}{% if display_mode == 'single' %} nofo_compare--content-guide--display-single{% else %} nofo_compare--content-guide--display-double{% endif %}{% endblock %}
 
 {% block content %}
-  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
-    <div class="usa-alert__body bg-base-lightest">
-      <p class="usa-alert__text">
-        <span class="usa-tag bg-gold text-ink">Beta</span>
-        <span class="margin-left-1">Comparing a Content Guide to a NOFO is an experimental feature and will change as we improve it. <br />{% include "includes/feedback_link.html" %}.</span>
-      </p>
-    </div>
-  </div>
-
   {% url 'guides:guide_edit' guide.id as back_href %}
   {% include "includes/page_heading.html" with title="Review the differences" back_text=guide.title back_href=back_href only %}
 
