@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from .utils import strip_file_suffix
 
 

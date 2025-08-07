@@ -1,5 +1,6 @@
 import csv
 import json
+import uuid
 
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
@@ -167,30 +168,66 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
         try:
             data = json.loads(request.body)
             subsections = data.get("subsections", {})
+            num_subsections = len(subsections)
 
             updated_count = 0
             failed_subsection_ids = []
-            for subsection_id, is_checked in subsections.items():
-                try:
-                    if subsection_id == 'bbdb2c5c-87e7-4129-933e-3bdb6d4d6b48':
-                        raise Exception("Test exception")
 
-                    subsection = ContentGuideSubsection.objects.get(
-                        id=subsection_id, section__content_guide=self.object
+            if subsections:
+                for subsection_id in list(subsections.keys()):
+                    try:
+                        uuid.UUID(str(subsection_id))
+                    except (ValueError, TypeError, AttributeError):
+                        failed_subsection_ids.append(subsection_id)
+                        del subsections[subsection_id]
+
+                try:
+                    subsection_objects = ContentGuideSubsection.objects.filter(
+                        id__in=subsections.keys(), section__content_guide=self.object
                     )
 
-                    new_comparison_type = "body" if is_checked else "none"
+                    subsection_map = {str(sub.id): sub for sub in subsection_objects}
 
-                    if subsection.comparison_type != new_comparison_type:
-                        subsection.comparison_type = new_comparison_type
-                        subsection.save()
-                        updated_count += 1
+                    subsections_to_update = []
+                    for subsection_id, is_checked in subsections.items():
+                        if subsection_id not in subsection_map:
+                            failed_subsection_ids.append(subsection_id)
+                            continue
+
+                        subsection = subsection_map[subsection_id]
+                        new_comparison_type = "body" if is_checked else "none"
+
+                        if subsection.comparison_type != new_comparison_type:
+                            subsection.comparison_type = new_comparison_type
+                            subsections_to_update.append(subsection)
+
+                    if subsections_to_update:
+                        ContentGuideSubsection.objects.bulk_update(
+                            subsections_to_update, ["comparison_type"]
+                        )
+                        updated_count = len(subsections_to_update)
 
                 except Exception as e:
-                    failed_subsection_ids.append(subsection_id)
-                    continue
+                    print("Error in bulk update:", e)
+                    # If bulk operation fails, fall back to individual processing
+                    for subsection_id, is_checked in subsections.items():
+                        try:
+                            subsection = ContentGuideSubsection.objects.get(
+                                id=subsection_id, section__content_guide=self.object
+                            )
 
-            if len(subsections) == len(failed_subsection_ids):
+                            new_comparison_type = "body" if is_checked else "none"
+
+                            if subsection.comparison_type != new_comparison_type:
+                                subsection.comparison_type = new_comparison_type
+                                subsection.save()
+                                updated_count += 1
+
+                        except Exception:
+                            failed_subsection_ids.append(subsection_id)
+                            continue
+
+            if num_subsections == len(failed_subsection_ids):
                 message = "Comparison selections failed to update."
                 status = "fail"
             elif len(failed_subsection_ids) > 0:
@@ -203,7 +240,7 @@ class ContentGuideEditView(GroupAccessObjectMixin, DetailView):
             response = {
                 "message": message,
                 "status": status,
-                "selections_count": len(subsections),
+                "selections_count": num_subsections,
                 "updated_count": updated_count,
                 "failed_subsection_ids": failed_subsection_ids,
             }
