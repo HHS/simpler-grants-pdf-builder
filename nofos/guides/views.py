@@ -340,6 +340,12 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 if first_sub.name.strip().lower() == "basic information":
                     del first_section["subsections"][0]
 
+            # Filter out sections that contain ONLY "ADDs".
+            comparison = [
+                section for section in comparison
+                if not all(sub.comparison_type == "body" and sub.status == "ADD" for sub in section["subsections"])
+            ]
+
             changed_subsections = [
                 sub
                 for section in comparison

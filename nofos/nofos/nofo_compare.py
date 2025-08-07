@@ -14,6 +14,7 @@ from .models import Nofo
 class SubsectionDiff:
     name: str
     status: str  # "MATCH", "UPDATE", "ADD", "DELETE"
+    comparison_type: str = "body"
     old_name: Optional[str] = ""
     new_name: Optional[str] = ""
     old_value: Optional[str] = ""
@@ -21,7 +22,6 @@ class SubsectionDiff:
     diff: Optional[str] = None
     old_diff: Optional[str] = None  # just the diff for the "old" document
     new_diff: Optional[str] = None  # just the diff for the "new" document
-    comparison_type: str = "body"
     diff_strings: List[str] = field(default_factory=list)
     tag: Optional[str] = ""  # metadata diffs don't have a tag (eg, nofo.number)
     html_id: Optional[str] = ""  # metadata diffs don't have an id

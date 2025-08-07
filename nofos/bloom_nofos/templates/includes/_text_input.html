@@ -1,4 +1,4 @@
-<label class="usa-label" for="{{ id }}">{{ label }}</label>
+<label class="usa-label {% if classes %} {{ classes }} {% endif %}" for="{{ id }}">{{ label }}</label>
 {% if hint %}
 <div class="usa-hint" id="{{ id }}--hint-1">
   {{ hint }}
