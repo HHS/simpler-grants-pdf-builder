@@ -20,11 +20,15 @@
   {% endif %}
 
   <div class="back-link font-body-md">
-    <a href="{% url 'guides:guide_index' %}">All Content Guides</a>
+    {% if new_nofo %}
+      <a href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Review the differences</a>
+    {% else %}
+      <a href="{% url 'guides:guide_index' %}">All content guides</a>
+    {% endif %}
   </div>
   <div class="nofo_guide_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
     <div class="nofo_guide_edit--header--h1 ">
-      <h1 class="font-heading-md margin-top-1">Compare NOFO to "{{ guide.opdiv }}" Source Content Guide</h1>
+      <h1 class="font-heading-md margin-top-1">{{ guide.title }}</h1>
     </div>
   </div>
 
@@ -39,10 +43,14 @@
 
   <ul class="usa-button-group margin-top-2 margin-bottom-4">
     <li class="usa-button-group__item">
-      <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to Compare</a>
+      {% if new_nofo %}
+        <a class="usa-button" href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Return to comparison</a>
+      {% else %}
+        <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to compare</a>
+      {% endif %}
     </li>
     <li class="usa-button-group__item">
-      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this Content Guide</a>
+      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this content guide</a>
     </li>
   </ul>
 
