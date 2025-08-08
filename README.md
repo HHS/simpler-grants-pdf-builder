@@ -1,3 +1,9 @@
+![Python Version from PEP 621 TOML](https://img.shields.io/badge/Python-3.13-blue)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Django CI](https://github.com/HHS/simpler-grants-pdf-builder/actions/workflows/django_ci.yml/badge.svg)](https://github.com/HHS/simpler-grants-pdf-builder/actions/workflows/django_ci.yml)
+
 <div align="center">
   <h1>NOFO Builder</h1>
   <h3>📄<sup>✍️</sup>🦆</h1>
@@ -79,6 +85,30 @@ poetry update --lock
 
 </details>
 
+### [Install `pre-commit` hooks](https://pre-commit.com/)
+
+`pre-commit` is a framework for managing and maintaining multi-language pre-commit hooks. It helps ensure code quality by running automated checks before each commit. The dependency is included as a poetry dev dependency, so the only local action is to install the pre-commit hooks for this project:
+
+```bash
+# Install the git hook scripts
+poetry run pre-commit install
+
+# Optional: run against all files (not just staged changes)
+poetry run pre-commit run --all-files
+```
+
+Our pre-commit configuration includes:
+- **Black**: Python code formatter
+- **isort**: Import sorter
+- **Django check**: Runs Django's system checks
+- **General hooks**: Trailing whitespace, file endings, YAML validation, etc.
+
+The hooks will automatically run on every commit. Files are excluded from formatting if they're in:
+- Static files (`nofos/bloom_nofos/static/`)
+- Migration files (`*/migrations/`)
+- SVG files (`.svg`)
+- Certificate files (`.crt`)
+
 ### [Install `docker`](https://docs.docker.com/install/)
 
 A docker container allows a developer to package up an application and all of its parts. This means we can build an app in any language, in any stack, and then run it anywhere — whether locally or on a server.
@@ -103,6 +133,7 @@ Important: make sure to run poetry commands from the `./nofos` directory.
 ```bash
 # install dependencies
 poetry install
+
 
 # make sure you are in the "./nofos" directory
 cd ./nofos

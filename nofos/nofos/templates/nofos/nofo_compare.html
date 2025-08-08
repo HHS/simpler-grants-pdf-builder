@@ -28,7 +28,7 @@
   {% if num_changed_sections == 0 and not nofo_comparison_metadata %}
     <h2>No changes</h2>
     <p>
-      
+
       This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) is <strong>identical</strong> to your original NOFO: “{{ nofo.title }}”.
     </p>
 
@@ -37,7 +37,7 @@
       Back to “{{ nofo|nofo_name }}”
     </a>
   {% else %}
-    
+
     <p><strong>Overview</strong></p>
     <ul class="usa-list">
     {% if num_changed_sections %}
