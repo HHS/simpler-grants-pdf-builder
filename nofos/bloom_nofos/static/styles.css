@@ -1366,7 +1366,8 @@ main .back-link a::before,
   main
   table.table--section
   .nofo-edit-table--subsection--manage
-  .usa-checkbox .usa-checkbox__label {
+  .usa-checkbox
+  .usa-checkbox__label {
   position: absolute;
   top: 0;
   right: 1.8rem;
@@ -1594,8 +1595,16 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-bottom: 1px solid #dfe1e2;
 }
 
+.nofo_compare--content-guide .nofo_view--title-bar td .usa-tooltip {
+  width: 100%;
+}
+
 .nofo_compare--content-guide .nofo_view--title-bar h2 {
   font-size: 1.2rem;
+  /* prevent the filename from wrapping to the next line, adds "..." at the end */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes,

@@ -106,11 +106,19 @@
             <table>
               <tr>
                 <td>
-                  <h2 class="margin-0 font-mono-md">{{ guide.title }}</h2>
+                  {% if guide.title|length > 40 %}
+                    <h2 class="margin-0 font-mono-md usa-tooltip" data-position="top" title="{{ guide.title }}">{{ guide.title }}</h2>
+                  {% else %}
+                    <h2 class="margin-0 font-mono-md">{{ guide.title }}</h2>
+                  {% endif %}
                 </td>
                 {% if comparison %}
                   <td>
-                    <h2 class="margin-0 font-mono-md">{{ new_nofo.filename }}</h2>
+                    {% if new_nofo.filename|length > 40 %}
+                      <h2 class="margin-0 font-mono-md usa-tooltip" data-position="top" title="{{ new_nofo.filename }}">{{ new_nofo.filename }}</h2>
+                    {% else %}
+                      <h2 class="margin-0 font-mono-md" data-position="top" title="{{ new_nofo.filename }}">{{ new_nofo.filename }}</h2>
+                    {% endif %}
                   </td>
                 {% endif %}
               </tr>
@@ -121,7 +129,13 @@
             <table>
               <tr>
                 <td>
-                  <h2 class="margin-0 font-mono-md">{{ guide.title }} & {{ new_nofo.filename }}</h2>
+                  {% with guide.title|add:new_nofo.filename as combined_title %}
+                    {% if combined_title|length > 60 %}
+                      <h2 class="margin-0 font-mono-md usa-tooltip" data-position="top" title="{{ guide.title }} & {{ new_nofo.filename }}">{{ guide.title }} & {{ new_nofo.filename }}</h2>
+                    {% else %}
+                      <h2 class="margin-0 font-mono-md">{{ guide.title }} & {{ new_nofo.filename }}</h2>
+                    {% endif %}
+                  {% endwith %}
                 </td>
               </tr>
             </table>
