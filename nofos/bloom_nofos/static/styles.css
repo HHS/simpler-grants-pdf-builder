@@ -2029,3 +2029,8 @@ del + ins > br {
 .usa-summary-box .usa-checkbox {
   background: transparent;
 }
+
+.disabled-link[aria-disabled="true"]:active {
+  pointer-events: none;
+  cursor: not-allowed;
+}

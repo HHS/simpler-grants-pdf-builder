@@ -44,13 +44,13 @@
   <ul class="usa-button-group margin-top-2 margin-bottom-4">
     <li class="usa-button-group__item">
       {% if new_nofo %}
-        <a class="usa-button" href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Return to comparison</a>
+        <a role="button" class="usa-button" href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Return to comparison</a>
       {% else %}
-        <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to compare</a>
+        <a role="button" class="usa-button" href="{% url 'guides:guide_compare_upload' guide.id %}">Upload NOFO to compare</a>
       {% endif %}
     </li>
     <li class="usa-button-group__item">
-      <a class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this content guide</a>
+      <a role="button" class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this content guide</a>
     </li>
   </ul>
 
@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sectionCheckboxes = document.querySelectorAll('input[name="compare_sections"]');
     const subsectionCheckboxes = document.querySelectorAll('input[name="compare_subsections"]');
     const allCheckboxes = [compareAllCheckbox, ...sectionCheckboxes, ...subsectionCheckboxes];
+    const usaButtons = document.querySelectorAll('.usa-button');
 
     // Handle "Compare All Sections" checkbox
     compareAllCheckbox.addEventListener('change', function() {
@@ -257,6 +258,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function updateUsaButtons() {
+        if (allCheckboxes.every(checkbox => !checkbox.checked)) {
+            usaButtons.forEach(button => {
+                button.setAttribute('aria-disabled', 'true');
+                button.setAttribute('disabled', 'disabled');
+                button.classList.add('disabled-link');
+            });
+            // Create a simple message div
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `usa-alert usa-alert--warning usa-alert--slim margin-top-2`;
+            messageDiv.setAttribute('tabindex', '-1');
+            messageDiv.setAttribute('role', 'alert');
+            messageDiv.innerHTML = `
+                <div class="usa-alert__body">
+                    <p class="usa-alert__text">Please select at least one section or subsection to compare.</p>
+                </div>
+            `;
+            messageDiv.id = 'empty-selection-message';
+
+            // Insert after the summary box
+            const summaryBox = document.querySelector('.usa-list');
+            summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
+            messageDiv.focus();
+        } else {
+            usaButtons.forEach(button => {
+                button.removeAttribute('aria-disabled');
+                button.removeAttribute('disabled');
+                button.classList.remove('disabled-link');
+            });
+            if (document.getElementById('empty-selection-message')) {
+                document.getElementById('empty-selection-message').remove();
+            }
+        }
+    }
+
     function saveSubsectionSelections(checkboxValueMap, element) {
         // Get the container with data attributes
         const container = document.querySelector('.compare-all-sections-container');
@@ -265,6 +301,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         allCheckboxes.forEach(checkbox => {
             checkbox.disabled = true;
+        });
+        usaButtons.forEach(button => {
+            button.disabled = true;
         });
 
         // Collect all subsection checkbox states from the map
@@ -309,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 break;
                             }
                         }
-                        indicateCheckboxError(checkbox);
                     }
                 });
             }
@@ -326,6 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             allCheckboxes.forEach(checkbox => {
                 checkbox.disabled = false;
             });
+            updateUsaButtons();
         });
     }
 
@@ -364,6 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the state on page load
     updateCompareSectionCheckboxes();
     updateCompareAllSectionsCheckbox();
+    updateUsaButtons();
 });
 </script>
 {% endblock %}
