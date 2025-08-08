@@ -1513,7 +1513,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .nofo_compare--content-guide .nofo_view h4,
 .nofo_compare--content-guide .nofo_view h5,
 .nofo_compare--content-guide .nofo_view h6 {
-  scroll-margin-top: 125px;
+  scroll-margin-top: 195px;
 }
 
 .nofo_compare--content-guide .nofo_view,
@@ -1618,7 +1618,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
   position: sticky;
-  top: 185px;
+  top: 190px;
   height: calc(100vh - 124px);
   display: flex;
   flex-direction: column;
