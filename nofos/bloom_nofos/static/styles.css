@@ -1529,9 +1529,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   position: sticky;
-  top: 110px;
+  top: 109px;
   z-index: 1;
   border-bottom: 1px solid var(--color--light-grey);
+  border-top: 1px solid var(--color--light-grey);
   background-color: white;
 }
 
