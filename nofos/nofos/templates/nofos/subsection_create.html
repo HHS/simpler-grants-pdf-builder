@@ -23,7 +23,7 @@
       <h1 class="font-heading-xl margin-y-0">New subsection</h1>
     </div>
   {% endwith %}
-  
+
   <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
 
   {% if prev_subsection_with_tag %}
@@ -100,7 +100,7 @@
 
       <!-- body -->
       <div class="form-group margin-top-4">
-        <label 
+        <label
         {% whitespaceless %}
             class="
               usa-label
@@ -109,12 +109,12 @@
                 {% endif %}
             "
           {% endwhitespaceless %} for="body">Subsection content</label>
-        <div 
+        <div
         {% whitespaceless %}
           class="
-                border-2px 
-                margin-top-1 
-                radius-md 
+                border-2px
+                margin-top-1
+                radius-md
                 {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
                   border-secondary-dark
                 {% else %}

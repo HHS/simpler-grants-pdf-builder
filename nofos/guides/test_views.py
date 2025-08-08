@@ -2,7 +2,6 @@ import csv
 import io
 import json
 import uuid
-
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
