@@ -234,6 +234,9 @@ def traditional_login_view(request):
             if user is not None:
                 login(request, user)
                 next_url = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
+                # TODO: REMOVE AFTER TESTING COMPARE PAGE
+                if user.email == "compare@nofo.com":
+                    next_url = "/guides/"
                 return redirect(next_url)
             else:
                 messages.error(request, "Invalid email or password.")
