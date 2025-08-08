@@ -1739,8 +1739,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare
   .nofo_view--menu-bar
-  .nofo_view--menu-bar--button__upload_file::before {
-  background-image: url("/static/img/usa-icons/upload_file.svg");
+  .nofo_view--menu-bar--button__file::before {
+  background-image: url("/static/img/blank_file.svg");
 }
 
 .nofo_compare
