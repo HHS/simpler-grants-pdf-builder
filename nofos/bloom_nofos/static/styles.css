@@ -1546,9 +1546,12 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare--content-guide
   .nofo_view
-  .nofo_view--table-container--no-comparison,
+  .nofo_view--table-container--no-comparison {
+  flex: 1 1 43%;
+}
+
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container--empty {
-  flex: 1 1 40%; /* Start with 40% but can grow */
+  flex: 1 1 37%;
 }
 
 .nofo_compare--content-guide
@@ -1642,7 +1645,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .guide_compare_upload {
   position: sticky;
-  top: 150px;
+  top: 190px;
 }
 
 .nofo_compare--content-guide
