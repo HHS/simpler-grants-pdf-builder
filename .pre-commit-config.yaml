@@ -1,0 +1,29 @@
+repos:
+  # General pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(nofos/bloom_nofos/static/.*|.*\.svg$|.*\.crt$|.*\.env.example|.*/migrations/.*)$
+      - id: end-of-file-fixer
+        exclude: ^(nofos/bloom_nofos/static/.*|.*\.svg$|.*\.crt$|.*\.env.example|.*/migrations/.*)$
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: mixed-line-ending
+
+  # Black code formatter
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: ['--line-length=88']
+
+  # isort import sorter
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: ['--profile', 'black', '--line-length=88']

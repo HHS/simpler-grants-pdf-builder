@@ -27,10 +27,7 @@ from nofos.nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_title,
 )
-from nofos.nofo_compare import (
-    annotate_side_by_side_diffs,
-    compare_nofos,
-)
+from nofos.nofo_compare import annotate_side_by_side_diffs, compare_nofos
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 

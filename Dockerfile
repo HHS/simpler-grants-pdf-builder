@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 # Patch system libraries to address known CVEs
 # - libcap2: CVE-2025-1390
-# - login, passwd: CVE-2023-4641, CVE-2023-29383, 
+# - login, passwd: CVE-2023-4641, CVE-2023-29383,
 # - libsystemd0, libudev1: CVE-2025-4598
 # - libgnutls30: CVE-2025-32990
 RUN apt-get update && \
