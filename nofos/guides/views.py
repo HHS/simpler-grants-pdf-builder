@@ -373,11 +373,16 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
             # add old_diff and new_diff
             comparison = annotate_side_by_side_diffs(comparison)
 
-            # Remove "Basic Information" if it's the first subsection of the first section
             first_section = comparison[0]
             if first_section["subsections"]:
+                # Remove "Basic Information" if it's the first subsection of the first section
                 first_sub = first_section["subsections"][0]
                 if first_sub.name.strip().lower() == "basic information":
+                    print("Removing Basic Information")
+                    del first_section["subsections"][0]
+                # Remove "Have questions?" if it's the first subsection of the first section
+                next_sub = first_section["subsections"][0]
+                if "have questions?" in next_sub.old_value.strip().lower():
                     del first_section["subsections"][0]
 
             # Filter out sections that contain ONLY "ADDs".

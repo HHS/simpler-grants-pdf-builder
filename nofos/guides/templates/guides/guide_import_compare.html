@@ -7,15 +7,6 @@
 {% block body_class %}nofo_import nofo_import--compare nofo_import--compare--guide{% endblock %}
 
 {% block content %}
-  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
-    <div class="usa-alert__body bg-base-lightest">
-      <p class="usa-alert__text">
-        <span class="usa-tag bg-gold text-ink">Beta</span>
-        <span class="margin-left-1">Comparing NOFOs is an experimental feature and will change as we improve it. {% include "includes/feedback_link.html" %}.</span>
-      </p>
-    </div>
-  </div>
-
   {% url 'guides:guide_edit' guide.id as back_href %}
   {% include "includes/page_heading.html" with title="Upload a NOFO to compare" back_text=guide.title back_href=back_href only %}
 
