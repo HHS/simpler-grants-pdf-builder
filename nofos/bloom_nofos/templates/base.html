@@ -20,7 +20,7 @@
               <a href="{% url 'index' %}">NOFO Builder</a>
             {% else %}
               <a href="{% url 'guides:guide_index' %}">NOFO Boilerplate Compare</a>
-            {% endif %}         
+            {% endif %}
           </em>
           {% if '/guides/' not in request.path %}
             {% if user.is_authenticated %}

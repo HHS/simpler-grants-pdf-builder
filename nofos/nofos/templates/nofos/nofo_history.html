@@ -85,7 +85,7 @@
 
 {% if has_more %}
   <div class="text-center margin-y-3">
-    <button class="usa-button" id="load-more-btn" 
+    <button class="usa-button" id="load-more-btn"
             data-next-offset="{{ next_offset }}">
       Load More Events
     </button>
@@ -98,19 +98,19 @@ document.getElementById('load-more-btn')?.addEventListener('click', async functi
     const offset = button.dataset.nextOffset;
     button.disabled = true;
     button.textContent = 'Loading...';
-    
+
     try {
         const response = await fetch(`?offset=${offset}`);
         const html = await response.text();
-        
+
         // Parse the new content
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-        
+
         // Get new rows and append them
         const newRows = doc.getElementById('audit-events-body').children;
         const currentTable = document.getElementById('audit-events-body');
-        
+
         const fragment = new DocumentFragment();
 
         Array.from(newRows).forEach(row => {
@@ -118,7 +118,7 @@ document.getElementById('load-more-btn')?.addEventListener('click', async functi
         });
 
         currentTable.appendChild(fragment);
-        
+
         // Update or remove the button
         const hasMore = doc.getElementById('load-more-btn');
         if (hasMore) {
@@ -136,4 +136,4 @@ document.getElementById('load-more-btn')?.addEventListener('click', async functi
 });
 </script>
 
-{% endblock %} 
+{% endblock %}
