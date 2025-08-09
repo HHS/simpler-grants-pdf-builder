@@ -387,8 +387,12 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
 
             # Filter out sections that contain ONLY "ADDs".
             comparison = [
-                section for section in comparison
-                if not all(sub.comparison_type == "body" and sub.status == "ADD" for sub in section["subsections"])
+                section
+                for section in comparison
+                if not all(
+                    sub.comparison_type == "body" and sub.status == "ADD"
+                    for sub in section["subsections"]
+                )
             ]
 
             changed_subsections = [

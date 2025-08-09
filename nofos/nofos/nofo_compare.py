@@ -236,10 +236,11 @@ def merge_renamed_subsections(
             heading_diff = html_diff(old_name, new_name)
 
             is_rename_only = old_body == new_body
+
             # look for if there is shared text in the header (remove del and ins and keep remainder)
-            has_shared_heading = bool(
-                re.sub(r"<(del|ins)>.*?</\1>", "", heading_diff or "").strip()
-            )
+            # "Shared heading" means at least 3 contiguous characters of overlap, case-sensitive
+            remaining_text = re.sub(r"<(del|ins)>.*?</\1>", " ", heading_diff or "")
+            has_shared_heading = bool(re.search(r"[A-Za-z0-9]{3,}", remaining_text))
 
             if is_rename_only or has_shared_heading:
                 merged.append(

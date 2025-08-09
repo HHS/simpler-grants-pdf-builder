@@ -83,28 +83,82 @@ class MergeRenamedSubsectionsTests(TestCase):
         self.assertEqual(result[0].status, "ADD")
         self.assertEqual(result[1].status, "DELETE")
 
+    # One shared character ("s" at the end) should fail to merge
     def test_minimal_shared_heading(self):
         input_data = [
             SubsectionDiff(
-                name="a b",
+                name="Cost-sharing commitments",
                 status="ADD",
                 old_value="",
-                new_value="Groundhog Day",
+                new_value="Text no overlap",
             ),
             SubsectionDiff(
-                name="a",
+                name="Program focus",
                 status="DELETE",
-                old_value="Groundhog",
+                old_value="Explanation completely different",
+                new_value="",
+            ),
+        ]
+        result = merge_renamed_subsections(input_data)
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual("Cost-sharing commitments", result[0].name)
+        self.assertEqual("Program focus", result[1].name)
+        self.assertEqual(result[0].status, "ADD")
+        self.assertEqual(result[1].status, "DELETE")
+
+    # Four shared _non-contigious_ characters ("Co" at the beginnning, "ts" at the end) should fail to merge
+    def test_three_character_shared_heading_non_contiguous(self):
+        input_data = [
+            SubsectionDiff(
+                name="Cost-sharing commitments",
+                status="ADD",
+                old_value="",
+                new_value="Text no overlap",
+            ),
+            SubsectionDiff(
+                name="Colorado chalets",
+                status="DELETE",
+                old_value="Explanation completely different",
+                new_value="",
+            ),
+        ]
+        result = merge_renamed_subsections(input_data)
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual("Cost-sharing commitments", result[0].name)
+        self.assertEqual("Colorado chalets", result[1].name)
+        self.assertEqual(result[0].status, "ADD")
+        self.assertEqual(result[1].status, "DELETE")
+
+    def test_three_character_shared_heading(self):
+        input_data = [
+            SubsectionDiff(
+                name="Cost-sharing commitments",
+                status="ADD",
+                old_value="",
+                new_value="Text no overlap",
+            ),
+            SubsectionDiff(
+                name="Cosmic horror is required",
+                status="DELETE",
+                old_value="Explanation completely different",
                 new_value="",
             ),
         ]
         result = merge_renamed_subsections(input_data)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].status, "UPDATE")
-        self.assertEqual("a<ins> b</ins>", result[0].name)
-        self.assertEqual("a", result[0].old_name)
-        self.assertEqual("a b", result[0].new_name)
-        self.assertEqual(result[0].diff, "<p>Groundhog<ins> Day</ins></p>")
+        self.assertEqual(
+            "Cos<del>mic horror is required</del><ins>t-sharing commitments</ins>",
+            result[0].name,
+        )
+        self.assertEqual("Cosmic horror is required", result[0].old_name)
+        self.assertEqual("Cost-sharing commitments", result[0].new_name)
+        self.assertEqual(
+            result[0].diff,
+            "<p><del>Explanation completely different</del><ins>Text no overlap</ins></p>",
+        )
 
 
 class FilterComparisonByStatusTests(TestCase):
