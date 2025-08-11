@@ -98,12 +98,14 @@ poetry run pre-commit run --all-files
 ```
 
 Our pre-commit configuration includes:
+
 - **Black**: Python code formatter
 - **isort**: Import sorter
 - **Django check**: Runs Django's system checks
 - **General hooks**: Trailing whitespace, file endings, YAML validation, etc.
 
 The hooks will automatically run on every commit. Files are excluded from formatting if they're in:
+
 - Static files (`nofos/bloom_nofos/static/`)
 - Migration files (`*/migrations/`)
 - SVG files (`.svg`)
@@ -174,17 +176,50 @@ Important: make sure to run poetry commands from the `./nofos` directory.
 poetry run python manage.py {runserver, makemigrations, migrate, etc}
 ```
 
-## A note on the CSS/HTML
+## A note on our implementation of the US Web Design System (USWDS)
 
-This app uses a static version of the [US Web Design System (USWDS)](https://designsystem.digital.gov) styles, generated on November 8th, 2023.
+This app uses a static version of the [US Web Design System (USWDS)](https://designsystem.digital.gov) styles, downloaded on August 11, 2025. At the time of writing, we are using version 3.13.0.
 
-I've made a couple of tweaks so that they work in this app.
+<details>
 
-### Adjustments to styles.css
+<summary>
+Updating USWDS
+</summary>
 
-- Update font paths from "../fonts" to "/static/fonts"
-- Update icon paths from "../img/usa-icons" to "/static/img/usa-icons"
-- Update img paths from "../img" to "/static/img"
+#### Why we use a static version of USWDS
+
+We don't have a frontend build pipeline, so we don't really fit into the model that USWDS describe for getting up and running [in their tutorial](https://designsystem.digital.gov/documentation/getting-started-for-developers/).
+
+Instead, we link to USWDS built assets in our `<head>` that we serve from our static folder.
+
+Periodically, we refresh these files with the newer versions so that we bring in the most recent updates.
+
+#### Steps to update USWDS
+
+1. Visit downloads page: https://designsystem.digital.gov/download/
+2. "Download code"
+3. Copy static assets to Django /static/uswds folder
+   1. Copy `/dist/css/uswds.css`
+   2. Copy `/dist/js/uswds-init.js`
+   3. Copy `/dist/js/uswds.js`
+   4. Move them all into `/nofos/bloom_nofos/static/uswds`
+4. Inside of "uswds.css", do a find-replace:
+   1. Find/replace: "../fonts" to `/static/fonts`
+   2. Find/replace: "../img" to `/static/img`
+5. Copy in new images
+   1. Copy all images in `dist/img/` (not subfolders)
+   2. Move them to `/nofos/bloom_nofos/static/img`
+6. Done!
+
+#### Done?
+
+Well, yes and no. Technically, this is all you need to do, but we don't know if the new version of USWDS creates any layout issues for us. The actual diffs of what changed since the last version of USWDS is too large to meaningfully understand, so we have to do this manaully.
+
+The last step is looking through the app vs a deployed version and checking for differences in layout.
+
+If found, you can decide if the new change is better/equivalent. If not then add CSS to revert the change.
+
+</details>
 
 ## Environment variables
 
