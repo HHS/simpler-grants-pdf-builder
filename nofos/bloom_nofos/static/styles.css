@@ -67,8 +67,36 @@ blockquote {
 
 /* General USWDS CSS */
 
+.usa-prose > table th,
+.usa-table th {
+  font-weight: 400;
+}
+
+.usa-prose > table thead th,
+.usa-table thead th {
+  font-weight: 700;
+}
+
+.usa-table thead td,
+.usa-table tfoot td,
+.usa-table th {
+  line-height: 1.5;
+}
+
+.usa-table--borderless :not(thead) th {
+  border-top: 1px solid #1b1b1b;
+}
+
+footer .usa-footer__primary-link {
+  text-decoration: none;
+}
+
 footer .usa-footer__primary-link:visited {
   color: var(--color--text-default);
+}
+
+.usa-button-group--segmented .usa-button {
+  display: inline-block;
 }
 
 .usa-combo-box__input,
@@ -1750,9 +1778,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-image: url("/static/img/usa-icons/content_copy.svg");
 }
 
-.nofo_compare
-  .nofo_view--menu-bar
-  .nofo_view--menu-bar--button__file::before {
+.nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button__file::before {
   background-image: url("/static/img/blank_file.svg");
 }
 
