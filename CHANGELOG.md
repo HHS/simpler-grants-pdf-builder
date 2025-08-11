@@ -11,7 +11,17 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- NOFO status picker in blue box on nofo_edit page is now a select box (previously a link)
+- Set full-width tables for this section is now a checkbox (previously a button)
+- Change "active" nav link on compare page to blue
+- Don't show "Have questions?" subsection in Content Guide
+
 ### Fixed
+
+- Add failure notification messages on Content Guide compare page if AJAX update fails (or partially fails)
+- Fixed height for the "filenames" sticky header on diff page
+- Disable "compare" buttons when no subsections are selected on Content Guide edit page
+- Require 3 contiguous characters in heading before merging subsections in diff (previously, it was 1 character)
 
 ## [3.7.0] - 2025-08-06
 
