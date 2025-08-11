@@ -67,23 +67,18 @@ blockquote {
 
 /* General USWDS CSS */
 
-.usa-prose > table th,
-.usa-table th {
-  font-weight: 400;
-}
-
-.usa-prose > table thead th,
-.usa-table thead th {
-  font-weight: 700;
-}
-
 .usa-table thead td,
 .usa-table tfoot td,
 .usa-table th {
   line-height: 1.5;
 }
 
-.usa-table--borderless :not(thead) th {
+.usa-prose > table th:not(thead th),
+.usa-table th:not(thead th) {
+  font-weight: 400;
+}
+
+.usa-table--borderless th:not(thead th) {
   border-top: 1px solid #1b1b1b;
 }
 
