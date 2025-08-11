@@ -244,16 +244,22 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCompareSectionCheckboxes() {
         sectionCheckboxes.forEach(sectionCheckbox => {
             const sectionId = sectionCheckbox.value;
-
-            // Find all subsection checkboxes for this section
             const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
 
             if (sectionSubsectionCheckboxes.length > 0) {
-                // Check if all subsections in this section are checked
                 const allSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).every(checkbox => checkbox.checked);
+                const someSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).some(checkbox => checkbox.checked);
 
-                // Update section checkbox based on subsection states
-                sectionCheckbox.checked = allSectionSubsectionsChecked;
+                if (allSectionSubsectionsChecked) {
+                    sectionCheckbox.checked = true;
+                    sectionCheckbox.indeterminate = false;
+                } else if (someSectionSubsectionsChecked) {
+                    sectionCheckbox.checked = false;
+                    sectionCheckbox.indeterminate = true;
+                } else {
+                    sectionCheckbox.checked = false;
+                    sectionCheckbox.indeterminate = false;
+                }
             }
         });
     }
