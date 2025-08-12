@@ -1565,7 +1565,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container {
   flex: 1 1 80%; /* Start with 80% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
-  max-height: 80vh; /* viewport height minus header/title/menu bars */
+  max-height: calc(100vh - 130px); /* viewport height minus menu/title bars */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* iOS momentum */
   scroll-behavior: smooth; /* programmatic smooth scroll */
@@ -1645,19 +1645,20 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  max-height: 80vh;
+  max-height: calc(100vh - 130px); /* viewport height minus menu/title bars */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* iOS momentum */
   scroll-behavior: smooth;
   scroll-padding-top: 50%;
   scroll-padding-bottom: 50%;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
   position: relative; /* become a normal scroll container */
   top: auto;
-  height: 80vh; /* align with left pane height */
+  max-height: calc(100vh - 130px); /* viewport height minus menu/title bars */
   display: flex;
   flex-direction: column;
 }

@@ -343,6 +343,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const OFFSET = 200; // 5px more than scroll-margin-top
+    const NAV_OFFSET = 100;
     const navLinks = Array.from(document.querySelectorAll(".nofo_view--changes--list a"));
     const prevBtn = document.querySelector(".nofo_view--menu-bar--button__expand_less");
     const nextBtn = document.querySelector(".nofo_view--menu-bar--button__expand_more");
@@ -534,7 +535,7 @@
 
       for (let i = 0; i < sections.length; i++) {
         const topViewport = getViewportTop(sections[i].heading, scrollTarget);
-        const threshold = scrollTarget ? 8 : OFFSET; // small buffer inside pane, larger for window
+        const threshold = scrollTarget ? NAV_OFFSET : OFFSET; // small buffer inside pane, larger for window
         if (topViewport - threshold <= 0) {
           current = sections[i];
         } else {
@@ -545,7 +546,7 @@
       // No active if above first section
       if (sections.length > 0) {
         const firstTopViewport = getViewportTop(sections[0].heading, scrollTarget);
-        const threshold = scrollTarget ? 8 : OFFSET;
+        const threshold = scrollTarget ? NAV_OFFSET : OFFSET;
         if (firstTopViewport - threshold > 0) {
           current = null;
         }
@@ -575,7 +576,7 @@
         if (!heading) return;
         if (scrollTarget) {
           e.preventDefault();
-          const desired = getRelativeTop(heading, scrollTarget) - 5; // align heading near top of pane
+          const desired = getRelativeTop(heading, scrollTarget) - NAV_OFFSET + 5; // align heading near top of pane
           const maxScrollTop = scrollTarget.scrollHeight - scrollTarget.clientHeight;
           const clamped = Math.max(0, Math.min(desired, maxScrollTop));
           isProgrammaticScroll = true;
