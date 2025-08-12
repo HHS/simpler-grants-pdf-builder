@@ -8,6 +8,7 @@ from django.utils.html import escape
 from martor.utils import markdownify
 
 from .models import Nofo
+from .nofo import decompose_empty_tags
 
 
 @dataclass
@@ -363,12 +364,14 @@ def annotate_side_by_side_diffs(comparison):
         soup = BeautifulSoup(diff_html, "html.parser")
         for ins in soup.find_all("ins"):
             ins.decompose()
+        decompose_empty_tags(soup)
         return str(soup) or ""
 
     def extract_new_diff(diff_html: str) -> str:
         soup = BeautifulSoup(diff_html, "html.parser")
         for delete in soup.find_all("del"):
             delete.decompose()
+        decompose_empty_tags(soup)
         return str(soup) or ""
 
     for item in comparison:
