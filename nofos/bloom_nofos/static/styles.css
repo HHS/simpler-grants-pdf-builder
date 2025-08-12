@@ -1565,6 +1565,10 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 .nofo_compare--content-guide .nofo_view .nofo_view--table-container {
   flex: 1 1 80%; /* Start with 80% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
+  max-height: 80vh; /* viewport height minus header/title/menu bars */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS momentum */
+  scroll-behavior: smooth; /* programmatic smooth scroll */
 }
 
 .nofo_compare--content-guide
@@ -1641,18 +1645,25 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  max-height: 80vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS momentum */
+  scroll-behavior: smooth;
+  scroll-padding-top: 50%;
+  scroll-padding-bottom: 50%;
+  scrollbar-gutter: stable both-edges;
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
-  position: sticky;
-  top: 190px;
-  height: calc(100vh - 124px);
+  position: relative; /* become a normal scroll container */
+  top: auto;
+  height: 80vh; /* align with left pane height */
   display: flex;
   flex-direction: column;
 }
 
 .nofo_compare--content-guide .nofo_view .nofo_view--changes--list ol {
-  overflow-y: auto; /* scroll only the list */
+  overflow-y: visible; /* pane container handles scrolling */
   flex: 1; /* take up all available space in the container */
   padding-left: 0;
   margin-top: 0;
@@ -1800,6 +1811,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_view .nofo_view--changes--list ol li {
   margin-bottom: 0.5rem;
+  scroll-snap-align: center; /* align item center to viewport center */
+  scroll-snap-stop: always; /* stronger snap */
 }
 
 .nofo_view .nofo_view--changes--list ol li:first-of-type {
