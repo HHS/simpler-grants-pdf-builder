@@ -22,6 +22,7 @@ Versioning since version 1.0.0.
 - Fixed height for the "filenames" sticky header on diff page
 - Disable "compare" buttons when no subsections are selected on Content Guide edit page
 - Require 3 contiguous characters in heading before merging subsections in diff (previously, it was 1 character)
+- Remove empty elements in diff side-by-side comparisons
 
 ## [3.7.0] - 2025-08-06
 

@@ -512,6 +512,36 @@ class AnnotateSideBySideDiffsTests(TestCase):
         self.assertEqual("<p>Original <del>deleted</del> </p>", annotated.old_diff)
         self.assertEqual("<p>Original  <ins>added</ins></p>", annotated.new_diff)
 
+    def test_list_with_li_del_item(self):
+        subsection = SubsectionDiff(
+            name="Subsection",
+            status="UPDATE",
+            diff="<ul><li>Item 1</li><li><del>Item 2 deleted</del></li><li>Item 3</li></ul>",
+        )
+        section = {"name": "Section A", "subsections": [subsection]}
+        result = annotate_side_by_side_diffs([section])[0]
+        annotated = result["subsections"][0]
+        self.assertEqual(
+            "<ul><li>Item 1</li><li><del>Item 2 deleted</del></li><li>Item 3</li></ul>",
+            annotated.old_diff,
+        )
+        self.assertEqual("<ul><li>Item 1</li><li>Item 3</li></ul>", annotated.new_diff)
+
+    def test_list_with_li_ins_item(self):
+        subsection = SubsectionDiff(
+            name="Subsection",
+            status="UPDATE",
+            diff="<ul><li>Item 1</li><li><ins>Item 2 added</ins></li><li>Item 3</li></ul>",
+        )
+        section = {"name": "Section A", "subsections": [subsection]}
+        result = annotate_side_by_side_diffs([section])[0]
+        annotated = result["subsections"][0]
+        self.assertEqual("<ul><li>Item 1</li><li>Item 3</li></ul>", annotated.old_diff)
+        self.assertEqual(
+            "<ul><li>Item 1</li><li><ins>Item 2 added</ins></li><li>Item 3</li></ul>",
+            annotated.new_diff,
+        )
+
 
 class TestCompareNofos(TestCase):
     def setUp(self):
