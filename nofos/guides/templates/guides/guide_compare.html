@@ -149,7 +149,7 @@
       <div id="nofo_view" class="nofo_view">
         {% if display_mode == 'double' %}
           {% if comparison %}
-            <div class="nofo_view--table-container">
+            <div id="nofo_view--table-container" class="nofo_view--table-container">
               {% for section in comparison %}
                 <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
                   <tr class="section--content">
@@ -240,7 +240,7 @@
             </div>
           {% else %}
           {# comparison does not exist, show original guide and grey column #}
-            <div class="nofo_view--table-container nofo_view--table-container--no-comparison">
+            <div id="nofo_view--table-container" class="nofo_view--table-container nofo_view--table-container--no-comparison">
               {% for section in guide.sections.all|dictsort:"order" %}
                 <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
                   <tr class="section--content">
@@ -280,7 +280,7 @@
         </div>
         {% else %}
         {# display_mode="single": Show consolidated view #}
-          <div class="nofo_view--table-container">
+          <div id="nofo_view--table-container" class="nofo_view--table-container">
             {% for section in comparison %}
               <table id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
                 <tr class="section--content">
@@ -346,6 +346,144 @@
     const navLinks = Array.from(document.querySelectorAll(".nofo_view--changes--list a"));
     const prevBtn = document.querySelector(".nofo_view--menu-bar--button__expand_less");
     const nextBtn = document.querySelector(".nofo_view--menu-bar--button__expand_more");
+    const scrollTarget = document.getElementById("nofo_view--table-container");
+
+    // Track manual scrolls inside the differences list container so we don't fight the user
+    const changesList = document.querySelector(".nofo_view--changes");
+    let lastManualScrollAt = 0;
+    const SUPPRESS_MS = 100; // tighter feel
+    let isProgrammaticScroll = false; // suspend nav updates during programmatic scroll
+
+    if (changesList) {
+      // Ensure list starts at the top
+      changesList.scrollTop = 0;
+      const markManualScroll = () => {
+        lastManualScrollAt = Date.now();
+      };
+      changesList.addEventListener("scroll", markManualScroll, { passive: true });
+      changesList.addEventListener("wheel", markManualScroll, { passive: true });
+      changesList.addEventListener("touchmove", markManualScroll, { passive: true });
+      changesList.addEventListener("mousedown", markManualScroll, { passive: true });
+      changesList.addEventListener("keydown", (e) => {
+        const scrollKeys = [
+          "ArrowUp",
+          "ArrowDown",
+          "PageUp",
+          "PageDown",
+          "Home",
+          "End",
+          " ",
+        ];
+        if (scrollKeys.includes(e.key)) markManualScroll();
+      });
+    }
+
+    // Utilities for positioning within scroll containers
+    // 1) element top relative to container content (like offsetTop)
+    function getRelativeTop(el, container) {
+      const elRect = el.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      return elRect.top - cRect.top + container.scrollTop;
+    }
+    // 2) element top relative to the visible viewport inside the container
+    function getViewportTop(el, container) {
+      if (!container) return el.getBoundingClientRect().top;
+      const elRect = el.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      return elRect.top - cRect.top;
+    }
+
+    // Smooth scroll helper that resolves when the container settles near target
+    function smoothScrollTo(container, targetTop, durationMs = 220) {
+      return new Promise((resolve) => {
+        let resolved = false;
+        const tolerance = 1;
+        let stableSince = 0;
+        const start = container.scrollTop;
+        const delta = targetTop - start;
+        const startTs = performance.now();
+
+        const useNative = (() => {
+          try {
+            container.scrollTo({ top: targetTop, behavior: "smooth" });
+            return true;
+          } catch (_) {
+            return false;
+          }
+        })();
+
+        function rafStep(ts) {
+          if (!useNative) {
+            const t = Math.min(1, (ts - startTs) / durationMs);
+            const eased = t * (2 - t); // easeOutQuad
+            container.scrollTop = start + delta * eased;
+          }
+
+          const near = Math.abs(container.scrollTop - targetTop) <= tolerance;
+          if (near) {
+            if (stableSince === 0) stableSince = ts;
+            if (ts - stableSince >= 80) {
+              if (!resolved) {
+                resolved = true;
+                resolve();
+                return;
+              }
+            }
+          } else {
+            stableSince = 0;
+          }
+
+          if (!resolved) requestAnimationFrame(rafStep);
+        }
+
+        requestAnimationFrame(rafStep);
+      });
+    }
+
+    // Always try to keep the active link centered (smoothly), unless the user
+    // has recently scrolled the list manually. We also add a small easing
+    // when adjusting scrollTop to avoid abrupt jumps on non-smooth browsers.
+    let lastActiveHref = null;
+    function autoCenterActiveLink(activeLinkEl) {
+      if (!changesList || !activeLinkEl) return;
+      if (isProgrammaticScroll) return; // wait for programmatic scroll to finish
+      const recentManual = Date.now() - lastManualScrollAt < SUPPRESS_MS;
+      if (recentManual) return;
+
+      const linkTop = getRelativeTop(activeLinkEl, changesList);
+      const linkCenter = linkTop + activeLinkEl.offsetHeight / 2;
+      const containerCenter = changesList.scrollTop + changesList.clientHeight / 2;
+      const deltaFromCenter = linkCenter - containerCenter;
+      const centerTolerance = 0; // px tolerance to avoid jitter against snap
+      if (Math.abs(deltaFromCenter) <= centerTolerance) return; // already centered enough
+
+      const desired =
+        linkTop - (changesList.clientHeight / 2) + (activeLinkEl.offsetHeight / 2);
+      const maxScrollTop = changesList.scrollHeight - changesList.clientHeight;
+      const clamped = Math.max(0, Math.min(desired, maxScrollTop));
+
+      // Avoid tiny sub-pixel thrashing
+      if (Math.abs(changesList.scrollTop - clamped) > 1) {
+        try {
+          changesList.scrollTo({ top: clamped, behavior: "smooth" });
+        } catch (_) {
+          // Safari fallback: incremental easing
+          const start = changesList.scrollTop;
+          const delta = clamped - start;
+          const duration = 180;
+          const startTs = performance.now();
+          function step(ts) {
+            const t = Math.min(1, (ts - startTs) / duration);
+            const eased = t * (2 - t); // easeOutQuad
+            changesList.scrollTop = start + delta * eased;
+            if (t < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }
+      }
+
+      lastActiveHref = activeLinkEl.getAttribute("href");
+    }
 
     const sections = navLinks.map(link => {
       const id = link.getAttribute("href").substring(1);
@@ -391,11 +529,13 @@
 
 
     function updateActiveNav() {
+      if (isProgrammaticScroll) return; // defer updates while we animate scroll
       let current = null;
 
       for (let i = 0; i < sections.length; i++) {
-        const rect = sections[i].heading.getBoundingClientRect();
-        if (rect.top - OFFSET <= 0) {
+        const topViewport = getViewportTop(sections[i].heading, scrollTarget);
+        const threshold = scrollTarget ? 8 : OFFSET; // small buffer inside pane, larger for window
+        if (topViewport - threshold <= 0) {
           current = sections[i];
         } else {
           break;
@@ -403,8 +543,12 @@
       }
 
       // No active if above first section
-      if (sections.length > 0 && sections[0].heading.getBoundingClientRect().top - OFFSET > 0) {
-        current = null;
+      if (sections.length > 0) {
+        const firstTopViewport = getViewportTop(sections[0].heading, scrollTarget);
+        const threshold = scrollTarget ? 8 : OFFSET;
+        if (firstTopViewport - threshold > 0) {
+          current = null;
+        }
       }
 
       navLinks.forEach(link => link.parentElement.classList.remove("is-active"));
@@ -413,10 +557,39 @@
       }
 
       setButtonState();
+
+      // Maintain centered active link per designed behavior
+      const activeLinkEl = document.querySelector(
+        ".nofo_view--changes--list li.is-active a"
+      );
+      autoCenterActiveLink(activeLinkEl);
     }
 
+    // Intercept clicks on nav links to scroll the left pane smoothly
+    // Always support default anchor behavior; if we have a left pane, intercept
+    // and translate to that pane's scroll so the header comes into view
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const id = link.getAttribute("href").substring(1);
+        const heading = document.getElementById(id);
+        if (!heading) return;
+        if (scrollTarget) {
+          e.preventDefault();
+          const desired = getRelativeTop(heading, scrollTarget) - 5; // align heading near top of pane
+          const maxScrollTop = scrollTarget.scrollHeight - scrollTarget.clientHeight;
+          const clamped = Math.max(0, Math.min(desired, maxScrollTop));
+          isProgrammaticScroll = true;
+          smoothScrollTo(scrollTarget, clamped, 260).then(() => {
+            isProgrammaticScroll = false;
+            updateActiveNav(); // finalize active state and center list
+          });
+        }
+      });
+    });
+
     // "passive: true" improves scroll performance
-    window.addEventListener("scroll", updateActiveNav, { passive: true });
+    const scrollElem = scrollTarget || window;
+    scrollElem.addEventListener("scroll", updateActiveNav, { passive: true });
     updateActiveNav(); // run on page load
   });
 </script>
