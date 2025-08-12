@@ -398,6 +398,7 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 for sub in section["subsections"]
                 if sub.status != "MATCH"
             ]
+
             context.update(
                 {
                     "new_nofo": new_nofo,
