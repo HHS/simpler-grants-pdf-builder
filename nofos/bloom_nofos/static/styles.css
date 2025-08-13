@@ -201,6 +201,22 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/arrow_forward.svg");
 }
 
+.usa-button--icon--before.usa-button--content_copy::before {
+  background-image: url("/static/img/usa-icons/content_copy.svg");
+}
+
+.usa-button--icon--before.usa-button--blank_file::before {
+  background-image: url("/static/img/blank_file.svg");
+}
+
+.usa-button--icon--before.usa-button--expand_more::before {
+  background-image: url("/static/img/usa-icons/expand_more.svg");
+}
+
+.usa-button--icon--before.usa-button--expand_less::before {
+  background-image: url("/static/img/usa-icons/expand_less.svg");
+}
+
 /* expand width of usa-prose/usa-content */
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content p,
@@ -1772,11 +1788,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button::before {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
   filter: brightness(0) saturate(100%) invert(49%) sepia(6%) saturate(369%)
     hue-rotate(164deg) brightness(92%) contrast(86%);
   width: 22px;
@@ -1797,28 +1808,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   .nofo_view--menu-bar--button.is-active:hover::before {
   filter: brightness(0) saturate(100%) invert(14%) sepia(20%) saturate(6652%)
     hue-rotate(187deg) brightness(103%) contrast(103%);
-}
-
-.nofo_compare
-  .nofo_view--menu-bar
-  .nofo_view--menu-bar--button__content_copy::before {
-  background-image: url("/static/img/usa-icons/content_copy.svg");
-}
-
-.nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button__file::before {
-  background-image: url("/static/img/blank_file.svg");
-}
-
-.nofo_compare
-  .nofo_view--menu-bar
-  .nofo_view--menu-bar--button__expand_more::before {
-  background-image: url("/static/img/usa-icons/expand_more.svg");
-}
-
-.nofo_compare
-  .nofo_view--menu-bar
-  .nofo_view--menu-bar--button__expand_less::before {
-  background-image: url("/static/img/usa-icons/expand_less.svg");
 }
 
 .nofo_compare .nofo_view--vertical-divider {

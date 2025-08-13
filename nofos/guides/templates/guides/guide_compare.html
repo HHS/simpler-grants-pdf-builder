@@ -67,23 +67,23 @@
         {% with current_view=request.path %}
           <a
             href="{{ current_view }}?display=double"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__content_copy{% if display_mode == 'double' %} is-active{% endif %}"
+            class="nofo_view--menu-bar--button usa-button--icon--before usa-button--content_copy {% if display_mode == 'double' %} is-active{% endif %}"
           >
             Side-by-side view
           </a>
           <a
             href="{{ current_view }}?display=single"
-            class="nofo_view--menu-bar--button nofo_view--menu-bar--button__file{% if display_mode == 'single' %} is-active{% endif %}"
+            class="nofo_view--menu-bar--button usa-button--icon--before usa-button--blank_file{% if display_mode == 'single' %} is-active{% endif %}"
             {% if not comparison %}aria-disabled="true"{% endif %}
           >
             Single view
           </a>
         {% endwith %}
         <div class="nofo_view--vertical-divider"></div>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_less" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
+        <button class="nofo_view--menu-bar--button usa-button--icon--before usa-button--expand_less" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
           Previous section
         </button>
-        <button class="nofo_view--menu-bar--button nofo_view--menu-bar--button__expand_more" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
+        <button class="nofo_view--menu-bar--button usa-button--icon--before usa-button--expand_more" {% if not comparison %}aria-disabled="true"{% endif %} type="button">
           Next section
         </button>
 
@@ -344,8 +344,8 @@
   document.addEventListener("DOMContentLoaded", function () {
     const OFFSET = 200; // 5px more than scroll-margin-top
     const navLinks = Array.from(document.querySelectorAll(".nofo_view--changes--list a"));
-    const prevBtn = document.querySelector(".nofo_view--menu-bar--button__expand_less");
-    const nextBtn = document.querySelector(".nofo_view--menu-bar--button__expand_more");
+    const prevBtn = document.querySelector(".usa-button--expand_less");
+    const nextBtn = document.querySelector(".usa-button--expand_more");
 
     const sections = navLinks.map(link => {
       const id = link.getAttribute("href").substring(1);
