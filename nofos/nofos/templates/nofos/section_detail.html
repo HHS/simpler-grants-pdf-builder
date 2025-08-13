@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="back-link font-body-md margin-bottom-105">
-  <a href="{% url 'nofos:nofo_edit' nofo.id %}">Edit “{{ nofo|nofo_name }}”</a>
+  <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'nofos:nofo_edit' nofo.id %}">Edit “{{ nofo|nofo_name }}”</a>
 </div>
 <div class="section_edit--header">
   <h1 class="font-heading-xl margin-y-1">Configure section <span class="usa-sr-only"> for {{ section.name }}</span></h1>
@@ -129,11 +129,11 @@
     <div class="usa-accordion__content usa-prose">
       <div class="edit_section--other_sections">
         {% if section.get_previous_section %}
-          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_previous_section.id %}" class="section_edit--previous-section">{{ section.get_previous_section.name }}</a>
+          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_previous_section.id %}" class="usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
         {% endif %}
 
         {% if section.get_next_section %}
-          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_next_section.id %}" class="section_edit--next-section">{{ section.get_next_section.name }}</a>
+          <a href="{% url 'nofos:section_detail' section.nofo.id section.get_next_section.id %}" class="usa-button--icon--after usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
         {% endif %}
       </div>
     </div>

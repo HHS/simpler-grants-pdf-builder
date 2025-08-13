@@ -193,6 +193,14 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/add.svg");
 }
 
+.usa-button--icon--before.usa-button--arrow_back::before {
+  background-image: url("/static/img/usa-icons/arrow_back.svg");
+}
+
+.usa-button--icon--after.usa-button--arrow_forward::after {
+  background-image: url("/static/img/usa-icons/arrow_forward.svg");
+}
+
 /* expand width of usa-prose/usa-content */
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content p,
@@ -1141,32 +1149,21 @@ main .back-link a,
 main .back-link a::before,
 .section_edit .edit_section--other_sections a::before,
 .section_edit .edit_section--other_sections a::after {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
   filter: invert(25%) sepia(62%) saturate(1908%) hue-rotate(183deg)
     brightness(93%) contrast(104%);
 }
 
 main .back-link a::before,
-.section_edit
-  .edit_section--other_sections
-  a.section_edit--previous-section::before {
-  background-image: url("/static/img/usa-icons/arrow_back.svg");
+.section_edit .edit_section--other_sections a.usa-button--arrow_back::before,
+.section_edit .edit_section--other_sections a.usa-button--arrow_forward::after {
   height: 12px;
   width: 18px;
   margin-right: 3px;
 }
 
-.section_edit
-  .edit_section--other_sections
-  a.section_edit--next-section::after {
-  background-image: url("/static/img/usa-icons/arrow_forward.svg");
-  height: 12px;
-  width: 18px;
+.section_edit .edit_section--other_sections a.usa-button--arrow_forward::after {
   margin-left: 3px;
+  margin-right: 0;
 }
 
 .nofo_edit .table--section tr,
