@@ -185,7 +185,7 @@
           </a>
         </span>
 
-        <a class="usa-button usa-button--outline add-button" type="button" href="{% url 'nofos:subsection_create' section.nofo.id subsection.section.id %}?prev_subsection={{subsection.id}}">
+        <a class="usa-button usa-button--outline usa-button--icon--before usa-button--add" type="button" href="{% url 'nofos:subsection_create' section.nofo.id subsection.section.id %}?prev_subsection={{subsection.id}}">
           Add subsection
         </a>
       </td>
@@ -194,7 +194,7 @@
   </tbody>
 </table>
 <script>
-  // Function to set table width CSS custom property for Safari compatibility dealing with the add-button positioning
+  // Function to set table width CSS custom property for Safari compatibility dealing with the usa-button--add positioning
   function setTableWidthVariable() {
       const table = document.querySelector('table.table--section');
       if (table) {
