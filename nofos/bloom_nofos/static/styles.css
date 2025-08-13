@@ -189,6 +189,10 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/check.svg");
 }
 
+.usa-button--icon--after.usa-button--delete::after {
+  background-image: url("/static/img/usa-icons/delete.svg");
+}
+
 .usa-button--icon--before.usa-button--add::before {
   background-image: url("/static/img/usa-icons/add.svg");
 }
@@ -1384,7 +1388,20 @@ main .back-link a::before,
   font-weight: 600;
 }
 
-/* Content guides */
+/* Content guide index page */
+.content_guide_index .table--section thead th:last-of-type,
+.content_guide_index .table--section tbody td:last-of-type {
+  text-align: center;
+}
+
+.content_guide_index .usa-button--delete::after {
+  filter: invert(14%) sepia(84%) saturate(3191%) hue-rotate(349deg)
+    brightness(94%) contrast(113%);
+  width: 22px;
+  height: 18px;
+}
+
+/* Content guide edit page */
 .nofo_guide_edit--header .nofo_guide_edit--header--h1 h1 {
   white-space: normal;
   font-size: 1.95rem;
