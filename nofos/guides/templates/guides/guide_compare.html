@@ -89,12 +89,12 @@
 
           <div class="nofo_view--menu-bar--file-download-button--container">
             {% if comparison %}
-              <a class="usa-button usa-button--outline usa-button--icon usa-button--file-download" type="button"
+              <a class="usa-button usa-button--outline usa-button--icon usa-button--file_download" type="button"
                 href="{% url 'guides:guide_compare_result_csv' pk=guide.pk new_nofo_id=new_nofo.pk %}">
                 <span class="margin-left-2">Export spreadsheet of differences</span>
               </a>
             {% else %}
-              <a class="usa-button usa-button--icon usa-button--file-download" aria-disabled="true">
+              <a class="usa-button usa-button--icon usa-button--file_download" aria-disabled="true">
                 <span class="margin-left-2">Export spreadsheet of differences</span>
               </a>
             {% endif %}

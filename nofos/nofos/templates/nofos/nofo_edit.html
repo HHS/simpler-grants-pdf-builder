@@ -313,7 +313,7 @@ Edit “{{ nofo|nofo_name }}”
   <div class="usa-alert">
     <div class="usa-alert__body">
       <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
-      <button class="usa-button usa-button--outline usa-button--inverse usa-button-icon--copy-button font-sans-2xs" type="button">Copy links</button>
+      <button class="usa-button usa-button--outline usa-button--inverse usa-button--icon usa-button--icon--before usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
       <div>
         <details>
           <summary>
@@ -626,7 +626,7 @@ Edit “{{ nofo|nofo_name }}”
       <span class="section--copy-button">
         <button
           type="button"
-          class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
+          class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--content_copy"
           data-position="bottom"
           data-section-id="{{ section.html_id }}"
           title="Copy link to this section"
@@ -641,7 +641,7 @@ Edit “{{ nofo|nofo_name }}”
 
       <span class="add-or-remove-subsections"><a href="{% url 'nofos:section_detail' nofo.id section.id %}">Configure section</a></span>
       <span>
-        <a class="back-to-top" href="#back-to-top">Top</a>
+        <a class="back-to-top usa-button--icon usa-button--icon--before usa-button--arrow_upward" href="#back-to-top">Top</a>
       </span>
     </div>
   </caption>
@@ -677,7 +677,7 @@ Edit “{{ nofo|nofo_name }}”
             <span class="subsection--copy-button floating">
               <button
                 type="button"
-                class="usa-button usa-button--unstyled usa-tooltip usa-button-icon--copy-button"
+                class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--content_copy"
                 data-position="bottom"
                 data-section-id="{{ subsection.html_id }}"
                 title="Copy link to this heading"
@@ -721,28 +721,28 @@ Edit “{{ nofo|nofo_name }}”
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Copy buttons for the heading ids
-    const tableButtons = document.querySelectorAll('.table--section .usa-button-icon--copy-button');
+    const tableButtons = document.querySelectorAll('.table--section .usa-button--content_copy');
     tableButtons.forEach(button => {
         button.addEventListener('click', function() {
             // Copy data-section-id to clipboard
             navigator.clipboard.writeText(`#${this.getAttribute('data-section-id')}`);
 
             // Add class to button
-            this.classList.add('usa-button-icon--copy-button--copied');
+            this.classList.add('usa-button--check');
 
             // Change the text inside the button's span
             this.querySelector('span').textContent = 'Copied';
 
             // Set a timer to revert changes after 1 second
             setTimeout(() => {
-                this.classList.remove('usa-button-icon--copy-button--copied');
+                this.classList.remove('usa-button--check');
                 this.querySelector('span').textContent = 'Copy section id';
             }, 1000);
         });
     });
 
     // Copy buttons inside of the alert boxes (eg, copy broken links)
-    const alertButtons = document.querySelectorAll('.usa-site-alert .usa-button-icon--copy-button');
+    const alertButtons = document.querySelectorAll('.usa-site-alert .usa-button--content_copy');
     alertButtons.forEach(button => {
         button.addEventListener('click', function() {
             // Find the nearest parent with the class '.usa-site-alert'

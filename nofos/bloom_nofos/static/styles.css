@@ -125,6 +125,70 @@ footer .usa-footer__primary-link:visited {
   background-color: #444782;
 }
 
+/* Icon Buttons */
+.usa-button--icon--before::before {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+}
+
+.usa-button--icon--after::after {
+  content: "";
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: inline-flex;
+}
+
+.usa-button--icon[aria-disabled]::before {
+  filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
+    hue-rotate(216deg) brightness(100%) contrast(80%);
+}
+
+.usa-button--icon.usa-button--outline::before {
+  filter: brightness(0) saturate(100%) invert(19%) sepia(62%) saturate(3740%)
+    hue-rotate(190deg) brightness(93%) contrast(102%);
+}
+
+.usa-button--icon.usa-button--outline:hover::before {
+  filter: brightness(0) saturate(100%) invert(19%) sepia(94%) saturate(993%)
+    hue-rotate(192deg) brightness(94%) contrast(94%);
+}
+
+.usa-button--icon.usa-button--outline:active::before {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(33%) saturate(1347%)
+    hue-rotate(179deg) brightness(94%) contrast(96%);
+}
+
+.usa-button--icon.usa-button--file_upload::before {
+  background-image: url("/static/img/usa-icons/file_upload.svg");
+}
+
+.usa-button--icon.usa-button--file_download::before {
+  background-image: url("/static/img/usa-icons/file_download.svg");
+}
+
+.usa-button--icon.usa-button--delete::before {
+  background-image: url("/static/img/usa-icons/delete.svg");
+}
+
+.usa-button--icon--before.usa-button--arrow_upward::before,
+.usa-button--icon--after.usa-button--arrow_upward::after {
+  background-image: url("/static/img/usa-icons/arrow_upward.svg");
+}
+
+.usa-button--icon--before.usa-button--content_copy::before,
+.usa-button--icon--after.usa-button--content_copy::after {
+  background-image: url("/static/img/usa-icons/content_copy.svg");
+}
+
+.usa-button--icon--before.usa-button--check::before,
+.usa-button--icon--after.usa-button--check::after {
+  background-image: url("/static/img/usa-icons/check.svg");
+}
+
 /* expand width of usa-prose/usa-content */
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content p,
@@ -163,12 +227,6 @@ footer .usa-footer__primary-link:visited {
 }
 
 a.back-to-top::before {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
-  background-image: url("/static/img/usa-icons/arrow_upward.svg");
   height: 12px;
   width: 18px;
   margin-right: 5px;
@@ -357,7 +415,7 @@ label.usa-label {
   top: 25%;
 }
 
-/* Import  page */
+/* Import page */
 
 .nofo_import .form-import--loading {
   position: relative;
@@ -511,12 +569,12 @@ label.usa-label {
   margin-bottom: 0;
 }
 
-.nofo_edit .usa-site-alert .usa-button-icon--copy-button {
+.nofo_edit .usa-site-alert .usa-button--content_copy {
   padding: 0.75rem 1rem 0.75rem 0.9rem;
   position: absolute;
   right: 0;
   top: 2rem;
-  margin-right: 4rem; /* match the padding on usa-alert__body */
+  margin-right: 4rem !important; /* match the padding on usa-alert__body */
 }
 
 .nofo_edit .usa-site-alert--broken-links a,
@@ -676,42 +734,27 @@ label.usa-label {
   flex-grow: 1;
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button,
-.nofo_edit .subsection--copy-button .usa-button-icon--copy-button {
+.nofo_edit .usa-button--content_copy {
   padding: 5px;
   border-radius: 3px;
 }
 
-.nofo_edit .subsection--copy-button .usa-button-icon--copy-button {
+.nofo_edit .subsection--copy-button .usa-button--content_copy {
   padding: 4px;
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button:hover,
-.nofo_edit .subsection--copy-button .usa-button-icon--copy-button:hover {
+.nofo_edit .usa-button--content_copy:hover {
   background: rgba(180, 180, 180, 0.2);
 }
 
-.nofo_edit .section--copy-button .usa-button-icon--copy-button::after,
-.nofo_edit .subsection--copy-button .usa-button-icon--copy-button::after {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
-  background-image: url("/static/img/usa-icons/content_copy.svg");
+.nofo_edit .usa-button--content_copy::after {
   filter: invert(0%) sepia(68%) saturate(995%) hue-rotate(19deg)
     brightness(102%) contrast(79%);
   width: 18px;
   height: 17px;
 }
 
-.nofo_edit .usa-alert__body .usa-button-icon--copy-button::before {
-  content: "";
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
-  background-image: url("/static/img/usa-icons/content_copy.svg");
+.nofo_edit .usa-alert__body .usa-button--content_copy::before {
   filter: invert(99%) sepia(100%) saturate(207%) hue-rotate(194deg)
     brightness(111%) contrast(100%);
   width: 13px;
@@ -719,18 +762,12 @@ label.usa-label {
   margin-right: 4px;
 }
 
-.nofo_edit
-  .section--copy-button
-  .usa-button-icon--copy-button.usa-button-icon--copy-button--copied::after,
-.nofo_edit
-  .subsection--copy-button
-  .usa-button-icon--copy-button.usa-button-icon--copy-button--copied::after {
-  background-image: url("/static/img/usa-icons/check.svg");
+.nofo_edit .usa-button--content_copy.usa-button--check::after {
   filter: invert(36%) sepia(93%) saturate(2132%) hue-rotate(58deg)
     brightness(92%) contrast(101%);
 }
 
-.nofo_edit .subsection--copy-button .usa-button-icon--copy-button::after {
+.nofo_edit .subsection--copy-button .usa-button--content_copy::after {
   width: 15px;
   height: 15px;
 }
@@ -2013,38 +2050,6 @@ del + ins > br {
   width: 18px;
   filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
     brightness(102%) contrast(101%);
-}
-
-.usa-button--icon[aria-disabled]::before {
-  filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
-    hue-rotate(216deg) brightness(100%) contrast(80%);
-}
-
-.usa-button--icon.usa-button--outline::before {
-  filter: brightness(0) saturate(100%) invert(19%) sepia(62%) saturate(3740%)
-    hue-rotate(190deg) brightness(93%) contrast(102%);
-}
-
-.usa-button--icon.usa-button--outline:hover::before {
-  filter: brightness(0) saturate(100%) invert(19%) sepia(94%) saturate(993%)
-    hue-rotate(192deg) brightness(94%) contrast(94%);
-}
-
-.usa-button--icon.usa-button--outline:active::before {
-  filter: brightness(0) saturate(100%) invert(15%) sepia(33%) saturate(1347%)
-    hue-rotate(179deg) brightness(94%) contrast(96%);
-}
-
-.usa-button--icon.usa-button--file-upload::before {
-  background-image: url("/static/img/usa-icons/file_upload.svg");
-}
-
-.usa-button--icon.usa-button--file-download::before {
-  background-image: url("/static/img/usa-icons/file_download.svg");
-}
-
-.usa-button--icon.usa-button--delete::before {
-  background-image: url("/static/img/usa-icons/delete.svg");
 }
 
 .usa-summary-box .usa-checkbox {
