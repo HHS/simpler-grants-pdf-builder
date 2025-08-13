@@ -189,6 +189,10 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/check.svg");
 }
 
+.usa-button--icon--before.usa-button--add::before {
+  background-image: url("/static/img/usa-icons/add.svg");
+}
+
 /* expand width of usa-prose/usa-content */
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content p,
@@ -1036,7 +1040,7 @@ _:future,
   transform: none;
 }
 
-/* Safari fix for add-button positioning - ensure proper table cell context */
+/* Safari fix for add button inside of section detail view - ensure proper table cell context */
 _::-webkit-full-page-media,
 _:future,
 :root
@@ -1052,7 +1056,7 @@ _:future,
   .section_edit
   table.table--section
   td.nofo-edit-table--subsection--manage
-  .add-button {
+  .usa-button--add {
   position: absolute;
   bottom: 0;
   white-space: nowrap;
@@ -1181,33 +1185,27 @@ main .back-link a::before,
 
 /* add button generic */
 
-.section_edit .add_button,
-.subsection_edit .add-button {
+.section_edit .usa-button--add,
+.subsection_edit .usa-button--add {
   padding: 0.55rem 0.9rem 0.55rem 0.6rem;
   font-weight: 400;
 }
 
-.section_edit .add-button::before,
-.subsection_edit .add-button::before {
-  background-image: url(/static/img/usa-icons/add.svg);
-  background-repeat: no-repeat;
-  content: "";
-  background-position: center center;
-  background-size: cover;
-  display: inline-flex;
+.section_edit .usa-button--add::before,
+.subsection_edit .usa-button--add::before {
   filter: invert(20%) sepia(99%) saturate(1868%) hue-rotate(190deg)
     brightness(95%) contrast(98%);
 }
 
-.section_edit .add-button:hover::before,
-.subsection_edit .add-button:hover::before {
+.section_edit .usa-button--add:hover::before,
+.subsection_edit .usa-button--add:hover::before {
   filter: invert(16%) sepia(92%) saturate(1493%) hue-rotate(201deg)
     brightness(98%) contrast(88%);
 }
 
 /* add button specific */
 
-.section_edit table.table--section .add-button {
+.section_edit table.table--section .usa-button--add {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -1218,12 +1216,16 @@ main .back-link a::before,
   box-shadow: inset 0 0 0 0.75px var(--color--text-default);
 }
 
+.section_edit table.table--section .usa-button--add:hover {
+  box-shadow: inset 0 0 0 1px #1a4480; /* match text colour */
+}
+
 .usa-button--outline {
   background-color: transparent;
   color: #005ea2;
 }
 
-.section_edit table.table--section .add-button::before {
+.section_edit table.table--section .usa-button--add::before {
   height: 9px;
   width: 16px;
 }
@@ -1451,11 +1453,7 @@ main .back-link a::before,
   font-style: italic;
 }
 
-.subsection_edit .add-button {
-  box-shadow: inset 0 0 0 1.5px var(--color--text-default);
-}
-
-.subsection_edit .add-button::before {
+.subsection_edit .usa-button--add::before {
   height: 11px;
   width: 18px;
 }
