@@ -1,34 +1,28 @@
-FROM python:3.13-slim
+# Stage 1: Build environment
+FROM python:3.13-slim AS builder
 
-# set work directory
 WORKDIR /app
 
 ARG IS_PROD_ARG=0
 ARG GITHUB_SHA_ARG
 
-# set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1s
-
 ENV IS_DOCKER=1
 ENV IS_PROD=${IS_PROD_ARG}
 ENV GITHUB_SHA=${GITHUB_SHA_ARG}
 
-# Install system dependencies (Debian-based)
+# Install all dependencies (your existing steps)
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
   wget \
   libffi-dev \
-  libpq-dev \
-  && rm -rf /var/lib/apt/lists/*
+  libpq-dev && \
+  rm -rf /var/lib/apt/lists/*
 
-# Patch system libraries to address known CVEs
-# - libcap2: CVE-2025-1390
-# - login, passwd: CVE-2023-4641, CVE-2023-29383,
-# - libsystemd0, libudev1: CVE-2025-4598
-# - libgnutls30: CVE-2025-32990
+# Patch system libraries for CVEs
 RUN apt-get update && \
   apt-get install -y --only-upgrade \
   libcap2 \
@@ -39,7 +33,7 @@ RUN apt-get update && \
   libgnutls30 && \
   rm -rf /var/lib/apt/lists/*
 
-# Install Poetry and create user
+# Install Poetry & appuser
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
   useradd --create-home --shell /bin/bash appuser && \
   chown -R appuser:appuser /app
@@ -50,15 +44,27 @@ RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
 
 USER appuser
 
-# Copy dependency files and install
+# Install Python deps
 COPY --chown=appuser:appuser pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && \
   poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
-# Copy app and collect static files
+# Copy the full application
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
+
+# Stage 2: New "clean" image with no upstream apt-get history
+FROM scratch
+
+# Copy everything
+COPY --from=builder / /
+
+# Restore environment from builder stage
+ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+WORKDIR /app
+USER appuser
 
 EXPOSE ${PORT:-8000}
 CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application"]
