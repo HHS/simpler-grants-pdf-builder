@@ -7,6 +7,7 @@ nofos/debug_output.html
 CHANGELOG.md
 README.md
 TODO.md
+Dockerfile
 
 # Python stuff
 __pycache__
