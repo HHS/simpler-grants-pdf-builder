@@ -1,28 +1,35 @@
-# Stage 1: Build environment
+# CHANGED: add an alias so we can copy from this stage later
 FROM python:3.13-slim AS builder
 
+# set work directory
 WORKDIR /app
 
 ARG IS_PROD_ARG=0
 ARG GITHUB_SHA_ARG
 
+# set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1s
+
 ENV IS_DOCKER=1
 ENV IS_PROD=${IS_PROD_ARG}
 ENV GITHUB_SHA=${GITHUB_SHA_ARG}
 
-# Install all dependencies (your existing steps)
+# Install system dependencies (Debian-based)
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
   wget \
   libffi-dev \
-  libpq-dev && \
-  rm -rf /var/lib/apt/lists/*
+  libpq-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-# Patch system libraries for CVEs
+# Patch system libraries to address known CVEs
+# - libcap2: CVE-2025-1390
+# - login, passwd: CVE-2023-4641, CVE-2023-29383,
+# - libsystemd0, libudev1: CVE-2025-4598
+# - libgnutls30: CVE-2025-32990
 RUN apt-get update && \
   apt-get install -y --only-upgrade \
   libcap2 \
@@ -33,7 +40,7 @@ RUN apt-get update && \
   libgnutls30 && \
   rm -rf /var/lib/apt/lists/*
 
-# Install Poetry & appuser
+# Install Poetry and create user
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
   useradd --create-home --shell /bin/bash appuser && \
   chown -R appuser:appuser /app
@@ -44,27 +51,33 @@ RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
 
 USER appuser
 
-# Install Python deps
+# Copy dependency files and install
 COPY --chown=appuser:appuser pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && \
   poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
-# Copy the full application
+# Copy app and collect static files
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
-# Stage 2: New "clean" image with no upstream apt-get history
+# =========================
+# Stage 2 "scratch" final
+# - Hides upstream apt-get layers for Dockle
+# - Restores PATH so ECS can find db-migrate/venv
+# =========================
 FROM scratch
 
-# Copy everything
+# copy the complete filesystem from builder
 COPY --from=builder / /
 
-# Restore environment from builder stage
+# ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# restore working dir and user
 WORKDIR /app
 USER appuser
 
+# final container port + command
 EXPOSE ${PORT:-8000}
 CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application"]
