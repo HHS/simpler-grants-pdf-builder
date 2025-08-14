@@ -9,7 +9,7 @@
 
 {% block content %}
   <div class="back-link font-body-md margin-bottom-105">
-    <a href="{% url 'guides:guide_edit' guide.id %}#{{ subsection.html_id }}">Edit “{{ guide.title }}”</a>
+    <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'guides:guide_edit' guide.id %}#{{ subsection.html_id }}">Edit “{{ guide.title }}”</a>
   </div>
   <div class="subsection_edit--header">
     <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
