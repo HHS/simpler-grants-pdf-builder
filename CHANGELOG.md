@@ -11,6 +11,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Use trash can icons for the "delete" column on Content Guides index
 - NOFO status picker in blue box on nofo_edit page is now a select box (previously a link)
 - Set full-width tables for this section is now a checkbox (previously a button)
 - Change "active" nav link on compare page to blue
