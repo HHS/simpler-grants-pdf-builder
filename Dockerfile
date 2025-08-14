@@ -4,17 +4,6 @@ FROM python:3.13-slim AS builder
 # set work directory
 WORKDIR /app
 
-ARG IS_PROD_ARG=0
-ARG GITHUB_SHA_ARG
-
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1s
-
-ENV IS_DOCKER=1
-ENV IS_PROD=${IS_PROD_ARG}
-ENV GITHUB_SHA=${GITHUB_SHA_ARG}
-
 # Install system dependencies (Debian-based)
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
@@ -73,6 +62,16 @@ COPY --from=builder / /
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# REDO: runtime env vars (they don't copy from the builder image config)
+ARG IS_PROD_ARG=0
+ARG GITHUB_SHA_ARG
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV IS_DOCKER=1
+ENV IS_PROD=${IS_PROD_ARG}
+ENV GITHUB_SHA=${GITHUB_SHA_ARG}
 
 # restore working dir and user
 WORKDIR /app
