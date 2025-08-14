@@ -21,9 +21,9 @@
 
   <div class="back-link font-body-md">
     {% if new_nofo %}
-      <a href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Review the differences</a>
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Review the differences</a>
     {% else %}
-      <a href="{% url 'guides:guide_index' %}">All content guides</a>
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'guides:guide_index' %}">All content guides</a>
     {% endif %}
   </div>
   <div class="nofo_guide_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
