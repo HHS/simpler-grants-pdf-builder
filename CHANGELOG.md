@@ -11,7 +11,11 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+## [3.7.2] - 2025-08-18
+
 ### Fixed
+
+- Fix Word import bug by downgrading python-mammoth
 
 ## [3.7.1] - 2025-08-18
 
