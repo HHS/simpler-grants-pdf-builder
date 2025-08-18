@@ -142,6 +142,12 @@ footer .usa-footer__primary-link:visited {
   display: inline-flex;
 }
 
+.usa-button--icon--only {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .usa-button--icon[aria-disabled]::before {
   filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
     hue-rotate(216deg) brightness(100%) contrast(80%);
