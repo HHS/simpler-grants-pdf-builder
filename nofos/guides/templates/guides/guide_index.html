@@ -39,7 +39,7 @@
           <td>
             <a href="{% url 'guides:guide_compare' guide.pk %}">Compare to a NOFO</a>
           </td>
-          <td><a href="{% url 'guides:guide_archive' guide.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--delete"><span class="usa-sr-only">Delete this content guide</span></a></td>
+          <td><a href="{% url 'guides:guide_archive' guide.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this content guide</span></a></td>
         </tr>
       {% endfor %}
       </tbody>
