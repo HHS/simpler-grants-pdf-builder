@@ -11,6 +11,12 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [3.7.1] - 2025-08-18
+
+### Changed
+
 - Use trash can icons for the "delete" column on Content Guides index
 - NOFO status picker in blue box on nofo_edit page is now a select box (previously a link)
 - Set full-width tables for this section is now a checkbox (previously a button)
@@ -19,6 +25,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Center trash can icons for the "delete" column on Content Guides index
 - Add failure notification messages on Content Guide compare page if AJAX update fails (or partially fails)
 - Fixed height for the "filenames" sticky header on diff page
 - Disable "compare" buttons when no subsections are selected on Content Guide edit page
