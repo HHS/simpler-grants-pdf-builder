@@ -316,7 +316,7 @@ section.section--appendix > .section--content > table {
   width: calc(216mm - 40mm); /* tables in the appendix should be full-width */
 }
 
-table tr td.usa-icon__td--sublist {
+.section--step-5-submit-your-application table tr td.usa-icon__td--sublist {
   padding-left: 30px;
 }
 
@@ -324,5 +324,7 @@ table tr td.usa-icon__td--sublist {
 .section--tables-full-width table.table--small,
 .section--tables-full-width table.table--large,
 .section--tables-full-width table.table--criterion {
-  width: calc(216mm - 40mm) !important; /* Match large table full-width behavior */
+  width: calc(
+    216mm - 40mm
+  ) !important; /* Match large table full-width behavior */
 }
