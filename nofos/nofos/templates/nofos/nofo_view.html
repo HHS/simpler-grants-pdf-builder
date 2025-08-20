@@ -278,7 +278,7 @@
   </section>
 
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+    <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
       <!-- SECTION TITLE PAGE -->
       {% if section.has_section_page %}
         <div class="title-page section--title-page">
