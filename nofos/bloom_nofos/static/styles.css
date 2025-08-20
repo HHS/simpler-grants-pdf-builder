@@ -517,7 +517,8 @@ label.usa-label {
 
 /* header widget for NOFO */
 
-.nofo_edit a.usa-tag--link {
+.nofo_edit a.usa-tag--link,
+.content_guide_edit a.usa-tag--link {
   text-decoration: none;
 }
 

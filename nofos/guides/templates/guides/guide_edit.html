@@ -27,10 +27,17 @@
     {% endif %}
   </div>
   <div class="nofo_guide_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
-    <div class="nofo_guide_edit--header--h1 ">
-      <h1 class="font-heading-md margin-top-1">{{ guide.title }}</h1>
+    <div class="nofo_guide_edit--header--h1">
+      <h1 class="font-heading-md margin-top-2 margin-bottom-105">{{ guide.title }}</h1>
     </div>
   </div>
+  {% if user.group == 'bloom' %}
+  <div class="margin-bottom-4">
+    <a href="{% url 'nofos:nofo_edit_group' guide.id %}" class="usa-tag--link">
+      <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ guide.group }}">{{ guide.get_group_display }}</span>
+    </a>
+  </div>
+  {% endif %}
 
   {% timezone "America/New_York" %}
     <p>

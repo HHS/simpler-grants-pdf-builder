@@ -22,6 +22,9 @@
     <thead>
       <tr>
         <th scope="col">Name</th>
+        {% if user.group == 'bloom' %}
+          <th scope="col" class="content-guide-group-col">Group</th>
+        {% endif %}
         <th scope="col">Updated</th>
         <th scope="col">Compare</th>
         <th scope="col">Delete</th>
@@ -31,6 +34,11 @@
       {% for guide in content_guides %}
         <tr>
           <th scope="row"><a href="{% url 'guides:guide_edit' guide.pk %}">{{ guide.title }}</a></th>
+          {% if user.group == 'bloom' %}
+            <td>
+              <span class="usa-tag bg-group bg-group--{{ guide.group }}">{{ guide.group }}</span>
+            </td>
+          {% endif %}
           {% timezone "America/New_York" %}
             <td>
               {{ guide.updated|date:'M j' }}, {{ guide.updated|date:'g:i A' }}
