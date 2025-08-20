@@ -15,6 +15,9 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fix CSS for Application Checklist tables in Step 3
+  - Some very specific CSS would only apply if the tables were in Step 5
+  - Other too general CSS should only apply to tables in Step 5
 - Show "Have questions?" callout box inline when it is _not_ in step 1
 
 ## [3.7.2] - 2025-08-18
