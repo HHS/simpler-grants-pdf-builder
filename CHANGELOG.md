@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Demote heading sizes inside of sections with no title pages
+
 ### Fixed
 
 - Show "Have questions?" callout box inline when it is _not_ in step 1
