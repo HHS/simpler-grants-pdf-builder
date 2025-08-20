@@ -11,6 +11,10 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+- Show "Have questions?" callout box inline when it is _not_ in step 1
+
 ## [3.7.2] - 2025-08-18
 
 ### Fixed
