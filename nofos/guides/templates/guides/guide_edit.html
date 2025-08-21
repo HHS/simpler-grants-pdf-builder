@@ -31,24 +31,19 @@
       <h1 class="font-heading-md margin-top-2 margin-bottom-105">{{ guide.title }}</h1>
     </div>
   </div>
-  {% if user.group == 'bloom' %}
-  <div class="margin-bottom-4">
-    <a href="{% url 'guides:guide_edit_group' guide.id %}" class="usa-tag--link">
-      <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ guide.group }}">{{ guide.get_group_display }}</span>
-    </a>
-  </div>
-  {% endif %}
 
   {% timezone "America/New_York" %}
     <p>
-      <em>This Content Guide was uploaded on <strong>{{ guide.created|date:'F j' }} at {{ guide.created|date:'g:i A' }}</strong></em>.
+      <em>This content guide was uploaded on <strong>{{ guide.created|date:'F j' }} at {{ guide.created|date:'g:i A' }}</strong></em>.
     </p>
   {% endtimezone %}
 
-  <p>Select “Ready to Compare” to review the differences between your content guide and an uploaded NOFO.
+  <div class="usa-prose">
+    <p>Select “Ready to Compare” to review the differences between your content guide and an uploaded NOFO.
     If you would like to upload a new version of your content guide, select “Replace this Content Guide.”</p>
+  </div>
 
-  <ul class="usa-button-group margin-top-2 margin-bottom-4">
+  <ul class="usa-button-group margin-top-2">
     <li class="usa-button-group__item">
       {% if new_nofo %}
         <a class="usa-button" href="{% url 'guides:guide_compare_result' guide.id new_nofo.id %}">Return to comparison</a>
@@ -60,6 +55,39 @@
       <a class="usa-button usa-button--outline" href="{% url 'guides:guide_import' %}">Replace this content guide</a>
     </li>
   </ul>
+
+  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived margin-bottom-6">
+    <caption>
+      <div>
+        <h2 class="margin-bottom-0">Content guide info</h2>
+      </div>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Name</th>
+        <td>{{ guide.title }}</td>
+        <td><a href="{% url 'guides:guide_edit_title' guide.id %}">Edit<span class="usa-sr-only"> content guide name</span></a>
+        </td>
+      </tr>
+      {% if user.group == 'bloom' %}
+        <tr>
+          <th scope="row">Group</th>
+          <td>
+            <span class="usa-tag bg-group bg-group--{{ guide.group }}">{{ guide.group }}</span>
+          </td>
+          <td><a href="{% url 'guides:guide_edit_group' guide.id %}">Edit<span class="usa-sr-only"> content guide group</span></a>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
 
   <h2>Which sections of this content guide would you like to compare to a NOFO?</h2>
   <ul class="usa-list">
