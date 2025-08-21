@@ -206,32 +206,26 @@ class NofosListView(ListView):
         # Exclude archived NOFOs
         queryset = queryset.filter(archived__isnull=True)
 
-        # default status: return unpublished NOFOs
+        # status filter: defaults to returning unpublished nofos
         self.status = self.request.GET.get("status", "in progress")
-        # default group: 'all' nofos unless a bloom user. if bloom user, default to 'bloom'
-        self.group = self.request.GET.get(
-            "group", "bloom" if self.request.user.group == "bloom" else "all"
-        )
+        if self.status == "in progress":
+            queryset = queryset.exclude(status__in=["published", "paused", "cancelled"])
+        elif self.status == "all":
+            pass
+        else:
+            queryset = queryset.filter(status=self.status)
 
-        if self.status:
-            if self.status == "in progress":
-                queryset = queryset.exclude(
-                    status__in=["published", "paused", "cancelled"]
-                )
-            elif self.status == "all":
-                pass
-            else:
-                queryset = queryset.filter(status=self.status)
-
-        # Apply group filter for Bloom users, doesn't apply to anyone else
-        if self.request.user.group == "bloom":
-            # Only "bloom" is actually used to filter
+        # group filter
+        user_group = self.request.user.group
+        if user_group == "bloom":
+            # default group param for bloom users is "bloom"
+            self.group = self.request.GET.get("group", "bloom")
             if self.group == "bloom":
                 queryset = queryset.filter(group="bloom")
-
-        # Filter NOFOs by the user's group unless they are 'bloom' users
-        user_group = self.request.user.group
-        if user_group != "bloom":
+            # else: bloom can see "all"
+        else:
+            # non-bloom users can only see their own group
+            self.group = user_group
             queryset = queryset.filter(group=user_group)
 
         return queryset.order_by("-updated")
