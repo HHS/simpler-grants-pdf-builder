@@ -12,7 +12,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView, View
-from guides.forms import ContentGuideSubsectionEditForm, ContentGuideTitleForm
+from guides.forms import (
+    ContentGuideGroupForm,
+    ContentGuideSubsectionEditForm,
+    ContentGuideTitleForm,
+)
 from guides.guide import create_content_guide
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from guides.utils import strip_file_suffix
@@ -40,7 +44,18 @@ class ContentGuideListView(LoginRequiredMixin, ListView):
     context_object_name = "content_guides"
 
     def get_queryset(self):
-        return ContentGuide.objects.filter(archived__isnull=True).order_by("-updated")
+        queryset = super().get_queryset()
+        # Exclude archived content guides
+        queryset = queryset.filter(archived__isnull=True)
+        # Return latest content guide first
+        queryset = queryset.order_by("-updated")
+
+        user_group = self.request.user.group
+        # If not a "bloom" user, return content guides belonging to user's group
+        if user_group != "bloom":
+            queryset = queryset.filter(group=user_group)
+
+        return queryset
 
 
 class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
@@ -274,6 +289,20 @@ class ContentGuideEditTitleView(GroupAccessObjectMixin, UpdateView):
     def form_valid(self, form):
         guide = self.object
         guide.title = form.cleaned_data["title"]
+        guide.save()
+
+        return redirect("guides:guide_edit", pk=guide.id)
+
+
+class ContentGuideEditGroupView(GroupAccessObjectMixin, UpdateView):
+    model = ContentGuide
+    form_class = ContentGuideGroupForm
+    template_name = "guides/guide_edit_group.html"
+    context_object_name = "guide"
+
+    def form_valid(self, form):
+        guide = self.object
+        guide.group = form.cleaned_data["group"]
         guide.save()
 
         return redirect("guides:guide_edit", pk=guide.id)

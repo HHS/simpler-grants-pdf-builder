@@ -7,6 +7,7 @@ from .models import ContentGuide, ContentGuideSubsection
 create_content_guide_form_class = create_object_model_form(ContentGuide)
 
 ContentGuideTitleForm = create_content_guide_form_class(["title"])
+ContentGuideGroupForm = create_content_guide_form_class(["group"])
 
 
 class ContentGuideSubsectionEditForm(forms.ModelForm):
