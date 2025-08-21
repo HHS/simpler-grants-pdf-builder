@@ -28,6 +28,11 @@ urlpatterns = [
         name="guide_edit_title",
     ),
     path(
+        "<uuid:pk>/edit/group",
+        views.ContentGuideEditGroupView.as_view(),
+        name="guide_edit_group",
+    ),
+    path(
         "<uuid:pk>/compare",
         views.ContentGuideCompareView.as_view(),
         name="guide_compare",

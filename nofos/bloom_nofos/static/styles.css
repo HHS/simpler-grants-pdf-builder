@@ -239,7 +239,8 @@ footer .usa-footer__primary-link:visited {
   max-width: 80ex;
 }
 
-.usa-prose > p {
+.usa-prose > p,
+.usa-prose > form {
   max-width: 80ex;
 }
 
