@@ -42,6 +42,11 @@
               <a href="{% url 'admin:nofos_subsection_change' subsection.id %}">Subsection admin link</a>
             </li>
           {% endif %}
+          {% if user.is_superuser and nofo and section %}
+            <li class="usa-nav__primary-item">
+              <a href="{% url 'admin:nofos_section_change' section.id %}">Section admin link</a>
+            </li>
+          {% endif %}
           {% if user.is_superuser and nofo %}
             <li class="usa-nav__primary-item">
               <a href="{{ nofo.get_admin_url }}">NOFO admin link</a>
