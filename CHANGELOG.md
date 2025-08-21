@@ -20,6 +20,7 @@ Versioning since version 1.0.0.
   - Some very specific CSS would only apply if the tables were in Step 5
   - Other too general CSS should only apply to tables in Step 5
 - Show "Have questions?" callout box inline when it is _not_ in step 1
+- Shave .5 px off small toc items now that we have seen some GS-exported templates
 
 ## [3.7.2] - 2025-08-18
 
