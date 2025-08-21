@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load martortags tz nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+{% load martortags tz get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
 
 
 {% block title %}
@@ -33,7 +33,7 @@
   </div>
   {% if user.group == 'bloom' %}
   <div class="margin-bottom-4">
-    <a href="{% url 'nofos:nofo_edit_group' guide.id %}" class="usa-tag--link">
+    <a href="{% url 'guides:guide_edit_group' guide.id %}" class="usa-tag--link">
       <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ guide.group }}">{{ guide.get_group_display }}</span>
     </a>
   </div>
