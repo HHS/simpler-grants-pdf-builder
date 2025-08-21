@@ -18,21 +18,33 @@ User = get_user_model()
 
 class ContentGuideListViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="user@example.com",
+        self.bloom_user = User.objects.create_user(
+            email="bloom@example.com",
             password="testpass123",
             group="bloom",
             force_password_reset=False,
         )
-        self.client.login(email="user@example.com", password="testpass123")
+        self.hrsa_user = User.objects.create_user(
+            email="hrsa@example.com",
+            password="testpass123",
+            group="hrsa",
+            force_password_reset=False,
+        )
 
-        self.guide1 = ContentGuide.objects.create(
-            title="Older", group="bloom", opdiv="CDC"
+        self.guide_bloom = ContentGuide.objects.create(
+            title="Bloom Guide", group="bloom", opdiv="CDC"
         )
-        self.guide2 = ContentGuide.objects.create(
-            title="Newer", group="bloom", opdiv="CDC"
+        self.guide_hrsa = ContentGuide.objects.create(
+            title="HRSA Guide", group="hrsa", opdiv="CDC"
         )
-        self.guide2.save()  # ensure updated is later
+
+        # default login is bloom user
+        self.client.login(email="bloom@example.com", password="testpass123")
+
+    def login_as(self, user):
+        """Helper to switch users in tests."""
+        self.client.logout()
+        self.client.login(email=user.email, password="testpass123")
 
     def test_view_returns_200_for_logged_in_user(self):
         url = reverse("guides:guide_index")
@@ -52,17 +64,34 @@ class ContentGuideListViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_archived_guides_are_excluded(self):
-        # Archive one of the guides
-        self.guide1.archived = timezone.now()
-        self.guide1.save()
-
+        archived = ContentGuide.objects.create(
+            title="Archived", group="bloom", opdiv="CDC", archived=timezone.now()
+        )
         url = reverse("guides:guide_index")
         response = self.client.get(url)
-        guides = list(response.context["content_guides"])
+        self.assertNotIn(archived, response.context["content_guides"])
 
-        self.assertNotIn(self.guide1, guides)
-        self.assertIn(self.guide2, guides)
-        self.assertEqual(len(guides), 1)
+    # ---- NEW GROUP VISIBILITY TESTS ----
+
+    def test_bloom_user_can_see_bloom_guides(self):
+        self.login_as(self.bloom_user)
+        response = self.client.get(reverse("guides:guide_index"))
+        self.assertIn(self.guide_bloom, response.context["content_guides"])
+
+    def test_hrsa_user_can_see_hrsa_guides(self):
+        self.login_as(self.hrsa_user)
+        response = self.client.get(reverse("guides:guide_index"))
+        self.assertIn(self.guide_hrsa, response.context["content_guides"])
+
+    def test_bloom_user_can_see_hrsa_guides(self):
+        self.login_as(self.bloom_user)
+        response = self.client.get(reverse("guides:guide_index"))
+        self.assertIn(self.guide_hrsa, response.context["content_guides"])
+
+    def test_hrsa_user_cannot_see_bloom_guides(self):
+        self.login_as(self.hrsa_user)
+        response = self.client.get(reverse("guides:guide_index"))
+        self.assertNotIn(self.guide_bloom, response.context["content_guides"])
 
 
 class ContentGuideImportViewTests(TestCase):

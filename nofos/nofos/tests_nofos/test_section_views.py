@@ -248,9 +248,9 @@ class NofoSectionDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check context contains required objects
-        self.assertIn("subsection", response.context)
+        self.assertIn("section", response.context)
         self.assertIn("nofo", response.context)
-        self.assertEqual(response.context["subsection"], self.section)
+        self.assertEqual(response.context["section"], self.section)
         self.assertEqual(response.context["nofo"], self.nofo)
 
     def test_section_detail_view_requires_authentication(self):
