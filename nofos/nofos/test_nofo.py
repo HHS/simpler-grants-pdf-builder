@@ -1728,76 +1728,80 @@ class AddHeadingsTests(TestCase):
 
 class AddPageBreaksToHeadingsTests(TestCase):
     def setUp(self):
-        # Set up a Nofo instance and related Sections and Subsections
         self.nofo = Nofo.objects.create(
             title="Test Nofo AddPageBreaksToHeadingsTests", opdiv="Test opdiv"
         )
-        self.section = Section.objects.create(
-            nofo=self.nofo, name="Test Section", order=1
-        )
 
-        # Get the default subsection that was automatically created
-        Subsection.objects.create(
-            section=self.section,
-            name="Basic information",
-            tag="h3",
-            body="Basic information section, no html_class",
-            order=1,
-        )
-
-        Subsection.objects.create(
-            section=self.section,
-            name="Eligibility",
-            tag="h3",
-            body="Eligibility section, yes html_class",
-            order=2,
-        )
-
-        Subsection.objects.create(
-            section=self.section,
-            name="Eligible applicants",
-            tag="h4",
-            body="Eligible applicants section, no html_class",
-            order=3,
-        )
-
-        Subsection.objects.create(
-            section=self.section,
-            name="Program description",
-            tag="h3",
-            body="Program description section, yes html_class",
-            order=4,
-        )
-
-        Subsection.objects.create(
-            section=self.section,
-            name="Application checklist",
-            tag="h3",
-            body="Application checklist section, yes html_class",
-            order=5,
-        )
-
-    def test_add_page_breaks_to_headings(self):
-        nofo = Nofo.objects.get(title="Test Nofo AddPageBreaksToHeadingsTests")
-
-        for section in nofo.sections.all():
-            for subsection in section.subsections.all():
-                self.assertEqual(subsection.html_class, "")
-
-        add_page_breaks_to_headings(nofo)
-
-        for section in nofo.sections.all():
-            self.assertEqual(section.subsections.get(order=1).html_class, "")
-            self.assertEqual(
-                section.subsections.get(order=2).html_class, "page-break-before"
+    def create_section_with_subsections(self, section_name, subsection_names):
+        section = Section.objects.create(nofo=self.nofo, name=section_name)
+        subsections = []
+        for i, name in enumerate(subsection_names, start=1):
+            subsections.append(
+                Subsection.objects.create(
+                    section=section,
+                    name=name,
+                    tag="h3",
+                    body=f"{name} body",
+                    order=i,
+                )
             )
-            self.assertEqual(section.subsections.get(order=3).html_class, "")
-            self.assertEqual(
-                section.subsections.get(order=4).html_class, "page-break-before"
-            )
-            self.assertEqual(
-                section.subsections.get(order=5).html_class, "page-break-before"
-            )
+        return section, subsections
+
+    def test_no_matches(self):
+        # Section name doesn't match rules
+        _, subsections = self.create_section_with_subsections(
+            "Contacts and Support", ["Eligibility", "Program description"]
+        )
+
+        add_page_breaks_to_headings(self.nofo)
+
+        for s in subsections:
+            s.refresh_from_db()
+            self.assertEqual(s.html_class, "")
+
+    def test_matches_with_section_name(self):
+        _, subsections = self.create_section_with_subsections(
+            "Step 1: Review the Opportunity",
+            ["Basic information", "Eligibility", "Program description"],
+        )
+
+        add_page_breaks_to_headings(self.nofo)
+
+        for s in subsections:
+            s.refresh_from_db()
+
+        self.assertEqual(subsections[0].html_class, "")  # not in rules
+        self.assertEqual(subsections[1].html_class, "page-break-before")  # Eligibility
+        self.assertEqual(subsections[2].html_class, "page-break-before")  # Program desc
+
+    def test_wrong_section_name_does_not_match(self):
+        _, subsections = self.create_section_with_subsections(
+            "Step 2: Get Ready to Apply",
+            ["Eligibility", "Application checklist"],
+        )
+
+        add_page_breaks_to_headings(self.nofo)
+
+        for s in subsections:
+            s.refresh_from_db()
+            self.assertEqual(s.html_class, "")  # no match without step 1/5 etc.
+
+    def test_multiple_sections_match(self):
+        # Same subsection name should match in 1 but not in 3
+        _, subs1 = self.create_section_with_subsections(
+            "Step 1: Review the Opportunity", ["Eligibility"]
+        )
+        _, subs2 = self.create_section_with_subsections(
+            "Step 3: Prepare Your Application", ["Eligibility"]
+        )
+
+        add_page_breaks_to_headings(self.nofo)
+
+        subs1[0].refresh_from_db()
+        subs2[0].refresh_from_db()
+
+        self.assertEqual(subs1[0].html_class, "page-break-before")
+        self.assertEqual(subs2[0].html_class, "")
 
 
 @patch("nofos.nofo.get_image_url_from_s3", return_value=None)

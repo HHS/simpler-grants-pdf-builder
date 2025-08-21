@@ -283,17 +283,30 @@ def add_headings_to_document(
 
 
 def add_page_breaks_to_headings(document):
+    """
+    Assign 'page-break-before' to subsections whose name matches a target
+    heading and whose parent section name contains the specified substring.
+
+    Example:
+        ("eligibility", "step 1") will match a subsection named "Eligibility"
+        inside a section named "Step 1: Review the Opportunity".
+    """
     page_break_headings = [
-        "eligibility",
-        "program description",
-        "application checklist",
+        ("eligibility", "step 1"),
+        ("program description", "step 1"),
+        ("application checklist", "step 5"),
     ]
 
     for section in document.sections.all():
+        section_name = (section.name or "").lower()
         for subsection in section.subsections.all():
-            if subsection.name and subsection.name.lower() in page_break_headings:
-                subsection.html_class = "page-break-before"
-                subsection.save()
+            for match_subsection, match_section in page_break_headings:
+                # subsection name must match exactly (case insensitive)
+                if subsection.name and subsection.name.lower() == match_subsection:
+                    # section name must be a substring
+                    if match_section in section_name:
+                        subsection.html_class = "page-break-before"
+                        subsection.save()
 
 
 def _build_document(document, sections, SectionModel, SubsectionModel):
