@@ -105,7 +105,6 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
 
     list_display = [
         "title",
-        "id",
         "number",
         "group",
         "status",
@@ -137,6 +136,8 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "archived",
                     "successor",
                     "filename",
+                    "created",
+                    "updated",
                 )
             },
         ),
@@ -149,7 +150,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
         ),
     )
 
-    readonly_fields = ("filename",)
+    readonly_fields = ("filename", "created", "updated")
     mirror_fields = ("inline_css",)
 
     @admin.action(description="Duplicate selected NOFOs")

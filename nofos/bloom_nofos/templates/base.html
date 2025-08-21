@@ -47,6 +47,11 @@
               <a href="{{ nofo.get_admin_url }}">NOFO admin link</a>
             </li>
           {% endif %}
+          {% if user.is_superuser and guide %}
+            <li class="usa-nav__primary-item">
+              <a href="{{ guide.get_admin_url }}">CG admin link</a>
+            </li>
+          {% endif %}
           {% if user.is_authenticated %}
             <li class="usa-nav__primary-item">
               {% if '/guides/' not in request.path %}
