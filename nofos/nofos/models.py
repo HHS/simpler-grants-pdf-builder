@@ -104,7 +104,7 @@ class BaseNofo(models.Model):
         choices=settings.GROUP_CHOICES,
         blank=False,
         default="bloom",
-        help_text="The OpDiv grouping for this document. The group is used to control access to a NOFO. The 'Bloomworks' group can be used to hide NOFOs from OpDiv users.",
+        help_text="The OpDiv group for this document. The group controls access to a document. The 'Bloomworks' group hides documents from OpDiv users.",
     )
 
     opdiv = models.CharField(
