@@ -11,16 +11,41 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [3.8.0] - 2025-08-21
+
+### Added
+
+- Content Guides have "groups" now
+  - Most users can only see content guides from their group
+  - Bloom users can see content guides from all groups
+- Add edit table to Content Guide edit page
+  - Allows everyone to edit name
+  - Allows bloom users to edit group
+- Add site header admin link for Content Guides
+- Add "created" and "updated" fields to admin view for a NOFO
+
+### Changed
+
+- Admin management panel for Content Guides is cleaned up
+  - Looks a lot like the admin management panel for NOFOs does
 - Demote heading sizes inside of sections with no title pages
 - Application Checklist subsection only gets a page-break when in Step 5
 
 ### Fixed
 
+- Fix site header admin link for Section pages
 - Fix CSS for Application Checklist tables in Step 3
   - Some very specific CSS would only apply if the tables were in Step 5
   - Other too general CSS should only apply to tables in Step 5
 - Show "Have questions?" callout box inline when it is _not_ in step 1
 - Shave .5 px off small toc items now that we have seen some GS-exported templates
+
+### Migrations
+
+- Change help text for the "group" attribute of a BaseNOFO
+  - It is now shorter and more general so that it works for both kinds of objects
 
 ## [3.7.2] - 2025-08-18
 
