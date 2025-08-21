@@ -12,6 +12,7 @@ Versioning since version 1.0.0.
 ### Changed
 
 - Demote heading sizes inside of sections with no title pages
+- Application Checklist subsection only gets a page-break when in Step 5
 
 ### Fixed
 
