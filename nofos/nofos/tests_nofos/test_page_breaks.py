@@ -44,7 +44,10 @@ class NofoRemovePagebreaksViewTest(TestCase):
 
         # Create a test section
         self.section = Section.objects.create(
-            name="Test Section", order=1, nofo=self.nofo, html_id="test-section"
+            name="Step 1: Review the Opportunity",
+            order=1,
+            nofo=self.nofo,
+            html_id="step-1-review-the-opportunity",
         )
 
         # Log in the user
@@ -396,6 +399,7 @@ class NofoRemovePagebreaksViewTest(TestCase):
             tag="h3",
         )
 
+        # should NOT get a page break: wrong section name
         application_checklist_subsection = Subsection.objects.create(
             section=self.section,
             name="Application Checklist",
@@ -424,9 +428,8 @@ class NofoRemovePagebreaksViewTest(TestCase):
         # Check that page breaks were added to the right subsections
         self.assertEqual(eligibility_subsection.html_class, "page-break-before")
         self.assertEqual(program_description_subsection.html_class, "page-break-before")
-        self.assertEqual(
-            application_checklist_subsection.html_class, "page-break-before"
-        )
+        # No page break because the section name doesn't match
+        self.assertEqual(application_checklist_subsection.html_class, "")
 
         # Check that regular subsection didn't get a page break
         self.assertEqual(regular_subsection.html_class, "")
