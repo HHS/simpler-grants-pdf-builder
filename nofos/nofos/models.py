@@ -551,6 +551,12 @@ class Section(BaseSection):
     def get_subsection_model(self):
         return Subsection
 
+    def get_absolute_url(self):
+        return reverse(
+            "nofos:section_detail",
+            kwargs={"pk": self.nofo.pk, "section_pk": self.pk},
+        )
+
 
 class BaseSubsection(models.Model):
     class Meta:
