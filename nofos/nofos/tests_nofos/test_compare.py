@@ -1,3 +1,4 @@
+import re
 from copy import deepcopy
 
 from django.test import TestCase
@@ -623,14 +624,24 @@ class TestCompareNofos(TestCase):
             tag="h3",
         )
 
-        # Matched subsection (same name, same content, different orders, different tags)
-        self.old_sub_5 = Subsection.objects.create(
-            name="Permitting rules",
-            body="Of course permits must be obtained.",
+        # Deleted subsection (exists only in old NOFO)
+        self.old_sub_4 = Subsection.objects.create(
+            name="Old Program Fee Requirements",
+            body="Processing fee is $50.",
             section=self.old_section,
             order=4,
             tag="h3",
         )
+
+        # Matched subsection (same name, same content, different tags)
+        self.old_sub_5 = Subsection.objects.create(
+            name="Permitting rules",
+            body="Of course permits must be obtained.",
+            section=self.old_section,
+            order=5,
+            tag="h3",
+        )
+
         self.new_sub_5 = Subsection.objects.create(
             name="Permitting rules",
             body="Of course permits must be obtained.",
@@ -639,31 +650,22 @@ class TestCompareNofos(TestCase):
             tag="h4",
         )
 
-        # Deleted subsection (exists only in old NOFO)
-        self.old_sub_5 = Subsection.objects.create(
-            name="Old NOFO Fee Requirements",
-            body="Processing fee is $50.",
-            section=self.old_section,
-            order=5,
-            tag="h3",
-        )
-
         # THESE 2 WILL GET MERGED
-
-        # Added subsection (exists only in new NOFO)
-        self.new_sub_6 = Subsection.objects.create(
-            name="Visit SAM.gov",
-            body="This is the website where you can sign up.",
-            section=self.new_section,
-            order=6,
-            tag="h3",
-        )
 
         # Deleted subsection (exists only in old NOFO)
         self.old_sub_6 = Subsection.objects.create(
             name="SAM.gov",
             body="Visit the website to sign up.",
             section=self.old_section,
+            order=6,
+            tag="h3",
+        )
+
+        # Added subsection (exists only in new NOFO)
+        self.new_sub_6 = Subsection.objects.create(
+            name="Visit SAM.gov",
+            body="This is the website where you can sign up.",
+            section=self.new_section,
             order=6,
             tag="h3",
         )
@@ -724,8 +726,22 @@ class TestCompareNofos(TestCase):
         self.assertEqual(subsection_add.old_value, "")
         self.assertEqual(subsection_add.new_value, "Follow these new rules.")
 
+        # Deletion test
+        subsection_delete = subsections[4]
+        self.assertEqual(subsection_delete.status, "DELETE")
+        self.assertEqual(
+            subsection_delete.name, "<del>Old Program Fee Requirements</del>"
+        )
+        self.assertEqual(subsection_delete.old_name, "Old Program Fee Requirements")
+        self.assertEqual(subsection_delete.new_name, "")
+        self.assertEqual(subsection_delete.old_value, "Processing fee is $50.")
+        self.assertEqual(subsection_delete.new_value, "")
+        self.assertIn(
+            "<del><p>Processing fee is $50.</p></del>", subsection_delete.diff
+        )
+
         # Second match test
-        subsection_match_2 = subsections[4]
+        subsection_match_2 = subsections[5]
         self.assertEqual(subsection_match_2.status, "MATCH")
         self.assertEqual(subsection_match_2.name, "Permitting rules")
         self.assertEqual(subsection_match_2.old_name, "Permitting rules")
@@ -735,18 +751,6 @@ class TestCompareNofos(TestCase):
         )
         self.assertEqual(
             subsection_match_2.new_value, "Of course permits must be obtained."
-        )
-
-        # Deletion test
-        subsection_delete = subsections[5]
-        self.assertEqual(subsection_delete.status, "DELETE")
-        self.assertEqual(subsection_delete.name, "<del>Old NOFO Fee Requirements</del>")
-        self.assertEqual(subsection_delete.old_name, "Old NOFO Fee Requirements")
-        self.assertEqual(subsection_delete.new_name, "")
-        self.assertEqual(subsection_delete.old_value, "Processing fee is $50.")
-        self.assertEqual(subsection_delete.new_value, "")
-        self.assertIn(
-            "<del><p>Processing fee is $50.</p></del>", subsection_delete.diff
         )
 
         # Merged update test (renamed + updated content)
@@ -762,6 +766,241 @@ class TestCompareNofos(TestCase):
         self.assertIn(
             "<del>Visit</del><ins>This is</ins> the website <del>to</del><ins>where you can</ins> sign up.",
             subsection_merge.diff,
+        )
+
+
+class TestCompareNofosOrdering(TestCase):
+    def setUp(self):
+        self.old_nofo = Nofo.objects.create(title="Old NOFO", opdiv="Test OpDiv")
+        self.new_nofo = Nofo.objects.create(title="New NOFO", opdiv="Test OpDiv")
+
+        self.old_section = Section.objects.create(
+            name="Main Section",
+            nofo=self.old_nofo,
+            order=1,
+            html_id="main-section",
+        )
+        self.new_section = Section.objects.create(
+            name="Main Section",
+            nofo=self.new_nofo,
+            order=1,
+            html_id="main-section",
+        )
+
+    def test_deletes_are_grouped_before_next_match(self):
+        """
+        Old has subsections 1.1, 1.2, 1.3 before Section 2.
+        New skips them. Expect deletes before Section 2.
+        """
+        # Old subsections
+        Subsection.objects.create(
+            name="Subsection 1", tag="h3", body="One", section=self.old_section, order=1
+        )
+        Subsection.objects.create(
+            name="Subsection 1.1",
+            tag="h3",
+            body="One.one",
+            section=self.old_section,
+            order=2,
+        )
+        Subsection.objects.create(
+            name="Subsection 1.2",
+            tag="h3",
+            body="One.two",
+            section=self.old_section,
+            order=3,
+        )
+        Subsection.objects.create(
+            name="Subsection 1.3",
+            tag="h3",
+            body="One.three",
+            section=self.old_section,
+            order=4,
+        )
+        Subsection.objects.create(
+            name="Subsection 2", tag="h3", body="Two", section=self.old_section, order=5
+        )
+        Subsection.objects.create(
+            name="Subsection 3",
+            tag="h3",
+            body="Three",
+            section=self.old_section,
+            order=6,
+        )
+        Subsection.objects.create(
+            name="Subsection 4",
+            tag="h3",
+            body="Four",
+            section=self.old_section,
+            order=7,
+        )
+        Subsection.objects.create(
+            name="Subsection 5",
+            tag="h3",
+            body="Five",
+            section=self.old_section,
+            order=8,
+        )
+
+        # New subsections (skip 1.1–1.3)
+        Subsection.objects.create(
+            name="Subsection 1", tag="h3", body="One", section=self.new_section, order=1
+        )
+        Subsection.objects.create(
+            name="Subsection 2", tag="h3", body="Two", section=self.new_section, order=2
+        )
+        Subsection.objects.create(
+            name="Subsection 3",
+            tag="h3",
+            body="Three",
+            section=self.new_section,
+            order=3,
+        )
+        Subsection.objects.create(
+            name="Subsection 4",
+            tag="h3",
+            body="Four",
+            section=self.new_section,
+            order=4,
+        )
+        Subsection.objects.create(
+            name="Subsection 5",
+            tag="h3",
+            body="Five",
+            section=self.new_section,
+            order=5,
+        )
+
+        result = compare_nofos(self.old_nofo, self.new_nofo)
+        subsections = result[0]["subsections"]
+
+        statuses = [s.status for s in subsections]
+        names = [re.sub(r"<.*?>", "", s.name) for s in subsections]
+
+        self.assertEqual(
+            statuses,
+            ["MATCH", "DELETE", "DELETE", "DELETE", "MATCH", "MATCH", "MATCH", "MATCH"],
+        )
+        self.assertEqual(
+            names,
+            [
+                "Subsection 1",
+                "Subsection 1.1",
+                "Subsection 1.2",
+                "Subsection 1.3",
+                "Subsection 2",
+                "Subsection 3",
+                "Subsection 4",
+                "Subsection 5",
+            ],
+        )
+
+    def test_adds_are_grouped_before_next_match(self):
+        """
+        New has subsections 1.1, 1.2, 1.3 before Section 2.
+        Old skips them. Expect adds before Section 2.
+        """
+        # Old subsections
+        Subsection.objects.create(
+            name="Subsection 1", tag="h3", body="One", section=self.old_section, order=1
+        )
+        Subsection.objects.create(
+            name="Subsection 2", tag="h3", body="Two", section=self.old_section, order=2
+        )
+        Subsection.objects.create(
+            name="Subsection 3",
+            tag="h3",
+            body="Three",
+            section=self.old_section,
+            order=3,
+        )
+        Subsection.objects.create(
+            name="Subsection 4",
+            tag="h3",
+            body="Four",
+            section=self.old_section,
+            order=4,
+        )
+        Subsection.objects.create(
+            name="Subsection 5",
+            tag="h3",
+            body="Five",
+            section=self.old_section,
+            order=5,
+        )
+
+        # New subsections (insert 1.1–1.3)
+        Subsection.objects.create(
+            name="Subsection 1", tag="h3", body="One", section=self.new_section, order=1
+        )
+        Subsection.objects.create(
+            name="Subsection 1.1",
+            tag="h3",
+            body="One.one",
+            section=self.new_section,
+            order=2,
+        )
+        Subsection.objects.create(
+            name="Subsection 1.2",
+            tag="h3",
+            body="One.two",
+            section=self.new_section,
+            order=3,
+        )
+        Subsection.objects.create(
+            name="Subsection 1.3",
+            tag="h3",
+            body="One.three",
+            section=self.new_section,
+            order=4,
+        )
+        Subsection.objects.create(
+            name="Subsection 2", tag="h3", body="Two", section=self.new_section, order=5
+        )
+        Subsection.objects.create(
+            name="Subsection 3",
+            tag="h3",
+            body="Three",
+            section=self.new_section,
+            order=6,
+        )
+        Subsection.objects.create(
+            name="Subsection 4",
+            tag="h3",
+            body="Four",
+            section=self.new_section,
+            order=7,
+        )
+        Subsection.objects.create(
+            name="Subsection 5",
+            tag="h3",
+            body="Five",
+            section=self.new_section,
+            order=8,
+        )
+
+        result = compare_nofos(self.old_nofo, self.new_nofo)
+        subsections = result[0]["subsections"]
+
+        statuses = [s.status for s in subsections]
+        names = [re.sub(r"<.*?>", "", s.name) for s in subsections]
+
+        self.assertEqual(
+            statuses,
+            ["MATCH", "ADD", "ADD", "ADD", "MATCH", "MATCH", "MATCH", "MATCH"],
+        )
+        self.assertEqual(
+            names,
+            [
+                "Subsection 1",
+                "Subsection 1.1",
+                "Subsection 1.2",
+                "Subsection 1.3",
+                "Subsection 2",
+                "Subsection 3",
+                "Subsection 4",
+                "Subsection 5",
+            ],
         )
 
 
