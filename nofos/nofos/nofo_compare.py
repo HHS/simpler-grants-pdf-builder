@@ -163,48 +163,60 @@ def compare_sections(old_section, new_section):
     # Get all subsections for comparison
     new_subsections = list(new_section.subsections.all())
     old_subsections = list(old_section.subsections.all()) if old_section else []
-    max_length = max(len(new_subsections), len(old_subsections))
-    matched_subsections = set()
 
+    matched_subsections = set()
     subsections = []
 
-    for index in range(max_length):
-        new_sub = new_subsections[index] if index < len(new_subsections) else None
-        old_sub = old_subsections[index] if index < len(old_subsections) else None
-        # First, check the new subsection for a match
-        if new_sub:
-            matched_old_sub = find_matching_subsection(
-                new_sub, old_subsections, matched_subsections
-            )
-            if matched_old_sub:
-                # add ids from both subsections to the "matched_subsections" set
-                matched_subsections.update([new_sub.id, matched_old_sub.id])
+    old_index = 0
+    new_index = 0
 
-                # Check if html_diff contains insert or deletes
-                if has_diff(
-                    html_diff(
-                        markdownify(matched_old_sub.body.strip()),
-                        markdownify(new_sub.body.strip()),
-                    )
-                ):
-                    # UPDATE
-                    subsections.append(result_update(matched_old_sub, new_sub))
-                else:
-                    # MATCH
-                    subsections.append(result_match(matched_old_sub))
+    while new_index < len(new_subsections):
+        new_sub = new_subsections[new_index]
 
+        # Try to find a matching old subsection
+        matched_old = find_matching_subsection(
+            new_sub, old_subsections, matched_subsections
+        )
+
+        if matched_old:
+            # Flush any unmatched old subsections that come BEFORE this match
+            while (
+                old_index < len(old_subsections)
+                and old_subsections[old_index].id != matched_old.id
+            ):
+                old_sub = old_subsections[old_index]
+                if old_sub.id not in matched_subsections:
+                    subsections.append(result_delete(old_sub))
+                    matched_subsections.add(old_sub.id)
+                old_index += 1
+
+            # Now handle the matched pair
+            matched_subsections.update([new_sub.id, matched_old.id])
+            if has_diff(
+                html_diff(
+                    markdownify(matched_old.body.strip()),
+                    markdownify(new_sub.body.strip()),
+                )
+            ):
+                subsections.append(result_update(matched_old, new_sub))
             else:
-                # ADD
-                subsections.append(result_add(new_sub))
-                matched_subsections.add(new_sub.id)
+                subsections.append(result_match(matched_old))
 
-        if old_sub and old_sub.id not in matched_subsections:
-            # Look for it in new NOFO subsections (maybe it was moved)
-            has_moved = any(n.is_matching_subsection(old_sub) for n in new_subsections)
-            if not has_moved:
-                # DELETE
-                subsections.append(result_delete(old_sub))
-                matched_subsections.add(old_sub.id)
+            old_index += 1
+        else:
+            # ADD (no matching old subsection)
+            subsections.append(result_add(new_sub))
+            matched_subsections.add(new_sub.id)
+
+        new_index += 1
+
+    # Flush any remaining unmatched old subsections as DELETE
+    while old_index < len(old_subsections):
+        old_sub = old_subsections[old_index]
+        if old_sub.id not in matched_subsections:
+            subsections.append(result_delete(old_sub))
+            matched_subsections.add(old_sub.id)
+        old_index += 1
 
     return {
         "name": new_section.name,
