@@ -81,6 +81,9 @@ poetry update
 
 # update only nested dependencies
 poetry update --lock
+
+# inspect dependency tree for 1 dependency
+poetry show --tree martor
 ```
 
 </details>
