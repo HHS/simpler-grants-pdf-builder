@@ -1,9 +1,10 @@
 /**
- * Name         : Martor v1.6.28
+ * Name         : Martor v1.6.45
  * Created by   : Agus Makmun (Summon Agus)
- * Release date : 20-Jul-2023
+ * Release date : 15-Nov-2024
  * License      : GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
  * Repository   : https://github.com/agusmakmun/django-markdown-editor
+ * JS Minifier  : https://jscompress.com
 **/
 
 (function ($) {
@@ -135,14 +136,6 @@
                 textareaId.val(value);
             });
 
-            // resize the editor using `resizable.min.js`
-            $('#' + editorId).resizable({
-                direction: 'bottom',
-                stop: function () {
-                    editor.resize();
-                }
-            });
-
             // update the preview if this menu is clicked
             var currentTab = $('.tab.segment[data-tab=preview-tab-' + field_name + ']');
             var previewTabButton = $('.item[data-tab=preview-tab-' + field_name + ']');
@@ -179,6 +172,15 @@
                 });
             };
 
+            let timeoutID;
+
+            var refreshPreviewTimeout = function () {
+                if (timeoutID) {
+                    clearTimeout(timeoutID);
+                }
+                timeoutID = setTimeout(refreshPreview, textareaId.data("save-timeout"));
+            }
+
             // Refresh the preview unconditionally on first load.
             window.onload = function () {
                 refreshPreview();
@@ -191,7 +193,7 @@
                     refreshPreview();
                 });
             } else {
-                editor.on('change', refreshPreview);
+                editor.on('change', refreshPreviewTimeout);
             }
 
             var editorTabButton = $('.item[data-tab=editor-tab-' + field_name + ']');
@@ -846,9 +848,7 @@
             });
 
             // Set initial value if has the content before.
-            if (textareaId.val() != '') {
-                editor.setValue(textareaId.val(), -1);
-            }
+            editor.setValue(textareaId.val(), -1);
         });// end each `mainMartor`
     };
 
@@ -858,14 +858,17 @@
 
     if ('django' in window && 'jQuery' in window.django)
         django.jQuery(document).on('formset:added', function (event, $row) {
-            $row.find('.main-martor').each(function () {
-                var id = $row.attr('id');
-                id = id.substr(id.lastIndexOf('-') + 1);
-                // Notice here we are using our jQuery instead of Django's.
-                // This is because plugins are only loaded for ours.
-                var fixed = $(this.outerHTML.replace(/__prefix__/g, id));
-                $(this).replaceWith(fixed);
-                fixed.martor();
-            });
+            // add delay for formset to load
+            setTimeout(function(){
+                $row.find('.main-martor').each(function () {
+                    var id = $row.attr('id');
+                    id = id.substr(id.lastIndexOf('-') + 1);
+                    // Notice here we are using our jQuery instead of Django's.
+                    // This is because plugins are only loaded for ours.
+                    var fixed = $(this.outerHTML.replace(/__prefix__/g, id));
+                    $(this).replaceWith(fixed);
+                    fixed.martor();
+                });
+            }, 1000);
         });
 })(jQuery);
