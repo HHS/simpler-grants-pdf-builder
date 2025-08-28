@@ -14,6 +14,7 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Show deletions in compare page in order
+- Fix martor bug in admin console where subsection content could not be edited
 
 ## [3.8.0] - 2025-08-21
 
