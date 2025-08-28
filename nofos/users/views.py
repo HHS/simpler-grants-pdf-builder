@@ -6,8 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.views import PasswordChangeView
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, resolve_url
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, FormView
@@ -224,18 +225,21 @@ def logout_view(request):
 def traditional_login_view(request):
     """Handle traditional login with username/password."""
     form = LoginForm(request.POST or None)
+    redirect_to = request.POST.get("next") or request.GET.get("next") or ""
 
-    if request.method == "POST":
-        if form.is_valid():
-            email = form.cleaned_data["email"].strip().lower()
-            password = form.cleaned_data["password"]
-            user = authenticate(request, username=email, password=password)
+    if request.method == "POST" and form.is_valid():
+        email = form.cleaned_data["email"].strip().lower()
+        password = form.cleaned_data["password"]
+        user = authenticate(request, username=email, password=password)
 
-            if user is not None:
-                login(request, user)
-                next_url = request.GET.get("next", settings.LOGIN_REDIRECT_URL)
-                return redirect(next_url)
-            else:
-                messages.error(request, "Invalid email or password.")
+        if user is not None:
+            login(request, user)
+            if redirect_to and url_has_allowed_host_and_scheme(
+                redirect_to, allowed_hosts={request.get_host()}
+            ):
+                return redirect(redirect_to)
+            return redirect(resolve_url(settings.LOGIN_REDIRECT_URL))
+        else:
+            messages.error(request, "Invalid email or password.")
 
-    return render(request, "users/login.html", {"form": form})
+    return render(request, "users/login.html", {"form": form, "next": redirect_to})
