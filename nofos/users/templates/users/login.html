@@ -58,6 +58,7 @@
 
   <!-- Email/password login form -->
   <form method="post" action="{% url 'users:login' %}">
+      <input type="hidden" name="next" value="{{ next }}">
       {% csrf_token %}
       <fieldset class="usa-fieldset">
 
@@ -72,7 +73,6 @@
           {% include "includes/form_macro.html" %}
 
       </fieldset>
-      <input type="hidden" name="next" value="{{ next }}">
 
       <button class="usa-button margin-top-3" type="submit">Login</button>
   </form>
