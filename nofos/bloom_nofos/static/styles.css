@@ -617,6 +617,10 @@ label.usa-label {
   margin-right: 4rem !important; /* match the padding on usa-alert__body */
 }
 
+.nofo_edit .usa-site-alert {
+  margin-bottom: 1rem;
+}
+
 .nofo_edit .usa-site-alert--broken-links a,
 .nofo_edit .usa-site-alert--heading-errors a,
 .nofo_edit .usa-site-alert--h7-headers a {
