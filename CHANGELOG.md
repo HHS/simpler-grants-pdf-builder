@@ -15,6 +15,7 @@ Versioning since version 1.0.0.
 
 - Show deletions in compare page in order
 - Fix martor bug in admin console where subsection content could not be edited
+- Fix next query param redirect on login
 
 ## [3.8.0] - 2025-08-21
 
