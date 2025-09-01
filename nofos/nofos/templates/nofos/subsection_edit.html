@@ -11,6 +11,10 @@
   <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
+{% block js %}
+  <script src="{% static 'js/nofos/subsection_edit.js' %}" defer></script>
+{% endblock %}
+
 {% block body_class %}subsection_edit{% endblock %}
 
 {% block content %}
@@ -69,36 +73,12 @@
           {% if subsection.tag %}
             {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
             {% if subsection.html_id %}
-            <div class="usa-hint margin-top-05 hint--subsection-id" id="{{ id }}--hint-2">
-              <span id="subsection-html_id">{{ "#"|add:subsection.html_id  }}</span>
-              <button type="button" class="usa-button usa-button--outline" id="subsection-html_id--button">
-                Copy
-              </button>
-            </div>
-
-            <script>
-              let text = document.getElementById('subsection-html_id').innerHTML;
-              let button = document.getElementById('subsection-html_id--button');
-
-              const copyContent = async () => {
-                try {
-
-                  await navigator.clipboard.writeText(text);
-                  button.innerHTML = 'Copied!'
-                  setTimeout(() => {
-                    button.innerHTML = 'Copy'
-                  }, "1000");
-
-                } catch (err) {
-                  console.error('Content failed to copy: ', err);
-                }
-              }
-
-              button.addEventListener(
-                "click",
-                copyContent
-              );
-            </script>
+              <div class="usa-hint margin-top-05 hint--subsection-id" id="{{ id }}--hint-2">
+                <span id="subsection-html_id">{{ "#"|add:subsection.html_id  }}</span>
+                <button type="button" class="usa-button usa-button--outline" id="subsection-html_id--button">
+                  Copy
+                </button>
+              </div>
             {% endif %}
           {% else %}
             {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type disabled="disabled" only %}
