@@ -35,8 +35,6 @@ python-json-logger = "^3.3.0"
 diff-match-patch = "^20241021"
 pre-commit = "^4.3.0"
 
-# sortable = "@3", check nofo_index.html
-
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 freezegun = "^1.5.5"

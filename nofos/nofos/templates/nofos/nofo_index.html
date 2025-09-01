@@ -30,7 +30,8 @@
 	{% endif %}
 
 	{% if nofo_list %}
-		<table class="sortable usa-table usa-table--borderless width-full">
+		<div class="usa-table-container">
+		<table class="usa-table usa-table--borderless width-full">
 			<caption>
 				{% if not nofo_status or nofo_status == 'in progress' %}
 					NOFOs being worked on or in review.
@@ -48,15 +49,15 @@
 			</caption>
 			<thead>
 				<tr>
-					<th scope="col" tabindex="0">Short name</th>
-					<th scope="col" tabindex="0">NOFO Number</th>
+					<th data-sortable scope="col" role="columnheader">Short name</th>
+					<th data-sortable scope="col" role="columnheader">NOFO Number</th>
 					{% if user.group == 'bloom' %}
-						<th scope="col" class="nofo-group-col" tabindex="0">Group</th>
+						<th scope="col" class="nofo-group-col" >Group</th>
 					{% endif %}
-					<th scope="col" tabindex="0">Status</th>
-					<th scope="col" tabindex="0">Coach</th>
-					<th scope="col" tabindex="0">Designer</th>
-					<th scope="col" tabindex="0">Updated</th>
+					<th scope="col">Status</th>
+					<th scope="col">Coach</th>
+					<th scope="col">Designer</th>
+					<th data-sortable scope="col" role="columnheader">Updated</th>
 					<th scope="col" class="no-sort">HTML</th>
 				</tr>
 			</thead>
@@ -74,7 +75,7 @@
 						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 						{% timezone "America/New_York" %}
-							<td data-sort="{{ nofo.updated|date:"YmdHM" }}">
+							<td data-sort-value="{{ nofo.updated|date:"YmdHM" }}">
 								<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
 									{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %},<br>{{ nofo.updated|date:'g:i A' }}{% endif %}
 									<span class="usa-sr-only"> - View audit history for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span>
@@ -86,6 +87,11 @@
 				{% endfor %}
 			</tbody>
 		</table>
+		<div
+			class="usa-sr-only usa-table__announcement-region"
+			aria-live="polite"
+		></div>
+		</div>
 	{% else %}
 		<p>No Fos are available{% if nofo_status %} that are “{{ nofo_status }}”{% endif %}.</p>
 	{% endif %}
@@ -99,21 +105,20 @@
 {% endblock %}
 
 {% block js_footer %}
-<script src="https://cdn.jsdelivr.net/gh/tofsjonas/sortable@3/sortable.min.js"></script>
 <script>
-	document.addEventListener('DOMContentLoaded', function() {
-    // Select all table headers in the nofo index
-    const headers = document.querySelectorAll('.nofo_index table.usa-table.sortable thead th');
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("th[data-sortable]").forEach(th => {
+    th.addEventListener("click", e => {
+      // Avoid double-firing if the user actually clicked the button
+      if (e.target.closest("button")) return;
 
-		headers.forEach(function(header) {
-        header.addEventListener('keydown', function(event) {
-            // Check if the Enter key (key code 13) is pressed
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                header.click(); // Simulate a click on the header
-            }
-        });
+			const button = th.querySelector("button");
+      if (button) {
+        button.focus();   // move focus
+        button.click();   // trigger sort
+      }
     });
-	});
+  });
+});
 </script>
 {% endblock %}
