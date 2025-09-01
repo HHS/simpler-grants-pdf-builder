@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
-{% load tz %}
+{% load static tz %}
 
 {% block title %}
 	{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'js/nofos/nofo_index.js' %}" defer></script>
 {% endblock %}
 
 {% block body_class %}nofo_index{% endblock %}
@@ -31,66 +35,66 @@
 
 	{% if nofo_list %}
 		<div class="usa-table-container">
-		<table class="usa-table usa-table--borderless width-full">
-			<caption>
-				{% if not nofo_status or nofo_status == 'in progress' %}
-					NOFOs being worked on or in review.
-				{% elif nofo_status == 'published' %}
-					NOFOs that rode off into the sunset.
-				{% elif nofo_status == 'paused' %}
-					NOFOs cooling their heels at the saloon.
-				{% elif nofo_status == 'cancelled' %}
-					NOFOs that were put out to pasture.
-				{% elif nofo_status == 'all' %}
-					Every NOFO in the corral.
-				{% else %}
-					List of NOFOs with status: {{ nofo_status }}
-				{% endif %}
-			</caption>
-			<thead>
-				<tr>
-					<th data-sortable scope="col" role="columnheader">Short name</th>
-					<th data-sortable scope="col" role="columnheader">NOFO Number</th>
-					{% if user.group == 'bloom' %}
-						<th scope="col" class="nofo-group-col" >Group</th>
+			<table class="usa-table usa-table--borderless width-full">
+				<caption>
+					{% if not nofo_status or nofo_status == 'in progress' %}
+						NOFOs being worked on or in review.
+					{% elif nofo_status == 'published' %}
+						NOFOs that rode off into the sunset.
+					{% elif nofo_status == 'paused' %}
+						NOFOs cooling their heels at the saloon.
+					{% elif nofo_status == 'cancelled' %}
+						NOFOs that were put out to pasture.
+					{% elif nofo_status == 'all' %}
+						Every NOFO in the corral.
+					{% else %}
+						List of NOFOs with status: {{ nofo_status }}
 					{% endif %}
-					<th scope="col">Status</th>
-					<th scope="col">Coach</th>
-					<th scope="col">Designer</th>
-					<th data-sortable scope="col" role="columnheader">Updated</th>
-					<th scope="col" class="no-sort">HTML</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for nofo in nofo_list %}
-					<tr {% if nofo.status == 'ready-for-qa' %}class="ready-for-qa"{% endif %}>
-						<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
-						<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
+				</caption>
+				<thead>
+					<tr>
+						<th data-sortable scope="col" role="columnheader">Short name</th>
+						<th data-sortable scope="col" role="columnheader">NOFO Number</th>
 						{% if user.group == 'bloom' %}
-							<td>
-								<span class="usa-tag bg-group bg-group--{{ nofo.group }}">{{ nofo.group }}</span>
-							</td>
+							<th scope="col" class="nofo-group-col" >Group</th>
 						{% endif %}
-						<td>{{ nofo.get_status_display }}</td>
-						<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
-						<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
-						{% timezone "America/New_York" %}
-							<td data-sort-value="{{ nofo.updated|date:"YmdHM" }}">
-								<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
-									{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %},<br>{{ nofo.updated|date:'g:i A' }}{% endif %}
-									<span class="usa-sr-only"> - View audit history for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span>
-								</a>
-							</td>
-						{% endtimezone %}
-						<td><a href="{% url 'nofos:nofo_view' nofo.id %}">View<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
+						<th scope="col">Status</th>
+						<th scope="col">Coach</th>
+						<th scope="col">Designer</th>
+						<th data-sortable scope="col" role="columnheader">Updated</th>
+						<th scope="col" class="no-sort">HTML</th>
 					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-		<div
-			class="usa-sr-only usa-table__announcement-region"
-			aria-live="polite"
-		></div>
+				</thead>
+				<tbody>
+					{% for nofo in nofo_list %}
+						<tr {% if nofo.status == 'ready-for-qa' %}class="ready-for-qa"{% endif %}>
+							<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
+							<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
+							{% if user.group == 'bloom' %}
+								<td>
+									<span class="usa-tag bg-group bg-group--{{ nofo.group }}">{{ nofo.group }}</span>
+								</td>
+							{% endif %}
+							<td>{{ nofo.get_status_display }}</td>
+							<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
+							<td>{% if nofo.designer %}{{ nofo.get_designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
+							{% timezone "America/New_York" %}
+								<td data-sort-value="{{ nofo.updated|date:"YmdHM" }}">
+									<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
+										{{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %},<br>{{ nofo.updated|date:'g:i A' }}{% endif %}
+										<span class="usa-sr-only"> - View audit history for {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span>
+									</a>
+								</td>
+							{% endtimezone %}
+							<td><a href="{% url 'nofos:nofo_view' nofo.id %}">View<span class="usa-sr-only"> {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</span></a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<div
+				class="usa-sr-only usa-table__announcement-region"
+				aria-live="polite"
+			></div>
 		</div>
 	{% else %}
 		<p>No Fos are available{% if nofo_status %} that are “{{ nofo_status }}”{% endif %}.</p>
@@ -102,23 +106,4 @@
     Import NOFO
 		</a>
 	</p>
-{% endblock %}
-
-{% block js_footer %}
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("th[data-sortable]").forEach(th => {
-    th.addEventListener("click", e => {
-      // Avoid double-firing if the user actually clicked the button
-      if (e.target.closest("button")) return;
-
-			const button = th.querySelector("button");
-      if (button) {
-        button.focus();   // move focus
-        button.click();   // trigger sort
-      }
-    });
-  });
-});
-</script>
 {% endblock %}
