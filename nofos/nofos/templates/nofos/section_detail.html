@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
-{% load martortags nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
-
+{% load static martortags nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
 
 {% block title %}
   Add or remove subsections for {{ section.name }}
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'js/nofos/section_detail.js' %}" defer></script>
 {% endblock %}
 
 {% block body_class %}section_edit{% endblock %}
@@ -193,18 +196,4 @@
     {% endfor %}
   </tbody>
 </table>
-<script>
-  // Function to set table width CSS custom property for Safari compatibility dealing with the usa-button--add positioning
-  function setTableWidthVariable() {
-      const table = document.querySelector('table.table--section');
-      if (table) {
-          const tableWidth = table.offsetWidth + 'px';
-          document.documentElement.style.setProperty('--safari-tr-width', tableWidth);
-      }
-  }
-
-  // Set table width variable on page load and window resize
-  document.addEventListener('DOMContentLoaded', setTableWidthVariable);
-  window.addEventListener('resize', setTableWidthVariable);
-</script>
 {% endblock %}
