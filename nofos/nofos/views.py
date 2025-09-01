@@ -1166,18 +1166,18 @@ class NofoHistoryView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         offset = int(self.request.GET.get("offset", 0))
+        limit = self.events_per_page
         self.nofo = self.object
 
         # Get audit events for this NOFO
-        all_events = [
-            format_audit_event(event) for event in get_audit_events_for_nofo(self.nofo)
-        ]
+        events = get_audit_events_for_nofo(self.nofo)
+        # add one extra audit event for detecting has_more
+        page = events[offset : offset + limit + 1]
 
         # Slice the results for pagination
-        end_offset = offset + self.events_per_page
-        context["audit_events"] = all_events[offset:end_offset]
-        context["has_more"] = len(all_events) > end_offset
-        context["next_offset"] = end_offset
+        context["audit_events"] = [format_audit_event(e) for e in page[:limit]]
+        context["has_more"] = len(page) > limit
+        context["next_offset"] = offset + limit
 
         # find previous versions, if any
         context["ancestor_nofos"] = Nofo.objects.filter(successor=self.object).order_by(
