@@ -406,6 +406,10 @@ label.usa-label {
   padding: 0.5rem 1.5rem 0.5rem 0.6rem;
 }
 
+.nofo_index table.usa-table thead th[data-sortable] {
+  padding-right: 2.5rem;
+}
+
 .nofo_index .usa-table th:last-of-type {
   padding-right: 0;
 }
@@ -418,40 +422,13 @@ label.usa-label {
   border-radius: 0;
 }
 
-.nofo_index table.usa-table thead th:not(.no-sort):hover {
+.nofo_index table.usa-table thead th[data-sortable]:hover {
   background: rgba(180, 180, 180, 0.2);
   cursor: pointer;
 }
 
-.nofo_index table.usa-table thead th:not(.no-sort):focus {
+.nofo_index table.usa-table thead th[data-sortable]:focus {
   z-index: 1;
-}
-
-.nofo_index .sortable thead th:not(.no-sort)::after {
-  color: inherit;
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid rgba(180, 180, 180, 0.5);
-  content: "";
-  position: absolute;
-  right: 6px;
-  top: 45%;
-}
-
-.nofo_index .sortable thead th:not(.no-sort)[aria-sort="ascending"]::after {
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid black;
-}
-
-.nofo_index .sortable thead th:not(.no-sort)[aria-sort="descending"]::after {
-  border-top: 6px solid transparent;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 6px solid black;
-  top: 25%;
 }
 
 /* Import page */
