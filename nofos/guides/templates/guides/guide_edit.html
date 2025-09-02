@@ -192,259 +192,188 @@
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const compareAllCheckbox = document.getElementById('compare-all-sections');
-    const sectionCheckboxes = document.querySelectorAll('input[name="compare_sections"]');
-    const subsectionCheckboxes = document.querySelectorAll('input[name="compare_subsections"]');
-    const allCheckboxes = [compareAllCheckbox, ...sectionCheckboxes, ...subsectionCheckboxes];
-    const usaButtons = document.querySelectorAll('.usa-button');
+document.addEventListener('DOMContentLoaded', () => {
+  const compareAllCheckbox   = document.getElementById('compare-all-sections');
+  const sectionCheckboxes    = document.querySelectorAll('input[name="compare_sections"]');
+  const subsectionCheckboxes = document.querySelectorAll('input[name="compare_subsections"]');
+  const allCheckboxes        = [compareAllCheckbox, ...sectionCheckboxes, ...subsectionCheckboxes];
+  const usaButtons           = document.querySelectorAll('.usa-button');
+  const container            = document.querySelector('.compare-all-sections-container'); // has data-url + data-csrf-token
 
-    // Handle "Compare All Sections" checkbox
-    compareAllCheckbox.addEventListener('change', function() {
-        const isChecked = this.checked;
+  /* ------------------------- small helpers ------------------------- */
 
-        // Check/uncheck all section checkboxes
-        sectionCheckboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
-        });
+  // Create or remove a slim USWDS alert just after .usa-list
+  function showAlert(message, status = 'warning') {
+    const summaryList = document.querySelector('.usa-list');
+    if (!summaryList) return;
 
-        // Check/uncheck all subsection checkboxes
-        const checkboxValueMap = new Map();
-        subsectionCheckboxes.forEach(checkbox => {
-            checkboxValueMap.set(checkbox, {
-                current: checkbox.checked,
-                desired: isChecked
-            });
-            checkbox.checked = isChecked;
-        });
+    // remove existing alert if present
+    document.getElementById('compare-alert')?.remove();
 
-        saveSubsectionSelections(checkboxValueMap, this);
+    const el = document.createElement('div');
+    el.id = 'compare-alert';
+    el.className = `usa-alert usa-alert--${status} usa-alert--slim margin-top-2`;
+    el.setAttribute('role', 'alert');
+    el.setAttribute('tabindex', '-1');
+    el.innerHTML = `<div class="usa-alert__body"><p class="usa-alert__text">${message}</p></div>`;
+    summaryList.after(el);
+    el.focus();
+
+    // auto-remove after 4s
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  function setControlsDisabled(disabled) {
+    allCheckboxes.forEach(cb => cb.disabled = disabled);
+    usaButtons.forEach(btn => btn.disabled = disabled);
+  }
+
+  function updateUsaButtons() {
+    const noneChecked = allCheckboxes.every(cb => !cb.checked);
+    usaButtons.forEach(btn => {
+      btn.toggleAttribute('aria-disabled', noneChecked);
+      btn.toggleAttribute('disabled',      noneChecked);
+      btn.classList.toggle('disabled-link', noneChecked);
     });
+    if (noneChecked) {
+      showAlert('Please select at least one section or subsection to compare.', 'warning');
+    } else {
+      document.getElementById('compare-alert')?.remove();
+    }
+  }
 
-    // Handle individual section "Compare Content" checkboxes
+  // Map a NodeList of checkboxes to { checkbox -> {current, desired} }
+  function buildCheckboxValueMap(nodes, desired) {
+    const map = new Map();
+    nodes.forEach(cb => {
+      map.set(cb, { current: cb.checked, desired });
+      cb.checked = desired;
+    });
+    return map;
+  }
+
+  // Keep the tri-state "Compare All" checkbox accurate
+  function updateCompareAllSectionsCheckbox() {
+    const list = [...sectionCheckboxes, ...subsectionCheckboxes];
+    const allChecked = list.every(cb => cb.checked);
+    const anyChecked = list.some(cb => cb.checked);
+    compareAllCheckbox.checked = allChecked;
+    compareAllCheckbox.indeterminate = !allChecked && anyChecked;
+  }
+
+  // Keep each section checkbox in sync with its subsections
+  function updateCompareSectionCheckboxes() {
     sectionCheckboxes.forEach(sectionCheckbox => {
-        sectionCheckbox.addEventListener('change', function() {
-            const sectionId = this.value;
-            const isChecked = this.checked;
+      const sectionId = sectionCheckbox.value;
+      const sectionSubs = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
+      if (!sectionSubs.length) return;
 
-            // Find all subsection checkboxes for this section
-            const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
-
-            const checkboxValueMap = new Map();
-            sectionSubsectionCheckboxes.forEach(checkbox => {
-                checkboxValueMap.set(checkbox, {
-                    current: checkbox.checked,
-                    desired: isChecked
-                });
-                checkbox.checked = isChecked;
-            });
-            saveSubsectionSelections(checkboxValueMap, this);
-        });
+      const allChecked = [...sectionSubs].every(cb => cb.checked);
+      const anyChecked = [...sectionSubs].some (cb => cb.checked);
+      sectionCheckbox.checked = allChecked;
+      sectionCheckbox.indeterminate = !allChecked && anyChecked;
     });
+  }
 
-    // Handle individual subsection checkboxes
-    subsectionCheckboxes.forEach(subsectionCheckbox => {
-        subsectionCheckbox.addEventListener('change', function() {
-            // Create map for just this checkbox that was clicked
-            const checkboxValueMap = new Map();
-            checkboxValueMap.set(this, {
-                current: !this.checked, // Previous state (opposite of current after click)
-                desired: this.checked   // New state (current after click)
-            });
+  /* ----------------------------- save ------------------------------ */
 
-            // Save the selection for this individual checkbox
-            saveSubsectionSelections(checkboxValueMap, this);
-        });
+  async function saveSubsectionSelections(checkboxValueMap, elementForFocus) {
+    const url       = container?.dataset.url;
+    const csrfToken = container?.dataset.csrfToken;
+    if (!url || !csrfToken) {
+      console.error('Missing URL or CSRF token on .compare-all-sections-container');
+      return;
+    }
+
+    setControlsDisabled(true);
+
+    // body: { subsections: { "<id>": true|false } }
+    const subsections = Object.fromEntries(
+      [...checkboxValueMap.entries()].map(([cb, v]) => [cb.value, v.desired])
+    );
+
+    try {
+      const res  = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        credentials: 'same-origin',
+        body: JSON.stringify({ subsections })
+      });
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        console.log(`Subsection selections saved. ${data.updated_count} updated.`);
+      } else if (data.status === 'fail') {
+        console.error(data.message);
+      } else if (data.status === 'partial') {
+        console.warn(data.message);
+      }
+
+      // Revert any failed IDs to their previous state
+      (data.failed_subsection_ids || []).forEach(failedId => {
+        const failed = document.querySelector(`input[name="compare_subsections"][value="${failedId}"]`);
+        if (!failed) return;
+        for (const [mapCb, values] of checkboxValueMap.entries()) {
+          if (mapCb.value === failedId) {
+            failed.checked = values.current;
+            break;
+          }
+        }
+      });
+
+      if (data.status !== 'success') {
+        showAlert(data.message || 'There was a problem saving your selection.', data.status === 'fail' ? 'error' : 'warning');
+        elementForFocus?.focus();
+      }
+    } catch (err) {
+      console.error('Error saving subsection selections:', err);
+      showAlert('There was a problem saving your selection.', 'error');
+      elementForFocus?.focus();
+    } finally {
+      updateCompareSectionCheckboxes();
+      updateCompareAllSectionsCheckbox();
+      setControlsDisabled(false);
+      updateUsaButtons();
+    }
+  }
+
+  // Expose for other parts of the page that may call it
+  window.saveSubsectionSelections = saveSubsectionSelections;
+
+  /* --------------------------- event wires ------------------------- */
+
+  // "Compare All Sections" toggles all sections + subsections
+  compareAllCheckbox.addEventListener('change', function () {
+    const desired = this.checked;
+    const map = buildCheckboxValueMap(subsectionCheckboxes, desired);
+    // also reflect on all section checkboxes
+    sectionCheckboxes.forEach(cb => cb.checked = desired);
+    saveSubsectionSelections(map, this);
+  });
+
+  // A section checkbox toggles only its own subsections
+  sectionCheckboxes.forEach(sectionCheckbox => {
+    sectionCheckbox.addEventListener('change', function () {
+      const sectionId  = this.value;
+      const desired    = this.checked;
+      const sectionSubs = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
+      const map = buildCheckboxValueMap(sectionSubs, desired);
+      saveSubsectionSelections(map, this);
     });
+  });
 
-    // Function to update the "Compare All Sections" checkbox state
-    function updateCompareAllSectionsCheckbox() {
-        const allCheckboxes = [...sectionCheckboxes, ...subsectionCheckboxes];
-        const allChecked = allCheckboxes.every(checkbox => checkbox.checked);
-        const anyChecked = allCheckboxes.some(checkbox => checkbox.checked);
+  // Individual subsection checkbox
+  subsectionCheckboxes.forEach(subsectionCheckbox => {
+    subsectionCheckbox.addEventListener('change', function () {
+      const map = new Map([[this, { current: !this.checked, desired: this.checked }]]);
+      saveSubsectionSelections(map, this);
+    });
+  });
 
-        if (allChecked) {
-            compareAllCheckbox.checked = true;
-            compareAllCheckbox.indeterminate = false;
-        } else if (anyChecked) {
-            compareAllCheckbox.checked = false;
-            compareAllCheckbox.indeterminate = true;
-        } else {
-            compareAllCheckbox.checked = false;
-            compareAllCheckbox.indeterminate = false;
-        }
-    }
-
-    // Function to update section checkboxes based on their subsection states
-    function updateCompareSectionCheckboxes() {
-        sectionCheckboxes.forEach(sectionCheckbox => {
-            const sectionId = sectionCheckbox.value;
-            const sectionSubsectionCheckboxes = document.querySelectorAll(`#section-${sectionId} input[name="compare_subsections"]`);
-
-            if (sectionSubsectionCheckboxes.length > 0) {
-                const allSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).every(checkbox => checkbox.checked);
-                const someSectionSubsectionsChecked = Array.from(sectionSubsectionCheckboxes).some(checkbox => checkbox.checked);
-
-                if (allSectionSubsectionsChecked) {
-                    sectionCheckbox.checked = true;
-                    sectionCheckbox.indeterminate = false;
-                } else if (someSectionSubsectionsChecked) {
-                    sectionCheckbox.checked = false;
-                    sectionCheckbox.indeterminate = true;
-                } else {
-                    sectionCheckbox.checked = false;
-                    sectionCheckbox.indeterminate = false;
-                }
-            }
-        });
-    }
-
-    function updateUsaButtons() {
-        if (allCheckboxes.every(checkbox => !checkbox.checked)) {
-            usaButtons.forEach(button => {
-                button.setAttribute('aria-disabled', 'true');
-                button.setAttribute('disabled', 'disabled');
-                button.classList.add('disabled-link');
-            });
-            // Create a simple message div
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `usa-alert usa-alert--warning usa-alert--slim margin-top-2`;
-            messageDiv.setAttribute('tabindex', '-1');
-            messageDiv.setAttribute('role', 'alert');
-            messageDiv.innerHTML = `
-                <div class="usa-alert__body">
-                    <p class="usa-alert__text">Please select at least one section or subsection to compare.</p>
-                </div>
-            `;
-            messageDiv.id = 'empty-selection-message';
-
-            // Insert after the summary box
-            const summaryBox = document.querySelector('.usa-list');
-            summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
-            messageDiv.focus();
-        } else {
-            usaButtons.forEach(button => {
-                button.removeAttribute('aria-disabled');
-                button.removeAttribute('disabled');
-                button.classList.remove('disabled-link');
-            });
-            if (document.getElementById('empty-selection-message')) {
-                document.getElementById('empty-selection-message').remove();
-            }
-        }
-    }
-
-    function saveSubsectionSelections(checkboxValueMap, element) {
-        // Get the container with data attributes
-        const container = document.querySelector('.compare-all-sections-container');
-        const url = container.dataset.url;
-        const csrfToken = container.dataset.csrfToken;
-
-        allCheckboxes.forEach(checkbox => {
-            checkbox.disabled = true;
-        });
-        usaButtons.forEach(button => {
-            button.disabled = true;
-        });
-
-        // Collect all subsection checkbox states from the map
-        const subsectionStates = {};
-        for (let [checkbox, values] of checkboxValueMap.entries()) {
-            subsectionStates[checkbox.value] = values.desired;
-        }
-
-        // Make POST request
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                subsections: subsectionStates
-            })
-        })
-        .then(response => {
-            return response.json();
-        })
-        .then(data => {
-            if (data.status == 'success') {
-                console.log(`Subsection selections saved successfully. ${data.updated_count} subsections updated.`);
-            } else if (data.status == 'fail') {
-                console.error(data.message);
-            } else if (data.status == 'partial') {
-                console.warn(data.message);
-            }
-
-            // Handle failed subsection IDs by reverting their checkboxes to previous state
-            if (data.failed_subsection_ids && data.failed_subsection_ids.length > 0) {
-                data.failed_subsection_ids.forEach(failedId => {
-                    const checkbox = document.querySelector(`input[name="compare_subsections"][value="${failedId}"]`);
-                    if (checkbox) {
-                        // Find the checkbox in our value map and revert to current (previous) state
-                        for (let [mapCheckbox, values] of checkboxValueMap.entries()) {
-                            if (mapCheckbox.value === failedId) {
-                                checkbox.checked = values.current;
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-            if (data.status !== 'success') {
-                showMessage(data, element);
-            }
-        })
-        .catch(error => {
-            console.error('Error saving subsection selections:', error);
-        })
-        .finally(() => {
-            updateCompareSectionCheckboxes();
-            updateCompareAllSectionsCheckbox();
-            allCheckboxes.forEach(checkbox => {
-                checkbox.disabled = false;
-            });
-            updateUsaButtons();
-        });
-    }
-
-    function showMessage(data, element) {
-            // Store the currently focused element
-            const previouslyFocusedElement = element;
-
-            // Create a simple message div
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `usa-alert usa-alert--${data.status === 'success' ? 'success' : data.status === 'fail' ? 'error' : 'warning'} usa-alert--slim margin-top-2`;
-            messageDiv.setAttribute('tabindex', '-1');
-            messageDiv.setAttribute('role', 'alert');
-            messageDiv.innerHTML = `
-                <div class="usa-alert__body">
-                    <p class="usa-alert__text">${data.message}</p>
-                </div>
-            `;
-
-            // Insert after the summary box
-            const summaryBox = document.querySelector('.usa-list');
-            summaryBox.parentNode.insertBefore(messageDiv, summaryBox.nextSibling);
-            messageDiv.focus();
-
-            // Remove message after 4 seconds
-            setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.parentNode.removeChild(messageDiv);
-                }
-                previouslyFocusedElement.focus();
-            }, 4000);
-    }
-
-    // Expose the function globally so it can be called from other parts of the page
-    window.saveSubsectionSelections = saveSubsectionSelections;
-
-    // Initialize the state on page load
-    updateCompareSectionCheckboxes();
-    updateCompareAllSectionsCheckbox();
-    updateUsaButtons();
+  /* --------------------------- initial sync ------------------------ */
+  updateCompareSectionCheckboxes();
+  updateCompareAllSectionsCheckbox();
+  updateUsaButtons();
 });
 </script>
 {% endblock %}
