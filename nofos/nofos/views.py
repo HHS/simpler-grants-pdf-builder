@@ -1746,9 +1746,9 @@ class NofoSubsectionEditView(
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        html_class = form.cleaned_data["html_class"]
-        if html_class:
-            self.object.html_class = html_class if html_class != "none" else ""
+        self.object.html_class = form.cleaned_data.get(
+            "html_class", ""
+        )  # "" or "page-break-before"
         self.object.save()
 
         messages.add_message(
