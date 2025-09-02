@@ -399,8 +399,15 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
             # add old_diff and new_diff
             comparison = annotate_side_by_side_diffs(comparison)
 
+            # count subsections which are not none
+            not_none_subsection_count = (
+                ContentGuideSubsection.objects.filter(section__content_guide=guide)
+                .exclude(comparison_type="none")
+                .count()
+            )
+
             first_section = comparison[0]
-            if first_section["subsections"]:
+            if first_section["subsections"] and not_none_subsection_count > 1:
                 # Remove "Basic Information" if it's the first subsection of the first section
                 first_sub = first_section["subsections"][0]
                 if first_sub.name.strip().lower() == "basic information":
