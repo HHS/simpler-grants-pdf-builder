@@ -11,11 +11,17 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Use USWDS sortable table for NOFO index instead of 3rd party library
+
 ### Fixed
 
 - Show deletions in compare page in order
 - Fix martor bug in admin console where subsection content could not be edited
 - Fix next query param redirect on login
+- Retrieving NOFO audit history is more efficient
+- Remove JS code from "Page break" input on subsection edit page
+  - Same functionality, but simpler implementation
+- Fix bug on /compare page if no subsections are selected
 
 ## [3.8.0] - 2025-08-21
 

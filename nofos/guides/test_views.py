@@ -565,6 +565,75 @@ class ContentGuideSubsectionEditViewTests(TestCase):
         self.assertEqual(self.subsection.diff_strings, [])
 
 
+class ContentGuideCompareViewTests(TestCase):
+    def setUp(self):
+        # Bloom user (can see all guides)
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Older", group="bloom", opdiv="CDC"
+        )
+
+    def test_compare_view_without_new_nofo_shows_upload_prompt(self):
+        """
+        Case 1: No new NOFO ID provided -> prompt to upload a NOFO should appear.
+        """
+        url = reverse("guides:guide_compare", args=[self.guide.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Upload a NOFO to compare it to this content guide.")
+
+    @patch("guides.views.annotate_side_by_side_diffs")
+    @patch("guides.views.compare_nofos")
+    def test_compare_view_with_new_nofo_and_zero_not_none_subsections_shows_no_changes(
+        self, mock_compare, mock_annotate
+    ):
+        """
+        Case 2: There IS a new NOFO, but the guide has 0 subsections whose comparison_type != 'none'.
+        Expect the 'No changes' message with both titles.
+        """
+        # Ensure not_none_subsection_count == 0 by making all guide subsections "none"
+        section = ContentGuideSection.objects.create(
+            content_guide=self.guide, name="Step 1", order=1, html_id="step-1"
+        )
+        ContentGuideSubsection.objects.create(
+            section=section,
+            name="Basic Information",
+            tag="h3",
+            body="Body text",
+            comparison_type="none",  # <-- only 'none' types exist
+            order=1,
+        )
+
+        new_nofo = Nofo.objects.create(title="Newer", group="bloom", opdiv="CDC")
+
+        # Mock a comparison result with only MATCHed subsections
+        sub = MagicMock()
+        sub.status = "MATCH"
+        sub.name = "Some subsection"
+        sub.old_value = "Old"
+        sub.new_value = "New"
+        sub.comparison_type = "name"
+
+        comparison = [{"name": "Step 1", "subsections": [sub]}]
+        mock_compare.return_value = comparison
+        mock_annotate.return_value = comparison
+
+        url = reverse("guides:guide_compare_result", args=[self.guide.pk, new_nofo.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        # Expected “no changes” message
+        expected = "<strong>No changes</strong>"
+        self.assertContains(resp, expected)
+
+
 class ContentGuideDiffCSVViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
