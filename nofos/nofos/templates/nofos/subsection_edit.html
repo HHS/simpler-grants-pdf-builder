@@ -128,26 +128,31 @@
       {% endif %}
 
       <!-- html_class -->
-      <div class="form-group">
+      <div class="form-group margin-top-4">
         <fieldset class="usa-fieldset">
-          {% if form.html_class.value %}
-            {% if form.html_class.value != 'page-break-before' and form.html_class.value != 'column-break-before' and form.html_class.value != 'avoid-break--heading' and form.html_class.value != 'none' %}
+          {# Show a warning if html_class is some unexpected value #}
+          {% with current_class=form.html_class.value|default_if_none:'' %}
+            {% if current_class and current_class != 'page-break-before' %}
               <div class="padding-05 padding-left-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark">
-                <span aria-hidden="true">⚠️</span> Warning! This heading’s class is ‘{{ form.html_class.value }}’. If you select a value, the existing class will be overwritten.
+                <span aria-hidden="true">⚠️</span>
+                Warning! This heading’s class is ‘{{ current_class }}’. If you change this, the existing class will be overwritten.
               </div>
             {% endif %}
-          {% endif %}
-          <div class="usa-checkbox width-mobile" style="margin-top: 3.25rem">
+          {% endwith %}
+
+          {# Hidden input ensures we submit "" when the checkbox is unchecked #}
+          <input type="hidden" name="html_class" value="">
+
+          <div class="usa-checkbox width-mobile">
             <input
               class="usa-checkbox__input usa-checkbox__input--tile"
               id="page-break-before"
               type="checkbox"
-              name="html_class_checkbox"
+              name="html_class"
               value="page-break-before"
-              {% if form.html_class.value and "page-break-before" in form.html_class.value %}
-                checked="checked"
+              {% if form.html_class.value == 'page-break-before' %}
+                checked
               {% endif %}
-              onclick="handleCheckboxClick(this)"
             />
             <label class="usa-checkbox__label" for="page-break-before">
               Add a page break
@@ -156,78 +161,6 @@
               </span>
             </label>
           </div>
-          {% if 'landscape' in nofo.theme %}
-            <div class="usa-checkbox">
-              <input
-                class="usa-checkbox__input usa-checkbox__input--tile"
-                id="column-break-before"
-                type="checkbox"
-                name="html_class_checkbox"
-                value="column-break-before"
-                {% if form.html_class.value and "column-break-before" in form.html_class.value %}
-                  checked="checked"
-                {% endif %}
-                onclick="handleCheckboxClick(this)"
-              />
-              <label class="usa-checkbox__label" for="column-break-before">
-                Has column break
-                <span class="usa-checkbox__label-description">
-                  This subsection starts in a new column in the printed PDF.
-                </span>
-              </label>
-            </div>
-            <div class="usa-checkbox">
-              <input
-                class="usa-checkbox__input usa-checkbox__input--tile"
-                id="avoid-break--heading"
-                type="checkbox"
-                name="html_class_checkbox"
-                value="avoid-break--heading"
-                {% if form.html_class.value and "avoid-break--heading" in form.html_class.value %}
-                  checked="checked"
-                {% endif %}
-                onclick="handleCheckboxClick(this)"
-              />
-              <label class="usa-checkbox__label" for="avoid-break--heading">
-                Avoid column break
-                <span class="usa-checkbox__label-description">
-                  Prevents this subsection from breaking across columns.
-                </span>
-              </label>
-            </div>
-          {% endif %}
-
-          <!-- Hidden input to store the actual value -->
-          <input type="hidden" name="html_class" id="html_class_hidden" value="{{ form.html_class.value|default:'none' }}">
-          <script>
-            function handleCheckboxClick(checkbox) {
-              // Uncheck all other checkboxes
-              document.querySelectorAll('input[name="html_class_checkbox"]').forEach(function(cb) {
-                if (cb !== checkbox) {
-                  cb.checked = false;
-                }
-              });
-
-              // Update the hidden input with the selected value
-              if (checkbox.checked) {
-                document.getElementById('html_class_hidden').value = checkbox.value;
-              } else {
-                // If the checkbox was unchecked, set value to none
-                document.getElementById('html_class_hidden').value = 'none';
-              }
-            }
-
-            // Initialize on page load
-            document.addEventListener('DOMContentLoaded', function() {
-              const currentValue = document.getElementById('html_class_hidden').value;
-              if (currentValue && currentValue !== 'none') {
-                const checkbox = document.querySelector(`input[value="${currentValue}"]`);
-                if (checkbox) {
-                  checkbox.checked = true;
-                }
-              }
-            });
-          </script>
         </fieldset>
       </div>
 
