@@ -1104,6 +1104,12 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
 /* Media queries */
 @media print {
+  @prince-pdf {
+    /* Open Acrobat with bookmarks panel open by default */
+    -prince-pdf-page-mode: show-bookmarks;
+    prince-pdf-role-map: "H7" P;
+  }
+
   /* Tag elements in the PDF */
   .toc ol {
     -prince-pdf-tag-type: TOC;
@@ -1118,14 +1124,8 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   }
 
   div[role="heading"] {
-    prince-pdf-tag-type: "H7";
+    -prince-pdf-tag-type: "H7";
     -prince-bookmark-level: 7;
-  }
-
-  @prince-pdf {
-    /* Open Acrobat with bookmarks panel open by default */
-    -prince-pdf-page-mode: show-bookmarks;
-    prince-pdf-role-map: "H7" P;
   }
 
   .bookmark-level-2 {
@@ -1151,6 +1151,11 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   .section--title-page--header-nav li a,
   .header-nav--running-header li a {
     -prince-link: none;
+  }
+
+  /* Close table borders when the cell continues onto a new page */
+  table {
+    box-decoration-break: clone;
   }
 
   /* Page break rules */
