@@ -11,6 +11,14 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [3.9.0] - 2025-09-05
+
+### Changed
+
+- Use "pipeline: 11" which uses the newest Prince release, Prince 16
+  - More details here: https://www.princexml.com/releases/16/
 - Use USWDS sortable table for NOFO index instead of 3rd party library
 
 ### Fixed
