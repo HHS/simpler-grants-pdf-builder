@@ -13,6 +13,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Remove 1px outline from table headings in PDFs
+
 ## [3.9.0] - 2025-09-05
 
 ### Changed

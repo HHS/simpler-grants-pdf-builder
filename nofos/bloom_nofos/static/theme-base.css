@@ -265,7 +265,6 @@ table th.header-row-empty[colspan] {
 
 table thead th,
 table tbody tr:first-of-type th {
-  background-clip: padding-box;
   font-weight: 600;
   line-height: 1.3;
   text-align: left;
