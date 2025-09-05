@@ -1522,7 +1522,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                     "document_url": nofo_url,
                     "document_type": "pdf",
                     "javascript": False,
-                    "pipeline": 11,
                     "prince_options": {
                         "media": "print",  # use print styles instead of screen styles
                         "profile": "PDF/UA-1",
