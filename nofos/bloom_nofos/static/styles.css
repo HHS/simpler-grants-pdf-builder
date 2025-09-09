@@ -635,6 +635,35 @@ label.usa-label {
   z-index: 10;
 }
 
+.nofo_edit .menu-button-links {
+  position: relative;
+  display: inline-block;
+}
+
+.nofo_edit .menu-button-links .menu-button-links__button {
+  border: 2px solid black;
+  background-image: url("/static/img/usa-icons/expand_more.svg"),
+    linear-gradient(transparent, transparent);
+}
+
+.nofo_edit .menu-button-links .menu-button-links__button[aria-expanded="true"] {
+  background-image: url("/static/img/usa-icons/expand_less.svg"),
+    linear-gradient(transparent, transparent);
+}
+
+.nofo_edit .menu-button-links .menu-button-links__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 200px;
+
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  background: white;
+}
+
 /* Alert styles */
 .usa-alert--fixed {
   position: fixed;

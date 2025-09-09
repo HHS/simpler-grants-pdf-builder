@@ -49,6 +49,67 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 </div>
 
+<div class="menu-button-links" data-disclosure>
+  <button
+    type="button"
+    class="menu-button-links__button usa-select"
+    aria-expanded="false"
+    aria-controls="quick-links"
+    id="quick-links-button"
+  >
+    WAI-ARIA Quick Links
+  </button>
+
+  <ul id="quick-links" class="menu-button-links__list usa-sidenav" hidden>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/">W3C Home Page</a></li>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/standards/webdesign/accessibility">WAI</a></li>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria/">ARIA Spec</a></li>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria-practices/">Authoring Practices</a></li>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria-implementation/">Implementation Guide</a></li>
+    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/accname-aam-1.1/">Accessible Name & Description</a></li>
+  </ul>
+</div>
+
+<script>
+  (function () {
+  function initDisclosure(root) {
+    const btn = root.querySelector('button[aria-controls]');
+    const panel = document.getElementById(btn.getAttribute('aria-controls'));
+    if (!btn || !panel) return;
+
+    function setOpen(open) {
+      btn.setAttribute('aria-expanded', String(open));
+      panel.hidden = !open;
+    }
+
+    // initial state (ensure DOM and ARIA agree)
+    setOpen(btn.getAttribute('aria-expanded') === 'true' && !panel.hidden);
+
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      setOpen(!open);
+    });
+
+    // Optional: close on Escape when focus is inside
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+
+    // Optional: click outside to close
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-disclosure]').forEach(initDisclosure);
+})();
+</script>
+
 {% include "includes/side_navigation.html" with side_nav_headings=side_nav_headings %}
 
 <div class="nofo_edit--audit-widget">
