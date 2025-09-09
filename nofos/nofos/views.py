@@ -279,6 +279,76 @@ class NofosDetailView(DetailView):
         return context
 
 
+# Canonical action builders
+def _link_check_links(nofo, external_count: int | None = None):
+    label = "Check external links"
+    if external_count is not None:
+        label = f"{label} ({external_count})"
+    return {
+        "key": "check-links",
+        "label": label,
+        "href": reverse_lazy("nofos:nofo_check_links", args=[nofo.pk]),
+    }
+
+
+def _link_reimport(nofo):
+    return {
+        "key": "reimport",
+        "label": "Re-import NOFO",
+        "href": reverse_lazy("nofos:nofo_import_overwrite", args=[nofo.pk]),
+    }
+
+
+def _link_delete(nofo):
+    return {
+        "key": "delete",
+        "label": "Delete NOFO",
+        "href": reverse_lazy("nofos:nofo_archive", args=[nofo.pk]),
+        "danger": True,
+    }
+
+
+def _link_find_replace(nofo):
+    return {
+        "key": "find-replace",
+        "label": "Find & Replace",
+        "href": reverse_lazy("nofos:nofo_find_replace", args=[nofo.pk]),
+    }
+
+
+# Status → allowed actions
+_STATUS_ACTIONS = {
+    "draft": ("check_links", "reimport", "delete", "find_replace"),
+    "active": ("check_links", "reimport", "find_replace"),
+    "ready-for-qa": ("check_links", "reimport", "find_replace"),
+    "review": ("find_replace",),
+    "doge": ("find_replace",),  # Deputy Secretary review
+    "published": (),  # no actions ("modifications" is not part of this)
+    "paused": ("check_links", "find_replace"),
+    "cancelled": (),
+}
+
+
+def build_nofo_action_links(nofo, *, external_links_count: int | None = None):
+    status = (nofo.status or "").lower()
+    actions = _STATUS_ACTIONS.get(status, ())
+
+    # Assemble in order
+    link_builders = {
+        "check_links": lambda: _link_check_links(nofo, external_links_count),
+        "reimport": lambda: _link_reimport(nofo),
+        "delete": lambda: _link_delete(nofo),
+        "find_replace": lambda: _link_find_replace(nofo),
+    }
+
+    links = []
+    for key in actions:
+        build = link_builders.get(key)
+        if build:
+            links.append(build())
+    return links
+
+
 class NofosEditView(GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
@@ -309,6 +379,16 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
 
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
+
+        # status-based action menu items
+        external_count = (
+            len(context["external_links"])
+            if context.get("external_links") is not None
+            else None
+        )
+        context["action_links"] = build_nofo_action_links(
+            self.object, external_links_count=external_count
+        )
 
         return context
 

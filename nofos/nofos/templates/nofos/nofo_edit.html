@@ -54,20 +54,24 @@ Edit “{{ nofo|nofo_name }}”
     type="button"
     class="menu-button-links__button usa-select"
     aria-expanded="false"
-    aria-controls="quick-links"
-    id="quick-links-button"
+    aria-controls="nofo-actions-{{ object.pk }}"
+    id="nofo-actions-button-{{ object.pk }}"
   >
-    WAI-ARIA Quick Links
+    NOFO actions
   </button>
 
-  <ul id="quick-links" class="menu-button-links__list usa-sidenav" hidden>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/">W3C Home Page</a></li>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/standards/webdesign/accessibility">WAI</a></li>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria/">ARIA Spec</a></li>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria-practices/">Authoring Practices</a></li>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/wai-aria-implementation/">Implementation Guide</a></li>
-    <li class="usa-sidenav__item"><a href="https://www.w3.org/TR/accname-aam-1.1/">Accessible Name & Description</a></li>
-  </ul>
+  {% if action_links %}
+    <ul id="nofo-actions-{{ object.pk }}" class="menu-button-links__list usa-sidenav" hidden>
+      {% for link in action_links %}
+        <li>
+          <a
+            href="{{ link.href }}"
+            class="{% if link.danger %}usa-link--destructive{% endif %}"
+          >{{ link.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 </div>
 
 <script>

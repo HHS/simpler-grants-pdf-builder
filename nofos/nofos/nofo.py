@@ -20,6 +20,7 @@ from constance import config
 from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
+from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
@@ -1118,6 +1119,71 @@ def _update_link_statuses(all_links):
                 link.update(result)
             except Exception as e:
                 print(f"Error checking link {link['url']}: {e}")
+
+
+def get_nofo_action_links(nofo, external_links_count=None):
+    # Canonical action builders
+    def _link_check_links(nofo, external_count=None):
+        label = "Check external links"
+        if external_count is not None:
+            label = f"{label} ({external_count})"
+        return {
+            "key": "check-links",
+            "label": label,
+            "href": reverse_lazy("nofos:nofo_check_links", args=[nofo.pk]),
+        }
+
+    def _link_reimport(nofo):
+        return {
+            "key": "reimport",
+            "label": "Re-import NOFO",
+            "href": reverse_lazy("nofos:nofo_import_overwrite", args=[nofo.pk]),
+        }
+
+    def _link_delete(nofo):
+        return {
+            "key": "delete",
+            "label": "Delete NOFO",
+            "href": reverse_lazy("nofos:nofo_archive", args=[nofo.pk]),
+            "danger": True,
+        }
+
+    def _link_find_replace(nofo):
+        return {
+            "key": "find-replace",
+            "label": "Find & Replace",
+            "href": reverse_lazy("nofos:nofo_find_replace", args=[nofo.pk]),
+        }
+
+    # Status → allowed actions
+    _STATUS_ACTIONS = {
+        "draft": ("check_links", "reimport", "delete", "find_replace"),
+        "active": ("check_links", "reimport", "find_replace"),
+        "ready-for-qa": ("check_links", "reimport", "find_replace"),
+        "review": ("find_replace",),
+        "doge": ("find_replace",),  # Deputy Secretary review
+        "published": (),  # no actions ("modifications" is not part of this)
+        "paused": ("check_links", "find_replace"),
+        "cancelled": (),
+    }
+
+    status = (nofo.status or "").lower()
+    actions = _STATUS_ACTIONS.get(status, ())
+
+    # Assemble in order
+    link_builders = {
+        "check_links": lambda: _link_check_links(nofo, external_links_count),
+        "reimport": lambda: _link_reimport(nofo),
+        "delete": lambda: _link_delete(nofo),
+        "find_replace": lambda: _link_find_replace(nofo),
+    }
+
+    links = []
+    for key in actions:
+        build = link_builders.get(key)
+        if build:
+            links.append(build())
+    return links
 
 
 def find_external_link(url):
