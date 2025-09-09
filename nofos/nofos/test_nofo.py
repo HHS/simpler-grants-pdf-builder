@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.urls import reverse
 from freezegun import freeze_time
 
 from .models import Nofo, Section, Subsection
@@ -43,6 +44,7 @@ from .nofo import (
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
     get_cover_image,
+    get_nofo_action_links,
     get_sections_from_soup,
     get_side_nav_links,
     get_step_2_section,
@@ -2751,6 +2753,122 @@ class TestFindIncorrectlyNestedHeadingLevels(TestCase):
 
         error_messages = find_incorrectly_nested_heading_levels(nofo)
         self.assertEqual(error_messages, [])
+
+
+class TestBuildNofoActionLinks(TestCase):
+    def setUp(self):
+        # Create a minimal NOFO; add required fields if your model needs them.
+        self.nofo = Nofo.objects.create(
+            title="Test Nofo Action Links",
+            opdiv="Test OpDiv",
+            status="draft",
+        )
+
+    def _assert_link(self, link, key, label, url_name, danger=False):
+        self.assertEqual(link["key"], key)
+        self.assertEqual(link["label"], label)
+        expected_href = reverse(url_name, args=[self.nofo.pk])
+        self.assertEqual(str(link["href"]), expected_href)
+        if danger:
+            self.assertTrue(link.get("danger") is True)
+        else:
+            self.assertFalse(link.get("danger", False))
+
+    def test_draft_has_check_reimport_delete_findreplace_in_order_with_count(self):
+        self.nofo.status = "draft"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo, external_links_count=143)
+        self.assertEqual(
+            [l["key"] for l in links],
+            ["check-links", "reimport", "delete", "find-replace"],
+        )
+
+        self._assert_link(
+            links[0],
+            key="check-links",
+            label="Check external links (143)",
+            url_name="nofos:nofo_check_links",
+        )
+        self._assert_link(
+            links[1],
+            key="reimport",
+            label="Re-import NOFO",
+            url_name="nofos:nofo_import_overwrite",
+        )
+        self._assert_link(
+            links[2],
+            key="delete",
+            label="Delete NOFO",
+            url_name="nofos:nofo_archive",
+            danger=True,
+        )
+        self._assert_link(
+            links[3],
+            key="find-replace",
+            label="Find & Replace",
+            url_name="nofos:nofo_find_replace",
+        )
+
+    def test_check_links_label_without_count(self):
+        self.nofo.status = "draft"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo, external_links_count=None)
+        self.assertEqual(links[0]["label"], "Check external links")
+
+    def test_active_has_check_reimport_findreplace(self):
+        self.nofo.status = "active"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo, external_links_count=3)
+        self.assertEqual(
+            [l["key"] for l in links], ["check-links", "reimport", "find-replace"]
+        )
+
+    def test_ready_for_qa_has_check_reimport_findreplace(self):
+        self.nofo.status = "ready-for-qa"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo, external_links_count=5)
+        self.assertEqual(
+            [l["key"] for l in links], ["check-links", "reimport", "find-replace"]
+        )
+
+    def test_review_has_findreplace_only(self):
+        self.nofo.status = "review"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertEqual([l["key"] for l in links], ["find-replace"])
+
+    def test_doge_has_findreplace_only(self):
+        self.nofo.status = "doge"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertEqual([l["key"] for l in links], ["find-replace"])
+
+    def test_published_has_no_actions(self):
+        self.nofo.status = "published"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertEqual(links, [])
+
+    def test_paused_has_check_and_findreplace(self):
+        self.nofo.status = "paused"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo, external_links_count=9)
+        self.assertEqual([l["key"] for l in links], ["check-links", "find-replace"])
+
+    def test_cancelled_has_no_actions(self):
+        self.nofo.status = "cancelled"
+        self.nofo.save()
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertEqual(links, [])
 
 
 class TestFindExternalLinks(TestCase):
