@@ -52,10 +52,15 @@ Edit “{{ nofo|nofo_name }}”
 <div class="menu-button-links" data-disclosure>
   <button
     type="button"
-    class="menu-button-links__button usa-select"
+    class="menu-button-links__button usa-select{% if not action_links %} usa-tooltip{% endif%}"
     aria-expanded="false"
     aria-controls="nofo-actions-{{ object.pk }}"
     id="nofo-actions-button-{{ object.pk }}"
+    {% if not action_links %}
+    disabled
+    data-position="bottom"
+    title="No actions for {{ object.status }} NOFOs"
+    {% endif %}
   >
     NOFO actions
   </button>
