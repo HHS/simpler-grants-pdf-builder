@@ -35,11 +35,66 @@ Edit “{{ nofo|nofo_name }}”
     </div>
   {% endwith %}
   <div class="nofo_edit--header--view font-sans-xs">
-    {% include "includes/print_button.html" %}
+
+    {# NOFO status #}
+    <form id="nofo-status--form" class="nofo-status--form" method="post" action="{% url 'nofos:nofo_edit_status' nofo.id %}">
+      {% csrf_token %}
+      <div class="usa-form-group margin-0">
+          <label class="usa-label display-inline-block font-sans-md margin-top-0" for="{{ status_form.status.name }}"><strong>Status:</strong></label>
+
+        <select
+          class="usa-select border-2px width-auto display-inline-block margin-top-0"
+          name="{{ status_form.status.name }}"
+          id="{{ status_form.status.name }}"
+          onchange="this.form.submit()"
+        >
+          {% for value, label in status_form.status.field.choices %}
+            {% if value == '' %}
+              <option disabled>{{ label }}</option>
+            {% else %}
+              <option value="{{ value }}" {% if status_form.status.value == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    {# NOFO actions #}
+    <div class="menu-button-links" data-disclosure>
+      <button
+        type="button"
+        class="menu-button-links__button usa-select{% if not action_links %} usa-tooltip{% endif%}"
+        aria-expanded="false"
+        aria-controls="nofo-actions-{{ object.pk }}"
+        id="nofo-actions-button-{{ object.pk }}"
+        {% if not action_links %}
+        disabled
+        data-position="bottom"
+        title="No actions for {{ object.status }} NOFOs"
+        {% endif %}
+      >
+        NOFO actions
+      </button>
+      {% if action_links %}
+        <ul id="nofo-actions-{{ object.pk }}" class="menu-button-links__list usa-sidenav" hidden>
+          {% for link in action_links %}
+            <li class="usa-sidenav__item">
+              <a
+                href="{{ link.href }}"
+                class="{% if link.danger %}usa-link--destructive{% endif %}"
+              >{{ link.label }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
   </div>
 </div>
 
-<div class="margin-bottom-5">
+<div class="margin-bottom-2">
 {% if user.group == 'bloom' %}
   <a href="{% url 'nofos:nofo_edit_group' nofo.id %}" class="usa-tag--link">
   <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ nofo.group }}">{{ nofo.get_group_display }}</span>
@@ -49,75 +104,6 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 </div>
 
-<div class="menu-button-links" data-disclosure>
-  <button
-    type="button"
-    class="menu-button-links__button usa-select{% if not action_links %} usa-tooltip{% endif%}"
-    aria-expanded="false"
-    aria-controls="nofo-actions-{{ object.pk }}"
-    id="nofo-actions-button-{{ object.pk }}"
-    {% if not action_links %}
-    disabled
-    data-position="bottom"
-    title="No actions for {{ object.status }} NOFOs"
-    {% endif %}
-  >
-    NOFO actions
-  </button>
-
-  {% if action_links %}
-    <ul id="nofo-actions-{{ object.pk }}" class="menu-button-links__list usa-sidenav" hidden>
-      {% for link in action_links %}
-        <li>
-          <a
-            href="{{ link.href }}"
-            class="{% if link.danger %}usa-link--destructive{% endif %}"
-          >{{ link.label }}</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-</div>
-
-<script>
-  (function () {
-  function initDisclosure(root) {
-    const btn = root.querySelector('button[aria-controls]');
-    const panel = document.getElementById(btn.getAttribute('aria-controls'));
-    if (!btn || !panel) return;
-
-    function setOpen(open) {
-      btn.setAttribute('aria-expanded', String(open));
-      panel.hidden = !open;
-    }
-
-    // initial state (ensure DOM and ARIA agree)
-    setOpen(btn.getAttribute('aria-expanded') === 'true' && !panel.hidden);
-
-    btn.addEventListener('click', () => {
-      const open = btn.getAttribute('aria-expanded') === 'true';
-      setOpen(!open);
-    });
-
-    // Optional: close on Escape when focus is inside
-    root.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
-        setOpen(false);
-        btn.focus();
-      }
-    });
-
-    // Optional: click outside to close
-    document.addEventListener('click', (e) => {
-      if (!root.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') {
-        setOpen(false);
-      }
-    });
-  }
-
-  document.querySelectorAll('[data-disclosure]').forEach(initDisclosure);
-})();
-</script>
 
 {% include "includes/side_navigation.html" with side_nav_headings=side_nav_headings %}
 
@@ -130,6 +116,10 @@ Edit “{{ nofo|nofo_name }}”
   <span>
     <a href="{% url 'nofos:nofo_history' nofo.id %}">See all updates to this NOFO</a>
   </span>
+</div>
+
+<div class="nofo_edit--print-buttons">
+    {% include "includes/print_button.html" %}
 </div>
 
 <!-- Consolidated NOFO Status and Actions Summary Box -->
