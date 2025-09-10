@@ -90,10 +90,6 @@ footer .usa-footer__primary-link:visited {
   color: var(--color--text-default);
 }
 
-.usa-button-group--segmented .usa-button {
-  display: inline-block;
-}
-
 .usa-combo-box__input,
 .usa-input,
 .usa-input-group,
@@ -523,7 +519,7 @@ label.usa-label {
   align-items: center;
   gap: 12px;
   padding-top: 8px;
-  margin-bottom: 6px;
+  padding-bottom: 6px;
   height: 58px;
 }
 
@@ -555,6 +551,30 @@ label.usa-label {
 .nofo_edit--header .nofo_edit--header--back-to-top {
   flex: 0 0 auto;
   white-space: nowrap;
+}
+
+.nofo_edit--header .nofo_edit--header--view .nofo-status--form {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.nofo_edit--header .nofo_edit--header--view .nofo-status--form select {
+  width: 140px;
+}
+
+.nofo_edit--print-buttons {
+  text-align: right;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  position: sticky;
+  top: 56px;
+  background: white;
+  z-index: 19;
+}
+
+.nofo_edit--print-buttons .usa-button-group {
+  justify-content: flex-end;
 }
 
 .section_edit--header h1,
@@ -642,6 +662,8 @@ label.usa-label {
 
 .nofo_edit .menu-button-links .menu-button-links__button {
   border: 2px solid black;
+  border-radius: 4px;
+  margin-top: 0;
   background-image: url("/static/img/usa-icons/expand_more.svg"),
     linear-gradient(transparent, transparent);
 }
@@ -654,8 +676,8 @@ label.usa-label {
 .nofo_edit .menu-button-links .menu-button-links__list {
   position: absolute;
   top: calc(100% + 4px);
-  left: 0;
-  z-index: 10;
+  right: 0;
+  z-index: 25;
   min-width: 200px;
 
   padding: 0;
@@ -753,7 +775,7 @@ label.usa-label {
 }
 
 .nofo_edit caption {
-  top: 46px;
+  top: 92px;
 }
 
 .nofo_edit caption div,
@@ -1032,7 +1054,7 @@ label.usa-label {
   display: inline-block;
   margin: 1em 0;
   position: sticky;
-  top: 139px;
+  top: 186px;
 }
 
 .nofo_edit main table.usa-table > tbody > tr:first-of-type > th {
@@ -1040,7 +1062,7 @@ label.usa-label {
 }
 
 .nofo_edit table.usa-table th.nofo-edit-table--subsection--name {
-  scroll-margin-top: 115px;
+  scroll-margin-top: 160px;
 }
 
 .nofo_edit

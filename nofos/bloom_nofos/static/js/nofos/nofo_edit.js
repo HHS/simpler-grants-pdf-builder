@@ -1,7 +1,48 @@
-// This JS file does 2 things:
+// This JS file does 3 things:
+// 1. Operates the "NOFO actions" open/close menu
 // 1. Copies the heading ids for sections and subsections (those link buttons you see)
 // 2. Copies all the flagged internal links to clipboard
 document.addEventListener("DOMContentLoaded", function () {
+  // JS to get the NOFO actions widget to open and close
+  function nofoActionsInit(root) {
+    const btn = root.querySelector("button[aria-controls]");
+    const panel = document.getElementById(btn.getAttribute("aria-controls"));
+    if (!btn || !panel) return;
+
+    function setOpen(open) {
+      btn.setAttribute("aria-expanded", String(open));
+      panel.hidden = !open;
+    }
+
+    // initial state (ensure DOM and ARIA agree)
+    setOpen(btn.getAttribute("aria-expanded") === "true" && !panel.hidden);
+
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") === "true";
+      setOpen(!open);
+    });
+
+    // Optional: close on Escape when focus is inside
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+
+    // Optional: click outside to close
+    document.addEventListener("click", (e) => {
+      if (
+        !root.contains(e.target) &&
+        btn.getAttribute("aria-expanded") === "true"
+      ) {
+        setOpen(false);
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-disclosure]").forEach(nofoActionsInit);
+
   // Copy buttons for the heading ids
   const tableButtons = document.querySelectorAll(
     ".table--section .usa-button--content_copy"
