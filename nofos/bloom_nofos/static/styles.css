@@ -553,15 +553,25 @@ label.usa-label {
   white-space: nowrap;
 }
 
+.nofo_edit--group-tag {
+  position: absolute;
+  margin-top: 21px;
+  z-index: 16;
+}
+
+.nofo_edit--group-tag .usa-tag {
+  padding: 0.3rem 0.5rem;
+}
+
 .nofo_edit--print-buttons {
   text-align: right;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   position: sticky;
   top: 56px;
   background: white;
-  z-index: 19;
+  z-index: 15;
 }
 
 .nofo_edit--print-buttons .usa-button-group {
