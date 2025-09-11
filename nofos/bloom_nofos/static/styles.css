@@ -553,15 +553,6 @@ label.usa-label {
   white-space: nowrap;
 }
 
-.nofo_edit--header .nofo_edit--header--view .nofo-status--form {
-  display: inline-block;
-  margin-right: 10px;
-}
-
-.nofo_edit--header .nofo_edit--header--view .nofo-status--form select {
-  width: 140px;
-}
-
 .nofo_edit--print-buttons {
   text-align: right;
   margin-top: 1rem;

@@ -37,30 +37,6 @@ Edit “{{ nofo|nofo_name }}”
   <div class="nofo_edit--header--view font-sans-xs">
 
     {# TODO: archived NOFOS please #}
-    {# NOFO status #}
-    <form id="nofo-status--form" class="nofo-status--form" method="post" action="{% url 'nofos:nofo_edit_status' nofo.id %}">
-      {% csrf_token %}
-      <div class="usa-form-group margin-0">
-          <label class="usa-label display-inline-block font-sans-md margin-top-0" for="{{ status_form.status.name }}"><strong>Status:</strong></label>
-
-        <select
-          class="usa-select border-2px width-auto display-inline-block margin-top-0"
-          name="{{ status_form.status.name }}"
-          id="{{ status_form.status.name }}"
-          onchange="this.form.submit()"
-        >
-          {% for value, label in status_form.status.field.choices %}
-            {% if value == '' %}
-              <option disabled>{{ label }}</option>
-            {% else %}
-              <option value="{{ value }}" {% if status_form.status.value == value %}selected{% endif %}>
-                {{ label }}
-              </option>
-            {% endif %}
-          {% endfor %}
-        </select>
-      </div>
-    </form>
 
     {# NOFO actions #}
     <div class="menu-button-links" data-disclosure>
@@ -126,12 +102,45 @@ Edit “{{ nofo|nofo_name }}”
 <!-- Consolidated NOFO Status and Actions Summary Box -->
 <div class="usa-summary-box margin-bottom-2" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
+
+    {# NOFO status #}
+    <h4 class="usa-summary-box__heading font-heading-sm" id="summary-box-key-information">
+      <!-- Status Dropdown Form -->
+      {% if not nofo.archived %}
+        <form id="nofo-status--form" method="post" action="{% url 'nofos:nofo_edit_status' nofo.id %}">
+          {% csrf_token %}
+          <div class="usa-form-group margin-bottom-3 margin-top-0">
+              <label class="usa-label display-inline-block font-sans-md margin-top-0" for="{{ status_form.status.name }}"><strong>Status:</strong></label>
+
+            <select
+              class="usa-select border-2px width-auto display-inline-block margin-top-0"
+              name="{{ status_form.status.name }}"
+              id="{{ status_form.status.name }}"
+              onchange="this.form.submit()"
+            >
+              {% for value, label in status_form.status.field.choices %}
+                {% if value == '' %}
+                  <option disabled>{{ label }}</option>
+                {% else %}
+                  <option value="{{ value }}" {% if status_form.status.value == value %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      {% else %}
+          NOFO is Archived.
+      {% endif %}
+    </h4>
+
     <div class="usa-summary-box__text">
 
       <!-- Status-specific messages and actions -->
       {% if nofo.archived %}
         <!-- ARCHIVED NOFO -->
-        <p>Archived NOFOs exist as a record for posterity but can't be edited in any way. If you would like to restore this NOFO, please get in touch with Paul or Adam.</p>
+        <p>Archived NOFOs exist as a record for posterity but can't be edited in any way. If you would like to restore this NOFO, please get in touch with Paul or Ben.</p>
         {% if nofo.successor %}
           <p>This is a past version of <a href="{% url 'nofos:nofo_edit' nofo.successor.id %}">{{ nofo.successor }}</a></p>
         {% endif %}
