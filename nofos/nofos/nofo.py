@@ -1157,9 +1157,9 @@ def get_nofo_action_links(nofo, external_links_count=None):
 
     # Status → allowed actions
     _STATUS_ACTIONS = {
-        "draft": ("check_links", "reimport", "delete", "find_replace"),
-        "active": ("check_links", "reimport", "find_replace"),
-        "ready-for-qa": ("check_links", "reimport", "find_replace"),
+        "draft": ("check_links", "find_replace", "reimport", "delete"),
+        "active": ("check_links", "find_replace", "reimport"),
+        "ready-for-qa": ("check_links", "find_replace", "reimport"),
         "review": ("find_replace",),
         "doge": ("find_replace",),  # Deputy Secretary review
         "published": (),  # no actions ("modifications" is not part of this)
@@ -1173,9 +1173,9 @@ def get_nofo_action_links(nofo, external_links_count=None):
     # Assemble in order
     link_builders = {
         "check_links": lambda: _link_check_links(nofo, external_links_count),
+        "find_replace": lambda: _link_find_replace(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "delete": lambda: _link_delete(nofo),
-        "find_replace": lambda: _link_find_replace(nofo),
     }
 
     links = []
@@ -1183,6 +1183,7 @@ def get_nofo_action_links(nofo, external_links_count=None):
         build = link_builders.get(key)
         if build:
             links.append(build())
+
     return links
 
 

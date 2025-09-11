@@ -686,6 +686,14 @@ label.usa-label {
   background: white;
 }
 
+.nofo_edit .menu-button-links .menu-button-links__list .usa-link--destructive,
+.nofo_edit
+  .menu-button-links
+  .menu-button-links__list
+  .usa-link--destructive:hover {
+  color: var(--color--usa-error-message);
+}
+
 /* Alert styles */
 .usa-alert--fixed {
   position: fixed;
