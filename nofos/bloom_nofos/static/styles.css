@@ -578,6 +578,14 @@ label.usa-label {
   justify-content: flex-end;
 }
 
+.usa-button-group--segmented
+  .usa-button-group__item:where(:not(:first-child):not(:last-child))
+  .usa-button {
+  border-radius: 0;
+  margin-right: -1px;
+  margin-left: -1px;
+}
+
 .section_edit--header h1,
 .subsection_edit--header h1 {
   width: 65%;
