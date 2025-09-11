@@ -309,29 +309,6 @@ Edit “{{ nofo|nofo_name }}”
 </section>
 {% endif %}
 
-<table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived">
-  <caption>
-    <div>
-      <h2 class="margin-bottom-0">NOFO status</h2>
-    </div>
-  </caption>
-  <thead class="usa-sr-only">
-    <tr>
-      <th scope="col">Key</th>
-      <th scope="col">Value</th>
-      <th scope="col">Manage</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">NOFO status</th>
-      <td>{{ nofo.get_status_display|get_value_or_none:"draft" }}</td>
-      <td><a href="{% url 'nofos:nofo_edit_status' nofo.id %}">Edit<span class="usa-sr-only"> NOFO status</span></a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
   <caption>
     <div>
