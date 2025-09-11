@@ -79,4 +79,11 @@ USER appuser
 
 # final container port + command
 EXPOSE ${PORT:-8000}
-CMD ["sh","-c","poetry run gunicorn --workers 2 --threads 2 --timeout 120 --graceful-timeout 30 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application --worker-tmp-dir /dev/shm"]
+CMD ["sh","-c","poetry run gunicorn \
+  --chdir nofos \
+  --bind 0.0.0.0:${PORT:-8000} \
+  --workers 1 --threads 4 --timeout 180 --graceful-timeout 45 \
+  --worker-tmp-dir /dev/shm \
+  --access-logfile '-' --error-logfile '-' --log-level info \
+  --access-logformat '%(t)s %(h)s \"%(r)s\" %(s)s %(b)s %(L)s' \
+  bloom_nofos.wsgi:application"]
