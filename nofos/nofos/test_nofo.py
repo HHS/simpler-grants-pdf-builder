@@ -2781,7 +2781,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo, external_links_count=143)
         self.assertEqual(
             [l["key"] for l in links],
-            ["check-links", "reimport", "delete", "find-replace"],
+            ["check-links", "find-replace", "reimport", "delete"],
         )
 
         self._assert_link(
@@ -2792,22 +2792,22 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[1],
+            key="find-replace",
+            label="Find & Replace",
+            url_name="nofos:nofo_find_replace",
+        )
+        self._assert_link(
+            links[2],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[2],
+            links[3],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
             danger=True,
-        )
-        self._assert_link(
-            links[3],
-            key="find-replace",
-            label="Find & Replace",
-            url_name="nofos:nofo_find_replace",
         )
 
     def test_check_links_label_without_count(self):
@@ -2823,7 +2823,7 @@ class TestBuildNofoActionLinks(TestCase):
 
         links = get_nofo_action_links(self.nofo, external_links_count=3)
         self.assertEqual(
-            [l["key"] for l in links], ["check-links", "reimport", "find-replace"]
+            [l["key"] for l in links], ["check-links", "find-replace", "reimport"]
         )
 
     def test_ready_for_qa_has_check_reimport_findreplace(self):
@@ -2832,7 +2832,7 @@ class TestBuildNofoActionLinks(TestCase):
 
         links = get_nofo_action_links(self.nofo, external_links_count=5)
         self.assertEqual(
-            [l["key"] for l in links], ["check-links", "reimport", "find-replace"]
+            [l["key"] for l in links], ["check-links", "find-replace", "reimport"]
         )
 
     def test_review_has_findreplace_only(self):
