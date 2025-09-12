@@ -519,7 +519,7 @@ label.usa-label {
   align-items: center;
   gap: 12px;
   padding-top: 8px;
-  padding-bottom: 6px;
+  padding-bottom: 10px;
   height: 58px;
 }
 
@@ -673,6 +673,7 @@ label.usa-label {
   border: 2px solid black;
   border-radius: 4px;
   margin-top: 0;
+  cursor: pointer;
   background-image: url("/static/img/usa-icons/expand_more.svg"),
     linear-gradient(transparent, transparent);
 }
@@ -792,7 +793,7 @@ label.usa-label {
 }
 
 .nofo_edit caption {
-  top: 92px;
+  top: 85px;
 }
 
 .nofo_edit caption div,
@@ -1079,7 +1080,7 @@ label.usa-label {
 }
 
 .nofo_edit table.usa-table th.nofo-edit-table--subsection--name {
-  scroll-margin-top: 160px;
+  scroll-margin-top: 158px;
 }
 
 .nofo_edit
