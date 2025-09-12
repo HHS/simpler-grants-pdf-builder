@@ -1498,7 +1498,7 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
-    # This lets us test the "print" audit event locally, which happens occasionally
+    # NOTE: Uncomment to test the "print" audit event locally
     # def get(self, request, pk):
     #     nofo = self.get_object()
     #     create_nofo_audit_event(event_type="nofo_print", nofo=nofo, user=request.user)
@@ -1507,15 +1507,10 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     def post(self, request, pk):
         nofo = self.get_object()
 
-        # the absolute uri is points to the /edit page, so remove that from the path
+        # the absolute uri points to the /edit page, so remove that from the path
         nofo_url = request.build_absolute_uri(nofo.get_absolute_url()).replace(
             "/edit", ""
         )
-
-        if "localhost" in nofo_url:
-            return HttpResponseBadRequest(
-                "Server error printing NOFO. Can't print a NOFO on localhost."
-            )
 
         nofo_filename = "{}.pdf".format(
             nofo.number or nofo.short_name or nofo.title
@@ -1531,12 +1526,24 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
         doc_api.api_client.configuration.debug = True
 
+        # config.DOCRAPTOR_LIVE_MODE is default but can be overridden by query param
+        is_test_pdf = not is_docraptor_live_mode_active(config.DOCRAPTOR_LIVE_MODE)
+        is_test_pdf = cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
+
+        # NOTE: uncomment this to see current values in local development
+        # return HttpResponse(
+        #     f"mode={mode}, is_test_pdf={is_test_pdf}, url={nofo_url}, filename={nofo_filename}"
+        # )
+
+        if "localhost" in nofo_url:
+            return HttpResponseBadRequest(
+                "Server error printing NOFO. Can't print a NOFO on localhost."
+            )
+
         try:
             response = doc_api.create_doc(
                 {
-                    "test": not is_docraptor_live_mode_active(
-                        config.DOCRAPTOR_LIVE_MODE
-                    ),  # test documents are free but watermarked
+                    "test": is_test_pdf,  # test documents are free but watermarked
                     "document_url": nofo_url,
                     "document_type": "pdf",
                     "javascript": False,

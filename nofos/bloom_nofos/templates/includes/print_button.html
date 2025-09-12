@@ -7,16 +7,16 @@
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=inline#zoom=100" target="_blank">
       {% csrf_token %}
-      <button type="submit" class="usa-button usa-button--outline button-group--primary font-sans-xs" aria-label="View{% if not DOCRAPTOR_LIVE_MODE %} test{% endif %} NOFO (opens in a new tab)" {% if 'localhost' in request.get_host %}disabled{% endif %}>
+      <button type="submit" class="usa-button button-group--primary font-sans-xs" aria-label="View{% if not DOCRAPTOR_LIVE_MODE %} test{% endif %} NOFO (opens in a new tab)" {% if 'localhost' in request.get_host %}disabled{% endif %}>
         View PDF
       </button>
     </form>
   </li>
   <li class="usa-button-group__item">
-    <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment">
+    <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment&is_test_pdf=false">
       {% csrf_token %}
       <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if 'localhost' in request.get_host %}disabled{% endif %}>
-        Download<span class="hide-on-tablet"> PDF</span>
+        Download<span class="hide-on-tablet"> PDF (live)</span>
       </button>
     </form>
   </li>
