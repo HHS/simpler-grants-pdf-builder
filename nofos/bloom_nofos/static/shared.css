@@ -324,6 +324,10 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
     display: inline-block;
   }
 
+  .usa-button-group--segmented .usa-button:focus {
+    outline-offset: 0;
+  }
+
   .usa-button-group.usa-button-group--segmented
     .usa-button-group__item:first-of-type
     button {
