@@ -9,7 +9,16 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add "Nofo actions" dropdown menu, align with NOFO title
+  - Move print buttons down below
+  - Remove NOFO action buttons in blue box
+- Add name of user who last updated a NOFO for more transparency
+
 ### Changed
+
+- Remove "status" table on nofo_edit page, in favour of status picker in blue box.
+- Move "↑ Top" button on NOFO Edit page to bottom right
+- Rearrange print buttons, so that "Download PDF" always prints a 'live' NOFO
 
 ### Fixed
 
