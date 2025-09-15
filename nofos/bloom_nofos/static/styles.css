@@ -887,6 +887,43 @@ label.usa-label {
   border-radius: 0.25rem;
 }
 
+.back-to-top--container {
+  display: inline-block;
+}
+
+.back-to-top--container a {
+  position: fixed;
+  bottom: 2rem;
+  right: 1rem;
+  z-index: 1000;
+
+  text-decoration: none;
+  padding: 10px 14px 10px 10px;
+  background-color: var(--color--usa-link);
+  border-radius: 0.25rem;
+
+  color: var(--color--white);
+  outline-offset: 3px;
+
+  /* start hidden */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  /* smooth fade */
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  transform: translateY(25px);
+}
+
+.back-to-top--container a.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s;
+
+  transform: translateY(0);
+}
+
 .nofo_edit .page-break--hr--container {
   position: relative;
 }
