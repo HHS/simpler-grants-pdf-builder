@@ -1,9 +1,12 @@
-// This JS file does 3 things:
+// This JS file does 4 things:
 // 1. Operates the "NOFO actions" open/close menu
-// 1. Copies the heading ids for sections and subsections (those link buttons you see)
-// 2. Copies all the flagged internal links to clipboard
+// 2. Copies the heading ids for sections and subsections (those link buttons you see)
+// 3. Copies all the flagged internal links to clipboard
+// 4. Controls when the "Top" link appears on the bottom right as you scroll
 document.addEventListener("DOMContentLoaded", function () {
-  // JS to get the NOFO actions widget to open and close
+  // ------------------------------------------------------------
+  // 1. Operates the "NOFO actions" open/close menu
+  // ------------------------------------------------------------
   function nofoActionsInit(root) {
     const btn = root.querySelector("button[aria-controls]");
     const panel = document.getElementById(btn.getAttribute("aria-controls"));
@@ -43,7 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelectorAll("[data-disclosure]").forEach(nofoActionsInit);
 
-  // Copy buttons for the heading ids
+  // ------------------------------------------------------------
+  // 2. Copies the heading ids for sections and subsections (those link buttons you see)
+  // ------------------------------------------------------------
   const tableButtons = document.querySelectorAll(
     ".table--section .usa-button--content_copy"
   );
@@ -67,7 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Copy buttons inside of the alert boxes (eg, copy broken links)
+  // ------------------------------------------------------------
+  // 3. Copies all the flagged internal links to clipboard
+  // ------------------------------------------------------------
   const alertButtons = document.querySelectorAll(
     ".usa-site-alert .usa-button--content_copy"
   );
@@ -100,6 +107,27 @@ document.addEventListener("DOMContentLoaded", function () {
       if (wasClosed) detailsElement.open = false;
     });
   });
+
+  // ------------------------------------------------------------
+  // 4. Controls when the "Top" link appears on the bottom right as you scroll
+  // ------------------------------------------------------------
+  const btn = document.querySelector(".back-to-top--container a");
+  const sentinel = document.getElementById("back-to-top--sentinel");
+  if (!btn || !sentinel) return;
+
+  const io = new IntersectionObserver(([entry]) => {
+    // Above top? (passed) boundingClientRect.top < 0
+    const passed = entry.boundingClientRect.top < 0;
+
+    if (entry.isIntersecting || passed) {
+      btn.classList.add("is-visible");
+    } else {
+      // below bottom (not reached yet)
+      btn.classList.remove("is-visible");
+    }
+  });
+
+  io.observe(sentinel);
 });
 
 window.addEventListener("load", function () {
