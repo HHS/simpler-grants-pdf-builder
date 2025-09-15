@@ -271,12 +271,6 @@ a.back-to-top::before {
   color: var(--color--text-default);
 }
 
-caption a.back-to-top::before {
-  margin-right: 2px;
-  filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
-    brightness(102%) contrast(101%);
-}
-
 .usa-logo {
   display: flex;
   align-items: center;
@@ -875,18 +869,6 @@ label.usa-label {
   text-decoration: underline;
 }
 
-.nofo_edit caption a.back-to-top,
-.nofo_edit caption a.back-to-top:visited {
-  color: var(--color--white);
-  outline-offset: 3px;
-}
-
-.nofo_edit caption a.back-to-top {
-  padding: 3px 14px 3px 8px;
-  background-color: var(--color--usa-link);
-  border-radius: 0.25rem;
-}
-
 .back-to-top--container {
   display: inline-block;
 }
@@ -913,6 +895,10 @@ label.usa-label {
   /* smooth fade */
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
   transform: translateY(25px);
+}
+
+.back-to-top--container a:hover {
+  text-decoration: underline;
 }
 
 .back-to-top--container a.is-visible {
