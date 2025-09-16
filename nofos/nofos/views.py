@@ -40,6 +40,7 @@ from .forms import (
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
+    NofoBeforeYouBeginForm,
     NofoCoachDesignerForm,
     NofoCoverImageForm,
     NofoGroupForm,
@@ -1090,6 +1091,11 @@ class NofoEditSubagencyView(BaseNofoEditView):
 class NofoEditSubagency2View(BaseNofoEditView):
     form_class = NofoSubagency2Form
     template_name = "nofos/nofo_edit_subagency2.html"
+
+
+class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
+    form_class = NofoBeforeYouBeginForm
+    template_name = "nofos/nofo_edit_byb.html"
 
 
 class NofoEditThemeOptionsView(BaseNofoEditView):

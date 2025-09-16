@@ -131,6 +131,11 @@ urlpatterns = [
         name="nofo_edit_status",
     ),
     path(
+        "<uuid:pk>/edit/before-you-begin",
+        views.NofoEditBeforeYouBeginPageView.as_view(),
+        name="nofo_edit_byb",
+    ),
+    path(
         "<uuid:pk>/edit/modifications",
         views.NofoEditModificationView.as_view(),
         name="nofo_modifications",

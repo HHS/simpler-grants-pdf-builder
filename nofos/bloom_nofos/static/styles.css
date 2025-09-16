@@ -241,7 +241,8 @@ footer .usa-footer__primary-link:visited {
 }
 
 .usa-collection__item,
-.usa-prose .usa-collection__item {
+.usa-prose .usa-collection__item,
+.usa-prose table.table--small {
   max-width: 80ex;
 }
 

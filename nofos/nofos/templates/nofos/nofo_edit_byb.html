@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+
+{% block title %}
+  NOFO Before You Begin page
+{% endblock %}
+
+{% block body_class %}overflow-scroll{% endblock %}
+
+{% block content %}
+  {% with nofo|nofo_name as nofo_name_str %}
+  {% with "Back to  “"|add:nofo_name_str|add:"”" as back_text %}
+    {% url 'nofos:nofo_edit' nofo.id as back_href %}
+    {% include "includes/page_heading.html" with title="NOFO Before You Begin page" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+  {% endwith %}
+
+  <div class="usa-prose">
+    <p>Configure this NOFO’s “Before You Begin” page.</p>
+
+    <details>
+      <summary><span>What are my options?</span></summary>
+
+      <div>
+        <table class="usa-table usa-table--font-size-1 table--small">
+          <thead>
+            <tr>
+              <th scope="col">Setting</th>
+              <th scope="col">What it means</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Full BYB page</th>
+              <td>
+                The default setting. The full text of the Before You Begin page will be shown.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Sole Source Justification</th>
+              <td>
+                NOFOs that are just for 1 applicant. The content of the Before You Begin page is reduced to omit the registration steps.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">No BYB page</th>
+              <td>
+                No Before You Begin page. The page is missing and the link is removed from the the table of contents.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <form id="nofo-byb--form" method="post">
+      {% csrf_token %}
+
+      {% include "includes/form_macro.html" %}
+
+      <button class="usa-button margin-top-3" type="submit">Save BYB page setting</button>
+    </form>
+  </div>
+
+{% endblock %}
