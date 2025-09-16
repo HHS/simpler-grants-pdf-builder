@@ -57,6 +57,7 @@ NofoSubagency2Form = create_nofo_form_class(
     ["subagency2"], not_required_labels=["Subagency 2"]
 )
 NofoTaglineForm = create_nofo_form_class(["tagline"])
+NofoBeforeYouBeginForm = create_nofo_form_class(["before_you_begin"])
 
 
 # Nofo status form: same options but with a divider inserted after "published"

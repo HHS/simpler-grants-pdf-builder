@@ -501,6 +501,30 @@ Edit “{{ nofo|nofo_name }}”
   </tbody>
 </table>
 
+{% if 'camille.c' in user.email or user.is_superuser %}
+  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
+    <caption>
+      <div>
+        <h2 class="margin-bottom-0">NOFO Before You Begin page</h2>
+      </div>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">BYB page setting</th>
+        <td>{{ nofo.get_before_you_begin_display|get_value_or_none:"setting selected" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_byb' nofo.id %}">Edit<span class="usa-sr-only"> Before you being page</span></a></td>
+      </tr>
+    </tbody>
+  </table>
+{% endif %}
+
 <div id="back-to-top--sentinel" aria-hidden="true"></div>
 
 {% for section in nofo.sections.all|dictsort:"order" %}
