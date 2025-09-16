@@ -58,7 +58,7 @@ class NofoBaseSchema(ModelSchema):
             "cover_image",
             "cover_image_alt_text",
             "inline_css",
-            "sole_source_justification",
+            "before_you_begin",
         ]
 
 
