@@ -9,10 +9,23 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.10.0] - 2025-09-16
+
+### Added
+
+- Add "Before You Begin" page setting for superusers and 1 other user
 - Add "Nofo actions" dropdown menu, align with NOFO title
   - Move print buttons down below
   - Remove NOFO action buttons in blue box
 - Add name of user who last updated a NOFO for more transparency
+
+### Migrations
+
+- Change 'sole_source_justification' boolean val into 'before_you_begin' ENUM
 
 ### Changed
 
