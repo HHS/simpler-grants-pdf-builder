@@ -12,6 +12,12 @@ from martor.models import MartorField
 
 from .utils import add_html_id_to_subsection
 
+BYB_CHOICES = [
+    ("full", "Full BYB page"),
+    ("sole_source", "Sole Source Justification"),
+    ("none", "No BYB page"),
+]
+
 COACH_CHOICES = [
     ("aarti", "Aarti"),
     ("alex", "Alex"),
@@ -355,10 +361,14 @@ class Nofo(BaseNofo):
         help_text="Extra CSS to include for this specific NOFO.",
     )
 
-    sole_source_justification = models.BooleanField(
-        "Sole source justification",
-        default=False,
-        help_text="An SSJ NOFO is intended for only 1 applicant.",
+    before_you_begin = models.CharField(
+        "Before You Begin page",
+        max_length=20,
+        choices=BYB_CHOICES,
+        default="full",
+        help_text=(
+            "Controls how the 'Before you begin' page is presented. Choices are 'Full', 'Sole Source' (for 1 applicant), and 'None'."
+        ),
     )
 
     def __str__(self):
