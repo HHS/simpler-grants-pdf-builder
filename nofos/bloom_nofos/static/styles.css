@@ -610,7 +610,7 @@ label.usa-label {
   margin-bottom: 0;
 }
 
-.nofo_edit .usa-site-alert .usa-button--content_copy {
+.nofo_edit .usa-alert__body .usa-button--content_copy {
   padding: 0.75rem 1rem 0.75rem 0.9rem;
   position: absolute;
   right: 0;
@@ -840,11 +840,13 @@ label.usa-label {
 }
 
 .nofo_edit .usa-alert__body .usa-button--content_copy::before {
+  /*
   filter: invert(99%) sepia(100%) saturate(207%) hue-rotate(194deg)
     brightness(111%) contrast(100%);
+      margin-right: 4px;
+    */
   width: 13px;
   height: 12px;
-  margin-right: 4px;
 }
 
 .nofo_edit .usa-button--content_copy.usa-button--check::after {

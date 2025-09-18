@@ -76,12 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // 3. Copies all the flagged internal links to clipboard
   // ------------------------------------------------------------
   const alertButtons = document.querySelectorAll(
-    ".usa-site-alert .usa-button--content_copy"
+    ".usa-alert__body .usa-button--content_copy"
   );
   alertButtons.forEach((button) => {
     button.addEventListener("click", function () {
-      // Find the nearest parent with the class '.usa-site-alert'
-      const alertBox = this.closest(".usa-site-alert");
+      // Find the nearest parent with the class '.usa-alert__body'
+      const alertBox = this.closest(".usa-alert__body");
       if (!alertBox) return console.error("Error: no alert box.");
 
       const detailsElement = alertBox.querySelector("details");
