@@ -265,7 +265,7 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
           </summary>
           <div>
-            <ol class="usa-list usa-list--no-max-width margin-top-1">
+            <ol class="usa-list usa-list--no-max-width">
               {% for broken_link in broken_links %}
               <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
               {% endfor %}
@@ -300,7 +300,7 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
           </summary>
           <div>
-            <ol class="usa-list usa-list--no-max-width margin-top-1">
+            <ol class="usa-list usa-list--no-max-width">
               {% for heading_error in heading_errors %}
               <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.subsection|subsection_name_or_order }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
               {% endfor %}
@@ -321,88 +321,6 @@ Edit “{{ nofo|nofo_name }}”
   </p>
 </div>
 
-<style>
-[role="tab"],
-[role="tab"]:focus,
-[role="tab"]:hover {
-  display: inline-block;
-  position: relative;
-  top: 2px;
-  padding: 3px 3px 4px;
-  border: 1px solid hsl(219deg 1% 72%);
-  border-bottom: 2px solid transparent;
-  border-radius: 4px 4px 0 0;
-  cursor: pointer;
-}
-
-[role="tab"][aria-selected="true"] {
-  padding: 2px 2px 4px;
-  border-width: 2px;
-}
-
-.accent-warm-dark[role="tab"][aria-selected="true"] {
-  border-color: #9c3d10;
-  background: #9c3d10;
-  color: white;
-}
-
-.secondary-darker[role="tab"][aria-selected="true"] {
-  border-color: #8b0a03;
-  background: #8b0a03;
-  color: white;
-}
-
-[role="tab"][aria-selected="false"] {
-  border-bottom: transparent;
-}
-
-[role="tab"] span.focus {
-  display: inline-block;
-  margin: 2px;
-  padding: 4px 6px;
-}
-
-[role="tabpanel"] {
-  padding: 5px;
-  border: 2px solid hsl(219deg 1% 72%);
-  border-radius: 0 4px 4px;
-}
-
-.accent-warm-dark[role="tabpanel"] {
-  border: 2px solid #9c3d10;
-}
-
-.accent-warm-dark[role="tabpanel"] .usa-button--outline {
-  box-shadow: inset 0 0 0 2px #9c3d10;
-  color: #9c3d10;
-}
-
-.nofo_edit .usa-alert__body .usa-button--content_copy::before {
-filter: brightness(0) saturate(100%) invert(20%) sepia(86%) saturate(1996%) hue-rotate(8deg) brightness(93%) contrast(87%);
-}
-
-.nofo_edit .usa-alert__body details > summary > span {
-  text-decoration: underline;
-}
-
-.secondary-darker[role="tabpanel"] {
-  border: 2px solid #8b0a03;
-}
-
-[role="tabpanel"] .usa-site-alert--emergency .usa-alert .usa-alert__body {
-  color: #1b1b1b;
-  background: white;
-}
-
-[role="tabpanel"] .usa-alert {
-  background: white;
-  border-left: none;
-}
-
-[role="tabpanel"].is-hidden {
-  display: none;
-}
-</style>
 <script>
   /*
  *   This content is licensed according to the W3C Software License at
