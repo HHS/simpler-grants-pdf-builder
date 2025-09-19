@@ -9,7 +9,15 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Removed
+
+- Remove 'h7s' check from NOFO warnings
+  - Since we upgraded DocRaptor, we have stopped manually tagging them, so there is no action to take anymore.
+
 ### Changed
+
+- Show "check broken links" and "check heading errors" in a tabbed interface
+- Remove "external links" option from NOFO actions menu. Add it to the "Things to check" section.
 
 ### Fixed
 

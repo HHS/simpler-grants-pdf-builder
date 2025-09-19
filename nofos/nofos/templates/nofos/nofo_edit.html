@@ -214,105 +214,106 @@ Edit “{{ nofo|nofo_name }}”
 </div>
 
 <!-- tabs for broken links etc. -->
+{% if has_warnings %}
+  <div class="tabs">
+    <h2 id="tablist-1" class="font-heading-lg margin-top-3">
+      Before publishing, address the following:
+    </h2>
 
-<div class="tabs">
-  <h2 id="tablist-1" class="font-heading-lg margin-top-3">
-    Before publishing, address the following:
-  </h2>
-
-  {% if nofo.status == 'draft' or nofo.status == 'active' or nofo.status == 'ready-for-qa' or nofo.status == 'paused' %}
-    <p>
-      <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
-        Check external links
-      </a>— There are {{ external_links|length }} external links in this NOFO
-    </p>
-  {% endif %}
-
-  <div role="tablist" aria-labelledby="tablist-1" class="automatic">
-    {% if broken_links|length %}
-      <button id="tab-1"
-              type="button"
-              role="tab"
-              class="accent-warm-dark"
-              aria-selected="true"
-              aria-controls="tabpanel-1">
-        <span class="focus">
-          Check broken links ({{ broken_links|length }})
-        </span>
-      </button>
+    {% if has_external_links %}
+      <p>
+        <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+          Check external links
+        </a>— There are {{ external_links|length }} external links in this NOFO
+      </p>
     {% endif %}
-    {% if heading_errors|length %}
-      <button id="tab-2"
-              type="button"
-              role="tab"
-              class="secondary-darker"
-              aria-selected="false"
-              aria-controls="tabpanel-2"
-              tabindex="-1">
-        <span class="focus">
-          Check heading levels ({{ heading_errors|length }})
-        </span>
-      </button>
+
+    <div role="tablist" aria-labelledby="tablist-1" class="automatic">
+      {% if has_broken_links %}
+        <button id="tab-1"
+                type="button"
+                role="tab"
+                class="accent-warm-dark"
+                aria-selected="true"
+                aria-controls="tabpanel-1">
+          <span class="focus">
+            Check broken links ({{ broken_links|length }})
+          </span>
+        </button>
+      {% endif %}
+      {% if has_heading_errors %}
+        <button id="tab-2"
+                type="button"
+                role="tab"
+                class="secondary-darker"
+                aria-selected="false"
+                aria-controls="tabpanel-2"
+                tabindex="-1">
+          <span class="focus">
+            Check heading levels ({{ heading_errors|length }})
+          </span>
+        </button>
+      {% endif %}
+    </div>
+    {% if has_broken_links %}
+      <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
+            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
+            <div>
+              <details>
+                <summary>
+                  {% if broken_links|length == 1 %}
+                  <span>There is 1 broken link</span>
+                  {% else %}
+                  <span>There are {{ broken_links|length }} broken links</span>
+                  {% endif %}
+                </summary>
+                <div>
+                  <ol class="usa-list usa-list--no-max-width">
+                    {% for broken_link in broken_links %}
+                    <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
+                    {% endfor %}
+                  </ol>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if has_heading_errors %}
+      <div id="tabpanel-2" role="tabpanel" class="secondary-darker" tabindex="0" aria-labelledby="tab-2" class="is-hidden">
+        <!-- WARNING MESSAGE FOR HEADING ERRORS -->
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: review headings for accessibility</h3>
+            <div>
+              <details>
+                <summary>
+                  {% if heading_errors|length == 1 %}
+                  <span>There is 1 heading error</span>
+                  {% else %}
+                  <span>There are {{ heading_errors|length }} heading errors</span>
+                  {% endif %}
+                </summary>
+                <div>
+                  <ol class="usa-list usa-list--no-max-width">
+                    {% for heading_error in heading_errors %}
+                    <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.subsection|subsection_name_or_order }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
+                    {% endfor %}
+                  </ol>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
     {% endif %}
   </div>
-  {% if broken_links|length %}
-    <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
-      <div class="usa-alert">
-        <div class="usa-alert__body">
-          <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
-          <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
-          <div>
-            <details>
-              <summary>
-                {% if broken_links|length == 1 %}
-                <span>There is 1 broken link</span>
-                {% else %}
-                <span>There are {{ broken_links|length }} broken links</span>
-                {% endif %}
-              </summary>
-              <div>
-                <ol class="usa-list usa-list--no-max-width">
-                  {% for broken_link in broken_links %}
-                  <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
-                  {% endfor %}
-                </ol>
-              </div>
-            </details>
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
-  {% if heading_errors|length %}
-    <div id="tabpanel-2" role="tabpanel" class="secondary-darker" tabindex="0" aria-labelledby="tab-2" class="is-hidden">
-      <!-- WARNING MESSAGE FOR HEADING ERRORS -->
-      <div class="usa-alert">
-        <div class="usa-alert__body">
-          <h3 class="usa-alert__heading">Warning: review headings for accessibility</h3>
-          <div>
-            <details>
-              <summary>
-                {% if heading_errors|length == 1 %}
-                <span>There is 1 heading error</span>
-                {% else %}
-                <span>There are {{ heading_errors|length }} heading errors</span>
-                {% endif %}
-              </summary>
-              <div>
-                <ol class="usa-list usa-list--no-max-width">
-                  {% for heading_error in heading_errors %}
-                  <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.subsection|subsection_name_or_order }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
-                  {% endfor %}
-                </ol>
-              </div>
-            </details>
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-</div>
+{% endif %}
 
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
   <caption>

@@ -320,6 +320,18 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         if last_modified_audit_event:
             context["last_modified_user"] = last_modified_audit_event.user
 
+        # booleans to show/hide our various warning messages
+        context["has_broken_links"] = len(context["broken_links"])
+        context["has_heading_errors"] = len(context["heading_errors"])
+        context["has_external_links"] = len(
+            context["external_links"]
+        ) and self.object.status in ("draft", "active", "ready-for-qa", "paused")
+        context["has_warnings"] = (
+            context["has_broken_links"]
+            or context["has_heading_errors"]
+            or context["has_external_links"]
+        )
+
         return context
 
 
