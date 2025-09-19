@@ -1121,18 +1121,8 @@ def _update_link_statuses(all_links):
                 print(f"Error checking link {link['url']}: {e}")
 
 
-def get_nofo_action_links(nofo, external_links_count=None):
+def get_nofo_action_links(nofo):
     # Canonical action builders
-    def _link_check_links(nofo, external_count=None):
-        label = "Check external links"
-        if external_count is not None:
-            label = f"{label} ({external_count})"
-        return {
-            "key": "check-links",
-            "label": label,
-            "href": reverse_lazy("nofos:nofo_check_links", args=[nofo.pk]),
-        }
-
     def _link_reimport(nofo):
         return {
             "key": "reimport",
@@ -1157,13 +1147,13 @@ def get_nofo_action_links(nofo, external_links_count=None):
 
     # Status → allowed actions
     _STATUS_ACTIONS = {
-        "draft": ("check_links", "find_replace", "reimport", "delete"),
-        "active": ("check_links", "find_replace", "reimport"),
-        "ready-for-qa": ("check_links", "find_replace", "reimport"),
+        "draft": ("find_replace", "reimport", "delete"),
+        "active": ("find_replace", "reimport"),
+        "ready-for-qa": ("find_replace", "reimport"),
         "review": ("find_replace",),
         "doge": ("find_replace",),  # Deputy Secretary review
         "published": (),  # no actions ("modifications" is not part of this)
-        "paused": ("check_links", "find_replace"),
+        "paused": ("find_replace",),
         "cancelled": (),
     }
 
@@ -1172,7 +1162,6 @@ def get_nofo_action_links(nofo, external_links_count=None):
 
     # Assemble in order
     link_builders = {
-        "check_links": lambda: _link_check_links(nofo, external_links_count),
         "find_replace": lambda: _link_find_replace(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "delete": lambda: _link_delete(nofo),
