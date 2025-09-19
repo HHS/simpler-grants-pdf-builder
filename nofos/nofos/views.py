@@ -78,7 +78,6 @@ from .nofo import (
     find_broken_links,
     find_external_link,
     find_external_links,
-    find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
@@ -293,7 +292,6 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
-        context["h7_headers"] = find_h7_headers(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(

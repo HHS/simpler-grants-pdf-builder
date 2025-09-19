@@ -38,7 +38,6 @@ from .nofo import (
     decompose_instructions_tables,
     find_broken_links,
     find_external_links,
-    find_h7_headers,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
@@ -3095,42 +3094,6 @@ class TestFindH7Headers(TestCase):
                 ],
             }
         ]
-
-    def test_find_h7_headers_find_all_h7s(self):
-        """
-        Test finding both explicit h7 subsections and div role="heading" h7s
-        """
-        nofo = create_nofo("Test Nofo", self.sections, opdiv="Test OpDiv")
-        self.assertEqual(nofo.title, "Test Nofo")
-        self.assertEqual(nofo.number, "NOFO #999")
-        self.assertEqual(nofo.sections.first().name, "New Section H7")
-
-        subsections = list(nofo.sections.first().subsections.all().order_by("order"))
-
-        self.assertEqual(len(subsections), 4)
-        self.assertEqual(subsections[0].name, "New Subsection H7")
-        self.assertEqual(subsections[1].name, "New Subsection H6")
-        self.assertEqual(subsections[2].name, "New Subsection H5")
-        self.assertEqual(subsections[3].name, "New Subsection H4")
-
-        h7_headers = find_h7_headers(nofo)
-        self.assertEqual(len(h7_headers), 2)  # Should find both types of H7s
-
-        # Check explicit h7 subsection
-        self.assertEqual(h7_headers[0]["name"], "New Subsection H7")
-        self.assertEqual(
-            h7_headers[0]["html_id"], "1--new-section-h7--new-subsection-h7"
-        )
-        self.assertEqual(h7_headers[0]["section"], nofo.sections.first())
-        self.assertEqual(h7_headers[0]["subsection"], subsections[0])
-
-        # Check div role="heading" h7
-        self.assertEqual(h7_headers[1]["name"], "This shimmed h7 will be recognized")
-        self.assertEqual(
-            h7_headers[1]["html_id"], "1--new-section-h7--new-subsection-h4"
-        )
-        self.assertEqual(h7_headers[1]["section"], nofo.sections.first())
-        self.assertEqual(h7_headers[1]["subsection"], subsections[3])
 
 
 class TestGetSideNavLinks(TestCase):
