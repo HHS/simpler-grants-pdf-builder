@@ -313,15 +313,8 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
 
-        # status-based action menu items
-        external_count = (
-            len(context["external_links"])
-            if context.get("external_links") is not None
-            else None
-        )
-        context["action_links"] = get_nofo_action_links(
-            self.object, external_links_count=external_count
-        )
+        # status-based nofo actions menu items
+        context["action_links"] = get_nofo_action_links(self.object)
 
         # latest audit event (to show latest editor/user)
         context["last_modified_user_email"] = None

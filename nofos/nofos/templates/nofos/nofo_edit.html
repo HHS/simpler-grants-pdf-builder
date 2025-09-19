@@ -220,6 +220,14 @@ Edit “{{ nofo|nofo_name }}”
     Before publishing, address the following:
   </h2>
 
+  {% if nofo.status == 'draft' or nofo.status == 'active' or nofo.status == 'ready-for-qa' or nofo.status == 'paused' %}
+    <p>
+      <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' nofo.id %}">
+        Check external links
+      </a>— There are {{ external_links|length }} external links in this NOFO
+    </p>
+  {% endif %}
+
   <div role="tablist" aria-labelledby="tablist-1" class="automatic">
     {% if broken_links|length %}
       <button id="tab-1"
@@ -304,12 +312,6 @@ Edit “{{ nofo|nofo_name }}”
       </div>
     </div>
   {% endif %}
-
-  <p>
-    <button class="usa-button usa-button--accent-warm" type="button">
-      Check external links
-    </button> — Check the links bro
-  </p>
 </div>
 
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
