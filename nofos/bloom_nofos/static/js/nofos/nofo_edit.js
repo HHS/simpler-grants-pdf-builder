@@ -1,8 +1,9 @@
-// This JS file does 4 things:
+// This JS file does 5 things:
 // 1. Operates the "NOFO actions" open/close menu
-// 2. Copies the heading ids for sections and subsections (those link buttons you see)
-// 3. Copies all the flagged internal links to clipboard
-// 4. Controls when the "Top" link appears on the bottom right as you scroll
+// 2. Controls tablist for broken links and heading issues to check in your NOFO
+// 3. Copies the heading ids for sections and subsections (those link buttons you see)
+// 4. Copies all the flagged internal links to clipboard
+// 5. Controls when the "Top" link appears on the bottom right as you scroll
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------------------------------------------------
   // 1. Operates the "NOFO actions" open/close menu
@@ -47,7 +48,82 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("[data-disclosure]").forEach(nofoActionsInit);
 
   // ------------------------------------------------------------
-  // 2. Copies the heading ids for sections and subsections (those link buttons you see)
+  // 2. Controls tablist for broken links and heading issues to check in your NOFO
+  // ------------------------------------------------------------
+  /**
+   * Accessible tabs (ARIA Authoring Practices)
+   * - Keeps aria-selected, tabindex, and panels in sync
+   * - Keyboard: ArrowLeft/ArrowRight, Home, End
+   * - Click selects and focuses tab
+   * - Works for multiple tablists with [role="tablist"].automatic
+   * Source: https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/
+   */
+  class TabsAutomatic {
+    constructor(tablistNode) {
+      this.tablistNode = tablistNode;
+      this.tabs = [...tablistNode.querySelectorAll('[role="tab"]')];
+      this.panels = this.tabs.map((tab) =>
+        document.getElementById(tab.getAttribute("aria-controls"))
+      );
+
+      // Prime all tabs/panels to a known baseline
+      this.tabs.forEach((tab, i) => {
+        tab.tabIndex = -1;
+        tab.setAttribute("aria-selected", "false");
+        tab.addEventListener("keydown", (e) => this.onKeydown(e));
+        tab.addEventListener("click", () => this.setSelected(i));
+      });
+
+      // Activate the first tab without stealing focus on init
+      this.setSelected(0, /*focus=*/ false);
+    }
+
+    /** Select tab by index; manage ARIA + focus + panel visibility */
+    setSelected(index, focus = true) {
+      this.currentIndex = index;
+
+      this.tabs.forEach((tab, i) => {
+        const isSelected = i === index;
+        tab.setAttribute("aria-selected", String(isSelected));
+        if (isSelected) {
+          tab.removeAttribute("tabindex");
+          if (focus) tab.focus();
+        } else {
+          tab.tabIndex = -1;
+        }
+        this.panels[i].classList.toggle("is-hidden", !isSelected);
+      });
+    }
+
+    /** Compute a wrapped index (for ArrowLeft/ArrowRight) */
+    wrap(i) {
+      const len = this.tabs.length;
+      return (i + len) % len;
+    }
+
+    /** Keyboard support per WAI-ARIA Tabs pattern */
+    onKeydown(e) {
+      const i = this.tabs.indexOf(e.currentTarget);
+      const key = e.key;
+
+      if (key === "ArrowLeft") this.setSelected(this.wrap(i - 1));
+      else if (key === "ArrowRight") this.setSelected(this.wrap(i + 1));
+      else if (key === "Home") this.setSelected(0);
+      else if (key === "End") this.setSelected(this.tabs.length - 1);
+      else return; // ignore other keys
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  // Initialize all automatic tablists
+  document
+    .querySelectorAll('[role="tablist"].automatic')
+    .forEach((node) => new TabsAutomatic(node));
+
+  // ------------------------------------------------------------
+  // 3. Copies the heading ids for sections and subsections (those link buttons you see)
   // ------------------------------------------------------------
   const tableButtons = document.querySelectorAll(
     ".table--section .usa-button--content_copy"
@@ -73,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ------------------------------------------------------------
-  // 3. Copies all the flagged internal links to clipboard
+  // 4. Copies all the flagged internal links to clipboard
   // ------------------------------------------------------------
   const alertButtons = document.querySelectorAll(
     ".usa-alert__body .usa-button--content_copy"
@@ -109,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ------------------------------------------------------------
-  // 4. Controls when the "Top" link appears on the bottom right as you scroll
+  //54. Controls when the "Top" link appears on the bottom right as you scroll
   // ------------------------------------------------------------
   const btn = document.querySelector(".back-to-top--container a");
   const sentinel = document.getElementById("back-to-top--sentinel");
