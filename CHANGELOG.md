@@ -13,6 +13,8 @@ Versioning since version 1.0.0.
 
 - Remove 'h7s' check from NOFO warnings
   - Since we upgraded DocRaptor, we have stopped manually tagging them, so there is no action to take anymore.
+- Remove the "LIVE/TEST" toggle in the header
+  - Now, the buttons themselves will download different kinds of PDFs
 
 ### Changed
 
