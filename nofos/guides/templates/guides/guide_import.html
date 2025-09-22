@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Import a new Content Guide
+  Upload a document
 {% endblock %}
 
 {% block body_class %}nofo_import nofo_import--content-guide{% endblock %}
@@ -24,11 +24,11 @@
   {% endif %}
 
   {% url 'guides:guide_index' as back_href %}
-  {% include "includes/page_heading.html" with title="Upload a content guide" back_text="All content guides" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Upload a document" back_text="All documents" back_href=back_href only %}
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {% with id="nofo-import" label="Select a content guide to upload" hint="Accepts .docx files." accept=".docx" value=title %}
+    {% with id="nofo-import" label="Select a document file to upload" hint="Accepts only .docx files." accept=".docx" value=title %}
       {% for message in messages %}
         {% if "error" in message.tags %}
           {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message only %}

@@ -2,7 +2,7 @@
 {% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs safe_br %}
 
 {% block title %}
-  Content Guide comparison result
+  Document comparison result
 {% endblock %}
 
 {% block css %}
@@ -23,15 +23,22 @@
   {% include "includes/page_heading.html" with title="Review the differences" back_text=guide.title back_href=back_href only %}
 
   <div class="usa-prose margin-bottom-1">
-    <p>
-      Your content guide is displayed here.
-      When you upload a NOFO to compare, it'll be displayed next to the content guide and list places where the NOFO’s boilerplate does not match the content guide.
-    </p>
+    {% if comparison %}
+      <p>
+        Your documents are displayed here. See the differences below.
+      </p>
+    {% else %}
+      <p>
+        Your uploaded document is displayed here.
+        When you upload another document to compare, it’ll be displayed next to the first document and list places where the content does not match the first document.
+      </p>
+    {% endif %}
+
   </div>
 
   <ul class="usa-button-group">
     <li class="usa-button-group__item margin-right-2">
-      <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a NOFO to compare</a>
+      <a class="usa-button" href="{% url 'guides:guide_compare_upload' guide.pk %}">Upload a {% if comparison %}different{% endif %} document to compare</a>
     </li>
     <li class="usa-button-group__item">
       <a class="usa-button usa-button--outline" href="{% url 'guides:guide_edit' guide.pk %}{% if new_nofo %}?new_nofo={{ new_nofo.id }}{% endif %}">Choose sections to compare</a>
@@ -49,9 +56,9 @@
     <div id="guide-differences" class="usa-accordion__content usa-prose">
       <ul>
         <li><del>Red with a strikethrough</del> is a deletion</li>
-        <li><ins>Green with an underline</ins> is content that has been added</li>
-        <li><strong>Side-by-side view</strong> shows both the content guide and NOFO next to each other highlighting the differences across both documents</li>
-        <li><strong>Single view</strong> shows the content guide with all the boilerplate differences between the NOFO and the content guide marked</li>
+        <li><ins>Green with an underline</ins> is content that has been added or updated</li>
+        <li><strong>Side-by-side view</strong> shows both documents next next to each other, highlighting the differences across both</li>
+        <li><strong>Single view</strong> shows a consolidated view with all the differences between the two documents marked</li>
       </ul>
     </div>
   </div>
@@ -60,7 +67,7 @@
   <div class="usa-alert usa-alert--info usa-alert--slim margin-bottom-5">
     <div class="usa-alert__body">
       <p class="usa-alert__text">
-        <strong>No changes</strong>: This document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) matches your Content Guide: “{{ guide.title }}”.
+        <strong>No changes</strong>: This new document (<span class="font-mono-sm">{{ new_nofo.filename }}</span>) matches your original document: “{{ guide.title }}”.
       </p>
     </div>
   </div>
@@ -223,11 +230,11 @@
                 <div class="usa-alert__body">
                   <p class="usa-alert__text">
                     {% if num_changed_subsections == 0 %}
-                      Your NOFO has no changes.
+                      Your documents have no changes.
                     {% elif num_changed_subsections == 1 %}
-                      Your NOFO has changes in 1 section.
+                      Your documents have changes in 1 section.
                     {% else %}
-                      Your NOFO has changes in {{ num_changed_subsections }} sections.
+                      Your documents have changes in {{ num_changed_subsections }} sections.
                     {% endif %}
                   </p>
                 </div>
@@ -267,7 +274,7 @@
             </div>
             <div class="nofo_view--table-container nofo_view--table-container--empty">
               <div class="guide_compare_upload">
-                <p class="margin-left-4 margin-right-4 margin-top-6 font-sans-md">Upload a NOFO to compare it to this content guide.</p>
+                <p class="margin-left-4 margin-right-4 margin-top-6 font-sans-md">Upload another document to be able to compare.</p>
               </div>
             </div>
             <div class="nofo_view--vertical-divider mr-0"></div>
@@ -275,7 +282,7 @@
               <div class="usa-alert usa-alert--info usa-alert--no-icon">
                 <div class="usa-alert__body">
                   <p class="usa-alert__text">
-                    Upload NOFO to see differences.
+                    Upload another document to see differences.
                   </p>
                 </div>
               </div>
@@ -319,11 +326,11 @@
                 <div class="usa-alert__body">
                   <p class="usa-alert__text">
                     {% if num_changed_subsections == 0 %}
-                      Your NOFO has no changes.
+                      Your documents have no changes.
                     {% elif num_changed_subsections == 1 %}
-                      Your NOFO has changes in 1 section.
+                      Your documents have changes in 1 section.
                     {% else %}
-                      Your NOFO has changes in {{ num_changed_subsections }} sections.
+                      Your documents have changes in {{ num_changed_subsections }} sections.
                     {% endif %}
                   </p>
                 </div>
