@@ -7,18 +7,18 @@ from nofos.models import BaseNofo, BaseSection, BaseSubsection
 
 class ContentGuide(BaseNofo):
     class Meta:
-        verbose_name = "Content Guide"
-        verbose_name_plural = "Content Guides"
+        verbose_name = "Document"
+        verbose_name_plural = "Documents"
 
     title = models.TextField(
-        "Content guide name",
+        "Document name",
         max_length=250,
         validators=[MaxLengthValidator(250)],
         blank=True,
     )
 
     def __str__(self):
-        return f"(Guide {self.id}) {self.title or self.filename}"
+        return f"(Document {self.id}) {self.title or self.filename}"
 
     def get_admin_url(self):
         """

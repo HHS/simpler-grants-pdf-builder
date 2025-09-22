@@ -1,25 +1,25 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Compare a NOFO to Content Guide “{{ guide.title }}”
+  Upload a document to compare
 {% endblock %}
 
 {% block body_class %}nofo_import nofo_import--compare nofo_import--compare--guide{% endblock %}
 
 {% block content %}
   {% url 'guides:guide_edit' guide.id as back_href %}
-  {% include "includes/page_heading.html" with title="Upload a NOFO to compare" back_text=guide.title back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Upload a document to compare" back_text=guide.title back_href=back_href only %}
 
   <div class="usa-prose">
-    <p>Select a NOFO file to compare to <strong>{{ guide.title }}</strong>.</p>
+    <p>Select a file to compare to <strong>{{ guide.title }}</strong>.</p>
 
-    <p>After you upload the NOFO, we’ll show you whether any boilerplate is different from the content guide you chose.</p>
+    <p>After you upload the document, we’ll show you whether there are any differences.</p>
   </div>
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-    {% with id="nofo-import" label="Select NOFO file" hint="Accepts .docx files." value=title %}
+    {% with id="nofo-import" label="Select file" hint="Accepts .docx files." value=title %}
       {% for message in messages %}
         {% if "error" in message.tags %}
           {% include "includes/file_input.html" with id=id label=label hint=hint error=message only %}
@@ -31,6 +31,6 @@
 
     {% include "includes/loading_horse.html" %}
 
-    <button class="usa-button margin-top-3 submit-button" type="submit">Compare NOFO</button>
+    <button class="usa-button margin-top-3 submit-button" type="submit">Upload file</button>
   </form>
 {% endblock %}

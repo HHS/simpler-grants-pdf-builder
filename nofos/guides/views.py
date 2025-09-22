@@ -17,7 +17,7 @@ from guides.forms import (
     ContentGuideSubsectionEditForm,
     ContentGuideTitleForm,
 )
-from guides.guide import create_content_guide
+from guides.guide import create_guide_document
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from guides.utils import strip_file_suffix
 
@@ -45,13 +45,13 @@ class ContentGuideListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Exclude archived content guides
+        # Exclude archived documents
         queryset = queryset.filter(archived__isnull=True)
-        # Return latest content guide first
+        # Return latest document first
         queryset = queryset.order_by("-updated")
 
         user_group = self.request.user.group
-        # If not a "bloom" user, return content guides belonging to user's group
+        # If not a "bloom" user, return documents belonging to user's group
         if user_group != "bloom":
             queryset = queryset.filter(group=user_group)
 
@@ -60,7 +60,7 @@ class ContentGuideListView(LoginRequiredMixin, ListView):
 
 class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
     """
-    Handles importing a NEW Content Guide from an uploaded file.
+    Handles importing a NEW Document (content guide or NOFO) from an uploaded file.
     """
 
     template_name = "guides/guide_import.html"
@@ -68,13 +68,13 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
-        Create a new Content Guide with the parsed data.
+        Create a new document with the parsed data.
         """
         try:
             cg_title = strip_file_suffix(filename)
             opdiv = suggest_nofo_opdiv(soup)
 
-            guide = create_content_guide(cg_title, sections, opdiv)
+            guide = create_guide_document(cg_title, sections, opdiv)
             add_headings_to_document(
                 guide,
                 SectionModel=ContentGuideSection,
@@ -97,7 +97,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
                 status=400,
             )
             return HttpResponseBadRequest(
-                f"<p><strong>Error creating Content Guide:</strong></p> {e.message}"
+                f"<p><strong>Error creating Document:</strong></p> {e.message}"
             )
         except Exception as e:
             log_exception(
@@ -106,7 +106,7 @@ class ContentGuideImportView(LoginRequiredMixin, BaseNofoImportView):
                 context="ContentGuideImportView:Exception",
                 status=500,
             )
-            return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
+            return HttpResponseBadRequest(f"Error creating Document: {str(e)}")
 
 
 class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
@@ -132,7 +132,7 @@ class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, Update
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         if self.object.archived:
-            return HttpResponseBadRequest("This Content Guide is already archived.")
+            return HttpResponseBadRequest("This document is already archived.")
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -142,7 +142,7 @@ class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, Update
 
         messages.error(
             request,
-            "You deleted Content Guide: “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+            "You deleted “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
                 guide.title
             ),
         )
@@ -377,7 +377,7 @@ class ContentGuideCompareUploadView(
             )
 
         except Exception as e:
-            return HttpResponseBadRequest(f"Error comparing NOFO: {str(e)}")
+            return HttpResponseBadRequest(f"Error comparing document: {str(e)}")
 
 
 class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):

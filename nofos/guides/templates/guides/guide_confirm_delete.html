@@ -9,13 +9,13 @@
     <div class="usa-alert__body">
       <h4 class="usa-alert__heading">Warning</h4>
       <p class="usa-alert__text">
-        Deleting a Content Guide removes it permanently.
+        Deleting a document removes it permanently.
       </p>
     </div>
   </div>
 
   {% url 'guides:guide_index' as back_href %}
-  {% include "includes/page_heading.html" with title="Delete “"|add:guide.title|add:"”" back_text="All content guides" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Delete “"|add:guide.title|add:"”" back_text="All documents" back_href=back_href only %}
 
   <form method="post">
     {% csrf_token %}
@@ -26,7 +26,7 @@
         <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
       </li>
       <li class="usa-button-group__item">
-        <a href="{{ back_href }}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this guide</a>
+        <a href="{{ back_href }}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this document</a>
       </li>
     </ul>
   </form>

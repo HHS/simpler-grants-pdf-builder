@@ -302,8 +302,8 @@ class ContentGuideEditViewTests(TestCase):
     def test_view_displays_guide_title(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f"Configure Content Guide: “{self.guide.title}”")
-        self.assertContains(response, "Upload NOFO to compare")
+        self.assertContains(response, f"Configure document: “{self.guide.title}”")
+        self.assertContains(response, "Ready to compare")
 
     def test_view_displays_section_names(self):
         response = self.client.get(self.url)
@@ -346,13 +346,13 @@ class ContentGuideEditViewTests(TestCase):
         # malformed UUID
         response = self.client.get(f"{url}?new_nofo=not-a-real-id")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Upload NOFO to compare")
+        self.assertContains(response, "Ready to compare")
 
         # well-formed UUID but not in DB
         missing_id = uuid.uuid4()
         response = self.client.get(f"{url}?new_nofo={missing_id}")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Upload NOFO to compare")
+        self.assertContains(response, "Ready to compare")
 
         # Return to comparison button is gone
         self.assertNotContains(response, "Return to comparison")
@@ -582,12 +582,12 @@ class ContentGuideCompareViewTests(TestCase):
 
     def test_compare_view_without_new_nofo_shows_upload_prompt(self):
         """
-        Case 1: No new NOFO ID provided -> prompt to upload a NOFO should appear.
+        Case 1: No new document ID provided -> prompt to upload another document should appear.
         """
         url = reverse("guides:guide_compare", args=[self.guide.pk])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Upload a NOFO to compare it to this content guide.")
+        self.assertContains(resp, "Upload another document to be able to compare.")
 
     @patch("guides.views.annotate_side_by_side_diffs")
     @patch("guides.views.compare_nofos")

@@ -4,7 +4,7 @@ from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsect
 from nofos.nofo import _build_document
 
 
-def create_content_guide(title, sections, opdiv):
+def create_guide_document(title, sections, opdiv):
     guide = ContentGuide(title=title)
     guide.opdiv = opdiv
     guide.save()

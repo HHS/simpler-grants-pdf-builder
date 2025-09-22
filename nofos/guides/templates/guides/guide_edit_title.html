@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Name your Content Guide
+  {% if show_back_link %}Rename this document{% else %}Name your document{% endif %}
 {% endblock %}
 
 {% block content %}
   {% if show_back_link %}
     {% url 'guides:guide_edit' guide.id as back_href %}
-    {% include "includes/page_heading.html" with title="Rename your content guide" back_text="Back to “"|add:guide.title|add:"”" back_href=back_href only %}
+    {% include "includes/page_heading.html" with title="Rename this document" back_text="Back to “"|add:guide.title|add:"”" back_href=back_href only %}
   {% else %}
-    {% include "includes/page_heading.html" with title="Rename your content guide" only %}
+    {% include "includes/page_heading.html" with title="Name your document" only %}
   {% endif %}
 
   <div class="usa-prose">
-    <p>Label your content guide so that it’s clear which version it is. We recommend including the date it was last updated.</p>
+    <p>Label your document so that it’s clear which version it is.<br> We recommend including the date it was updated.</p>
   </div>
 
   <form id="nofo-title--form nofo-title--form--content-guide" method="post">
