@@ -35,6 +35,16 @@ from nofos.nofo_compare import annotate_side_by_side_diffs, compare_nofos
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
+#################################################################
+# ⚠️ ⚠️ ⚠️   ALERT: "ContentGuide" == GENERIC DOCUMENT   ⚠️ ⚠️ ⚠️ #
+#                                                               #
+# These models were originally assumed to be only               #
+# Content Guides but now they can be ANY type of document.      #
+#                                                               #
+# We are keeping the name "ContentGuide" in code for historical #
+# reasons — do NOT assume they are all Content Guides.          #
+#################################################################
+
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 
 

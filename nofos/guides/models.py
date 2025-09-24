@@ -4,6 +4,16 @@ from django.urls import reverse
 
 from nofos.models import BaseNofo, BaseSection, BaseSubsection
 
+#################################################################
+# ⚠️ ⚠️ ⚠️   ALERT: "ContentGuide" == GENERIC DOCUMENT   ⚠️ ⚠️ ⚠️ #
+#                                                               #
+# These models were originally assumed to be only               #
+# Content Guides but now they can be ANY type of document.      #
+#                                                               #
+# We are keeping the name "ContentGuide" in code for historical #
+# reasons — do NOT assume they are all Content Guides.          #
+#################################################################
+
 
 class ContentGuide(BaseNofo):
     class Meta:
