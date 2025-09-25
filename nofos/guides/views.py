@@ -445,12 +445,20 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 if sub.status != "MATCH"
             ]
 
+            sections_changed_subsections = {}
+            for subsection in changed_subsections:
+                section_name = subsection.section.name
+                sections_changed_subsections.setdefault(section_name, []).append(
+                    subsection
+                )
+
             context.update(
                 {
                     "new_nofo": new_nofo,
                     "comparison": comparison,
                     "changed_subsections": changed_subsections,
                     "num_changed_subsections": len(changed_subsections),
+                    "sections_changed_subsections": sections_changed_subsections,
                 }
             )
 

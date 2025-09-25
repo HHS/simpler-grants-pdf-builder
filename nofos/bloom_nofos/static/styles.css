@@ -2018,7 +2018,8 @@ del li,
 del h3,
 del h4,
 del h5,
-del h6 {
+del h6,
+.del {
   background-color: #ffebe9;
 }
 
@@ -2031,7 +2032,8 @@ ins li,
 ins h3,
 ins h4,
 ins h5,
-ins h6 {
+ins h6,
+.ins {
   background-color: #aceebb;
 }
 

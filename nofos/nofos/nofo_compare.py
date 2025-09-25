@@ -1,13 +1,13 @@
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from bloom_nofos.html_diff import has_diff, html_diff
 from bs4 import BeautifulSoup
 from django.utils.html import escape
 from martor.utils import markdownify
 
-from .models import Nofo
+from .models import Nofo, Section
 from .nofo import decompose_empty_tags
 
 
@@ -15,7 +15,8 @@ from .nofo import decompose_empty_tags
 class SubsectionDiff:
     name: str
     status: str  # "MATCH", "UPDATE", "ADD", "DELETE"
-    comparison_type: str = "body"
+    comparison_type: Literal["body", "name", "none", "diff_strings"] = "body"
+    section: Optional[Section] = None
     old_name: Optional[str] = ""
     new_name: Optional[str] = ""
     old_value: Optional[str] = ""
@@ -62,6 +63,7 @@ def result_match(original_subsection):
     name = get_subsection_name_or_order(original_subsection)
     result = SubsectionDiff(
         name=name,
+        section=original_subsection.section,
         old_name=name,
         new_name=name,
         status="MATCH",
@@ -77,6 +79,7 @@ def result_match(original_subsection):
 def result_update(original_subsection, new_subsection):
     result = SubsectionDiff(
         name=get_subsection_name_or_order(original_subsection),
+        section=original_subsection.section,
         old_name=get_subsection_name_or_order(original_subsection),
         new_name=get_subsection_name_or_order(new_subsection),
         status="UPDATE",
@@ -97,13 +100,14 @@ def result_merged_update(
 ):
     return SubsectionDiff(
         name=name,
+        comparison_type=old_subsection.comparison_type,
+        section=old_subsection.section,
         old_name=re.sub(r"<.*?>", "", old_subsection.name),
         new_name=re.sub(r"<.*?>", "", new_subsection.name),
         status="UPDATE",
         old_value=old_value,
         new_value=new_value,
         diff=html_diff(markdownify(old_value), markdownify(new_value)),
-        comparison_type=old_subsection.comparison_type,
         diff_strings=old_subsection.diff_strings or [],
         html_id=html_id,
     )
@@ -112,6 +116,7 @@ def result_merged_update(
 def result_add(new_subsection):
     return SubsectionDiff(
         name=get_subsection_name_or_order(new_subsection),
+        section=new_subsection.section,
         old_name="",
         new_name=get_subsection_name_or_order(new_subsection),
         status="ADD",
@@ -126,6 +131,7 @@ def result_add(new_subsection):
 def result_delete(old_subsection):
     result = SubsectionDiff(
         name=html_diff(get_subsection_name_or_order(old_subsection), ""),
+        section=old_subsection.section,
         old_name=get_subsection_name_or_order(old_subsection),
         new_name="",
         status="DELETE",
