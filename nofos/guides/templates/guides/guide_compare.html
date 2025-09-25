@@ -241,10 +241,17 @@
               </div>
               <div class="nofo_view--changes--list">
                 <ol>
-                  {% for changed_subsection in changed_subsections %}
-                    <li>
-                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
-                    </li>
+                  {% for section_name, subsections in sections_changed_subsections.items %}
+                    <h3>{{ section_name }}</h3>
+                    <ul>
+                      {% for subsection in subsections %}
+                        <li>
+                          <a href="#{{ subsection.html_id }}">{{ forloop.counter }}. {{ subsection.name|strip_br_ins_del }}
+                            <br />
+                            {% if subsection.status == 'UPDATE' %}<span class="ins">CHANGED</span>{% elif subsection.status == 'ADD'%}<span class="ins">ADD</span>{% else %}<span class="del">{{ subsection.status }}</span>{% endif %}</a>
+                        </li>
+                      {% endfor %}
+                    </ul>
                   {% endfor %}
                 </ol>
               </div>
