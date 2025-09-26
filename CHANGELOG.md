@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add "Step" title to side nav for NOFO Compare
+
 ### Changed
 
 ### Fixed
@@ -24,6 +26,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Highlight background colour of "ADD", "DELETE", "CHANGED" in side nav for NOFO Compare
 - Show "check broken links" and "check heading errors" in a tabbed interface
 - Remove "external links" option from NOFO actions menu. Add it to the "Things to check" section.
 - Added new HRSA designer: Kerry
