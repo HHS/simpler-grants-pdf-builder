@@ -1,0 +1,38 @@
+{% load safe_br %}
+
+<div class="nofo_view--changes">
+  <div class="usa-alert usa-alert--info usa-alert--no-icon margin-bottom-2">
+    <div class="usa-alert__body">
+      <p class="usa-alert__text">
+        {% if num_changed_subsections == 0 %}
+          Your documents have no changes.
+        {% elif num_changed_subsections == 1 %}
+          Your documents have changes in 1 section.
+        {% else %}
+          Your documents have changes in {{ num_changed_subsections }} sections.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if num_changed_subsections > 0 %}
+    <div class="nofo_view--changes--list">
+      <ol>
+        {% for section_name, subsections in sections_changed_subsections.items %}
+        <li>
+          <div class="nofo_view--changes--step-name">{{ section_name }}</div>
+          <ol>
+            {% for subsection in subsections %}
+              <li>
+                <a href="#{{ subsection.html_id }}">{{ subsection.index_counter }}. {{ subsection.name|strip_br_ins_del }}
+                  <br />
+                  {% if subsection.status == 'UPDATE' %}<span class="ins">CHANGED</span>{% elif subsection.status == 'ADD'%}<span class="ins">ADD</span>{% else %}<span class="del">{{ subsection.status }}</span>{% endif %}</a>
+              </li>
+            {% endfor %}
+          </ol>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+  {% endif %}
+</div>
