@@ -247,7 +247,7 @@
                     <ol>
                       {% for subsection in subsections %}
                         <li>
-                          <a href="#{{ subsection.html_id }}">{{ forloop.counter }}. {{ subsection.name|strip_br_ins_del }}
+                          <a href="#{{ subsection.html_id }}">{{ subsection.index_counter }}. {{ subsection.name|strip_br_ins_del }}
                             <br />
                             {% if subsection.status == 'UPDATE' %}<span class="ins">CHANGED</span>{% elif subsection.status == 'ADD'%}<span class="ins">ADD</span>{% else %}<span class="del">{{ subsection.status }}</span>{% endif %}</a>
                         </li>

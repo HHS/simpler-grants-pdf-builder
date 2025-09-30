@@ -445,6 +445,10 @@ class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
                 if sub.status != "MATCH"
             ]
 
+            # Add index counter
+            for i, sub in enumerate(changed_subsections, start=1):
+                sub.index_counter = i
+
             sections_changed_subsections = {}
             for subsection in changed_subsections:
                 section_name = subsection.section.name

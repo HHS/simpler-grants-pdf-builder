@@ -27,6 +27,7 @@ class SubsectionDiff:
     diff_strings: List[str] = field(default_factory=list)
     tag: Optional[str] = ""  # metadata diffs don't have a tag (eg, nofo.number)
     html_id: Optional[str] = ""  # metadata diffs don't have an id
+    index_number: Optional[int] = 0  # used for numbering the changes in the final diff
 
 
 def find_matching_subsection(new_subsection, old_subsections, matched_ids):
