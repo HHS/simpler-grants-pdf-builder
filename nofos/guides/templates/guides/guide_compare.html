@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs safe_br %}
+{% load static martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
 
 {% block title %}
   Document comparison result
@@ -225,39 +225,7 @@
               {% endfor %}
               </div>
             <div class="nofo_view--vertical-divider mr-0"></div>
-            <div class="nofo_view--changes">
-              <div class="usa-alert usa-alert--info usa-alert--no-icon  margin-bottom-2">
-                <div class="usa-alert__body">
-                  <p class="usa-alert__text">
-                    {% if num_changed_subsections == 0 %}
-                      Your documents have no changes.
-                    {% elif num_changed_subsections == 1 %}
-                      Your documents have changes in 1 section.
-                    {% else %}
-                      Your documents have changes in {{ num_changed_subsections }} sections.
-                    {% endif %}
-                  </p>
-                </div>
-              </div>
-              <div class="nofo_view--changes--list">
-                <ol>
-                  {% for section_name, subsections in sections_changed_subsections.items %}
-                  <li>
-                    <div class="nofo_view--changes--step-name">{{ section_name }}</div>
-                    <ol>
-                      {% for subsection in subsections %}
-                        <li>
-                          <a href="#{{ subsection.html_id }}">{{ subsection.index_counter }}. {{ subsection.name|strip_br_ins_del }}
-                            <br />
-                            {% if subsection.status == 'UPDATE' %}<span class="ins">CHANGED</span>{% elif subsection.status == 'ADD'%}<span class="ins">ADD</span>{% else %}<span class="del">{{ subsection.status }}</span>{% endif %}</a>
-                        </li>
-                      {% endfor %}
-                    </ol>
-                  </li>
-                  {% endfor %}
-                </ol>
-              </div>
-            </div>
+            {% include "includes/compare_side_nav.html" with num_changed_subsections=num_changed_subsections sections_changed_subsections=sections_changed_subsections only %}
           {% else %}
           {# comparison does not exist, show original guide and grey column #}
             <div class="nofo_view--table-container nofo_view--table-container--no-comparison">
@@ -330,30 +298,7 @@
             {% endfor %}
           </div>
           <div class="nofo_view--vertical-divider mr-0"></div>
-            <div class="nofo_view--changes">
-              <div class="usa-alert usa-alert--info usa-alert--no-icon  margin-bottom-2">
-                <div class="usa-alert__body">
-                  <p class="usa-alert__text">
-                    {% if num_changed_subsections == 0 %}
-                      Your documents have no changes.
-                    {% elif num_changed_subsections == 1 %}
-                      Your documents have changes in 1 section.
-                    {% else %}
-                      Your documents have changes in {{ num_changed_subsections }} sections.
-                    {% endif %}
-                  </p>
-                </div>
-              </div>
-              <div class="nofo_view--changes--list">
-                <ol>
-                  {% for changed_subsection in changed_subsections %}
-                    <li>
-                      <a href="#{{ changed_subsection.html_id }}">{{ forloop.counter }}. {{ changed_subsection.name|strip_br_ins_del }}<br />{{ changed_subsection.status }}</a>
-                    </li>
-                  {% endfor %}
-                </ol>
-              </div>
-            </div>
+          {% include "includes/compare_side_nav.html" with num_changed_subsections=num_changed_subsections sections_changed_subsections=sections_changed_subsections only %}
         {% endif %}
       </div>
     </div>

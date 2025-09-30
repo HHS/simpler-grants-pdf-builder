@@ -13,6 +13,12 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Many improvements to side nav for NOFO Compare
+  - Highlight background colour of "ADD", "DELETE", "CHANGED" in side nav
+  - Add sticky "Step" headers between the nav items in the side nav
+  - Auto scroll side nav items as we scroll down the document
+  - Keep the index number of nav items as we scroll past sections
+
 ### Fixed
 
 ## [3.11.0] - 2025-09-30
@@ -26,7 +32,6 @@ Versioning since version 1.0.0.
 
 ### Changed
 
-- Highlight background colour of "ADD", "DELETE", "CHANGED" in side nav for NOFO Compare
 - Show "check broken links" and "check heading errors" in a tabbed interface
 - Remove "external links" option from NOFO actions menu. Add it to the "Things to check" section.
 - Added new HRSA designer: Kerry
