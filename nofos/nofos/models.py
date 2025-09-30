@@ -42,6 +42,7 @@ DESIGNER_CHOICES = [
     ("hrsa-ericka", "Ericka"),
     ("hrsa-jene", "Jene"),
     ("hrsa-jennifer", "Jennifer"),
+    ("hrsa-kerry", "Kerry"),
     ("hrsa-kieumy", "KieuMy"),
     ("hrsa-lynda", "Lynda"),
     ("hrsa-marco", "Marco"),

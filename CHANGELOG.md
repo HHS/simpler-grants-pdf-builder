@@ -9,6 +9,12 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.11.0] - 2025-09-30
+
 ### Removed
 
 - Remove 'h7s' check from NOFO warnings
@@ -20,8 +26,11 @@ Versioning since version 1.0.0.
 
 - Show "check broken links" and "check heading errors" in a tabbed interface
 - Remove "external links" option from NOFO actions menu. Add it to the "Things to check" section.
+- Added new HRSA designer: Kerry
 
-### Fixed
+### Migrations
+
+- Add migration for new HRSA designer
 
 ## [3.10.0] - 2025-09-16
 
