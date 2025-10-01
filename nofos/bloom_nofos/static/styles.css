@@ -2050,6 +2050,10 @@ ins h6,
   background-color: #aceebb;
 }
 
+.ins-updated {
+  background-color: #d9e8f6;
+}
+
 del + ins > br {
   display: none;
 }
