@@ -2,7 +2,7 @@ from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.urls import reverse
 
-from nofos.models import BaseNofo, BaseSection, BaseSubsection
+from nofos.models import BaseNofo, BaseSection, BaseSubsection, Nofo
 
 #################################################################
 # ⚠️ ⚠️ ⚠️   ALERT: "ContentGuide" == GENERIC DOCUMENT   ⚠️ ⚠️ ⚠️ #
@@ -25,6 +25,15 @@ class ContentGuide(BaseNofo):
         max_length=250,
         validators=[MaxLengthValidator(250)],
         blank=True,
+    )
+
+    from_nofo = models.ForeignKey(
+        Nofo,
+        on_delete=models.CASCADE,  # delete this guide if the source NOFO is deleted
+        related_name="derived_guides",  # reverse: nofo.derived_guides.all()
+        null=True,
+        blank=True,
+        help_text="If this guide was cloned from a NOFO, this is the source NOFO.",
     )
 
     def __str__(self):

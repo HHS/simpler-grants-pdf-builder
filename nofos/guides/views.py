@@ -76,6 +76,9 @@ def duplicate_guide(original_doc) -> ContentGuide:
         status="draft",
         archived=None,
         successor=None,
+        from_nofo=(
+            original_doc if not is_guide else None
+        ),  # reference to original nofo
     )
 
     # 2) Iterate sections in order
