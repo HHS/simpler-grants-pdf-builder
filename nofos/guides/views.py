@@ -61,6 +61,17 @@ def duplicate_guide(original_doc) -> ContentGuide:
     Creates each new section, then bulk-creates its subsections.
     """
     is_guide = isinstance(original_doc, ContentGuide)
+    is_nofo = not is_guide
+
+    # 0) Find the last ContentGuide cloned from this nofo, if any
+    prior_content_guide_cloned_from_nofo = None
+    if is_nofo:
+        prior_content_guide_cloned_from_nofo = (
+            ContentGuide.objects.select_for_update(skip_locked=True)
+            .filter(from_nofo=original_doc, successor__isnull=True)
+            .order_by("-created")
+            .first()
+        )
 
     # 1) Create the guide shell
     title = (
@@ -76,9 +87,7 @@ def duplicate_guide(original_doc) -> ContentGuide:
         status="draft",
         archived=None,
         successor=None,
-        from_nofo=(
-            original_doc if not is_guide else None
-        ),  # reference to original nofo
+        from_nofo=(original_doc if is_nofo else None),  # reference original nofo
     )
 
     # 2) Iterate sections in order
@@ -112,6 +121,11 @@ def duplicate_guide(original_doc) -> ContentGuide:
             new_subs.append(ContentGuideSubsection(section=new_sec, **data))
 
         ContentGuideSubsection.objects.bulk_create(new_subs)
+
+    # 4) This new Guide is a successor to the last Guide cloned from this NOFO
+    if prior_content_guide_cloned_from_nofo:
+        prior_content_guide_cloned_from_nofo.successor = guide
+        prior_content_guide_cloned_from_nofo.save(update_fields=["successor"])
 
     return guide
 
