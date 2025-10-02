@@ -181,6 +181,16 @@ class DuplicateGuideTests(TestCase):
                 self.assertEqual(nsub.comparison_type, "body")
                 self.assertEqual(nsub.diff_strings, [])
 
+    def test_duplicate_from_nofo_sets_from_nofo(self):
+        source = self._make_nofo_with_content(opdiv="NIH")
+        new = duplicate_guide(source)
+        self.assertEqual(new.from_nofo, source)
+
+    def test_duplicate_from_guide_leaves_from_nofo_empty(self):
+        source = self._make_guide_with_content(opdiv="CDC")
+        new = duplicate_guide(source)
+        self.assertIsNone(new.from_nofo)
+
 
 class ContentGuideListViewTests(TestCase):
     def setUp(self):
