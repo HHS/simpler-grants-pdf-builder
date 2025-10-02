@@ -27,11 +27,6 @@ urlpatterns = [
         name="guide_duplicate",
     ),
     path(
-        "import/document/2/<uuid:pk>",
-        views.ContentGuideDuplicateView2.as_view(),
-        name="guide_duplicate_2",
-    ),
-    path(
         "<uuid:pk>/import/title",
         views.ContentGuideImportTitleView.as_view(),
         name="guide_import_title",
