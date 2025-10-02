@@ -10,10 +10,176 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from guides.views import duplicate_guide
 
-from nofos.models import Nofo
+from nofos.models import Nofo, Section, Subsection
 
 User = get_user_model()
+
+
+class DuplicateGuideTests(TestCase):
+    def _make_nofo_with_content(
+        self,
+        *,
+        title="NOFO title",
+        short_name="NOFO short name",
+        filename="file.docx",
+        opdiv="HRSA",
+        group="bloom",
+        sections=2,
+        subs_per_section=3,
+    ) -> Nofo:
+        nofo = Nofo.objects.create(
+            title=title,
+            short_name=short_name,
+            filename=filename,
+            opdiv=opdiv,
+            group=group,
+        )
+        # sections
+        for s in range(1, sections + 1):
+            sec = Section.objects.create(
+                nofo=nofo, name=f"Section {s}", html_id=f"{s}-sec", order=s
+            )
+            # subsections
+            for i in range(1, subs_per_section + 1):
+                Subsection.objects.create(
+                    section=sec,
+                    name=f"Sub {s}.{i}",
+                    html_id=f"{s}-{i}",
+                    order=i,
+                    tag="h3",
+                    callout_box=False,
+                    body=f"Body {s}.{i}",
+                )
+        return nofo
+
+    def _make_guide_with_content(
+        self,
+        *,
+        title="Content Guide title",
+        filename="guide.docx",
+        opdiv="CDC",
+        group="bloom",
+        sections=2,
+        subs_per_section=2,
+    ) -> ContentGuide:
+        guide = ContentGuide.objects.create(
+            title=title,
+            filename=filename,
+            opdiv=opdiv,
+            group=group,
+        )
+        for s in range(1, sections + 1):
+            sec = ContentGuideSection.objects.create(
+                content_guide=guide, name=f"GSection {s}", html_id=f"g{s}-sec", order=s
+            )
+            for i in range(1, subs_per_section + 1):
+                ContentGuideSubsection.objects.create(
+                    section=sec,
+                    name=f"GSub {s}.{i}",
+                    html_id=f"g{s}-{i}",
+                    order=i,
+                    tag="h3",
+                    callout_box=bool(i % 2),
+                    body=f"GBody {s}.{i}",
+                    comparison_type="diff_strings" if i == 1 else "name",
+                    diff_strings=["must include", f"token-{s}-{i}"] if i == 1 else [],
+                )
+        return guide
+
+    def test_duplicate_from_content_guide_copies_all_fields(self):
+        source = self._make_guide_with_content(
+            title="Content Guide title",
+            filename="sg.docx",
+            opdiv="ACF",
+            sections=2,
+            subs_per_section=2,
+        )
+
+        new = duplicate_guide(source)
+
+        # Top-level expectations
+        self.assertIsInstance(new, ContentGuide)
+        self.assertEqual(new.status, "draft")
+        self.assertIsNone(new.archived)
+        self.assertIsNone(new.successor)
+        self.assertEqual(new.opdiv, "ACF")  # preserved from source
+        self.assertEqual(new.title, "Content Guide title")
+
+        # Section count & order
+        self.assertEqual(new.sections.count(), source.sections.count())
+        new_secs = list(new.sections.order_by("order"))
+        src_secs = list(source.sections.order_by("order"))
+        for i, (ns, ss) in enumerate(zip(new_secs, src_secs), start=1):
+            self.assertEqual(ns.order, ss.order)
+            self.assertEqual(ns.name, ss.name)
+            self.assertEqual(ns.html_id, ss.html_id)
+
+            # Subsection parity & order
+            new_subs = list(ns.subsections.order_by("order"))
+            src_subs = list(ss.subsections.order_by("order"))
+            self.assertEqual(len(new_subs), len(src_subs))
+            for nsub, ssub in zip(new_subs, src_subs):
+                # common fields
+                self.assertEqual(nsub.name, ssub.name)
+                self.assertEqual(nsub.html_id, ssub.html_id)
+                self.assertEqual(nsub.html_class, ssub.html_class)
+                self.assertEqual(nsub.order, ssub.order)
+                self.assertEqual(nsub.tag, ssub.tag)
+                self.assertEqual(nsub.callout_box, ssub.callout_box)
+                self.assertEqual(nsub.body, ssub.body)
+                # guide-specific fields should COPY on guide→guide
+                self.assertEqual(nsub.comparison_type, ssub.comparison_type)
+                self.assertEqual(nsub.diff_strings, ssub.diff_strings)
+
+    def test_duplicate_from_nofo_sets_defaults_for_guide_only_fields(self):
+        source = self._make_nofo_with_content(
+            title="NOFO title",
+            short_name="NOFO short name",
+            filename="nofile.docx",
+            opdiv="NIH",
+            sections=2,
+            subs_per_section=3,
+        )
+
+        new = duplicate_guide(source)
+
+        # Top-level expectations
+        self.assertIsInstance(new, ContentGuide)
+        self.assertEqual(new.status, "draft")
+        self.assertIsNone(new.archived)
+        self.assertIsNone(new.successor)
+        self.assertEqual(new.opdiv, "NIH")
+        self.assertEqual(new.title, "NOFO title")
+
+        # Section parity
+        self.assertEqual(new.sections.count(), source.sections.count())
+
+        new_secs = list(new.sections.order_by("order"))
+        src_secs = list(source.sections.order_by("order"))
+        for ns, ss in zip(new_secs, src_secs):
+            self.assertEqual(ns.order, ss.order)
+            self.assertEqual(ns.name, ss.name)
+            self.assertEqual(ns.html_id, ss.html_id)
+
+            new_subs = list(ns.subsections.order_by("order"))
+            src_subs = list(ss.subsections.order_by("order"))
+            self.assertEqual(len(new_subs), len(src_subs))
+
+            for nsub, ssub in zip(new_subs, src_subs):
+                # common fields copied
+                self.assertEqual(nsub.name, ssub.name)
+                self.assertEqual(nsub.html_id, ssub.html_id)
+                self.assertEqual(nsub.html_class, ssub.html_class)
+                self.assertEqual(nsub.order, ssub.order)
+                self.assertEqual(nsub.tag, ssub.tag)
+                self.assertEqual(nsub.callout_box, ssub.callout_box)
+                self.assertEqual(nsub.body, ssub.body)
+
+                # guide-only fields should be DEFAULTS on NOFO→guide
+                self.assertEqual(nsub.comparison_type, "body")
+                self.assertEqual(nsub.diff_strings, [])
 
 
 class ContentGuideListViewTests(TestCase):
@@ -178,6 +344,89 @@ class ContentGuideImportTitleViewTests(TestCase):
         response = self.client.get(self.url)
         self.assertNotEqual(response.status_code, 200)
         self.assertIn(response.status_code, [302, 403])
+
+
+# guides/tests/test_duplicate_guide_view.py
+from django.test import TestCase
+from django.urls import reverse
+from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+
+from nofos.models import Nofo, Section, Subsection
+
+
+class ContentGuideDuplicateViewTests(TestCase):
+    def _make_nofo(self):
+        nofo = Nofo.objects.create(
+            title="NOFO title",
+            short_name="NOFO short name",
+            filename="nofile.docx",
+            opdiv="NIH",
+            group="bloom",
+        )
+        s1 = Section.objects.create(nofo=nofo, name="Sec 1", html_id="s1", order=1)
+        s2 = Section.objects.create(nofo=nofo, name="Sec 2", html_id="s2", order=2)
+        Subsection.objects.create(
+            section=s1, name="A", html_id="a", order=1, tag="h3", body="Body A"
+        )
+        Subsection.objects.create(
+            section=s2, name="B", html_id="b", order=1, tag="h3", body="Body B"
+        )
+        return nofo
+
+    def _make_guide(self):
+        guide = ContentGuide.objects.create(
+            title="Guide", filename="g.docx", opdiv="ACF", group="bloom"
+        )
+        gs = ContentGuideSection.objects.create(
+            content_guide=guide, name="G1", html_id="g1", order=1
+        )
+        ContentGuideSubsection.objects.create(
+            section=gs,
+            name="G1.1",
+            html_id="g1-1",
+            order=1,
+            tag="h3",
+            body="G body",
+            comparison_type="name",
+            diff_strings=["x"],
+        )
+        return guide
+
+    def test_view_duplicates_from_nofo_and_redirects(self):
+        source = self._make_nofo()
+        url = reverse("guides:guide_duplicate", args=[source.id])
+
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 302)
+        # One new guide created
+        self.assertEqual(ContentGuide.objects.count(), 1)
+        new = ContentGuide.objects.latest("created")
+        # Redirect goes to edit page for new guide
+        self.assertIn(reverse("guides:guide_edit", args=[new.id]), resp["Location"])
+        # Sanity: sections/subsections copied
+        self.assertEqual(new.sections.count(), 2)
+        self.assertEqual(sum(s.subsections.count() for s in new.sections.all()), 2)
+
+    def test_view_duplicates_from_guide_and_redirects(self):
+        source = self._make_guide()
+        url = reverse("guides:guide_duplicate", args=[source.id])
+
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(ContentGuide.objects.count(), 2)  # original + new
+        new = ContentGuide.objects.exclude(id=source.id).get()
+        self.assertIn(reverse("guides:guide_edit", args=[new.id]), resp["Location"])
+        # guide-specific fields preserved
+        new_sub = new.sections.first().subsections.first()
+        self.assertEqual(new_sub.comparison_type, "name")
+        self.assertEqual(new_sub.diff_strings, ["x"])
+
+    def test_get_acts_like_post(self):
+        source = self._make_nofo()
+        url = reverse("guides:guide_duplicate", args=[source.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(ContentGuide.objects.count(), 1)
 
 
 # Edit the title from the "edit" screen
