@@ -137,8 +137,8 @@ class ContentGuideListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Exclude archived documents
-        queryset = queryset.filter(archived__isnull=True)
+        # Exclude archived documents and documents that have a successor
+        queryset = queryset.filter(archived__isnull=True, successor__isnull=True)
         # Return latest document first
         queryset = queryset.order_by("-updated")
 
