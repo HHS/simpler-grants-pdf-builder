@@ -1,5 +1,6 @@
 import csv
 import json
+import time
 import uuid
 
 from bloom_nofos.logs import log_exception
@@ -7,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -22,7 +24,7 @@ from guides.models import ContentGuide, ContentGuideSection, ContentGuideSubsect
 from guides.utils import strip_file_suffix
 
 from nofos.mixins import GroupAccessObjectMixinFactory
-from nofos.models import Nofo
+from nofos.models import Nofo, Subsection
 from nofos.nofo import (
     add_headings_to_document,
     add_page_breaks_to_headings,
@@ -46,6 +48,176 @@ from nofos.views import BaseNofoImportView
 #################################################################
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
+
+
+###########################################################
+######### GUIDES UTILS (used in TODO ) ##########
+###########################################################
+
+
+@transaction.atomic
+def duplicate_guide_2(original_doc):
+    """
+    Create a new ContentGuide by duplicating sections & subsections from a source
+    document, which can be either a NOFO or another ContentGuide.
+
+    - Copies common BaseNofo fields where sensible (filename, group, opdiv).
+    - Sets status='draft', clears archived/successor.
+    - Sections/Subsections are bulk-copied.
+      - When source is a NOFO, guide-only fields (comparison_type, diff_strings)
+        just use defaults.
+      - When source is a ContentGuide, those fields are copied too.
+    """
+    # --- 1) Make the new ContentGuide shell
+    title = (
+        getattr(original_doc, "title", "")
+        or getattr(original_doc, "short_name", "")
+        or (original_doc.filename or "")
+    )
+    new_guide = ContentGuide.objects.create(
+        title=title,
+        filename=getattr(original_doc, "filename", "") or "",
+        group=getattr(original_doc, "group", "bloom"),
+        opdiv=getattr(
+            original_doc, "opdiv"
+        ),  # opdiv is reauired, so this can never be empty
+        status="draft",
+        archived=None,
+        successor=None,
+    )
+
+    # --- 2) Gather source sections/subsections
+    # Works for both models because both expose .sections relation
+    original_sections = list(original_doc.sections.all().order_by("order"))
+
+    # Build section copies
+    new_sections = []
+    section_map = {}
+
+    for original_section in original_sections:
+        data = model_to_dict(
+            original_section,
+            exclude=["id", "nofo", "content_guide"],  # remove FKs & pk
+        )
+        new_sections.append(ContentGuideSection(content_guide=new_guide, **data))
+
+    created_sections = ContentGuideSection.objects.bulk_create(new_sections)
+
+    # Map original section id -> new section object
+    for src, dst in zip(original_sections, created_sections):
+        section_map[src.id] = dst
+
+    # --- 3) Copy subsections
+    # When source is NOFO: copy base fields only
+    # When source is Guide: also copy comparison_type, diff_strings
+    is_guide = isinstance(original_doc, ContentGuide)
+
+    if is_guide:
+        original_subsections = list(
+            ContentGuideSubsection.objects.filter(section__in=original_sections)
+            .select_related("section")
+            .order_by("order")
+        )
+    else:
+        original_subsections = list(
+            Subsection.objects.filter(section__in=original_sections)
+            .select_related("section")
+            .order_by("order")
+        )
+
+    new_subsections = []
+    for original_sub in original_subsections:
+        base_fields = [
+            "name",
+            "html_id",
+            "html_class",
+            "order",
+            "tag",
+            "callout_box",
+            "body",
+        ]
+        data = {f: getattr(original_sub, f) for f in base_fields}
+
+        if is_guide:
+            # Preserve guide-specific comparison metadata
+            data["comparison_type"] = original_sub.comparison_type
+            data["diff_strings"] = original_sub.diff_strings
+
+        new_subsections.append(
+            ContentGuideSubsection(
+                section=section_map[original_sub.section.id],
+                **data,
+            )
+        )
+
+    ContentGuideSubsection.objects.bulk_create(new_subsections)
+
+    return new_guide
+
+
+@transaction.atomic
+def duplicate_guide(original_doc) -> ContentGuide:
+    """
+    Create ContentGuide from either a Nofo or a ContentGuide.
+    Creates each new section, then bulk-creates its subsections.
+    """
+    is_guide = isinstance(original_doc, ContentGuide)
+
+    # 1) Create the guide shell
+    title = (
+        getattr(original_doc, "title", "")
+        or getattr(original_doc, "short_name", "")
+        or (original_doc.filename or "")
+    )
+    guide = ContentGuide.objects.create(
+        title=title,
+        filename=getattr(original_doc, "filename", "") or "",
+        group=getattr(original_doc, "group", "bloom"),
+        opdiv=getattr(
+            original_doc, "opdiv"
+        ),  # opdiv is required, so this can't be empty
+        status="draft",
+        archived=None,
+        successor=None,
+    )
+
+    # 2) Iterate sections in order
+    orig_sections = list(original_doc.sections.all().order_by("order"))
+
+    for orig_sec in orig_sections:
+        # Copy section fields (excluding pk and FK)
+        sec_data = model_to_dict(orig_sec, exclude=["id", "nofo", "content_guide"])
+        new_sec = ContentGuideSection(content_guide=guide, **sec_data)
+        new_sec.save()  # run any section-level logic/hooks
+
+        # 3) Fetch subsections for THIS section
+        if hasattr(orig_sec, "subsections"):  # works for both models
+            orig_subqs = orig_sec.subsections.all().order_by("order")
+
+        # Build new subsections (bulk per section)
+        new_subs = []
+        for orig_sub in orig_subqs:
+            base_fields = [
+                "name",
+                "html_id",
+                "html_class",
+                "order",
+                "tag",
+                "callout_box",
+                "body",
+            ]
+            data = {f: getattr(orig_sub, f) for f in base_fields}
+
+            if is_guide:
+                data["comparison_type"] = getattr(orig_sub, "comparison_type", "body")
+                data["diff_strings"] = getattr(orig_sub, "diff_strings", [])
+
+            new_subs.append(ContentGuideSubsection(section=new_sec, **data))
+
+        if new_subs:
+            ContentGuideSubsection.objects.bulk_create(new_subs)  # fast, still simple
+
+    return guide
 
 
 class ContentGuideListView(LoginRequiredMixin, ListView):
@@ -130,6 +302,70 @@ class ContentGuideImportTitleView(GroupAccessObjectMixin, UpdateView):
         guide.save()
 
         return redirect("guides:guide_compare", pk=guide.id)
+
+
+class ContentGuideDuplicateView(View):
+    """
+    Create a new ContentGuide from a BaseNofo-like source.
+    Accepts a UUID for either a Nofo or a ContentGuide and duplicates it as a new ContentGuide.
+    """
+
+    def post(self, request, pk, *args, **kwargs):
+        # Try NOFO first, else ContentGuide
+        try:
+            original_doc = Nofo.objects.get(pk=pk)
+        except Nofo.DoesNotExist:
+            original_doc = get_object_or_404(ContentGuide, pk=pk)
+
+        try:
+            start = time.perf_counter()  # start timer
+            new_guide = duplicate_guide(original_doc)
+            elapsed = time.perf_counter() - start  # stop timer
+
+            print(
+                f"Document duplicated as a new Content Guide in {elapsed:.2f} seconds."
+            )
+            print("New guide: {}".format(new_guide.id))
+            return redirect("guides:guide_edit", pk=new_guide.id)
+
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error duplicating document: {e}")
+
+    # Optional: allow GET to act like POST for convenience/links
+    def get(self, request, pk, *args, **kwargs):
+        return self.post(request, pk, *args, **kwargs)
+
+
+class ContentGuideDuplicateView2(View):
+    """
+    Create a new ContentGuide from a BaseNofo-like source.
+    Accepts a UUID for either a Nofo or a ContentGuide and duplicates it as a new ContentGuide.
+    """
+
+    def post(self, request, pk, *args, **kwargs):
+        # Try NOFO first, else ContentGuide
+        try:
+            original_doc = Nofo.objects.get(pk=pk)
+        except Nofo.DoesNotExist:
+            original_doc = get_object_or_404(ContentGuide, pk=pk)
+
+        try:
+            start = time.perf_counter()  # start timer
+            new_guide = duplicate_guide_2(original_doc)
+            elapsed = time.perf_counter() - start  # stop timer
+
+            print(
+                f"Document duplicated as a new Content Guide in {elapsed:.2f} seconds."
+            )
+            print("New guide: {}".format(new_guide.id))
+            return redirect("guides:guide_edit", pk=new_guide.id)
+
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error duplicating document: {e}")
+
+    # Optional: allow GET to act like POST for convenience/links
+    def get(self, request, pk, *args, **kwargs):
+        return self.post(request, pk, *args, **kwargs)
 
 
 class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
