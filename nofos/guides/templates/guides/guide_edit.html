@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static martortags tz get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+{% load static martortags tz nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
 
 {% block title %}
   Configure document: “{{ guide.title }}”
@@ -20,6 +20,19 @@
     {% else %}
       {% include "includes/warning_archived.html" with document=guide user=user class_name="margin-bottom-3" only %}
     {% endif %}
+  {% endif %}
+
+  {% if guide.from_nofo and not guide.successor %}
+    <div class="usa-alert usa-alert--info margin-bottom-3">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">Document cloned from NOFO: “{{ guide.from_nofo|nofo_name }}”</h4>
+        <p class="usa-alert__text">
+          This tool lets you <em>compare changes</em> between your NOFO and other files you upload.
+          <br />
+          To <em>edit</em> your NOFO, return to the NOFO Builder: <a class="usa-link usa-link--external" href="{% url 'nofos:nofo_edit' guide.from_nofo.id %}" target="_blank">{{ guide.from_nofo|nofo_name }}</a>.
+        </p>
+      </div>
+    </div>
   {% endif %}
 
   <div class="back-link font-body-md">

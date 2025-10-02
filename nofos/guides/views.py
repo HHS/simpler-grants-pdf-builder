@@ -125,6 +125,7 @@ def duplicate_guide(original_doc) -> ContentGuide:
     # 4) This new Guide is a successor to the last Guide cloned from this NOFO
     if prior_content_guide_cloned_from_nofo:
         prior_content_guide_cloned_from_nofo.successor = guide
+        prior_content_guide_cloned_from_nofo.archived = timezone.now().date()
         prior_content_guide_cloned_from_nofo.save(update_fields=["successor"])
 
     return guide
