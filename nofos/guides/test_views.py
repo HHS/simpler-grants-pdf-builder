@@ -191,6 +191,28 @@ class DuplicateGuideTests(TestCase):
         new = duplicate_guide(source)
         self.assertIsNone(new.from_nofo)
 
+    def test_duplicate_twice_from_nofo_sets_from_nofo_and_successor(self):
+        source = self._make_nofo_with_content(opdiv="NIH")
+        first_guide = duplicate_guide(source)
+        self.assertEqual(first_guide.from_nofo, source)
+        self.assertIsNone(first_guide.successor)
+
+        second_guide = duplicate_guide(source)
+        self.assertEqual(second_guide.from_nofo, source)
+        self.assertIsNone(second_guide.successor)
+
+        # Refresh to see updates made inside duplicate_guide
+        first_guide.refresh_from_db()
+        # first guide should now have a successor now
+        self.assertEqual(first_guide.successor, second_guide)
+
+        # Only one open head for this NOFO
+        open_heads = ContentGuide.objects.filter(
+            from_nofo=source, successor__isnull=True
+        )
+        self.assertEqual(open_heads.count(), 1)
+        self.assertEqual(open_heads.first().pk, second_guide.pk)
+
 
 class ContentGuideListViewTests(TestCase):
     def setUp(self):
