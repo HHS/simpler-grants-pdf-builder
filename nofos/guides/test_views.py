@@ -269,6 +269,24 @@ class ContentGuideListViewTests(TestCase):
         response = self.client.get(url)
         self.assertNotIn(archived, response.context["content_guides"])
 
+    def test_guides_with_successor_are_excluded(self):
+        # Create a guide chain
+        first = ContentGuide.objects.create(title="First", group="bloom", opdiv="CDC")
+        second = ContentGuide.objects.create(
+            title="Second", group="bloom", opdiv="CDC", from_nofo=None
+        )
+        first.successor = second
+        first.save()
+
+        url = reverse("guides:guide_index")
+        response = self.client.get(url)
+        guides = list(response.context["content_guides"])
+
+        # "first" should be excluded because it has a successor
+        self.assertNotIn(first, guides)
+        # "second" (the current head) should still be visible
+        self.assertIn(second, guides)
+
     # ---- NEW GROUP VISIBILITY TESTS ----
 
     def test_bloom_user_can_see_bloom_guides(self):
