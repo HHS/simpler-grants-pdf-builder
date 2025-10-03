@@ -1,5 +1,6 @@
 import io
 import json
+import time
 import uuid
 from datetime import datetime
 
@@ -286,41 +287,96 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
     template_name = "nofos/nofo_edit.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["broken_links"] = find_broken_links(self.object)
-        context["external_links"] = find_external_links(self.object, with_status=False)
-        context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
-            self.object
-        ) + find_incorrectly_nested_heading_levels(self.object)
-        context["page_breaks_count"] = count_page_breaks_nofo(self.object)
+        t_total = time.perf_counter()
 
-        context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
-            config.DOCRAPTOR_LIVE_MODE
+        def timed(label, func, *args, **kw):
+            t0 = time.perf_counter()
+            try:
+                return func(*args, **kw)
+            finally:
+                dt = (time.perf_counter() - t0) * 1000
+                print(f"[NOFO Edit] {label}: {dt:.1f} ms")
+
+        context = super().get_context_data(**kwargs)
+
+        # expensive-ish lookups
+        context["broken_links"] = timed(
+            "find_broken_links", find_broken_links, self.object
+        )
+        context["external_links"] = timed(
+            "find_external_links(no_status)",
+            find_external_links,
+            self.object,
+            with_status=False,
         )
 
-        context["side_nav_headings"] = get_side_nav_links(self.object)
+        # heading checks (time individually to see which is costly)
+        same_or_higher = timed(
+            "find_same_or_higher_heading_levels_consecutive",
+            find_same_or_higher_heading_levels_consecutive,
+            self.object,
+        )
+        incorrect_nesting = timed(
+            "find_incorrectly_nested_heading_levels",
+            find_incorrectly_nested_heading_levels,
+            self.object,
+        )
+        context["heading_errors"] = same_or_higher + incorrect_nesting
 
+        context["page_breaks_count"] = timed(
+            "count_page_breaks_nofo", count_page_breaks_nofo, self.object
+        )
+
+        # feature flags / config
+        context["DOCRAPTOR_LIVE_MODE"] = timed(
+            "is_docraptor_live_mode_active",
+            is_docraptor_live_mode_active,
+            config.DOCRAPTOR_LIVE_MODE,
+        )
+
+        # sidebar prep
+        context["side_nav_headings"] = timed(
+            "get_side_nav_links", get_side_nav_links, self.object
+        )
+
+        # session pops
+        t0 = time.perf_counter()
         context["error_heading"] = self.request.session.pop("error_heading", "Error")
         context["success_heading"] = self.request.session.pop(
             "success_heading", "NOFO saved successfully"
         )
-
-        # Add status form for dropdown in template
-        context["status_form"] = NofoStatusForm(instance=self.object)
-
-        # Clean up stale reimport session data
         self.request.session.pop("reimport_data", None)
+        print(f"[NOFO Edit] session_pops: {(time.perf_counter()-t0)*1000:.1f} ms")
 
-        # status-based nofo actions menu items
-        context["action_links"] = get_nofo_action_links(self.object)
+        # forms
+        t0 = time.perf_counter()
+        context["status_form"] = NofoStatusForm(instance=self.object)
+        print(
+            f"[NOFO Edit] NofoStatusForm(instance): {(time.perf_counter()-t0)*1000:.1f} ms"
+        )
 
-        # latest audit event (to show latest editor/user)
-        context["last_modified_user_email"] = None
+        # actions menu
+        context["action_links"] = timed(
+            "get_nofo_action_links", get_nofo_action_links, self.object
+        )
+
+        # latest audit event (measure fetch separately)
+        t0 = time.perf_counter()
         last_modified_audit_event = get_latest_audit_event_for_nofo(self.object)
+        print(
+            f"[NOFO Edit] get_latest_audit_event_for_nofo: {(time.perf_counter()-t0)*1000:.1f} ms"
+        )
+
+        t0 = time.perf_counter()
+        context["last_modified_user_email"] = None
         if last_modified_audit_event:
             context["last_modified_user"] = last_modified_audit_event.user
+        print(
+            f"[NOFO Edit] assign_last_modified_user: {(time.perf_counter()-t0)*1000:.1f} ms"
+        )
 
-        # booleans to show/hide our various warning messages
+        # boolean flags (cheap, but time anyway to see surprises)
+        t0 = time.perf_counter()
         context["has_broken_links"] = len(context["broken_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
         context["has_external_links"] = len(
@@ -330,6 +386,12 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             context["has_broken_links"]
             or context["has_heading_errors"]
             or context["has_external_links"]
+        )
+        print(f"[NOFO Edit] flags_compute: {(time.perf_counter()-t0)*1000:.1f} ms")
+
+        # total
+        print(
+            f"[NOFO Edit] TOTAL get_context_data: {(time.perf_counter()-t_total)*1000:.1f} ms"
         )
 
         return context
