@@ -75,10 +75,13 @@ def duplicate_guide(original_doc) -> ContentGuide:
 
     # 1) Create the guide shell
     title = (
-        getattr(original_doc, "title", "")
-        or getattr(original_doc, "short_name", "")
+        getattr(original_doc, "short_name", "")
+        or getattr(original_doc, "title", "")
         or (original_doc.filename or "")
     )
+    if is_nofo:
+        title = "(Compare) {}".format(title)
+
     guide = ContentGuide.objects.create(
         title=title,
         filename=getattr(original_doc, "filename", "") or "",
