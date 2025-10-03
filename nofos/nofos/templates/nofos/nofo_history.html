@@ -70,7 +70,15 @@
   <tbody id="audit-events-body">
     {% for event in audit_events %}
     <tr>
-      <td>{{ event.event_type }}</td>
+      <td>
+        {% if user.is_superuser %}
+          <a href="{% url 'admin:easyaudit_crudevent_change' event.id %}">
+            {{ event.event_type }}
+          </a>
+        {% else %}
+          {{ event.event_type }}
+        {% endif %}
+      </td>
       <td><em>{{ event.object_type }}</em><br>{{ event.object_description }}</td>
       <td>{{ event.user.email }}</td>
       {% timezone "America/New_York" %}

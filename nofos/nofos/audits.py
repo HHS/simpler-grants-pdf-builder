@@ -38,6 +38,7 @@ def format_audit_event(event):
     Includes enhanced labels and object details.
     """
     event_details = {
+        "id": event.id,
         "event_type": event.get_event_type_display(),
         "object_type": event.content_type.model.title(),
         "object_description": event.object_repr,
@@ -96,53 +97,78 @@ def format_audit_event(event):
     return event_details
 
 
-def get_audit_events_for_nofo(nofo, reverse=True):
+def get_audit_events_for_nofo(nofo, reverse=True, limit_per_set=None):
     """
-    Return all audit events related to the given NOFO: the NOFO object,
+    Return audit events related to the given NOFO: the NOFO object,
     its sections, and its subsections.
+
+    Args:
+        reverse (bool): newest-first if True.
+        limit_per_set (int|None): if set, cap each bucket (NOFO / Sections / Subsections)
+                                  by datetime DESC before merging.
     """
 
     def _filter_updated_events(events):
-        """Remove events where only the 'updated' field changed."""
+        """Remove events where only 'updated' or only 'uuid' changed."""
         filtered_events = []
         for event in events:
             if event.event_type != CRUDEvent.UPDATE:
                 filtered_events.append(event)
                 continue
+            if event.changed_fields == "null":
+                continue
             try:
                 changed = json.loads(event.changed_fields or "{}")
-                if not (
-                    changed.keys() == {"updated"} or list(changed.keys()) == ["updated"]
-                ):
-                    filtered_events.append(event)
+
+                # Normalize keys into a set
+                keys = set(changed.keys()) if isinstance(changed, dict) else set()
+
+                # Ignore if only 'updated' or only 'uuid'
+                if keys in ({"updated"}, {"uuid"}):
+                    continue
+
+                filtered_events.append(event)
             except Exception:
+                # On parse error, safest is to keep
                 filtered_events.append(event)
         return filtered_events
 
     # Get audit events for the NOFO
-    nofo_events = CRUDEvent.objects.filter(
-        object_id=nofo.id, content_type__model="nofo"
-    )
-    nofo_events = _filter_updated_events(nofo_events)
+    nofo_events_qs = CRUDEvent.objects.filter(
+        object_id=nofo.id,
+        content_type__model="nofo",
+    ).order_by("-datetime")
+    if limit_per_set:
+        nofo_events_qs = nofo_events_qs[:limit_per_set]
 
     # Get audit events for Sections
     section_ids = list(nofo.sections.values_list("id", flat=True))
-    section_events = CRUDEvent.objects.filter(
-        object_id__in=[str(sid) for sid in section_ids],
+    section_ids_str = [str(sid) for sid in section_ids]
+    section_events_qs = CRUDEvent.objects.filter(
+        object_id__in=section_ids_str,
         content_type__model="section",
-    )
+    ).order_by("-datetime")
+    if limit_per_set:
+        section_events_qs = section_events_qs[:limit_per_set]
 
     # Get audit events for Subsections (even if they have been deleted)
     subsection_filter = Q()
     for section_id in section_ids:
         subsection_filter |= Q(object_json_repr__contains=str(section_id))
 
-    subsection_events = CRUDEvent.objects.filter(
-        content_type__model="subsection"
-    ).filter(subsection_filter)
+    subsection_events_qs = (
+        CRUDEvent.objects.filter(content_type__model="subsection")
+        .filter(subsection_filter)
+        .order_by("-datetime")
+    )
+    if limit_per_set:
+        subsection_events_qs = subsection_events_qs[:limit_per_set]
+
+    # Only NOFO events get _filter_updated_events
+    events = list(nofo_events_qs) + list(section_events_qs) + list(subsection_events_qs)
 
     return sorted(
-        list(nofo_events) + list(section_events) + list(subsection_events),
+        _filter_updated_events(events),
         key=lambda e: e.datetime,
         reverse=reverse,
     )
