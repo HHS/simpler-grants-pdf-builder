@@ -9,17 +9,32 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.12.0] - 2025-10-03
+
+### Added
+
+- Add "NOFO Compare" to header
 - Add "Step" title to side nav for NOFO Compare
 
 ### Changed
 
+- Submit a support ticket footer link is visible for all users
+- "Compare" is a new option in "NOFO Actions" drop down
+- Change all references to "Content guides" to just say "Documents" on Compare side of things
 - Many improvements to side nav for NOFO Compare
   - Highlight background colour of "ADD", "DELETE", "CHANGED" in side nav
+  - "ADD" has blue outline now
   - Add sticky "Step" headers between the nav items in the side nav
   - Auto scroll side nav items as we scroll down the document
   - Keep the index number of nav items as we scroll past sections
 
-### Fixed
+### Migrations
+
+- Add migration for new "from_nofo" field to ContentGuide objects
 
 ## [3.11.0] - 2025-09-30
 

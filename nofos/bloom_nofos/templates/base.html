@@ -26,6 +26,16 @@
       </div>
       <nav aria-label="Primary navigation" class="usa-nav">
         <ul class="usa-nav__primary usa-accordion">
+          {% if user.is_authenticated and '/nofos/' in request.path %}
+            <li class="usa-nav__primary-item">
+              <a href="{% url 'guides:guide_index' %}">NOFO Compare</a>
+            </li>
+          {% endif %}
+          {% if user.is_authenticated and '/guides/' in request.path %}
+            <li class="usa-nav__primary-item">
+              <a href="{% url 'index' %}">NOFO Builder</a>
+            </li>
+          {% endif %}
           {% if user.is_superuser and nofo and subsection %}
             <li class="usa-nav__primary-item">
               <a href="{% url 'admin:nofos_subsection_change' subsection.id %}">Subsection admin link</a>
@@ -101,7 +111,7 @@
               Latest updates
             </a>
           </li>
-          {% if user.group == 'hrsa' %}
+          {% if user.is_authenticated %}
             <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
               {% include "includes/feedback_link.html" with html_class="usa-footer__primary-link usa-link--external" link_text="Submit a support ticket" only %}
             </li>
