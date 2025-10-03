@@ -1123,6 +1123,14 @@ def _update_link_statuses(all_links):
 
 def get_nofo_action_links(nofo):
     # Canonical action builders
+    def _link_compare(nofo):
+        return {
+            "key": "compare",
+            "label": "Compare NOFO",
+            "href": reverse_lazy("guides:guide_duplicate", args=[nofo.pk]),
+            "external": True,
+        }
+
     def _link_reimport(nofo):
         return {
             "key": "reimport",
@@ -1147,13 +1155,22 @@ def get_nofo_action_links(nofo):
 
     # Status → allowed actions
     _STATUS_ACTIONS = {
-        "draft": ("find_replace", "reimport", "delete"),
-        "active": ("find_replace", "reimport"),
-        "ready-for-qa": ("find_replace", "reimport"),
-        "review": ("find_replace",),
-        "doge": ("find_replace",),  # Deputy Secretary review
+        "draft": ("find_replace", "compare", "reimport", "delete"),
+        "active": ("find_replace", "compare", "reimport"),
+        "ready-for-qa": ("find_replace", "compare", "reimport"),
+        "review": (
+            "find_replace",
+            "compare",
+        ),
+        "doge": (
+            "find_replace",
+            "compare",
+        ),  # Deputy Secretary review
         "published": (),  # no actions ("modifications" is not part of this)
-        "paused": ("find_replace",),
+        "paused": (
+            "find_replace",
+            "compare",
+        ),
         "cancelled": (),
     }
 
@@ -1163,6 +1180,7 @@ def get_nofo_action_links(nofo):
     # Assemble in order
     link_builders = {
         "find_replace": lambda: _link_find_replace(nofo),
+        "compare": lambda: _link_compare(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "delete": lambda: _link_delete(nofo),
     }

@@ -60,7 +60,8 @@ Edit “{{ nofo|nofo_name }}”
             <li class="usa-sidenav__item">
               <a
                 href="{{ link.href }}"
-                class="{% if link.danger %}usa-link--destructive{% endif %}"
+                class="{% if link.danger %}usa-link--destructive{% endif %} {% if link.external %}usa-link--external{% endif %}"
+                {% if link.external %}target="_blank"{% endif %}
               >{{ link.label }}</a>
             </li>
           {% endfor %}
