@@ -177,7 +177,9 @@ def get_audit_events_for_nofo(nofo, reverse=True, limit_per_set=None):
 def get_latest_audit_event_for_nofo(nofo):
     """
     Return the most recent audit event for this NOFO (including related Sections/Subsections),
-    honoring the same filtering rules as `get_audit_events_for_nofo`.
+    honoring the same filtering rules as `get_audit_events_for_nofo`, but with a bounded window
+    per bucket for speed.
     """
-    events = get_audit_events_for_nofo(nofo, reverse=True)  # newest-first
+    QUERY_LIMIT = 10
+    events = get_audit_events_for_nofo(nofo, reverse=True, limit_per_set=QUERY_LIMIT)
     return events[0] if events else None
