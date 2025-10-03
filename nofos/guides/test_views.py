@@ -151,7 +151,7 @@ class DuplicateGuideTests(TestCase):
         self.assertIsNone(new.archived)
         self.assertIsNone(new.successor)
         self.assertEqual(new.opdiv, "NIH")
-        self.assertEqual(new.title, "NOFO title")
+        self.assertEqual(new.title, "(Compare) NOFO short name")  # use short name
 
         # Section parity
         self.assertEqual(new.sections.count(), source.sections.count())
