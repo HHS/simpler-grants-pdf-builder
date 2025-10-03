@@ -452,7 +452,7 @@ class ContentGuideDuplicateViewTests(TestCase):
         self.assertEqual(ContentGuide.objects.count(), 1)
         new = ContentGuide.objects.latest("created")
         # Redirect goes to edit page for new guide
-        self.assertIn(reverse("guides:guide_edit", args=[new.id]), resp["Location"])
+        self.assertIn(reverse("guides:guide_compare", args=[new.id]), resp["Location"])
         # Sanity: sections/subsections copied
         self.assertEqual(new.sections.count(), 2)
         self.assertEqual(sum(s.subsections.count() for s in new.sections.all()), 2)
@@ -465,7 +465,7 @@ class ContentGuideDuplicateViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(ContentGuide.objects.count(), 2)  # original + new
         new = ContentGuide.objects.exclude(id=source.id).get()
-        self.assertIn(reverse("guides:guide_edit", args=[new.id]), resp["Location"])
+        self.assertIn(reverse("guides:guide_compare", args=[new.id]), resp["Location"])
         # guide-specific fields preserved
         new_sub = new.sections.first().subsections.first()
         self.assertEqual(new_sub.comparison_type, "name")

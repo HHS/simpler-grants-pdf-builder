@@ -19,11 +19,11 @@
       </p>
     </div>
   </div>
-  <div class="usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon usa-alert--alpha margin-bottom-3">
-    <div class="usa-alert__body bg-base-lightest">
+
+  <div class="usa-alert usa-alert--info usa-alert--slim margin-bottom-3">
+    <div class="usa-alert__body">
       <p class="usa-alert__text">
-        <span class="usa-tag bg-gold text-ink">Beta</span>
-        <span class="margin-left-1"><a href="{% url 'nofos:nofo_import_compare' nofo.id %}">Compare your new document to see what’s new</a>.</span>
+        <a class="usa-link usa-link--external" href="{% url 'guides:guide_duplicate' nofo.id %}" target="_blank">Compare your NOFO to your new document</a> to see what’s changed before you reimport.
       </p>
     </div>
   </div>

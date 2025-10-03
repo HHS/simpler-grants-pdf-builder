@@ -2762,24 +2762,30 @@ class TestBuildNofoActionLinks(TestCase):
             status="draft",
         )
 
-    def _assert_link(self, link, key, label, url_name, danger=False):
+    def _assert_link(self, link, key, label, url_name, danger=False, external=False):
         self.assertEqual(link["key"], key)
         self.assertEqual(link["label"], label)
         expected_href = reverse(url_name, args=[self.nofo.pk])
         self.assertEqual(str(link["href"]), expected_href)
+
         if danger:
             self.assertTrue(link.get("danger") is True)
         else:
             self.assertFalse(link.get("danger", False))
 
-    def test_draft_has_check_reimport_delete_findreplace_in_order_with_count(self):
+        if external:
+            self.assertTrue(link.get("external") is True)
+        else:
+            self.assertFalse(link.get("external", False))
+
+    def test_draft_has_reimport_delete_findreplace_in_order_with_count(self):
         self.nofo.status = "draft"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "reimport", "delete"],
+            ["find-replace", "compare", "reimport", "delete"],
         )
 
         self._assert_link(
@@ -2790,45 +2796,56 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[1],
+            key="compare",
+            label="Compare NOFO",
+            url_name="guides:guide_duplicate",
+            external=True,
+        )
+        self._assert_link(
+            links[2],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[2],
+            links[3],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
             danger=True,
         )
 
-    def test_active_has_check_reimport_findreplace(self):
+    def test_active_has_findreplace_compare_reimport(self):
         self.nofo.status = "active"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
-        self.assertEqual([l["key"] for l in links], ["find-replace", "reimport"])
+        self.assertEqual(
+            [l["key"] for l in links], ["find-replace", "compare", "reimport"]
+        )
 
-    def test_ready_for_qa_has_check_reimport_findreplace(self):
+    def test_ready_for_qa_has_findreplace_compare_reimport(self):
         self.nofo.status = "ready-for-qa"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
-        self.assertEqual([l["key"] for l in links], ["find-replace", "reimport"])
+        self.assertEqual(
+            [l["key"] for l in links], ["find-replace", "compare", "reimport"]
+        )
 
-    def test_review_has_findreplace_only(self):
+    def test_review_has_findreplace_compare(self):
         self.nofo.status = "review"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
-        self.assertEqual([l["key"] for l in links], ["find-replace"])
+        self.assertEqual([l["key"] for l in links], ["find-replace", "compare"])
 
-    def test_doge_has_findreplace_only(self):
+    def test_doge_has_findreplace_compare(self):
         self.nofo.status = "doge"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
-        self.assertEqual([l["key"] for l in links], ["find-replace"])
+        self.assertEqual([l["key"] for l in links], ["find-replace", "compare"])
 
     def test_published_has_no_actions(self):
         self.nofo.status = "published"
@@ -2837,12 +2854,12 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(links, [])
 
-    def test_paused_has_check_and_findreplace(self):
+    def test_paused_has_findreplace_compare(self):
         self.nofo.status = "paused"
         self.nofo.save()
 
         links = get_nofo_action_links(self.nofo)
-        self.assertEqual([l["key"] for l in links], ["find-replace"])
+        self.assertEqual([l["key"] for l in links], ["find-replace", "compare"])
 
     def test_cancelled_has_no_actions(self):
         self.nofo.status = "cancelled"

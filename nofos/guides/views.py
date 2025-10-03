@@ -230,7 +230,7 @@ class ContentGuideDuplicateView(View):
 
         try:
             new_guide = duplicate_guide(original_doc)
-            return redirect("guides:guide_edit", pk=new_guide.id)
+            return redirect("guides:guide_compare", pk=new_guide.id)
 
         except Exception as e:
             return HttpResponseBadRequest(f"Error duplicating document: {e}")
