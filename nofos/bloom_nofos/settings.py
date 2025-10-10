@@ -145,6 +145,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
     "bloom_nofos.middleware.BadRequestMiddleware",
+    "bloom_nofos.middleware.CurrentUserMiddleware",
     "bloom_nofos.middleware.JSONRequestLoggingMiddleware",
     "nofos.middleware.NofosLoginRequiredMiddleware",
 ]

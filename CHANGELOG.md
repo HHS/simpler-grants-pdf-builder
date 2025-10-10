@@ -13,6 +13,21 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.14.0] - 2025-10-13
+
+### Added
+
+- Add new field to Document objects: "updated_by"
+  - It stores the logged in user who made the most recent edit
+
+### Fixed
+
+- Remove "get all audit events" function that runs when editing a NOFO
+
+### Migrations
+
+- Add 'updated_by' val to NOFO and ContentGuide
+
 ## [3.13.0] - 2025-10-10
 
 ### Changed

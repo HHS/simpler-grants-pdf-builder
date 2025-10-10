@@ -146,12 +146,3 @@ def get_audit_events_for_nofo(nofo, reverse=True):
         key=lambda e: e.datetime,
         reverse=reverse,
     )
-
-
-def get_latest_audit_event_for_nofo(nofo):
-    """
-    Return the most recent audit event for this NOFO (including related Sections/Subsections),
-    honoring the same filtering rules as `get_audit_events_for_nofo`.
-    """
-    events = get_audit_events_for_nofo(nofo, reverse=True)  # newest-first
-    return events[0] if events else None

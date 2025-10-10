@@ -33,7 +33,6 @@ from .audits import (
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
     get_audit_events_for_nofo,
-    get_latest_audit_event_for_nofo,
 )
 from .forms import (
     CheckNOFOLinkSingleForm,
@@ -315,10 +314,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["action_links"] = get_nofo_action_links(self.object)
 
         # latest audit event (to show latest editor/user)
-        context["last_modified_user_email"] = None
-        last_modified_audit_event = get_latest_audit_event_for_nofo(self.object)
-        if last_modified_audit_event:
-            context["last_modified_user"] = last_modified_audit_event.user
+        context["updated_by"] = self.object.updated_by
 
         # booleans to show/hide our various warning messages
         context["has_broken_links"] = len(context["broken_links"])

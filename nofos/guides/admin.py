@@ -63,6 +63,7 @@ class ContentGuideAdmin(admin.ModelAdmin):
                     "filename",
                     "created",
                     "updated",
+                    "updated_by",
                 )
             },
         ),
