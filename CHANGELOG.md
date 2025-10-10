@@ -13,6 +13,12 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.13.0] - 2025-10-10
+
+### Changed
+
+- Downgrade Python from 3.13.x to 3.12.12
+
 ## [3.12.0] - 2025-10-03
 
 ### Added

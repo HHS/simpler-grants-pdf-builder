@@ -48,9 +48,46 @@ Once a NOFO is reviewed and approved, our workflow is:
 
 `python` is a high-level, general-purpose programming language, popular for programming web applications.
 
-This project uses Python >=3.13.
+This project uses Python >=3.12.
 
 You can find the exact version of python that is being used by referencing the [Dockerfile](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/Dockerfile#L1). If you want to change your Python version, I would recommend [pyenv](https://github.com/pyenv/pyenv).
+
+<details>
+
+<summary>
+Changing Python version
+</summary>
+
+#### Changing the Python version
+
+Note: this is not required for initial installation + booting up the app, but I am putting it here so that I remember.
+
+The assumption here is that we are using `pyenv` to manage our Python version.
+
+```bash
+# check for currently supported versions of Python
+pyenv install --list
+
+# if the version you want is not shown, you can try updating pyenv
+brew update && brew upgrade pyenv
+
+# install new version of python with pyenv
+pyenv install 3.14.0
+
+# update python versions in various files
+# here is a commit that is representative: #538d753a4d961e4d97c783bb7d4157a655ffd12a
+
+# point poetry at the new python
+poetry env use 3.14
+
+# refresh lockfile metadata for the new python *without* bumping any packages
+poetry lock --no-update
+
+# install exactly from the lockfile
+poetry install --sync
+```
+
+</details>
 
 ### [Install `poetry`](https://python-poetry.org/docs/)
 
@@ -64,7 +101,7 @@ Updating dependencies
 
 #### Updating poetry dependencies
 
-Note: this is not required for initial installation + booting up the app, but I am putting it here so that I remember.
+Note: this is also not required for initial installation + booting up the app.
 
 ```bash
 # check for outdated deps
