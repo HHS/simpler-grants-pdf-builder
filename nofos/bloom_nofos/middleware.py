@@ -1,5 +1,6 @@
 import logging
 import re
+import threading
 import time
 import traceback
 
@@ -9,6 +10,16 @@ from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.template import loader
 from django.utils.deprecation import MiddlewareMixin
 
+_local = threading.local()
+
+
+def set_current_user(user):
+    _local.user = user
+
+
+def get_current_user():
+    return getattr(_local, "user", None)
+
 
 class BadRequestMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
@@ -17,6 +28,18 @@ class BadRequestMiddleware(MiddlewareMixin):
             template = loader.get_template("400.html")
             return HttpResponseBadRequest(template.render(context, request))
         return response
+
+
+class CurrentUserMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            set_current_user(getattr(request, "user", None))
+            return self.get_response(request)
+        finally:
+            set_current_user(None)
 
 
 class JSONRequestLoggingMiddleware(MiddlewareMixin):

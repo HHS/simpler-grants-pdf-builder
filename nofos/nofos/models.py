@@ -1,6 +1,7 @@
 import uuid
 
 import cssutils
+from bloom_nofos.middleware import get_current_user
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -149,6 +150,15 @@ class BaseNofo(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
 
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="The last logged-in user who modified this document.",
+    )
+
     @property
     def is_nofo(self):
         return isinstance(self, Nofo)
@@ -174,14 +184,34 @@ class BaseNofo(models.Model):
                 ) != getattr(self, field.name):
                     # A field other than 'status' has changed, update the 'updated' field
                     self.updated = timezone.now()
+                    user = get_current_user()
+                    self.updated_by = user if (user and user.is_authenticated) else None
                     break
+
         else:
             # If it's a new instance, set the 'updated' field to the current time
             self.updated = timezone.now()
+            user = get_current_user()
+            self.updated_by = user if (user and user.is_authenticated) else None
 
         # Call the clean method for validation
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def touch_updated(self):
+        """
+        Atomically update `updated` (and `updated_by`, if present) without
+        calling save(), to avoid recursion or expensive validation.
+        """
+        user = get_current_user()
+        updates = {"updated": timezone.now()}
+        if user and user.is_authenticated:
+            updates["updated_by"] = user
+        else:
+            # If you prefer to *not* clear when no user, comment this out
+            updates["updated_by"] = None
+
+        self.__class__.objects.filter(pk=self.pk).update(**updates)
 
 
 class Nofo(BaseNofo):
@@ -499,8 +529,7 @@ class BaseSection(models.Model):
 
         document = self.get_document()
         if document:
-            document.updated = timezone.now()
-            document.save()
+            document.touch_updated()
 
     @classmethod
     def get_next_order(cls, document):
@@ -651,8 +680,7 @@ class BaseSubsection(models.Model):
         # set "updated" field on Nofo/ContentGuide
         document = self.get_document()
         if document:
-            document.updated = timezone.now()
-            document.save()
+            document.touch_updated()
 
     def get_absolute_url(self):
         nofo_id = self.section.nofo.id

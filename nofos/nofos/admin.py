@@ -138,6 +138,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "filename",
                     "created",
                     "updated",
+                    "updated_by",
                 )
             },
         ),
