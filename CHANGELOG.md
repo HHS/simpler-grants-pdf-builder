@@ -13,6 +13,16 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.15.0] - 2025-10-13
+
+### Changed
+
+- Invalidate all links to NOFO Compare for now
+
+### Migrations
+
+- Remove all 'guides' models and data
+
 ## [3.14.0] - 2025-10-13
 
 ### Added
