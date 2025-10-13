@@ -2,7 +2,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    dependencies = []
+    dependencies = [
+        ("easyaudit", "0019_alter_crudevent_changed_fields_and_more"),
+    ]
 
     operations = [
         # 1) Remove admin log rows that reference 'guides' content types
