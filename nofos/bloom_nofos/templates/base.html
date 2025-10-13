@@ -19,7 +19,6 @@
             {% if '/guides/' not in request.path %}
               <a href="{% url 'index' %}">NOFO Builder</a>
             {% else %}
-              <!-- <a href="{% url 'guides:guide_index' %}">NOFO Compare</a> -->
               <a href="#">NOFO Compare</a>
             {% endif %}
           </em>
@@ -29,7 +28,6 @@
         <ul class="usa-nav__primary usa-accordion">
           {% if user.is_authenticated and '/nofos/' in request.path %}
             <li class="usa-nav__primary-item">
-              <!-- <a href="{% url 'guides:guide_index' %}">NOFO Compare</a> -->
               <a href="#">NOFO Compare</a>
             </li>
           {% endif %}
@@ -63,7 +61,6 @@
               {% if '/guides/' not in request.path %}
                 <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
               {% else %}
-                <a href="{% url 'guides:guide_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'guide_index' %}aria-current="page"{% endif %}>All documents</a>
               {% endif %}
             </li>
           {% endif %}
