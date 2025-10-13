@@ -20,14 +20,6 @@
     </div>
   </div>
 
-  <!-- <div class="usa-alert usa-alert--info usa-alert--slim margin-bottom-3">
-    <div class="usa-alert__body">
-      <p class="usa-alert__text">
-        <a class="usa-link usa-link--external" href="{% url 'guides:guide_duplicate' nofo.id %}" target="_blank">Compare your NOFO to your new document</a> to see what’s changed before you reimport.
-      </p>
-    </div>
-  </div> -->
-
   {% with nofo|nofo_name as nofo_name_str %}
     {% with "Edit “"|add:nofo_name_str|add:"”" as back_text %}
       {% url 'nofos:nofo_edit' nofo.id as back_href %}

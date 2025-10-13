@@ -10,7 +10,6 @@
       {% endif %}
       {% if not document.number %}
       <br />
-      See the latest version here: <a class="usa-link" href="{% url 'guides:guide_edit' document.successor.id %}">{{ document.title }}</a>
       {% endif %}
     </p>
   </div>

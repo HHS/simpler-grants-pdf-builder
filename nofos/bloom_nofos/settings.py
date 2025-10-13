@@ -127,7 +127,6 @@ INSTALLED_APPS = [
     "constance",
     "easyaudit",
     "nofos.apps.NofosConfig",
-    "guides.apps.GuidesConfig",
     "users.apps.UsersConfig",
     "uploads.apps.UploadsConfig",
     "django_mirror",
