@@ -45,6 +45,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("nofos", "0072_alter_nofo_coach_alter_nofo_designer_and_more"),
+        ("easyaudit", "0019_alter_crudevent_changed_fields_and_more"),
     ]
 
     operations = [
