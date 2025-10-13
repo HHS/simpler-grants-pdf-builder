@@ -15,9 +15,18 @@ Versioning since version 1.0.0.
 
 ## [3.15.0] - 2025-10-13
 
+### Added
+
+- Added a new app: "compare"
+  - Compare will be "guides" renamed, because "guides" is no longer relevant
+
 ### Changed
 
 - Invalidate all links to NOFO Compare for now
+
+## Removed
+
+- Removed all "guides" data and references
 
 ### Migrations
 
