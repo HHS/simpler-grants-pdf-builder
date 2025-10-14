@@ -64,7 +64,7 @@
       {% if new_nofo %}
         <a class="usa-button" href="{% url 'compare:compare_compare_result' document.id new_nofo.id %}">Return to comparison</a>
       {% else %}
-        <a class="usa-button" href="{% url 'compare:compare_compare_upload' document.id %}">Ready to compare</a>
+        <a class="usa-button" href="{% url 'compare:compare_import_to_doc' document.id %}">Ready to compare</a>
       {% endif %}
     </li>
     <li class="usa-button-group__item">

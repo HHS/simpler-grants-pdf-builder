@@ -416,52 +416,54 @@ class CompareEditGroupView(GroupAccessObjectMixin, UpdateView):
         return redirect("compare:compare_edit", pk=document.id)
 
 
-# class ContentGuideCompareUploadView(
-#     GroupAccessObjectMixin, LoginRequiredMixin, BaseNofoImportView
-# ):
-#     template_name = "guides/guide_import_compare.html"
-#     redirect_url_name = "guides:guide_compare_upload"
+class CompareImportToDocView(
+    GroupAccessObjectMixin, LoginRequiredMixin, BaseNofoImportView
+):
+    template_name = "compare/compare_import_to_doc.html"
+    redirect_url_name = "compare:compare_compare_upload"
 
-#     def dispatch(self, request, *args, **kwargs):
-#         self.guide = get_object_or_404(ContentGuide, pk=kwargs.get("pk"))
-#         return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        self.document = get_object_or_404(CompareDocument, pk=kwargs.get("pk"))
+        return super().dispatch(request, *args, **kwargs)
 
-#     def get_redirect_url_kwargs(self):
-#         return {"pk": self.kwargs["pk"]}
+    def get_redirect_url_kwargs(self):
+        return {"pk": self.kwargs["pk"]}
 
-#     def get(self, request, *args, **kwargs):
-#         return render(
-#             request,
-#             self.get_template_name(),
-#             {"guide": self.guide},
-#         )
+    def get(self, request, *args, **kwargs):
+        return render(
+            request,
+            self.get_template_name(),
+            {"document": self.document},
+        )
 
-#     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
-#         try:
-#             # Create a temporary NOFO for comparison
-#             new_nofo = create_nofo(
-#                 title=suggest_nofo_title(soup),
-#                 sections=sections,
-#                 opdiv=suggest_nofo_opdiv(soup),
-#             )
+    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+        try:
+            # Create a temporary NOFO for comparison
+            new_nofo = create_nofo(
+                title=suggest_nofo_title(soup),
+                sections=sections,
+                opdiv=suggest_nofo_opdiv(soup),
+            )
 
-#             new_nofo.group = request.user.group
-#             new_nofo.filename = filename
-#             suggest_all_nofo_fields(new_nofo, soup)
-#             add_headings_to_document(new_nofo)
-#             add_page_breaks_to_headings(new_nofo)
+            new_nofo.group = request.user.group
+            new_nofo.filename = filename
+            suggest_all_nofo_fields(new_nofo, soup)
+            add_headings_to_document(new_nofo)
+            add_page_breaks_to_headings(new_nofo)
 
-#             # Mark it as archived immediately
-#             new_nofo.title = f"(COMPARE) {new_nofo.title}"
-#             new_nofo.archived = timezone.now()
-#             new_nofo.save()
+            # Mark it as archived immediately
+            new_nofo.title = f"(COMPARE) {new_nofo.title}"
+            new_nofo.archived = timezone.now()
+            new_nofo.save()
 
-#             return redirect(
-#                 "guides:guide_compare_result", pk=self.guide.pk, new_nofo_id=new_nofo.pk
-#             )
+            return redirect(
+                "compare:compare_compare_result",
+                pk=self.document.pk,
+                new_nofo_id=new_nofo.pk,
+            )
 
-#         except Exception as e:
-#             return HttpResponseBadRequest(f"Error comparing document: {str(e)}")
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error comparing document: {str(e)}")
 
 
 # class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
