@@ -21,11 +21,11 @@ urlpatterns = [
         views.CompareImportTitleView.as_view(),
         name="compare_import_title",
     ),
-    # path(
-    #     "<uuid:pk>/delete",
-    #     views.ContentGuideArchiveView.as_view(),
-    #     name="guide_archive",
-    # ),
+    path(
+        "<uuid:pk>/delete",
+        views.CompareArchiveView.as_view(),
+        name="compare_archive",
+    ),
     path("<uuid:pk>/edit", views.CompareEditView.as_view(), name="compare_edit"),
     path(
         "<uuid:pk>/edit/title",

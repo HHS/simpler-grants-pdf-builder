@@ -47,7 +47,7 @@
           <td>
             Compare a document <span class="usa-sr-only">to {{ document.title }}</span>
           </td>
-          <td><span class="usa-sr-only">Delete this document</span></td>
+          <td><a href="{% url 'compare:compare_archive' document.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
         </tr>
       {% endfor %}
       </tbody>
