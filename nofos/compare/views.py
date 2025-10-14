@@ -230,31 +230,31 @@ class CompareImportTitleView(GroupAccessObjectMixin, UpdateView):
 #         return self.post(request, pk, *args, **kwargs)
 
 
-# class ContentGuideArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
-#     model = ContentGuide
-#     template_name = "guides/guide_confirm_delete.html"
-#     success_url = reverse_lazy("guides:guide_index")
-#     context_object_name = "guide"
-#     fields = []  # We don’t need a form — just confirm
+class CompareArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
+    model = CompareDocument
+    template_name = "compare/compare_confirm_delete.html"
+    success_url = reverse_lazy("compare:compare_index")
+    context_object_name = "document"
+    fields = []  # We don’t need a form — just confirm
 
-#     def dispatch(self, request, *args, **kwargs):
-#         self.object = self.get_object()
-#         if self.object.archived:
-#             return HttpResponseBadRequest("This document is already archived.")
-#         return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.archived:
+            return HttpResponseBadRequest("This document is already archived.")
+        return super().dispatch(request, *args, **kwargs)
 
-#     def post(self, request, *args, **kwargs):
-#         guide = self.get_object()
-#         guide.archived = timezone.now()
-#         guide.save(update_fields=["archived"])
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+        document.archived = timezone.now()
+        document.save(update_fields=["archived"])
 
-#         messages.error(
-#             request,
-#             "You deleted “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
-#                 guide.title
-#             ),
-#         )
-#         return redirect(self.success_url)
+        messages.error(
+            request,
+            "You deleted “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                document.title
+            ),
+        )
+        return redirect(self.success_url)
 
 
 class CompareEditView(GroupAccessObjectMixin, DetailView):
