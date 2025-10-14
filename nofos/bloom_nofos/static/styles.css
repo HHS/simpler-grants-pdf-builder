@@ -487,7 +487,7 @@ label.usa-label {
 /* header widget for NOFO */
 
 .nofo_edit a.usa-tag--link,
-.content_guide_edit a.usa-tag--link {
+.compare_edit a.usa-tag--link {
   text-decoration: none;
 }
 
@@ -1525,12 +1525,12 @@ main .back-link a::before,
 }
 
 /* Content guide index page */
-.content_guide_index .table--section thead th:last-of-type,
-.content_guide_index .table--section tbody td:last-of-type {
+.compare_index .table--section thead th:last-of-type,
+.compare_index .table--section tbody td:last-of-type {
   text-align: center;
 }
 
-.content_guide_index .usa-button--delete::after {
+.compare_index .usa-button--delete::after {
   filter: invert(14%) sepia(84%) saturate(3191%) hue-rotate(349deg)
     brightness(94%) contrast(113%);
   width: 22px;
@@ -1538,13 +1538,13 @@ main .back-link a::before,
 }
 
 /* Content guide edit page */
-.nofo_guide_edit--header .nofo_guide_edit--header--h1 h1 {
+.nofo_compare_edit--header .nofo_compare_edit--header--h1 h1 {
   white-space: normal;
   font-size: 1.95rem;
   line-height: normal;
 }
 
-.content_guide_edit .nofo_edit--header--subheading {
+.compare_edit .nofo_edit--header--subheading {
   margin-bottom: -10px;
   z-index: 30;
   position: relative;
@@ -1553,13 +1553,13 @@ main .back-link a::before,
   text-transform: uppercase;
 }
 
-.content_guide_edit .usa-accordion__compare-heading {
+.compare_edit .usa-accordion__compare-heading {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.content_guide_edit .usa-accordion__compare-checkbox {
+.compare_edit .usa-accordion__compare-checkbox {
   position: absolute;
   right: 3rem;
   z-index: 1;
@@ -1567,7 +1567,7 @@ main .back-link a::before,
   flex-direction: row-reverse;
 }
 
-.content_guide_edit .usa-accordion__compare-checkbox-label {
+.compare_edit .usa-accordion__compare-checkbox-label {
   margin: 0;
   background-color: transparent;
 }
@@ -1583,14 +1583,11 @@ main .back-link a::before,
   font-weight: 700;
 }
 
-.content_guide_edit
-  main
-  table.table--section
-  .nofo-edit-table--subsection--manage {
+.compare_edit main table.table--section .nofo-edit-table--subsection--manage {
   position: relative;
 }
 
-.content_guide_edit
+.compare_edit
   main
   table.table--section
   .nofo-edit-table--subsection--manage
@@ -1601,7 +1598,7 @@ main .back-link a::before,
   right: 1.8rem;
 }
 
-.content_guide_edit .compare-all-sections-container {
+.compare_edit .compare-all-sections-container {
   width: 100%;
   display: flex;
   flex-direction: column;

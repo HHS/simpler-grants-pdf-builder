@@ -347,7 +347,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         section_order = section.get("order", "")
         default_html_id = f"{section_order}--{slugify(section_name)}"
 
-        object_name = "nofo" if hasattr(SectionModel, "nofo") else "content_guide"
+        object_name = "nofo" if hasattr(SectionModel, "nofo") else "document"
         section_obj = SectionModel(
             name=section_name,
             order=section_order,

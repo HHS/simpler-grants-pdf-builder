@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Upload a document
+{% endblock %}
+
+{% block body_class %}nofo_import nofo_import--compare{% endblock %}
+
+{% block content %}
+  {% if WORD_IMPORT_STRICT_MODE %}
+  <div class="usa-alert usa-alert--warning margin-bottom-3">
+    <div class="usa-alert__body">
+      <h4 class="usa-alert__heading">Warning</h4>
+      <p class="usa-alert__text">
+        “Strict mode” is active. In strict mode, .docx files with unhandled formatting will raise an exception.
+      </p>
+      {% if request.user.is_superuser %}
+        <p class="usa-alert__text">
+          <a href="/admin/constance/config/" target="_blank">Visit the admin backend to manage strict mode</a>.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% url 'compare:compare_index' as back_href %}
+  {% include "includes/page_heading.html" with title="Upload a document" back_text="All documents" back_href=back_href only %}
+
+  <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% with id="nofo-import" label="Select a document file to upload" hint="Accepts only .docx files." accept=".docx" value=title %}
+      {% for message in messages %}
+        {% if "error" in message.tags %}
+          {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept error=message only %}
+        {% endif %}
+      {% empty %}
+        {% include "includes/file_input.html" with id=id label=label hint=hint accept=accept only %}
+      {% endfor %}
+    {% endwith %}
+
+    {% include "includes/loading_horse.html" %}
+
+    <button class="usa-button margin-top-3 submit-button" type="submit">Upload</button>
+  </form>
+{% endblock %}
