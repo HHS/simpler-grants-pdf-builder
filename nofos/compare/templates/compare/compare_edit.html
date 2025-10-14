@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static martortags tz nofo_name get_value_or_none add_classes_to_tables convert_paragraphs_to_hrs %}
+
+{% block title %}
+  Configure document: “{{ document.title }}”
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'js/compare/compare_edit.js' %}" defer></script>
+{% endblock %}
+
+{% block body_class %}compare_edit{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Document saved successfully" error_heading="Subsection deleted" only %}
+
+  {% if document.archived %}
+    {% if document.successor %}
+      {% include "includes/warning_successor.html" with document=document user=user class_name="margin-bottom-3" only %}
+    {% else %}
+      {% include "includes/warning_archived.html" with document=document user=user class_name="margin-bottom-3" only %}
+    {% endif %}
+  {% endif %}
+
+  {% if document.from_nofo and not document.successor %}
+    <div class="usa-alert usa-alert--info margin-bottom-3">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">Document cloned from NOFO: “{{ document.from_nofo|nofo_name }}”</h4>
+        <p class="usa-alert__text">
+          This tool lets you <em>compare changes</em> between your NOFO and other files you upload.
+          <br />
+          To <em>edit</em> your NOFO, return to the NOFO Builder: <a class="usa-link usa-link--external" href="{% url 'nofos:nofo_edit' document.from_nofo.id %}" target="_blank">{{ document.from_nofo|nofo_name }}</a>.
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="back-link font-body-md">
+    {% if new_nofo %}
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'compare:compare_compare_result_result' document.id new_nofo.id %}">Review the differences</a>
+    {% else %}
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'compare:compare_index' %}">All documents</a>
+    {% endif %}
+  </div>
+  <div class="nofo_compare_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
+    <div class="nofo_compare_edit--header--h1">
+      <h1 class="font-heading-md margin-top-2 margin-bottom-105">{{ document.title }}</h1>
+    </div>
+  </div>
+
+  {% timezone "America/New_York" %}
+    <p>
+      <em>This document was uploaded on <strong>{{ document.created|date:'F j' }} at {{ document.created|date:'g:i A' }}</strong></em>.
+    </p>
+  {% endtimezone %}
+
+  <div class="usa-prose">
+    <p>Select “Ready to compare” to review the differences between your uploaded documents.<br />
+    If you would like to upload a new version of this document, select “Replace this document.”</p>
+  </div>
+
+  <ul class="usa-button-group margin-top-2">
+    <li class="usa-button-group__item">
+      {% if new_nofo %}
+        <a class="usa-button" href="{% url 'compare:compare_compare_result' document.id new_nofo.id %}">Return to comparison</a>
+      {% else %}
+        <a class="usa-button" href="{% url 'compare:compare_compare_upload' document.id %}">Ready to compare</a>
+      {% endif %}
+    </li>
+    <li class="usa-button-group__item">
+      <a class="usa-button usa-button--outline" href="{% url 'compare:compare_import' %}">Replace this document</a>
+    </li>
+  </ul>
+
+  <table class="usa-table usa-table--borderless width-full table--hide-edit-if-archived margin-bottom-6">
+    <caption>
+      <div>
+        <h2 class="margin-bottom-0">Document info</h2>
+      </div>
+    </caption>
+    <thead class="usa-sr-only">
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+        <th scope="col">Manage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Name</th>
+        <td>{{ document.title }}</td>
+        <td><a href="{% url 'compare:compare_edit_title' document.id %}">Edit<span class="usa-sr-only"> document name</span></a>
+        </td>
+      </tr>
+      {% if user.group == 'bloom' %}
+        <tr>
+          <th scope="row">Group</th>
+          <td>
+            <span class="usa-tag bg-group bg-group--{{ document.group }}">{{ document.group }}</span>
+          </td>
+          <td><a href="{% url 'compare:compare_edit_group' document.id %}">Edit<span class="usa-sr-only"> OpDiv group</span></a>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <h2>Which sections of this document would you like to compare to other files?</h2>
+  <ul class="usa-list">
+    <li>Selecting a section will compare all the content in that section.</li>
+    <li>Any sections you don't select won't be compared.</li>
+    <li>Headings within each section will always be compared.</li>
+    <li>Expand each section to see what content it includes.</li>
+  </ul>
+
+  <div class="compare-all-sections-container"
+       data-url="{% url 'compare:compare_edit' document.id %}"
+       data-csrf-token="{{ csrf_token }}">
+    <div class="usa-checkbox flipped-label">
+      <input
+        class="usa-checkbox__input"
+        id="compare-all-sections"
+        type="checkbox"
+        name="compare_all"
+        value="all"
+      />
+      <label class="usa-checkbox__label" for="compare-all-sections">
+        Compare All Sections
+      </label>
+    </div>
+  </div>
+
+  <div class="usa-accordion usa-accordion--bordered">
+    {% for section in document.sections.all|dictsort:"order" %}
+      <h3 class="usa-accordion__heading usa-accordion__compare-heading">
+        <button
+          type="button"
+          class="usa-accordion__button"
+          aria-expanded="false"
+          aria-controls="section-{{ section.id }}"
+        >
+          {{ section.name }}
+        </button>
+        <div class="usa-checkbox usa-accordion__compare-checkbox flipped-label">
+          <input
+            class="usa-checkbox__input"
+            id="compare-section-{{ section.id }}"
+            type="checkbox"
+            name="compare_sections"
+            value="{{ section.id }}"
+            onclick="event.stopPropagation();"
+          />
+          <label class="usa-checkbox__label usa-accordion__compare-checkbox-label" for="compare-section-{{ section.id }}" onclick="event.stopPropagation();">
+            Compare Content
+          </label>
+        </div>
+      </h3>
+      <div id="section-{{ section.id }}" class="usa-accordion__content usa-prose">
+        <table class="usa-table usa-table--borderless width-full table--section">
+          <thead>
+            <tr>
+              <th scope="col">Heading</th>
+              <th scope="col">Content</th>
+              <th scope="col"><span class="usa-sr-only">Manage comparison</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subsection in section.subsections.all|dictsort:"order" %}
+              {% if subsection.name != 'Basic information' %}
+              <tr class="row--comparison-type--{{ subsection.comparison_type }}">
+                <th scope="row"
+                  class="w-20 nofo-edit-table--subsection--name{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
+                  <span class="floating">
+                    {% if subsection.name %}
+                      <span {% if subsection.comparison_type == 'none' %}class="text-base text-italic"{% endif %}>
+                        {{ subsection.name }}
+                      </span>
+                    {% else %}
+                      <span class="text-base">—</span>
+                    {% endif %}
+                  </span>
+                </th>
+                <td class="nofo-edit-table--subsection--body">
+                  {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|get_value_or_none:"content" }}
+                </td>
+                <td class="width-4 nofo-edit-table--subsection--manage width-10 height-6">
+                  <div class="usa-checkbox ">
+                    <input
+                      class="usa-checkbox__input"
+                      id="compare-subsection-{{ subsection.id }}"
+                      type="checkbox"
+                      name="compare_subsections"
+                      value="{{ subsection.id }}"
+                      {% if subsection.comparison_type == 'body' %}checked{% endif %}
+                    />
+                    <label class="usa-checkbox__label" for="compare-subsection-{{ subsection.id }}">
+                      <span class="usa-sr-only">Compare subsection: {{ subsection.name }}</span>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

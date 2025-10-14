@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block title %}
+	NOFO Compare
+{% endblock %}
+
+{% block body_class %}compare_index{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Document saved successfully" error_heading="Document deleted" only %}
+
+  <h1 class="font-heading-xl margin-y-0">Welcome to Compare!</h1>
+  <div class="usa-prose">
+    <p>NOFO Compare lets you check your NOFO and content guide documents to see what has changed between versions. It does that by comparing two documents to each other.</p>
+    <p>To get started, choose a document that you want to compare against or upload a new one.</p>
+  </div>
+
+  {% if compare_docs %}
+  <h2 class="font-heading-md margin-top-6">All documents</h2>
+  <table class="usa-table usa-table--borderless width-full table--section">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        {% if user.group == 'bloom' %}
+          <th scope="col" class="compare-group-col">Group</th>
+        {% endif %}
+        <th scope="col">Updated</th>
+        <th scope="col" class="w-25">Compare Differences</th>
+        <th scope="col" class="w-5">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in compare_docs %}
+        <tr>
+          <th scope="row"><a href="{% url 'compare:compare_edit' document.pk %}">{{ document.title }}</a></th>
+          {% if user.group == 'bloom' %}
+            <td>
+              <span class="usa-tag bg-group bg-group--{{ document.group }}">{{ document.group }}</span>
+            </td>
+          {% endif %}
+          {% timezone "America/New_York" %}
+            <td>
+              {{ document.updated|date:'M j' }}, {{ document.updated|date:'g:i A' }}
+            </td>
+          {% endtimezone %}
+          <td>
+            Compare a document <span class="usa-sr-only">to {{ document.title }}</span>
+          </td>
+          <td><span class="usa-sr-only">Delete this document</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2 class="font-heading-md margin-top-6">Upload a new document</h2>
+  <div class="usa-prose">
+    <p>Upload the Word version (.docx) of the document you want to compare.</p>
+    <p>
+      <a class="usa-button" href="{% url 'compare:compare_import' %}">
+      Upload document
+      </a>
+    </p>
+  </div>
+{% endblock %}

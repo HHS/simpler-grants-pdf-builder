@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if show_back_link %}Rename this document{% else %}Name your document{% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if show_back_link %}
+    {% url 'compare:compare_edit' document.id as back_href %}
+    {% include "includes/page_heading.html" with title="Rename this document" back_text="Back to “"|add:document.title|add:"”" back_href=back_href only %}
+  {% else %}
+    {% include "includes/page_heading.html" with title="Name your document" only %}
+  {% endif %}
+
+  <div class="usa-prose">
+    <p>Label your document so that it’s clear which version it is.<br> We recommend including the date it was updated.</p>
+  </div>
+
+  <form id="nofo-title--form nofo-title--form--compare" method="post">
+    {% csrf_token %}
+
+    {% with id=form.title.name label=form.title.label value=form.title.value hint=form.title.help_text hint2="eg, “FY26 content guide 2025-08-01”" hint2for="title" error=form.title.errors.0 input_type="TextInput" classes="text-bold" %}
+      {% include "includes/_text_input.html" with id=id label=label hint=hint hint2=hint2 hint2for=hint2for value=value error=error disabled=disabled input_type=input_type classes=classes only %}
+    {% endwith %}
+
+    <button class="usa-button margin-top-3" type="submit">Save name</button>
+  </form>
+{% endblock %}

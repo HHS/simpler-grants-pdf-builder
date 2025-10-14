@@ -16,10 +16,10 @@
       <div class="usa-navbar">
         <div class="usa-logo">
           <em class="usa-logo__text">
-            {% if '/guides/' not in request.path %}
+            {% if '/compare/' not in request.path %}
               <a href="{% url 'index' %}">NOFO Builder</a>
             {% else %}
-              <a href="#">NOFO Compare</a>
+              <a href="{% url 'compare:compare_index' %}">NOFO Compare</a>
             {% endif %}
           </em>
         </div>
@@ -28,10 +28,10 @@
         <ul class="usa-nav__primary usa-accordion">
           {% if user.is_authenticated and '/nofos/' in request.path %}
             <li class="usa-nav__primary-item">
-              <a href="#">NOFO Compare</a>
+              <a href="{% url 'compare:compare_index' %}">NOFO Compare</a>
             </li>
           {% endif %}
-          {% if user.is_authenticated and '/guides/' in request.path %}
+          {% if user.is_authenticated and '/compare/' in request.path %}
             <li class="usa-nav__primary-item">
               <a href="{% url 'index' %}">NOFO Builder</a>
             </li>
@@ -58,9 +58,10 @@
           {% endif %}
           {% if user.is_authenticated %}
             <li class="usa-nav__primary-item">
-              {% if '/guides/' not in request.path %}
+              {% if '/compare/' not in request.path %}
                 <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'nofo_index' %}aria-current="page"{% endif %}>All NOFOs</a>
               {% else %}
+                <a href="{% url 'compare:compare_index' %}" class="usa-nav-link" {% if request.resolver_match.url_name == 'compare_index' %}aria-current="page"{% endif %}>All documents</a>
               {% endif %}
             </li>
           {% endif %}
