@@ -51,9 +51,9 @@
               <a href="{{ nofo.get_admin_url }}">NOFO admin link</a>
             </li>
           {% endif %}
-          {% if user.is_superuser and guide %}
+          {% if user.is_superuser and document %}
             <li class="usa-nav__primary-item">
-              <a href="{{ guide.get_admin_url }}">CG admin link</a>
+              <a href="{{ document.get_admin_url }}">Document admin link</a>
             </li>
           {% endif %}
           {% if user.is_authenticated %}

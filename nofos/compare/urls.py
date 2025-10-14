@@ -42,11 +42,11 @@ urlpatterns = [
     #     views.ContentGuideCompareView.as_view(),
     #     name="guide_compare",
     # ),
-    # path(
-    #     "<uuid:pk>/compare/upload",
-    #     views.ContentGuideCompareUploadView.as_view(),
-    #     name="guide_compare_upload",
-    # ),
+    path(
+        "<uuid:pk>/import/to-doc",
+        views.CompareImportToDocView.as_view(),
+        name="compare_import_to_doc",
+    ),
     # path(
     #     "<uuid:pk>/compare/<uuid:new_nofo_id>",
     #     views.ContentGuideCompareView.as_view(),
