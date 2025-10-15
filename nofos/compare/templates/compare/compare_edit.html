@@ -37,7 +37,7 @@
 
   <div class="back-link font-body-md">
     {% if new_nofo %}
-      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'compare:compare_compare_result_result' document.id new_nofo.id %}">Review the differences</a>
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'compare:compare_document_result' document.id new_nofo.id %}">Review the differences</a>
     {% else %}
       <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'compare:compare_index' %}">All documents</a>
     {% endif %}
@@ -62,7 +62,7 @@
   <ul class="usa-button-group margin-top-2">
     <li class="usa-button-group__item">
       {% if new_nofo %}
-        <a class="usa-button" href="{% url 'compare:compare_compare_result' document.id new_nofo.id %}">Return to comparison</a>
+        <a class="usa-button" href="{% url 'compare:compare_document_result' document.id new_nofo.id %}">Return to comparison</a>
       {% else %}
         <a class="usa-button" href="{% url 'compare:compare_import_to_doc' document.id %}">Ready to compare</a>
       {% endif %}

@@ -202,7 +202,7 @@ class CompareImportTitleView(GroupAccessObjectMixin, UpdateView):
         document.title = form.cleaned_data["title"]
         document.save()
 
-        return redirect("compare:compare_compare", pk=document.id)
+        return redirect("compare:compare_document", pk=document.id)
 
 
 # class ContentGuideDuplicateView(View):
@@ -420,7 +420,7 @@ class CompareImportToDocView(
     GroupAccessObjectMixin, LoginRequiredMixin, BaseNofoImportView
 ):
     template_name = "compare/compare_import_to_doc.html"
-    redirect_url_name = "compare:compare_compare_upload"
+    redirect_url_name = "compare:compare_import_to_doc"
 
     def dispatch(self, request, *args, **kwargs):
         self.document = get_object_or_404(CompareDocument, pk=kwargs.get("pk"))
@@ -457,7 +457,7 @@ class CompareImportToDocView(
             new_nofo.save()
 
             return redirect(
-                "compare:compare_compare_result",
+                "compare:compare_document_result",
                 pk=self.document.pk,
                 new_nofo_id=new_nofo.pk,
             )
@@ -466,83 +466,83 @@ class CompareImportToDocView(
             return HttpResponseBadRequest(f"Error comparing document: {str(e)}")
 
 
-# class ContentGuideCompareView(GroupAccessObjectMixin, LoginRequiredMixin, View):
-#     def get(self, request, pk, new_nofo_id=None):
-#         guide = get_object_or_404(ContentGuide, pk=pk)
+class CompareDocumentView(GroupAccessObjectMixin, LoginRequiredMixin, View):
+    def get(self, request, pk, new_nofo_id=None):
+        compare_doc = get_object_or_404(CompareDocument, pk=pk)
 
-#         # Get display mode from query param (default to "double", which is side-by-side)
-#         display_mode = request.GET.get("display", "double")
+        # Get display mode from query param (default to "double", which is side-by-side)
+        display_mode = request.GET.get("display", "double")
 
-#         context = {
-#             "guide": guide,
-#             "display_mode": display_mode,
-#         }
+        context = {
+            "document": compare_doc,
+            "display_mode": display_mode,
+        }
 
-#         if new_nofo_id:
-#             new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
+        if new_nofo_id:
+            new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
 
-#             comparison = compare_nofos(guide, new_nofo)
-#             # add old_diff and new_diff
-#             comparison = annotate_side_by_side_diffs(comparison)
+            comparison = compare_nofos(compare_doc, new_nofo)
+            # add old_diff and new_diff
+            comparison = annotate_side_by_side_diffs(comparison)
 
-#             # count subsections which are not none
-#             not_none_subsection_count = (
-#                 ContentGuideSubsection.objects.filter(section__content_guide=guide)
-#                 .exclude(comparison_type="none")
-#                 .count()
-#             )
+            # count subsections which are not none
+            not_none_subsection_count = (
+                CompareSubsection.objects.filter(section__document=compare_doc)
+                .exclude(comparison_type="none")
+                .count()
+            )
 
-#             first_section = comparison[0]
-#             if first_section["subsections"] and not_none_subsection_count > 1:
-#                 # Remove "Basic Information" if it's the first subsection of the first section
-#                 first_sub = first_section["subsections"][0]
-#                 if first_sub.name.strip().lower() == "basic information":
-#                     print("Removing Basic Information")
-#                     del first_section["subsections"][0]
-#                 # Remove "Have questions?" if it's the first subsection of the first section
-#                 next_sub = first_section["subsections"][0]
-#                 if "have questions?" in next_sub.old_value.strip().lower():
-#                     del first_section["subsections"][0]
+            first_section = comparison[0]
+            if first_section["subsections"] and not_none_subsection_count > 1:
+                # Remove "Basic Information" if it's the first subsection of the first section
+                first_sub = first_section["subsections"][0]
+                if first_sub.name.strip().lower() == "basic information":
+                    print("Removing Basic Information")
+                    del first_section["subsections"][0]
+                # Remove "Have questions?" if it's the first subsection of the first section
+                next_sub = first_section["subsections"][0]
+                if "have questions?" in next_sub.old_value.strip().lower():
+                    del first_section["subsections"][0]
 
-#             # Filter out sections that contain ONLY "ADDs".
-#             comparison = [
-#                 section
-#                 for section in comparison
-#                 if not all(
-#                     sub.comparison_type == "body" and sub.status == "ADD"
-#                     for sub in section["subsections"]
-#                 )
-#             ]
+            # Filter out sections that contain ONLY "ADDs".
+            comparison = [
+                section
+                for section in comparison
+                if not all(
+                    sub.comparison_type == "body" and sub.status == "ADD"
+                    for sub in section["subsections"]
+                )
+            ]
 
-#             changed_subsections = [
-#                 sub
-#                 for section in comparison
-#                 for sub in section["subsections"]
-#                 if sub.status != "MATCH"
-#             ]
+            changed_subsections = [
+                sub
+                for section in comparison
+                for sub in section["subsections"]
+                if sub.status != "MATCH"
+            ]
 
-#             # Add index counter
-#             for i, sub in enumerate(changed_subsections, start=1):
-#                 sub.index_counter = i
+            # Add index counter
+            for i, sub in enumerate(changed_subsections, start=1):
+                sub.index_counter = i
 
-#             sections_changed_subsections = {}
-#             for subsection in changed_subsections:
-#                 section_name = subsection.section.name
-#                 sections_changed_subsections.setdefault(section_name, []).append(
-#                     subsection
-#                 )
+            sections_changed_subsections = {}
+            for subsection in changed_subsections:
+                section_name = subsection.section.name
+                sections_changed_subsections.setdefault(section_name, []).append(
+                    subsection
+                )
 
-#             context.update(
-#                 {
-#                     "new_nofo": new_nofo,
-#                     "comparison": comparison,
-#                     "changed_subsections": changed_subsections,
-#                     "num_changed_subsections": len(changed_subsections),
-#                     "sections_changed_subsections": sections_changed_subsections,
-#                 }
-#             )
+            context.update(
+                {
+                    "new_nofo": new_nofo,
+                    "comparison": comparison,
+                    "changed_subsections": changed_subsections,
+                    "num_changed_subsections": len(changed_subsections),
+                    "sections_changed_subsections": sections_changed_subsections,
+                }
+            )
 
-#         return render(request, "guides/guide_compare.html", context)
+        return render(request, "compare/compare_document.html", context)
 
 
 # class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
