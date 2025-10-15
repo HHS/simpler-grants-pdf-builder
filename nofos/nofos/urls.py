@@ -24,11 +24,6 @@ urlpatterns = [
         name="nofo_import_overwrite",
     ),
     path(
-        "<uuid:pk>/compare",
-        views.NofosImportCompareView.as_view(),
-        name="nofo_import_compare",
-    ),
-    path(
         "<uuid:pk>/confirm-import/",
         views.NofosConfirmReimportView.as_view(),
         name="nofo_import_confirm_overwrite",
