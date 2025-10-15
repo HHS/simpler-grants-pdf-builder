@@ -28,6 +28,9 @@ Versioning since version 1.0.0.
 
 - Removed all "guides" data and references
 - Removed (unused) view for editing a CompareDoc subsection
+- Remove all files related to "guides" app
+- Remove (almost) all code related to DOCRAPTOR_LIVE_MODE
+- Remove the view for NOFO import compare: we don't need it now that there is a "compare" app
 
 ### Migrations
 

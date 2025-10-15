@@ -2,8 +2,6 @@ import json
 import re
 import uuid
 
-from bloom_nofos.utils import is_docraptor_live_mode_active
-from constance import config
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.utils import timezone
@@ -16,7 +14,7 @@ def clean_string(string):
     return re.sub(r"\s+", " ", string.strip())
 
 
-def create_nofo_audit_event(event_type, document, user):
+def create_nofo_audit_event(event_type, document, user, is_test_pdf=True):
     # Define allowed event types
     allowed_event_types = ["nofo_import", "nofo_print", "nofo_reimport"]
 
@@ -35,13 +33,7 @@ def create_nofo_audit_event(event_type, document, user):
 
     # Add print_mode if the event_type involves printing
     if event_type == "nofo_print":
-        changed_fields_json["print_mode"] = [
-            (
-                "live"
-                if is_docraptor_live_mode_active(config.DOCRAPTOR_LIVE_MODE)
-                else "test"
-            )
-        ]
+        changed_fields_json["print_mode"] = ["test" if is_test_pdf else "live"]
 
     # Create the audit log event
     CRUDEvent.objects.create(

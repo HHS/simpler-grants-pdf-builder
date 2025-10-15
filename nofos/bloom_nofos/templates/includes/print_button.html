@@ -7,7 +7,7 @@
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=inline#zoom=100" target="_blank">
       {% csrf_token %}
-      <button type="submit" class="usa-button button-group--primary font-sans-xs" aria-label="View{% if not DOCRAPTOR_LIVE_MODE %} test{% endif %} NOFO (opens in a new tab)" {% if 'localhost' in request.get_host %}disabled{% endif %}>
+      <button type="submit" class="usa-button button-group--primary font-sans-xs" aria-label="View test NOFO (opens in a new tab)" {% if 'localhost' in request.get_host %}disabled{% endif %}>
         Preview PDF
       </button>
     </form>

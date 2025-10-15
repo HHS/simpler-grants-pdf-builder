@@ -33,18 +33,6 @@ def cast_to_boolean(value_str):
         raise ValueError(f"Value '{value_str}' is not a valid boolean string")
 
 
-def is_docraptor_live_mode_active(last_updated):
-    # Check if the timestamp is more than 5 minutes old
-    if last_updated and now() - last_updated < get_timedelta_for_docraptor_live_mode():
-        return True
-
-    return False
-
-
-def get_timedelta_for_docraptor_live_mode():
-    return timedelta(minutes=5)
-
-
 def get_internal_ip():
     try:
         return gethostbyname(gethostname())
