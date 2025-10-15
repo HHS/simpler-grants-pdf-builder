@@ -102,8 +102,8 @@
           <div class="nofo_view--menu-bar--file-download-button--container">
             {% if comparison %}
               <a class="usa-button usa-button--outline usa-button--icon usa-button--file_download" type="button"
-                href="#">
-                <span class="margin-left-2"># Export spreadsheet of differences</span>
+                href="{% url 'compare:compare_document_result_csv' pk=document.pk new_nofo_id=new_nofo.pk %}">
+                <span class="margin-left-2">Export spreadsheet of differences</span>
               </a>
             {% else %}
               <a class="usa-button usa-button--icon usa-button--file_download" aria-disabled="true">
