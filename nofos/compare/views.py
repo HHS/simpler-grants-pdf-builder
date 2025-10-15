@@ -545,66 +545,66 @@ class CompareDocumentView(GroupAccessObjectMixin, LoginRequiredMixin, View):
         return render(request, "compare/compare_document.html", context)
 
 
-# class ContentGuideDiffCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
-#     def get(self, request, pk, new_nofo_id):
-#         guide = get_object_or_404(ContentGuide, pk=pk)
-#         new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
+class CompareDocumentCSVView(GroupAccessObjectMixin, LoginRequiredMixin, View):
+    def get(self, request, pk, new_nofo_id):
+        compare_doc = get_object_or_404(CompareDocument, pk=pk)
+        new_nofo = get_object_or_404(Nofo, pk=new_nofo_id)
 
-#         comparison = compare_nofos(guide, new_nofo)
-#         comparison = annotate_side_by_side_diffs(comparison)
+        comparison = compare_nofos(compare_doc, new_nofo)
+        comparison = annotate_side_by_side_diffs(comparison)
 
-#         # Prepare response as CSV
-#         response = HttpResponse(content_type="text/csv")
-#         filename = f"content_guide_diff_{guide.pk}_{new_nofo.pk}.csv"
-#         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        # Prepare response as CSV
+        response = HttpResponse(content_type="text/csv")
+        filename = f"compare__{compare_doc.pk}__{new_nofo.pk}.csv"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
-#         writer = csv.writer(response)
+        writer = csv.writer(response)
 
-#         # Check if any subsection has non-matching names in UPDATE diff objects
-#         has_merged_subsection = any(
-#             subsection.status == "UPDATE"
-#             and (subsection.old_name != subsection.new_name)
-#             for section in comparison
-#             for subsection in section["subsections"]
-#         )
+        # Check if any subsection has non-matching names in UPDATE diff objects
+        has_merged_subsection = any(
+            subsection.status == "UPDATE"
+            and (subsection.old_name != subsection.new_name)
+            for section in comparison
+            for subsection in section["subsections"]
+        )
 
-#         # Write header
-#         header = ["Status", "Step name", "Section name", "Old value"]
-#         if has_merged_subsection:
-#             header.append("New section name")
-#         header.append("New value")
+        # Write header
+        header = ["Status", "Step name", "Section name", "Old value"]
+        if has_merged_subsection:
+            header.append("New section name")
+        header.append("New value")
 
-#         writer.writerow(header)
+        writer.writerow(header)
 
-#         for section in comparison:
-#             for subsection in section["subsections"]:
-#                 if subsection.status == "MATCH":
-#                     continue
+        for section in comparison:
+            for subsection in section["subsections"]:
+                if subsection.status == "MATCH":
+                    continue
 
-#                 row = []
+                row = []
 
-#                 if has_merged_subsection:
-#                     row = [
-#                         subsection.status,
-#                         section["name"],
-#                         subsection.old_name,
-#                         subsection.old_value,
-#                         subsection.new_name,  # add "New subsection name" string if has_merged_subsections
-#                         subsection.new_value,
-#                     ]
-#                 else:
-#                     row = [
-#                         subsection.status,
-#                         section["name"],
-#                         (
-#                             subsection.new_name
-#                             if subsection.status == "ADD"
-#                             else subsection.old_name or subsection.new_name
-#                         ),
-#                         subsection.old_value,
-#                         subsection.new_value,
-#                     ]
+                if has_merged_subsection:
+                    row = [
+                        subsection.status,
+                        section["name"],
+                        subsection.old_name,
+                        subsection.old_value,
+                        subsection.new_name,  # add "New subsection name" string if has_merged_subsections
+                        subsection.new_value,
+                    ]
+                else:
+                    row = [
+                        subsection.status,
+                        section["name"],
+                        (
+                            subsection.new_name
+                            if subsection.status == "ADD"
+                            else subsection.old_name or subsection.new_name
+                        ),
+                        subsection.old_value,
+                        subsection.new_value,
+                    ]
 
-#                 writer.writerow(row)
+                writer.writerow(row)
 
-#         return response
+        return response
