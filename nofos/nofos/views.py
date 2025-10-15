@@ -104,7 +104,6 @@ from .nofo import (
     suggest_nofo_title,
     upload_cover_image_to_s3,
 )
-from .nofo_compare import compare_nofos, compare_nofos_metadata
 from .utils import create_nofo_audit_event, create_subsection_html_id
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -636,95 +635,6 @@ class NofosImportOverwriteView(
                 status=500,
             )
             return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
-
-
-class NofosImportCompareView(NofosImportOverwriteView):
-    """
-    Handles overwriting an existing NOFO with new content.
-    """
-
-    template_name = "nofos/nofo_import_compare.html"
-    redirect_url_name = "nofos:nofo_import_compare"
-
-    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
-        """
-        Create a new NOFO and then pass both in for a comparison.
-        """
-        nofo = self.nofo
-
-        if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
-
-        try:
-            page_breaks = {}
-            if if_preserve_page_breaks:
-                page_breaks = preserve_subsection_metadata(nofo, sections)
-
-            nofo_title = suggest_nofo_title(soup)
-            opdiv = suggest_nofo_opdiv(soup)
-
-            new_nofo = create_nofo(nofo_title, sections, opdiv)
-
-            # restore page breaks
-            if if_preserve_page_breaks and page_breaks:
-                new_nofo = restore_subsection_metadata(new_nofo, page_breaks)
-
-            add_headings_to_document(new_nofo)
-            add_page_breaks_to_headings(new_nofo)
-            new_nofo.group = request.user.group
-            new_nofo.filename = filename
-            suggest_all_nofo_fields(new_nofo, soup)
-
-            # give nofo a title that indicates it is a comparison NOFO
-            new_nofo.title = "(COMPARE) {}".format(new_nofo.title)
-            # archive this new NOFO immediately
-            new_nofo.archived = timezone.now().date()
-            new_nofo.save()
-
-            # Build the comparison object
-            nofo_comparison = compare_nofos(
-                nofo, new_nofo, statuses_to_ignore=["MATCH"]
-            )
-            nofo_comparison_metadata = compare_nofos_metadata(
-                nofo, new_nofo, statuses_to_ignore=["MATCH"]
-            )
-
-            # Number of changes
-            num_changed_sections = len(nofo_comparison)
-            num_changed_subsections = sum(
-                len(s["subsections"]) for s in nofo_comparison
-            )
-
-            return render(
-                request,
-                "nofos/nofo_compare.html",
-                {
-                    "nofo": nofo,
-                    "new_nofo": new_nofo,
-                    "nofo_comparison": nofo_comparison,
-                    "nofo_comparison_metadata": nofo_comparison_metadata,
-                    "num_changed_sections": num_changed_sections,
-                    "num_changed_subsections": num_changed_subsections,
-                },
-            )
-
-        except ValidationError as e:
-            log_exception(
-                request,
-                e,
-                context="NofosImportCompareView:ValidationError",
-                status=400,
-            )
-            return HttpResponseBadRequest(
-                f"<p><strong>Error importing NOFO:</strong></p> {e.message}"
-            )
-        except Exception as e:
-            log_exception(
-                request,
-                e,
-                context="NofosImportCompareView:Exception",
-                status=500,
-            )
-            return HttpResponseBadRequest(f"Error importing NOFO: {str(e)}")
 
 
 class NofosConfirmReimportView(GroupAccessObjectMixin, View):
