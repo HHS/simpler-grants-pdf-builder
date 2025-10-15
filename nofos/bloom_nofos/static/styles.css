@@ -1698,34 +1698,34 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   word-break: break-word;
 }
 
-.nofo_compare--content-guide .nofo_view--wrapper {
+.nofo_compare--document .nofo_view--wrapper {
   border: 2px solid var(--color--light-grey);
   border-radius: 4px;
   position: relative;
 }
 
-.nofo_compare--content-guide .nofo_view--wrapper > * {
+.nofo_compare--document .nofo_view--wrapper > * {
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-.nofo_compare--content-guide .nofo_view {
+.nofo_compare--document .nofo_view {
   padding-top: 1rem;
   padding-bottom: 1rem;
   background-color: #f5f5f5;
   border-top: 1px solid var(--color--light-grey);
 }
 
-.nofo_compare--content-guide .nofo_view h2,
-.nofo_compare--content-guide .nofo_view h3,
-.nofo_compare--content-guide .nofo_view h4,
-.nofo_compare--content-guide .nofo_view h5,
-.nofo_compare--content-guide .nofo_view h6 {
+.nofo_compare--document .nofo_view h2,
+.nofo_compare--document .nofo_view h3,
+.nofo_compare--document .nofo_view h4,
+.nofo_compare--document .nofo_view h5,
+.nofo_compare--document .nofo_view h6 {
   scroll-margin-top: 195px;
 }
 
-.nofo_compare--content-guide .nofo_view,
-.nofo_compare--content-guide .nofo_view--title-bar {
+.nofo_compare--document .nofo_view,
+.nofo_compare--document .nofo_view--title-bar {
   padding-left: 0;
   padding-right: 1rem;
   display: flex;
@@ -1733,7 +1733,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   align-items: stretch; /* ensures all children match the tallest */
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar {
+.nofo_compare--document .nofo_view--title-bar {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   position: sticky;
@@ -1744,29 +1744,27 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   background-color: white;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view--title-bar
   .nofo_view--title--table-container,
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container {
+.nofo_compare--document .nofo_view .nofo_view--table-container {
   flex: 1 1 80%; /* Start with 80% but can grow */
   min-width: 0; /* Prevent overflow issues with long content */
 }
 
-.nofo_compare--content-guide
-  .nofo_view
-  .nofo_view--table-container--no-comparison {
+.nofo_compare--document .nofo_view .nofo_view--table-container--no-comparison {
   flex: 1 1 43%;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container--empty {
+.nofo_compare--document .nofo_view .nofo_view--table-container--empty {
   flex: 1 1 37%;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view--title-bar
   .nofo_view--title--table-container
   table,
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container > table {
+.nofo_compare--document .nofo_view .nofo_view--table-container > table {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
@@ -1774,7 +1772,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   min-width: 0;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view
   .nofo_view--table-container
   > table
@@ -1787,7 +1785,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   vertical-align: baseline;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view
   .nofo_view--table-container
   > table:first-of-type
@@ -1797,7 +1795,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-top: 1px solid #dfe1e2;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view
   .nofo_view--table-container
   > table:last-of-type
@@ -1807,11 +1805,11 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   border-bottom: 1px solid #dfe1e2;
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar td .usa-tooltip {
+.nofo_compare--document .nofo_view--title-bar td .usa-tooltip {
   width: 100%;
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar h2 {
+.nofo_compare--document .nofo_view--title-bar h2 {
   font-size: 1.2rem;
   /* prevent the filename from wrapping to the next line, adds "..." at the end */
   white-space: nowrap;
@@ -1819,8 +1817,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   text-overflow: ellipsis;
 }
 
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes,
-.nofo_compare--content-guide .nofo_view .nofo_view--changes {
+.nofo_compare--document .nofo_view--title-bar .nofo_view--title-changes,
+.nofo_compare--document .nofo_view .nofo_view--changes {
   flex: 0 1 20%; /* 20% width, can shrink and grow but fixed max width of 180px */
   max-width: 180px;
   min-width: 0;
@@ -1828,7 +1826,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   flex-direction: column;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--changes--list {
+.nofo_compare--document .nofo_view .nofo_view--changes--list {
   position: sticky;
   top: 190px;
   height: calc(100vh - 190px);
@@ -1836,7 +1834,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   flex-direction: column;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--changes--list ol {
+.nofo_compare--document .nofo_view .nofo_view--changes--list ol {
   overflow-y: auto; /* scroll only the list */
   flex: 1; /* take up all available space in the container */
   padding-left: 0;
@@ -1845,7 +1843,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   -ms-overflow-style: none; /* IE and Edge */
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--changes--step-name {
+.nofo_compare--document .nofo_view .nofo_view--changes--step-name {
   position: sticky;
   top: -0.9rem;
   background-color: #f5f5f5;
@@ -1858,25 +1856,25 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   padding-bottom: 0.5rem;
 }
 
-.nofo_compare--content-guide .nofo_view .nofo_view--table-container--empty {
+.nofo_compare--document .nofo_view .nofo_view--table-container--empty {
   background: #d9d9d9;
   text-align: center;
   margin-right: 2rem;
 }
 
-.guide_compare_upload {
+.compare_upload {
   position: sticky;
   top: 190px;
 }
 
-.nofo_compare--content-guide
+.nofo_compare--document
   .nofo_view--title-bar
   .nofo_view--title--table-container,
-.nofo_compare--content-guide .nofo_view--title-bar .nofo_view--title-changes {
+.nofo_compare--document .nofo_view--title-bar .nofo_view--title-changes {
   padding: 0.5rem 0;
 }
 
-.nofo_compare.nofo_compare--content-guide.nofo_compare--content-guide--comparison
+.nofo_compare.nofo_compare--document.nofo_compare--document--comparison
   .section--content
   > *:not(.section--content--right-col) {
   width: auto;
@@ -2056,7 +2054,7 @@ del + ins > br {
 }
 
 @media (min-width: 64em) {
-  .nofo_compare--content-guide .nofo_view--wrapper {
+  .nofo_compare--document .nofo_view--wrapper {
     position: relative;
     left: 50%;
     right: 50%;
@@ -2064,11 +2062,11 @@ del + ins > br {
     min-width: 60rem; /* matches .grid-container */
   }
 
-  .nofo_compare--content-guide--display-double .nofo_view--wrapper {
+  .nofo_compare--document--display-double .nofo_view--wrapper {
     width: 85vw;
   }
 
-  .nofo_compare--content-guide--display-single .nofo_view--wrapper {
+  .nofo_compare--document--display-single .nofo_view--wrapper {
     width: 70vw;
   }
 }

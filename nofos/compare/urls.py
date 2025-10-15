@@ -37,21 +37,21 @@ urlpatterns = [
         views.CompareEditGroupView.as_view(),
         name="compare_edit_group",
     ),
-    # path(
-    #     "<uuid:pk>/compare",
-    #     views.ContentGuideCompareView.as_view(),
-    #     name="guide_compare",
-    # ),
     path(
-        "<uuid:pk>/import/to-doc",
+        "<uuid:pk>/document",
+        views.CompareDocumentView.as_view(),
+        name="compare_document",
+    ),
+    path(
+        "<uuid:pk>/import/document",
         views.CompareImportToDocView.as_view(),
         name="compare_import_to_doc",
     ),
-    # path(
-    #     "<uuid:pk>/compare/<uuid:new_nofo_id>",
-    #     views.ContentGuideCompareView.as_view(),
-    #     name="guide_compare_result",
-    # ),
+    path(
+        "<uuid:pk>/document/<uuid:new_nofo_id>",
+        views.CompareDocumentView.as_view(),
+        name="compare_document_result",
+    ),
     # path(
     #     "<uuid:pk>/compare/<uuid:new_nofo_id>/csv/",
     #     views.ContentGuideDiffCSVView.as_view(),
