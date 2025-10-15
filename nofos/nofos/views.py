@@ -5,7 +5,7 @@ from datetime import datetime
 
 import docraptor
 from bloom_nofos.logs import log_exception
-from bloom_nofos.utils import cast_to_boolean, is_docraptor_live_mode_active
+from bloom_nofos.utils import cast_to_boolean
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -268,10 +268,6 @@ class NofosDetailView(DetailView):
         # get the orientation (eg, "landscape" or "portrait")
         context["nofo_theme_orientation"] = orientation
 
-        context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
-            config.DOCRAPTOR_LIVE_MODE
-        )
-
         context["nofo_cover_image"] = get_cover_image(self.object)
 
         context["step_2_section"] = get_step_2_section(self.object)
@@ -291,10 +287,6 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
-
-        context["DOCRAPTOR_LIVE_MODE"] = is_docraptor_live_mode_active(
-            config.DOCRAPTOR_LIVE_MODE
-        )
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
 
@@ -1441,8 +1433,8 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
         doc_api.api_client.configuration.debug = True
 
-        # config.DOCRAPTOR_LIVE_MODE is default but can be overridden by query param
-        is_test_pdf = not is_docraptor_live_mode_active(config.DOCRAPTOR_LIVE_MODE)
+        # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
+        is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
         is_test_pdf = cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
 
         # NOTE: uncomment this to see current values in local development
@@ -1480,7 +1472,10 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
             # Create audit event for printing a nofo
             create_nofo_audit_event(
-                event_type="nofo_print", document=nofo, user=request.user
+                event_type="nofo_print",
+                document=nofo,
+                user=request.user,
+                is_test_pdf=is_test_pdf,
             )
 
             return response

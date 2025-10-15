@@ -43,15 +43,6 @@
           <em class="usa-logo__text">
             <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">NOFO Builder</a>
           </em>
-          {% if user.is_authenticated %}
-            <a class="inline-block usa-tag--link" href="{% url 'test_mode' %}">
-              {% if DOCRAPTOR_LIVE_MODE %}
-                <span class="usa-tag bg-green">Live</span>
-              {% else %}
-                <span class="usa-tag bg-accent-cool-dark">Test</span>
-              {% endif %}
-            </a>
-          {% endif %}
         </div>
       </div>
       <nav aria-label="Primary navigation" class="usa-nav">

@@ -48,7 +48,6 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("uploads/", include("uploads.urls")),
     path("admin/", admin.site.urls),
-    path("test-mode", views.TestModeView.as_view(), name="test_mode"),
     path("", views.index, name="index"),
     path("404/", views.page_not_found),
     path("", health_api.urls),  # Mount health check at root
