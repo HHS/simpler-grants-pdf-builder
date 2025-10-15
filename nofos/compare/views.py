@@ -205,29 +205,29 @@ class CompareImportTitleView(GroupAccessObjectMixin, UpdateView):
         return redirect("compare:compare_document", pk=document.id)
 
 
-# class ContentGuideDuplicateView(View):
-#     """
-#     Create a new ContentGuide from a BaseNofo-like source.
-#     Accepts a UUID for either a Nofo or a ContentGuide and duplicates it as a new ContentGuide.
-#     """
+class CompareDuplicateView(View):
+    """
+    Create a new ContentGuide from a BaseNofo-like source.
+    Accepts a UUID for either a Nofo or a ContentGuide and duplicates it as a new ContentGuide.
+    """
 
-#     def post(self, request, pk, *args, **kwargs):
-#         # Try NOFO first, else ContentGuide
-#         try:
-#             original_doc = Nofo.objects.get(pk=pk)
-#         except Nofo.DoesNotExist:
-#             original_doc = get_object_or_404(ContentGuide, pk=pk)
+    def post(self, request, pk, *args, **kwargs):
+        # Try NOFO first, else ContentGuide
+        try:
+            original_doc = Nofo.objects.get(pk=pk)
+        except Nofo.DoesNotExist:
+            original_doc = get_object_or_404(CompareDocument, pk=pk)
 
-#         try:
-#             new_guide = duplicate_guide(original_doc)
-#             return redirect("guides:guide_compare", pk=new_guide.id)
+        try:
+            new_guide = duplicate_compare_doc(original_doc)
+            return redirect("compare:compare_document", pk=new_guide.id)
 
-#         except Exception as e:
-#             return HttpResponseBadRequest(f"Error duplicating document: {e}")
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error duplicating document: {e}")
 
-#     # Optional: allow GET to act like POST for convenience/links
-#     def get(self, request, pk, *args, **kwargs):
-#         return self.post(request, pk, *args, **kwargs)
+    # Optional: allow GET to act like POST for convenience/links
+    def get(self, request, pk, *args, **kwargs):
+        return self.post(request, pk, *args, **kwargs)
 
 
 class CompareArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):

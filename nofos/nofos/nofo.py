@@ -1127,7 +1127,7 @@ def get_nofo_action_links(nofo):
         return {
             "key": "compare",
             "label": "Compare NOFO",
-            "href": "#",  # reverse_lazy("guides:guide_duplicate", args=[nofo.pk]),
+            "href": reverse_lazy("compare:compare_duplicate", args=[nofo.pk]),
             "external": True,
         }
 
