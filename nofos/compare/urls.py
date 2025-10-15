@@ -57,9 +57,4 @@ urlpatterns = [
         views.CompareDocumentCSVView.as_view(),
         name="compare_document_result_csv",
     ),
-    # path(
-    #     "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
-    #     views.ContentGuideSubsectionEditView.as_view(),
-    #     name="subsection_edit",
-    # ),
 ]

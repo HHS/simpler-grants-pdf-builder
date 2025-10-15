@@ -1,12 +1,12 @@
 <div class="usa-alert usa-alert--warning{% if class_name %} {{ class_name }}{% endif %}">
   <div class="usa-alert__body">
-    <h4 class="usa-alert__heading text-base-darkest">Archived {% if not document.number %}Content Guide{% else %}NOFO{% endif %}</h4>
+    <h4 class="usa-alert__heading text-base-darkest">Archived {% if not document.number %}Compare Document{% else %}NOFO{% endif %}</h4>
     <p class="usa-alert__text">
-      This {% if not document.number %}Content Guide{% else %}NOFO{% endif %} was deleted on {{ document.archived|date:"F j, Y" }}.
+      This {% if not document.number %}Compare Document{% else %}NOFO{% endif %} was deleted on {{ document.archived|date:"F j, Y" }}.
       {% if user.is_superuser %}
         <a href="{{ document.get_admin_url }}">Un-archive it in the Admin backend</a> by clearing the "Archived" value</a>.
       {% else %}
-        To un-archive this {% if not document.number %}Content Guide{% else %}NOFO{% endif %}, contact Adam or Paul.
+        To un-archive this {% if not document.number %}Compare Document{% else %}NOFO{% endif %}, contact Adam or Paul.
       {% endif %}
     </p>
   </div>
