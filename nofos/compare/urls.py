@@ -11,11 +11,11 @@ urlpatterns = [
         views.CompareImportView.as_view(),
         name="compare_import",
     ),
-    # path(
-    #     "import/document/<uuid:pk>",
-    #     views.ContentGuideDuplicateView.as_view(),
-    #     name="guide_duplicate",
-    # ),
+    path(
+        "import/duplicate/<uuid:pk>",
+        views.CompareDuplicateView.as_view(),
+        name="compare_duplicate",
+    ),
     path(
         "<uuid:pk>/import/title",
         views.CompareImportTitleView.as_view(),

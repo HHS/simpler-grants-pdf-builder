@@ -35,11 +35,11 @@ class CompareDocument(BaseNofo):
         """
         return reverse("admin:compare_comparedocument_change", args=(self.id,))
 
-    # def get_absolute_url(self):
-    #     """
-    #     Returns the main edit view for this Compare Document.
-    #     """
-    #     return reverse("guides:guide_edit", args=(self.id,))
+    def get_absolute_url(self):
+        """
+        Returns the main edit view for this Compare Document.
+        """
+        return reverse("compare:compare_edit", args=(self.id,))
 
 
 class CompareSection(BaseSection):
