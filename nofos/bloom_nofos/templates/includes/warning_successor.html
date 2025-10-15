@@ -2,9 +2,9 @@
 
 <div class="usa-alert usa-alert--warning{% if class_name %} {{ class_name }}{% endif %}">
   <div class="usa-alert__body">
-    <h4 class="usa-alert__heading text-base-darkest">Past version of {% if not document.number %}Content Guide{% else %}{{ document.successor.number }}{% endif %}</h4>
+    <h4 class="usa-alert__heading text-base-darkest">Past version of {% if not document.number %}Compare Document{% else %}{{ document.successor.number }}{% endif %}</h4>
     <p class="usa-alert__text">
-      This {% if not document.number %}Content Guide{% else %}NOFO{% endif %} revision is from {{ document.archived|date:"F j, Y" }}.
+      This {% if not document.number %}Compare Document{% else %}NOFO{% endif %} revision is from {{ document.archived|date:"F j, Y" }}.
       {% if not user.is_superuser %}
         To restore to this version, contact Paul or Adam.
       {% endif %}

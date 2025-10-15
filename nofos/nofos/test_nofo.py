@@ -2765,9 +2765,7 @@ class TestBuildNofoActionLinks(TestCase):
     def _assert_link(self, link, key, label, url_name, danger=False, external=False):
         self.assertEqual(link["key"], key)
         self.assertEqual(link["label"], label)
-        expected_href = (
-            "#" if url_name == "#" else reverse(url_name, args=[self.nofo.pk])
-        )
+        expected_href = reverse(url_name, args=[self.nofo.pk])
         self.assertEqual(str(link["href"]), expected_href)
 
         if danger:
@@ -2800,7 +2798,7 @@ class TestBuildNofoActionLinks(TestCase):
             links[1],
             key="compare",
             label="Compare NOFO",
-            url_name="#",
+            url_name="compare:compare_duplicate",
             external=True,
         )
         self._assert_link(

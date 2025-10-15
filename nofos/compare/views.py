@@ -207,20 +207,20 @@ class CompareImportTitleView(GroupAccessObjectMixin, UpdateView):
 
 class CompareDuplicateView(View):
     """
-    Create a new ContentGuide from a BaseNofo-like source.
-    Accepts a UUID for either a Nofo or a ContentGuide and duplicates it as a new ContentGuide.
+    Create a new CompareDocument from a BaseNofo-like source.
+    Accepts a UUID for either a Nofo or a CompareDocument and duplicates it as a new CompareDocument.
     """
 
     def post(self, request, pk, *args, **kwargs):
-        # Try NOFO first, else ContentGuide
+        # Try NOFO first, else CompareDocument
         try:
             original_doc = Nofo.objects.get(pk=pk)
         except Nofo.DoesNotExist:
             original_doc = get_object_or_404(CompareDocument, pk=pk)
 
         try:
-            new_guide = duplicate_compare_doc(original_doc)
-            return redirect("compare:compare_document", pk=new_guide.id)
+            new_doc = duplicate_compare_doc(original_doc)
+            return redirect("compare:compare_document", pk=new_doc.id)
 
         except Exception as e:
             return HttpResponseBadRequest(f"Error duplicating document: {e}")

@@ -13,7 +13,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
-## [3.15.0] - 2025-10-13
+## [3.15.0] - 2025-10-15
 
 ### Added
 
@@ -27,6 +27,7 @@ Versioning since version 1.0.0.
 ## Removed
 
 - Removed all "guides" data and references
+- Removed (unused) view for editing a CompareDoc subsection
 
 ### Migrations
 
