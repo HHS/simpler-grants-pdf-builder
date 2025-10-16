@@ -128,6 +128,7 @@ INSTALLED_APPS = [
     "easyaudit",
     "nofos.apps.NofosConfig",
     "compare.apps.CompareConfig",
+    "composer.apps.ComposerConfig",
     "users.apps.UsersConfig",
     "uploads.apps.UploadsConfig",
     "django_mirror",

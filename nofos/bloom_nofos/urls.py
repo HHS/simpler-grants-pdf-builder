@@ -45,6 +45,7 @@ urlpatterns = [
     path("martor/", include("martor.urls")),
     path("nofos/", include("nofos.urls")),
     path("compare/", include("compare.urls")),
+    path("composer/", include("composer.urls")),
     path("users/", include("users.urls")),
     path("uploads/", include("uploads.urls")),
     path("admin/", admin.site.urls),
