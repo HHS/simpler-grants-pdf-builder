@@ -64,6 +64,9 @@ class ContentGuideSection(BaseSection):
         related_name="sections",
     )
 
+    def get_document(self):
+        return self.document
+
 
 class ContentGuideSubsection(BaseSubsection):
     """

@@ -28,10 +28,9 @@ from nofos.nofo_compare import annotate_side_by_side_diffs, compare_nofos
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
-from .compare import create_compare_document
 from .forms import CompareGroupForm, CompareTitleForm
 from .models import CompareDocument, CompareSection, CompareSubsection
-from .utils import strip_file_suffix
+from .utils import create_compare_document, strip_file_suffix
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(CompareDocument)
 
