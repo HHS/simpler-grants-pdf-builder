@@ -1375,7 +1375,7 @@ main .back-link a::before,
 
 .usa-button--outline {
   background-color: transparent;
-  color: #005ea2;
+  color: var(--color--usa-link);
 }
 
 .section_edit table.table--section .usa-button--add::before {
@@ -1669,7 +1669,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .usa-footer__not-actually-a-link {
-  color: #565c65;
+  color: var(--color--med-grey);
   font-weight: 400;
 }
 
@@ -2215,4 +2215,49 @@ del + ins > br {
 
 .composer--button-box > div {
   margin-bottom: 1.5rem;
+}
+
+.composer_document_section .side-nav-list--intro {
+  color: var(--color--text-grey);
+  font-size: 105%;
+  font-weight: 700;
+  margin-right: 2.5rem;
+}
+
+.composer_document_section #side-nav {
+  position: sticky;
+  top: 1rem;
+}
+
+.composer_document_section #side-nav-list {
+  padding: 0 2rem 0 0;
+  border-bottom: 0;
+}
+
+.composer_document_section .usa-sidenav__item {
+  color: var(--color--med-grey);
+  border-left: 2px solid #dfe1e2;
+  border-right: 2px solid #dfe1e2;
+}
+
+.composer_document_section .usa-sidenav__item:first-of-type {
+  border-radius: 4px 4px 0 0;
+  border-top: 2px solid #dfe1e2;
+}
+
+.composer_document_section .usa-sidenav__item:last-of-type {
+  border-radius: 0 0 4px 4px;
+  border-bottom: 2px solid #dfe1e2;
+}
+
+.composer_document_section .usa-sidenav .usa-current::after {
+  border-radius: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.composer_document_section .subhead--document-name {
+  border-radius: 0;
+  top: 0;
+  bottom: 0;
 }
