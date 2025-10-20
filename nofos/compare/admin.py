@@ -5,6 +5,8 @@ from django.utils.html import format_html
 
 from .models import CompareDocument, CompareSection, CompareSubsection
 
+# --- Inlines -----------------------------------------------------------------
+
 
 class CompareSubsectionInline(admin.TabularInline):
     model = CompareSubsection
@@ -25,6 +27,9 @@ class CompareSectionInline(admin.TabularInline):
     form = CompareSectionModelForm
     extra = 1
     show_change_link = True
+
+
+# --- CompareDocument admin ------------------------------------------------------
 
 
 @admin.register(CompareDocument)
