@@ -207,7 +207,7 @@ class GuideSectionView(LoginRequiredMixin, View):
             {
                 "document": document,
                 "sections": ordered,
-                "section": section,
+                "current_section": section,
                 "header_blocks": header_blocks,
                 "accordion_blocks": accordion_blocks,
                 "prev_sec": prev_sec,

@@ -1,28 +1,53 @@
 {% extends 'base.html' %}
+{% load tz %}
 
 {% block title %}
-  {{ document.title }} — {{ section.name }}</title>
+  {{ document.title }} — {{ current_section.name }}</title>
 {% endblock %}
+
+{% block body_class %}composer_document_section{% endblock %}
 
 {% block content %}
   <div class="grid-row cg-layout">
-    <!-- 20%: sticky sidenav -->
-    <aside class="grid-col-12 tablet:grid-col-3 desktop:grid-col-2 cg-sidenav">
-      <nav class="usa-sidenav">
-        <ul class="usa-sidenav__list">
-          {% for s in sections %}
+    <!-- sticky sidenav -->
+
+    <aside class="grid-col-12 tablet:grid-col-3 cg-sidenav">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
+      </div>
+
+      <p class="side-nav-list--intro">Sections in this content guide</p>
+
+      <nav id="side-nav" aria-label="Section navigation">
+        <ul id="side-nav-list" class="usa-sidenav">
+          {% for section in sections %}
             <li class="usa-sidenav__item">
-              {{ s.name }}
+              <a
+                href="{% url 'composer:composer_document_section' document.pk section.pk %}"
+                {% if section.id == current_section.id %}aria-current="page" class="usa-current"{% endif %}>
+                {{ section.name }}
+              </a>
             </li>
           {% endfor %}
         </ul>
       </nav>
     </aside>
 
-    <!-- 80%: section content -->
-    <main class="grid-col-12 tablet:grid-col-9 desktop:grid-col-10">
-      <h1 class="margin-bottom-1">{{ section.name }}</h1>
-      <p class="text-base margin-bottom-4">Part of <strong>{{ document.title }}</strong>.</p>
+    <!-- current_section content -->
+    <main class="grid-col-12 tablet:grid-col-9">
+      <div class="subhead--document-name font-sans-md text-base">{{ document.title }}</div>
+      <h1 class="margin-bottom-1 margin-top-1 font-serif-xl">{{ current_section.name }}</h1>
+      {% timezone "America/New_York" %}
+        <p>
+          <em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em>.
+        </p>
+      {% endtimezone %}
+      <p>
+        Review and make updates to the content guide.
+        Enter instructions, question and/or fields you’d want within each section of the grant application.
+        By clicking “Edit,” you can set how you want writers to edit a section such as making any, all or no changes to the content.
+      </p>
+      <hr />
 
       <!-- Header blocks (h2/h3) -->
       {% for ss in header_blocks %}

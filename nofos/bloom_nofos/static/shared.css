@@ -305,7 +305,7 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
     .usa-nav__primary > .usa-nav__primary-item > a {
       line-height: 0.9;
       padding: 1rem;
-      color: #565c65;
+      color: var(--color--med-grey);
       display: block;
       font-weight: 700;
     }
