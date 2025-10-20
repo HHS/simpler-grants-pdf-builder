@@ -24,7 +24,7 @@
   {% endif %}
 
   {% url 'composer:composer_index' as back_href %}
-  {% include "includes/page_heading.html" with title="Upload a document" back_text="All documents" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title="Upload a document" back_text="Existing content guides" back_href=back_href only %}
 
   <form id="nofo-import--form" class="form-import--loading" method="post" enctype="multipart/form-data">
     {% csrf_token %}

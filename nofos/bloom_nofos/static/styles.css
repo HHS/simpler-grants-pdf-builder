@@ -1530,7 +1530,8 @@ main .back-link a::before,
   text-align: center;
 }
 
-.compare_index .usa-button--delete::after {
+.compare_index .usa-button--delete::after,
+.composer_index .usa-button--delete::after {
   filter: invert(14%) sepia(84%) saturate(3191%) hue-rotate(349deg)
     brightness(94%) contrast(113%);
   width: 22px;
@@ -2197,4 +2198,21 @@ del + ins > br {
 .disabled-link[aria-disabled="true"]:active {
   pointer-events: none;
   cursor: not-allowed;
+}
+
+/* COMPOSER */
+
+.composer--button-box--container {
+  margin: 1.5rem 0;
+}
+
+.composer--button-box {
+  width: 300px;
+  padding: 1.5rem 1rem;
+  border: 3px solid var(--color--light-grey);
+  border-radius: 10px;
+}
+
+.composer--button-box > div {
+  margin-bottom: 1.5rem;
 }
