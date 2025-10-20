@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {{ document.title }} — {{ section.name }}</title>
+{% endblock %}
+
+{% block content %}
+  <div class="grid-row cg-layout">
+    <!-- 20%: sticky sidenav -->
+    <aside class="grid-col-12 tablet:grid-col-3 desktop:grid-col-2 cg-sidenav">
+      <nav class="usa-sidenav">
+        <ul class="usa-sidenav__list">
+          {% for s in sections %}
+            <li class="usa-sidenav__item">
+              {{ s.name }}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- 80%: section content -->
+    <main class="grid-col-12 tablet:grid-col-9 desktop:grid-col-10">
+      <h1 class="margin-bottom-1">{{ section.name }}</h1>
+      <p class="text-base margin-bottom-4">Part of <strong>{{ document.title }}</strong>.</p>
+
+      <!-- Header blocks (h2/h3) -->
+      {% for ss in header_blocks %}
+        <section id="{{ ss.html_id }}" class="margin-bottom-3">
+          <h3 class="margin-bottom-1">{{ ss.name }}</h3>
+          <div class="margin-bottom-2">
+            {# Replace with your Markdown renderer if needed #}
+            {{ ss.body|safe }}
+          </div>
+        </section>
+      {% endfor %}
+
+      <!-- Accordion blocks (h4/h5/h6/...) -->
+      {% if accordion_blocks %}
+        <div class="usa-accordion">
+          {% for ss in accordion_blocks %}
+            <h4 class="usa-accordion__heading">
+              <button class="usa-accordion__button"
+                      aria-expanded="false"
+                      aria-controls="acc-{{ ss.pk }}">
+                {{ ss.name|default:"Details" }}
+              </button>
+            </h4>
+            <div id="acc-{{ ss.pk }}" class="usa-accordion__content usa-prose">
+              {{ ss.body|safe }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Pager -->
+      <nav class="display-flex flex-justify margin-top-4">
+        <div>
+          {% if prev_sec %}
+            <a class="usa-button usa-button--outline"
+                href="{% url 'composer:composer_document_section' document.pk prev_sec.pk %}">
+                ← {{ prev_sec.name }}
+            </a>
+          {% endif %}
+        </div>
+        <div>
+          {% if next_sec %}
+            <a class="usa-button"
+                href="{% url 'composer:composer_document_section' document.pk next_sec.pk %}">
+                {{ next_sec.name }} →
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    </main>
+  </div>
+{% endblock %}

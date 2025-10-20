@@ -135,7 +135,7 @@ urlpatterns = [
         views.NofoEditModificationView.as_view(),
         name="nofo_modifications",
     ),
-    path("<uuid:pk>/print/", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
+    path("<uuid:pk>/print", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
     path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/create",
         views.NofoSubsectionCreateView.as_view(),

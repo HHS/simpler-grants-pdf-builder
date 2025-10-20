@@ -39,7 +39,8 @@
     <tbody>
       {% for document in documents %}
         <tr>
-          <th scope="row">{{ document.title }}</th>
+          <th scope="row">
+            <a href="{% url 'composer:composer_document_redirect' document.pk %}">{{ document.title }}</a></th>
 					<td>{{ document.get_status_display }}</td>
           {% timezone "America/New_York" %}
             <td>
