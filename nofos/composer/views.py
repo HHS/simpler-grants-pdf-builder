@@ -2,11 +2,11 @@ from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, View
 
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
@@ -127,3 +127,90 @@ class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
             ),
         )
         return redirect(self.success_url)
+
+
+def guide_section_redirect(request, pk):
+    document = ContentGuide.objects.prefetch_related("sections").filter(pk=pk).first()
+    if not document:
+        log_exception(
+            request,
+            Exception("Guide missing"),
+            context="guide_section_redirect",
+            status=404,
+        )
+        return HttpResponseNotFound("<p><strong>Content Guide not found.</strong></p>")
+
+    first = document.sections.order_by("order", "pk").first()
+    if not first:
+        log_exception(
+            request,
+            Exception("No sections"),
+            context="guide_section_redirect",
+            status=404,
+        )
+        return HttpResponseNotFound(
+            "<p><strong>This content guide has no sections.</strong></p>"
+        )
+
+    return redirect(
+        "composer:composer_document_section", pk=document.pk, section_pk=first.pk
+    )
+
+
+class GuideSectionView(LoginRequiredMixin, View):
+    """
+    20% / 80% layout:
+      - left: sticky sidenav of sections
+      - right: all subsections for the chosen section
+    Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
+    """
+
+    template_name = "composer/composer_section.html"
+
+    def get(self, request, pk, section_pk):
+        document = get_object_or_404(ContentGuide, pk=pk)
+        # Prefetch sections + subsections for snappy nav + rendering
+        sections = (
+            ContentGuideSection.objects.filter(document=document)
+            .order_by("order", "pk")
+            .prefetch_related("subsections")
+        )
+        section = get_object_or_404(
+            ContentGuideSection, pk=section_pk, document=document
+        )
+
+        # Subsections ordered; split for rendering mode
+        subsections = ContentGuideSubsection.objects.filter(
+            section=section, enabled=True
+        ).order_by("order", "pk")
+
+        header_blocks = []
+        accordion_blocks = []
+        for ss in subsections:
+            tag = (ss.tag or "").lower()
+            if tag in ("h2", "h3") or not tag:
+                header_blocks.append(ss)
+            else:
+                accordion_blocks.append(ss)
+
+        # Prev/Next section for pager
+        ordered = list(sections)
+        idx = next((i for i, s in enumerate(ordered) if s.pk == section.pk), None)
+        prev_sec = ordered[idx - 1] if idx and idx > 0 else None
+        next_sec = (
+            ordered[idx + 1] if idx is not None and idx < len(ordered) - 1 else None
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "document": document,
+                "sections": ordered,
+                "section": section,
+                "header_blocks": header_blocks,
+                "accordion_blocks": accordion_blocks,
+                "prev_sec": prev_sec,
+                "next_sec": next_sec,
+            },
+        )

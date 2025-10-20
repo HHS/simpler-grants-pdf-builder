@@ -53,7 +53,7 @@ urlpatterns = [
         name="compare_document_result",
     ),
     path(
-        "<uuid:pk>/document/<uuid:new_nofo_id>/csv/",
+        "<uuid:pk>/document/<uuid:new_nofo_id>/csv",
         views.CompareDocumentCSVView.as_view(),
         name="compare_document_result_csv",
     ),
