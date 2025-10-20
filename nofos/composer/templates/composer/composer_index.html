@@ -10,7 +10,50 @@
 {% block content %}
   <h1 class="font-heading-xl margin-y-0">Welcome to Composer!</h1>
   <div class="usa-prose">
-    <p>NOFO Composer is the best thing since sliced bread. Prepare to be wowed.</p>
+    <p class="font-serif-md text-bold margin-bottom-1 margin-top-4">Start a new content guide from HHS core templates.</p>
+    <p class="margin-top-1">Control subsections and content that writers can edit or review.</p>
   </div>
+
+  <div class="composer--button-box--container">
+    <div class="composer--button-box">
+      <div><strong>Create New Content Guide</strong></div>
+      <div>Begin with a blank form. Add in your questions and content.</div>
+      <a class="usa-button" href="{% url 'composer:composer_import' %}">
+        New content guide
+      </a>
+    </div>
+  </div>
+
+  {% if documents %}
+  <h2 class="font-heading-md margin-top-6">Existing content guides</h2>
+  <table class="usa-table usa-table--borderless width-full table--section">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Status</th>
+        <th scope="col">Created</th>
+        <th scope="col">Updated</th>
+        <th scope="col" class="w-5">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in documents %}
+        <tr>
+          <th scope="row">{{ document.title }}</th>
+					<td>{{ document.get_status_display }}</td>
+          {% timezone "America/New_York" %}
+            <td>
+              {{ document.created|date:'M j' }}, {{ document.created|date:'g:i A' }}
+            </td>
+            <td>
+              {{ document.updated|date:'M j' }}, {{ document.updated|date:'g:i A' }}
+            </td>
+          {% endtimezone %}
+          <td><a href="{% url 'composer:composer_archive' document.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
 
 {% endblock %}
