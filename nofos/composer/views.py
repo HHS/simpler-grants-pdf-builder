@@ -17,6 +17,7 @@ from nofos.nofo import (
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
+from .forms import ComposerSubsectionEditForm
 from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from .utils import create_content_guide_document
 
@@ -152,16 +153,11 @@ def guide_section_redirect(request, pk):
             "<p><strong>This content guide has no sections.</strong></p>"
         )
 
-    return redirect(
-        "composer:composer_document_section", pk=document.pk, section_pk=first.pk
-    )
+    return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 
 
-class GuideSectionView(LoginRequiredMixin, View):
+class ComposerSectionView(LoginRequiredMixin, View):
     """
-    20% / 80% layout:
-      - left: sticky sidenav of sections
-      - right: all subsections for the chosen section
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
     """
 
@@ -250,3 +246,49 @@ class GuideSectionView(LoginRequiredMixin, View):
                 "next_sec": next_sec,
             },
         )
+
+
+class ComposerSubsectionEditView(
+    GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
+):
+    """
+    Edit a single ContentGuideSubsection's edit_mode + body.
+    URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
+    """
+
+    model = ContentGuideSubsection
+    form_class = ComposerSubsectionEditForm
+    template_name = "composer/subsection_edit.html"
+    context_object_name = "subsection"
+
+    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    def get_object(self, queryset=None):
+        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
+        section = get_object_or_404(
+            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
+        )
+        subsection = get_object_or_404(
+            ContentGuideSubsection, pk=self.kwargs["subsection_pk"], section=section
+        )
+        # stash for context/success_url
+        self.document = document
+        self.section = section
+        return subsection
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["document"] = self.document
+        ctx["section"] = self.section
+        return ctx
+
+    def form_valid(self, form):
+        messages.success(self.request, "Subsection saved.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Back to the section page with an anchor to this subsection
+        url = reverse_lazy(
+            "composer:section_view", args=[self.document.pk, self.section.pk]
+        )
+        anchor = getattr(self.object, "html_id", "") or f"subsection-{self.object.pk}"
+        return f"{url}#{anchor}"

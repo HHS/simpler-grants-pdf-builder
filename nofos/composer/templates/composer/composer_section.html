@@ -23,7 +23,7 @@
           {% for section in sections %}
             <li class="usa-sidenav__item">
               <a
-                href="{% url 'composer:composer_document_section' document.pk section.pk %}"
+                href="{% url 'composer:section_view' document.pk section.pk %}"
                 {% if section.id == current_section.id %}aria-current="page" class="usa-current"{% endif %}>
                 {{ section.name }}
               </a>
@@ -65,9 +65,16 @@
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
-              <div class="font-heading-md">{{ subsection.name }}</div>
-              <div class="usa-prose">
-                {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              <div class=" position-relative">
+                <div class="font-heading-md padding-top-1">{{ subsection.name }}</div>
+                <a
+                  class="usa-button usa-button--outline usa-button--composer-edit"
+                  href="{% url 'composer:subsection_edit' document.pk current_section.pk subsection.pk %}">
+                    Edit
+                </a>
+                <div class="usa-prose">
+                  {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                </div>
               </div>
             </div>
           </div>
@@ -79,7 +86,7 @@
         <div>
           {% if prev_sec %}
             <a class="usa-button usa-button--outline"
-                href="{% url 'composer:composer_document_section' document.pk prev_sec.pk %}">
+                href="{% url 'composer:section_view' document.pk prev_sec.pk %}">
                 ← {{ prev_sec.name }}
             </a>
           {% endif %}
@@ -87,7 +94,7 @@
         <div>
           {% if next_sec %}
             <a class="usa-button"
-                href="{% url 'composer:composer_document_section' document.pk next_sec.pk %}">
+                href="{% url 'composer:section_view' document.pk next_sec.pk %}">
                 {{ next_sec.name }} →
             </a>
           {% endif %}
