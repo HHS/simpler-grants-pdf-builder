@@ -17,7 +17,12 @@ urlpatterns = [
     ),
     path(
         "<uuid:pk>/section/<uuid:section_pk>",
-        views.GuideSectionView.as_view(),
-        name="composer_document_section",
+        views.ComposerSectionView.as_view(),
+        name="section_view",
+    ),
+    path(
+        "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
+        views.ComposerSubsectionEditView.as_view(),
+        name="subsection_edit",
     ),
 ]

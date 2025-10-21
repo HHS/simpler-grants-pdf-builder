@@ -2265,3 +2265,15 @@ del + ins > br {
 .composer_document_section hr {
   border: 2px solid #dfe1e2;
 }
+
+.composer_document_section .usa-button--composer-edit {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  font-size: 0.87rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  margin-right: 0;
+  min-width: 5rem;
+}

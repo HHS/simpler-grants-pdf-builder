@@ -1,0 +1,27 @@
+from django import forms
+from martor.fields import MartorFormField
+
+from .models import ContentGuideSubsection
+
+
+class ComposerSubsectionEditForm(forms.ModelForm):
+    body = MartorFormField(required=False)
+
+    class Meta:
+        model = ContentGuideSubsection
+        fields = ["edit_mode", "body"]
+
+    def clean(self):
+        cleaned = super().clean()
+
+        if cleaned.get("edit_mode") == "variables":
+            subsection: ContentGuideSubsection = self.instance
+            if not subsection.extract_variables():
+                # Soft warning → convert to an error if you want to enforce
+                self.add_error(
+                    "edit_mode",
+                    "No {…} variables found in this subsection’s body. "
+                    "Switch to 'Edit all text' or add variables.",
+                )
+
+        return cleaned
