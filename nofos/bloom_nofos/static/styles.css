@@ -2261,3 +2261,7 @@ del + ins > br {
   top: 0;
   bottom: 0;
 }
+
+.composer_document_section hr {
+  border: 2px solid #dfe1e2;
+}

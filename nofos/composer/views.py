@@ -167,6 +167,50 @@ class GuideSectionView(LoginRequiredMixin, View):
 
     template_name = "composer/composer_section.html"
 
+    def group_subsections(self, subsections):
+        """
+        Return a list of groups:
+        [{"heading": "Funding details", "items": [sub1, sub2, ...]}, ...]
+        A group starts when the subsection name is in your pre-set headers
+        or when the tag is h2/h3. The header subsection itself is included
+        as the first item in its group.
+        """
+        headers_step_1 = {
+            "basic information",
+            "funding details",
+            "eligibility",
+            "program description",
+            "data, monitoring, and evaluation",
+            "funding policies and limitations",
+        }
+
+        def normalize_name(s: str) -> str:
+            return (s or "").strip().lower()
+
+        subsection_groups: list[dict] = []
+        current_idx = None
+
+        for subsection in subsections:
+            tag = (subsection.tag or "").lower()
+            is_header = normalize_name(subsection.name) in headers_step_1 or tag in (
+                "h2",
+                "h3",
+            )
+
+            # If we hit a new header, start a new group
+            if is_header:
+                subsection_groups.append({"heading": subsection.name, "items": []})
+                current_idx = len(subsection_groups) - 1
+            # catch-all for first subsection, if not caught above
+            elif current_idx is None:
+                subsection_groups.append({"heading": subsection.name, "items": []})
+                current_idx = 0
+
+            # Append the subsection to the current group
+            subsection_groups[current_idx]["items"].append(subsection)
+
+        return subsection_groups
+
     def get(self, request, pk, section_pk):
         document = get_object_or_404(ContentGuide, pk=pk)
         # Prefetch sections + subsections for snappy nav + rendering
@@ -184,14 +228,7 @@ class GuideSectionView(LoginRequiredMixin, View):
             section=section, enabled=True
         ).order_by("order", "pk")
 
-        header_blocks = []
-        accordion_blocks = []
-        for ss in subsections:
-            tag = (ss.tag or "").lower()
-            if tag in ("h2", "h3") or not tag:
-                header_blocks.append(ss)
-            else:
-                accordion_blocks.append(ss)
+        grouped_subsections = self.group_subsections(subsections)
 
         # Prev/Next section for pager
         ordered = list(sections)
@@ -208,8 +245,7 @@ class GuideSectionView(LoginRequiredMixin, View):
                 "document": document,
                 "sections": ordered,
                 "current_section": section,
-                "header_blocks": header_blocks,
-                "accordion_blocks": accordion_blocks,
+                "grouped_subsections": grouped_subsections,
                 "prev_sec": prev_sec,
                 "next_sec": next_sec,
             },

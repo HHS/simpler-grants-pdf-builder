@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load tz %}
+{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
 
 {% block title %}
   {{ document.title }} — {{ current_section.name }}</title>
@@ -50,33 +50,29 @@
       <hr />
 
       <!-- Header blocks (h2/h3) -->
-      {% for ss in header_blocks %}
-        <section id="{{ ss.html_id }}" class="margin-bottom-3">
-          <h3 class="margin-bottom-1">{{ ss.name }}</h3>
-          <div class="margin-bottom-2">
-            {# Replace with your Markdown renderer if needed #}
-            {{ ss.body|safe }}
-          </div>
-        </section>
-      {% endfor %}
+      {% for grouped_subsection in grouped_subsections %}
+        <h3 class="margin-top-4">{{ grouped_subsection.heading }}</h3>
 
-      <!-- Accordion blocks (h4/h5/h6/...) -->
-      {% if accordion_blocks %}
-        <div class="usa-accordion">
-          {% for ss in accordion_blocks %}
+        {# Header item + subsequent items — put lower-than-h3 inside accordions if you like #}
+        {% for subsection in grouped_subsection.items %}
+          <div class="usa-accordion usa-accordion--multiselectable usa-accordion--bordered" data-allow-multiple>
+
             <h4 class="usa-accordion__heading">
               <button class="usa-accordion__button"
                       aria-expanded="false"
-                      aria-controls="acc-{{ ss.pk }}">
-                {{ ss.name|default:"Details" }}
+                      aria-controls="accordion-{{ subsection.pk }}">
+                {{ subsection.name|default:"(No title)" }}
               </button>
             </h4>
-            <div id="acc-{{ ss.pk }}" class="usa-accordion__content usa-prose">
-              {{ ss.body|safe }}
+            <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
+              <div class="font-heading-md">{{ subsection.name }}</div>
+              <div class="usa-prose">
+                {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              </div>
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+          </div>
+        {% endfor %}
+      {% endfor %}
 
       <!-- Pager -->
       <nav class="display-flex flex-justify margin-top-4">
