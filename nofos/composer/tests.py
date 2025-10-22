@@ -212,6 +212,92 @@ class ComposerImportViewTests(TestCase):
         self.assertContains(follow_response, "Error: Oops! No fos uploaded.")
 
 
+class ComposerImportTitleViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.document = ContentGuide.objects.create(
+            title="Original Title.docx", opdiv="CDC", group="bloom"
+        )
+        self.url = reverse(
+            "composer:composer_import_title", kwargs={"pk": self.document.pk}
+        )
+        self.redirect_url = reverse("composer:composer_index")
+
+    def test_view_returns_200_for_authorized_user(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_valid_data_updates_title(self):
+        response = self.client.post(self.url, {"title": "Updated Title Import"})
+        self.document.refresh_from_db()
+        self.assertEqual(self.document.title, "Updated Title Import")
+        self.assertRedirects(response, self.redirect_url)
+
+    def test_post_invalid_data_shows_errors(self):
+        response = self.client.post(self.url, {"title": ""})  # empty title = invalid
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertIn("This field is required.", form.errors["title"])
+
+    def test_unauthorized_user_redirected(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+
+class CompareEditTitleViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.document = ContentGuide.objects.create(
+            title="Original Title.docx", opdiv="CDC", group="bloom"
+        )
+        self.url = reverse(
+            "composer:composer_edit_title", kwargs={"pk": self.document.pk}
+        )
+        self.redirect_url = reverse("composer:composer_index")
+
+    def test_view_returns_200_for_authorized_user(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_valid_data_updates_title(self):
+        response = self.client.post(self.url, {"title": "Updated Title Edit"})
+        self.document.refresh_from_db()
+        self.assertEqual(self.document.title, "Updated Title Edit")
+        self.assertRedirects(response, self.redirect_url)
+
+    def test_post_invalid_data_shows_errors(self):
+        response = self.client.post(self.url, {"title": ""})  # empty title = invalid
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertIn("This field is required.", form.errors["title"])
+
+    def test_unauthorized_user_redirected(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+
 class ComposerArchiveViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
