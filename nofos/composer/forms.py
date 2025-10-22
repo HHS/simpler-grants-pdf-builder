@@ -1,7 +1,13 @@
 from django import forms
 from martor.fields import MartorFormField
 
-from .models import ContentGuideSubsection
+from nofos.forms import create_object_model_form
+
+from .models import ContentGuide, ContentGuideSubsection
+
+create_composer_form_class = create_object_model_form(ContentGuide)
+
+CompareTitleForm = create_composer_form_class(["title"])
 
 
 class ComposerSubsectionEditForm(forms.ModelForm):

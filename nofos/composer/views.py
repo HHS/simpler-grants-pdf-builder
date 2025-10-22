@@ -17,7 +17,7 @@ from nofos.nofo import (
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
-from .forms import ComposerSubsectionEditForm
+from .forms import CompareTitleForm, ComposerSubsectionEditForm
 from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from .utils import create_content_guide_document
 
@@ -79,9 +79,7 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
                 user=request.user,
             )
 
-            # Send them to a “set title” or detail page (mirror your compare route)
-            # return redirect("composer:composer_import_title", pk=document.pk)
-            return redirect("composer:composer_index")
+            return redirect("composer:composer_import_title", pk=document.pk)
 
         except ValidationError as e:
             log_exception(
@@ -101,6 +99,39 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
                 status=500,
             )
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
+
+
+class ComposerImportTitleView(GroupAccessObjectMixin, UpdateView):
+    model = ContentGuide
+    form_class = CompareTitleForm
+    template_name = "composer/composer_edit_title.html"
+
+    def form_valid(self, form):
+        document = self.object
+        document.title = form.cleaned_data["title"]
+        document.save()
+
+        return redirect("composer:composer_index")
+
+
+class ComposerEditTitleView(GroupAccessObjectMixin, UpdateView):
+    model = ContentGuide
+    form_class = CompareTitleForm
+    template_name = "composer/composer_edit_title.html"
+    context_object_name = "document"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["first_section"] = self.object.sections.order_by("order", "pk").first()
+        context["show_back_link"] = True
+        return context
+
+    def form_valid(self, form):
+        document = self.object
+        document.title = form.cleaned_data["title"]
+        document.save()
+
+        return redirect("composer:composer_index")
 
 
 class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
