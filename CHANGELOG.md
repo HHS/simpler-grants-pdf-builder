@@ -13,6 +13,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Docraptor live mode should be a boolean, otherwise it is always true
+
 ## [3.15.0] - 2025-10-15
 
 ### Added

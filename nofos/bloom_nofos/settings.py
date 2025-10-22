@@ -570,9 +570,9 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "DOCRAPTOR_LIVE_MODE": (
-        now(),
+        False,
         "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
-        datetime,
+        bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (
         False,
