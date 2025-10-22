@@ -507,12 +507,10 @@ class ComposerSectionViewTests(TestCase):
         self.assertIsNotNone(resp.context["prev_sec"])
         self.assertEqual(resp.context["prev_sec"].pk, self.sec1.pk)
 
-    def test_anonymous_user_redirects_to_login(self):
+    def test_anonymous_user_is_forbidden(self):
         self.client.logout()
         resp = self.client.get(self.url_sec1)
-        # LoginRequiredMixin → 302 to LOGIN_URL
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("/users/login", resp.url)
+        self.assertEqual(resp.status_code, 403)
 
     def test_404_when_section_not_in_document(self):
         # Make a section in a different guide and try to view with current guide pk

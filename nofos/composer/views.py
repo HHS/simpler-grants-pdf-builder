@@ -3,10 +3,10 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest, HttpResponseNotFound
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import ListView, UpdateView, View
+from django.views.generic import DetailView, ListView, UpdateView
 
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
@@ -156,12 +156,18 @@ def compare_section_redirect(request, pk):
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 
 
-class ComposerSectionView(LoginRequiredMixin, View):
+class ComposerSectionView(GroupAccessObjectMixin, DetailView):
     """
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
+    URL params:
+      pk          -> ContentGuide.pk
+      section_pk  -> ContentGuideSection.pk (within that guide)
     """
 
+    model = ContentGuideSection
     template_name = "composer/composer_section.html"
+    context_object_name = "current_section"
+    pk_url_kwarg = "section_pk"
 
     def group_subsections(self, subsections):
         """
@@ -207,50 +213,52 @@ class ComposerSectionView(LoginRequiredMixin, View):
 
         return subsection_groups
 
-    def get(self, request, pk, section_pk):
-        document = get_object_or_404(ContentGuide, pk=pk)
-        # Prefetch sections + subsections for snappy nav + rendering
-        sections = (
-            ContentGuideSection.objects.filter(document=document)
+    def get_queryset(self):
+        document_pk = self.kwargs["pk"]
+        return (
+            ContentGuideSection.objects.filter(document__pk=document_pk)
             .order_by("order", "pk")
             .prefetch_related("subsections")
         )
-        section = get_object_or_404(
-            ContentGuideSection, pk=section_pk, document=document
-        )
 
-        # Subsections ordered; split for rendering mode
-        subsections = ContentGuideSubsection.objects.filter(section=section).order_by(
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        current_section: ContentGuideSection = self.object
+        document: ContentGuide = current_section.document
+
+        # All sections for sidenav + prev/next calculation
+        sections_qs = ContentGuideSection.objects.filter(document=document).order_by(
             "order", "pk"
         )
+        sections = list(sections_qs)
 
+        # Subsections for the current section
+        subsections = ContentGuideSubsection.objects.filter(
+            section=current_section
+        ).order_by("order", "pk")
         grouped_subsections = self.group_subsections(subsections)
 
-        # Prev/Next section for pager
-        ordered = list(sections)
-        idx = next((i for i, s in enumerate(ordered) if s.pk == section.pk), None)
-        prev_sec = ordered[idx - 1] if idx and idx > 0 else None
+        # Prev/Next
+        idx = next(
+            (i for i, s in enumerate(sections) if s.pk == current_section.pk), None
+        )
+        prev_sec = sections[idx - 1] if (idx is not None and idx > 0) else None
         next_sec = (
-            ordered[idx + 1] if idx is not None and idx < len(ordered) - 1 else None
+            sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
-        return render(
-            request,
-            self.template_name,
-            {
-                "document": document,
-                "sections": ordered,
-                "current_section": section,
-                "grouped_subsections": grouped_subsections,
-                "prev_sec": prev_sec,
-                "next_sec": next_sec,
-            },
+        ctx.update(
+            document=document,
+            sections=sections,
+            grouped_subsections=grouped_subsections,
+            prev_sec=prev_sec,
+            next_sec=next_sec,
+            anchor=self.request.GET.get("anchor"),
         )
+        return ctx
 
 
-class ComposerSubsectionEditView(
-    GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
-):
+class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
     URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
@@ -290,5 +298,5 @@ class ComposerSubsectionEditView(
         url = reverse_lazy(
             "composer:section_view", args=[self.document.pk, self.section.pk]
         )
-        anchor = getattr(self.object, "html_id", "") or f"subsection-{self.object.pk}"
-        return f"{url}#{anchor}"
+        anchor = getattr(self.object, "html_id", "")
+        return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
