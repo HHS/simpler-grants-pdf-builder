@@ -9,8 +9,9 @@
 
 {% block content %}
   <div class="grid-row cg-layout">
-    <!-- sticky sidenav -->
+    {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
 
+    <!-- sticky sidenav -->
     <aside class="grid-col-12 tablet:grid-col-3 cg-sidenav">
       <div class="back-link font-body-md margin-bottom-105">
         <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
