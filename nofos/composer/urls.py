@@ -12,7 +12,7 @@ urlpatterns = [
     ),
     path(
         "<uuid:pk>",
-        views.guide_section_redirect,
+        views.compare_section_redirect,
         name="composer_document_redirect",
     ),
     path(
