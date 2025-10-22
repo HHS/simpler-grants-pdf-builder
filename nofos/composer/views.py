@@ -130,13 +130,13 @@ class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
         return redirect(self.success_url)
 
 
-def guide_section_redirect(request, pk):
+def compare_section_redirect(request, pk):
     document = ContentGuide.objects.prefetch_related("sections").filter(pk=pk).first()
     if not document:
         log_exception(
             request,
             Exception("Guide missing"),
-            context="guide_section_redirect",
+            context="compare_section_redirect",
             status=404,
         )
         return HttpResponseNotFound("<p><strong>Content Guide not found.</strong></p>")
@@ -146,7 +146,7 @@ def guide_section_redirect(request, pk):
         log_exception(
             request,
             Exception("No sections"),
-            context="guide_section_redirect",
+            context="compare_section_redirect",
             status=404,
         )
         return HttpResponseNotFound(
