@@ -1,13 +1,147 @@
+import uuid
+
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from .forms import ComposerSubsectionEditForm
 from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from .views import ComposerSectionView
 
 User = get_user_model()
+
+# --- TEST MODELS -------------------------------------------------------
+
+
+class ExtractVariablesTests(TestCase):
+    def setUp(self):
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            document=self.guide, order=1, name="Section 1", html_id="sec-1"
+        )
+
+    def _mk(self, body: str):
+        return ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Sub 1",
+            tag="h3",
+            body=body,
+            edit_mode="full",
+            enabled=True,
+        )
+
+    def test_no_variables_returns_empty_list(self):
+        ss = self._mk("No placeholders here.")
+        self.assertEqual(ss.extract_variables(), [])
+
+    def test_simple_string_variable(self):
+        ss = self._mk("Please provide {Project name} for the application.")
+        vars_ = ss.extract_variables()
+        self.assertEqual(
+            vars_,
+            [
+                {"key": "project_name", "type": "string", "label": "Project name"},
+            ],
+        )
+
+    def test_list_variable_type(self):
+        ss = self._mk("Add tags: {List: Tags}")
+        vars_ = ss.extract_variables()
+        self.assertEqual(
+            vars_,
+            [
+                {"key": "tags", "type": "list", "label": "Tags"},
+            ],
+        )
+
+    def test_duplicate_labels_are_deduped(self):
+        ss = self._mk("Enter {Project name} and confirm {Project name}")
+        vars_ = ss.extract_variables()
+        self.assertEqual(
+            vars_[0], {"key": "project_name", "type": "string", "label": "Project name"}
+        )
+        self.assertEqual(
+            vars_[1],
+            {"key": "project_name_2", "type": "string", "label": "Project name"},
+        )
+
+    def test_escaped_opening_brace_does_not_create_variable(self):
+        ss = self._mk(r"Literal \{not a variable} and real {Variable}")
+        vars_ = ss.extract_variables()
+        self.assertEqual(
+            vars_,
+            [
+                {"key": "variable", "type": "string", "label": "Variable"},
+            ],
+        )
+
+    def test_empty_or_whitespace_label_falls_back_to_key_var(self):
+        ss = self._mk("Weird case: {   }")
+        vars_ = ss.extract_variables()
+        self.assertEqual(
+            vars_,
+            [
+                {
+                    "key": "var",
+                    "type": "string",
+                    "label": "",
+                },  # label trimmed to empty → key fallback
+            ],
+        )
+
+    def test_text_override_parameter_is_used_instead_of_instance_body(self):
+        ss = self._mk("Old body without vars")
+        override = "New body with a {Fresh var}"
+        vars_ = ss.extract_variables(text=override)
+        self.assertEqual(
+            vars_,
+            [
+                {"key": "fresh_var", "type": "string", "label": "Fresh var"},
+            ],
+        )
+
+
+# --- TEST FORMS ----------------------------------------------------------
+
+
+class SubsectionEditFormVariablesTests(TestCase):
+    def setUp(self):
+        self.guide = ContentGuide.objects.create(title="G", opdiv="CDC", group="bloom")
+        self.section = ContentGuideSection.objects.create(
+            document=self.guide, order=1, name="S"
+        )
+        self.ss = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Intro",
+            tag="h4",
+            body="Initial body",
+            edit_mode="full",
+        )
+
+    def test_variables_validation_uses_posted_body(self):
+        form = ComposerSubsectionEditForm(
+            data={"edit_mode": "variables", "body": "Has {Variable} now"},
+            instance=self.ss,
+        )
+        self.assertTrue(form.is_valid(), form.errors.as_json())
+
+    def test_variables_validation_errors_when_no_vars(self):
+        form = ComposerSubsectionEditForm(
+            data={"edit_mode": "variables", "body": "No placeholders here"},
+            instance=self.ss,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("edit_mode", form.errors)
+
+
+# --- TEST VIEWS -------------------------------------------------------
 
 
 class ComposerListViewTests(TestCase):
@@ -270,3 +404,250 @@ class GroupSubsectionsTests(TestCase):
         self.assertEqual(len(groups), 1)
         self.assertEqual(groups[0]["heading"], "Funding details")
         self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk, s3.pk, s2.pk])
+
+
+class ComposerSectionViewTests(TestCase):
+    def setUp(self):
+        # Auth user
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # Guide + sections
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.sec1 = ContentGuideSection.objects.create(
+            document=self.guide,
+            order=1,
+            name="Understand the opportunity",
+            html_id="s1",
+        )
+        self.sec2 = ContentGuideSection.objects.create(
+            document=self.guide, order=2, name="Get ready to apply", html_id="s2"
+        )
+
+        # Subsections for sec1 (ensure grouping behavior)
+        self.ss1 = ContentGuideSubsection.objects.create(
+            section=self.sec1,
+            order=1,
+            name="Intro",
+            tag="h4",
+            body="Body 1",
+            enabled=True,
+        )
+        # Preset header name → starts new group
+        self.ss2 = ContentGuideSubsection.objects.create(
+            section=self.sec1,
+            order=2,
+            name="Funding details",
+            tag="h4",
+            body="Body 2",
+            enabled=True,
+        )
+        # Not a header → belongs to previous group
+        self.ss3 = ContentGuideSubsection.objects.create(
+            section=self.sec1,
+            order=3,
+            name="Budget table",
+            tag="h5",
+            body="Body 3",
+            enabled=True,
+        )
+        # Disabled → should appear anyway
+        self.ss4_disabled = ContentGuideSubsection.objects.create(
+            section=self.sec1,
+            order=4,
+            name="(Disabled)",
+            tag="h4",
+            body="x",
+            enabled=False,
+        )
+
+        self.url_sec1 = reverse(
+            "composer:section_view",
+            kwargs={"pk": self.guide.pk, "section_pk": self.sec1.pk},
+        )
+        self.url_sec2 = reverse(
+            "composer:section_view",
+            kwargs={"pk": self.guide.pk, "section_pk": self.sec2.pk},
+        )
+
+    def test_renders_200_and_groups_subsections(self):
+        resp = self.client.get(self.url_sec1)
+        self.assertEqual(resp.status_code, 200)
+
+        grouped = resp.context["grouped_subsections"]
+        self.assertEqual(len(grouped), 2)
+
+        # Group 1: heading = "Intro", items = [ss1]
+        self.assertEqual(grouped[0]["heading"], "Intro")
+        self.assertEqual([i.pk for i in grouped[0]["items"]], [self.ss1.pk])
+
+        # Group 2: heading = "Funding details", items = [ss2, ss3]
+        self.assertEqual(grouped[1]["heading"], "Funding details")
+        self.assertEqual(
+            [i.pk for i in grouped[1]["items"]],
+            [self.ss2.pk, self.ss3.pk, self.ss4_disabled.pk],
+        )
+
+    def test_prev_next_sections_in_context_first_section(self):
+        resp = self.client.get(self.url_sec1)
+        self.assertIsNone(resp.context["prev_sec"])
+        self.assertIsNotNone(resp.context["next_sec"])
+        self.assertEqual(resp.context["next_sec"].pk, self.sec2.pk)
+
+    def test_prev_next_sections_in_context_second_section(self):
+        resp = self.client.get(self.url_sec2)
+        self.assertIsNone(resp.context["next_sec"])
+        self.assertIsNotNone(resp.context["prev_sec"])
+        self.assertEqual(resp.context["prev_sec"].pk, self.sec1.pk)
+
+    def test_anonymous_user_redirects_to_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url_sec1)
+        # LoginRequiredMixin → 302 to LOGIN_URL
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/users/login", resp.url)
+
+    def test_404_when_section_not_in_document(self):
+        # Make a section in a different guide and try to view with current guide pk
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            document=other_guide, order=1, name="Stray", html_id="x"
+        )
+        bad_url = reverse(
+            "composer:section_view",
+            kwargs={"pk": self.guide.pk, "section_pk": stray_section.pk},
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_when_guide_missing(self):
+        bad_url = reverse(
+            "composer:section_view",
+            kwargs={"pk": uuid.uuid4(), "section_pk": self.sec1.pk},
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+
+class ComposerSubsectionEditViewTests(TestCase):
+    def setUp(self):
+        # user + login
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # guide/sections/subsections
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            document=self.guide, order=1, name="S1", html_id="s1"
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="SS1",
+            tag="h3",
+            body="Initial body",
+            enabled=True,
+            edit_mode="full",
+            html_id="ss-1",
+        )
+
+        self.url = reverse(
+            "composer:subsection_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": self.section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+
+    def test_get_renders_for_logged_in_user(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        # context includes document/section/subsection
+        self.assertEqual(resp.context["document"].pk, self.guide.pk)
+        self.assertEqual(resp.context["section"].pk, self.section.pk)
+        self.assertEqual(resp.context["subsection"].pk, self.subsection.pk)
+
+    def test_anonymous_redirects_to_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_post_updates_and_redirects_with_anchor_prefers_html_id(self):
+        payload = {
+            "edit_mode": "variables",
+            "body": "New **markdown** with {Variable}",
+        }
+        resp = self.client.post(self.url, data=payload, follow=False)
+
+        # saved
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.edit_mode, "variables")
+        self.assertIn("New **markdown**", self.subsection.body)
+
+        # redirected back to section with anchor "#<html_id>"
+        expected_base = reverse(
+            "composer:section_view", args=[self.guide.pk, self.section.pk]
+        )
+        self.assertTrue(resp["Location"].startswith(expected_base))
+        self.assertTrue(resp["Location"].endswith(f"#{self.subsection.html_id}"))
+
+        # success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("Subsection saved." in str(m) for m in msgs))
+
+    def test_404_when_subsection_not_in_section(self):
+        other_section = ContentGuideSection.objects.create(
+            document=self.guide, order=2, name="S2", html_id="s2"
+        )
+        bad_url = reverse(
+            "composer:subsection_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": other_section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_when_section_not_in_guide(self):
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            document=other_guide, order=1, name="Stray", html_id="x"
+        )
+        bad_url = reverse(
+            "composer:subsection_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": stray_section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_invalid_edit_mode_returns_errors(self):
+        payload = {"edit_mode": "not-a-choice", "body": "x"}
+        resp = self.client.post(self.url, data=payload)
+        # stays on page with errors
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Select a valid choice", status_code=200)

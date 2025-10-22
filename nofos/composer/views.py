@@ -220,9 +220,9 @@ class ComposerSectionView(LoginRequiredMixin, View):
         )
 
         # Subsections ordered; split for rendering mode
-        subsections = ContentGuideSubsection.objects.filter(
-            section=section, enabled=True
-        ).order_by("order", "pk")
+        subsections = ContentGuideSubsection.objects.filter(section=section).order_by(
+            "order", "pk"
+        )
 
         grouped_subsections = self.group_subsections(subsections)
 
