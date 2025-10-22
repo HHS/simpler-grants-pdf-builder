@@ -13,15 +13,13 @@ class ComposerSubsectionEditForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-
         if cleaned.get("edit_mode") == "variables":
             subsection: ContentGuideSubsection = self.instance
-            if not subsection.extract_variables():
-                # Soft warning → convert to an error if you want to enforce
+            posted_body = cleaned.get("body") or ""
+            if not subsection.extract_variables(text=posted_body):
                 self.add_error(
                     "edit_mode",
                     "No {…} variables found in this subsection’s body. "
                     "Switch to 'Edit all text' or add variables.",
                 )
-
         return cleaned

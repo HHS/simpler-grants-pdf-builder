@@ -113,7 +113,7 @@ class ContentGuideSubsection(BaseSubsection):
 
     _VAR_PATTERN = re.compile(r"(?<!\\)\{(?P<raw>[^}]+)\}")
 
-    def extract_variables(self) -> List[dict]:
+    def extract_variables(self, text: str | None = None) -> List[dict]:
         """
         Parse this subsection's body for variable placeholders.
 
@@ -125,7 +125,7 @@ class ContentGuideSubsection(BaseSubsection):
         Returns:
             List[{"key": "total_budget_amount", "type": "string", "label": "Enter total budget amount"}]
         """
-        text = self.body or ""
+        text = (text if text is not None else self.body) or ""
         results: List[dict] = []
         used_keys = set()
 
