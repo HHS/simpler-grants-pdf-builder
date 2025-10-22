@@ -49,18 +49,22 @@
       </p>
       <hr />
 
-      <!-- Header blocks (h2/h3) -->
+      <!-- Header blocks (h2/h3 + pre-identified heading names)  -->
       {% for grouped_subsection in grouped_subsections %}
         <h3 class="margin-top-4">{{ grouped_subsection.heading }}</h3>
 
-        {# Header item + subsequent items — put lower-than-h3 inside accordions if you like #}
+        {# Header item + subsequent items #}
         {% for subsection in grouped_subsection.items %}
-          <div class="usa-accordion usa-accordion--multiselectable usa-accordion--bordered" data-allow-multiple>
-
+          <div id="{{ subsection.html_id }}" class="usa-accordion usa-accordion--multiselectable usa-accordion--bordered" data-allow-multiple>
             <h4 class="usa-accordion__heading">
               <button class="usa-accordion__button"
-                      aria-expanded="false"
-                      aria-controls="accordion-{{ subsection.pk }}">
+                      aria-controls="accordion-{{ subsection.pk }}"
+                      {% if anchor == subsection.html_id %}
+                        aria-expanded="true"
+                      {% else %}
+                        aria-expanded="false"
+                      {% endif %}
+                      >
                 {{ subsection.name|default:"(No title)" }}
               </button>
             </h4>
