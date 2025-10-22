@@ -253,7 +253,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
         )
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         current_section: ContentGuideSection = self.object
         document: ContentGuide = current_section.document
 
@@ -278,7 +278,9 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
             sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
-        ctx.update(
+        context["success_heading"] = "Content Guide saved successfully"
+
+        context.update(
             document=document,
             sections=sections,
             grouped_subsections=grouped_subsections,
@@ -286,7 +288,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
             next_sec=next_sec,
             anchor=self.request.GET.get("anchor"),
         )
-        return ctx
+        return context
 
 
 class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
@@ -321,7 +323,14 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return ctx
 
     def form_valid(self, form):
-        messages.success(self.request, "Subsection saved.")
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "Updated section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
+                self.object.name or "(#{})".format(self.object.order),
+                self.object.section.name,
+            ),
+        )
         return super().form_valid(form)
 
     def get_success_url(self):
