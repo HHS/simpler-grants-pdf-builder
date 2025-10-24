@@ -694,7 +694,7 @@ class ComposerSubsectionEditViewTests(TestCase):
 
         # success message was added
         msgs = list(get_messages(resp.wsgi_request))
-        self.assertTrue(any("Subsection saved." in str(m) for m in msgs))
+        self.assertTrue(any("Updated section:" in str(m) for m in msgs))
 
     def test_404_when_subsection_not_in_section(self):
         other_section = ContentGuideSection.objects.create(
