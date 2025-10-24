@@ -5,6 +5,7 @@
   --color--text-default: #1b1b1b;
   --color--text-grey: #71767a;
   --color--usa-link: #005ea2;
+  --color--usa-link-hover: #1a4480;
   --color--usa-link-rgb: 0, 94, 162;
   --color--usa-link-visited: #54278f;
   --color--usa-error-message: #b50909;
@@ -1370,7 +1371,7 @@ main .back-link a::before,
 }
 
 .section_edit table.table--section .usa-button--add:hover {
-  box-shadow: inset 0 0 0 1px #1a4480; /* match text colour */
+  box-shadow: inset 0 0 0 1px var(--color--usa-link-hover); /* match text colour */
 }
 
 .usa-button--outline {
@@ -1447,74 +1448,148 @@ main .back-link a::before,
 
 /* Styling the martor editing window */
 
-.subsection_edit .main-martor,
-.subsection_create .main-martor {
+.main-martor--container {
+  border: 2px solid black;
+}
+
+.main-martor--container--error {
+  border-color: var(--color--usa-error-message);
+}
+
+.main-martor--container .main-martor .nav-tabs {
+  border-bottom: 2px solid black;
+}
+
+.main-martor--container .main-martor {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.subsection_edit .main-martor .icon.expand-editor,
-.subsection_create .main-martor .icon.expand-editor {
+.main-martor--container .main-martor .icon.expand-editor {
   display: none;
 }
 
-.subsection_edit .main-martor .resizable .resizable-b,
-.subsection_create .main-martor .resizable .resizable-b {
+.main-martor--container .main-martor .resizable .resizable-b {
   width: 100%;
   cursor: row-resize;
 }
 
-.subsection_edit .main-martor .nav-tabs .nav-link {
+.main-martor--container .main-martor .nav-tabs .nav-link {
   border-radius: 0;
   border: none;
   margin-bottom: 0;
 }
 
-.subsection_edit .main-martor .nav-tabs .nav-link:not(.active) {
-  background-color: rgba(var(--color--usa-link-rgb), 0.06);
-  border-bottom: 2px solid rgba(var(--color--usa-link-rgb), 0.06);
+.main-martor--container .main-martor .btn-group > .btn {
+  border: 0;
 }
 
-.subsection_edit .main-martor .nav-tabs .nav-link:not(.active):hover {
-  background-color: rgba(var(--color--usa-link-rgb), 0.1);
-  border-bottom: 2px solid rgba(var(--color--usa-link-rgb), 0.2);
+.main-martor--container .main-martor .btn-group-sm > .btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0;
 }
 
-.subsection_edit .main-martor .nav-tabs .nav-link:not(.active):hover span {
+.main-martor--container .main-martor .nav-tabs {
+  background-color: #f8f9fa;
+}
+
+.main-martor--container .main-martor .nav-tabs .nav-link.active {
+  background-color: var(--color--usa-link);
+  color: white;
+  border-bottom: 0;
+}
+
+.main-martor--container .main-martor .nav-tabs .nav-link.active:hover {
+  background-color: var(--color--usa-link-hover);
+  color: white;
+  border-bottom: 0;
+}
+
+.main-martor--container .main-martor .nav-tabs .nav-link:not(.active) {
+  border-bottom: 0;
+  color: var(--color--usa-link);
+  background-color: white;
+}
+
+.main-martor--container .main-martor .nav-tabs .nav-link:not(.active):hover {
+  color: var(--color--usa-link-hover);
+  border-bottom: 0;
+  background-color: white;
+}
+
+.main-martor--container
+  .main-martor
+  .nav-tabs
+  .nav-link[aria-controls^="nav-preview"] {
+  border-right: 2px solid var(--color--usa-link);
+}
+.main-martor--container
+  .main-martor
+  .nav-tabs
+  .nav-link[aria-controls^="nav-preview"]:hover {
+  border-right: 2px solid var(--color--usa-link-hover);
+}
+
+.main-martor--container
+  .main-martor
+  .nav-tabs
+  .nav-link:not(.active):hover
+  span {
   text-decoration: underline;
 }
 
-.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn:hover {
+.main-martor--container .main-martor .nav-tabs .btn-toolbar .btn:hover {
   background-color: var(--color--light-grey);
 }
 
-.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn.markdown-help {
+.main-martor--container .main-martor .nav-tabs .btn-toolbar .btn.markdown-help {
   background-color: var(--color--usa-accent-warm);
 }
 
-.subsection_edit .main-martor .nav-tabs .btn-toolbar .btn.markdown-help:hover {
+.main-martor--container
+  .main-martor
+  .nav-tabs
+  .btn-toolbar
+  .btn.markdown-help:hover {
   background-color: var(--color--usa-accent-warm-hover);
   color: var(--color--white);
 }
 
-.subsection_edit .modal .modal-dialog .modal-content .text-center.small.credit {
+.main-martor--container
+  .modal
+  .modal-dialog
+  .modal-content
+  .text-center.small.credit {
   display: none;
 }
 
-.subsection_edit div.martor-preview div[role="heading"] {
+.main-martor--container .martor-field {
+  height: 320px;
+}
+
+.main-martor--container .ace_editor {
+  font-size: 12.5px;
+}
+
+.main-martor--container div.martor-preview {
+  font-size: 15px;
+}
+
+.main-martor--container div.martor-preview div[role="heading"] {
   color: #777;
   font-size: 12.5px;
   font-weight: 600;
   font-variant: small-caps;
 }
 
-.subsection_edit div.martor-preview table thead th > p,
-.subsection_edit div.martor-preview table tbody tr:first-of-type th p {
+.main-martor--container div.martor-preview table thead th > p,
+.main-martor--container div.martor-preview table tbody tr:first-of-type th p {
   font-weight: 400;
 }
 
-.subsection_edit div.martor-preview table thead th p:first-child,
-.subsection_edit
+.main-martor--container div.martor-preview table thead th p:first-child,
+.main-martor--container
   div.martor-preview
   table
   tbody
