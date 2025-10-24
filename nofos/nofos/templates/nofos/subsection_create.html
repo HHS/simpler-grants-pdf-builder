@@ -111,13 +111,10 @@
         <div
         {% whitespaceless %}
           class="
-                border-2px
                 margin-top-1
-                radius-md
+                main-martor--container
                 {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
-                  border-secondary-dark
-                {% else %}
-                  border-base-lighter
+                  main-martor--container--error
                 {% endif %}
               "
         {% endwhitespaceless %} id="{{ form.body.name }}" tabIndex="-1" {% if form.errors.body %}aria-describedby="body--error-message"{% endif %}>

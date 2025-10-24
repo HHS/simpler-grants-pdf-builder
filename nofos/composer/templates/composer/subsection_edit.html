@@ -14,8 +14,6 @@
 {% block body_class %}subsection_edit subsection_edit--composer{% endblock %}
 
 {% block content %}
-
-  <div class="grid-container">
     <div class="back-link font-body-md margin-bottom-105">
       <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
     </div>
@@ -102,13 +100,13 @@
       </fieldset>
 
       {# --- Body (Martor) --- #}
-      <div class="margin-top-3">
+      <div class="margin-top-4">
         <label class="usa-label text-bold" for="{{ form.body.id_for_label }}">Section content</label>
         <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
         <br>
         Select “Preview” to see how content will appear.</p>
 
-        <div class="border-1px border-base-lighter radius-md">
+        <div class="main-martor--container ">
           {{ form.body }}
         </div>
         {% if form.body.errors %}
@@ -122,7 +120,6 @@
            href="{% url 'composer:section_view' document.pk section.pk %}">Cancel</a>
       </div>
     </form>
-  </div>
 {% endblock %}
 
 {% block js_footer %}
