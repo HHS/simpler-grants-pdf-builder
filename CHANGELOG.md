@@ -13,7 +13,33 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.16.0] - 2025-10-24
+
+### Added
+
+- Add new app: "composer"
+  - Add index view
+  - Add import view
+  - Add archive view
+  - Add edit title view
+  - Add "section" overview (with accordions)
+  - Add subsection edit view
+
+### Changed
+
+- Cleaned up the martor text editor to look more like Annie's designs
+  - Larger text
+  - Active button is blue
+  - Black border, squared edges
+
+### Fixed
+
 - Docraptor live mode should be a boolean, otherwise it is always true
+- Removed trailing slash from the couple of URLs that (unintentionally) had them
+
+### Migrations
+
+- Add new "composer" data models: ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 ## [3.15.0] - 2025-10-15
 
