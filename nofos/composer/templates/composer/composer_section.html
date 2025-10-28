@@ -58,7 +58,7 @@
         {% for subsection in grouped_subsection.items %}
           <div id="{{ subsection.html_id }}" class="usa-accordion usa-accordion--multiselectable usa-accordion--bordered" data-allow-multiple>
             <h4 class="usa-accordion__heading">
-              <button class="usa-accordion__button"
+              <button class="usa-accordion__button display-flex flex-justify"
                       aria-controls="accordion-{{ subsection.pk }}"
                       {% if anchor == subsection.html_id %}
                         aria-expanded="true"
@@ -66,7 +66,7 @@
                         aria-expanded="false"
                       {% endif %}
                       >
-                {{ subsection.name|default:"(No title)" }}
+                {{ subsection.name|default:"(No title)" }} <span class="usa-tag bg-primary-dark maxh-fit-content">{{ subsection.edit_mode }}</span>
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">

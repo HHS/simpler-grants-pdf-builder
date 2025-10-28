@@ -66,6 +66,10 @@ blockquote {
   font-variant: small-caps;
 }
 
+.maxh-fit-content {
+  max-height: fit-content;
+}
+
 /* General USWDS CSS */
 
 .usa-table thead td,
