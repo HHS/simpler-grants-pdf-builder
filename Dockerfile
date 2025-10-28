@@ -65,8 +65,10 @@ RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" &&
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
-# Add this as the last RUN in the builder stage (right before FROM scratch)
+# --- remove Poetry's venv that holds pip 25.2 (requires root) ---
+USER root
 RUN rm -rf /usr/local/venv
+USER appuser
 
 # =========================
 # Stage 2 "scratch" final
