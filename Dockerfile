@@ -34,6 +34,9 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3
   useradd --create-home --shell /bin/bash appuser && \
   chown -R appuser:appuser /app
 
+# AFTER installing Poetry, upgrade system pip
+RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3"
+
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
   chmod +x /usr/local/bin/db-migrate
@@ -45,6 +48,9 @@ COPY --chown=appuser:appuser pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && \
   poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
+
+# AFTER `poetry install`
+RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3"
 
 # Copy app and collect static files
 COPY --chown=appuser:appuser . .
@@ -59,9 +65,6 @@ FROM scratch
 
 # copy the complete filesystem from builder
 COPY --from=builder / /
-
-# In the final stage, after copying the filesystem
-RUN rm -f /usr/local/bin/pip* /app/.venv/bin/pip*
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
