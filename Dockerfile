@@ -65,6 +65,20 @@ RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" &&
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
+# Switch back to root to clean up system pip before final stage
+USER root
+
+# Remove old system pip completely - this must happen BEFORE copying to final stage
+RUN rm -rf /usr/local/lib/python*/site-packages/pip* \
+  /usr/local/lib/python*/site-packages/pip-*.dist-info \
+  /usr/local/lib/python*/site-packages/setuptools* \
+  /usr/local/lib/python*/site-packages/setuptools-*.dist-info && \
+  rm -f /usr/local/bin/pip* /usr/local/bin/easy_install*
+
+# Verify cleanup (optional but helpful for debugging)
+RUN echo "Venv pip version:" && /app/.venv/bin/python -m pip --version || true && \
+  echo "System pip removed:" && (python -m pip --version 2>&1 || echo "Success - no system pip found")
+
 # =========================
 # Stage 2 "scratch" final
 # - Hides upstream apt-get layers for Dockle
@@ -72,13 +86,8 @@ RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 # =========================
 FROM scratch
 
-# copy the complete filesystem from builder
+# copy the complete filesystem from builder (now cleaned)
 COPY --from=builder / /
-
-# Remove system pip entirely (keep only venv pip which is 25.3+)
-RUN rm -rf /usr/local/lib/python*/site-packages/pip* \
-  /usr/local/lib/python*/site-packages/pip-*.dist-info && \
-  rm -f /usr/local/bin/pip*
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
