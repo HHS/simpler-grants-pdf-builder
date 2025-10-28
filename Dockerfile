@@ -14,21 +14,6 @@ RUN apt-get update && \
   libpq-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# Patch system libraries to address known CVEs
-# - libcap2: CVE-2025-1390
-# - login, passwd: CVE-2023-4641, CVE-2023-29383,
-# - libsystemd0, libudev1: CVE-2025-4598
-# - libgnutls30: CVE-2025-32990
-RUN apt-get update && \
-  apt-get install -y --only-upgrade \
-  libcap2 \
-  login \
-  passwd \
-  libsystemd0 \
-  libudev1 \
-  libgnutls30 && \
-  rm -rf /var/lib/apt/lists/*
-
 # Install Poetry and create user
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
   useradd --create-home --shell /bin/bash appuser && \
