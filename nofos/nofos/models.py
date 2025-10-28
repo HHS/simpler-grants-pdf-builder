@@ -20,23 +20,17 @@ BYB_CHOICES = [
 ]
 
 COACH_CHOICES = [
-    ("aarti", "Aarti"),
-    ("alex", "Alex"),
-    ("emily", "Emily"),
-    ("hannah", "Hannah"),
-    ("julie", "Julie"),
-    ("july", "July"),
+    ("laura", "Laura W"),
+    ("julie", "Julie H"),
     ("moira", "Moira"),
+    ("sara_d", "Sara D"),
+    ("sara_t", "Sara T"),
 ]
 
 DESIGNER_CHOICES = [
-    ("bloom-abbey", "Abbey"),
     ("bloom-adam", "Adam"),
-    ("bloom-emily-b", "Emily B"),
-    ("bloom-emily-i", "Emily I"),
-    ("bloom-jackie", "Jackie"),
+    ("bloom-ben-b", "Ben B"),
     ("bloom-jana", "Jana"),
-    ("bloom-kevin", "Kevin"),
     ("bloom-yasmine", "Yasmine"),
     ("hrsa-betty", "Betty"),
     ("hrsa-dvora", "Dvora"),
