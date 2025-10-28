@@ -34,8 +34,10 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3
   useradd --create-home --shell /bin/bash appuser && \
   chown -R appuser:appuser /app
 
-# AFTER installing Poetry, upgrade system pip
-RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3"
+# AFTER installing Poetry, upgrade system pip and delete ensurepip bundles
+RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" && \
+  rm -f /usr/local/lib/python*/ensurepip/_bundled/pip-*.whl \
+  /usr/local/lib/python*/ensurepip/_bundled/setuptools-*.whl
 
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
@@ -49,8 +51,10 @@ RUN poetry config virtualenvs.in-project true && \
   poetry install --no-root && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
-# AFTER `poetry install`
-RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3"
+# AFTER `poetry install` (venv exists)
+RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" && \
+  rm -f /app/.venv/lib/python*/ensurepip/_bundled/pip-*.whl \
+  /app/.venv/lib/python*/ensurepip/_bundled/setuptools-*.whl
 
 # Copy app and collect static files
 COPY --chown=appuser:appuser . .
@@ -65,6 +69,8 @@ FROM scratch
 
 # copy the complete filesystem from builder
 COPY --from=builder / /
+
+RUN rm -f /usr/local/bin/pip* /app/.venv/bin/pip*
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
