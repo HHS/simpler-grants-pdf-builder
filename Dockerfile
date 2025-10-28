@@ -39,8 +39,8 @@ RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" "virtualenv>=20.2
   rm -f /usr/local/lib/python*/ensurepip/_bundled/pip-*.whl \
   /usr/local/lib/python*/ensurepip/_bundled/setuptools-*.whl && \
   find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete && \
-  find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/setuptools-*.whl" -delete
-
+  find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/setuptools-*.whl" -delete && \
+  find /usr/local/venv -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete 2>/dev/null || true
 
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
@@ -64,11 +64,6 @@ RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" &&
 # Copy app and collect static files
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
-
-# --- remove Poetry's venv that holds pip 25.2 (requires root) ---
-USER root
-RUN rm -rf /usr/local/venv
-USER appuser
 
 # =========================
 # Stage 2 "scratch" final
