@@ -34,13 +34,16 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3
   useradd --create-home --shell /bin/bash appuser && \
   chown -R appuser:appuser /app
 
-# AFTER installing Poetry, upgrade system pip and delete ensurepip bundles
+# AFTER installing Poetry, upgrade system pip and virtualenv, then replace old pip wheels
 RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" "virtualenv>=20.29.1" && \
   rm -f /usr/local/lib/python*/ensurepip/_bundled/pip-*.whl \
   /usr/local/lib/python*/ensurepip/_bundled/setuptools-*.whl && \
   find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete && \
   find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/setuptools-*.whl" -delete && \
-  find /usr/local/venv -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete 2>/dev/null || true
+  python -m pip download --no-deps --dest /tmp pip setuptools wheel && \
+  find /usr/local/venv -type d -path "*/virtualenv/seed/wheels/embed" -exec cp /tmp/*.whl {} \; 2>/dev/null || true && \
+  rm -rf /tmp/*.whl
+
 
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
@@ -74,11 +77,6 @@ FROM scratch
 
 # copy the complete filesystem from builder
 COPY --from=builder / /
-
-# Remove system pip entirely (keep only venv pip which is 25.3+)
-RUN rm -rf /usr/local/lib/python*/site-packages/pip* \
-  /usr/local/lib/python*/site-packages/pip-*.dist-info && \
-  rm -f /usr/local/bin/pip*
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
