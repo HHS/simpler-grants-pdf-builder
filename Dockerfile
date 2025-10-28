@@ -75,7 +75,10 @@ FROM scratch
 # copy the complete filesystem from builder
 COPY --from=builder / /
 
-RUN rm -f /usr/local/bin/pip* /app/.venv/bin/pip*
+# Remove system pip entirely (keep only venv pip which is 25.3+)
+RUN rm -rf /usr/local/lib/python*/site-packages/pip* \
+  /usr/local/lib/python*/site-packages/pip-*.dist-info && \
+  rm -f /usr/local/bin/pip*
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
