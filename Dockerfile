@@ -35,9 +35,12 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3
   chown -R appuser:appuser /app
 
 # AFTER installing Poetry, upgrade system pip and delete ensurepip bundles
-RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" && \
+RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" "virtualenv>=20.29.1" && \
   rm -f /usr/local/lib/python*/ensurepip/_bundled/pip-*.whl \
-  /usr/local/lib/python*/ensurepip/_bundled/setuptools-*.whl
+  /usr/local/lib/python*/ensurepip/_bundled/setuptools-*.whl && \
+  find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete && \
+  find /usr/local/lib/python*/site-packages -path "*/virtualenv/seed/wheels/embed/setuptools-*.whl" -delete
+
 
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
@@ -54,7 +57,9 @@ RUN poetry config virtualenvs.in-project true && \
 # AFTER `poetry install` (venv exists)
 RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" && \
   rm -f /app/.venv/lib/python*/ensurepip/_bundled/pip-*.whl \
-  /app/.venv/lib/python*/ensurepip/_bundled/setuptools-*.whl
+  /app/.venv/lib/python*/ensurepip/_bundled/setuptools-*.whl && \
+  find /app/.venv/lib/python* -path "*/virtualenv/seed/wheels/embed/pip-*.whl" -delete || true && \
+  find /app/.venv/lib/python* -path "*/virtualenv/seed/wheels/embed/setuptools-*.whl" -delete || true
 
 # Copy app and collect static files
 COPY --chown=appuser:appuser . .
