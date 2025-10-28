@@ -68,6 +68,13 @@ RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3" &&
 COPY --chown=appuser:appuser . .
 RUN poetry run python nofos/manage.py collectstatic --noinput --verbosity 0
 
+# FINAL CLEANUP: Remove ALL pip 25.2 artifacts before copying to final stage
+USER root
+RUN find / -name "*pip-25.2*" -type f -delete 2>/dev/null || true && \
+  find / -path "*/pip-25.2*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true && \
+  echo "Final pip artifact scan:" && \
+  find / -name "*pip-25.2*" 2>/dev/null || echo "No pip 25.2 artifacts found"
+
 # =========================
 # Stage 2 "scratch" final
 # - Hides upstream apt-get layers for Dockle
