@@ -13,6 +13,34 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.17.0] - 2025-10-28
+
+### Changed
+
+- Updated list of coaches and designers
+  - Retired coaches:
+    - Aarti
+    - Alex
+    - Emily
+    - Hannah
+    - July
+  - Retired designers:
+    - Abbey
+    - Emily B
+    - Emily I
+    - Jackie
+    - Kevin
+  - New coaches:
+    - Laura
+    - Sara D
+    - Sara T
+  - New designer:
+    - Ben B
+
+### Migrations
+
+- Updated list of coaches and designers 👆
+
 ## [3.16.0] - 2025-10-24
 
 ### Added
