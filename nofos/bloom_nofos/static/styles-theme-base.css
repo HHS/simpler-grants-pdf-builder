@@ -99,7 +99,6 @@
 /* Regular CSS */
 
 html {
-  font-size: 11pt;
   line-height: 1.5;
 }
 
@@ -366,12 +365,19 @@ img.usa-icon--check_box_outline_blank {
 
 /* Headings */
 
+.nofo_compare--document .nofo_view h2,
+.nofo_compare--document .nofo_view h3,
+.nofo_compare--document .nofo_view h4,
+.nofo_compare--document .nofo_view h5,
+.nofo_compare--document .nofo_view h6 {
+  margin-top: 50px;
+}
+
 .nofo_view h2,
 .nofo_view h3,
 .nofo_view h4,
 .nofo_view h5,
 .nofo_view h6 {
-  margin-top: 50px;
   margin-bottom: 5px;
 }
 
@@ -402,6 +408,20 @@ img.usa-icon--check_box_outline_blank {
 .nofo_view h6 {
   font-size: 14pt;
   font-weight: 500;
+}
+
+.composer_document_section--preview .nofo_view h2,
+.composer_document_section--preview .nofo_view h3 {
+  margin-top: 30px;
+}
+
+.composer_document_section--preview .nofo_view h4,
+.composer_document_section--preview .nofo_view h5 {
+  margin-top: 24px;
+}
+
+.composer_document_section--preview .nofo_view h6 {
+  margin-top: 18px;
 }
 
 /* Headings which follow headings have less top spacing */

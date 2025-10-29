@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
-{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
 
 {% block title %}
-  {{ document.title }} — Preview</title>
+  Preview: {{ document.title }} </title>
+{% endblock %}
+
+{% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
 {% block body_class %}composer_document_section composer_document_section--preview{% endblock %}
@@ -33,7 +40,7 @@
               href="{% url 'composer:composer_preview' document.pk %}"
               aria-current="page"
               class="usa-current">
-              Preview
+              Preview content guide
             </a>
           </li>
         </ul>
@@ -42,37 +49,32 @@
 
     <!-- Full-document preview -->
     <main class="grid-col-12 tablet:grid-col-9">
-      <div class="subhead--document-name font-sans-md text-base">{{ document.title }}</div>
-      <h1 class="margin-bottom-1 margin-top-1 font-serif-xl">Preview</h1>
+      <h1 class="margin-bottom-1 margin-top-0 font-serif-xl">Preview “{{ document.title }}”</h1>
       {% timezone "America/New_York" %}
         <p><em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em>.</p>
       {% endtimezone %}
 
       <hr />
 
-      <!-- Render each section with all its subsections -->
-      {% for section in sections %}
-        <section id="section-{{ section.pk }}" class="usa-prose margin-top-6">
-          <h2 class="font-serif-lg">{{ section.name }}</h2>
+      <div class="nofo_view">
+        <!-- Render each section with all its subsections -->
+        {% for section in sections %}
+          <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+            <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
 
-          {% if section.description %}
-            <p class="usa-prose">{{ section.description }}</p>
-          {% endif %}
-
-          {% for subsection in section.ordered_subsections %}
-            <article id="{{ subsection.html_id|default:'subsection-'|add:subsection.pk }}" class="margin-top-3">
-              {% if subsection.name %}
-                <h3 class="font-serif-md margin-bottom-1">{{ subsection.name }}</h3>
-              {% endif %}
-              <div class="usa-prose">
-                {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-              </div>
-            </article>
-          {% empty %}
-            <p class="text-base italic">No subsections in this section.</p>
-          {% endfor %}
-        </section>
-      {% endfor %}
+            <div class="section--content">
+              {% for subsection in section.ordered_subsections %}
+                  {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                    {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                  {% endwith %}
+                  <div>
+                    {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                  </div>
+              {% endfor %}
+            </div>
+          </section>
+        {% endfor %}
+      </div>
     </main>
   </div>
 {% endblock %}
