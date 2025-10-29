@@ -30,6 +30,11 @@
               </a>
             </li>
           {% endfor %}
+          <li class="usa-sidenav__item">
+            <a href="{% url 'composer:composer_preview' document.pk %}">
+              Preview content guide
+            </a>
+          </li>
         </ul>
       </nav>
     </aside>
