@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+
+{% block title %}
+  {{ document.title }} — Preview</title>
+{% endblock %}
+
+{% block body_class %}composer_document_section composer_document_section--preview{% endblock %}
+
+{% block content %}
+  <div class="grid-row cg-layout">
+    <!-- sticky sidenav -->
+    <aside class="grid-col-12 tablet:grid-col-3 cg-sidenav">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
+      </div>
+
+      <p class="side-nav-list--intro">Sections in this content guide</p>
+
+      <nav id="side-nav" aria-label="Section navigation">
+        <ul id="side-nav-list" class="usa-sidenav">
+          {% for section in sections %}
+            <li class="usa-sidenav__item">
+              <a
+                href="{% url 'composer:section_view' document.pk section.pk %}"
+                {% if section.id == current_section.id %}aria-current="page" class="usa-current"{% endif %}>
+                {{ section.name }}
+              </a>
+            </li>
+          {% endfor %}
+          <li class="usa-sidenav__item">
+            <a
+              href="{% url 'composer:composer_preview' document.pk %}"
+              aria-current="page"
+              class="usa-current">
+              Preview
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Full-document preview -->
+    <main class="grid-col-12 tablet:grid-col-9">
+      <div class="subhead--document-name font-sans-md text-base">{{ document.title }}</div>
+      <h1 class="margin-bottom-1 margin-top-1 font-serif-xl">Preview</h1>
+      {% timezone "America/New_York" %}
+        <p><em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em>.</p>
+      {% endtimezone %}
+
+      <hr />
+
+      <!-- Render each section with all its subsections -->
+      {% for section in sections %}
+        <section id="section-{{ section.pk }}" class="usa-prose margin-top-6">
+          <h2 class="font-serif-lg">{{ section.name }}</h2>
+
+          {% if section.description %}
+            <p class="usa-prose">{{ section.description }}</p>
+          {% endif %}
+
+          {% for subsection in section.ordered_subsections %}
+            <article id="{{ subsection.html_id|default:'subsection-'|add:subsection.pk }}" class="margin-top-3">
+              {% if subsection.name %}
+                <h3 class="font-serif-md margin-bottom-1">{{ subsection.name }}</h3>
+              {% endif %}
+              <div class="usa-prose">
+                {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              </div>
+            </article>
+          {% empty %}
+            <p class="text-base italic">No subsections in this section.</p>
+          {% endfor %}
+        </section>
+      {% endfor %}
+    </main>
+  </div>
+{% endblock %}

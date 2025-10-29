@@ -308,6 +308,38 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
         return context
 
 
+class ComposerPreviewView(LoginRequiredMixin, DetailView):
+    """
+    Read-only preview of an entire Composer document.
+    Left pane: sections + a 'Preview' item (current page).
+    Right pane: full document printed section-by-section.
+    """
+
+    model = ContentGuide
+    context_object_name = "document"
+    template_name = "composer/composer_preview.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Make sure sections are ordered
+        sections = (
+            self.object.sections.select_related("document")
+            .prefetch_related("subsections")
+            .order_by("order", "id")
+        )
+        # Make sure subsections are ordered
+        for s in sections:
+            s.ordered_subsections = sorted(
+                s.subsections.all(), key=lambda ss: (getattr(ss, "order", 0), ss.id)
+            )
+
+        context["sections"] = sections
+        context["current_section"] = None  # not on a specific section in preview
+        context["show_back_link"] = True
+        context["is_preview"] = True
+        return context
+
+
 class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
@@ -334,10 +366,10 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return subsection
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["document"] = self.document
-        ctx["section"] = self.section
-        return ctx
+        context = super().get_context_data(**kwargs)
+        context["document"] = self.document
+        context["section"] = self.section
+        return context
 
     def form_valid(self, form):
         messages.add_message(
