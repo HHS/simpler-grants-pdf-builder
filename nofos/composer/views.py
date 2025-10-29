@@ -239,6 +239,16 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
                 subsection_groups.append({"heading": subsection.name, "items": []})
                 current_idx = 0
 
+            # if first item
+            if len(subsection_groups[current_idx]["items"]) == 0:
+                # skip if subsection heading matches group name and subsection.body is empty
+                if (
+                    normalize_name(subsection.name)
+                    == normalize_name(subsection_groups[current_idx]["heading"])
+                    and not subsection.body
+                ):
+                    continue
+
             # Append the subsection to the current group
             subsection_groups[current_idx]["items"].append(subsection)
 
