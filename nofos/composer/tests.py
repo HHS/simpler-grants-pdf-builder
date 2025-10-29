@@ -400,14 +400,14 @@ class GroupSubsectionsTests(TestCase):
         )
         self.view = ComposerSectionView()
 
-    def _make_subsection(self, name, tag=None, order=1):
+    def _make_subsection(self, name, tag=None, order=1, body="Generic body content"):
         """Helper to make a subsection instance (not saved content matters for grouping)."""
         return ContentGuideSubsection.objects.create(
             section=self.section,
             order=order,
             name=name,
             tag=tag or "",
-            body="",
+            body=body,
             enabled=True,
         )
 
@@ -490,6 +490,37 @@ class GroupSubsectionsTests(TestCase):
         self.assertEqual(len(groups), 1)
         self.assertEqual(groups[0]["heading"], "Funding details")
         self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk, s3.pk, s2.pk])
+
+    def test_header_item_with_empty_body_is_skipped(self):
+        # s1 is a header (preset name); its body is empty → should NOT appear in items
+        s1 = self._make_subsection("Funding details", tag="h4", order=1, body="")
+        # A normal subsection after the header
+        s2 = self._make_subsection(
+            "Budget breakdown", tag="h5", order=2, body="Some text"
+        )
+
+        groups = self.view.group_subsections([s1, s2])
+
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0]["heading"], "Funding details")
+        # Only s2 shows up because s1 (the header item) had no body
+        self.assertEqual([x.pk for x in groups[0]["items"]], [s2.pk])
+
+    def test_header_item_with_nonempty_body_is_included(self):
+        # s1 is a header (preset name) with real body → should appear in items
+        s1 = self._make_subsection(
+            "Funding details", tag="h4", order=1, body="<p>Hello</p>"
+        )
+        s2 = self._make_subsection(
+            "Budget breakdown", tag="h5", order=2, body="Some text"
+        )
+
+        groups = self.view.group_subsections([s1, s2])
+
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0]["heading"], "Funding details")
+        # s1 included first, then s2
+        self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk, s2.pk])
 
 
 class ComposerSectionViewTests(TestCase):
