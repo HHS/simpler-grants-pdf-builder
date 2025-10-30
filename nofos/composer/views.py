@@ -11,6 +11,7 @@ from django.views.generic import DetailView, ListView, UpdateView
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
     add_headings_to_document,
+    add_instructions_to_subsections,
     add_page_breaks_to_headings,
     suggest_nofo_opdiv,
 )
@@ -51,6 +52,13 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
 
     template_name = "composer/composer_import.html"
     redirect_url_name = "composer:composer_import"
+
+    @staticmethod
+    def add_instructions_to_subsections(sections, instructions_tables):
+        """
+        Add instructions from the instructions_tables to the corresponding subsections.
+        """
+        add_instructions_to_subsections(sections, instructions_tables)
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
