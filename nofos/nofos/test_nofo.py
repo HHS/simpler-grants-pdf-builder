@@ -26,6 +26,7 @@ from .nofo import (
     add_endnotes_header_if_exists,
     add_final_subsection_to_step_3,
     add_headings_to_document,
+    add_instructions_to_subsections,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
     clean_heading_tags,
@@ -6824,6 +6825,69 @@ class DecomposeInstructionsTablesTest(TestCase):
         self.assertIn("Some information.", remaining_tables[0].get_text())
         self.assertIn("More data here.", remaining_tables[1].get_text())
 
+    def test_returns_removed_tables(self):
+        """Test that the function returns the removed tables."""
+        html_content = """
+        <html>
+            <body>
+                <table><tr><td><span>Instructions for NOFO writers</span><p>This table should be removed</p></td></tr></table>
+                <table><tr><td>Another table that should remain.</td></tr></table>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        removed_tables = decompose_instructions_tables(soup)
+        self.assertEqual(len(removed_tables), 1)
+        self.assertIn("Instructions for NOFO writers", removed_tables[0].get_text())
+
+class AddInstructionsToSubsectionsTests(TestCase):
+    def test_add_instructions_to_subsections(self):
+        sections = [
+            {
+                "subsections": [
+                    {"name": "Section A", "body": "<p>Content A</p>"},
+                    {"name": "Section B", "body": "<p>Content B</p>"}
+                ]
+            }
+        ]
+        
+        instructions = [
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section A</td></tr></table>',
+                "html.parser"
+            ).table,
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section B</td></tr></table>', 
+                "html.parser"
+            ).table
+        ]
+        
+        add_instructions_to_subsections(sections, instructions)
+        
+        assert "Instructions for Section A" in sections[0]["subsections"][0]["instructions"]
+        assert "Instructions for Section B" in sections[0]["subsections"][1]["instructions"]
+
+    def test_add_instructions_to_subsections_matches_first_only(self):
+        sections = [
+            {
+                "subsections": [
+                    {"name": "Section A", "body": "<p>Content A</p>"},
+                    {"name": "Section A", "body": "<p>Another A</p>"}
+                ]
+            }
+        ]
+        
+        instructions = [
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section A</td></tr></table>',
+                "html.parser"
+            ).table
+        ]
+        
+        add_instructions_to_subsections(sections, instructions)
+        
+        assert "instructions" in sections[0]["subsections"][0]
+        assert "instructions" not in sections[0]["subsections"][1]
 
 class NormalizeWhitespaceImgAltTextTests(TestCase):
     def test_replaces_double_newlines_with_single(self):
