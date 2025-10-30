@@ -53,8 +53,7 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
     template_name = "composer/composer_import.html"
     redirect_url_name = "composer:composer_import"
 
-    @staticmethod
-    def add_instructions_to_subsections(sections, instructions_tables):
+    def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
         Add instructions from the instructions_tables to the corresponding subsections.
         """

@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add "instructions" to matching subsections
+
 ### Changed
 
 ### Fixed
