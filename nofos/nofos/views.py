@@ -69,6 +69,7 @@ from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
+    add_instructions_to_subsections,
     add_page_breaks_to_headings,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
@@ -411,12 +412,15 @@ class BaseNofoImportView(View):
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
             top_heading_level = "h1" if soup.find("h1") else "h2"
-            soup = process_nofo_html(soup, top_heading_level)
+            soup, instructions_tables = process_nofo_html(soup, top_heading_level)
 
             # 4. Build sections and subsections as python dicts
             sections = self.get_sections_and_subsections_from_soup(
                 soup, top_heading_level
             )
+
+            # 5. Add instructions to subsections (only required for Composer)
+            add_instructions_to_subsections(sections, instructions_tables)
 
         except ValidationError as e:
             # Render a distinct error page for mammoth style map warnings
@@ -448,7 +452,7 @@ class BaseNofoImportView(View):
 
         add_final_subsection_to_step_3(sections)
 
-        # 5. Hand off to child for nofo creation
+        # 6. Hand off to child for nofo creation
         return self.handle_nofo_create(
             request, soup, sections, filename, *args, **kwargs
         )

@@ -127,7 +127,7 @@ def process_nofo_html(soup, top_heading_level):
         with open(output_file_path, "w", encoding="utf-8") as file:
             file.write(str(soup))
 
-    decompose_instructions_tables(soup)
+    instructions_tables = decompose_instructions_tables(soup)
     normalize_whitespace_img_alt_text(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
@@ -146,8 +146,7 @@ def process_nofo_html(soup, top_heading_level):
 
     soup = add_em_to_de_minimis(soup)
 
-    return soup
-
+    return soup, instructions_tables
 
 ###########################################################
 #################### UTILITY FUNCS ####################
@@ -403,6 +402,11 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             if hasattr(SubsectionModel, "comparison_type"):
                 subsection_fields["comparison_type"] = subsection.get(
                     "comparison_type", "body"
+                )
+
+            if hasattr(SubsectionModel, "instructions"):
+                subsection_fields["instructions"] = subsection.get(
+                    "instructions", ""
                 )
 
             subsection_obj = SubsectionModel(**subsection_fields)
@@ -2361,13 +2365,15 @@ def unwrap_nested_lists(soup):
 def decompose_instructions_tables(soup):
     """
     This function mutates the soup!
-    Remove tables from a BeautifulSoup object that contain specific instructional text.
+    Remove tables from a BeautifulSoup object that contain specific instructional text,
+    and return them as a list of extracted HTML snippets for later use.
 
     This function iterates through all the <table> elements in the BeautifulSoup object.
     If a table contains text that starts with "Instructions for NOFO writers:",
     it is removed from the soup object.
     """
     tables = soup.find_all("table")
+    instructions_tables = []
     for table in tables:
         cells = table.find_all("td")
         if len(cells) == 1:
@@ -2377,7 +2383,38 @@ def decompose_instructions_tables(soup):
                 or table_text_lowercase.startswith("instructions for new nofo team")
                 or re.match(r".+-specific instructions", table_text_lowercase)
             ):
-                table.decompose()
+                instructions_tables.append(table.extract())
+
+    return instructions_tables
+
+def add_instructions_to_subsections(sections, instructions_tables):
+    """
+    This function adds extracted instruction tables to their corresponding subsections
+    based on matching subsection names. Instructions are considered to belong to the first
+    subsection whose name appears in the instruction table text, and can only belong to a
+    single subsection. 
+
+    Args:
+        sections (list): A list of section dictionaries, each containing a list of subsections.
+        instructions_tables (list): A list of BeautifulSoup table elements containing instructions.
+
+    Returns:
+        None: The function modifies the sections in place.
+    """
+    all_subsections = [subsection for section in sections for subsection in section.get("subsections", [])]
+    for instruction_table in instructions_tables:
+        table_text = instruction_table.get_text().lower()
+        for subsection in all_subsections:
+            subsection_name_lower = subsection.get("name", "").lower()
+            if subsection_name_lower in table_text:
+                if "instructions" in subsection:
+                    # Alert that something unexpected has happened
+                    # Only one instructions table should match a subsection
+                    continue
+                subsection["instructions"] = str(instruction_table)
+                break  # Stop searching after the first match
+            
+
 
 
 def normalize_whitespace_img_alt_text(soup):
