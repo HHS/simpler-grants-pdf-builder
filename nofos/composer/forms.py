@@ -29,3 +29,11 @@ class ComposerSubsectionEditForm(forms.ModelForm):
                     "Switch to 'Edit all text' or add variables.",
                 )
         return cleaned
+
+
+class ComposerSubsectionInstructionsEditForm(forms.ModelForm):
+    instructions = MartorFormField(required=False)
+
+    class Meta:
+        model = ContentGuideSubsection
+        fields = ["instructions"]
