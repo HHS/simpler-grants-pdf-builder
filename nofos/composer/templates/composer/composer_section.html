@@ -70,7 +70,12 @@
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
-              <div class=" position-relative">
+              <div class="position-relative">
+                <div class="usa-card bg-accent-cool-light">
+                  {{ subsection.instructions|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                </div>
+              </div>
+              <div class="position-relative">
                 <div class="font-heading-md padding-top-1">{{ subsection.name }}</div>
                 <a
                   class="usa-button usa-button--outline usa-button--composer-edit"
