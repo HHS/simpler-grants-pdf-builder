@@ -18,7 +18,11 @@ from nofos.nofo import (
 from nofos.utils import create_nofo_audit_event
 from nofos.views import BaseNofoImportView
 
-from .forms import CompareTitleForm, ComposerSubsectionEditForm
+from .forms import (
+    CompareTitleForm,
+    ComposerSubsectionEditForm,
+    ComposerSubsectionInstructionsEditForm,
+)
 from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from .utils import create_content_guide_document
 
@@ -376,6 +380,57 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
             self.request,
             messages.SUCCESS,
             "Updated section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
+                self.object.name or "(#{})".format(self.object.order),
+                self.object.section.name,
+            ),
+        )
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Back to the section page with an anchor to this subsection
+        url = reverse_lazy(
+            "composer:section_view", args=[self.document.pk, self.section.pk]
+        )
+        anchor = getattr(self.object, "html_id", "")
+        return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+
+
+class ComposerSubsectionInstructionsEditView(GroupAccessObjectMixin, UpdateView):
+    """
+    Edit a single ContentGuideSubsection's instructions.
+    URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/instructions/edit
+    """
+
+    model = ContentGuideSubsection
+    form_class = ComposerSubsectionInstructionsEditForm
+    template_name = "composer/instructions_edit.html"
+    context_object_name = "subsection"
+
+    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    def get_object(self, queryset=None):
+        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
+        section = get_object_or_404(
+            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
+        )
+        subsection = get_object_or_404(
+            ContentGuideSubsection, pk=self.kwargs["subsection_pk"], section=section
+        )
+        # stash for context/success_url
+        self.document = document
+        self.section = section
+        return subsection
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["document"] = self.document
+        ctx["section"] = self.section
+        return ctx
+
+    def form_valid(self, form):
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "Updated instructions for section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
                 self.object.name or "(#{})".format(self.object.order),
                 self.object.section.name,
             ),

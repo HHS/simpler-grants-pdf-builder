@@ -102,6 +102,14 @@ footer .usa-footer__primary-link:visited {
   height: 2.6rem;
 }
 
+.usa-button--compact {
+  font-size: 0.87rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-right: 0;
+  min-width: 5rem;
+}
+
 .usa-button--cyan {
   background-color: #00819e;
 }
@@ -2347,18 +2355,6 @@ del + ins > br {
 
 .composer_document_section hr {
   border: 2px solid #dfe1e2;
-}
-
-.composer_document_section .usa-button--composer-edit {
-  position: absolute;
-  top: 0;
-  right: 0;
-
-  font-size: 0.87rem;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-  margin-right: 0;
-  min-width: 5rem;
 }
 
 .composer_document_section--preview h1 {

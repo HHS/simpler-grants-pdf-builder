@@ -75,15 +75,27 @@
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
-              <div class="position-relative">
-                <div class="usa-card bg-accent-cool-light">
-                  {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              {% if subsection.instructions %}
+              <div class="position-relative padding-2 border-bottom border-base-lighter">
+                <div class="bg-primary-lighter padding-2">
+                  <div class="display-flex flex-justify flex-align-center">
+                    <div class="font-heading-lg text-bold padding-top-1">Instructions</div>
+                    <span class="bg-white"><a
+                      class="usa-button usa-button--outline usa-button--compact"
+                      href="{% url 'composer:instructions_edit' document.pk current_section.pk subsection.pk %}">
+                        Edit instructions
+                    </a></span>
+                  </div>
+                  <div>
+                    {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                  </div>
                 </div>
               </div>
+              {% endif %}
               <div class="position-relative">
-                <div class="font-heading-md padding-top-1 margin-right-10">{{ subsection.name }}</div>
+                <div class="font-heading-lg text-bold padding-top-1 margin-right-10">{{ subsection.name }}</div>
                 <a
-                  class="usa-button usa-button--outline usa-button--composer-edit"
+                  class="usa-button usa-button--outline usa-button--compact position-absolute top-0 right-0"
                   href="{% url 'composer:subsection_edit' document.pk current_section.pk subsection.pk %}">
                     Edit
                 </a>
