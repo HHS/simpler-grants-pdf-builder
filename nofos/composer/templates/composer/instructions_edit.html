@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Instructions{% if subsection.name %} for {{ subsection.name }}{% endif %}
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}instructions_edit instructions_edit--composer{% endblock %}
+
+{% block content %}
+    <div class="back-link font-body-md margin-bottom-105">
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
+    </div>
+
+    <h1 class="font-heading-xl margin-y-0">Edit "{{subsection.name}}" instructions</h1>
+    <p>Edit instructions writers will see for this section. This content will automatically be locked and writers will not be able to make changes.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="margin-top-4">
+        <label class="usa-label text-bold" for="{{ form.instructions.id_for_label }}">Instructions content</label>
+        <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
+        <br>
+        Select “Preview” to see how content will appear.</p>
+
+        <div class="main-martor--container ">
+          {{ form.instructions }}
+        </div>
+        {% if form.instructions.errors %}
+          <div class="usa-error-message">{{ form.instructions.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="margin-top-4">
+        <button class="usa-button" type="submit">Save</button>
+        <a class="usa-button usa-button--unstyled margin-left-2"
+            href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">Cancel</a>
+      </div>
+    </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
+{% endblock %}
