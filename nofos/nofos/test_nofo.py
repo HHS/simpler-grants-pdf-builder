@@ -6867,7 +6867,7 @@ class AddInstructionsToSubsectionsTests(TestCase):
         assert "Instructions for Section A" in sections[0]["subsections"][0]["instructions"]
         assert "Instructions for Section B" in sections[0]["subsections"][1]["instructions"]
 
-    def test_add_instructions_to_subsections_matches_first_only(self):
+    def test_add_instructions_to_subsections_matches_instructions_once(self):
         sections = [
             {
                 "subsections": [
@@ -6888,6 +6888,39 @@ class AddInstructionsToSubsectionsTests(TestCase):
         
         assert "instructions" in sections[0]["subsections"][0]
         assert "instructions" not in sections[0]["subsections"][1]
+
+    def test_add_instructions_to_subsections_matches_subsequent_duplicates(self):
+        sections = [
+            {
+                "subsections": [
+                    {"name": "Section A", "body": "<p>Content A</p>"},
+                    {"name": "Section B", "body": "<p>Content B</p>"},
+                    {"name": "Section A", "body": "<p>Another A</p>"}
+                ]
+            }
+        ]
+        
+        instructions = [
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section A</td></tr></table>',
+                "html.parser"
+            ).table,
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section A</td></tr></table>', 
+                "html.parser"
+            ),
+            BeautifulSoup(
+                '<table><tr><td>Instructions for Section B</td></tr></table>', 
+                "html.parser"
+            ).table
+        ]
+        
+        add_instructions_to_subsections(sections, instructions)
+        
+        assert "Instructions for Section A" in sections[0]["subsections"][0]["instructions"]
+        assert "Instructions for Section B" in sections[0]["subsections"][1]["instructions"]
+        assert "Instructions for Section A" in sections[0]["subsections"][2]["instructions"]
+
 
 class NormalizeWhitespaceImgAltTextTests(TestCase):
     def test_replaces_double_newlines_with_single(self):

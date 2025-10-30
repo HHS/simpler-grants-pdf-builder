@@ -69,7 +69,6 @@ from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
-    add_instructions_to_subsections,
     add_page_breaks_to_headings,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
@@ -420,7 +419,7 @@ class BaseNofoImportView(View):
             )
 
             # 5. Add instructions to subsections (only required for Composer)
-            add_instructions_to_subsections(sections, instructions_tables)
+            self.add_instructions_to_subsections(sections, instructions_tables)
 
         except ValidationError as e:
             # Render a distinct error page for mammoth style map warnings
@@ -467,6 +466,14 @@ class BaseNofoImportView(View):
         if not len(sections):
             raise ValidationError("That file does not contain a NOFO.")
         return get_subsections_from_sections(sections, top_heading_level)
+
+    @staticmethod
+    def add_instructions_to_subsections(sections, instructions_tables):
+        """
+        Default behavior for BaseNofoImportView is to do nothing. Other views, 
+        specifically the Composer view, can override this to add instructions.
+        """
+        pass
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """

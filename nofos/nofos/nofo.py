@@ -2393,6 +2393,7 @@ def add_instructions_to_subsections(sections, instructions_tables):
     based on matching subsection names. Instructions are considered to belong to the first
     subsection whose name appears in the instruction table text, and can only belong to a
     single subsection. 
+    NOTE: Only used in ComposerImportView. 
 
     Args:
         sections (list): A list of section dictionaries, each containing a list of subsections.
