@@ -64,6 +64,11 @@
 
             <div class="section--content">
               {% for subsection in section.ordered_subsections %}
+                  {% if subsection.instructions %}
+                    <div>
+                      {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    </div>
+                  {% endif %}
                   {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                     {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
                   {% endwith %}
