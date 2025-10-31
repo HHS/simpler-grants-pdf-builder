@@ -92,7 +92,7 @@ class ContentGuideSubsection(BaseSubsection):
     edit_mode = models.CharField(
         max_length=16,
         choices=EDIT_MODE_CHOICES,
-        default="full",
+        default="locked",
         help_text="Decide how NOFO Writers can edit this subsection.",
     )
 
