@@ -118,6 +118,14 @@ class ComposerImportTitleView(GroupAccessObjectMixin, UpdateView):
         document.title = form.cleaned_data["title"]
         document.save()
 
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "View content guide: <a href='/composer/{}'>{}</a>".format(
+                document.id, document.title
+            ),
+        )
+
         return redirect("composer:composer_index")
 
 
