@@ -19,11 +19,14 @@
     </div>
 
     <h1 class="font-heading-xl margin-y-0">Edit "{{subsection.name}}" instructions</h1>
-    <p>Edit instructions writers will see for this section. This content will automatically be locked and writers will not be able to make changes.</p>
+    <ul class="margin-top-2">
+      <li>Edit instructions that OpsDivs and writers will review.</li>
+      <li>This content will automatically be locked and writers will not be able to make changes.</li>
+    </ul>
 
     <form method="post" novalidate>
       {% csrf_token %}
-      <div class="margin-top-4">
+      <div>
         <label class="usa-label text-bold" for="{{ form.instructions.id_for_label }}">Instructions content</label>
         <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
         <br>
