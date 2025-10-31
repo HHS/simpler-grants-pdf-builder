@@ -8,6 +8,8 @@
 {% block body_class %}composer_index{% endblock %}
 
 {% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Content guide imported successfully" error_heading="Content guide deleted" only %}
+
   <h1 class="font-heading-xl margin-y-0">Welcome to Composer!</h1>
   <div class="usa-prose">
     <p class="font-serif-md text-bold margin-bottom-1 margin-top-4">Start a new content guide from HHS core templates.</p>

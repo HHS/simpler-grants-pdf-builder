@@ -118,6 +118,14 @@ class ComposerImportTitleView(GroupAccessObjectMixin, UpdateView):
         document.title = form.cleaned_data["title"]
         document.save()
 
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "View content guide: <a href='/composer/{}'>{}</a>".format(
+                document.id, document.title
+            ),
+        )
+
         return redirect("composer:composer_index")
 
 
@@ -253,6 +261,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
                     normalize_name(subsection.name)
                     == normalize_name(subsection_groups[current_idx]["heading"])
                     and not subsection.body
+                    and not subsection.instructions
                 ):
                     continue
 
