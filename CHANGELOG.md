@@ -9,11 +9,32 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.18.0] - 2025-10-31
+
+### Added
+
 - Add "instructions" to matching subsections
 
 ### Changed
 
+- Change labels on ConentGuideSubsection accordions to match prototype
+- Use "locked" by default for new ContentGuideSubsections
+- Hide the first ConentGuideSubsection of a group if:
+  - it has no body
+  - it has no instructions
+  - it has the same name as the group
+
 ### Fixed
+
+- Show "destructive" alert message when deleting a NOFO
+
+### Migrations
+
+- Default new ContentGuideSubsection edit_type values to "locked"
 
 ## [3.17.0] - 2025-10-28
 

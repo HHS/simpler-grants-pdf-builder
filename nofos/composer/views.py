@@ -261,6 +261,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
                     normalize_name(subsection.name)
                     == normalize_name(subsection_groups[current_idx]["heading"])
                     and not subsection.body
+                    and not subsection.instructions
                 ):
                     continue
 
