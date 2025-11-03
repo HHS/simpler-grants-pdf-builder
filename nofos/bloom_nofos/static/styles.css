@@ -25,7 +25,8 @@ html:not(.html--nofo_edit) {
 /* Make sure footer sits on the bottom */
 body,
 body.subsection_edit,
-body.subsection_create {
+body.subsection_create,
+body.instructions_edit {
   display: flex;
   flex-direction: column;
   min-height: 100vh;

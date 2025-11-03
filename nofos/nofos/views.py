@@ -469,13 +469,12 @@ class BaseNofoImportView(View):
             raise ValidationError("That file does not contain a NOFO.")
         return get_subsections_from_sections(sections, top_heading_level)
 
-    @staticmethod
-    def add_instructions_to_subsections(sections, instructions_tables):
+    def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
         Default behavior for BaseNofoImportView is to do nothing. Other views,
         specifically the Composer view, can override this to add instructions.
         """
-        pass
+        return
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
