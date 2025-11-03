@@ -6840,6 +6840,7 @@ class DecomposeInstructionsTablesTest(TestCase):
         self.assertEqual(len(removed_tables), 1)
         self.assertIn("Instructions for NOFO writers", removed_tables[0].get_text())
 
+
 class AddInstructionsToSubsectionsTests(TestCase):
     def test_add_instructions_to_subsections(self):
         sections = [
@@ -6853,24 +6854,22 @@ class AddInstructionsToSubsectionsTests(TestCase):
 
         instructions = [
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section A</td></tr></table>",
+                "<table><tr><td><div>Instructions for Section A</div><div>Do this!</div></td></tr></table>",
                 "html.parser",
             ).table,
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section B</td></tr></table>",
+                "<table><tr><td><div>Instructions for Section B</div></td></tr></table>",
                 "html.parser",
             ).table,
         ]
 
         add_instructions_to_subsections(sections, instructions)
 
-        assert (
-            "Instructions for Section A"
-            in sections[0]["subsections"][0]["instructions"]
+        assert sections[0]["subsections"][0]["instructions"] == BeautifulSoup(
+            "<div>Instructions for Section A</div><div>Do this!</div>", "html.parser"
         )
-        assert (
-            "Instructions for Section B"
-            in sections[0]["subsections"][1]["instructions"]
+        assert sections[0]["subsections"][1]["instructions"] == BeautifulSoup(
+            "<div>Instructions for Section B</div>", "html.parser"
         )
 
     def test_add_instructions_to_subsections_matches_instructions_once(self):

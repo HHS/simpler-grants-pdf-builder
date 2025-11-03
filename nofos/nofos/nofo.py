@@ -148,6 +148,7 @@ def process_nofo_html(soup, top_heading_level):
 
     return soup, instructions_tables
 
+
 ###########################################################
 #################### UTILITY FUNCS ####################
 ###########################################################
@@ -372,19 +373,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             continue
 
         for subsection in section.get("subsections", []):
-            md_body = ""
-            subsection_body = subsection.get("body", [])
-
-            # if subsection body is a string, it's not HTML
-            if isinstance(subsection_body, str):
-                md_body = subsection_body
-
-            else:
-                html_body = [str(tag).strip() for tag in subsection_body]
-                if html_body:
-                    md_body = md("".join(html_body), escape_misc=False)
-                    # strip excess newlines, then add 1 trailing newline
-                    md_body = md_body.strip() + "\n"
+            subsection_md_body = get_as_markdown(subsection.get("body", []))
 
             subsection_fields = {
                 "name": subsection.get("name", ""),
@@ -395,7 +384,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                     "is_callout_box", subsection.get("callout_box", False)
                 ),
                 "html_class": subsection.get("html_class", ""),
-                "body": md_body,  # body can be empty
+                "body": subsection_md_body,  # body can be empty
                 "section": model_section,
             }
 
@@ -405,7 +394,10 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 )
 
             if hasattr(SubsectionModel, "instructions"):
-                subsection_fields["instructions"] = subsection.get("instructions", "")
+                instructions_md_body = get_as_markdown(
+                    subsection.get("instructions", "")
+                )
+                subsection_fields["instructions"] = instructions_md_body
 
             subsection_obj = SubsectionModel(**subsection_fields)
             add_html_id_to_subsection(subsection_obj)
@@ -418,6 +410,23 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
 
     SubsectionModel.objects.bulk_create(subsections_to_create)
     return document
+
+
+def get_as_markdown(html_or_string):
+    md_body = ""
+
+    # if content is a string, it's not HTML
+    if isinstance(html_or_string, str):
+        return html_or_string
+
+    else:
+        html_body = [str(tag).strip() for tag in html_or_string]
+        if html_body:
+            md_body = md("".join(html_body), escape_misc=False)
+            # strip excess newlines, then add 1 trailing newline
+            md_body = md_body.strip() + "\n"
+
+    return md_body
 
 
 def create_nofo(title, sections, opdiv):
@@ -2386,12 +2395,17 @@ def decompose_instructions_tables(soup):
 
     return instructions_tables
 
+
 def add_instructions_to_subsections(sections, instructions_tables):
     """
-    This function adds extracted instruction tables to their corresponding subsections
-    based on matching subsection names. Instructions are considered to belong to the first
-    subsection with a name, whose name appears in the instruction table text. Instructions
-    can only belong to a single subsection.
+    This function adds instructions derived from extracted instructions tables to their
+    corresponding subsections. Instructions are matched to subsections based on matching names.
+    Instructions are considered to belong to the first subsection with a name, whose name
+    appears in the instruction table text. Instructions can only belong to a single subsection, and
+    every subsection can only have one instruction.
+
+    Instrucions are parsed from one-cell tables with the outer table elements stripped away.
+
     NOTE: Only used in ComposerImportView.
 
     Args:
@@ -2409,19 +2423,25 @@ def add_instructions_to_subsections(sections, instructions_tables):
     ]
     # For each instruction table
     for instruction_table in instructions_tables:
-        table_text = instruction_table.get_text().lower()
+        # Take only the inner content of the instruction table, discarding outer one-cell table
+        instructions_body = BeautifulSoup(
+            instruction_table.find("td").decode_contents(), "html.parser"
+        )
+
         # Check each subsection for a matching name
         for subsection in all_subsections:
             subsection_name_lower = subsection.get("name", "").lower()
-            # Skip is subsection name is empty
+            # Skip if subsection name is empty
             if not subsection_name_lower:
                 continue
-            if subsection_name_lower in table_text:
+
+            if subsection_name_lower in instructions_body.get_text().lower():
+                # If subsection already has instructions, skip it -- only one set of instructions per subsection
                 if "instructions" in subsection:
-                    # Alert that something unexpected has happened
-                    # Only one instructions table should match a subsection
+                    # TODO: Alert that something unexpected has happened ?
                     continue
-                subsection["instructions"] = str(instruction_table)
+
+                subsection["instructions"] = instructions_body
                 break  # Stop searching after the first match
 
 
