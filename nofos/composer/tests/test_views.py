@@ -525,7 +525,7 @@ class GroupSubsectionsTests(TestCase):
         self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk, s2.pk])
 
     def test_header_item_with_nonempty_instructions_is_included(self):
-        # s1 is a header (preset name) with real body → should appear in items
+        # s1 is a header (preset name) with non-empty instructions → should appear in items
         s1 = self._make_subsection(
             "Funding details",
             tag="h4",
