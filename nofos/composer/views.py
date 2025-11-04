@@ -256,7 +256,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
 
             # if first item
             if len(subsection_groups[current_idx]["items"]) == 0:
-                # skip if subsection heading matches group name and subsection.body is empty
+                # skip if subsection heading matches group name, subsection.body and subsection.instructions are empty
                 if (
                     normalize_name(subsection.name)
                     == normalize_name(subsection_groups[current_idx]["heading"])
