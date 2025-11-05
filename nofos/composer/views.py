@@ -6,7 +6,13 @@ from django.http import HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
@@ -309,7 +315,11 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
             sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
-        context["success_heading"] = "Content Guide saved successfully"
+        # Allow per-request success/error headings stored in the session
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "Content Guide saved successfully"
+        )
 
         context.update(
             document=document,
@@ -483,6 +493,49 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         )
         anchor = getattr(self.object, "html_id", "")
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+
+
+class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
+    model = ContentGuideSubsection
+    pk_url_kwarg = "subsection_pk"
+    template_name = "composer/subsection_confirm_delete.html"
+    context_object_name = "subsection"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["document"] = self.object.section.document
+        context["section"] = self.object.section
+        return context
+
+    def get_success_url(self):
+        document = self.object.section.document
+        section = self.object.section
+        url = reverse_lazy("composer:section_view", args=[document.pk, section.pk])
+        return url
+
+    def dispatch(self, request, *args, **kwargs):
+        self.document_id = kwargs.get("pk")
+        self.subsection = self.get_object()
+        self.document = self.subsection.section.document
+
+        if str(self.document.id) != str(self.document_id):
+            return HttpResponseBadRequest(
+                "Document ID does not match subsection's document."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.request.session["error_heading"] = "Subsection deleted"
+
+        messages.error(
+            self.request,
+            "You deleted subsection:  “{}” from “{}”".format(
+                self.subsection.name or self.subsection.id, self.subsection.section.name
+            ),
+        )
+
+        return super().form_valid(form)
 
 
 class ComposerSubsectionInstructionsEditView(GroupAccessObjectMixin, UpdateView):
