@@ -46,6 +46,11 @@ urlpatterns = [
         name="subsection_edit",
     ),
     path(
+        "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/delete",
+        views.ComposerSubsectionDeleteView.as_view(),
+        name="subsection_confirm_delete",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/instructions/edit",
         views.ComposerSubsectionInstructionsEditView.as_view(),
         name="instructions_edit",

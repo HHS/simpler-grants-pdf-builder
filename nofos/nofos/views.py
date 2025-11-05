@@ -1642,6 +1642,8 @@ class NofoSubsectionCreateView(
             section.subsections.count(), form.instance
         )
 
+        response = super().form_valid(form)
+
         messages.success(
             self.request,
             "Created new subsection: “{}” in ‘{}’".format(
@@ -1650,7 +1652,7 @@ class NofoSubsectionCreateView(
             ),
         )
 
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
