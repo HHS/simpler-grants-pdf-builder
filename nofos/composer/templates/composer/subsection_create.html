@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static nofo_name input_type get_value_or_none whitespaceless %}
+
+{% block title %}
+  New subsection
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}subsection_create{% endblock %}
+
+{% block content %}
+    <div class="back-link font-body-md margin-bottom-105">
+      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
+    </div>
+    <div class="subsection_edit--header">
+      <h1 class="font-heading-xl margin-y-0">New subsection</h1>
+    </div>
+
+  <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
+
+  {% if prev_subsection_with_tag %}
+  <h2 class="font-serif-md margin-top-4">Previous subsection{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
+  <div class="previous-subsection-widget outline-box">
+    <p class="outline-box--heading text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
+    <p class="outline-box--content">
+      <a href="{% url 'composer:subsection_edit' document.pk prev_subsection_with_tag.section.id prev_subsection_with_tag.id %}" class="usa-link usa-link--external" target="blank" title="{{ prev_subsection_with_tag.name }} (Opens in a new tab)">
+        {{ prev_subsection_with_tag.name }}
+        (<span class="small-caps">{{ prev_subsection_with_tag.tag }}</span>)
+      </a>
+    </p>
+  </div>
+  {% endif %}
+
+  <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Your new subsection</h2>
+
+  <form class="form" method="post">
+    {% csrf_token %}
+    <fieldset class="usa-fieldset">
+
+      {% if form.non_field_errors %}
+        <legend class="legend--bootstrap">
+          <div class="usa-error-message">
+            Error: {{ form.non_field_errors.0 }}
+          </div>
+        </legend>
+      {% endif %}
+
+      <!-- name -->
+      <div class="form-group">
+        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
+          {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
+        {% endwith %}
+
+      <!-- tag -->
+      <div class="form-group width-mobile">
+        <label class="usa-label" for="tag">Heading level</label>
+        <div class="usa-hint" id="tag--hint-1">
+          Required if name exists. {% if prev_subsection_with_tag %}Last heading: <span class="previous-subsection--tag">{{ prev_subsection_with_tag.tag }}</span>.{% endif %}
+        </div>
+        {% if form.errors.tag %}
+          <div class="usa-error-message" id="tag--error">
+            {{ form.errors.tag.0 }}
+          </div>
+        {% endif %}
+        <select {% whitespaceless %}
+          class="
+                usa-select
+                border-2px
+                  {% if form.errors.tag %}
+                    border-secondary-dark
+                  {% endif %}
+              "
+        {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" aria-describedby="tag--hint-1">
+          <option value="">---------</option>
+          <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
+          <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
+          <option value="h5" {% if form.tag.value == 'h5' %}selected{% endif %}>Heading 5</option>
+          <option value="h6" {% if form.tag.value == 'h6' %}selected{% endif %}>Heading 6</option>
+          <option value="h7" {% if form.tag.value == 'h7' %}selected{% endif %}>Heading 7</option>
+        </select>
+      </div>
+
+      <!-- callout_box -->
+      <div class="form-group margin-top-4 width-mobile">
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box">
+          <label class="usa-checkbox__label" for="callout_box">Is callout box?
+            <span class="usa-checkbox__label-description">Callout boxes <span aria-hidden="true">(📦)</span> use an accent color to call attention to important content.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Add instructions -->
+      <details class="form-group margin-top-4">
+        <summary><span class="usa-label text-bold">Add instructions ?</span></summary>
+        <div class="form-group margin-top-4">
+          <label
+          {% whitespaceless %}
+              class="
+                usa-label
+                  {% if form.non_field_errors and "name or content" in form.non_field_errors.0   %}
+                  text-secondary-dark
+                  {% endif %}
+              "
+            {% endwhitespaceless %} for="instructions">Instructions content</label>
+          <div
+          {% whitespaceless %}
+            class="
+                  margin-top-1
+                  main-martor--container
+                  {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
+                    main-martor--container--error
+                  {% endif %}
+                "
+          {% endwhitespaceless %} id="{{ form.instructions.name }}" tabIndex="-1" {% if form.errors.instrutions %}aria-describedby="instructions--error-message"{% endif %}>
+            {{ form.instructions }}
+          </div>
+        </div>
+      </details>
+      {# --- Edit mode radios (USWDS tiles) --- #}
+      <fieldset class="usa-fieldset margin-top-2 width-mobile">
+        <legend class="usa-label padding-bottom-1 text-bold">What will writers be able to edit?</legend>
+
+        {% if form.edit_mode.errors %}
+          <div class="usa-error-message">{{ form.edit_mode.errors.0 }}</div>
+        {% endif %}
+
+        {% with current=form.edit_mode.value|default_if_none:'' name=form.edit_mode.name %}
+        <div class="grid-row grid-gap">
+          <div class="grid-col-12">
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                     id="em-full"
+                     type="radio"
+                     name="{{ name }}"
+                     value="full"
+                     {% if current == 'full' or not current %}checked{% endif %} />
+              <label class="usa-radio__label" for="em-full">
+                All text in this section is editable
+                <span class="usa-checkbox__label-description">
+                  Writers can edit any of the text.
+                </span>
+              </label>
+            </div>
+
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                     id="em-variables"
+                     type="radio"
+                     name="{{ name }}"
+                     value="variables"
+                     {% if current == 'variables' %}checked{% endif %} />
+              <label class="usa-radio__label" for="em-variables">
+                Edit certain text only
+                <span class="usa-checkbox__label-description">
+                  Only variables in curly braces can be changed. Use instructions to guide writers.
+                </span>
+              </label>
+            </div>
+
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                     id="em-yesno"
+                     type="radio"
+                     name="{{ name }}"
+                     value="yes_no"
+                     {% if current == 'yes_no' %}checked{% endif %} />
+              <label class="usa-radio__label" for="em-yesno">
+                Select Yes/No only
+                <span class="usa-checkbox__label-description">
+                  Writers can include or exclude this subsection. Text can't be changed.
+                </span>
+              </label>
+            </div>
+
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                     id="em-locked"
+                     type="radio"
+                     name="{{ name }}"
+                     value="locked"
+                     {% if current == 'locked' %}checked{% endif %} />
+              <label class="usa-radio__label" for="em-locked">
+                Nothing. All content is locked
+                <span class="usa-checkbox__label-description">
+                  Writers cannot modify or remove this text.
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+      </fieldset>
+
+      <!-- body -->
+      <div class="form-group margin-top-4">
+        <label
+        {% whitespaceless %}
+            class="
+              usa-label
+                {% if form.non_field_errors and "name or content" in form.non_field_errors.0   %}
+                text-secondary-dark
+                {% endif %}
+            "
+          {% endwhitespaceless %} for="body">Subsection content</label>
+        <div
+        {% whitespaceless %}
+          class="
+                margin-top-1
+                main-martor--container
+                {% if form.non_field_errors and "name or content" in form.non_field_errors.0 %}
+                  main-martor--container--error
+                {% endif %}
+              "
+        {% endwhitespaceless %} id="{{ form.body.name }}" tabIndex="-1" {% if form.errors.body %}aria-describedby="body--error-message"{% endif %}>
+          {{ form.body }}
+        </div>
+      </div>
+    </fieldset>
+    <div class="form-group">
+      <button class="usa-button usa-button--green margin-top-3" type="submit">Save subsection</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
+{% endblock %}

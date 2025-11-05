@@ -67,6 +67,9 @@ class ContentGuideSection(BaseSection):
     def get_document(self):
         return self.document
 
+    def get_subsection_model(self):
+        return ContentGuideSubsection
+
 
 class ContentGuideSubsection(BaseSubsection):
     """

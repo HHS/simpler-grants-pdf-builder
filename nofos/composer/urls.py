@@ -36,6 +36,11 @@ urlpatterns = [
         name="composer_preview",
     ),
     path(
+        "<uuid:pk>/section/<uuid:section_pk>/subsection/create",
+        views.ComposerSubsectionCreateView.as_view(),
+        name="subsection_create",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.ComposerSubsectionEditView.as_view(),
         name="subsection_edit",

@@ -6,7 +6,7 @@ from django.http import HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from nofos.mixins import GroupAccessObjectMixinFactory
 from nofos.nofo import (
@@ -15,11 +15,12 @@ from nofos.nofo import (
     add_page_breaks_to_headings,
     suggest_nofo_opdiv,
 )
-from nofos.utils import create_nofo_audit_event
+from nofos.utils import create_nofo_audit_event, create_subsection_html_id
 from nofos.views import BaseNofoImportView
 
 from .forms import (
     CompareTitleForm,
+    ComposerSubsectionCreateForm,
     ComposerSubsectionEditForm,
     ComposerSubsectionInstructionsEditForm,
 )
@@ -351,6 +352,86 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         context["show_back_link"] = True
         context["is_preview"] = True
         return context
+
+
+class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
+    """
+    Create a new ContentGuideSubsection within a given section.
+    URL: /<pk>/section/<section_pk>/subsection/add
+    """
+
+    model = ContentGuideSubsection
+    form_class = ComposerSubsectionCreateForm
+    template_name = "composer/subsection_create.html"
+    context_object_name = "subsection"
+
+    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    def dispatch(self, request, *args, **kwargs):
+        self.document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
+        self.section = get_object_or_404(
+            ContentGuideSection,
+            pk=self.kwargs["section_pk"],
+            document=self.document,
+        )
+
+        self.prev_subsection_id = self.request.GET.get("prev_subsection")
+        if not self.prev_subsection_id:
+            return HttpResponseBadRequest("No subsection provided.")
+
+        # Fetch previous subsection
+        self.prev_subsection = get_object_or_404(
+            ContentGuideSubsection, pk=self.prev_subsection_id
+        )
+
+        # loop until you find the next previous subsection with a tag
+        self.prev_subsection_with_tag = self.prev_subsection
+        while (
+            self.prev_subsection_with_tag is not None
+            and not self.prev_subsection_with_tag.tag
+        ):
+            self.prev_subsection_with_tag = (
+                self.prev_subsection_with_tag.get_previous_subsection()
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["document"] = self.document
+        context["section"] = self.section
+        context["prev_subsection"] = self.prev_subsection
+        context["prev_subsection_with_tag"] = self.prev_subsection_with_tag
+        return context
+
+    def form_valid(self, form):
+        section = self.prev_subsection.section
+        order = self.prev_subsection.order + 1
+
+        # Create a gap in the 'order' for this new subsection
+        section.insert_order_space(order)
+
+        form.instance.section = section
+        form.instance.order = order
+        form.instance.html_id = create_subsection_html_id(
+            section.subsections.count(), form.instance
+        )
+
+        messages.success(
+            self.request,
+            "Created new subsection: “{}” in ‘{}’".format(
+                form.instance.name or "(#{})".format(form.instance.order),
+                section.name,
+            ),
+        )
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Back to the section page
+        url = reverse_lazy(
+            "composer:section_view", args=[self.document.pk, self.section.pk]
+        )
+        return "{}#{}".format(url, self.object.html_id)
 
 
 class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):

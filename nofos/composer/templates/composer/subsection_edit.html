@@ -120,6 +120,31 @@
            href="{% url 'composer:section_view' document.pk section.pk %}">Cancel</a>
       </div>
     </form>
+
+    <hr class="margin-top-3 margin-bottom-5" />
+
+    <details class="usa-accordion usa-accordion--bordered">
+      <summary class="usa-accordion__button">
+        <h2 class="usa-accordion--heading">
+          Other actions
+        </h2>
+      </summary>
+
+      <div class="usa-accordion__content usa-prose">
+        <ul class="usa-list usa-list--unstyled">
+          <li>
+            <a class="usa-button usa-button--green" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">
+              Add subsection
+            </a> — add a new subsection after this one
+          </li>
+          <li>
+            <a class="usa-button usa-button--secondary" href="">
+              Delete subsection
+            </a> — remove this subsection completely
+          </li>
+        </ul>
+      </div>
+    </details>
 {% endblock %}
 
 {% block js_footer %}
