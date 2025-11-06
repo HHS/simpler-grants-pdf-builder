@@ -442,7 +442,7 @@ class ComposerSectionViewTests(TestCase):
         )
 
         # Subsections for sec1 (ensure grouping behavior)
-        self.ss1 = ContentGuideSubsection.objects.create(
+        self.subsection1 = ContentGuideSubsection.objects.create(
             section=self.sec1,
             order=1,
             name="Intro",
@@ -451,7 +451,7 @@ class ComposerSectionViewTests(TestCase):
             enabled=True,
         )
         # Preset header name → starts new group
-        self.ss2 = ContentGuideSubsection.objects.create(
+        self.subsection2 = ContentGuideSubsection.objects.create(
             section=self.sec1,
             order=2,
             name="Funding details",
@@ -460,7 +460,7 @@ class ComposerSectionViewTests(TestCase):
             enabled=True,
         )
         # Not a header → belongs to previous group
-        self.ss3 = ContentGuideSubsection.objects.create(
+        self.subsection3 = ContentGuideSubsection.objects.create(
             section=self.sec1,
             order=3,
             name="Budget table",
@@ -469,7 +469,7 @@ class ComposerSectionViewTests(TestCase):
             enabled=True,
         )
         # Disabled → should appear anyway
-        self.ss4_disabled = ContentGuideSubsection.objects.create(
+        self.subsection4_disabled = ContentGuideSubsection.objects.create(
             section=self.sec1,
             order=4,
             name="(Disabled)",
@@ -496,13 +496,13 @@ class ComposerSectionViewTests(TestCase):
 
         # Group 1: heading = "Intro", items = [ss1]
         self.assertEqual(grouped[0]["heading"], "Intro")
-        self.assertEqual([i.pk for i in grouped[0]["items"]], [self.ss1.pk])
+        self.assertEqual([i.pk for i in grouped[0]["items"]], [self.subsection1.pk])
 
         # Group 2: heading = "Funding details", items = [ss2, ss3]
         self.assertEqual(grouped[1]["heading"], "Funding details")
         self.assertEqual(
             [i.pk for i in grouped[1]["items"]],
-            [self.ss2.pk, self.ss3.pk, self.ss4_disabled.pk],
+            [self.subsection2.pk, self.subsection3.pk, self.subsection4_disabled.pk],
         )
 
     def test_prev_next_sections_in_context_first_section(self):
@@ -660,6 +660,7 @@ class ComposerSubsectionEditViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Select a valid choice", status_code=200)
 
+
 class ComposerSubsectionCreateViewTests(TestCase):
     def setUp(self):
         # user + login
@@ -739,6 +740,7 @@ class ComposerSubsectionCreateViewTests(TestCase):
         msgs = list(get_messages(resp.wsgi_request))
         self.assertTrue(any("Created new section:" in str(m) for m in msgs))
 
+
 class ComposerSubsectionDeleteViewTests(TestCase):
     def setUp(self):
         # user + login
@@ -775,9 +777,8 @@ class ComposerSubsectionDeleteViewTests(TestCase):
                 "pk": self.document.pk,
                 "section_pk": self.section.pk,
                 "subsection_pk": self.subsection.pk,
-            }
+            },
         )
-
 
     def test_get_renders_for_logged_in_user(self):
         resp = self.client.get(self.url)

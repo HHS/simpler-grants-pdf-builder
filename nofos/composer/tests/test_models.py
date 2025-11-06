@@ -27,71 +27,136 @@ class ExtractVariablesTests(TestCase):
             enabled=True,
         )
 
-    def test_no_variables_returns_empty_list(self):
-        ss = self._mk("No placeholders here.")
-        self.assertEqual(ss.extract_variables(), [])
+    def test_no_variables(self):
+        subsection = self._mk("This sentence has no variables.")
+        self.assertEqual(subsection.extract_variables(), [])
 
-    def test_simple_string_variable(self):
-        ss = self._mk("Please provide {Project name} for the application.")
-        vars_ = ss.extract_variables()
+    def test_simple_variable(self):
+        subsection = self._mk("This sentence has one {variable}.")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_,
+            variables,
             [
-                {"key": "project_name", "type": "string", "label": "Project name"},
+                {"key": "variable", "type": "string", "label": "variable"},
             ],
         )
 
-    def test_list_variable_type(self):
-        ss = self._mk("Add tags: {List: Tags}")
-        vars_ = ss.extract_variables()
+    def test_variable_with_spaces(self):
+        subsection = self._mk("This has { variable with spaces }.")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_,
+            variables,
             [
-                {"key": "tags", "type": "list", "label": "Tags"},
+                {
+                    "key": "variable_with_spaces",
+                    "type": "string",
+                    "label": "variable with spaces",
+                },
             ],
         )
 
-    def test_duplicate_labels_are_deduped(self):
-        ss = self._mk("Enter {Project name} and confirm {Project name}")
-        vars_ = ss.extract_variables()
+    def test_duplicate_variables(self):
+        subsection = self._mk("Enter {Project name} and confirm {Project name}")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_[0], {"key": "project_name", "type": "string", "label": "Project name"}
+            variables[0],
+            {"key": "project_name", "type": "string", "label": "Project name"},
         )
         self.assertEqual(
-            vars_[1],
+            variables[1],
             {"key": "project_name_2", "type": "string", "label": "Project name"},
         )
 
-    def test_escaped_opening_brace_does_not_create_variable(self):
-        ss = self._mk(r"Literal \{not a variable} and real {Variable}")
-        vars_ = ss.extract_variables()
+    def test_multiple_variables(self):
+        subsection = self._mk("This has {first} and {second} variables.")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_,
+            variables,
+            [
+                {
+                    "key": "first",
+                    "type": "string",
+                    "label": "first",
+                },
+                {
+                    "key": "second",
+                    "type": "string",
+                    "label": "second",
+                },
+            ],
+        )
+
+    def test_escaped_braces(self):
+        """Escaped braces should not be treated as variables."""
+        subsection = self._mk(r"This is not a \{variable\}.")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_escaped_opening_brace(self):
+        subsection = self._mk(r"Literal \{not a variable} and real {Variable}")
+        variables = subsection.extract_variables()
+        self.assertEqual(
+            variables,
             [
                 {"key": "variable", "type": "string", "label": "Variable"},
             ],
         )
 
-    def test_empty_or_whitespace_label_falls_back_to_key_var(self):
-        ss = self._mk("Weird case: {   }")
-        vars_ = ss.extract_variables()
+    def test_nested_braces(self):
+        """Nested braces should match first complete set of braces: '{outer {inner}'"""
+        subsection = self._mk("This {outer {inner} text} has nesting.")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_,
+            variables,
+            [{"key": "outer_inner", "label": "outer {inner", "type": "string"}],
+        )
+
+    def test_empty_braces(self):
+        """Empty braces should not be treated as variables."""
+        subsection = self._mk("This has {} empty braces.")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_empty_braces_with_whitespace(self):
+        subsection = self._mk("This has {   } empty braces with whitespace.")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_unmatched_braces(self):
+        subsection = self._mk("This has { unmatched brace.")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_list_type_variable(self):
+        subsection = self._mk(
+            "Type: {List: Choose from Grant or Cooperative agreement}."
+        )
+        variables = subsection.extract_variables()
+        self.assertEqual(
+            variables,
             [
                 {
-                    "key": "var",
-                    "type": "string",
-                    "label": "",
-                },  # label trimmed to empty → key fallback
+                    "key": "choose_from_grant_or_cooperative_agreement",
+                    "type": "list",
+                    "label": "Choose from Grant or Cooperative agreement",
+                }
             ],
         )
 
-    def test_text_override_parameter_is_used_instead_of_instance_body(self):
-        ss = self._mk("Old body without vars")
-        override = "New body with a {Fresh var}"
-        vars_ = ss.extract_variables(text=override)
+    def test_variable_in_markdown_context(self):
+        subsection = self._mk("**Bold** and {variable} and _italic_.")
+        variables = subsection.extract_variables()
         self.assertEqual(
-            vars_,
+            variables,
+            [{"key": "variable", "type": "string", "label": "variable"}],
+        )
+
+    def test_text_override_parameter_is_used_instead_of_instance_body(self):
+        subsection = self._mk("Old body without vars")
+        override = "New body with a {Fresh var}"
+        variables = subsection.extract_variables(text=override)
+        self.assertEqual(
+            variables,
             [
                 {"key": "fresh_var", "type": "string", "label": "Fresh var"},
             ],

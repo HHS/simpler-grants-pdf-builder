@@ -4,6 +4,7 @@
 :root {
   --color--text-default: #1b1b1b;
   --color--text-grey: #71767a;
+  --color--variable-pink: #d900b9;
   --color--usa-link: #005ea2;
   --color--usa-link-hover: #1a4480;
   --color--usa-link-rgb: 0, 94, 162;
@@ -1583,6 +1584,16 @@ main .back-link a::before,
 
 .main-martor--container .ace_editor {
   font-size: 12.5px;
+}
+
+.main-martor--container .ace_editor .ace_text-layer .ace_variable.ace_curly {
+  color: var(--color--variable-pink);
+  font-weight: 700;
+}
+
+.main-martor--container div.martor-preview .md-curly-variable {
+  background-color: var(--color--yellow);
+  padding: 0 2px;
 }
 
 .main-martor--container div.martor-preview {
