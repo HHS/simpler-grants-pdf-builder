@@ -1,9 +1,9 @@
-# composer/models.py
 from __future__ import annotations
 
 import re
 from typing import List
 
+from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
 from django.db import models
@@ -114,7 +114,8 @@ class ContentGuideSubsection(BaseSubsection):
 
     # ---------- Variable parsing helpers ---------- #
 
-    _VAR_PATTERN = re.compile(r"(?<!\\)\{(?P<raw>[^}]+)\}")
+    # Unified pattern - no nested braces allowed
+    _VAR_PATTERN = re.compile(CURLY_VARIABLE_PATTERN)
 
     def extract_variables(self, text: str | None = None) -> List[dict]:
         """
@@ -133,7 +134,7 @@ class ContentGuideSubsection(BaseSubsection):
         used_keys = set()
 
         for m in self._VAR_PATTERN.finditer(text):
-            raw = m.group("raw").strip()
+            raw = m.group(1).strip()  # group(1) instead of group("raw")
 
             var_type = "string"
             label = raw

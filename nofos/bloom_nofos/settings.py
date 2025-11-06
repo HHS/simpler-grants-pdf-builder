@@ -403,7 +403,7 @@ MARTOR_MARKDOWNIFY_TIMEOUT = 0  # update the preview instantly
 # or:
 MARTOR_MARKDOWNIFY_TIMEOUT = 1000  # default
 
-# Markdown extensions (default)
+# Markdown extensions
 MARTOR_MARKDOWN_EXTENSIONS = [
     "markdown.extensions.extra",
     "markdown.extensions.nl2br",
@@ -412,10 +412,11 @@ MARTOR_MARKDOWN_EXTENSIONS = [
     # Custom markdown extensions.
     # "martor.extensions.urlize",
     "martor.extensions.del_ins",  # ~~strikethrough~~ and ++underscores++
-    "martor.extensions.mention",  # to parse markdown mention
+    # "martor.extensions.mention",  # to parse markdown mention
     # "martor.extensions.emoji",  # to parse markdown emoji
-    "martor.extensions.mdx_video",  # to parse embed/iframe video
+    # "martor.extensions.mdx_video",  # to parse embed/iframe video
     # "martor.extensions.escape_html",  # to handle the XSS vulnerabilities
+    "bloom_nofos.markdown_extensions.curly_variables",  # custom extension for {variables}
 ]
 
 # Markdown Extensions Configs
