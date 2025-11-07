@@ -212,7 +212,7 @@ class SubsectionCreateForm(forms.ModelForm):
         tag = cleaned_data.get("tag")
 
         if name and not tag:
-            self.add_error("tag", "Subsections with a name must have a Heading level.")
+            self.add_error("tag", "Subsections with a name must have a heading level.")
 
         if tag and not name:
             self.add_error("name", "Subsections with a heading level must have a name.")

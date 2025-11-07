@@ -530,7 +530,7 @@ class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 
         messages.error(
             self.request,
-            "You deleted subsection:  “{}” from “{}”".format(
+            "You deleted subsection: “{}” from “{}”".format(
                 self.subsection.name or self.subsection.id, self.subsection.section.name
             ),
         )

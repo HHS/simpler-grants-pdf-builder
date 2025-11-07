@@ -30,7 +30,7 @@ class ComposerSubsectionCreateForm(forms.ModelForm):
 
         # Validate tag present if name is provided
         if name and not tag:
-            self.add_error("tag", "Subsections with a name must have a Heading level.")
+            self.add_error("tag", "Subsections with a name must have a heading level.")
 
         # Validate name is present if tag is selected
         if tag and not name:
@@ -45,7 +45,8 @@ class ComposerSubsectionCreateForm(forms.ModelForm):
         # Validate if edit_mode is "variables", that variables are present in body
         if edit_mode == "variables":
             posted_body = body or ""
-            if not ContentGuideSubsection.extract_variables(text=posted_body):
+            subsection: ContentGuideSubsection = self.instance
+            if not subsection.extract_variables(text=posted_body):
                 self.add_error(
                     "edit_mode",
                     "No {…} variables found in this subsection’s body. "
