@@ -1,30 +1,20 @@
-// HIGH-LEVEL OVERVIEW:
-// ====================
-// This script adds custom syntax highlighting for curly braces {like this} in
-// the Martor markdown editor (which uses the Ace editor internally).
-//
-// WHY THIS APPROACH:
-// Ace editor has a two-stage rendering process:
-//   1. TOKENIZATION: Text is broken into "tokens" (e.g., "bold", "italic", "text")
-//   2. RENDERING: Each token type gets CSS classes (e.g., .ace_string_emphasis)
-//
-// We can't modify Ace's highlighting rules directly (they're compiled), but we
-// CAN intercept the tokenizer and post-process its output. This is called the
-// "tokenizer wrapper" pattern.
-//
-// THE STRATEGY:
-//   1. Wait for the Ace editor to load and render
-//   2. Get the editor's current tokenizer (handles markdown syntax)
-//   3. Wrap it with our own function that adds extra processing
-//   4. Our wrapper looks for {curly braces} in text tokens and splits them
-//   5. Mark curly brace sections as "variable.curly" tokens
-//   6. Force the editor to re-render with our new tokens
-//   7. CSS (separate file) styles .ace_variable.ace_curly elements
+// Curly variables: highlighting + live list (Ace/Martor)
+// -----------------------------------------------------
+// - Highlights {curly placeholders} inside the Ace editor
+// - Renders a live, deduped list of those variables into #curly-variables--list
+// - Shares one regex + one init/poll loop for both behaviors
 //
 (function () {
   "use strict";
 
+  // ===========================================================================
+  // SHARED CONFIG / HELPERS
+  // ===========================================================================
+
+  // Keep in sync with Python: r"(?<!\\)\{([^{}]*\S[^{}]*)\}"
   const CURLY_VARIABLE_PATTERN_JS = /(?<!\\)\{[^{}]*\S[^{}]*\}/g;
+
+  // Token types from Ace's Markdown mode we consider "textual" (safe to split)
   const TEXT_TOKEN_TYPES = [
     "text.xml",
     "text",
@@ -32,6 +22,40 @@
     "list",
     "string.blockquote",
   ];
+
+  // Target container for the inline list appended after your description sentence
+  const LIST_CONTAINER_ID = "curly-variables--list";
+
+  /**
+   * Debounce a function call.
+   * Ensures `fn` runs only after `ms` milliseconds have passed without a new call.
+   */
+  function debounce(fn, ms) {
+    let t;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  }
+
+  // ===========================================================================
+  // MODULE A — ACE HIGHLIGHTING (tokenizer wrapper)
+  // ===========================================================================
+  // This portion of the script adds custom syntax highlighting for curly braces
+  // {like this} in the Martor markdown editor (which uses the Ace editor internally).
+  //
+  // We can't modify Ace's highlighting rules directly (they're compiled), but we
+  // CAN intercept the tokenizer and post-process its output. This is called the
+  // "tokenizer wrapper" pattern.
+  //
+  // THE STRATEGY:
+  //   1. Wait for the Ace editor to load and render
+  //   2. Get the editor's current tokenizer (handles markdown syntax)
+  //   3. Wrap it with our own function that adds extra processing
+  //   4. Our wrapper looks for {curly braces} in text tokens and splits them
+  //   5. Mark curly brace sections as "variable.curly" tokens
+  //   6. Force the editor to re-render with our new tokens
+  //   7. CSS (separate file) styles .ace_variable.ace_curly elements
 
   /**
    * Split a token containing {curly braces} into multiple tokens.
@@ -47,7 +71,6 @@
    *   ]
    */
   function splitTokenOnCurlyBraces(token) {
-    // Find all {curly brace} matches in this token's text
     const matches = [];
     let match;
     CURLY_VARIABLE_PATTERN_JS.lastIndex = 0;
@@ -56,29 +79,25 @@
       matches.push({ index: match.index, text: match[0] });
     }
 
-    // None found? Return original token unchanged
+    // If not matches, return original token unchanged
     if (matches.length === 0) return [token];
 
-    // Build new token array by splitting around matches
     const newTokens = [];
     let lastIndex = 0;
 
-    matches.forEach((match) => {
-      // Add any text BEFORE the curly brace (if there is any)
-      if (match.index > lastIndex) {
+    matches.forEach((m) => {
+      if (m.index > lastIndex) {
         newTokens.push({
-          type: token.type, // Keep original token type for this text
-          value: token.value.substring(lastIndex, match.index),
+          type: token.type,
+          value: token.value.substring(lastIndex, m.index),
         });
       }
-
       // Add the curly brace itself as a special "variable.curly" token
       // This is what CSS will target with .ace_variable.ace_curly
-      newTokens.push({ type: "variable.curly", value: match.text });
-      lastIndex = match.index + match.text.length;
+      newTokens.push({ type: "variable.curly", value: m.text });
+      lastIndex = m.index + m.text.length;
     });
 
-    // Add any remaining text AFTER the last curly brace
     if (lastIndex < token.value.length) {
       newTokens.push({
         type: token.type,
@@ -100,15 +119,12 @@
   function wrapTokenizer(originalTokenizer) {
     return {
       getLineTokens: function (line, startState) {
-        // Step 1: Get tokens from original markdown tokenizer
         const result = originalTokenizer.getLineTokens(line, startState);
         const processedTokens = [];
 
-        // Step 2: Process each token to find and split curly braces
         result.tokens.forEach((token) => {
           const isTextToken = TEXT_TOKEN_TYPES.includes(token.type);
           if (isTextToken && token.value) {
-            // This is a text token - scan it for {curly braces}
             processedTokens.push(...splitTokenOnCurlyBraces(token));
           } else {
             processedTokens.push(token);
@@ -118,7 +134,7 @@
         return { tokens: processedTokens, state: result.state };
       },
 
-      // Proxy required tokenizer methods to the original
+      // Proxy required tokenizer methods so Ace remains happy
       $rules: originalTokenizer.$rules,
       getState: originalTokenizer.getState,
       getStateNames: originalTokenizer.getStateNames,
@@ -138,7 +154,7 @@
     const session = editor.getSession();
     const mode = session.getMode();
 
-    // Guard: Only apply to markdown mode, and only one time
+    // Only apply to Markdown mode, and only once
     if (
       !mode.$id?.includes("markdown") ||
       mode.getTokenizer().__curlyVarsWrapped
@@ -146,29 +162,18 @@
       return;
     }
 
-    // Create wrapped tokenizer (our tokenizer wrapping the markdown tokenizer)
     const wrappedTokenizer = wrapTokenizer(mode.getTokenizer());
-    // Mark it so we don't wrap it again if this function runs multiple times
-    wrappedTokenizer.__curlyVarsWrapped = true;
-    // Replace the mode's tokenizer getter to return our wrapped version
+    wrappedTokenizer.__curlyVarsWrapped = true; // mark as installed
     mode.getTokenizer = () => wrappedTokenizer;
 
-    // ===== FORCE RE-TOKENIZATION AND RE-RENDER =====
-    // The editor has already tokenized the content with the old tokenizer.
-    // We need to force it to re-tokenize everything with our new tokenizer.
-
-    // Tell the background tokenizer to use our new tokenizer
+    // Force re-tokenization & re-render
     session.bgTokenizer.setTokenizer(wrappedTokenizer);
-    // Fire an update event to signal that tokens have changed
     session.bgTokenizer.fireUpdateEvent(0, session.getLength() - 1);
-    // Restart background tokenization from the beginning
     session.bgTokenizer.start(0);
-    // Force the renderer to redraw everything on screen
     editor.renderer.updateFull();
 
-    // Re-render lines when content changes
+    // Keep the viewport fresh on edits
     session.on("change", (delta) => {
-      // Small delay to let the tokenizer process first
       setTimeout(() => {
         editor.renderer.updateLines(
           delta.start.row,
@@ -180,12 +185,96 @@
     console.log("[curly-variables] Highlighting applied");
   }
 
+  // ===========================================================================
+  // MODULE B — VARIABLE LIST (extract + render to #curly-variables--list)
+  // ===========================================================================
+
   /**
-   * Wait for the Ace editor to be ready, then apply highlighting.
-   *
-   * This polls for the editor to exist because:
-   *   1. Our script might load before Martor initializes the editor
-   *   2. We need the editor to be fully rendered before modifying it
+   * Extract unique curly variables from a text blob using the shared regex.
+   * Keeps first-seen order; returns the inside text (without braces) trimmed.
+   */
+  function extractCurlyVariables(text) {
+    const vars = [];
+    const seen = new Set();
+    CURLY_VARIABLE_PATTERN_JS.lastIndex = 0;
+
+    let m;
+    while ((m = CURLY_VARIABLE_PATTERN_JS.exec(text)) !== null) {
+      // m[0] is "{ ... }" including braces
+      const inside = m[0].slice(1, -1).trim();
+      if (!seen.has(inside)) {
+        seen.add(inside);
+        vars.push(inside);
+      }
+    }
+    return vars;
+  }
+
+  /**
+   * Render variables inline into #curly-variables--list as:
+   *   ": <span class='curly-var'>{one}</span>, <span class='curly-var'>{two}</span>, ..."
+   * If none exist, keep the span empty so your label sentence reads naturally.
+   */
+  function renderVariableList(vars) {
+    const container = document.getElementById(LIST_CONTAINER_ID);
+    if (!container) return;
+
+    // Clear previous
+    container.textContent = "";
+
+    if (vars.length === 0) {
+      // Keep empty to let the sentence read naturally with the trailing period.
+      return;
+    }
+
+    // Prefix ": "
+    container.appendChild(document.createTextNode(": "));
+
+    vars.forEach((v, i) => {
+      const span = document.createElement("span");
+      span.className = "curly-var font-mono-xs";
+      span.textContent = `{${v}}`; // show braces
+      container.appendChild(span);
+
+      if (i < vars.length - 1) {
+        container.appendChild(document.createTextNode(", "));
+      }
+    });
+  }
+
+  /**
+   * Bind live updates so the list reflects current editor content.
+   * Debounced to avoid excessive DOM work during rapid typing.
+   */
+  function attachVariableListUpdater(editor) {
+    const session = editor.getSession();
+    const update = debounce(() => {
+      const text = session.getValue();
+      const vars = extractCurlyVariables(text);
+      renderVariableList(vars);
+    }, 80);
+
+    // Initial render after first paint
+    editor.renderer.once("afterRender", () => {
+      setTimeout(update, 0);
+    });
+
+    // Update on typical change signals
+    session.on("change", update);
+    session.on("changeMode", update);
+    editor.on("input", update);
+
+    console.log("[curly-variables] Variable list active");
+  }
+
+  // ===========================================================================
+  // BOOTSTRAP (shared init for both modules)
+  // ===========================================================================
+
+  /**
+   * Poll for Ace + the editor element; once ready, attach:
+   *  - Module A (highlighting via tokenizer wrapper)
+   *  - Module B (variable list updater)
    */
   function init(attempts = 0) {
     const ace = window.ace;
@@ -194,16 +283,22 @@
     if (ace && editorElement) {
       try {
         const editor = ace.edit(editorElement);
-        // Wait for the editor to render at least once (ensures the editor is fully initialized)
+
+        // After first render, apply both features in a stable order
         editor.renderer.once("afterRender", () => {
-          setTimeout(() => applyHighlighting(editor), 50);
+          // Short delay to ensure mode/tokenizer is ready
+          setTimeout(() => {
+            // MODULE A: Ace highlighting
+            applyHighlighting(editor);
+            // MODULE B: Inline variable list
+            attachVariableListUpdater(editor);
+          }, 50);
         });
       } catch (e) {
-        console.error("[curly-vars] Error:", e);
+        console.error("[curly-variables] Init error:", e);
       }
     } else if (attempts < 50) {
-      // Editor not ready yet - try again in 100ms
-      // Give up after 50 attempts (5 seconds total)
+      // Poll every 100ms for up to 5s
       setTimeout(() => init(attempts + 1), 100);
     }
   }

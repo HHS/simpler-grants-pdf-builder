@@ -47,8 +47,8 @@ class ComposerSubsectionCreateForm(forms.ModelForm):
             if not subsection.extract_variables(text=posted_body):
                 self.add_error(
                     "edit_mode",
-                    "No {…} variables found in this section’s body. "
-                    "Switch to 'Edit all text' or add variables.",
+                    "No {variables} found in section content. "
+                    "Select another option or add variables.",
                 )
 
         return cleaned_data
@@ -69,8 +69,8 @@ class ComposerSubsectionEditForm(forms.ModelForm):
             if not subsection.extract_variables(text=posted_body):
                 self.add_error(
                     "edit_mode",
-                    "No {…} variables found in this section’s body. "
-                    "Switch to 'Edit all text' or add variables.",
+                    "No {variables} found in section content. "
+                    "Select another option or add variables.",
                 )
         return cleaned
 

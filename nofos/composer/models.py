@@ -179,6 +179,6 @@ class ContentGuideSubsection(BaseSubsection):
             if not self._VAR_PATTERN.search(self.body or ""):
                 raise ValidationError(
                     {
-                        "body": "Edit mode 'variables' selected but no variable placeholders found in body."
+                        "body": "'Edit certain text only' selected but no {variables} found in section content."
                     }
                 )
