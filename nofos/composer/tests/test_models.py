@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from nofos.composer.models import (
+from composer.models import (
     ContentGuide,
     ContentGuideSection,
     ContentGuideSubsection,
