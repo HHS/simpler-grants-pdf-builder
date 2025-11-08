@@ -18,13 +18,13 @@
       <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
     </div>
     <div class="subsection_edit--header">
-      <h1 class="font-heading-xl margin-y-0">New subsection</h1>
+      <h1 class="font-heading-xl margin-y-0">New section</h1>
     </div>
 
-  <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
+  <p>Create a new section after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
 
   {% if prev_subsection_with_tag %}
-  <h2 class="font-serif-md margin-top-4">Previous subsection{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
+  <h2 class="font-serif-md margin-top-4">Previous section{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
   <div class="previous-subsection-widget outline-box">
     <p class="outline-box--heading text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
     <p class="outline-box--content">
@@ -36,7 +36,7 @@
   </div>
   {% endif %}
 
-  <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Your new subsection</h2>
+  <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Your new section</h2>
 
   <form class="form" method="post">
     {% csrf_token %}
@@ -211,7 +211,7 @@
                 text-secondary-dark
                 {% endif %}
             "
-          {% endwhitespaceless %} for="body">Subsection content</label>
+          {% endwhitespaceless %} for="body">Section content</label>
         <div
         {% whitespaceless %}
           class="
@@ -227,7 +227,7 @@
       </div>
     </fieldset>
     <div class="form-group">
-      <button class="usa-button usa-button--green margin-top-3" type="submit">Save subsection</button>
+      <button class="usa-button usa-button--green margin-top-3" type="submit">Save section</button>
     </div>
   </form>
 {% endblock %}

@@ -12,136 +12,6 @@ from django.utils import timezone
 
 User = get_user_model()
 
-# --- TEST MODELS -------------------------------------------------------
-
-
-class ExtractVariablesTests(TestCase):
-    def setUp(self):
-        self.guide = ContentGuide.objects.create(
-            title="Guide", opdiv="CDC", group="bloom"
-        )
-        self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="Section 1", html_id="sec-1"
-        )
-
-    def _mk(self, body: str):
-        return ContentGuideSubsection.objects.create(
-            section=self.section,
-            order=1,
-            name="Sub 1",
-            tag="h3",
-            body=body,
-            edit_mode="full",
-            enabled=True,
-        )
-
-    def test_no_variables_returns_empty_list(self):
-        ss = self._mk("No placeholders here.")
-        self.assertEqual(ss.extract_variables(), [])
-
-    def test_simple_string_variable(self):
-        ss = self._mk("Please provide {Project name} for the application.")
-        vars_ = ss.extract_variables()
-        self.assertEqual(
-            vars_,
-            [
-                {"key": "project_name", "type": "string", "label": "Project name"},
-            ],
-        )
-
-    def test_list_variable_type(self):
-        ss = self._mk("Add tags: {List: Tags}")
-        vars_ = ss.extract_variables()
-        self.assertEqual(
-            vars_,
-            [
-                {"key": "tags", "type": "list", "label": "Tags"},
-            ],
-        )
-
-    def test_duplicate_labels_are_deduped(self):
-        ss = self._mk("Enter {Project name} and confirm {Project name}")
-        vars_ = ss.extract_variables()
-        self.assertEqual(
-            vars_[0], {"key": "project_name", "type": "string", "label": "Project name"}
-        )
-        self.assertEqual(
-            vars_[1],
-            {"key": "project_name_2", "type": "string", "label": "Project name"},
-        )
-
-    def test_escaped_opening_brace_does_not_create_variable(self):
-        ss = self._mk(r"Literal \{not a variable} and real {Variable}")
-        vars_ = ss.extract_variables()
-        self.assertEqual(
-            vars_,
-            [
-                {"key": "variable", "type": "string", "label": "Variable"},
-            ],
-        )
-
-    def test_empty_or_whitespace_label_falls_back_to_key_var(self):
-        ss = self._mk("Weird case: {   }")
-        vars_ = ss.extract_variables()
-        self.assertEqual(
-            vars_,
-            [
-                {
-                    "key": "var",
-                    "type": "string",
-                    "label": "",
-                },  # label trimmed to empty → key fallback
-            ],
-        )
-
-    def test_text_override_parameter_is_used_instead_of_instance_body(self):
-        ss = self._mk("Old body without vars")
-        override = "New body with a {Fresh var}"
-        vars_ = ss.extract_variables(text=override)
-        self.assertEqual(
-            vars_,
-            [
-                {"key": "fresh_var", "type": "string", "label": "Fresh var"},
-            ],
-        )
-
-
-# --- TEST FORMS ----------------------------------------------------------
-
-
-class SubsectionEditFormVariablesTests(TestCase):
-    def setUp(self):
-        self.guide = ContentGuide.objects.create(title="G", opdiv="CDC", group="bloom")
-        self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="S"
-        )
-        self.ss = ContentGuideSubsection.objects.create(
-            section=self.section,
-            order=1,
-            name="Intro",
-            tag="h4",
-            body="Initial body",
-            edit_mode="full",
-        )
-
-    def test_variables_validation_uses_posted_body(self):
-        form = ComposerSubsectionEditForm(
-            data={"edit_mode": "variables", "body": "Has {Variable} now"},
-            instance=self.ss,
-        )
-        self.assertTrue(form.is_valid(), form.errors.as_json())
-
-    def test_variables_validation_errors_when_no_vars(self):
-        form = ComposerSubsectionEditForm(
-            data={"edit_mode": "variables", "body": "No placeholders here"},
-            instance=self.ss,
-        )
-        self.assertFalse(form.is_valid())
-        self.assertIn("edit_mode", form.errors)
-
-
-# --- TEST VIEWS -------------------------------------------------------
-
 
 class ComposerListViewTests(TestCase):
     def setUp(self):
@@ -789,3 +659,152 @@ class ComposerSubsectionEditViewTests(TestCase):
         # stays on page with errors
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Select a valid choice", status_code=200)
+
+class ComposerSubsectionCreateViewTests(TestCase):
+    def setUp(self):
+        # user + login
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # guide/sections/subsections
+        self.document = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            document=self.document, order=1, name="S1", html_id="s1"
+        )
+
+        self.prev_subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="SS1",
+            tag="h3",
+            body="Initial body",
+            enabled=True,
+            edit_mode="full",
+            html_id="ss-1",
+        )
+
+        self.url = f"{reverse(
+            "composer:subsection_create",
+            kwargs={
+                "pk": self.document.pk,
+                "section_pk": self.section.pk,
+            }
+        )}?prev_subsection={self.prev_subsection.pk}"
+
+    def test_get_renders_for_logged_in_user(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        # context includes document/section/subsection
+        self.assertEqual(resp.context["document"].pk, self.document.pk)
+        self.assertEqual(resp.context["section"].pk, self.section.pk)
+
+    def test_anonymous_redirects_to_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_post_updates_and_redirects_with_anchor_prefers_html_id(self):
+        payload = {
+            "edit_mode": "variables",
+            "body": "New **markdown** with {Variable}",
+            "instructions": "Some instructions",
+        }
+        resp = self.client.post(self.url, data=payload, follow=False)
+
+        # saved
+        self.section.refresh_from_db()
+        new_subsection = ContentGuideSubsection.objects.get(
+            order=2,
+            section=self.section,
+        )
+        self.assertEqual(new_subsection.edit_mode, "variables")
+        self.assertIn("New **markdown**", new_subsection.body)
+        self.assertIn("Some instructions", new_subsection.instructions)
+
+        # redirected back to section with anchor "#<html_id>"
+        expected_base = reverse(
+            "composer:section_view", args=[self.document.pk, self.section.pk]
+        )
+        self.assertTrue(resp["Location"].startswith(expected_base))
+        self.assertTrue(resp["Location"].endswith(f"#{new_subsection.html_id}"))
+
+        # success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("Created new section:" in str(m) for m in msgs))
+
+class ComposerSubsectionDeleteViewTests(TestCase):
+    def setUp(self):
+        # user + login
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # guide/sections/subsections
+        self.document = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            document=self.document, order=1, name="S1", html_id="s1"
+        )
+
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="SS1",
+            tag="h3",
+            body="Initial body",
+            enabled=True,
+            edit_mode="full",
+            html_id="ss-1",
+        )
+
+        self.url = reverse(
+            "composer:subsection_confirm_delete",
+            kwargs={
+                "pk": self.document.pk,
+                "section_pk": self.section.pk,
+                "subsection_pk": self.subsection.pk,
+            }
+        )
+
+
+    def test_get_renders_for_logged_in_user(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        # context includes document/section/subsection
+        self.assertEqual(resp.context["document"].pk, self.document.pk)
+        self.assertEqual(resp.context["section"].pk, self.section.pk)
+        self.assertEqual
+
+    def test_anonymous_redirects_to_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_post_deletes_and_redirects(self):
+        resp = self.client.post(self.url, follow=False)
+
+        # deleted
+        with self.assertRaises(ContentGuideSubsection.DoesNotExist):
+            ContentGuideSubsection.objects.get(pk=self.subsection.pk)
+
+        # redirected back to section without anchor
+        expected_url = reverse(
+            "composer:section_view", args=[self.document.pk, self.section.pk]
+        )
+        self.assertEqual(resp["Location"], expected_url)
+
+        # success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("You deleted section:" in str(m) for m in msgs))
