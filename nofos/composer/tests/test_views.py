@@ -255,7 +255,7 @@ class ComposerDocumentRedirectTests(TestCase):
         url = reverse(self.redirect_url_name, kwargs={"pk": guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
-        self.assertIn(b"This content guide has no sections.", response.content)
+        self.assertIn(b"This content guide has no steps.", response.content)
 
 
 class GroupSubsectionsTests(TestCase):
