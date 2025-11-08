@@ -9,13 +9,13 @@
     <div class="usa-alert__body">
       <h4 class="usa-alert__heading">Warning</h4>
       <p class="usa-alert__text">
-        Deleting a Subsection is permanent.
+        Deleting a section is permanent.
       </p>
     </div>
   </div>
 
-  {% with "Back to Subsection: "|add:subsection.name as back_text %}
-  {% with "Delete Subsection: "|add:subsection.name as title %}
+  {% with "Back to section: "|add:subsection.name as back_text %}
+  {% with "Delete section: "|add:subsection.name as title %}
     {% url 'composer:subsection_edit' document.pk subsection.section.id subsection.id as back_href %}
     {% include "includes/page_heading.html" with title=title back_text=back_text back_href=back_href only %}
   {% endwith %}
@@ -23,7 +23,7 @@
 
   <form id="composer-subsection-delete--form" method="post">
     {% csrf_token %}
-    <p>Are you absolutely sure you want to delete “{{ subsection.name }}” in section “{{ subsection.section.name }}”?</p>
+    <p>Are you absolutely sure you want to delete “{{ subsection.name }}” in step “{{ subsection.section.name }}”?</p>
     <p></p>
 
     {{ form }}
@@ -33,7 +33,7 @@
         <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
       </li>
       <li class="usa-button-group__item">
-        <a href="{% url 'composer:subsection_edit' document.pk subsection.section.id subsection.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this Subsection</a>
+        <a href="{% url 'composer:subsection_edit' document.pk subsection.section.id subsection.id %}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this section</a>
       </li>
     </ul>
   </form>

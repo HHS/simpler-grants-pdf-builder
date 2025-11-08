@@ -202,12 +202,12 @@ def compare_section_redirect(request, pk):
     if not first:
         log_exception(
             request,
-            Exception("No sections"),
+            Exception("No steps"),
             context="compare_section_redirect",
             status=404,
         )
         return HttpResponseNotFound(
-            "<p><strong>This content guide has no sections.</strong></p>"
+            "<p><strong>This content guide has no steps.</strong></p>"
         )
 
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
@@ -386,7 +386,7 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
 
         self.prev_subsection_id = self.request.GET.get("prev_subsection")
         if not self.prev_subsection_id:
-            return HttpResponseBadRequest("No subsection provided.")
+            return HttpResponseBadRequest("No section provided.")
 
         # Fetch previous subsection
         self.prev_subsection = get_object_or_404(
@@ -428,7 +428,7 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
 
         messages.success(
             self.request,
-            "Created new subsection: “{}” in ‘{}’".format(
+            "Created new section: “{}” in ‘{}’".format(
                 form.instance.name or "(#{})".format(form.instance.order),
                 section.name,
             ),
@@ -520,7 +520,7 @@ class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 
         if str(self.document.id) != str(self.document_id):
             return HttpResponseBadRequest(
-                "Document ID does not match subsection's document."
+                "Document ID does not match section's document."
             )
 
         return super().dispatch(request, *args, **kwargs)
@@ -530,7 +530,7 @@ class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 
         messages.error(
             self.request,
-            "You deleted subsection: “{}” from “{}”".format(
+            "You deleted section: “{}” from “{}”".format(
                 self.subsection.name or self.subsection.id, self.subsection.section.name
             ),
         )
