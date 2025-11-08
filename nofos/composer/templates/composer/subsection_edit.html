@@ -60,7 +60,7 @@
               <label class="usa-radio__label" for="em-variables">
                 Edit certain text only
                 <span class="usa-checkbox__label-description">
-                  Only variables in curly braces can be changed. Use instructions to guide writers.
+                  Only variables in curly braces can be changed<span id="curly-variables--list"></span>.
                 </span>
               </label>
             </div>
@@ -106,12 +106,14 @@
         <br>
         Select “Preview” to see how content will appear.</p>
 
-        <div class="main-martor--container ">
+        {% if form.body.errors %}
+          <div class="usa-error-message margin-bottom-1">{{ form.body.errors.0 }}</div>
+        {% endif %}
+
+        <div class="main-martor--container {% if form.body.errors %}main-martor--container--error{% endif %}">
           {{ form.body }}
         </div>
-        {% if form.body.errors %}
-          <div class="usa-error-message">{{ form.body.errors.0 }}</div>
-        {% endif %}
+
       </div>
 
       <div class="margin-top-4">
