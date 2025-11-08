@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from nofos.composer.forms import ComposerSubsectionEditForm
-from nofos.composer.models import (
+from composer.forms import ComposerSubsectionEditForm
+from composer.models import (
     ContentGuide,
     ContentGuideSection,
     ContentGuideSubsection,
