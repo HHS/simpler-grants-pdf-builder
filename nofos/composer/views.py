@@ -31,7 +31,7 @@ from .forms import (
     ComposerSubsectionInstructionsEditForm,
 )
 from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
-from .utils import create_content_guide_document
+from .utils import create_content_guide_document, render_curly_variable_list_html_string
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 
@@ -474,6 +474,9 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["section"] = self.section
+        context["subsection_variables"] = render_curly_variable_list_html_string(
+            self.get_object().extract_variables()
+        )
         return context
 
     def form_valid(self, form):
