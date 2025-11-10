@@ -1,10 +1,9 @@
-from django.test import TestCase
-
 from composer.models import (
     ContentGuide,
     ContentGuideSection,
     ContentGuideSubsection,
 )
+from django.test import TestCase
 
 
 class ExtractVariablesTests(TestCase):
@@ -156,7 +155,7 @@ class GetGroupedSubsections(TestCase):
         self.assertEqual(len(groups), 2)
         self.assertEqual(groups[0]["heading"], "Overview")
         self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk])
-    
+
         self.assertEqual(groups[1]["heading"], "Deep dive")
         self.assertEqual([x.pk for x in groups[1]["items"]], [s2.pk, s3.pk])
 

@@ -17,7 +17,10 @@
 {% block content %}
   <div class="grid-row cg-layout">
     <!-- Full-document preview -->
-    <main class="grid-col-12">
+    <div class="grid-col-12">
+      <div class="back-link font-body-md margin-bottom-105">
+        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}">Back to section</a>
+      </div>
       <h1 class="margin-bottom-1 margin-top-0 font-serif-xl">Configure step
         <br>
         {% with section.name|nofo_section_name_separator as section_name %}
@@ -38,7 +41,7 @@
         </div>
       </div>
 
-      <div class="">
+      <main>
         <div class="grid-row">
           <h2 class="grid-col-9 grid-offset-2 margin-top-4 font-serif-xl border-bottom border-base-lighter border-bottom-width-05">{{ section.name }}</h2>
         </div>
@@ -77,7 +80,7 @@
               {% endfor %}
               </h2>
         {% endfor %}
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 {% endblock %}
