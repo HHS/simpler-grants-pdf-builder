@@ -1586,16 +1586,6 @@ main .back-link a::before,
   font-size: 12.5px;
 }
 
-.main-martor--container .ace_editor .ace_text-layer .ace_variable.ace_curly {
-  color: var(--color--variable-pink);
-  font-weight: 700;
-}
-
-.main-martor--container div.martor-preview .md-curly-variable {
-  background-color: var(--color--yellow);
-  padding: 0 2px;
-}
-
 .main-martor--container div.martor-preview {
   font-size: 15px;
 }
@@ -2385,4 +2375,21 @@ del + ins > br {
 
 .subsection_edit--composer .usa-radio__label .curly-var {
   color: var(--color--variable-pink);
+}
+
+.subsection_edit--composer
+  .main-martor--container
+  .ace_editor
+  .ace_text-layer
+  .ace_variable.ace_curly {
+  color: var(--color--variable-pink);
+  font-weight: 700;
+}
+
+.subsection_edit--composer
+  .main-martor--container
+  div.martor-preview
+  .md-curly-variable {
+  background-color: var(--color--yellow);
+  padding: 0 2px;
 }
