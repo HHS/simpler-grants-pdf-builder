@@ -1,11 +1,10 @@
-from django.test import TestCase
-
 from composer.forms import ComposerSubsectionEditForm
 from composer.models import (
     ContentGuide,
     ContentGuideSection,
     ContentGuideSubsection,
 )
+from django.test import TestCase
 
 
 class SubsectionEditFormVariablesTests(TestCase):

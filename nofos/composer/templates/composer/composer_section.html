@@ -55,6 +55,7 @@
       </p>
       <hr />
 
+      <div class="border-bottom border-base-lighter border-bottom-width-1px">
       <!-- Header blocks (h2/h3 + pre-identified heading names)  -->
       {% for grouped_subsection in grouped_subsections %}
         <h3 class="margin-top-4">{{ grouped_subsection.heading }}</h3>
@@ -107,6 +108,10 @@
           </div>
         {% endfor %}
       {% endfor %}
+        <div class="margin-y-4 display-flex flex-justify-end">
+          <a class="usa-button usa-button--unstyled" href="{% url 'composer:section_edit' document.pk current_section.pk %}">Configure section</a>
+        </div>
+      </div>
 
       <!-- Pager -->
       <nav class="display-flex flex-justify margin-top-4">
