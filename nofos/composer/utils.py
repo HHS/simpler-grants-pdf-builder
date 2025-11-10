@@ -1,3 +1,5 @@
+from html import escape
+
 from django.forms import ValidationError
 
 from nofos.nofo import _build_document
@@ -32,3 +34,30 @@ def get_edit_mode_label(value: str) -> str:
     if not value:
         return ""
     return EDIT_MODE_LABELS.get(value) or value
+
+
+def render_curly_variable_list_html_string(extracted_variables) -> str:
+    """
+    Render the HTML string for the inline variable list shown after the
+    "Only variables in curly braces can be changed" label.
+
+    Example:
+        >>> render_curly_variable_list_html_string([
+        ...   {"label": "first"}, {"label": "second"}
+        ... ])
+        ': <span class="curly-var font-mono-xs">{first}</span>, '
+        '<span class="curly-var font-mono-xs">{second}</span>'
+    """
+    variables = [
+        escape(v.get("label", "").strip())
+        for v in extracted_variables or []
+        if v.get("label")
+    ]
+
+    if not variables:
+        return ""
+
+    labels = ", ".join(
+        f'<span class="curly-var font-mono-xs">{{{v}}}</span>' for v in variables
+    )
+    return f": {labels}"
