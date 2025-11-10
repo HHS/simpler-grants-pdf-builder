@@ -134,13 +134,13 @@
         <ul class="usa-list usa-list--unstyled">
           <li>
             <a class="usa-button usa-button--green" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">
-              Add subsection
-            </a> — add a new subsection after this one
+              Add section
+            </a> — add a new section after this one
           </li>
           <li>
             <a class="usa-button usa-button--secondary" href="{%url 'composer:subsection_confirm_delete' document.pk section.pk subsection.pk %}">
-              Delete subsection
-            </a> — remove this subsection completely
+              Delete section
+            </a> — remove this section completely
           </li>
         </ul>
       </div>

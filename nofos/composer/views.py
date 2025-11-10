@@ -441,7 +441,8 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
         url = reverse_lazy(
             "composer:section_view", args=[self.document.pk, self.section.pk]
         )
-        return "{}#{}".format(url, self.object.html_id)
+        anchor = getattr(self.object, "html_id", "")
+        return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
 class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
