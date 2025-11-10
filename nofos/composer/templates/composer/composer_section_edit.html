@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs add_classes_to_tables convert_paragraphs_to_hrs nofo_section_name_separator safe_br %}
+
+{% block title %}
+  Preview: {{ document.title }} </title>
+{% endblock %}
+
+{% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}composer_document_section composer_document_section--preview{% endblock %}
+
+{% block content %}
+  <div class="grid-row cg-layout">
+    <!-- Full-document preview -->
+    <main class="grid-col-12">
+      <h1 class="margin-bottom-1 margin-top-0 font-serif-xl">Configure step
+        <br>
+        {% with section.name|nofo_section_name_separator as section_name %}
+          <span class="font-serif-lg  text-base">{% if section_name.number %}{{ section_name.number }}. {% endif %}{{ section_name.name|safe_br }}</span>
+        {% endwith %}
+      </h1>
+
+      <div class="usa-accordion usa-accordion--bordered">
+        <h2 class="usa-accordion__heading">
+          <button class="usa-accordion__button" aria-controls="accordion-{{ section.pk }}">
+            Next section
+          </button>
+        </h2>
+        <div id="accordion-{{ section.pk }}" class="usa-accordion__content usa-accordion__content--bordered" hidden>
+          {%with next_section.name|nofo_section_name_separator as next_section_name %}
+            <a class="usa-button--unstyled usa-button--icon--after usa-button--arrow_forward" href="{% url 'composer:section_edit' document.pk next_section.pk %}">{{next_section_name.name}}</a>
+          {% endwith %}
+        </div>
+      </div>
+
+      <div class="">
+        <div class="grid-row">
+          <h2 class="grid-col-9 grid-offset-2 margin-top-4 font-serif-xl border-bottom border-base-lighter border-bottom-width-05">{{ section.name }}</h2>
+        </div>
+
+        <!-- Render each section with all its subsections -->
+        {% for group in grouped_subsections %}
+        <div class="grid-row">
+          <div class="grid-col-9 grid-offset-2">
+              <h3 class="font-serif-lg margin-bottom-1">
+                {{ group.heading }}
+              </h3>
+          </div>
+        </div>
+            {% for subsection in group.items %}
+              <div class="margin-top-3 grid-row grid-gap flex-align-center">
+                <div class="grid-col-2 text-bold">{{subsection.name}}</div>
+                <div class="grid-col-9">
+                  {% if subsection.instructions %}
+                  <div class="bg-primary-lighter padding-2">
+                    {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                  </div>
+                  {% endif %}
+                  <div class="margin-top-2">
+                    {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                  </div>
+                </div>
+                <div class="grid-col-1 flex-align-center">
+                  <a class="usa-button usa-button--unstyled text-secondary" href="{%url 'composer:subsection_confirm_delete' document.pk section.pk subsection.pk %}">Delete</a>
+                </div>
+                <div class="grid-col-12 display-flex flex-align-center margin-y-3">
+                  <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
+                  <a class="usa-button usa-button--outline margin-right-0" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">+ Add section</a>
+                  <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
+                </div>
+              </div>
+              {% endfor %}
+              </h2>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+{% endblock %}
