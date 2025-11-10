@@ -226,61 +226,6 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
     context_object_name = "current_section"
     pk_url_kwarg = "section_pk"
 
-    def group_subsections(self, subsections):
-        """
-        Return a list of groups:
-        [{"heading": "Funding details", "items": [sub1, sub2, ...]}, ...]
-        A group starts when the subsection name is in your pre-set headers
-        or when the tag is h2/h3. The header subsection itself is included
-        as the first item in its group.
-        """
-        headers_step_1 = {
-            "basic information",
-            "funding details",
-            "eligibility",
-            "program description",
-            "data, monitoring, and evaluation",
-            "funding policies and limitations",
-        }
-
-        def normalize_name(s: str) -> str:
-            return (s or "").strip().lower()
-
-        subsection_groups: list[dict] = []
-        current_idx = None
-
-        for subsection in subsections:
-            tag = (subsection.tag or "").lower()
-            is_header = normalize_name(subsection.name) in headers_step_1 or tag in (
-                "h2",
-                "h3",
-            )
-
-            # If we hit a new header, start a new group
-            if is_header:
-                subsection_groups.append({"heading": subsection.name, "items": []})
-                current_idx = len(subsection_groups) - 1
-            # catch-all for first subsection, if not caught above
-            elif current_idx is None:
-                subsection_groups.append({"heading": subsection.name, "items": []})
-                current_idx = 0
-
-            # if first item
-            if len(subsection_groups[current_idx]["items"]) == 0:
-                # skip if subsection heading matches group name, subsection.body and subsection.instructions are empty
-                if (
-                    normalize_name(subsection.name)
-                    == normalize_name(subsection_groups[current_idx]["heading"])
-                    and not subsection.body
-                    and not subsection.instructions
-                ):
-                    continue
-
-            # Append the subsection to the current group
-            subsection_groups[current_idx]["items"].append(subsection)
-
-        return subsection_groups
-
     def get_queryset(self):
         document_pk = self.kwargs["pk"]
         return (
@@ -301,10 +246,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
         sections = list(sections_qs)
 
         # Subsections for the current section
-        subsections = ContentGuideSubsection.objects.filter(
-            section=current_section
-        ).order_by("order", "pk")
-        grouped_subsections = self.group_subsections(subsections)
+        grouped_subsections = current_section.get_grouped_subsections()
 
         # Prev/Next
         idx = next(
@@ -361,6 +303,45 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         context["current_section"] = None  # not on a specific section in preview
         context["show_back_link"] = True
         context["is_preview"] = True
+        return context
+
+
+class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
+    """
+    Edit a single ContentGuideSection's subsections.
+    URL: /<pk>/section/<section_pk>/edit
+    """
+
+    model = ContentGuideSection
+    template_name = "composer/composer_section_edit.html"
+    context_object_name = "section"
+    pk_url_kwarg = "section_pk"
+
+    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    def get_object(self, queryset=None):
+        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
+        section = get_object_or_404(
+            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
+        )
+        # stash for context/success_url
+        self.document = document
+        return section
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["document"] = self.document
+        grouped_subsections = self.object.get_grouped_subsections()
+        context["grouped_subsections"] = grouped_subsections
+
+        sections_qs = ContentGuideSection.objects.filter(
+            document=self.document
+        ).order_by("order", "pk")
+        sections = list(sections_qs)
+        idx = next((i for i, s in enumerate(sections) if s.pk == self.object.pk), None)
+        next_section = (
+            sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
+        )
+        context["next_section"] = next_section
         return context
 
 

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from django.test import TestCase
 
 from composer.forms import ComposerSubsectionEditForm
 from composer.models import (

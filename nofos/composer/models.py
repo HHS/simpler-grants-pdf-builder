@@ -70,6 +70,62 @@ class ContentGuideSection(BaseSection):
     def get_subsection_model(self):
         return ContentGuideSubsection
 
+    def get_grouped_subsections(self):
+        """
+        Return a list of groups:
+        [{"heading": "Funding details", "items": [sub1, sub2, ...]}, ...]
+        A group starts when the subsection name is in your pre-set headers
+        or when the tag is h2/h3. The header subsection itself is included
+        as the first item in its group.
+        """
+        headers_step_1 = {
+            "basic information",
+            "funding details",
+            "eligibility",
+            "program description",
+            "data, monitoring, and evaluation",
+            "funding policies and limitations",
+        }
+
+        def normalize_name(s: str) -> str:
+            return (s or "").strip().lower()
+
+        subsection_groups: list[dict] = []
+        current_idx = None
+
+        ordered_subsections = self.subsections.all().order_by("order", "pk")
+        for subsection in ordered_subsections:
+            tag = (subsection.tag or "").lower()
+            is_header = normalize_name(subsection.name) in headers_step_1 or tag in (
+                "h2",
+                "h3",
+            )
+
+            # If we hit a new header, start a new group
+            if is_header:
+                subsection_groups.append({"heading": subsection.name, "items": []})
+                current_idx = len(subsection_groups) - 1
+            # catch-all for first subsection, if not caught above
+            elif current_idx is None:
+                subsection_groups.append({"heading": subsection.name, "items": []})
+                current_idx = 0
+
+            # if first item
+            if len(subsection_groups[current_idx]["items"]) == 0:
+                # skip if subsection heading matches group name, subsection.body and subsection.instructions are empty
+                if (
+                    normalize_name(subsection.name)
+                    == normalize_name(subsection_groups[current_idx]["heading"])
+                    and not subsection.body
+                    and not subsection.instructions
+                ):
+                    continue
+
+            # Append the subsection to the current group
+            subsection_groups[current_idx]["items"].append(subsection)
+
+        return subsection_groups
+
 
 class ContentGuideSubsection(BaseSubsection):
     """
