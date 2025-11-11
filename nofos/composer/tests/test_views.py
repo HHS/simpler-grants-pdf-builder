@@ -1,14 +1,13 @@
 import uuid
 
 from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from composer.views import ComposerSectionView
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
-from nofos.composer.views import ComposerSectionView
 
 User = get_user_model()
 
