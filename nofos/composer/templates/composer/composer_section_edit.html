@@ -2,7 +2,7 @@
 {% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs add_classes_to_tables convert_paragraphs_to_hrs nofo_section_name_separator safe_br %}
 
 {% block title %}
-  Preview: {{ document.title }} </title>
+  Configure: {{ section.name }} </title>
 {% endblock %}
 
 {% block css %}
@@ -19,7 +19,7 @@
     <!-- Full-document preview -->
     <div class="grid-col-12">
       <div class="back-link font-body-md margin-bottom-105">
-        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}">Back to section</a>
+        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}">Back</a>
       </div>
       <h1 class="margin-bottom-1 margin-top-0 font-serif-xl">Configure step
         <br>
@@ -28,57 +28,53 @@
         {% endwith %}
       </h1>
 
-      <div class="usa-accordion usa-accordion--bordered">
-        <h2 class="usa-accordion__heading">
-          <button class="usa-accordion__button" aria-controls="accordion-{{ section.pk }}">
-            Next section
-          </button>
-        </h2>
-        <div id="accordion-{{ section.pk }}" class="usa-accordion__content usa-accordion__content--bordered" hidden>
-          {%with next_section.name|nofo_section_name_separator as next_section_name %}
-            <a class="usa-button--unstyled usa-button--icon--after usa-button--arrow_forward" href="{% url 'composer:section_edit' document.pk next_section.pk %}">{{next_section_name.name}}</a>
-          {% endwith %}
-        </div>
+      <div class="margin-top-4">
+        <details class="usa-accordion usa-accordion--bordered" open>
+          <summary class="usa-accordion__button">
+            <h3 class="usa-accordion--heading margin-top-0">
+              Other steps
+            </h3>
+          </summary>
+
+          <div class="usa-accordion__content usa-prose">
+            <div class="display-flex flex-justify">
+              {% if section.get_previous_section %}
+                <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
+              {% endif %}
+
+              {% if section.get_next_section %}
+                <a href="{% url 'composer:section_edit' document.id section.get_next_section.id %}" class="usa-button--icon--after usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
+              {% endif %}
+            </div>
+          </div>
+        </details>
       </div>
 
       <main>
-        <div class="grid-row">
-          <h2 class="grid-col-9 grid-offset-2 margin-top-4 font-serif-xl border-bottom border-base-lighter border-bottom-width-05">{{ section.name }}</h2>
-        </div>
-
         <!-- Render each section with all its subsections -->
-        {% for group in grouped_subsections %}
-        <div class="grid-row">
-          <div class="grid-col-9 grid-offset-2">
-              <h3 class="font-serif-lg margin-bottom-1">
-                {{ group.heading }}
-              </h3>
-          </div>
-        </div>
-            {% for subsection in group.items %}
-              <div class="margin-top-3 grid-row grid-gap flex-align-center">
-                <div class="grid-col-2 text-bold">{{subsection.name}}</div>
-                <div class="grid-col-9">
-                  {% if subsection.instructions %}
-                  <div class="bg-primary-lighter padding-2">
-                    {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                  </div>
-                  {% endif %}
-                  <div class="margin-top-2">
-                    {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                  </div>
-                </div>
-                <div class="grid-col-1 flex-align-center">
-                  <a class="usa-button usa-button--unstyled text-secondary" href="{%url 'composer:subsection_confirm_delete' document.pk section.pk subsection.pk %}">Delete</a>
-                </div>
-                <div class="grid-col-12 display-flex flex-align-center margin-y-3">
-                  <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
-                  <a class="usa-button usa-button--outline margin-right-0" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">+ Add section</a>
-                  <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
-                </div>
+        {% for subsection in section.subsections.all %}
+          <div class="margin-top-3 grid-row grid-gap flex-align-center">
+            <div class="grid-col-2 text-bold">{{subsection.name}}</div>
+            <div class="grid-col-9">
+              {% if subsection.instructions %}
+              <div class="bg-primary-lighter padding-2">
+                {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
               </div>
-              {% endfor %}
-              </h2>
+              {% endif %}
+              <div class="margin-top-2 {%if subsection.callout_box %}padding-2 border border-base-lighter border-width-05 radius-lg{% endif %}">
+                {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              </div>
+            </div>
+            <div class="grid-col-1 flex-align-center">
+              <a class="usa-button usa-button--unstyled text-secondary" href="{%url 'composer:subsection_confirm_delete' document.pk section.pk subsection.pk %}">Delete</a>
+            </div>
+            <div class="grid-col-12 display-flex flex-align-center margin-y-3">
+              <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
+              <a class="usa-button usa-button--light usa-button--outline margin-right-0" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">+ Add section</a>
+              <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
+            </div>
+          </div>
+
         {% endfor %}
       </main>
     </div>

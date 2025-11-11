@@ -136,6 +136,10 @@ footer .usa-footer__primary-link:visited {
   background-color: #444782;
 }
 
+.usa-button--light {
+  font-size: 90%;
+  box-shadow: inset 0 0 0 0.75px var(--color--text-default);
+}
 /* Icon Buttons */
 .usa-button--icon--before::before {
   content: "";
@@ -151,8 +155,7 @@ footer .usa-footer__primary-link:visited {
   background-position: center center;
   background-size: cover;
   display: inline-flex;
-  height: 12px;
-  width: 18px;
+
 }
 
 .usa-button--icon--only {
@@ -224,10 +227,14 @@ footer .usa-footer__primary-link:visited {
 
 .usa-button--icon--before.usa-button--arrow_back::before {
   background-image: url("/static/img/usa-icons/arrow_back.svg");
+  height: 12px;
+  width: 18px;
 }
 
 .usa-button--icon--after.usa-button--arrow_forward::after {
   background-image: url("/static/img/usa-icons/arrow_forward.svg");
+  height: 12px;
+  width: 18px;
 }
 
 .usa-button--icon--before.usa-button--content_copy::before {
