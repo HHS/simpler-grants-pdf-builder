@@ -22,7 +22,7 @@ from nofos.nofo import (
     suggest_nofo_opdiv,
 )
 from nofos.utils import create_nofo_audit_event, create_subsection_html_id
-from nofos.views import BaseNofoImportView
+from nofos.views import BaseNofoHistoryView, BaseNofoImportView
 
 from .forms import (
     CompareTitleForm,
@@ -185,6 +185,21 @@ class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
             ),
         )
         return redirect(self.success_url)
+
+
+class ComposerHistoryView(GroupAccessObjectMixin, BaseNofoHistoryView):
+    model = ContentGuide
+    template_name = "composer/composer_history.html"
+    context_object_name = "document"
+
+    def get_document_model_name(self):
+        return "contentguide"
+
+    def get_section_model_name(self):
+        return "contentguidesection"
+
+    def get_subsection_model_name(self):
+        return "contentguidesubsection"
 
 
 def compare_section_redirect(request, pk):
