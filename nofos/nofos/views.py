@@ -32,6 +32,7 @@ from django.views.generic import (
 from .audits import (
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
+    get_audit_events_for_document,
     get_audit_events_for_nofo,
 )
 from .forms import (
@@ -1090,9 +1091,66 @@ class NofoEditStatusView(BaseNofoEditView):
 ###########################################################
 
 
-class NofoHistoryView(
-    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
-):
+class BaseNofoHistoryView(GroupAccessObjectMixin, DetailView):
+    """
+    Mixin to provide common functionality for NOFO history views.
+    """
+
+    template_name = "nofos/nofo_history.html"
+    events_per_page = 25  # Show 25 events per batch
+
+    # Must be set by child classes
+    model = None
+
+    def get_template_name(self):
+        """
+        Allows child classes to override the template name if desired.
+        """
+        return self.template_name
+
+    def get_document_model_name(self):
+        """
+        Allows child classes to specify the document model name for audit events.
+        """
+        return "nofo"
+
+    def get_section_model_name(self):
+        """
+        Allows child classes to specify the section model name for audit events.
+        """
+        return "section"
+
+    def get_subsection_model_name(self):
+        """
+        Allows child classes to specify the subsection model name for audit events.
+        """
+        return "subsection"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offset = int(self.request.GET.get("offset", 0))
+        limit = self.events_per_page
+        self.document = self.object
+
+        # Get audit events for this document
+        events = get_audit_events_for_document(
+            self.document,
+            document_model=self.get_document_model_name(),
+            section_model=self.get_section_model_name(),
+            subsection_model=self.get_subsection_model_name(),
+        )
+        # add one extra audit event for detecting has_more
+        page = events[offset : offset + limit + 1]
+
+        # Slice the results for pagination
+        context["audit_events"] = [format_audit_event(e) for e in page[:limit]]
+        context["has_more"] = len(page) > limit
+        context["next_offset"] = offset + limit
+
+        return context
+
+
+class NofoHistoryView(PreventIfArchivedOrCancelledMixin, BaseNofoHistoryView):
     model = Nofo
     template_name = "nofos/nofo_history.html"
     events_per_page = 25  # Show 25 events per batch
@@ -1102,19 +1160,7 @@ class NofoHistoryView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        offset = int(self.request.GET.get("offset", 0))
-        limit = self.events_per_page
-        self.nofo = self.object
-
-        # Get audit events for this NOFO
-        events = get_audit_events_for_nofo(self.nofo)
-        # add one extra audit event for detecting has_more
-        page = events[offset : offset + limit + 1]
-
-        # Slice the results for pagination
-        context["audit_events"] = [format_audit_event(e) for e in page[:limit]]
-        context["has_more"] = len(page) > limit
-        context["next_offset"] = offset + limit
+        self.nofo = self.document
 
         # find previous versions, if any
         context["ancestor_nofos"] = Nofo.objects.filter(successor=self.object).order_by(
