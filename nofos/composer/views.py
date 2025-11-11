@@ -192,6 +192,11 @@ class ComposerHistoryView(GroupAccessObjectMixin, BaseNofoHistoryView):
     template_name = "composer/composer_history.html"
     context_object_name = "document"
 
+    event_formatting_options = {
+        "SubsectionModel": ContentGuideSubsection,
+        "document_display_prefix": "Content Guide",
+    }
+
     def get_document_model_name(self):
         return "contentguide"
 

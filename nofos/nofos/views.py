@@ -1100,6 +1100,13 @@ class BaseNofoHistoryView(DetailView):
 
     # Must be set by child classes
     model = None
+    event_formatting_options = {}
+
+    def get_event_formatting_options(self):
+        """
+        Allows child classes to specify options for formatting audit events.
+        """
+        return self.event_formatting_options
 
     def get_document_model_name(self):
         """
@@ -1136,7 +1143,10 @@ class BaseNofoHistoryView(DetailView):
         page = events[offset : offset + limit + 1]
 
         # Slice the results for pagination
-        context["audit_events"] = [format_audit_event(e) for e in page[:limit]]
+        context["audit_events"] = [
+            format_audit_event(e, self.get_event_formatting_options())
+            for e in page[:limit]
+        ]
         context["has_more"] = len(page) > limit
         context["next_offset"] = offset + limit
 
