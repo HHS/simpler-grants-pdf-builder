@@ -134,13 +134,13 @@ class ContentGuideSubsection(BaseSubsection):
         used_keys = set()
 
         for m in self._VAR_PATTERN.finditer(text):
-            raw = m.group(1).strip()  # group(1) instead of group("raw")
+            variable = m.group(1).strip()
 
             var_type = "string"
-            label = raw
+            label = variable
 
-            if ":" in raw:
-                head, tail = raw.split(":", 1)
+            if ":" in variable:
+                head, tail = variable.split(":", 1)
                 if head.strip().lower() == "list":
                     var_type = "list"
                     label = tail.strip()

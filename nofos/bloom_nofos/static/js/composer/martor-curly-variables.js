@@ -92,7 +92,7 @@
           value: token.value.substring(lastIndex, m.index),
         });
       }
-      // Add the curly brace itself as a special "variable.curly" token
+      // Add the variable with included curly braces as a special "variable.curly" token
       // This is what CSS will target with .ace_variable.ace_curly
       newTokens.push({ type: "variable.curly", value: m.text });
       lastIndex = m.index + m.text.length;
