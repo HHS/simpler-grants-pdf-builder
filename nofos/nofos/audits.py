@@ -32,11 +32,16 @@ def deduplicate_audit_events_by_day_and_object(events):
     return list(deduplicated.values())
 
 
-def format_audit_event(event):
+def format_audit_event(event, formatting_options={}):
     """
     Takes a CRUDEvent and returns a formatted dictionary for display in the UI.
     Includes enhanced labels and object details.
     """
+    BASE_DOCUMENT_TYPES = ["nofo", "contentguide"]
+
+    SubsectionModel = formatting_options.get("SubsectionModel", Subsection)
+    document_display_prefix = formatting_options.get("document_display_prefix", "NOFO")
+
     event_details = {
         "event_type": event.get_event_type_display(),
         "object_type": event.content_type.model.title(),
@@ -55,12 +60,12 @@ def format_audit_event(event):
         event_details["object_html_id"] = ""
 
     # Improve object description for subsection edits
-    if event.content_type.model == "subsection":
+    if "subsection" in event.content_type.model:
         try:
-            subsection = Subsection.objects.get(id=event.object_id)
+            subsection = SubsectionModel.objects.get(id=event.object_id)
             name = subsection.name or "#{}".format(subsection.order)
             event_details["object_description"] = f"{subsection.section.name} - {name}"
-        except Subsection.DoesNotExist:
+        except SubsectionModel.DoesNotExist:
             pass
 
     # Handle custom audit events
@@ -73,18 +78,24 @@ def format_audit_event(event):
                 if "action" in changed_fields:
                     action = changed_fields["action"]
                     if action == "nofo_import":
-                        event_details["event_type"] = "NOFO Imported"
+                        event_details["event_type"] = (
+                            f"{document_display_prefix} Imported"
+                        )
                     elif action == "nofo_print":
-                        event_details["event_type"] = "NOFO Printed"
+                        event_details["event_type"] = (
+                            f"{document_display_prefix} Printed"
+                        )
                         if "print_mode" in changed_fields:
                             event_details[
                                 "event_type"
                             ] += f" ({changed_fields['print_mode'][0]} mode)"
                     elif action == "nofo_reimport":
-                        event_details["event_type"] = "NOFO Re-imported"
+                        event_details["event_type"] = (
+                            f"{document_display_prefix} Re-imported"
+                        )
 
                 # Improve object description for Nofo field changes
-                elif event.content_type.model == "nofo":
+                elif event.content_type.model in BASE_DOCUMENT_TYPES:
                     field_name = next(iter(changed_fields.keys()))
                     formatted_field = " ".join(
                         word.title() for word in field_name.split("_")
