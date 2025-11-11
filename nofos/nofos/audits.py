@@ -97,6 +97,18 @@ def format_audit_event(event):
 
 
 def get_audit_events_for_nofo(nofo, reverse=True):
+    return get_audit_events_for_document(
+        nofo,
+        document_model="nofo",
+        section_model="section",
+        subsection_model="subsection",
+        reverse=reverse,
+    )
+
+
+def get_audit_events_for_document(
+    document, document_model, section_model, subsection_model, reverse=True
+):
     """
     Return all audit events related to the given NOFO: the NOFO object,
     its sections, and its subsections.
@@ -120,16 +132,16 @@ def get_audit_events_for_nofo(nofo, reverse=True):
         return filtered_events
 
     # Get audit events for the NOFO
-    nofo_events = CRUDEvent.objects.filter(
-        object_id=nofo.id, content_type__model="nofo"
+    document_events = CRUDEvent.objects.filter(
+        object_id=document.id, content_type__model=document_model
     )
-    nofo_events = _filter_updated_events(nofo_events)
+    document_events = _filter_updated_events(document_events)
 
     # Get audit events for Sections
-    section_ids = list(nofo.sections.values_list("id", flat=True))
+    section_ids = list(document.sections.values_list("id", flat=True))
     section_events = CRUDEvent.objects.filter(
         object_id__in=[str(sid) for sid in section_ids],
-        content_type__model="section",
+        content_type__model=section_model,
     )
 
     # Get audit events for Subsections (even if they have been deleted)
@@ -138,11 +150,11 @@ def get_audit_events_for_nofo(nofo, reverse=True):
         subsection_filter |= Q(object_json_repr__contains=str(section_id))
 
     subsection_events = CRUDEvent.objects.filter(
-        content_type__model="subsection"
+        content_type__model=subsection_model
     ).filter(subsection_filter)
 
     return sorted(
-        list(nofo_events) + list(section_events) + list(subsection_events),
+        list(document_events) + list(section_events) + list(subsection_events),
         key=lambda e: e.datetime,
         reverse=reverse,
     )
