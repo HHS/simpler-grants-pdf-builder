@@ -9,7 +9,14 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add functionality for adding/deleting a Content Guide subsection
+- Add "preview" page for Composer
+- Added syntax highlighting to Ace editor for {variables}
+- Add django-markdown-editor markdown extension for wrapping {variables} with spans
+
 ### Changed
+
+- Allow "instructions" to be edited like a subsection body
 
 ### Fixed
 
@@ -30,7 +37,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
-- Show "destructive" alert message when deleting a NOFO
+- Show "destructive" alert message when deleting a Content Guide
 
 ### Migrations
 
