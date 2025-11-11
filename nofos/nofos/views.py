@@ -1091,22 +1091,15 @@ class NofoEditStatusView(BaseNofoEditView):
 ###########################################################
 
 
-class BaseNofoHistoryView(GroupAccessObjectMixin, DetailView):
+class BaseNofoHistoryView(DetailView):
     """
     Mixin to provide common functionality for NOFO history views.
     """
 
-    template_name = "nofos/nofo_history.html"
     events_per_page = 25  # Show 25 events per batch
 
     # Must be set by child classes
     model = None
-
-    def get_template_name(self):
-        """
-        Allows child classes to override the template name if desired.
-        """
-        return self.template_name
 
     def get_document_model_name(self):
         """
@@ -1150,7 +1143,9 @@ class BaseNofoHistoryView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class NofoHistoryView(PreventIfArchivedOrCancelledMixin, BaseNofoHistoryView):
+class NofoHistoryView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, BaseNofoHistoryView
+):
     model = Nofo
     template_name = "nofos/nofo_history.html"
     events_per_page = 25  # Show 25 events per batch

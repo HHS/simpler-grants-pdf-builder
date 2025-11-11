@@ -16,6 +16,11 @@ urlpatterns = [
         "<uuid:pk>/delete", views.ComposerArchiveView.as_view(), name="composer_archive"
     ),
     path(
+        "<uuid:pk>/history",
+        views.ComposerHistoryView.as_view(),
+        name="composer_history",
+    ),
+    path(
         "<uuid:pk>",
         views.compare_section_redirect,
         name="composer_document_redirect",
