@@ -5,13 +5,6 @@
   Configure: {{ section.name }} </title>
 {% endblock %}
 
-{% block css %}
-  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
-{% endblock %}
-
 {% block body_class %}composer_document_section composer_document_section--preview{% endblock %}
 
 {% block content %}
@@ -39,11 +32,11 @@
           <div class="usa-accordion__content usa-prose">
             <div class="display-flex flex-justify">
               {% if section.get_previous_section %}
-                <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
+                <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--unstyled usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
               {% endif %}
 
               {% if section.get_next_section %}
-                <a href="{% url 'composer:section_edit' document.id section.get_next_section.id %}" class="usa-button--icon--after usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
+                <a href="{% url 'composer:section_edit' document.id section.get_next_section.id %}" class="usa-button--unstyled usa-button--icon--after usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
               {% endif %}
             </div>
           </div>
@@ -53,15 +46,15 @@
       <main>
         <!-- Render each section with all its subsections -->
         {% for subsection in section.subsections.all %}
-          <div class="margin-top-3 grid-row grid-gap flex-align-center">
+          <div class="grid-row grid-gap flex-align-center">
             <div class="grid-col-2 text-bold">{{subsection.name}}</div>
             <div class="grid-col-9">
               {% if subsection.instructions %}
-              <div class="bg-primary-lighter padding-2">
+              <div class="usa-prose padding-2 bg-primary-lighter">
                 {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
               </div>
               {% endif %}
-              <div class="margin-top-2 {%if subsection.callout_box %}padding-2 border border-base-lighter border-width-05 radius-lg{% endif %}">
+              <div class="usa-prose margin-top-2 {%if subsection.callout_box %}padding-2 border border-base-lighter border-width-05 radius-lg{% endif %}">
                 {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
               </div>
             </div>

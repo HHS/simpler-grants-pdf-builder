@@ -168,24 +168,22 @@ footer .usa-footer__primary-link:visited {
   filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
     hue-rotate(216deg) brightness(100%) contrast(80%);
 }
-
+.usa-button--icon:visited {
+  color: var(--color--usa-link);
+}
 .usa-button--icon.usa-button--outline::before,
-.usa-button--unstyled.usa-button--icon--before::before,
-.usa-button--unstyled.usa-button--icon--after::after {
+.usa-button--icon--before.usa-button--unstyled::before,
+.usa-button--icon--after.usa-button--unstyled::after {
   filter: brightness(0) saturate(100%) invert(19%) sepia(62%) saturate(3740%)
     hue-rotate(190deg) brightness(93%) contrast(102%);
 }
 
-.usa-button--icon.usa-button--outline:hover::before,
-.usa-button--unstyled.usa-button--icon--before::hover::before,
-.usa-button--unstyled.usa-button--icon--after::hover::after {
+.usa-button--icon.usa-button--outline:hover::before {
   filter: brightness(0) saturate(100%) invert(19%) sepia(94%) saturate(993%)
     hue-rotate(192deg) brightness(94%) contrast(94%);
 }
 
-.usa-button--icon.usa-button--outline:active::before,
-.usa-button--unstyled.usa-button--icon--before::active::before,
-.usa-button--unstyled.usa-button--icon--after::active::after{
+.usa-button--icon.usa-button--outline:active::before{
   filter: brightness(0) saturate(100%) invert(15%) sepia(33%) saturate(1347%)
     hue-rotate(179deg) brightness(94%) contrast(96%);
 }
