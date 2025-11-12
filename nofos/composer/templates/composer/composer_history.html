@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static tz %}
+{% load static tz audit_event_object_display_name %}
 
 {% block title %}
   All updates for "{{ document }}"
@@ -40,7 +40,7 @@
     {% for event in audit_events %}
     <tr>
       <td>{{ event.event_type }}</td>
-      <td><em>{{ event.object_type }}</em><br>{{ event.object_description }}</td>
+      <td><em>{{ event.object_type|audit_event_object_display_name }}</em><br>{{ event.object_description }}</td>
       <td>{{ event.user.email }}</td>
       {% timezone "America/New_York" %}
         <td>

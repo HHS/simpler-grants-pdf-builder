@@ -32,13 +32,14 @@ def deduplicate_audit_events_by_day_and_object(events):
     return list(deduplicated.values())
 
 
-def format_audit_event(event, formatting_options={}):
+def format_audit_event(event, formatting_options=None):
     """
     Takes a CRUDEvent and returns a formatted dictionary for display in the UI.
     Includes enhanced labels and object details.
     """
     BASE_DOCUMENT_TYPES = ["nofo", "contentguide"]
 
+    formatting_options = formatting_options or {}
     SubsectionModel = formatting_options.get("SubsectionModel", Subsection)
     document_display_prefix = formatting_options.get("document_display_prefix", "NOFO")
 
@@ -60,7 +61,7 @@ def format_audit_event(event, formatting_options={}):
         event_details["object_html_id"] = ""
 
     # Improve object description for subsection edits
-    if "subsection" in event.content_type.model:
+    if event.content_type.model.endswith("subsection"):
         try:
             subsection = SubsectionModel.objects.get(id=event.object_id)
             name = subsection.name or "#{}".format(subsection.order)

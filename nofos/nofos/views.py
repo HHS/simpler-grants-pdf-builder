@@ -1093,20 +1093,19 @@ class NofoEditStatusView(BaseNofoEditView):
 
 class BaseNofoHistoryView(DetailView):
     """
-    Mixin to provide common functionality for NOFO history views.
+    Mixin to provide common functionality for BaseNOFO-object history views.
     """
 
     events_per_page = 25  # Show 25 events per batch
 
     # Must be set by child classes
     model = None
-    event_formatting_options = {}
 
     def get_event_formatting_options(self):
         """
         Allows child classes to specify options for formatting audit events.
         """
-        return self.event_formatting_options
+        return {}
 
     def get_document_model_name(self):
         """
