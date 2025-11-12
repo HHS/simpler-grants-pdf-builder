@@ -61,3 +61,16 @@ def render_curly_variable_list_html_string(extracted_variables) -> str:
         f'<span class="curly-var font-mono-xs">{{{v}}}</span>' for v in variables
     )
     return f": {labels}"
+
+
+def get_audit_event_object_display_name(value: str) -> str:
+    OBJECT_DISPLAY_NAMES = {
+        "Contentguide": "Content guide",
+        "Contentguidesection": "Step",
+        "Contentguidesubsection": "Section",
+    }
+
+    if not value:
+        return ""
+
+    return OBJECT_DISPLAY_NAMES.get(value) or value
