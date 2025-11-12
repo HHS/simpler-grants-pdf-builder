@@ -110,7 +110,7 @@
           <div class="usa-error-message margin-bottom-1">{{ form.body.errors.0 }}</div>
         {% endif %}
 
-        <div class="main-martor--container {% if form.body.errors %}main-martor--container--error{% endif %}">
+        <div class="main-martor--container {% if form.body.errors %}main-martor--container--error{% endif %} {% if form.edit_mode.value == 'full' %}styled-subsection-body--full{% endif %}">
           {{ form.body }}
         </div>
 

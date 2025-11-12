@@ -2393,3 +2393,12 @@ del + ins > br {
   background-color: var(--color--yellow);
   padding: 0 2px;
 }
+
+.styled-subsection-body--variables .md-curly-variable {
+  background-color: var(--color--yellow);
+  padding: 0 2px;
+}
+
+.styled-subsection-body--full {
+  color: var(--color--green-dark);
+}
