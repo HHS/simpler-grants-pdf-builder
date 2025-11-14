@@ -11,8 +11,8 @@
   // SHARED CONFIG / HELPERS
   // ===========================================================================
 
-  // Keep in sync with Python: r"(?<!\\)\{([^{}]*\S[^{}]*)\}"
-  const CURLY_VARIABLE_PATTERN_JS = /(?<!\\)\{[^{}]*\S[^{}]*\}/g;
+  // Keep in sync with Python: r"(?<!\\)\{(?![:.#])([^{}]*\S[^{}]*)\}"
+  const CURLY_VARIABLE_PATTERN_JS = /(?<!\\)\{(?![:.#])[^{}]*\S[^{}]*\}/g;
 
   // Token types from Ace's Markdown mode we consider "textual" (safe to split)
   const TEXT_TOKEN_TYPES = [

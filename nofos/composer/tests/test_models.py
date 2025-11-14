@@ -150,6 +150,21 @@ class ExtractVariablesTests(TestCase):
             [{"key": "variable", "type": "string", "label": "variable"}],
         )
 
+    def test_attr_list_block_not_wrapped_colon(self):
+        subsection = self._mk("This is a paragraph.\n{: #an_id .a_class }")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_attr_list_block_not_wrapped_class(self):
+        subsection = self._mk("This is a paragraph.\n{.lead}")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
+    def test_attr_list_block_not_wrapped_id(self):
+        subsection = self._mk("This is a paragraph.\n{#section-id}")
+        variables = subsection.extract_variables()
+        self.assertEqual(variables, [])
+
     def test_text_override_parameter_is_used_instead_of_instance_body(self):
         subsection = self._mk("Old body without vars")
         override = "New body with a {Fresh var}"
