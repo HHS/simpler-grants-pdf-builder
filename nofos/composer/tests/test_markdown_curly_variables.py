@@ -116,6 +116,26 @@ class CurlyVariableMarkdownTests(SimpleTestCase):
             html,
         )
 
+    def test_attr_list_block_not_wrapped_colon(self):
+        """Attribute list starting with '{:' is not treated as a variable."""
+        text = "This is a paragraph.\n{: #an_id .a_class }"
+        html = markdownify(text)
+        self.assertEqual(
+            '<p class="a_class" id="an_id">This is a paragraph.<br></p>', html
+        )
+
+    def test_attr_list_block_not_wrapped_class(self):
+        """Attribute list starting with '{.' is not treated as a variable."""
+        text = "This is a paragraph.\n{.lead}"
+        html = markdownify(text)
+        self.assertEqual('<p class="lead">This is a paragraph.<br></p>', html)
+
+    def test_attr_list_block_not_wrapped_id(self):
+        """Attribute list starting with '{#' is not treated as a variable."""
+        text = "This is a paragraph.\n{#section-id}"
+        html = markdownify(text)
+        self.assertEqual('<p id="section-id">This is a paragraph.<br></p>', html)
+
 
 class CurlyVariablePatternTests(SimpleTestCase):
     """Test that the regex pattern correctly matches curly variables."""
@@ -167,5 +187,23 @@ class CurlyVariablePatternTests(SimpleTestCase):
     def test_extraction_no_matches(self):
         """Text without variables returns empty list."""
         text = "This has no variables at all."
+        vars = self._find_curly_variables(text)
+        self.assertEqual(vars, [])
+
+    def test_extraction_ignores_attr_list_colon(self):
+        """Attribute lists starting with '{:' should be ignored."""
+        text = "This is a paragraph.\n{: #an_id .a_class }"
+        vars = self._find_curly_variables(text)
+        self.assertEqual(vars, [])
+
+    def test_extraction_ignores_attr_list_class(self):
+        """Attribute lists starting with '{.' should be ignored."""
+        text = "This {.lead} should not be a variable."
+        vars = self._find_curly_variables(text)
+        self.assertEqual(vars, [])
+
+    def test_extraction_ignores_attr_list_id(self):
+        """Attribute lists starting with '{#' should be ignored."""
+        text = "This {#section-id} should not be a variable."
         vars = self._find_curly_variables(text)
         self.assertEqual(vars, [])
