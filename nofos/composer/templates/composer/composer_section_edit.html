@@ -21,7 +21,7 @@
         {% endwith %}
       </h1>
 
-      <div class="margin-top-4">
+      <div class="margin-y-4">
         <details class="usa-accordion usa-accordion--bordered" open>
           <summary class="usa-accordion__button">
             <h3 class="usa-accordion--heading margin-top-0">
@@ -54,7 +54,7 @@
                 {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
               </div>
               {% endif %}
-              <div class="usa-prose margin-top-2 {%if subsection.callout_box %}padding-2 border border-base-lighter border-width-05 radius-lg{% endif %}">
+              <div class="usa-prose margin-top-2 {%if subsection.callout_box %}padding-2 border border-base-lighter border-width-05 radius-lg{% endif %} styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
                 {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
               </div>
             </div>

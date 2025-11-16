@@ -91,6 +91,9 @@
 {% block main_container_end %}
     </div>
   </section>
+  {% if include_scroll_to_top|default:False %}
+    {% include "includes/scroll_to_top_button.html" %}
+  {% endif %}
 </main>
 {% endblock %}
 
@@ -133,6 +136,12 @@
   </footer>
 {% endblock %}
 
+
 {% block uswds_js_footer %}
   <script src="{% static 'uswds/uswds.js' %}"></script>
+{% endblock %}
+
+
+{% block js_footer %}
+  <script src="{% static 'js/nofos/scroll_to_top.js' %}"></script>
 {% endblock %}

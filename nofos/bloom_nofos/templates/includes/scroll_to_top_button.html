@@ -1,0 +1,23 @@
+{% comment %}
+Scroll-to-top button macro
+
+This macro adds a floating "scroll to top" button that appears when the user
+has scrolled down the page. The button is hidden by default and shows with
+a smooth fade-in animation once the user scrolls past 90% of the viewport height.
+
+Usage in base.html (context variable approach):
+  In your view, set: context['include_scroll_to_top'] = True
+  The macro is automatically included via base.html based on the variable.
+
+Direct usage (for overrides):
+  {% include "includes/scroll_to_top_button.html" with use_scroll_to_top=True %}
+
+The button visibility is controlled by JavaScript that tracks the scroll position.
+Clicking scrolls smoothly to the top and moves focus to #main-content for a11y.
+{% endcomment %}
+
+<div class="back-to-top--container" role="doc-backlink">
+  <a href="#" aria-label="Back to top of page" class="usa-button--icon usa-button--icon--before usa-button--arrow_upward">
+    <span class="margin-left-05">Top</span>
+  </a>
+</div>
