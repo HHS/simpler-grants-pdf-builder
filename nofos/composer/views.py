@@ -349,6 +349,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
             prev_sec=prev_sec,
             next_sec=next_sec,
             anchor=self.request.GET.get("anchor"),
+            include_scroll_to_top=True,
         )
         return context
 
@@ -382,6 +383,7 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         context["current_section"] = None  # not on a specific section in preview
         context["show_back_link"] = True
         context["is_preview"] = True
+        context["include_scroll_to_top"] = True
         return context
 
 
@@ -409,6 +411,7 @@ class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
+        context["include_scroll_to_top"] = True
         return context
 
 
