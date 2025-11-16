@@ -1,0 +1,9 @@
+{% load edit_mode_label edit_mode_label_class %}
+
+{% with edit_mode|edit_mode_label as label %}
+  {% with edit_mode|edit_mode_label_class as class %}
+    {% if label %}
+      <span class="usa-tag maxh-fit-content text-black {{class}}">{{ label }}</span>
+    {% endif %}
+  {% endwith %}
+{% endwith %}

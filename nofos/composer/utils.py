@@ -22,10 +22,15 @@ def create_content_guide_document(title, sections, opdiv):
 
 
 EDIT_MODE_LABELS = {
-    "full": "Some text",
-    "variables": "Variables",
+    "variables": "Certain text",
     "yes_no": "Yes/No",
     "locked": "Locked",
+}
+
+EDIT_MODE_LABEL_CLASSES = {
+    "variables": "bg-yellow",
+    "yes_no": "bg-primary-lighter",
+    "locked": "bg-secondary-light",
 }
 
 
@@ -33,7 +38,14 @@ def get_edit_mode_label(value: str) -> str:
     """Return a human-readable label for an ContentGuideSubsection edit_mode value."""
     if not value:
         return ""
-    return EDIT_MODE_LABELS.get(value) or value
+    return EDIT_MODE_LABELS.get(value) or ""
+
+
+def get_edit_mode_label_class(value: str) -> str:
+    """Return a class string to apply to the label tag <span> for a ContentGuideSubsection."""
+    if not value:
+        return ""
+    return EDIT_MODE_LABEL_CLASSES.get(value) or ""
 
 
 def render_curly_variable_list_html_string(extracted_variables) -> str:
