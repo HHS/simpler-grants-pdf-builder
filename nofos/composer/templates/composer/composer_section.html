@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load tz martortags edit_mode_label add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
 
 {% block title %}
   {{ document.title }} — {{ current_section.name }}</title>
@@ -73,7 +73,7 @@
                         aria-expanded="false"
                       {% endif %}
                       >
-                {{ subsection.name|default:"(No title)" }} <span class="usa-tag bg-primary-dark maxh-fit-content">{{ subsection.edit_mode|edit_mode_label }}</span>
+                {{ subsection.name|default:"(No title)" }} {% include "includes/subsection_label.html" with edit_mode=subsection.edit_mode %}
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
