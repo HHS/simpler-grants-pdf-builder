@@ -536,8 +536,6 @@ Edit “{{ nofo|nofo_name }}”
   </table>
 {% endif %}
 
-<div id="back-to-top--sentinel" aria-hidden="true"></div>
-
 {% for section in nofo.sections.all|dictsort:"order" %}
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived table--section">
   <caption aria-label="{{ section.name|strip_br }}">
@@ -632,7 +630,4 @@ Edit “{{ nofo|nofo_name }}”
 </table>
 {% endfor %}
 
-<div class="back-to-top--container">
-  <a class="back-to-top usa-button--icon usa-button--icon--before usa-button--arrow_upward" href="#back-to-top">Top</a>
-</div>
 {% endblock %}
