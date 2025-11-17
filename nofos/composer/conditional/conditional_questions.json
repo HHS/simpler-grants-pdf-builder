@@ -1,0 +1,53 @@
+[
+  {
+    "key": "cost_sharing",
+    "label": "Does this NOFO include a cost-sharing requirement?",
+    "subsections": [
+      "Cost sharing",
+      "Method 1: Start with the federal share",
+      "Method 2: Start with the total project cost",
+      "Types of cost sharing",
+      "Cost-sharing commitments",
+      "Cost-sharing waiver"
+    ]
+  },
+  {
+    "key": "maintenance_of_effort",
+    "label": "Is there is a statutory maintenance of effort requirement?",
+    "subsections": ["Maintenance of effort"]
+  },
+  {
+    "key": "data_management_plans",
+    "label": "Does this project include a data management and sharing plan?",
+    "subsections": ["Data management plan"]
+  },
+
+  {
+    "key": "training_awards",
+    "label": "Does this NOFO include training awards?",
+    "subsections": ["Indirect costs: training awards"]
+  },
+
+  {
+    "key": "foreign_awards",
+    "label": "Does this NOFO include foreign awards?",
+    "subsections": ["Indirect costs: foreign awards"]
+  },
+  {
+    "key": "letters_of_support",
+    "label": "Are letters of support required?",
+    "subsections": ["Letters of support"]
+  },
+
+  {
+    "key": "intergovernmental_review",
+    "label": "Is this NOFO subject to Intergovernmental Review?",
+    "subsections": ["Intergovernmental review"]
+  },
+
+  {
+    "key": "cooperative_agreement",
+    "label": "Is this a cooperative agreement?",
+    "subsections": ["Cooperative agreement terms", "CDC’s role"]
+  }
+]
