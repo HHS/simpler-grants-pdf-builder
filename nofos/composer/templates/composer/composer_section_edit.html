@@ -30,7 +30,7 @@
           </summary>
 
           <div class="usa-accordion__content usa-prose">
-            <div class="display-flex flex-justify">
+            <div class="display-flex flex-justify edit_section--other_sections">
               {% if section.get_previous_section %}
                 <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--unstyled usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
               {% endif %}
