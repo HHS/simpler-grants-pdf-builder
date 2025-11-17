@@ -155,7 +155,6 @@ footer .usa-footer__primary-link:visited {
   background-position: center center;
   background-size: cover;
   display: inline-flex;
-
 }
 
 .usa-button--icon--only {
@@ -183,7 +182,7 @@ footer .usa-footer__primary-link:visited {
     hue-rotate(192deg) brightness(94%) contrast(94%);
 }
 
-.usa-button--icon.usa-button--outline:active::before{
+.usa-button--icon.usa-button--outline:active::before {
   filter: brightness(0) saturate(100%) invert(15%) sepia(33%) saturate(1347%)
     hue-rotate(179deg) brightness(94%) contrast(96%);
 }
@@ -979,6 +978,10 @@ label.usa-label {
   transform: translateY(25px);
 }
 
+.back-to-top--container a:visited {
+  color: var(--color--white);
+}
+
 .back-to-top--container a:hover {
   text-decoration: underline;
 }
@@ -1325,7 +1328,9 @@ _:future,
 main .back-link a,
 .nofo_edit caption div a:visited,
 .section_edit .edit_section--other_sections a,
-.section_edit .edit_section--other_sections a:visited {
+.section_edit .edit_section--other_sections a:visited,
+.composer_document_section .edit_section--other_sections a,
+.composer_document_section .edit_section--other_sections a:visited {
   color: var(--color--usa-link);
 }
 
