@@ -73,7 +73,11 @@
                         aria-expanded="false"
                       {% endif %}
                       >
-                {{ subsection.name|default:"(No title)" }} {% include "includes/subsection_label.html" with edit_mode=subsection.edit_mode %}
+                {{ subsection.name|default:"(No title)" }}
+                <div class="flex-row">
+                  {% include "includes/subsection_label.html" with subsection=subsection only %}
+                  {% include "includes/subsection_label.html" with edit_mode=subsection.edit_mode only %}
+                </div>
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
