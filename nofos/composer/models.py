@@ -115,6 +115,46 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Whether to show this section in the content guide.",
     )
 
+    # ---------- Conditional answer helpers ---------- #
+
+    _YES_NO_PATTERN = re.compile(r"\((YES|NO)\)")
+
+    def _find_yes_no_string(self) -> str | None:
+        """
+        Parse the instructions for a (YES) or (NO) marker.
+
+        Returns "YES", "NO", or None if nothing found.
+        """
+        if not self.instructions:
+            return None
+
+        m = self._YES_NO_PATTERN.search(self.instructions)
+        if not m:
+            return None
+
+        return m.group(1).upper()
+
+    @property
+    def conditional_answer(self) -> bool | None:
+        """
+        Boolean representation of the (YES)/(NO) token in instructions.
+
+        Returns:
+            True  -> (YES)
+            False -> (NO)
+            None  -> no token present
+        """
+        token = self._find_yes_no_string()
+        if token == "YES":
+            return True
+        if token == "NO":
+            return False
+        return None
+
+    @property
+    def is_conditional(self) -> bool:
+        return self.conditional_answer is not None
+
     # ---------- Variable parsing helpers ---------- #
 
     # Unified pattern - no nested braces allowed

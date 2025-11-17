@@ -175,3 +175,76 @@ class ExtractVariablesTests(TestCase):
                 {"key": "fresh_var", "type": "string", "label": "Fresh var"},
             ],
         )
+
+
+class ConditionalAnswerTests(TestCase):
+    def setUp(self):
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            document=self.guide, order=1, name="Section 1", html_id="sec-1"
+        )
+
+    def _mk(self, instructions: None, edit_mode="yes_no", order=1):
+        """
+        Helper to create a subsection with given instructions.
+        Body is irrelevant for these tests.
+        """
+        return ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=order,
+            name="Sub 1",
+            tag="h3",
+            body="",
+            instructions=instructions or "",
+            edit_mode=edit_mode,
+            enabled=True,
+        )
+
+    def test_no_instructions_returns_none_and_not_conditional(self):
+        subsection = self._mk(instructions="")
+        self.assertIsNone(subsection.conditional_answer)
+        self.assertFalse(subsection.is_conditional)
+
+    def test_yes_token_returns_true(self):
+        subsection = self._mk("Include this section if (YES).")
+        self.assertTrue(subsection.is_conditional)
+        self.assertIs(subsection.conditional_answer, True)
+
+    def test_no_token_returns_false(self):
+        subsection = self._mk("Exclude this section if (NO).")
+        self.assertTrue(subsection.is_conditional)
+        self.assertIs(subsection.conditional_answer, False)
+
+    def test_case_insensitive_matching(self):
+        # neither should match because we require uppercase
+        yes_sub = self._mk("Include when (yes).")
+        no_sub = self._mk("Exclude when (nO).", order=2)
+
+        self.assertIs(yes_sub.is_conditional, False)
+        self.assertIs(no_sub.is_conditional, False)
+
+    def test_parentheses_without_yes_no_are_ignored(self):
+        subsection = self._mk("This text has (MAYBE) but no explicit YES or NO token.")
+        self.assertIsNone(subsection.conditional_answer)
+        self.assertFalse(subsection.is_conditional)
+
+    def test_first_token_wins_if_both_yes_and_no_present(self):
+        """
+        Document the current behaviour: we use the first match in instructions.
+        """
+        subsection = self._mk("First (YES), then (NO).")
+        self.assertIs(subsection.conditional_answer, True)
+
+        subsection2 = self._mk("First (NO), then (YES).", order=2)
+        self.assertIs(subsection2.conditional_answer, False)
+
+    def test_non_yes_no_edit_mode_still_parses(self):
+        """
+        Even if edit_mode is not 'yes_no', the parsing still works.
+        This just documents the current behaviour.
+        """
+        subsection = self._mk("Include for (YES).", edit_mode="full")
+        self.assertIs(subsection.conditional_answer, True)
+        self.assertTrue(subsection.is_conditional)
