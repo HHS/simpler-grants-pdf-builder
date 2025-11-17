@@ -48,6 +48,17 @@ def get_edit_mode_label_class(value: str) -> str:
     return EDIT_MODE_LABEL_CLASSES.get(value) or ""
 
 
+def get_conditional_questions_label(subsection: ContentGuideSubsection) -> str:
+    """Return a label for an ContentGuideSubsection that is a conditional question."""
+    if subsection and subsection.is_conditional:
+        if subsection.conditional_answer:
+            return "Conditional: Yes"
+        else:
+            return "Conditional: No"
+
+    return ""
+
+
 def render_curly_variable_list_html_string(extracted_variables) -> str:
     """
     Render the HTML string for the inline variable list shown after the

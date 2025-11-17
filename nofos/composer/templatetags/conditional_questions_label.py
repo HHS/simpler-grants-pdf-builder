@@ -1,0 +1,14 @@
+from composer.models import ContentGuideSubsection
+from composer.utils import get_conditional_questions_label
+from django import template
+
+register = template.Library()
+
+
+@register.filter
+def conditional_questions_label(subsection: ContentGuideSubsection):
+    """
+    Return "Conditional: Yes" or "Conditional: No" if subsection is a conditional question.
+    Usage: {{ subsection|conditional_questions_label }}
+    """
+    return get_conditional_questions_label(subsection)

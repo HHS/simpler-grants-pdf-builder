@@ -1,9 +1,19 @@
-{% load edit_mode_label %}
+{% load edit_mode_label conditional_questions_label %}
 
-{% with edit_mode|edit_mode_label as label %}
-  {% with edit_mode|edit_mode_label_class as class %}
-    {% if label %}
-      <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{class}}">{{ label }}</span>
-    {% endif %}
+{% if edit_mode %}
+  {% with edit_mode|edit_mode_label as label %}
+    {% with edit_mode|edit_mode_label_class as class %}
+      {% if label %}
+        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{class}}">{{ label }}</span>
+      {% endif %}
+    {% endwith %}
   {% endwith %}
-{% endwith %}
+{% endif %}
+
+{% if subsection %}
+  {% with subsection|conditional_questions_label as conditional_label %}
+      {% if conditional_label %}
+        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-accent-warm-light">{{ conditional_label }}</span>
+      {% endif %}
+  {% endwith %}
+{% endif %}
