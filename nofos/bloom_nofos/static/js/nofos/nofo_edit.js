@@ -183,29 +183,4 @@ document.addEventListener("DOMContentLoaded", function () {
       if (wasClosed) detailsElement.open = false;
     });
   });
-
-  // ------------------------------------------------------------
-  //54. Controls when the "Top" link appears on the bottom right as you scroll
-  // ------------------------------------------------------------
-  const btn = document.querySelector(".back-to-top--container a");
-  const sentinel = document.getElementById("back-to-top--sentinel");
-  if (!btn || !sentinel) return;
-
-  const io = new IntersectionObserver(([entry]) => {
-    // Above top? (passed) boundingClientRect.top < 0
-    const passed = entry.boundingClientRect.top < 0;
-
-    if (entry.isIntersecting || passed) {
-      btn.classList.add("is-visible");
-    } else {
-      // below bottom (not reached yet)
-      btn.classList.remove("is-visible");
-    }
-  });
-
-  io.observe(sentinel);
-});
-
-window.addEventListener("load", function () {
-  document.documentElement.style.scrollBehavior = "smooth";
 });

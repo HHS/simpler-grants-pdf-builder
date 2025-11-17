@@ -320,6 +320,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             or context["has_external_links"]
         )
 
+        # Use base template scroll to top button functionality
+        context["include_scroll_to_top"] = True
+
         return context
 
 
