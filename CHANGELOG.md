@@ -9,6 +9,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add an "OpDiv" column to the admin view for a NOFO
 - Add functionality for adding/deleting a Content Guide subsection
 - Add "preview" page for Composer
 - Added syntax highlighting to Ace editor for {variables}
@@ -16,6 +17,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Change Composer tags to new format
+- Scroll-to-top button now on multiple composer pages
 - Allow "instructions" to be edited like a subsection body
 
 ### Fixed

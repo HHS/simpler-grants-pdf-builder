@@ -106,6 +106,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     list_display = [
         "title",
         "number",
+        "opdiv",
         "group",
         "status",
         "designer",
