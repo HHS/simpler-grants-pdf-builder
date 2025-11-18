@@ -1,10 +1,10 @@
 from html import escape
 
+from composer.conditional.conditional_questions import find_question_for_subsection
+from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from django.forms import ValidationError
 
 from nofos.nofo import _build_document
-
-from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 
 
 def create_content_guide_document(title, sections, opdiv):
@@ -57,6 +57,25 @@ def get_conditional_questions_label(subsection: ContentGuideSubsection) -> str:
             return "Conditional: No"
 
     return ""
+
+
+def get_conditional_question_note(subsection):
+    if not subsection or not subsection.is_conditional:
+        return ""
+
+    question = find_question_for_subsection(subsection)
+    if not question:
+        return ""
+
+    answer_label = "Yes" if subsection.conditional_answer else "No"
+
+    return (
+        "Note: Writers will be asked “<em>{}</em>”, "
+        "and will see this section if they answer: <strong>{}</strong>. "
+    ).format(
+        question.label,
+        answer_label,
+    )
 
 
 def render_curly_variable_list_html_string(extracted_variables) -> str:

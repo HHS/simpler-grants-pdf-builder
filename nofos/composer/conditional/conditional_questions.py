@@ -61,3 +61,13 @@ class ConditionalQuestionRegistry(dict[str, ConditionalQuestion]):
             for subsection in subsections
             if question.matches_subsection_name(subsection.name)
         ]
+
+
+CONDITIONAL_QUESTIONS = ConditionalQuestionRegistry.from_json(DEFAULT_JSON_PATH)
+
+
+def find_question_for_subsection(subsection):
+    for question in CONDITIONAL_QUESTIONS.values():
+        if question.matches_subsection_name(subsection.name):
+            return question
+    return None
