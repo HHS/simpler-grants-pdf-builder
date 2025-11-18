@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note %}
 
 {% block title %}
   {{ document.title }} — {{ current_section.name }}</title>
@@ -81,8 +81,15 @@
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
+              {% with subsection|conditional_questions_note as conditional_note %}
+                {% if conditional_note %}
+                  <p class="margin-top-1">
+                    {{ conditional_note|safe }}
+                  </p>
+                {% endif %}
+              {% endwith %}
               {% if subsection.instructions %}
-              <div class="position-relative padding-2 border-bottom border-base-lighter">
+              <div class="position-relative padding-bottom-2 border-bottom border-base-lighter">
                 <div class="bg-primary-lighter padding-2">
                   <div class="display-flex flex-justify flex-align-center">
                     <div class="font-heading-lg text-bold padding-top-1">Instructions</div>
