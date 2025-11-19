@@ -14,7 +14,15 @@
 {% block content %}
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
-	<h1 class="font-heading-xl margin-y-0">{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
+	<div class="nofo_index--header">
+		<h1 class="font-heading-xl margin-y-0">{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
+		{% if user.is_superuser %}
+			<div class="nofo_index--header--view font-sans-md">
+				<a href="{% url 'nofos:nofo_search' %}">Search NOFOs</a>
+			</div>
+		{% endif %}
+	</div>
+
 
 	<p class="nofo_index--filter">
 		<a href="{% url 'nofos:nofo_index' %}?group={{ nofo_group }}" {% if not nofo_status or nofo_status == 'in progress' %}aria-current="page"{% endif %}>In progress NOFOs</a> |

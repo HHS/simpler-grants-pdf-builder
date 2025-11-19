@@ -166,6 +166,7 @@ urlpatterns = [
         views.CheckNOFOLinksDetailView.as_view(),
         name="nofo_check_links",
     ),
+    path("search", views.NofoSearchView.as_view(), name="nofo_search"),
     path(
         "check-link",
         views.CheckNOFOLinkSingleView.as_view(),

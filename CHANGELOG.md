@@ -9,6 +9,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add a "search NOFOs" page for superusers
 - Add an "OpDiv" column to the admin view for a NOFO
 - Add functionality for adding/deleting a Content Guide subsection
 - Add "preview" page for Composer
