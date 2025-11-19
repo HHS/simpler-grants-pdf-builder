@@ -130,16 +130,39 @@ class ContentGuideSection(BaseSection):
 
     class Meta:
         ordering = ["order"]
-        unique_together = ("document", "order")
+        unique_together = ("content_guide", "content_guide_instance", "order")
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(
+                        content_guide__isnull=False, content_guide_instance__isnull=True
+                    )
+                    | models.Q(
+                        content_guide__isnull=True, content_guide_instance__isnull=False
+                    )
+                ),
+                name="section_has_exactly_one_parent",
+            )
+        ]
 
-    document = models.ForeignKey(
+    content_guide = models.ForeignKey(
         ContentGuide,
         on_delete=models.CASCADE,
         related_name="sections",
+        null=True,
+        blank=True,
+    )
+
+    content_guide_instance = models.ForeignKey(
+        ContentGuideInstance,
+        on_delete=models.CASCADE,
+        related_name="sections",
+        null=True,
+        blank=True,
     )
 
     def get_document(self):
-        return self.document
+        return self.content_guide or self.content_guide_instance
 
     def get_subsection_model(self):
         return ContentGuideSubsection
