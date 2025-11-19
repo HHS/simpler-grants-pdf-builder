@@ -125,7 +125,7 @@ class ContentGuideInstance(BaseNofo):
 
 class ContentGuideSection(BaseSection):
     """
-    Ordered section of a Content Guide.
+    Ordered section of a Content Guide or a Content Guide Instance.
     """
 
     class Meta:
@@ -168,7 +168,8 @@ class ContentGuideSection(BaseSection):
         return ContentGuideSubsection
 
     def get_sibling_queryset(self):
-        return self.document.sections.all()
+        document = self.get_document()
+        return document.sections.all()
 
 
 class ContentGuideSubsection(BaseSubsection):
