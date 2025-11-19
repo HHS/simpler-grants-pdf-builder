@@ -517,6 +517,7 @@ label.usa-label {
   text-decoration: none;
 }
 
+.nofo_index--header,
 .nofo_edit--header,
 .section_edit--header,
 .subsection_edit--header {
@@ -613,11 +614,13 @@ label.usa-label {
   margin-left: -1px;
 }
 
+.nofo_index--header h1,
 .section_edit--header h1,
 .subsection_edit--header h1 {
   width: 65%;
 }
 
+.nofo_index--header--view,
 .section_edit--header--view,
 .subsection_edit--header--view {
   position: absolute;
@@ -627,6 +630,10 @@ label.usa-label {
   display: flex;
   align-items: baseline;
   gap: 20px;
+}
+
+.nofo_index--header--view {
+  top: 10px;
 }
 
 .nofo_edit--audit-widget {

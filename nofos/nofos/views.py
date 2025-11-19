@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -48,6 +49,7 @@ from .forms import (
     NofoMetadataForm,
     NofoNumberForm,
     NofoOpDivForm,
+    NofoSearchForm,
     NofoShortNameForm,
     NofoStatusForm,
     NofoSubagency2Form,
@@ -1438,6 +1440,43 @@ class NofoRemovePageBreaksView(
                 request, f"{pagebreaks_removed} page breaks have been removed."
             )
         return redirect("nofos:nofo_edit", pk=nofo.id)
+
+
+class NofoSearchView(SuperuserRequiredMixin, ListView):
+    model = Nofo
+    template_name = "nofos/nofo_search.html"
+    context_object_name = "nofo_list"
+
+    def get_queryset(self):
+        # Start with non-archived NOFOs
+        queryset = Nofo.objects.filter(archived__isnull=True)
+
+        # Search query
+        query = self.request.GET.get("query", "").strip()
+        self.search_query = query
+
+        if not query:
+            # No query → show nothing
+            return Nofo.objects.none()
+
+        # Case-insensitive partial matches on these four fields
+        queryset = queryset.filter(
+            Q(short_name__icontains=query)
+            | Q(title__icontains=query)
+            | Q(opdiv__icontains=query)
+            | Q(number__icontains=query)
+        )
+
+        return queryset.order_by("-updated")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = NofoSearchForm(
+            initial={"query": getattr(self, "search_query", "")}
+        )
+        context["query"] = getattr(self, "search_query", "")
+        context["today_m_j"] = dateformat.format(timezone.now(), "M j")
+        return context
 
 
 class CheckNOFOLinkSingleView(SuperuserRequiredMixin, FormView):

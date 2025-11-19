@@ -230,6 +230,20 @@ class CheckNOFOLinkSingleForm(forms.Form):
     url = forms.URLField(label="Check this URL", max_length=2048, required=True)
 
 
+# Simple form for searching for a NOFO
+class NofoSearchForm(forms.Form):
+    query = forms.CharField(
+        label="Search NOFOs",
+        required=False,
+        help_text="Enter any part of a NOFO name, number, or OpDiv.",
+        widget=forms.TextInput(
+            attrs={
+                "class": "usa-input usa-input border-2px",
+            }
+        ),
+    )
+
+
 class InsertOrderSpaceForm(forms.Form):
     section = forms.ModelChoiceField(
         queryset=Section.objects.all(), required=True, label="Section", disabled=False

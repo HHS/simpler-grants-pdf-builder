@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static tz %}
+
+{% block title %}Search NOFOs{% endblock %}
+
+{% block body_class %}nofo_search{% endblock %}
+
+{% block content %}
+  {% url 'nofos:nofo_index' as back_href %}
+  {% include "includes/page_heading.html" with title="Search NOFOs" back_text="Back to “All NOFOs”" back_href=back_href only %}
+
+  <form id="nofo-search-nofos--form" method="get">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Search</button>
+  </form>
+
+  {% if query %}
+    <br>
+    <hr>
+    {% if nofo_list %}
+      <div class="usa-table-container">
+        <table class="usa-table usa-table--borderless width-full">
+          <caption>
+            {{ nofo_list|length }} results for “{{ query }}”
+          </caption>
+          <thead>
+            <tr>
+              <th data-sortable scope="col" role="columnheader">Short name</th>
+              <th data-sortable scope="col" role="columnheader">NOFO Number</th>
+              <th scope="col">OpDiv</th>
+              <th scope="col" class="nofo-group-col">Group</th>
+              <th scope="col">Status</th>
+              <th data-sortable scope="col" role="columnheader">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for nofo in nofo_list %}
+              <tr {% if nofo.status == 'ready-for-qa' %}class="ready-for-qa"{% endif %}>
+                <th scope="row">
+                  <a href="{% url 'nofos:nofo_edit' nofo.id %}">
+                    {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+                  </a>
+                </th>
+                <td>
+                  {% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}
+                </td>
+                <td>
+                  {{ nofo.opdiv }}
+                </td>
+                <td>
+                  <span class="usa-tag bg-group bg-group--{{ nofo.group }}">{{ nofo.group }}</span>
+                </td>
+                <td>{{ nofo.get_status_display }}</td>
+                {% timezone "America/New_York" %}
+                  <td data-sort-value="{{ nofo.updated|date:"YmdHM" }}">
+                    <a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">
+                      {{ nofo.updated|date:'M j' }}{% if nofo.updated|date:'M j' == today_m_j %},<br>{{ nofo.updated|date:'g:i A' }}{% endif %}
+                      <span class="usa-sr-only">
+                        - View audit history for
+                        {% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}
+                      </span>
+                    </a>
+                  </td>
+                {% endtimezone %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No NOFOs found with “{{ query }}” as part of their name, number, or OpDiv.</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}
