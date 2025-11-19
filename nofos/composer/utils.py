@@ -23,13 +23,11 @@ def create_content_guide_document(title, sections, opdiv):
 
 EDIT_MODE_LABELS = {
     "variables": "Certain text",
-    "yes_no": "Yes/No",
     "locked": "Locked",
 }
 
 EDIT_MODE_LABEL_CLASSES = {
     "variables": "bg-yellow",
-    "yes_no": "bg-primary-lighter",
     "locked": "bg-secondary-light",
 }
 

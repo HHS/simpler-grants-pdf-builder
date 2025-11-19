@@ -91,7 +91,6 @@ class ContentGuideSubsection(BaseSubsection):
     EDIT_MODE_CHOICES = [
         ("full", "Edit all text"),
         ("variables", "Edit variables"),
-        ("yes_no", "Select Yes/No only"),
         ("locked", "Content is locked"),
     ]
 
@@ -100,6 +99,11 @@ class ContentGuideSubsection(BaseSubsection):
         choices=EDIT_MODE_CHOICES,
         default="locked",
         help_text="Decide how NOFO Writers can edit this subsection.",
+    )
+
+    optional = models.BooleanField(
+        default=False,
+        help_text="Decide if this subsection is required, or can be removed by NOFO Writers",
     )
 
     # Admin-only Markdown field for guidance.
