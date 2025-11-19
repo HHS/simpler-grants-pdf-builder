@@ -1,5 +1,13 @@
 {% load edit_mode_label conditional_questions_label %}
 
+{% if conditional_answer is True or conditional_answer is False %}
+  {% with conditional_answer|conditional_questions_label as conditional_label %}
+      {% if conditional_label %}
+        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-accent-warm-light">{{ conditional_label }}</span>
+      {% endif %}
+  {% endwith %}
+{% endif %}
+
 {% if edit_mode %}
   {% with edit_mode|edit_mode_label as label %}
     {% with edit_mode|edit_mode_label_class as class %}
@@ -7,13 +15,5 @@
         <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{class}}">{{ label }}</span>
       {% endif %}
     {% endwith %}
-  {% endwith %}
-{% endif %}
-
-{% if subsection %}
-  {% with subsection|conditional_questions_label as conditional_label %}
-      {% if conditional_label %}
-        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-accent-warm-light">{{ conditional_label }}</span>
-      {% endif %}
   {% endwith %}
 {% endif %}

@@ -20,41 +20,30 @@ class GetEditModeLabelTests(SimpleTestCase):
         self.assertEqual(get_edit_mode_label(""), "")
 
 
-class MockSubsection:
-    """Lightweight stand-in for ContentGuideSubsection for testing."""
-
-    def __init__(self, is_conditional, conditional_answer: None):
-        self.is_conditional = is_conditional
-        self.conditional_answer = conditional_answer
-
-
 class GetConditionalQuestionsLabelTests(SimpleTestCase):
-    def test_conditional_yes_returns_yes_label(self):
-        subsection = MockSubsection(is_conditional=True, conditional_answer=True)
+    def test_true_returns_yes_label(self):
         self.assertEqual(
-            get_conditional_questions_label(subsection),
+            get_conditional_questions_label(True),
             "Conditional: Yes",
         )
 
-    def test_conditional_no_returns_no_label(self):
-        subsection = MockSubsection(is_conditional=True, conditional_answer=False)
+    def test_false_returns_no_label(self):
         self.assertEqual(
-            get_conditional_questions_label(subsection),
+            get_conditional_questions_label(False),
             "Conditional: No",
         )
 
-    def test_non_conditional_returns_empty_string(self):
-        subsection = MockSubsection(is_conditional=False, conditional_answer=None)
-        self.assertEqual(
-            get_conditional_questions_label(subsection),
-            "",
-        )
-
-    def test_none_subsection_returns_empty_string(self):
+    def test_none_returns_empty_string(self):
         self.assertEqual(
             get_conditional_questions_label(None),
             "",
         )
+
+    def test_non_bool_values_return_empty_string(self):
+        # Anything that is not literal True/False should give empty string
+        for value in ("yes", "no", "", 0, 1, [], {}, object()):
+            with self.subTest(value=value):
+                self.assertEqual(get_conditional_questions_label(value), "")
 
 
 class RenderCurlyVariableListHtmlStringTests(SimpleTestCase):
