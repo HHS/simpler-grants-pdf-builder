@@ -45,8 +45,82 @@ class ContentGuide(BaseNofo):
     class Meta:
         ordering = ["-created"]
 
-    def __str__(self) -> str:  # pragma: no cover
-        return self.title
+    def __str__(self) -> str:
+        return "(ContentGuide) {}".format(self.title)
+
+
+class ContentGuideInstance(BaseNofo):
+    """
+    An instance of a ContentGuide, to be filled out by NOFO Writers.
+    Guides remain editable by admins even when ACTIVE.
+    """
+
+    title = models.TextField(
+        "Content Guide title",
+        max_length=250,
+        validators=[MaxLengthValidator(250)],
+        blank=True,
+        help_text="The official name for this NOFO. It will be public when the NOFO is published.",
+    )
+
+    # status is a required field, so let's just make it a "Draft"
+    status = models.CharField(
+        max_length=32,
+        validators=[MaxLengthValidator(32)],
+        choices=[
+            ("draft", "Draft"),
+        ],
+        blank=False,
+        default="draft",
+    )
+
+    short_name = models.CharField(
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="A name that makes it easier to find this NOFO in a list. It won’t be public.",
+    )
+
+    number = models.CharField(
+        "Opportunity number",
+        max_length=200,
+        validators=[MaxLengthValidator(200)],
+        blank=True,
+        help_text="The official opportunity number for this NOFO.",
+    )
+
+    agency = models.CharField(
+        "Agency",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="The agency within the operating division (eg, Bureau of Health Workforce)",
+    )
+
+    conditional_questions = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Yes/No answers keyed by question key (e.g. intergov_review: true).",
+    )
+
+    # convenience helper for getting 1 conditional_question value at a time
+    def get_conditional_question_answer(self, key: str, default=None):
+        return self.conditional_questions.get(key, default)
+
+    parent = models.ForeignKey(
+        ContentGuide,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="instances",
+        help_text="The original Content Guide this instance was created from.",
+    )
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self) -> str:
+        return "(ContentGuideInstance) {}".format(self.title or self.short_name)
 
 
 class ContentGuideSection(BaseSection):
