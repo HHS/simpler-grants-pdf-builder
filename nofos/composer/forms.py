@@ -59,7 +59,7 @@ class ComposerSubsectionEditForm(forms.ModelForm):
 
     class Meta:
         model = ContentGuideSubsection
-        fields = ["edit_mode", "body"]
+        fields = ["optional", "edit_mode", "body"]
 
     def clean(self):
         cleaned = super().clean()

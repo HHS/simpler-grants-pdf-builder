@@ -8,6 +8,10 @@
   {% endwith %}
 {% endif %}
 
+{% if optional is True %}
+    <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-optional-purple">Optional</span>
+{% endif %}
+
 {% if edit_mode %}
   {% with edit_mode|edit_mode_label as label %}
     {% with edit_mode|edit_mode_label_class as class %}
