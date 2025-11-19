@@ -121,18 +121,18 @@ class ContentGuideSubsection(BaseSubsection):
 
     def _find_yes_no_string(self) -> str | None:
         """
-        Parse the instructions for a (YES) or (NO) marker.
+        Find the exact strings "(YES)" or "(NO)" inside the instructions.
 
         Returns "YES", "NO", or None if nothing found.
         """
         if not self.instructions:
             return None
 
-        m = self._YES_NO_PATTERN.search(self.instructions)
-        if not m:
+        token = self._YES_NO_PATTERN.search(self.instructions)
+        if not token:
             return None
 
-        return m.group(1).upper()
+        return token.group(1).upper()
 
     @property
     def conditional_answer(self) -> bool | None:
@@ -140,9 +140,9 @@ class ContentGuideSubsection(BaseSubsection):
         Boolean representation of the (YES)/(NO) token in instructions.
 
         Returns:
-            True  -> (YES)
-            False -> (NO)
-            None  -> no token present
+            (YES) -> True
+            (NO) -> False
+            No token -> None
         """
         token = self._find_yes_no_string()
         if token == "YES":

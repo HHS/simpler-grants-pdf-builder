@@ -48,13 +48,12 @@ def get_edit_mode_label_class(value: str) -> str:
     return EDIT_MODE_LABEL_CLASSES.get(value) or ""
 
 
-def get_conditional_questions_label(subsection: ContentGuideSubsection) -> str:
+def get_conditional_questions_label(conditional_answer=None) -> str:
     """Return a label for an ContentGuideSubsection that is a conditional question."""
-    if subsection and subsection.is_conditional:
-        if subsection.conditional_answer:
-            return "Conditional: Yes"
-        else:
-            return "Conditional: No"
+    if conditional_answer is True:
+        return "Conditional: Yes"
+    if conditional_answer is False:
+        return "Conditional: No"
 
     return ""
 
