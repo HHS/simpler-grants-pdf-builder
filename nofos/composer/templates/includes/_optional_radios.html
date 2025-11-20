@@ -1,0 +1,40 @@
+{# Reusable optional/required radio tiles. Expects 'field' BoundField. #}
+<fieldset class="usa-fieldset margin-top-2">
+  <legend class="usa-label padding-bottom-2 text-bold">Is this section required or optional for writers to complete?</legend>
+
+  {% if field.errors %}
+    <div class="usa-error-message">{{ field.errors.0 }}</div>
+  {% endif %}
+
+  {% with current=field.value|default_if_none:False name=field.name %}
+  <div class="grid-row grid-gap width-mobile-lg">
+    <div class="grid-col-12">
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+          id="op-false"
+          type="radio"
+          name="{{ name }}"
+          value=False
+          {% if current is False %}checked{% endif %} />
+          <label class="usa-radio__label" for="op-false">
+            Yes, this section is required.
+          </label>
+      </div>
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+          id="op-true"
+          type="radio"
+          name="{{ name }}"
+          value=True
+          {% if current is True %}checked{% endif %} />
+          <label class="usa-radio__label" for="op-true">
+            <div class="display-flex flex-justify">
+              No, this section is optional.
+              {% include "includes/subsection_labels.html" with optional=True only %}
+            </div>
+          </label>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+</fieldset>

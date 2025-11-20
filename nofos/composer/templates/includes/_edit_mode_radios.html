@@ -1,0 +1,69 @@
+{# Reusable edit mode radio tiles. Expects 'field' BoundField and optional 'subsection_variables' (HTML safe) #}
+<fieldset class="usa-fieldset margin-top-2">
+  <legend class="usa-label padding-bottom-2 text-bold">What will writers be able to edit?</legend>
+
+  {% if field.errors %}
+    <div class="usa-error-message">{{ field.errors.0 }}</div>
+  {% endif %}
+
+  {% with current=field.value|default_if_none:'' name=field.name %}
+  <div class="grid-row grid-gap width-mobile-lg">
+    <div class="grid-col-12">
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+               id="em-full"
+               type="radio"
+               name="{{ name }}"
+               value="full"
+               {% if current == 'full' or not current %}checked{% endif %} />
+        <label class="usa-radio__label" for="em-full">
+          All text in this section is editable
+          <span class="usa-checkbox__label-description">
+            Writers can edit any of the text.
+          </span>
+        </label>
+      </div>
+
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+               id="em-variables"
+               type="radio"
+               name="{{ name }}"
+               value="variables"
+               {% if current == 'variables' %}checked{% endif %} />
+        <label class="usa-radio__label" for="em-variables">
+          <div class="display-flex flex-justify">
+            Edit certain text only
+            {% include "includes/subsection_labels.html" with edit_mode='variables' %}
+          </div>
+          <span class="usa-checkbox__label-description">
+            {% if subsection_variables %}
+              Only variables in curly braces can be changed<span id="curly-variables--list">{{ subsection_variables|safe }}</span>.
+            {% else %}
+              Only variables in curly braces can be changed. Use instructions to guide writers.
+            {% endif %}
+          </span>
+        </label>
+      </div>
+
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+               id="em-locked"
+               type="radio"
+               name="{{ name }}"
+               value="locked"
+               {% if current == 'locked' %}checked{% endif %} />
+        <label class="usa-radio__label" for="em-locked">
+          <div class="display-flex flex-justify">
+            Nothing. All content is locked
+            {% include "includes/subsection_labels.html" with edit_mode='locked' %}
+          </div>
+          <span class="usa-checkbox__label-description">
+            Writers cannot modify or remove this text.
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+</fieldset>
