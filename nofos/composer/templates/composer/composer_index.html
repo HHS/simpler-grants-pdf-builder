@@ -12,51 +12,116 @@
 
   <h1 class="font-heading-xl margin-y-0">Welcome to Composer!</h1>
   <div class="usa-prose">
-    <p class="font-serif-md text-bold margin-bottom-1 margin-top-4">Start a new content guide from HHS core templates.</p>
-    <p class="margin-top-1">Control sections and content that writers can edit or review.</p>
+    <p>Your workspace for creating and managing content guides across OpDivs.</p>
+    <p>
+      Use Composer to set policy standards for NOFOs across OpDivs.
+      Create new content guides or update existing ones to ensure policy and regulatory language stays current and consistent across OpDivs.
+    </p>
   </div>
 
-  <div class="composer--button-box--container">
-    <div class="composer--button-box">
-      <div><strong>Create New Content Guide</strong></div>
-      <div>Begin with a blank form. Add in your questions and content.</div>
-      <a class="usa-button" href="{% url 'composer:composer_import' %}">
-        New content guide
-      </a>
-    </div>
-  </div>
+  {% if draft_documents or active_documents %}
+    {% if draft_documents %}
+      <h2 class="font-heading-md margin-top-6">Edit draft content guides</h2>
+      <div class="usa-prose">
+        <p>
+          You configure whether sections will be locked or editable for OpDiv writers and program teams.
+        </p>
+      </div>
+      <table class="usa-table usa-table--borderless width-full table--section">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Last saved by</th>
+            <th scope="col">Created</th>
+            <th scope="col">Updated</th>
+            <th scope="col" class="w-5">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for draft in draft_documents %}
+            <tr>
+              <th scope="row">
+                <a href="{% url 'composer:composer_document_redirect' draft.pk %}">{{ draft.title }}</a></th>
+              <td>{{ draft.updated_by }}</td>
+              {% timezone "America/New_York" %}
+                <td>
+                  {{ draft.created|date:'M j' }}, {{ draft.created|date:'g:i A' }}
+                </td>
+                <td>
+                  {{ draft.updated|date:'M j' }}, {{ draft.updated|date:'g:i A' }}
+                </td>
+              {% endtimezone %}
+              <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
 
-  {% if documents %}
-  <h2 class="font-heading-md margin-top-6">Existing content guides</h2>
-  <table class="usa-table usa-table--borderless width-full table--section">
-    <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Status</th>
-        <th scope="col">Created</th>
-        <th scope="col">Updated</th>
-        <th scope="col" class="w-5">Delete</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for document in documents %}
-        <tr>
-          <th scope="row">
-            <a href="{% url 'composer:composer_document_redirect' document.pk %}">{{ document.title }}</a></th>
-					<td>{{ document.get_status_display }}</td>
-          {% timezone "America/New_York" %}
-            <td>
-              {{ document.created|date:'M j' }}, {{ document.created|date:'g:i A' }}
-            </td>
-            <td>
-              {{ document.updated|date:'M j' }}, {{ document.updated|date:'g:i A' }}
-            </td>
-          {% endtimezone %}
-          <td><a href="{% url 'composer:composer_archive' document.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    {%if active_documents %}
+      <h2 class="font-heading-md margin-top-6">Review published content guides</h2>
+      <div class="usa-prose">
+        <p>
+          You review and edit content guides that OpDiv writers and program teams can access.
+        </p>
+      </div>
+      <table class="usa-table usa-table--borderless width-full table--section">
+        <thead>
+          <tr>
+            <th data-sortable scope="col" role="columnheader">Name</th>
+            <th data-sortable scope="col" role="columnheader"">Last saved by</th>
+            <th data-sortable scope="col" role="columnheader">Created</th>
+            <th data-sortable scope="col" role="columnheader">Updated</th>
+            <th data-sortable scope="col" role="columnheader">Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for active in active_documents %}
+            <tr>
+              <th scope="row">
+                <a href="{% url 'composer:composer_document_redirect' active.pk %}">{{ active.title }}</a></th>
+              <td>{{ active.updated_by_display }}</td>
+              {% timezone "America/New_York" %}
+                <td>
+                  {{ active.created|date:'M j' }}, {{ active.created|date:'g:i A' }}
+                </td>
+                <td>
+                  {{ active.updated|date:'M j' }}, {{ active.updated|date:'g:i A' }}
+                </td>
+              {% endtimezone %}
+              <td><a href="" class="usa-button usa-button--unstyled usa-button--icon  usa-button--icon--before usa-button--file_download">Download</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
   {% endif %}
+
+  <h2 class="font-heading-md margin-top-6">Create a new content guide</h2>
+  <div class="usa-prose">
+    <p>
+      We’ll guide you through questions needed to start a new content guide.
+      You can then add, edit, and determine what OpDiv writers and program teams can control.
+    </p>
+  </div>
+  <a class="usa-button" href="{% url 'composer:composer_import' %}">
+    Start a new content guide
+  </a>
+
+  <details class="usa-accordion usa-accordion--bordered margin-top-15">
+    <summary class="usa-accordion__button" aria-expanded="false">
+      <h2 class="usa-accordion--heading">
+        Need help getting started?
+      </h2>
+    </summary>
+
+    <div class="usa-accordion__content usa-prose">
+      <ul class="usa-list usa-list--unstyled">
+        <li>Watch the short <a href="#">Composer overview video</a></li>
+        <li>Review the <a href="#">Composer how-to user guide</a></li>
+      </ul>
+    </div>
+  </details>
+
 
 {% endblock %}
