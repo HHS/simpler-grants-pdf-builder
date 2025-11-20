@@ -164,12 +164,39 @@ class ContentGuideSection(BaseSection):
     def get_document(self):
         return self.content_guide or self.content_guide_instance
 
+    @property
+    def document_id(self):
+        document = self.get_document()
+        return document.id
+
     def get_subsection_model(self):
         return ContentGuideSubsection
 
     def get_sibling_queryset(self):
         document = self.get_document()
         return document.sections.all()
+
+    def get_document_name(self):
+        """Return the parent document field name."""
+        if self.content_guide_id is not None:
+            return "content_guide"
+        if self.content_guide_instance_id is not None:
+            return "content_guide_instance"
+        # This should never happen
+        raise ValueError("Section has no parent document.")
+
+    @classmethod
+    def get_document_model_name(cls, document):
+        """Return the document field name for a 'passed in' document. This is useful during _build_document."""
+        # Match by type
+        if isinstance(document, ContentGuide):
+            return "content_guide"
+        if isinstance(document, ContentGuideInstance):
+            return "content_guide_instance"
+
+        raise ValueError(
+            f"Cannot determine parent field for document type: {type(document).__name__}"
+        )
 
 
 class ContentGuideSubsection(BaseSubsection):

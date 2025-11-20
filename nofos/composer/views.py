@@ -2,7 +2,7 @@ from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -304,8 +304,9 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
 
     def get_queryset(self):
         document_pk = self.kwargs["pk"]
+        # hardcoded "content_guide__pk"
         return (
-            ContentGuideSection.objects.filter(document__pk=document_pk)
+            ContentGuideSection.objects.filter(content_guide__pk=document_pk)
             .order_by("order", "pk")
             .prefetch_related("subsections")
         )
@@ -313,12 +314,13 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         current_section: ContentGuideSection = self.object
-        document: ContentGuide = current_section.document
+        document = current_section.get_document()
 
         # All sections for sidenav + prev/next calculation
-        sections_qs = ContentGuideSection.objects.filter(document=document).order_by(
-            "order", "pk"
-        )
+        document_name = current_section.get_document_name()
+        sections_qs = ContentGuideSection.objects.filter(
+            **{document_name: document}
+        ).order_by("order", "pk")
         sections = list(sections_qs)
 
         # Subsections for the current section
@@ -356,27 +358,25 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
 
 class ComposerPreviewView(LoginRequiredMixin, DetailView):
     """
-    Read-only preview of an entire Composer document.
+    Read-only preview of an entire Composer document (needs model name).
     Left pane: sections + a 'Preview' item (current page).
     Right pane: full document printed section-by-section.
     """
 
-    model = ContentGuide
     context_object_name = "document"
     template_name = "composer/composer_preview.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Make sure sections are ordered
-        sections = (
-            self.object.sections.select_related("document")
-            .prefetch_related("subsections")
-            .order_by("order", "id")
+        sections = self.object.sections.prefetch_related("subsections").order_by(
+            "order", "id"
         )
         # Make sure subsections are ordered
-        for s in sections:
-            s.ordered_subsections = sorted(
-                s.subsections.all(), key=lambda ss: (getattr(ss, "order", 0), ss.id)
+        for section in sections:
+            section.ordered_subsections = sorted(
+                section.subsections.all(),
+                key=lambda subsection: (getattr(subsection, "order", 0), subsection.id),
             )
 
         context["sections"] = sections
@@ -400,12 +400,14 @@ class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
 
     # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
     def get_object(self, queryset=None):
-        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
-        section = get_object_or_404(
-            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
-        )
-        # stash for context/success_url
-        self.document = document
+        section = get_object_or_404(ContentGuideSection, pk=self.kwargs["section_pk"])
+        self.document = section.get_document()
+
+        # Validate that URL matches the real hierarchy
+        expected_document_pk = str(self.kwargs["pk"])
+        if expected_document_pk != str(self.document.pk):
+            raise Http404("Section does not belong to this document.")
+
         return section
 
     def get_context_data(self, **kwargs):
@@ -428,12 +430,15 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
 
     # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
     def dispatch(self, request, *args, **kwargs):
-        self.document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
         self.section = get_object_or_404(
-            ContentGuideSection,
-            pk=self.kwargs["section_pk"],
-            document=self.document,
+            ContentGuideSection, pk=self.kwargs["section_pk"]
         )
+        self.document = self.section.get_document()
+
+        expected_document_pk = str(self.kwargs["pk"])
+        if expected_document_pk != str(self.document.pk):
+            # Wrong doc/section combination – treat as 404
+            raise Http404("Section does not belong to this document.")
 
         self.prev_subsection_id = self.request.GET.get("prev_subsection")
         if not self.prev_subsection_id:
@@ -509,16 +514,23 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
 
     # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
     def get_object(self, queryset=None):
-        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
-        section = get_object_or_404(
-            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
-        )
         subsection = get_object_or_404(
-            ContentGuideSubsection, pk=self.kwargs["subsection_pk"], section=section
+            ContentGuideSubsection,
+            pk=self.kwargs["subsection_pk"],
         )
-        # stash for context/success_url
-        self.document = document
-        self.section = section
+
+        self.section = subsection.section
+        self.document = self.section.get_document()
+
+        # Validate that URL matches the real hierarchy
+        expected_section_pk = str(self.kwargs["section_pk"])
+        if expected_section_pk != str(self.section.pk):
+            raise Http404("Subsection does not belong to this section.")
+
+        expected_doc_pk = str(self.kwargs["pk"])
+        if expected_doc_pk != str(self.document.pk):
+            raise Http404("Subsection does not belong to this document.")
+
         return subsection
 
     def get_context_data(self, **kwargs):
@@ -558,27 +570,36 @@ class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["document"] = self.object.section.document
+        context["document"] = self.object.section.get_document()
         context["section"] = self.object.section
         return context
 
     def get_success_url(self):
-        document = self.object.section.document
+        document = self.object.section.get_document()
         section = self.object.section
         url = reverse_lazy("composer:section_view", args=[document.pk, section.pk])
         return url
 
-    def dispatch(self, request, *args, **kwargs):
-        self.document_id = kwargs.get("pk")
-        self.subsection = self.get_object()
-        self.document = self.subsection.section.document
+    def get_object(self, queryset=None):
+        subsection = get_object_or_404(
+            ContentGuideSubsection,
+            pk=self.kwargs["subsection_pk"],
+        )
 
-        if str(self.document.id) != str(self.document_id):
-            return HttpResponseBadRequest(
-                "Document ID does not match section's document."
-            )
+        self.subsection = subsection
+        self.section = subsection.section
+        self.document = self.section.get_document()
 
-        return super().dispatch(request, *args, **kwargs)
+        # Validate that URL matches the real hierarchy
+        expected_section_pk = str(self.kwargs["section_pk"])
+        if expected_section_pk != str(self.section.pk):
+            raise Http404("Subsection does not belong to this section.")
+
+        expected_doc_pk = str(self.kwargs["pk"])
+        if expected_doc_pk != str(self.document.pk):
+            raise Http404("Subsection does not belong to this document.")
+
+        return subsection
 
     def form_valid(self, form):
         self.request.session["error_heading"] = "Subsection deleted"
@@ -606,16 +627,23 @@ class ComposerSubsectionInstructionsEditView(GroupAccessObjectMixin, UpdateView)
 
     # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
     def get_object(self, queryset=None):
-        document = get_object_or_404(ContentGuide, pk=self.kwargs["pk"])
-        section = get_object_or_404(
-            ContentGuideSection, pk=self.kwargs["section_pk"], document=document
-        )
         subsection = get_object_or_404(
-            ContentGuideSubsection, pk=self.kwargs["subsection_pk"], section=section
+            ContentGuideSubsection,
+            pk=self.kwargs["subsection_pk"],
         )
-        # stash for context/success_url
-        self.document = document
-        self.section = section
+
+        self.section = subsection.section
+        self.document = self.section.get_document()
+
+        # Validate that URL matches the real hierarchy
+        expected_section_pk = str(self.kwargs["section_pk"])
+        if expected_section_pk != str(self.section.pk):
+            raise Http404("Subsection does not belong to this section.")
+
+        expected_doc_pk = str(self.kwargs["pk"])
+        if expected_doc_pk != str(self.document.pk):
+            raise Http404("Subsection does not belong to this document.")
+
         return subsection
 
     def get_context_data(self, **kwargs):

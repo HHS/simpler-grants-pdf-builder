@@ -311,6 +311,17 @@ def add_page_breaks_to_headings(document):
 
 
 def _build_document(document, sections, SectionModel, SubsectionModel):
+    def _get_document_field_name(SectionModel, document):
+        """
+        Return the field name that should be used to attach `document` to SectionModel.
+        """
+        # ContentGuideSection has this method
+        if hasattr(SectionModel, "get_document_model_name"):
+            return SectionModel.get_document_model_name(document)
+
+        # NOFO Section has "nofo", Compare docs have "document"
+        return "nofo" if hasattr(SectionModel, "nofo") else "document"
+
     def _get_validation_message(validation_error, obj):
         obj_type = obj._meta.verbose_name.title()
         name_max_length = obj._meta.get_field("name").max_length
@@ -347,7 +358,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         section_order = section.get("order", "")
         default_html_id = f"{section_order}--{slugify(section_name)}"
 
-        object_name = "nofo" if hasattr(SectionModel, "nofo") else "document"
+        object_name = _get_document_field_name(SectionModel, document)
         section_obj = SectionModel(
             name=section_name,
             order=section_order,
