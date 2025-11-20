@@ -38,6 +38,43 @@ class ComposerListViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("users:login"), response.url)
 
+    def test_no_content_guides(self):
+        """When no draft or published content guides exist, the user should see the empty state"""
+        self.client.login(email="composer@example.com", password="testpass123")
+        url = reverse("composer:composer_index")
+        response = self.client.get(url)
+        self.assertContains(response, "No content guides available")
+        # Create new always visible
+        self.assertContains(response, "Create a new content guide")
+
+    def test_draft_only(self):
+        """When only draft content guides exist, only the draft table is visible"""
+        ContentGuide.objects.create(
+            title="Original Title.docx", opdiv="CDC", group="bloom", status="draft"
+        )
+        self.client.login(email="composer@example.com", password="testpass123")
+        url = reverse("composer:composer_index")
+        response = self.client.get(url)
+        self.assertContains(response, "Edit draft content guides")
+        self.assertNotContains(response, "Review published content guides")
+        # Create new always visible
+        self.assertContains(response, "Create a new content guide")
+
+    def test_published_only(self):
+        """When only active content guides exist, only the published table is visible"""
+        ContentGuide.objects.create(
+            title="Original Title.docx", opdiv="CDC", group="bloom", status="active"
+        )
+        self.client.login(email="composer@example.com", password="testpass123")
+        url = reverse("composer:composer_index")
+        response = self.client.get(url)
+        self.assertNotContains(response, "Edit draft content guides")
+        self.assertContains(response, "Review published content guides")
+        # Create new always visible
+        self.assertContains(response, "Create a new content guide")
+
+
+
 
 class ComposerImportViewTests(TestCase):
     def setUp(self):
