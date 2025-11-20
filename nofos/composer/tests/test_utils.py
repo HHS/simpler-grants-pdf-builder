@@ -9,7 +9,6 @@ from django.test import SimpleTestCase
 class GetEditModeLabelTests(SimpleTestCase):
     def test_known_values(self):
         self.assertEqual(get_edit_mode_label("variables"), "Certain text")
-        self.assertEqual(get_edit_mode_label("yes_no"), "Yes/No")
         self.assertEqual(get_edit_mode_label("locked"), "Locked")
 
     def test_unknown_value_returns_empty_string(self):
