@@ -11,7 +11,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("composer", "0002_alter_contentguidesubsection_edit_mode"),
+        ("composer", "0003_alter_contentguidesubsection_optional"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
