@@ -23,7 +23,7 @@ def copy_content_guide_to_document(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("composer", "0003_contentguideinstance"),
+        ("composer", "0004_contentguideinstance"),
     ]
 
     operations = [
