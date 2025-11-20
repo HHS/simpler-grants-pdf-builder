@@ -186,7 +186,7 @@ class ConditionalAnswerTests(TestCase):
             document=self.guide, order=1, name="Section 1", html_id="sec-1"
         )
 
-    def _mk(self, instructions: None, edit_mode="yes_no", order=1):
+    def _mk(self, instructions: None, edit_mode="locked", order=1):
         """
         Helper to create a subsection with given instructions.
         Body is irrelevant for these tests.
@@ -242,7 +242,7 @@ class ConditionalAnswerTests(TestCase):
 
     def test_non_yes_no_edit_mode_still_parses(self):
         """
-        Even if edit_mode is not 'yes_no', the parsing still works.
+        Even if edit_mode is not 'locked', the parsing still works.
         This just documents the current behaviour.
         """
         subsection = self._mk("Include for (YES).", edit_mode="full")
