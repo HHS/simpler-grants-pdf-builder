@@ -16,7 +16,15 @@ class ComposerSubsectionCreateForm(forms.ModelForm):
 
     class Meta:
         model = ContentGuideSubsection
-        fields = ["name", "tag", "callout_box", "edit_mode", "body", "instructions"]
+        fields = [
+            "name",
+            "tag",
+            "callout_box",
+            "optional",
+            "edit_mode",
+            "body",
+            "instructions",
+        ]
         widgets = {
             "name": forms.TextInput(),
         }
