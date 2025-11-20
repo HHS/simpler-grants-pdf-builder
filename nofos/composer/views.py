@@ -55,6 +55,14 @@ class ComposerListView(LoginRequiredMixin, ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        qs = self.get_queryset()
+        context["draft_documents"] = qs.filter(status="draft")
+        context["active_documents"] = qs.filter(status="active")
+        return context
+
 
 class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
     """
