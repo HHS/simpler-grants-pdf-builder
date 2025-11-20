@@ -157,6 +157,14 @@ class BaseNofo(models.Model):
     def is_nofo(self):
         return isinstance(self, Nofo)
 
+    @property
+    def updated_by_display(self):
+        """Get a name for display of the BaseNofo.updated_by User object"""
+        user = self.updated_by
+        if not user:
+            return ""
+        return getattr(user, "full_name", None) or getattr(user, "email", None)
+
     def __str__(self):
         return "({}) {}".format(self.id, self.title or "Untitled")
 
