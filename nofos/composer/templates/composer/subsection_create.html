@@ -126,6 +126,45 @@
           </div>
         </div>
       </details>
+
+      {# --- Optional or Required (USWDS tiles --- #}
+      <fieldset class="usa-fieldset margin-top-2 width-mobile">
+        <legend class="usa-label padding-bottom-1 text-bold">Is this section required or optional for writers to complete?</legend>
+
+        {% if form.optional.errors %}
+          <div class="usa-error-message">{{ form.optional.errors.0 }}</div>
+        {% endif %}
+
+        {% with current=form.optional.value|default_if_none:False name=form.optional.name %}
+        <div class="grid-row grid-gap">
+          <div class="grid-col-12">
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                id="op-false"
+                type="radio"
+                name="{{ name }}"
+                value=False
+                {% if current is False %}checked{% endif %} />
+                <label class="usa-radio__label" for="op-false">
+                  Yes, this section is required.
+                </label>
+            </div>
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                id="op-true"
+                type="radio"
+                name="{{ name }}"
+                value=True
+                {% if current is True %}checked{% endif %} />
+                <label class="usa-radio__label" for="op-true">
+                  No, this section is optional.
+                </label>
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+      </fieldset>
+
       {# --- Edit mode radios (USWDS tiles) --- #}
       <fieldset class="usa-fieldset margin-top-2 width-mobile">
         <legend class="usa-label padding-bottom-1 text-bold">What will writers be able to edit?</legend>
