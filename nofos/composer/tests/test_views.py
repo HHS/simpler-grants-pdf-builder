@@ -545,6 +545,94 @@ class ComposerSectionViewTests(TestCase):
         self.assertEqual(resp.status_code, 404)
 
 
+class ComposerSectionEditViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.guide,
+            order=1,
+            name="Section 1",
+            html_id="sec-1",
+        )
+
+        self.url = reverse(
+            "composer:section_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": self.section.pk,
+            },
+        )
+
+    def test_get_renders_for_logged_in_user(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        # context includes document + section
+        self.assertEqual(resp.context["document"].pk, self.guide.pk)
+        self.assertEqual(resp.context["section"].pk, self.section.pk)
+        self.assertTrue(resp.context["include_scroll_to_top"])
+
+    def test_anonymous_redirects_to_login_or_forbidden(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        # In other Composer tests you assert 403 for anonymous;
+        # keep the same expectation here.
+        self.assertEqual(resp.status_code, 403)
+
+    def test_404_section_not_in_document(self):
+        """
+        If the section_pk in the URL belongs to a different guide
+        than pk, get_object should raise 404.
+        """
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            content_guide=other_guide,
+            order=1,
+            name="Stray",
+            html_id="sec-x",
+        )
+
+        bad_url = reverse(
+            "composer:section_edit",
+            kwargs={
+                "pk": self.guide.pk,  # correct guide
+                "section_pk": stray_section.pk,  # WRONG section (belongs to other_guide)
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_when_document_pk_mismatch(self):
+        """
+        If pk in the URL does not match the section's actual document.pk,
+        get_object should raise 404.
+        """
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+
+        bad_url = reverse(
+            "composer:section_edit",
+            kwargs={
+                "pk": other_guide.pk,  # WRONG guide
+                "section_pk": self.section.pk,  # section belongs to self.guide
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+
 class ComposerSubsectionEditViewTests(TestCase):
     def setUp(self):
         # user + login
@@ -739,6 +827,41 @@ class ComposerSubsectionCreateViewTests(TestCase):
         msgs = list(get_messages(resp.wsgi_request))
         self.assertTrue(any("Created new section:" in str(m) for m in msgs))
 
+    def test_404_section_mismatch(self):
+        other_document = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            content_guide=other_document, order=1, name="Other section", html_id="x"
+        )
+
+        bad_url = f"{reverse(
+            'composer:subsection_create',
+            kwargs={
+                'pk': self.document.pk,        # correct doc
+                'section_pk': stray_section.pk # WRONG section
+            }
+        )}?prev_subsection={self.prev_subsection.pk}"
+
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_document_mismatch(self):
+        other_document = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+
+        bad_url = f"{reverse(
+            'composer:subsection_create',
+            kwargs={
+                'pk': other_document.pk,       # WRONG doc
+                'section_pk': self.section.pk  # correct section for REAL doc
+            }
+        )}?prev_subsection={self.prev_subsection.pk}"
+
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
 
 class ComposerSubsectionDeleteViewTests(TestCase):
     def setUp(self):
@@ -808,3 +931,192 @@ class ComposerSubsectionDeleteViewTests(TestCase):
         # success message was added
         msgs = list(get_messages(resp.wsgi_request))
         self.assertTrue(any("You deleted section:" in str(m) for m in msgs))
+
+    def test_404_subsection_not_in_section(self):
+        other_section = ContentGuideSection.objects.create(
+            content_guide=self.document, order=2, name="S2", html_id="s2"
+        )
+
+        bad_url = reverse(
+            "composer:subsection_confirm_delete",
+            kwargs={
+                "pk": self.document.pk,
+                "section_pk": other_section.pk,  # WRONG section
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_section_not_in_document(self):
+        other_document = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            content_guide=other_document, order=1, name="Stray", html_id="x"
+        )
+
+        bad_url = reverse(
+            "composer:subsection_confirm_delete",
+            kwargs={
+                "pk": self.document.pk,  # correct doc
+                "section_pk": stray_section.pk,  # WRONG section for doc
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_document_mismatch(self):
+        other_document = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+
+        bad_url = reverse(
+            "composer:subsection_confirm_delete",
+            kwargs={
+                "pk": other_document.pk,  # WRONG doc
+                "section_pk": self.section.pk,  # correct section for REAL doc
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+
+class ComposerSubsectionInstructionsEditViewTests(TestCase):
+    def setUp(self):
+        # user + login
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # Document hierarchy: guide -> section -> subsection
+        self.guide = ContentGuide.objects.create(
+            title="Guide", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.guide, order=1, name="S1", html_id="s1"
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="SS1",
+            tag="h3",
+            body="Initial body",
+            instructions="Initial instructions",
+            enabled=True,
+            edit_mode="full",
+            html_id="ss-1",
+        )
+
+        self.url = reverse(
+            "composer:instructions_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": self.section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+
+    def test_get_renders_for_logged_in_user(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        # Context includes document + section + subsection
+        self.assertEqual(resp.context["document"].pk, self.guide.pk)
+        self.assertEqual(resp.context["section"].pk, self.section.pk)
+        self.assertEqual(resp.context["subsection"].pk, self.subsection.pk)
+
+    def test_anonymous_returns_403(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_post_updates_instructions_and_redirects(self):
+        payload = {
+            "instructions": "Updated instructions!",
+            "body": self.subsection.body,
+            "edit_mode": self.subsection.edit_mode,
+        }
+
+        resp = self.client.post(self.url, data=payload, follow=False)
+
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.instructions, "Updated instructions!")
+
+        # redirected back to section with #anchor
+        expected = reverse(
+            "composer:section_view",
+            args=[self.guide.pk, self.section.pk],
+        )
+        anchor = self.subsection.html_id
+        self.assertTrue(resp["Location"].startswith(expected))
+        self.assertTrue(resp["Location"].endswith(f"#{anchor}"))
+
+        # success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("Updated instructions" in str(m) for m in msgs))
+
+    def test_404_subsection_not_in_section(self):
+        """
+        section_pk does not match subsection.section.pk
+        """
+        other_section = ContentGuideSection.objects.create(
+            content_guide=self.guide, order=2, name="S2", html_id="s2"
+        )
+
+        bad_url = reverse(
+            "composer:instructions_edit",
+            kwargs={
+                "pk": self.guide.pk,
+                "section_pk": other_section.pk,  # WRONG section
+                "subsection_pk": self.subsection.pk,  # belongs to self.section
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_section_not_in_document(self):
+        """
+        section_pk belongs to a different document than pk in URL
+        """
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+        stray_section = ContentGuideSection.objects.create(
+            content_guide=other_guide, order=1, name="Stray", html_id="x"
+        )
+
+        bad_url = reverse(
+            "composer:instructions_edit",
+            kwargs={
+                "pk": self.guide.pk,  # correct guide
+                "section_pk": stray_section.pk,  # WRONG section
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_404_document_mismatch(self):
+        """
+        pk in URL does not match subsection.section.get_document().pk
+        """
+        other_guide = ContentGuide.objects.create(
+            title="Other", opdiv="CDC", group="bloom"
+        )
+
+        bad_url = reverse(
+            "composer:instructions_edit",
+            kwargs={
+                "pk": other_guide.pk,  # WRONG document
+                "section_pk": self.section.pk,
+                "subsection_pk": self.subsection.pk,
+            },
+        )
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
