@@ -221,10 +221,10 @@ class ComposerDocumentRedirectTests(TestCase):
         # Create a guide with two sections (ordered)
         guide = ContentGuide.objects.create(title="Guide A", opdiv="CDC", group="bloom")
         s1 = ContentGuideSection.objects.create(
-            document=guide, order=1, name="Section 1", html_id="sec-1"
+            content_guide=guide, order=1, name="Section 1", html_id="sec-1"
         )
         ContentGuideSection.objects.create(
-            document=guide, order=2, name="Section 2", html_id="sec-2"
+            content_guide=guide, order=2, name="Section 2", html_id="sec-2"
         )
 
         url = reverse(self.redirect_url_name, kwargs={"pk": guide.pk})
@@ -256,6 +256,7 @@ class ComposerDocumentRedirectTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn(b"This content guide has no steps.", response.content)
 
+
 class GroupSubsectionsTests(TestCase):
     def setUp(self):
         # Minimal parent objects so we can create valid subsections
@@ -263,7 +264,7 @@ class GroupSubsectionsTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="Section 1", html_id="sec-1"
+            content_guide=self.guide, order=1, name="Section 1", html_id="sec-1"
         )
         self.view = ComposerSectionView()
 
@@ -413,6 +414,7 @@ class GroupSubsectionsTests(TestCase):
         # s1 included first, then s2
         self.assertEqual([x.pk for x in groups[0]["items"]], [s1.pk, s2.pk])
 
+
 class ComposerSectionViewTests(TestCase):
     def setUp(self):
         # Auth user
@@ -429,13 +431,13 @@ class ComposerSectionViewTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.sec1 = ContentGuideSection.objects.create(
-            document=self.guide,
+            content_guide=self.guide,
             order=1,
             name="Understand the opportunity",
             html_id="s1",
         )
         self.sec2 = ContentGuideSection.objects.create(
-            document=self.guide, order=2, name="Get ready to apply", html_id="s2"
+            content_guide=self.guide, order=2, name="Get ready to apply", html_id="s2"
         )
 
         # Subsections for sec1 (ensure grouping behavior)
@@ -525,7 +527,7 @@ class ComposerSectionViewTests(TestCase):
             title="Other", opdiv="CDC", group="bloom"
         )
         stray_section = ContentGuideSection.objects.create(
-            document=other_guide, order=1, name="Stray", html_id="x"
+            content_guide=other_guide, order=1, name="Stray", html_id="x"
         )
         bad_url = reverse(
             "composer:section_view",
@@ -559,7 +561,7 @@ class ComposerSubsectionEditViewTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="S1", html_id="s1"
+            content_guide=self.guide, order=1, name="S1", html_id="s1"
         )
         self.subsection = ContentGuideSubsection.objects.create(
             section=self.section,
@@ -619,7 +621,7 @@ class ComposerSubsectionEditViewTests(TestCase):
 
     def test_404_when_subsection_not_in_section(self):
         other_section = ContentGuideSection.objects.create(
-            document=self.guide, order=2, name="S2", html_id="s2"
+            content_guide=self.guide, order=2, name="S2", html_id="s2"
         )
         bad_url = reverse(
             "composer:subsection_edit",
@@ -637,7 +639,7 @@ class ComposerSubsectionEditViewTests(TestCase):
             title="Other", opdiv="CDC", group="bloom"
         )
         stray_section = ContentGuideSection.objects.create(
-            document=other_guide, order=1, name="Stray", html_id="x"
+            content_guide=other_guide, order=1, name="Stray", html_id="x"
         )
         bad_url = reverse(
             "composer:subsection_edit",
@@ -674,7 +676,7 @@ class ComposerSubsectionCreateViewTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.document, order=1, name="S1", html_id="s1"
+            content_guide=self.document, order=1, name="S1", html_id="s1"
         )
 
         self.prev_subsection = ContentGuideSubsection.objects.create(
@@ -754,7 +756,7 @@ class ComposerSubsectionDeleteViewTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.document, order=1, name="S1", html_id="s1"
+            content_guide=self.document, order=1, name="S1", html_id="s1"
         )
 
         self.subsection = ContentGuideSubsection.objects.create(

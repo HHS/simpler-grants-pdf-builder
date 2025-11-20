@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from .models import ContentGuide
 
 app_name = "composer"
 
@@ -37,7 +38,7 @@ urlpatterns = [
     ),
     path(
         "<uuid:pk>/preview",
-        views.ComposerPreviewView.as_view(),
+        views.ComposerPreviewView.as_view(model=ContentGuide),
         name="composer_preview",
     ),
     path(

@@ -11,7 +11,7 @@ class SubsectionEditFormVariablesTests(TestCase):
     def setUp(self):
         self.guide = ContentGuide.objects.create(title="G", opdiv="CDC", group="bloom")
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="S"
+            content_guide=self.guide, order=1, name="S"
         )
         self.ss = ContentGuideSubsection.objects.create(
             section=self.section,
@@ -42,7 +42,7 @@ class SubsectionCreateFormVariablesTests(TestCase):
     def setUp(self):
         self.guide = ContentGuide.objects.create(title="G", opdiv="CDC", group="bloom")
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="S"
+            content_guide=self.guide, order=1, name="S"
         )
 
     def test_variables_validation_uses_posted_body(self):
