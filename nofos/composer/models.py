@@ -45,33 +45,158 @@ class ContentGuide(BaseNofo):
     class Meta:
         ordering = ["-created"]
 
-    def __str__(self) -> str:  # pragma: no cover
-        return self.title
+    def __str__(self) -> str:
+        return "(ContentGuide) {}".format(self.title)
+
+
+class ContentGuideInstance(BaseNofo):
+    """
+    An instance of a ContentGuide, to be filled out by NOFO Writers.
+    Guides remain editable by admins even when ACTIVE.
+    """
+
+    title = models.TextField(
+        "Content Guide title",
+        max_length=250,
+        validators=[MaxLengthValidator(250)],
+        blank=True,
+        help_text="The official name for this NOFO. It will be public when the NOFO is published.",
+    )
+
+    # status is a required field, so let's just make it a "Draft"
+    status = models.CharField(
+        max_length=32,
+        validators=[MaxLengthValidator(32)],
+        choices=[
+            ("draft", "Draft"),
+        ],
+        blank=False,
+        default="draft",
+    )
+
+    short_name = models.CharField(
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="A name that makes it easier to find this NOFO in a list. It won’t be public.",
+    )
+
+    number = models.CharField(
+        "Opportunity number",
+        max_length=200,
+        validators=[MaxLengthValidator(200)],
+        blank=True,
+        help_text="The official opportunity number for this NOFO.",
+    )
+
+    agency = models.CharField(
+        "Agency",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="The agency within the operating division (eg, Bureau of Health Workforce)",
+    )
+
+    conditional_questions = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Yes/No answers keyed by question key (e.g. intergov_review: true).",
+    )
+
+    # convenience helper for getting 1 conditional_question value at a time
+    def get_conditional_question_answer(self, key: str, default=None):
+        return self.conditional_questions.get(key, default)
+
+    parent = models.ForeignKey(
+        ContentGuide,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="instances",
+        help_text="The original Content Guide this instance was created from.",
+    )
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self) -> str:
+        return "(ContentGuideInstance) {}".format(self.title or self.short_name)
 
 
 class ContentGuideSection(BaseSection):
     """
-    Ordered section of a Content Guide.
+    Ordered section of a Content Guide or a Content Guide Instance.
     """
 
     class Meta:
         ordering = ["order"]
-        unique_together = ("document", "order")
+        unique_together = ("content_guide", "content_guide_instance", "order")
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(
+                        content_guide__isnull=False, content_guide_instance__isnull=True
+                    )
+                    | models.Q(
+                        content_guide__isnull=True, content_guide_instance__isnull=False
+                    )
+                ),
+                name="section_has_exactly_one_parent",
+            )
+        ]
 
-    document = models.ForeignKey(
+    content_guide = models.ForeignKey(
         ContentGuide,
         on_delete=models.CASCADE,
         related_name="sections",
+        null=True,
+        blank=True,
+    )
+
+    content_guide_instance = models.ForeignKey(
+        ContentGuideInstance,
+        on_delete=models.CASCADE,
+        related_name="sections",
+        null=True,
+        blank=True,
     )
 
     def get_document(self):
-        return self.document
+        return self.content_guide or self.content_guide_instance
+
+    @property
+    def document_id(self):
+        document = self.get_document()
+        return document.id
 
     def get_subsection_model(self):
         return ContentGuideSubsection
 
     def get_sibling_queryset(self):
-        return self.document.sections.all()
+        document = self.get_document()
+        return document.sections.all()
+
+    def get_document_field_name(self):
+        """Return the parent document field name: 'content_guide' or 'content_guide_instance'."""
+        if self.content_guide_id is not None:
+            return "content_guide"
+        if self.content_guide_instance_id is not None:
+            return "content_guide_instance"
+        # This should never happen
+        raise ValueError("Section has no parent document.")
+
+    @classmethod
+    def get_document_field_name_for(cls, document):
+        """Return the document field name for a 'passed in' document. This is useful during _build_document."""
+        # Match by type
+        if isinstance(document, ContentGuide):
+            return "content_guide"
+        if isinstance(document, ContentGuideInstance):
+            return "content_guide_instance"
+
+        raise ValueError(
+            f"Cannot determine parent field for document type: {type(document).__name__}"
+        )
 
 
 class ContentGuideSubsection(BaseSubsection):

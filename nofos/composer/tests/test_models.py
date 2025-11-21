@@ -12,7 +12,7 @@ class ExtractVariablesTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="Section 1", html_id="sec-1"
+            content_guide=self.guide, order=1, name="Section 1", html_id="sec-1"
         )
 
     def _mk(self, body: str):
@@ -183,7 +183,7 @@ class ConditionalAnswerTests(TestCase):
             title="Guide", opdiv="CDC", group="bloom"
         )
         self.section = ContentGuideSection.objects.create(
-            document=self.guide, order=1, name="Section 1", html_id="sec-1"
+            content_guide=self.guide, order=1, name="Section 1", html_id="sec-1"
         )
 
     def _mk(self, instructions: None, edit_mode="locked", order=1):
