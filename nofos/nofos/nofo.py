@@ -400,6 +400,12 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 subsection_fields["instructions"] = instructions_md_body
 
             subsection_obj = SubsectionModel(**subsection_fields)
+
+            if hasattr(SubsectionModel, "extract_variables"):
+                variables = subsection_obj.extract_variables()
+                if variables:
+                    subsection_obj.edit_mode = "variables"
+
             add_html_id_to_subsection(subsection_obj)
             try:
                 subsection_obj.full_clean()
