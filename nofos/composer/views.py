@@ -304,7 +304,7 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
 
     def get_queryset(self):
         document_pk = self.kwargs["pk"]
-        # hardcoded "content_guide__pk"
+        # hardcoded "content_guide__pk": reimplement this method if we genericize this view
         return (
             ContentGuideSection.objects.filter(content_guide__pk=document_pk)
             .order_by("order", "pk")
@@ -317,9 +317,9 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
         document = current_section.get_document()
 
         # All sections for sidenav + prev/next calculation
-        document_name = current_section.get_document_name()
+        document_field_name = current_section.get_document_field_name()
         sections_qs = ContentGuideSection.objects.filter(
-            **{document_name: document}
+            **{document_field_name: document}
         ).order_by("order", "pk")
         sections = list(sections_qs)
 
@@ -358,7 +358,9 @@ class ComposerSectionView(GroupAccessObjectMixin, DetailView):
 
 class ComposerPreviewView(LoginRequiredMixin, DetailView):
     """
-    Read-only preview of an entire Composer document (needs model name).
+    Read-only preview of an entire Composer document.
+    Model is a required argument for instantiation, like:
+            views.ComposerPreviewView.as_view(model=ContentGuide),
     Left pane: sections + a 'Preview' item (current page).
     Right pane: full document printed section-by-section.
     """

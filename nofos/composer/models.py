@@ -176,8 +176,8 @@ class ContentGuideSection(BaseSection):
         document = self.get_document()
         return document.sections.all()
 
-    def get_document_name(self):
-        """Return the parent document field name."""
+    def get_document_field_name(self):
+        """Return the parent document field name: 'content_guide' or 'content_guide_instance'."""
         if self.content_guide_id is not None:
             return "content_guide"
         if self.content_guide_instance_id is not None:
@@ -186,7 +186,7 @@ class ContentGuideSection(BaseSection):
         raise ValueError("Section has no parent document.")
 
     @classmethod
-    def get_document_model_name(cls, document):
+    def get_document_field_name_for(cls, document):
         """Return the document field name for a 'passed in' document. This is useful during _build_document."""
         # Match by type
         if isinstance(document, ContentGuide):
