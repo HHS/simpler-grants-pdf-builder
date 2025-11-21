@@ -316,8 +316,8 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         Return the field name that should be used to attach `document` to SectionModel.
         """
         # ContentGuideSection has this method
-        if hasattr(SectionModel, "get_document_model_name"):
-            return SectionModel.get_document_model_name(document)
+        if hasattr(SectionModel, "get_document_field_name_for"):
+            return SectionModel.get_document_field_name_for(document)
 
         # NOFO Section has "nofo", Compare docs have "document"
         return "nofo" if hasattr(SectionModel, "nofo") else "document"
