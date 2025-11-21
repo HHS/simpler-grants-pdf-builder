@@ -73,6 +73,10 @@ blockquote {
   max-height: fit-content;
 }
 
+.minw-fit-content {
+  min-width: fit-content;
+}
+
 .bg-optional-purple {
   background-color: var(--color--optional-purple)
 }
@@ -672,7 +676,8 @@ label.usa-label {
   border-width: 2px;
 }
 
-.nofo_edit .accent-warm-dark[role="tab"][aria-selected="true"] {
+.nofo_edit .accent-warm-dark[role="tab"][aria-selected="true"],
+.composer_document_section .accent-warm-dark{
   border-color: var(--color--usa-emergency);
   background: var(--color--usa-emergency);
   color: white;

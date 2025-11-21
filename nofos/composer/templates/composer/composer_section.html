@@ -49,11 +49,47 @@
     </span>
         </p>
       {% endtimezone %}
-      <p>
-        Review and make updates to the content guide.
-        Enter instructions, question and/or fields you’d want within each section of the grant application.
-        By clicking “Edit,” you can set how you want writers to edit a section such as making any, all or no changes to the content.
-      </p>
+      <ul class="line-height-sans-5">
+        <li>Review and update the content guide.</li>
+        <li>Select “Edit” to set how much control OpDivs and writers have.</li>
+        <li>Tags (e.g., Locked, Certain text, Optional) show those permissions and can be changed when editing.</li>
+      </ul>
+      <details>
+        <summary class="accent-warm-dark width-card radius-sm padding-1">Guide to the tags</summary>
+        <div class="border border-accent-warm-dark border-radius-sm">
+          <ul class="usa-prose">
+            <li>No tag means all text in the section can be edited and changed.</li>
+            <li>
+              <div class="display-flex">
+                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='locked' %}</div>
+                <div>is a section writers cannot edit or make changes.</div>
+              </div>
+            </li>
+            <li>
+              <div class="display-flex">
+                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='variables' %}</div>
+                <div>means writers can edit certain text only in this section. Only text inside the brackets can be changed.</div>
+              </div>
+            </li>
+            <li>
+              <div class="display-flex">
+                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with optional=True %}</div>
+                <div>means this section is not required for the writer to answer. No text in the section can be edited or changed. </div>
+              </div>
+            </li>
+            <li>
+              <div class="display-flex">
+                <div class="minw-fit-content margin-right-1">
+                  <div class="margin-bottom-1">{% include "includes/subsection_labels.html" with conditional_answer=True %}</div>
+                  <div>{% include "includes/subsection_labels.html" with conditional_answer=False %}</div>
+                </div>
+                <div>means this section has associated text if writer has selected yes or no.</div>
+              </div>
+
+            </li>
+          </ul>
+        </div>
+      </details>
       <hr />
 
       <div class="border-bottom border-base-lighter border-bottom-width-1px">
