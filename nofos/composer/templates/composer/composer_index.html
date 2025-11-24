@@ -42,14 +42,10 @@
             <tr>
               <th scope="row">
                 <a href="{% url 'composer:composer_document_redirect' draft.pk %}">{{ draft.title }}</a></th>
-              <td>{{ draft.updated_by }}</td>
+              <td>{{ draft.updated_by_display }}</td>
               {% timezone "America/New_York" %}
-                <td>
-                  {{ draft.created|date:'M j' }}, {{ draft.created|date:'g:i A' }}
-                </td>
-                <td>
-                  {{ draft.updated|date:'M j' }}, {{ draft.updated|date:'g:i A' }}
-                </td>
+                <td> {{ draft.created_display }}</td>
+                <td> {{ draft.updated_display }} </td>
               {% endtimezone %}
               <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
             </tr>
