@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note %}
+{% load tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note nofo_section_name_separator %}
 
 {% block title %}
   {{ document.title }} — {{ current_section.name }}</title>
@@ -41,12 +41,20 @@
 
     <!-- current_section content -->
     <main class="grid-col-12 tablet:grid-col-9">
-      <div class="subhead--document-name font-sans-md text-base">{{ document.title }}</div>
-      <h1 class="margin-bottom-1 margin-top-1 font-serif-xl">{{ current_section.name }}</h1>
+      <div class="display-flex flex-justify flex-align-end margin-bottom-1">
+        <div>
+          <div class="subhead--document-name font-sans-md text-base">{{ document.title }}</div>
+          <h1 class="margin-bottom-0 margin-top-1 font-serif-xl">
+            {% with current_section.name|nofo_section_name_separator as section_name %}
+              {{ section_name.name }}
+            {% endwith %}
+          </h1>
+        </div>
+        <a href="{% url 'composer:composer_preview' document.pk %}" class="usa-button">Preview</a>
+      </div>
       {% timezone "America/New_York" %}
         <p>
           <em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em> — <a href="{% url 'composer:composer_history' document.id %}">See all updates</a>
-    </span>
         </p>
       {% endtimezone %}
       <ul class="line-height-sans-5">
