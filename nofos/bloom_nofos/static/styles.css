@@ -81,6 +81,23 @@ blockquote {
   background-color: var(--color--optional-purple)
 }
 
+details.explainer-box summary {
+  border-radius: 2px;
+  width: fit-content;
+}
+
+details.explainer-box summary:hover {
+  cursor: pointer;
+}
+
+details[open].explainer-box summary {
+  border-radius: 2px 2px 0 0;
+}
+
+.explainer-box--content {
+  border-radius: 0 2px 2px 2px;
+}
+
 /* General USWDS CSS */
 
 .usa-table thead td,
