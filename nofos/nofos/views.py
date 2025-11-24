@@ -235,7 +235,6 @@ class NofosListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["today_m_j"] = dateformat.format(timezone.now(), "M j")
         context["nofo_status"] = self.status
         context["nofo_group"] = self.group
         return context
@@ -1475,7 +1474,6 @@ class NofoSearchView(SuperuserRequiredMixin, ListView):
             initial={"query": getattr(self, "search_query", "")}
         )
         context["query"] = getattr(self, "search_query", "")
-        context["today_m_j"] = dateformat.format(timezone.now(), "M j")
         return context
 
 
