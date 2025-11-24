@@ -9,6 +9,7 @@ from django.db import models, transaction
 from django.forms import ValidationError
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateformat import format
 from martor.models import MartorField
 
 from .utils import add_html_id_to_subsection
@@ -158,11 +159,31 @@ class BaseNofo(models.Model):
         return isinstance(self, Nofo)
 
     @property
+    def created_display(self):
+        today = timezone.now().date()
+        created_date = self.created.date()
+        if created_date != today:
+            return format(self.created, "M j")
+
+        return f"{format(self.created, 'M j')}, {format(self.created, 'g:i A')}"
+
+    @property
+    def updated_display(self):
+        today = timezone.now().date()
+        updated_date = self.updated.date()
+
+        if updated_date != today:
+            return format(self.updated, "M j")
+
+        return f"{format(self.updated, 'M j')}, {format(self.updated, 'g:i A')}"
+
+    @property
     def updated_by_display(self):
         """Get a name for display of the BaseNofo.updated_by User object"""
         user = self.updated_by
         if not user:
             return ""
+
         return getattr(user, "full_name", None) or getattr(user, "email", None)
 
     def __str__(self):
