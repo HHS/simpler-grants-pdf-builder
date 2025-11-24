@@ -9,6 +9,16 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.19.0] - 2025-10-31
+
+### Added
+
+- Add "Optional/Required" field to Subsection edit field
+- Add labels to the subsection edit radio button labels
 - Add a "search NOFOs" page for superusers
 - Add an "OpDiv" column to the admin view for a NOFO
 - Add functionality for adding/deleting a Content Guide subsection
@@ -16,13 +26,23 @@ Versioning since version 1.0.0.
 - Added syntax highlighting to Ace editor for {variables}
 - Add django-markdown-editor markdown extension for wrapping {variables} with spans
 
+## Removed
+
+- Remove "Yes/No" as an edit_mode option (replaced by "Required/Optional" field)
+
 ### Changed
 
+- Detect presence of variables ("{var}") on composer import
 - Change Composer tags to new format
 - Scroll-to-top button now on multiple composer pages
 - Allow "instructions" to be edited like a subsection body
 
-### Fixed
+### Migrations
+
+- Add a new ContentGuideInstance model for NOFO writers
+- Change up ContentGuideSection to point back to either a ContentGuide _or_ a ContentGuideInstance (but not both)
+- Remove "yes_no" edit mode for ContentGuideSubsection
+- Add new "optional" field to ContentGuideSubsection
 
 ## [3.18.0] - 2025-10-31
 
