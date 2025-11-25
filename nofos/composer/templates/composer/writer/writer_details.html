@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Program details for this draft NOFO
+{% endblock %}
+
+{% block body_class %}composer_writer_details{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">First, let’s set up the program details</h1>
+
+  <div class="usa-prose margin-top-3">
+    <p>
+      You’re creating a draft NOFO based on:
+      <strong>{{ parent_content_guide.title }}</strong>
+    </p>
+  </div>
+
+  <form method="post" class="margin-top-3">
+    {% csrf_token %}
+
+    <div class="usa-form-group">
+      <label class="usa-label">Agency name</label>
+      <div class="usa-hint">This is based on your operating division group and can’t be changed here.</div>
+      <p class="margin-top-1">{{ agency_name }}</p>
+    </div>
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">Save and return to drafts</button>
+  </form>
+{% endblock %}

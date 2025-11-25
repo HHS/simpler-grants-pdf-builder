@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Start drafting a NOFO
+{% endblock %}
+
+{% block body_class %}composer_writer_start{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">Start drafting a NOFO</h1>
+
+  <form method="post" class="margin-top-3">
+    {% csrf_token %}
+    {% include "includes/form_macro.html" %}
+    <button class="usa-button margin-top-3" type="submit">Continue</button>
+  </form>
+{% endblock %}

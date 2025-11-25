@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block title %}
+  Welcome to Composer
+{% endblock %}
+
+{% block body_class %}composer_writer_index{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Draft NOFO saved" error_heading="Error" only %}
+
+  <h1 class="font-heading-xl margin-y-0">Welcome to Composer</h1>
+
+  <div class="usa-prose margin-top-2">
+    <p>Your workspace for creating and managing your NOFOs.</p>
+    <p>Use Composer to help set your program’s content guides so you can focus on clear, accurate information for your NOFO.</p>
+  </div>
+
+  {% if draft_nofos %}
+    <h2 class="font-heading-md margin-top-4">Draft NOFOs</h2>
+    <table class="usa-table usa-table--borderless width-full table--section">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Based on guide</th>
+          <th scope="col">Created</th>
+          <th scope="col">Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nofo in draft_nofos %}
+          <tr>
+            <th scope="row">
+              {{ nofo.short_name|default:nofo.title|default:nofo.id }}
+            </th>
+            <td>
+              {{ nofo.parent.title }}
+            </td>
+            {% timezone "America/New_York" %}
+              <td>{{ nofo.created|date:"M j, g:i A" }}</td>
+              <td>{{ nofo.updated|date:"M j, g:i A" }}</td>
+            {% endtimezone %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2 class="font-heading-md margin-top-6">Start drafting a new NOFO</h2>
+  <div class="usa-prose">
+    <p>We’ll guide you through questions needed to start filling out a NOFO from an approved content guide. You can download at anytime to complete offline.</p>
+    <a class="usa-button" href="{% url 'composer:writer_start' %}">
+      Start a new draft NOFO
+    </a>
+  </div>
+
+  {% if content_guides %}
+    <h2 class="font-heading-md margin-top-6">Approved content guides</h2>
+    <table class="usa-table usa-table--borderless width-full table--section">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Status</th>
+          <th scope="col">Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guide in content_guides %}
+          <tr>
+            <th scope="row">
+              {{ guide.title }}
+            </th>
+            <td>{{ guide.get_status_display }}</td>
+            {% timezone "America/New_York" %}
+              <td>{{ guide.updated|date:"M j, g:i A" }}</td>
+            {% endtimezone %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

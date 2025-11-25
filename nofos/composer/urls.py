@@ -71,4 +71,20 @@ urlpatterns = [
         views.ComposerSubsectionInstructionsEditView.as_view(),
         name="instructions_edit",
     ),
+    # WRITER FLOW URLS
+    path(
+        "writer",
+        views.WriterDashboardView.as_view(),
+        name="writer_index",
+    ),
+    path(
+        "writer/start",
+        views.WriterInstanceStartView.as_view(),
+        name="writer_start",
+    ),
+    path(
+        "writer/start/<uuid:parent_pk>/details",
+        views.WriterInstanceDetailsView.as_view(),
+        name="writer_details",
+    ),
 ]

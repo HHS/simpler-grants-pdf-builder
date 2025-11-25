@@ -3,11 +3,16 @@ from martor.fields import MartorFormField
 
 from nofos.forms import create_object_model_form
 
-from .models import ContentGuide, ContentGuideSubsection
+from .models import ContentGuide, ContentGuideInstance, ContentGuideSubsection
 
 create_composer_form_class = create_object_model_form(ContentGuide)
 
 CompareTitleForm = create_composer_form_class(["title"])
+
+
+###########################################################
+###################### SYSTEM ADMINS ######################
+###########################################################
 
 
 class ComposerSubsectionCreateForm(forms.ModelForm):
@@ -89,3 +94,65 @@ class ComposerSubsectionInstructionsEditForm(forms.ModelForm):
     class Meta:
         model = ContentGuideSubsection
         fields = ["instructions"]
+
+
+###########################################################
+###################### NOFO WRITERS #######################
+###########################################################
+
+
+class WriterInstanceStartForm(forms.Form):
+    """
+    Step 1: choose which ContentGuide to base the draft NOFO on.
+
+    TODO: should only show 'published' Content Guides, but this is not ready yet
+    """
+
+    parent = forms.ModelChoiceField(
+        queryset=ContentGuide.objects.none(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Choose an approved content guide as a basis for your draft NOFO.",
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        qs = ContentGuide.objects.filter(
+            archived__isnull=True,
+            successor__isnull=True,
+            # status="published", # TODO: only show published
+        )
+        # if not a bloom user, only show content guides from that user's group
+        if user and getattr(user, "group", None) != "bloom":
+            qs = qs.filter(group=user.group)
+
+        self.fields["parent"].queryset = qs.order_by("title")
+        self.fields["parent"].label_from_instance = lambda obj: obj.title or obj
+
+
+class WriterInstanceDetailsForm(forms.ModelForm):
+    """
+    Step 2: capture basic NOFO metadata for the new ContentGuideInstance.
+    Agency is set from the user's group in the view, but displayed read-only.
+    """
+
+    class Meta:
+        model = ContentGuideInstance
+        fields = ["short_name", "title", "number"]
+        labels = {
+            "short_name": "Short name",
+            "title": "NOFO title",
+            "number": "NOFO number",
+        }
+        help_texts = {
+            "short_name": "A name that makes it easier to find this NOFO later. It won’t be public.",
+            "title": "The official name for this NOFO.",
+            "number": "The opportunity number for this NOFO.",
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # You can customize widgets / placeholders here if you like:
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "usa-input")
