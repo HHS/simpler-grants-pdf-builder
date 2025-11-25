@@ -12,7 +12,7 @@
     <!-- Full-document preview -->
     <div class="grid-col-12">
       <div class="back-link font-body-md margin-bottom-105">
-        <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}">Back</a>
+        <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}">Back</a>
       </div>
       <h1 class="margin-bottom-1 margin-top-0 font-serif-xl">Configure step
         <br>
@@ -32,11 +32,11 @@
           <div class="usa-accordion__content usa-prose">
             <div class="display-flex flex-justify edit_section--other_sections">
               {% if section.get_previous_section %}
-                <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--unstyled usa-button--icon--before usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
+                <a href="{% url 'composer:section_edit' document.id section.get_previous_section.id %}" class="usa-button--unstyled usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back">{{ section.get_previous_section.name }}</a>
               {% endif %}
 
               {% if section.get_next_section %}
-                <a href="{% url 'composer:section_edit' document.id section.get_next_section.id %}" class="usa-button--unstyled usa-button--icon--after usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
+                <a href="{% url 'composer:section_edit' document.id section.get_next_section.id %}" class="usa-button--unstyled usa-button--icon--after usa-button--icon--usa-blue usa-button--arrow_forward">{{ section.get_next_section.name }}</a>
               {% endif %}
             </div>
           </div>
@@ -63,7 +63,7 @@
             </div>
             <div class="grid-col-12 display-flex flex-align-center margin-y-3">
               <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
-              <a class="usa-button usa-button--light usa-button--outline margin-right-0" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">+ Add section</a>
+              <a class="usa-button usa-button--outline usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add" type="button" href="{% url 'composer:subsection_create' document.pk section.pk %}?prev_subsection={{subsection.id}}">Add section</a>
               <div class="flex-1 border-bottom border-base-lighter border-bottom-width-1px"></div>
             </div>
           </div>

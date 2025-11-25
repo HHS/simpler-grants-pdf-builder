@@ -5,7 +5,7 @@
   --color--text-default: #1b1b1b;
   --color--text-grey: #71767a;
   --color--variable-pink: #d900b9;
-  --color--optional-purple: #EFDFED;
+  --color--optional-purple: #efdfed;
   --color--usa-link: #005ea2;
   --color--usa-link-hover: #1a4480;
   --color--usa-link-rgb: 0, 94, 162;
@@ -78,7 +78,7 @@ blockquote {
 }
 
 .bg-optional-purple {
-  background-color: var(--color--optional-purple)
+  background-color: var(--color--optional-purple);
 }
 
 details.explainer-box summary {
@@ -193,14 +193,9 @@ footer .usa-footer__primary-link:visited {
   filter: brightness(0) saturate(100%) invert(21%) sepia(0%) saturate(232%)
     hue-rotate(216deg) brightness(100%) contrast(80%);
 }
+
 .usa-button--icon:visited {
   color: var(--color--usa-link);
-}
-.usa-button--icon.usa-button--outline::before,
-.usa-button--icon--before.usa-button--unstyled::before,
-.usa-button--icon--after.usa-button--unstyled::after {
-  filter: brightness(0) saturate(100%) invert(19%) sepia(62%) saturate(3740%)
-    hue-rotate(190deg) brightness(93%) contrast(102%);
 }
 
 .usa-button--icon.usa-button--outline:hover::before {
@@ -275,6 +270,56 @@ footer .usa-footer__primary-link:visited {
 .usa-button--icon--before.usa-button--expand_less::before {
   background-image: url("/static/img/usa-icons/expand_less.svg");
 }
+
+.usa-button--icon--usa-blue::before,
+.usa-button--icon--usa-blue::after {
+  filter: invert(25%) sepia(62%) saturate(1908%) hue-rotate(183deg)
+    brightness(93%) contrast(104%);
+}
+
+.usa-button--icon--usa-blue--hover:hover::before,
+.usa-button--icon--usa-blue--hover:hover::after {
+  filter: invert(16%) sepia(92%) saturate(1493%) hue-rotate(201deg)
+    brightness(98%) contrast(88%);
+}
+
+.usa-button--icon--usa-red::before,
+.usa-button--icon--usa-red::after {
+  filter: invert(14%) sepia(84%) saturate(3191%) hue-rotate(349deg)
+    brightness(94%) contrast(113%);
+}
+
+.usa-button--icon--usa-text-base::before,
+.usa-button--icon--usa-text-base::after {
+  filter: invert(0%) sepia(68%) saturate(995%) hue-rotate(19deg)
+    brightness(102%) contrast(79%);
+}
+
+.usa-button--icon--usa-text-grey::before,
+.usa-button--icon--usa-text-grey::after {
+  filter: brightness(0) saturate(100%) invert(49%) sepia(6%) saturate(369%)
+    hue-rotate(164deg) brightness(92%) contrast(86%);
+}
+
+.usa-button--icon--usa-emergency::before,
+.usa-button--icon--usa-emergency::after {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(86%) saturate(1996%)
+    hue-rotate(8deg) brightness(93%) contrast(87%);
+}
+
+.usa-button--icon--usa-white::before,
+.usa-button--icon--usa-white::after {
+  filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
+    brightness(102%) contrast(101%);
+}
+
+.usa-button--check::after,
+.usa-button--icon--usa-green::before,
+.usa-button--icon--usa-green::after {
+  filter: invert(36%) sepia(93%) saturate(2132%) hue-rotate(58deg)
+    brightness(92%) contrast(101%);
+}
+
 /* expand width of usa-prose/usa-content */
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content p,
@@ -694,7 +739,7 @@ label.usa-label {
 }
 
 .nofo_edit .accent-warm-dark[role="tab"][aria-selected="true"],
-.composer_document_section .accent-warm-dark{
+.composer_document_section .accent-warm-dark {
   border-color: var(--color--usa-emergency);
   background: var(--color--usa-emergency);
   color: white;
@@ -948,22 +993,13 @@ label.usa-label {
 }
 
 .nofo_edit .usa-button--content_copy::after {
-  filter: invert(0%) sepia(68%) saturate(995%) hue-rotate(19deg)
-    brightness(102%) contrast(79%);
   width: 18px;
   height: 17px;
 }
 
 .nofo_edit .usa-alert__body .usa-button--content_copy::before {
-  filter: brightness(0) saturate(100%) invert(20%) sepia(86%) saturate(1996%)
-    hue-rotate(8deg) brightness(93%) contrast(87%);
   width: 13px;
   height: 12px;
-}
-
-.nofo_edit .usa-button--content_copy.usa-button--check::after {
-  filter: invert(36%) sepia(93%) saturate(2132%) hue-rotate(58deg)
-    brightness(92%) contrast(101%);
 }
 
 .nofo_edit .subsection--copy-button .usa-button--content_copy::after {
@@ -1369,13 +1405,6 @@ main .back-link a,
 }
 
 main .back-link a::before,
-.section_edit .edit_section--other_sections a::before,
-.section_edit .edit_section--other_sections a::after {
-  filter: invert(25%) sepia(62%) saturate(1908%) hue-rotate(183deg)
-    brightness(93%) contrast(104%);
-}
-
-main .back-link a::before,
 .section_edit .edit_section--other_sections a.usa-button--arrow_back::before,
 .section_edit .edit_section--other_sections a.usa-button--arrow_forward::after {
   height: 12px;
@@ -1405,26 +1434,15 @@ main .back-link a::before,
 /* add button generic */
 
 .section_edit .usa-button--add,
-.subsection_edit .usa-button--add {
+.composer_document_section .usa-button--add {
   padding: 0.55rem 0.9rem 0.55rem 0.6rem;
   font-weight: 400;
 }
 
-.section_edit .usa-button--add::before,
-.subsection_edit .usa-button--add::before {
-  filter: invert(20%) sepia(99%) saturate(1868%) hue-rotate(190deg)
-    brightness(95%) contrast(98%);
-}
-
-.section_edit .usa-button--add:hover::before,
-.subsection_edit .usa-button--add:hover::before {
-  filter: invert(16%) sepia(92%) saturate(1493%) hue-rotate(201deg)
-    brightness(98%) contrast(88%);
-}
-
 /* add button specific */
 
-.section_edit table.table--section .usa-button--add {
+.section_edit table.table--section .usa-button--add,
+.composer_document_section .usa-button--add {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -1435,7 +1453,8 @@ main .back-link a::before,
   box-shadow: inset 0 0 0 0.75px var(--color--text-default);
 }
 
-.section_edit table.table--section .usa-button--add:hover {
+.section_edit table.table--section .usa-button--add:hover,
+.composer_document_section .usa-button--add:hover {
   box-shadow: inset 0 0 0 1px var(--color--usa-link-hover); /* match text colour */
 }
 
@@ -1444,7 +1463,8 @@ main .back-link a::before,
   color: var(--color--usa-link);
 }
 
-.section_edit table.table--section .usa-button--add::before {
+.section_edit table.table--section .usa-button--add::before,
+.composer_document_section .usa-button--add::before {
   height: 9px;
   width: 16px;
 }
@@ -1672,8 +1692,6 @@ main .back-link a::before,
 
 .compare_index .usa-button--delete::after,
 .composer_index .usa-button--delete::after {
-  filter: invert(14%) sepia(84%) saturate(3191%) hue-rotate(349deg)
-    brightness(94%) contrast(113%);
   width: 22px;
   height: 18px;
 }
@@ -2077,8 +2095,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 }
 
 .nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button::before {
-  filter: brightness(0) saturate(100%) invert(49%) sepia(6%) saturate(369%)
-    hue-rotate(164deg) brightness(92%) contrast(86%);
   width: 22px;
   height: 21px;
   margin-bottom: 8px;
@@ -2086,15 +2102,17 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .nofo_compare
   .nofo_view--menu-bar
-  .nofo_view--menu-bar--button.is-active::before,
-.nofo_compare .nofo_view--menu-bar .nofo_view--menu-bar--button:hover::before {
+  .usa-button--icon--usa-text-grey.is-active::before,
+.nofo_compare
+  .nofo_view--menu-bar
+  .usa-button--icon--usa-text-grey:hover::before {
   filter: brightness(0) saturate(100%) invert(16%) sepia(93%) saturate(6087%)
     hue-rotate(203deg) brightness(89%) contrast(102%);
 }
 
 .nofo_compare
   .nofo_view--menu-bar
-  .nofo_view--menu-bar--button.is-active:hover::before {
+  .usa-button--icon--usa-text-grey.is-active:hover::before {
   filter: brightness(0) saturate(100%) invert(14%) sepia(20%) saturate(6652%)
     hue-rotate(187deg) brightness(103%) contrast(103%);
 }
@@ -2327,8 +2345,6 @@ del + ins > br {
   display: inline-flex;
   height: 18px;
   width: 18px;
-  filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(331deg)
-    brightness(102%) contrast(101%);
 }
 
 .usa-summary-box .usa-checkbox {
@@ -2342,19 +2358,11 @@ del + ins > br {
 
 /* COMPOSER */
 
-.composer--button-box--container {
-  margin: 1.5rem 0;
-}
-
-.composer--button-box {
-  width: 300px;
-  padding: 1.5rem 1rem;
-  border: 3px solid var(--color--light-grey);
-  border-radius: 10px;
-}
-
-.composer--button-box > div {
-  margin-bottom: 1.5rem;
+.composer_index--writer .usa-button--file_download::before {
+  background-position: bottom left;
+  background-size: contain;
+  height: 25px;
+  width: 23px;
 }
 
 .composer_document_section--preview aside {

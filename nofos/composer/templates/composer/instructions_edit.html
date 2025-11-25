@@ -15,7 +15,7 @@
 
 {% block content %}
     <div class="back-link font-body-md margin-bottom-105">
-      <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
+      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:section_view' document.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
     </div>
 
     <h1 class="font-heading-xl margin-y-0">Edit "{{subsection.name}}" instructions</h1>
