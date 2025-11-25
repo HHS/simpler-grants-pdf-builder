@@ -87,4 +87,9 @@ urlpatterns = [
         views.WriterInstanceDetailsView.as_view(),
         name="writer_details",
     ),
+    path(
+        "writer/<uuid:pk>/delete",
+        views.WriterInstanceArchiveView.as_view(),
+        name="writer_archive",
+    ),
 ]

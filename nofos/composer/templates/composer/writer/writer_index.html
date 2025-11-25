@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% load tz %}
+{% load tz nofo_name %}
 
 {% block title %}
   Welcome to Composer
 {% endblock %}
 
-{% block body_class %}composer_writer_index{% endblock %}
+{% block body_class %}composer_index composer_index--writer{% endblock %}
 
 {% block content %}
   {% include "includes/alerts.html" with messages=messages success_heading="Draft NOFO saved" error_heading="Error" only %}
@@ -18,51 +18,63 @@
   </div>
 
   {% if draft_nofos %}
-    <h2 class="font-heading-md margin-top-4">Draft NOFOs</h2>
+    <h2 class="font-heading-md margin-top-8">Continue editing draft NOFOs</h2>
+    <div class="usa-prose">
+      <p>
+        Review and continue editing your working NOFOs.
+      </p>
+    </div>
     <table class="usa-table usa-table--borderless width-full table--section">
       <thead>
         <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Based on guide</th>
+          <th scope="col">Short name</th>
+          <th scope="col">Last saved by</th>
           <th scope="col">Created</th>
           <th scope="col">Updated</th>
+          <th scope="col" class="w-5">Delete</th>
         </tr>
       </thead>
       <tbody>
-        {% for nofo in draft_nofos %}
+        {% for draft in draft_nofos %}
           <tr>
             <th scope="row">
-              {{ nofo.short_name|default:nofo.title|default:nofo.id }}
+              {{ draft|nofo_name }}
             </th>
-            <td>
-              {{ nofo.parent.title }}
-            </td>
+            <td>{{ draft.updated_by_display }}</td>
             {% timezone "America/New_York" %}
-              <td>{{ nofo.created|date:"M j, g:i A" }}</td>
-              <td>{{ nofo.updated|date:"M j, g:i A" }}</td>
+              <td> {{ draft.created_display }}</td>
+              <td> {{ draft.updated_display }} </td>
             {% endtimezone %}
+            <td><a href="{% url 'composer:writer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--icon--usa-red usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   {% endif %}
 
-  <h2 class="font-heading-md margin-top-6">Start drafting a new NOFO</h2>
+  <h2 class="font-heading-md margin-top-8">Start drafting a new NOFO</h2>
   <div class="usa-prose">
     <p>We’ll guide you through questions needed to start filling out a NOFO from an approved content guide. You can download at anytime to complete offline.</p>
-    <a class="usa-button" href="{% url 'composer:writer_start' %}">
+    <a class="usa-button margin-top-0" href="{% url 'composer:writer_start' %}">
       Start a new draft NOFO
     </a>
   </div>
 
   {% if content_guides %}
-    <h2 class="font-heading-md margin-top-6">Approved content guides</h2>
+    <h2 class="font-heading-md margin-top-8">Approved content guides</h2>
+    <div class="usa-prose">
+      <p>
+        Download a blank approved content guide and work offline.
+      </p>
+    </div>
     <table class="usa-table usa-table--borderless width-full table--section">
       <thead>
         <tr>
           <th scope="col">Name</th>
-          <th scope="col">Status</th>
+          <th scope="col">Last saved by</th>
+          <th scope="col">Created</th>
           <th scope="col">Updated</th>
+          <th scope="col" class="w-5 text-center">Download</th>
         </tr>
       </thead>
       <tbody>
@@ -71,10 +83,12 @@
             <th scope="row">
               {{ guide.title }}
             </th>
-            <td>{{ guide.get_status_display }}</td>
+            <td>{{ guide.updated_by_display }}</td>
             {% timezone "America/New_York" %}
-              <td>{{ guide.updated|date:"M j, g:i A" }}</td>
+              <td> {{ guide.created_display }}</td>
+              <td> {{ guide.updated_display }} </td>
             {% endtimezone %}
+            <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
           </tr>
         {% endfor %}
       </tbody>

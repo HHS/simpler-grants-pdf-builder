@@ -47,7 +47,7 @@
                 <td> {{ draft.created_display }}</td>
                 <td> {{ draft.updated_display }} </td>
               {% endtimezone %}
-              <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
+              <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--icon--usa-red usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -85,7 +85,7 @@
                   {{ published.updated|date:'M j' }}, {{ published.updated|date:'g:i A' }}
                 </td>
               {% endtimezone %}
-              <td><a href="" class="usa-button usa-button--unstyled usa-button--icon  usa-button--icon--before usa-button--file_download">Download</a></td>
+              <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
             </tr>
           {% endfor %}
         </tbody>

@@ -49,7 +49,10 @@ from .models import (
 )
 from .utils import create_content_guide_document, render_curly_variable_list_html_string
 
-GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
+GroupAccessContentGuideMixin = GroupAccessObjectMixinFactory(ContentGuide)
+GroupAccessContentGuideInstanceMixin = GroupAccessObjectMixinFactory(
+    ContentGuideInstance
+)
 
 
 ###########################################################
@@ -116,6 +119,51 @@ def create_archived_ancestor_duplicate(original):
     ContentGuideSubsection.objects.bulk_create(new_subsections)
 
     return new_content_guide
+
+
+###########################################################
+##################### GENERIC VIEWS #######################
+###########################################################
+
+
+class BaseComposerArchiveView(LoginRequiredMixin, UpdateView):
+    """
+    Generic archive view for any BaseNofo subclass that has an `archived` field
+    and a `title` (or similar) attribute.
+    """
+
+    template_name = "composer/composer_confirm_delete.html"
+    context_object_name = "document"
+    fields = []  # No form, just confirmation
+
+    # Subclasses should set these:
+    back_link_text = None
+    success_url = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.archived:
+            return HttpResponseBadRequest("This document is already archived.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("back_link_url", self.get_success_url())
+        context.setdefault("back_link_text", self.back_link_text)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+        document.archived = timezone.now()
+        document.save(update_fields=["archived"])
+
+        messages.error(
+            request,
+            "You deleted “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
+                document.title
+            ),
+        )
+        return redirect(self.get_success_url())
 
 
 ###########################################################
@@ -218,7 +266,7 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
-class ComposerImportTitleView(GroupAccessObjectMixin, UpdateView):
+class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
     model = ContentGuide
     form_class = CompareTitleForm
     template_name = "composer/composer_edit_title.html"
@@ -239,7 +287,7 @@ class ComposerImportTitleView(GroupAccessObjectMixin, UpdateView):
         return redirect("composer:composer_index")
 
 
-class ComposerEditTitleView(GroupAccessObjectMixin, UpdateView):
+class ComposerEditTitleView(GroupAccessContentGuideMixin, UpdateView):
     model = ContentGuide
     form_class = CompareTitleForm
     template_name = "composer/composer_edit_title.html"
@@ -259,34 +307,15 @@ class ComposerEditTitleView(GroupAccessObjectMixin, UpdateView):
         return redirect("composer:composer_index")
 
 
-class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
+class ComposerArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiveView):
     model = ContentGuide
-    template_name = "composer/composer_confirm_delete.html"
+    back_link_text = "All content guides"
     success_url = reverse_lazy("composer:composer_index")
-    context_object_name = "document"
-    fields = []  # We don’t need a form — just confirm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.archived:
-            return HttpResponseBadRequest("This document is already archived.")
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        document = self.get_object()
-        document.archived = timezone.now()
-        document.save(update_fields=["archived"])
-
-        messages.error(
-            request,
-            "You deleted “{}”.<br/>If this was a mistake, contact the NOFO Builder team at <a href='mailto:simplernofos@bloomworks.digital'>simplernofos@bloomworks.digital</a>.".format(
-                document.title
-            ),
-        )
-        return redirect(self.success_url)
 
 
-class ComposerUnpublishView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
+class ComposerUnpublishView(
+    GroupAccessContentGuideMixin, LoginRequiredMixin, UpdateView
+):
     model = ContentGuide
     template_name = "composer/composer_confirm_unpublish.html"
     context_object_name = "document"
@@ -318,7 +347,7 @@ class ComposerUnpublishView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateVi
         return redirect(reverse_lazy("composer:composer_preview", args=[document.pk]))
 
 
-class ComposerHistoryView(GroupAccessObjectMixin, BaseNofoHistoryView):
+class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
     model = ContentGuide
     template_name = "composer/composer_history.html"
     context_object_name = "document"
@@ -368,7 +397,7 @@ def compare_section_redirect(request, pk):
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 
 
-class ComposerSectionView(GroupAccessObjectMixin, DetailView):
+class ComposerSectionView(GroupAccessContentGuideMixin, DetailView):
     """
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
     URL params:
@@ -581,7 +610,7 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
             return redirect(self.request.path)
 
 
-class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
+class ComposerSectionEditView(GroupAccessContentGuideMixin, DetailView):
     """
     Edit a single ContentGuideSection's subsections.
     URL: /<pk>/section/<section_pk>/edit
@@ -592,7 +621,7 @@ class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
     context_object_name = "section"
     pk_url_kwarg = "section_pk"
 
-    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    # Ensure we can authorize against the parent guide (GroupAccessContentGuideMixin)
     def get_object(self, queryset=None):
         section = get_object_or_404(ContentGuideSection, pk=self.kwargs["section_pk"])
         self.document = section.get_document()
@@ -611,7 +640,7 @@ class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
         return context
 
 
-class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
+class ComposerSubsectionCreateView(GroupAccessContentGuideMixin, CreateView):
     """
     Create a new ContentGuideSubsection within a given section.
     URL: /<pk>/section/<section_pk>/subsection/add
@@ -622,7 +651,7 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
     template_name = "composer/subsection_create.html"
     context_object_name = "subsection"
 
-    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    # Ensure we can authorize against the parent guide (GroupAccessContentGuideMixin)
     def dispatch(self, request, *args, **kwargs):
         self.section = get_object_or_404(
             ContentGuideSection, pk=self.kwargs["section_pk"]
@@ -695,7 +724,7 @@ class ComposerSubsectionCreateView(GroupAccessObjectMixin, CreateView):
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
-class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
+class ComposerSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
     URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
@@ -706,7 +735,7 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
     template_name = "composer/subsection_edit.html"
     context_object_name = "subsection"
 
-    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    # Ensure we can authorize against the parent guide (GroupAccessContentGuideMixin)
     def get_object(self, queryset=None):
         subsection = get_object_or_404(
             ContentGuideSubsection,
@@ -756,7 +785,7 @@ class ComposerSubsectionEditView(GroupAccessObjectMixin, UpdateView):
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
-class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
+class ComposerSubsectionDeleteView(GroupAccessContentGuideMixin, DeleteView):
     model = ContentGuideSubsection
     pk_url_kwarg = "subsection_pk"
     template_name = "composer/subsection_confirm_delete.html"
@@ -808,7 +837,7 @@ class ComposerSubsectionDeleteView(GroupAccessObjectMixin, DeleteView):
         return super().form_valid(form)
 
 
-class ComposerSubsectionInstructionsEditView(GroupAccessObjectMixin, UpdateView):
+class ComposerSubsectionInstructionsEditView(GroupAccessContentGuideMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's instructions.
     URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/instructions/edit
@@ -819,7 +848,7 @@ class ComposerSubsectionInstructionsEditView(GroupAccessObjectMixin, UpdateView)
     template_name = "composer/instructions_edit.html"
     context_object_name = "subsection"
 
-    # Ensure we can authorize against the parent guide (GroupAccessObjectMixin)
+    # Ensure we can authorize against the parent guide (GroupAccessContentGuideMixin)
     def get_object(self, queryset=None):
         subsection = get_object_or_404(
             ContentGuideSubsection,
@@ -998,3 +1027,11 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
             f"Draft NOFO “{instance.short_name or instance.title or instance.pk}” created successfully.",
         )
         return redirect("composer:writer_index")
+
+
+class WriterInstanceArchiveView(
+    GroupAccessContentGuideInstanceMixin, BaseComposerArchiveView
+):
+    model = ContentGuideInstance
+    back_link_text = "All draft NOFOs"
+    success_url = reverse_lazy("composer:writer_index")
