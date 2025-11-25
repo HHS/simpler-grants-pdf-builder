@@ -1,0 +1,34 @@
+<fieldset class="usa-fieldset">
+  <legend class="usa-legend">{{ label }}</legend>
+
+  {% if hint %}
+    <div class="usa-hint" id="{{ id }}--hint-1">
+      {{ hint }}
+    </div>
+  {% endif %}
+
+  {% if error %}
+    <div class="usa-error-message" id="{{ id }}--error">
+      Error: {{ error }}
+    </div>
+  {% endif %}
+
+  <div id="id_{{ id }}">
+    {% for choice_id, choice_label in choices %}
+      <div class="usa-radio">
+        <input
+          class="usa-radio__input"
+          id="{{ id }}_{{ forloop.counter0 }}"
+          type="radio"
+          name="{{ id }}"
+          value="{{ choice_id }}"
+          {% if value == choice_id %}checked="checked"{% endif %}
+          aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if error %}{{ id }}--error{% endif %}"
+        />
+        <label class="usa-radio__label" for="{{ id }}_{{ forloop.counter0 }}">
+          {{ choice_label }}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+</fieldset>

@@ -9,6 +9,10 @@
     {% with id=field.name label=field.label hint=field.help_text value=field.value choices=field.field.choices error=field.errors.0 %}
       {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
     {% endwith %}
+  {% elif field|input_type == 'RadioSelect' %}
+    {% with id=field.name label=field.label hint=field.help_text value=field.value choices=field.field.choices error=field.errors.0 %}
+      {% include "includes/radio_group.html" with id=id label=label hint=hint value=value choices=choices error=error only %}
+    {% endwith %}
   {% else %}
     <p>Field name: {{ field.name }}</p>
     <p>Input type: {{ field|input_type }}</p>
