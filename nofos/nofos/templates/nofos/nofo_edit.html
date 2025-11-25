@@ -26,7 +26,7 @@ Edit “{{ nofo|nofo_name }}”
 {% endif %}
 
 <div class="back-link font-body-md">
-  <a class="usa-button--icon--before usa-button--arrow_back" href="{% url 'nofos:nofo_index' %}">All NOFOs</a>
+  <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'nofos:nofo_index' %}">All NOFOs</a>
 </div>
 <div class="nofo_edit--header nofo_edit--header--sticky" id="nofo_edit--header--id">
   {% with nofo|nofo_name as nofo_name_str %}
@@ -261,7 +261,7 @@ Edit “{{ nofo|nofo_name }}”
         <div class="usa-alert">
           <div class="usa-alert__body">
             <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
-            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
+            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
             <div>
               <details>
                 <summary>
@@ -544,7 +544,7 @@ Edit “{{ nofo|nofo_name }}”
       <span class="section--copy-button">
         <button
           type="button"
-          class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--icon--only usa-button--content_copy"
+          class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--icon--only usa-button--icon--usa-text-base usa-button--content_copy"
           data-position="bottom"
           data-section-id="{{ section.html_id }}"
           title="Copy link to this section"
@@ -592,7 +592,7 @@ Edit “{{ nofo|nofo_name }}”
             <span class="subsection--copy-button floating">
               <button
                 type="button"
-                class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--icon--only usa-button--content_copy"
+                class="usa-button usa-button--unstyled usa-tooltip usa-button--icon--after usa-button--icon--only usa-button--icon--usa-text-base usa-button--content_copy"
                 data-position="bottom"
                 data-section-id="{{ subsection.html_id }}"
                 title="Copy link to this heading"
