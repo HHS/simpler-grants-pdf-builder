@@ -403,6 +403,12 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
                 key=lambda subsection: (getattr(subsection, "order", 0), subsection.id),
             )
 
+        # Allow per-request success/error headings stored in the session
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "Content Guide saved successfully"
+        )
+
         context["sections"] = sections
         context["current_section"] = None  # not on a specific section in preview
         context["show_back_link"] = True
@@ -411,12 +417,10 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        print("POST FORM FROM PREVIEW")
         document = self.get_object()
 
         action = request.POST.get("action")
         if action == "exit":
-            print("ACTION EXIT")
             self.request.session["success_heading"] = "Content guide successfully saved"
             messages.success(
                 self.request,
@@ -427,6 +431,21 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         if action == "publish":
             document.status = "published"
             document.save(update_fields=["status"])
+
+            self.request.session["success_heading"] = (
+                "Your content guide was successfully published"
+            )
+            messages.success(
+                self.request,
+                (
+                    "The guide will be available for writers and OpDivs.<br />"
+                    f"You can’t make any updates. If you want to make edits, select <a href={'#'}> unpublish</a> to continue editing.<br />"
+                    "<br />"
+                    f"You can import the downloaded Word document into <a href={'#'}>NOFO Compare</a> to easily identify differences between other versions."
+                ),
+            )
+
+            return redirect(self.request.path)
 
 
 class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
