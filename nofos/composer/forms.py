@@ -4,6 +4,7 @@ from martor.fields import MartorFormField
 from nofos.forms import create_object_model_form
 
 from .models import ContentGuide, ContentGuideInstance, ContentGuideSubsection
+from .utils import get_opdiv_label
 
 create_composer_form_class = create_object_model_form(ContentGuide)
 
@@ -134,18 +135,28 @@ class WriterInstanceStartForm(forms.Form):
 class WriterInstanceDetailsForm(forms.ModelForm):
     """
     Step 2: capture basic NOFO metadata for the new ContentGuideInstance.
-    Agency is set from the user's group in the view, but displayed read-only.
+    opdiv and title are required; others are optional.
     """
 
     class Meta:
         model = ContentGuideInstance
-        fields = ["short_name", "title", "number"]
+        fields = [
+            "opdiv",
+            "agency",
+            "title",
+            "short_name",
+            "number",
+        ]
         labels = {
-            "short_name": "Short name",
+            "opdiv": "Operating Division",
+            "agency": "Agency",
             "title": "NOFO title",
+            "short_name": "Short name",
             "number": "NOFO number",
         }
         help_texts = {
+            "opdiv": "The HHS operating division responsible for this NOFO (eg, CDC).",
+            "agency": "The agency or office within the operating division (eg, Global Health Center).",
             "short_name": "A name that makes it easier to find this NOFO later. It won’t be public.",
             "title": "The official name for this NOFO.",
             "number": "The opportunity number for this NOFO.",
@@ -153,6 +164,19 @@ class WriterInstanceDetailsForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # You can customize widgets / placeholders here if you like:
-        for field in self.fields.values():
-            field.widget.attrs.setdefault("class", "usa-input")
+
+        # Make opdiv + title required
+        if "opdiv" in self.fields:
+            self.fields["opdiv"].required = True
+        if "title" in self.fields:
+            self.fields["title"].required = True
+
+        # Prefill opdiv with the user's group for the initial GET only.
+        # Don't overwrite user input on POST (self.is_bound == True).
+        if not self.is_bound and user and "opdiv" in self.fields:
+            self.fields["opdiv"].initial = get_opdiv_label(getattr(user, "group", ""))
+
+        # Basic USWDS styling on widgets
+        for name, field in self.fields.items():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = (existing + " " + "usa-input").strip()
