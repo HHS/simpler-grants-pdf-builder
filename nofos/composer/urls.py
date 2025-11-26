@@ -78,6 +78,11 @@ urlpatterns = [
         name="writer_index",
     ),
     path(
+        "writer/before-start",
+        views.WriterInstanceBeforeStartView.as_view(),
+        name="writer_before_start",
+    ),
+    path(
         "writer/start",
         views.WriterInstanceStartView.as_view(),
         name="writer_start",

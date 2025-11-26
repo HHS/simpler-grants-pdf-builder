@@ -20,6 +20,7 @@ from django.views.generic import (
     DetailView,
     FormView,
     ListView,
+    TemplateView,
     UpdateView,
 )
 
@@ -938,6 +939,14 @@ class WriterDashboardView(LoginRequiredMixin, ListView):
             guides_queryset, self.request.user
         )
         return context
+
+
+class WriterInstanceBeforeStartView(LoginRequiredMixin, TemplateView):
+    """
+    Step 0 for writers: see a list of "Getting started" information
+    """
+
+    template_name = "composer/writer/writer_before_start.html"
 
 
 class WriterInstanceStartView(LoginRequiredMixin, FormView):

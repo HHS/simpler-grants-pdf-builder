@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Before you get started
+{% endblock %}
+
+{% block body_class %}composer_writer_before_start{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">Before you get started</h1>
+
+  <div class="usa-prose">
+    <p>We’ve made it easier to set up your NOFO so you can focus on clear, accurate information. Before you begin, here’s what you’ll need and what to expect.</p>
+
+    <ol class="usa-process-list">
+      <li class="usa-process-list__item">
+        <h2 class="usa-process-list__heading">Gather some basic information</h2>
+        <p>
+          Before you start, have a few key details ready about your program.
+          <br>
+          Composer uses this information to tailor the questions you’ll see and structure your NOFO.
+        </p>
+        <p class="margin-bottom-05">You’ll need:</p>
+        <ul>
+          <li>Program title</li>
+          <li>Activity code (if applicable)</li>
+          <li>Cost-sharing or matching requirements</li>
+          <li>Expected funding amount and number of awards</li>
+          <li>Key agency contact information</li>
+        </ul>
+        <p>Having this information ready will make setup faster.</p>
+      </li>
+      <li class="usa-process-list__item">
+        <h2 class="usa-process-list__heading">Fill out the guided questions</h2>
+        <p>
+          Composer will walk you through short questions for each step of the NOFO.
+          <br>
+          You can save your progress anytime and return later.
+        </p>
+        <p class="margin-bottom-05">Steps include:</p>
+        <ol type="1">
+          <li>Review the opportunity</li>
+          <li>Get ready to apply</li>
+          <li>Build your application</li>
+          <li>Understand review, selection, and award</li>
+          <li>Submit your application</li>
+          <li>Learn what happens after award</li>
+          <li>Contacts and support</li>
+        </ol>
+      </li>
+      <li class="usa-process-list__item">
+        <h2 class="usa-process-list__heading">Review and make edits</h2>
+        <p>
+          As you go, you can review and edit your responses at any time.
+          <br>
+          Your answers shape how the NOFO appears when you and your team start writing the main sections.
+        </p>
+      </li>
+      <li class="usa-process-list__item">
+        <h2 class="usa-process-list__heading">Save and preview your NOFO</h2>
+        <p>
+          When you feel ready, you can download and continue your NOFO draft in Word, following the instructions in each section.
+        </p>
+      </li>
+    </ol>
+
+    <a class="usa-button margin-top-0" href="{% url 'composer:writer_start' %}">
+      Let’s begin
+    </a>
+  </div>
+
+{% endblock %}
