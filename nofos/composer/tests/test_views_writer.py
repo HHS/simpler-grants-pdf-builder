@@ -125,6 +125,27 @@ class WriterDashboardViewTests(TestCase):
         self.assertEqual(content_guides, {acf_guide, hrsa_guide})
 
 
+class WriterInstanceBeforeStartTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="acf@example.com",
+            password="testpass123",
+            group="acf",
+            force_password_reset=False,
+        )
+        self.url = reverse("composer:writer_before_start")
+
+    def test_anonymous_redirects_to_login(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_page_renders_for_logged_in_user(self):
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Before you begin")
+
+
 class WriterInstanceStartViewTests(TestCase):
     def setUp(self):
         self.bloom_user = User.objects.create_user(
