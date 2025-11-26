@@ -865,7 +865,6 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
 
         instance.parent = self.parent_content_guide
         instance.group = user_group
-        instance.opdiv = user_group
         instance.save()
 
         messages.success(

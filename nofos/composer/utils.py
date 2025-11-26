@@ -2,9 +2,20 @@ from html import escape
 
 from composer.conditional.conditional_questions import find_question_for_subsection
 from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from django.conf import settings
 from django.forms import ValidationError
 
 from nofos.nofo import _build_document
+
+GROUP_MAP = dict(settings.GROUP_CHOICES)
+
+
+def get_opdiv_label(opdiv_code: str) -> str:
+    """
+    Returns the human-readable label for a group code.
+    If unknown, returns the code unchanged.
+    """
+    return GROUP_MAP.get(opdiv_code, opdiv_code)
 
 
 def create_content_guide_document(title, sections, opdiv):
