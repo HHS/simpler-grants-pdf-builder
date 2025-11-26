@@ -41,6 +41,18 @@ class ComposerListView(LoginRequiredMixin, ListView):
     template_name = "composer/composer_index.html"
     context_object_name = "documents"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Allow per-request success/error headings from the session
+        context["error_heading"] = self.request.session.pop(
+            "error_heading", "Content guide deleted"
+        )
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "Content guide imported successfully"
+        )
+        return context
+
     def get_queryset(self):
         queryset = super().get_queryset()
         # Exclude archived documents and documents that have a successor
@@ -375,6 +387,8 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
     context_object_name = "document"
     template_name = "composer/composer_preview.html"
+    exit_url = reverse_lazy("composer:composer_index")
+    fields = []
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -395,6 +409,24 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         context["is_preview"] = True
         context["include_scroll_to_top"] = True
         return context
+
+    def post(self, request, *args, **kwargs):
+        print("POST FORM FROM PREVIEW")
+        document = self.get_object()
+
+        action = request.POST.get("action")
+        if action == "exit":
+            print("ACTION EXIT")
+            self.request.session["success_heading"] = "Content guide successfully saved"
+            messages.success(
+                self.request,
+                f"You saved: “<a href='{reverse_lazy('composer:composer_document_redirect', args=[document.pk])}'>{document.title}</a>”",
+            )
+            return redirect(self.exit_url)
+
+        if action == "publish":
+            document.status = "published"
+            document.save(update_fields=["status"])
 
 
 class ComposerSectionEditView(GroupAccessObjectMixin, DetailView):
