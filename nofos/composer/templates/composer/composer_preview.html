@@ -56,6 +56,17 @@
 
       <hr />
 
+      <form method="post">
+        {% csrf_token %}
+        <ul class="usa-button-group flex-justify-end margin-y-2 margin-x-0">
+          <li class="usa-button-group__item">
+            <button class="usa-button usa-button--outline" type="submit" name="action" value="exit">Save and exit</button>
+          </li>
+          <li class="usa-button-group__item" type="submit" name="action" value="publish"><button class="usa-button">Publish</button></li>
+        </ul>
+
+      </form>
+
       <div class="nofo_view">
         <!-- Render each section with all its subsections -->
         {% for section in sections %}
