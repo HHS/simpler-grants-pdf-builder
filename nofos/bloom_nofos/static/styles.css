@@ -2365,7 +2365,7 @@ del + ins > br {
   color: var(--color--text-grey);
   font-size: 105%;
   font-weight: 700;
-  margin: 1em 2.5rem 1em 0;
+  margin: .5em 2.5rem 1em 0;
 }
 
 .composer_document_section #side-nav {

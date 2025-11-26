@@ -1,0 +1,26 @@
+<!-- sticky sidenav -->
+<aside class="grid-col-12 tablet:grid-col-3 cg-sidenav">
+  <p class="side-nav-list--intro">Steps in this content guide</p>
+
+  <nav id="side-nav" aria-label="Step navigation">
+    <ul id="side-nav-list" class="usa-sidenav">
+      {% for section in sections %}
+        <li class="usa-sidenav__item">
+          <a
+            href="{% url 'composer:section_view' document_pk section.pk %}"
+            {% if section.id == current_section.id %}aria-current="page" class="usa-current"{% endif %}>
+            {{ section.name }}
+          </a>
+        </li>
+      {% endfor %}
+      <li class="usa-sidenav__item">
+        <a
+          href="{% url 'composer:composer_preview' document_pk %}"
+          aria-current="page"
+          class="usa-current">
+          Preview content guide
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
