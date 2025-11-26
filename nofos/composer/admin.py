@@ -165,6 +165,7 @@ class ContentGuideInstanceAdmin(admin.ModelAdmin):
                     "title",
                     "short_name",
                     "number",
+                    "opdiv",
                     "agency",
                     "group",
                     "status",

@@ -55,7 +55,7 @@ a:visited {
 blockquote {
   margin: 0;
   padding: 10px 15px;
-  border-left: 8px solid #dfe1e2;
+  border-left: 8px solid var(--color--light-grey);
   font-style: italic;
 }
 
@@ -1937,8 +1937,8 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   > table
   .section--content
   > td {
-  border-left: 1px solid #dfe1e2;
-  border-right: 1px solid #dfe1e2;
+  border-left: 1px solid var(--color--light-grey);
+  border-right: 1px solid var(--color--light-grey);
   background-color: #ffffff;
   padding: 0px 2rem;
   vertical-align: baseline;
@@ -1951,7 +1951,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   .section--content:first-of-type
   > td {
   padding-top: 1rem;
-  border-top: 1px solid #dfe1e2;
+  border-top: 1px solid var(--color--light-grey);
 }
 
 .nofo_compare--document
@@ -1961,7 +1961,7 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   .section--content:last-of-type
   > td {
   padding-bottom: 1rem;
-  border-bottom: 1px solid #dfe1e2;
+  border-bottom: 1px solid var(--color--light-grey);
 }
 
 .nofo_compare--document .nofo_view--title-bar td .usa-tooltip {
@@ -2388,18 +2388,18 @@ del + ins > br {
 
 .composer_document_section .usa-sidenav__item {
   color: var(--color--med-grey);
-  border-left: 2px solid #dfe1e2;
-  border-right: 2px solid #dfe1e2;
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
 }
 
 .composer_document_section .usa-sidenav__item:first-of-type {
   border-radius: 4px 4px 0 0;
-  border-top: 2px solid #dfe1e2;
+  border-top: 2px solid var(--color--light-grey);
 }
 
 .composer_document_section .usa-sidenav__item:last-of-type {
   border-radius: 0 0 4px 4px;
-  border-bottom: 2px solid #dfe1e2;
+  border-bottom: 2px solid var(--color--light-grey);
 }
 
 .composer_document_section .usa-sidenav .usa-current::after {
@@ -2414,8 +2414,9 @@ del + ins > br {
   bottom: 0;
 }
 
+.composer_writer_details hr,
 .composer_document_section hr {
-  border: 2px solid #dfe1e2;
+  border: 2px solid var(--color--light-grey);
 }
 
 .composer_document_section--preview h1 {
