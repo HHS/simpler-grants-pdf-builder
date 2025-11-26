@@ -1,0 +1,38 @@
+{% extend 'base.html' %}
+
+{% block title %}
+  Unpublish "{{document.title}}"
+{% endblock %}
+
+{% block content %}
+  <div class="usa-alert usa-alert--warning margin-bottom-3">
+    <div class="usa-alert__body">
+      <h4 class="usa-alert__heading">Warning</h4>
+      <p class="usa-alert__text">Unpublishing will hide this content guide from NOFO writers</p>
+    </div>
+  </div>
+
+  {% url 'composer:composer_preview' document.pk as back_href %}
+  {% include "includes/page_heading.html" with title="Unpublish “"|add:document.title|add:"”" back_text="Back to preview" back_href=back_href only %}
+
+  <form method="post">
+    {% csrf_token %}
+    <p>
+      Are you absolutely sure you want to unpublish and make edits to “{{ document.title }}”?
+      <ul>
+        <li>Unpublishing this content guide means you can make edits to it again.</li>
+        <li>When you unpublish, NOFO Writers will not be able to start a new draft NOFO based on this content guide.</li>
+        <li>Make sure to re-publish your content guide when you are finished with your edits.</li>
+      </ul>
+    </p>
+
+    <ul class="usa-button-group margin-top-3">
+      <li class="usa-button-group__item">
+        <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
+      </li>
+      <li class="usa-button-group__item">
+        <a href="{{ back_href }}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this document</a>
+      </li>
+    </ul>
+  </form>
+{% endblock %}
