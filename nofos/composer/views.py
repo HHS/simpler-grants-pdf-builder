@@ -2,6 +2,7 @@ from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -34,6 +35,52 @@ from .models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from .utils import create_content_guide_document, render_curly_variable_list_html_string
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
+
+
+def create_archived_ancestor_duplicate(original):
+    # Clone the content guide
+    new_content_guide = ContentGuide.objects.get(pk=original.pk)
+    new_content_guide.id = None
+
+    # Update the clone to be a parent of the original, and to be archived
+    new_content_guide.successor = original
+    new_content_guide.archived = timezone.now().date()
+
+    # Clone all sections and bulk create
+    original_sections = list(ContentGuideSection.objects.filter(content_guide=original))
+    section_map = {}
+
+    new_sections = [
+        ContentGuideSection(
+            **model_to_dict(original_section, exclude=["id", "content_guide"]),
+            content_guide=original,
+        )
+        for original_section in original_sections
+    ]
+    created_sections = ContentGuideSection.bulk_create(new_sections)
+
+    # Map old section IDs to new section objects, to enable linking new created subsections
+    # to new sections
+    for original, new in zip(original_sections, created_sections):
+        section_map[original.id] = new
+
+    # Clone all subsections, associate with corresponding cloned and created section,
+    # and bulk create
+    original_subsections = list(
+        ContentGuideSubsection.objects.filter(section__in=original_sections)
+    )
+
+    new_subsections = [
+        ContentGuideSubsection(
+            **model_to_dict(original_subsection, exclude=["id", "section"]),
+            section=section_map[original_subsection.id],
+        )
+        for original_subsection in original_subsections
+    ]
+
+    ContentGuideSubsection.bulk_create(new_subsections)
+
+    return new_content_guide
 
 
 class ComposerListView(LoginRequiredMixin, ListView):
@@ -205,6 +252,38 @@ class ComposerArchiveView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView
             ),
         )
         return redirect(self.success_url)
+
+
+class ComposerUnpublishView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateView):
+    model = ContentGuide
+    template_name = "composer/composer_confirm_unpublish.html"
+    context_object_name = "document"
+    fields = []
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status != "published":
+            return HttpResponseBadRequest(
+                "This document is not yet published, and cannot be unpublished"
+            )
+
+        return super.dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+
+        create_archived_ancestor_duplicate(document)
+
+        document.archived = None
+        document.status = "draft"
+        document.save(update_fields=["archived", "status"])
+
+        messages.warning(
+            self.request,
+            "You can now make edits to your content guide. NOFO writers can't use this content guide until it is published again.",
+        )
+
+        return redirect(reverse_lazy("composer:composer_preview", args=[document.pk]))
 
 
 class ComposerHistoryView(GroupAccessObjectMixin, BaseNofoHistoryView):

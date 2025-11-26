@@ -42,6 +42,11 @@ urlpatterns = [
         name="composer_preview",
     ),
     path(
+        "<uuid:pk>/unpublish",
+        views.ComposerUnpublishView.as_view(),
+        name="composer_unpublish",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/edit",
         views.ComposerSectionEditView.as_view(),
         name="section_edit",
