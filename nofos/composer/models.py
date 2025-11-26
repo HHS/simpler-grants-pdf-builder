@@ -19,11 +19,7 @@ class ContentGuide(BaseNofo):
     Guides remain editable by admins even when ACTIVE.
     """
 
-    STATUS_CHOICES = [
-        ("draft", "Draft"),
-        ("active", "Active"),
-        ("retired", "Retired"),
-    ]
+    STATUS_CHOICES = [("draft", "Draft"), ("published", "Published")]
 
     title = models.TextField(
         "Content Guide title",
