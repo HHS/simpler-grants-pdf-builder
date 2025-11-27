@@ -61,9 +61,9 @@ class ComposerListViewTests(TestCase):
         self.assertContains(response, "Create a new content guide")
 
     def test_published_only(self):
-        """When only active content guides exist, only the published table is visible"""
+        """When only published content guides exist, only the published table is visible"""
         ContentGuide.objects.create(
-            title="Original Title.docx", opdiv="CDC", group="bloom", status="active"
+            title="Original Title.docx", opdiv="CDC", group="bloom", status="published"
         )
         self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_index")
@@ -270,6 +270,23 @@ class ComposerDocumentRedirectTests(TestCase):
         expected = reverse(
             "composer:section_view", kwargs={"pk": guide.pk, "section_pk": s1.pk}
         )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)
+
+    def test_redirects_to_preview_when_published(self):
+        # Create a published guide with sections
+        guide = ContentGuide.objects.create(
+            title="Published Guide", opdiv="CDC", group="bloom", status="published"
+        )
+        ContentGuideSection.objects.create(
+            content_guide=guide, order=1, name="Section 1", html_id="sec-1"
+        )
+
+        url = reverse(self.redirect_url_name, kwargs={"pk": guide.pk})
+        response = self.client.get(url)
+
+        expected = reverse("composer:composer_preview", kwargs={"pk": guide.pk})
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, expected)
@@ -1157,3 +1174,202 @@ class ComposerSubsectionInstructionsEditViewTests(TestCase):
         )
         resp = self.client.get(bad_url)
         self.assertEqual(resp.status_code, 404)
+
+
+class ComposerPreviewViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.guide = ContentGuide.objects.create(
+            title="Test Guide", opdiv="CDC", group="bloom", status="draft"
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.guide, order=1, name="Section 1", html_id="sec-1"
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Subsection 1",
+            tag="h3",
+            body="Test body",
+            enabled=True,
+        )
+
+        self.url = reverse("composer:composer_preview", kwargs={"pk": self.guide.pk})
+
+    def test_get_renders_preview_page(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["document"].pk, self.guide.pk)
+        self.assertTrue(resp.context["is_preview"])
+        self.assertIsNotNone(resp.context["sections"])
+
+    def test_anonymous_user_redirected(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertIn(resp.status_code, [302, 403])
+
+    def test_post_exit_action_redirects_with_message(self):
+        resp = self.client.post(self.url, {"action": "exit"}, follow=False)
+
+        # Redirects to index
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("composer:composer_index"))
+
+        # Session variable set for success heading
+        follow_resp = self.client.get(resp["Location"])
+        self.assertEqual(follow_resp.context["success_heading"], "Content guide successfully saved")
+
+        # Success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("You saved:" in str(m) for m in msgs))
+        self.assertTrue(any(self.guide.title in str(m) for m in msgs))
+
+    def test_post_publish_action_updates_status(self):
+        resp = self.client.post(self.url, {"action": "publish"}, follow=False)
+
+        # Document status updated
+        self.guide.refresh_from_db()
+        self.assertEqual(self.guide.status, "published")
+
+        # Redirects back to same page
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, self.url)
+
+        # Session variable set
+        follow_resp = self.client.get(resp["Location"])
+        self.assertEqual(
+            follow_resp.context["success_heading"],
+            "Your content guide was successfully published"
+        )
+
+        # Success message was added
+        msgs = list(get_messages(resp.wsgi_request))
+        self.assertTrue(any("available for writers" in str(m) for m in msgs))
+
+    def test_sidenav_hidden_when_published(self):
+        # Initially draft → sidenav shown
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Steps in this content guide")
+
+        # Publish the guide
+        self.guide.status = "published"
+        self.guide.save()
+
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, "Steps in this content guide")
+
+
+class ComposerUnpublishViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="test@example.com", password="testpass123")
+
+        # Create a published guide with sections and subsections
+        self.guide = ContentGuide.objects.create(
+            title="Published Guide", opdiv="CDC", group="bloom", status="published"
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.guide, order=1, name="Section 1", html_id="sec-1"
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Subsection 1",
+            tag="h3",
+            body="Test body",
+            instructions="Test instructions",
+            enabled=True,
+        )
+
+        self.url = reverse("composer:composer_unpublish", kwargs={"pk": self.guide.pk})
+
+    def test_cannot_unpublish_draft_document(self):
+        draft_guide = ContentGuide.objects.create(
+            title="Draft Guide", opdiv="CDC", group="bloom", status="draft"
+        )
+        url = reverse("composer:composer_unpublish", kwargs={"pk": draft_guide.pk})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn(b"not yet published", resp.content)
+
+    def test_post_creates_archived_duplicate_and_unpublishes(self):
+        original_pk = self.guide.pk
+        original_section_count = self.guide.sections.count()
+        original_subsection_count = ContentGuideSubsection.objects.filter(
+            section__content_guide=self.guide
+        ).count()
+
+        resp = self.client.post(self.url, follow=False)
+
+        # Original guide is now draft and not archived
+        self.guide.refresh_from_db()
+        self.assertEqual(self.guide.status, "draft")
+        self.assertIsNone(self.guide.archived)
+
+        # Archived duplicate was created
+        archived = ContentGuide.objects.filter(successor=self.guide, archived__isnull=False).first()
+        self.assertIsNotNone(archived)
+        self.assertEqual(archived.title, self.guide.title)
+        self.assertIsNotNone(archived.archived)
+
+        # Archived duplicate has same structure
+        archived_section_count = archived.sections.count()
+        archived_subsection_count = ContentGuideSubsection.objects.filter(
+            section__content_guide=archived
+        ).count()
+        self.assertEqual(archived_section_count, original_section_count)
+        self.assertEqual(archived_subsection_count, original_subsection_count)
+
+        # Redirected to preview page
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            resp.url, reverse("composer:composer_preview", kwargs={"pk": original_pk})
+        )
+
+    def test_archived_duplicate_preserves_data(self):
+        ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=2,
+            name="Subsection 2",
+            tag="h4",
+            body="Second body",
+            instructions="Second instructions",
+            enabled=False,
+        )
+
+        self.client.post(self.url)
+
+        # Get the archived copy
+        archived = ContentGuide.objects.filter(successor=self.guide, archived__isnull=False).first()
+        archived_section = archived.sections.first()
+        archived_subsections = list(archived_section.subsections.order_by("order"))
+
+        # Verify first subsection
+        self.assertEqual(archived_subsections[0].name, "Subsection 1")
+        self.assertEqual(archived_subsections[0].body, "Test body")
+        self.assertEqual(archived_subsections[0].instructions, "Test instructions")
+        self.assertTrue(archived_subsections[0].enabled)
+
+        # Verify second subsection
+        self.assertEqual(archived_subsections[1].name, "Subsection 2")
+        self.assertEqual(archived_subsections[1].body, "Second body")
+        self.assertEqual(archived_subsections[1].instructions, "Second instructions")
+        self.assertFalse(archived_subsections[1].enabled)
+
+    def test_anonymous_user_forbidden(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
