@@ -125,7 +125,7 @@ class WriterDashboardViewTests(TestCase):
         self.assertEqual(content_guides, {acf_guide, hrsa_guide})
 
 
-class WriterInstanceBeforeStartTests(TestCase):
+class WriterInstanceBeforeStartViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="acf@example.com",
