@@ -90,18 +90,6 @@ class ComposerListView(LoginRequiredMixin, ListView):
     template_name = "composer/composer_index.html"
     context_object_name = "documents"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Allow per-request success/error headings from the session
-        context["error_heading"] = self.request.session.pop(
-            "error_heading", "Content guide deleted"
-        )
-        context["success_heading"] = self.request.session.pop(
-            "success_heading", "Content guide imported successfully"
-        )
-        return context
-
     def get_queryset(self):
         queryset = super().get_queryset()
         # Exclude archived documents and documents that have a successor
@@ -118,6 +106,14 @@ class ComposerListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Allow per-request success/error headings from the session
+        context["error_heading"] = self.request.session.pop(
+            "error_heading", "Content guide deleted"
+        )
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "Content guide imported successfully"
+        )
 
         qs = self.get_queryset()
         context["draft_documents"] = qs.filter(status="draft")
@@ -465,8 +461,12 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
     Read-only preview of an entire Composer document.
     Model is a required argument for instantiation, like:
             views.ComposerPreviewView.as_view(model=ContentGuide),
-    Left pane: sections + a 'Preview' item (current page).
-    Right pane: full document printed section-by-section.
+
+    If draft:
+        Left pane: sections + a 'Preview' item (current page).
+        Right pane: full document printed section-by-section.
+    If published:
+        Full-width: full document printed section-by-section.
     """
 
     context_object_name = "document"
@@ -506,9 +506,12 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         action = request.POST.get("action")
         if action == "exit":
             self.request.session["success_heading"] = "Content guide successfully saved"
+            edit_link = reverse_lazy(
+                "composer:composer_document_redirect", args=[document.pk]
+            )
             messages.success(
                 self.request,
-                f"You saved: “<a href='{reverse_lazy('composer:composer_document_redirect', args=[document.pk])}'>{document.title}</a>”",
+                f"You saved: “<a href='{edit_link}'>{document.title}</a>”",
             )
             return redirect(self.exit_url)
 
@@ -519,11 +522,14 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
             self.request.session["success_heading"] = (
                 "Your content guide was successfully published"
             )
+            unpublish_link = reverse_lazy(
+                "composer:composer_unpublish", args=[document.pk]
+            )
             messages.success(
                 self.request,
                 (
                     "The guide will be available for writers and OpDivs.<br />"
-                    f"You can’t make any updates. If you want to make edits, select <a href={'#'}> unpublish</a> to continue editing.<br />"
+                    f"You can’t make any updates. If you want to make edits, select <a href='{unpublish_link}'>unpublish</a> to continue editing.<br />"
                     "<br />"
                     f"You can import the downloaded Word document into <a href={'#'}>NOFO Compare</a> to easily identify differences between other versions."
                 ),
