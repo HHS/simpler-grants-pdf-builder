@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+  First, let’s set up the program details
+{% endblock %}
+
+{% block body_class %}composer_writer_details{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">First, let’s set up the program details</h1>
+
+    <p class="usa-prose">Tell us your program’s basic information.</p>
+
+    <h2 class="font-serif-md margin-top-4">Your NOFO is based on this content guide</h2>
+    <div class="previous-subsection-widget outline-box">
+      <p class="outline-box--content margin-top-0">
+        <a href="#" class="usa-link usa-link--external" target="blank" title="Program focus (Opens in a new tab)">
+          {{ parent_content_guide.title }}
+        </a>
+      </p>
+      <p class="margin-top-05 margin-bottom-05 text-base-dark">Last updated: {{ parent_content_guide.updated }}</p>
+    </div>
+
+    <div class="usa-prose margin-top-3">
+      <hr>
+
+      {% include "includes/error_summary.html" with form=form %}
+
+      <p aria-hidden="true">
+        <span class="label--required text-secondary-dark">*</span>
+        <span>Indicates required field</span>
+      </p>
+
+      <form method="post" class="margin-top-3">
+        {% csrf_token %}
+
+        {% include "includes/form_macro.html" with show_required_asterisk=True %}
+
+        <button class="usa-button margin-top-3" type="submit">Save and return to drafts</button>
+      </form>
+    </div>
+
+{% endblock %}

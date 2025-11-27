@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load tz nofo_name %}
+
+{% block title %}
+  Welcome to Composer
+{% endblock %}
+
+{% block body_class %}composer_index composer_index--writer{% endblock %}
+
+{% block content %}
+  {% include "includes/alerts.html" with messages=messages success_heading="Draft NOFO saved" error_heading="Draft NOFO deleted" only %}
+
+  <h1 class="font-heading-xl margin-y-0">Welcome to Composer</h1>
+
+  <div class="usa-prose margin-top-2">
+    <p>Your workspace for creating and managing your NOFOs.</p>
+    <p>Use Composer to help set your program’s content guides so you can focus on clear, accurate information for your NOFO.</p>
+  </div>
+
+  {% if draft_nofos %}
+    <h2 class="font-heading-md margin-top-8">Continue editing draft NOFOs</h2>
+    <div class="usa-prose">
+      <p>
+        Review and continue editing your working NOFOs.
+      </p>
+    </div>
+    <table class="usa-table usa-table--borderless width-full table--section">
+      <thead>
+        <tr>
+          <th scope="col">Short name</th>
+          <th scope="col">Last saved by</th>
+          <th scope="col">Created</th>
+          <th scope="col">Updated</th>
+          <th scope="col" class="w-5">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for draft in draft_nofos %}
+          <tr>
+            <th scope="row">
+              {{ draft|nofo_name }}
+            </th>
+            <td>{{ draft.updated_by_display }}</td>
+            {% timezone "America/New_York" %}
+              <td> {{ draft.created_display }}</td>
+              <td> {{ draft.updated_display }} </td>
+            {% endtimezone %}
+            <td><a href="{% url 'composer:writer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--icon--usa-red usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2 class="font-heading-md margin-top-8">Start drafting a new NOFO</h2>
+  <div class="usa-prose">
+    <p>We’ll guide you through questions needed to start filling out a NOFO from an approved content guide. You can download at anytime to complete offline.</p>
+    <a class="usa-button margin-top-0" href="{% url 'composer:writer_before_start' %}">
+      Start a new draft NOFO
+    </a>
+  </div>
+
+  {% if content_guides %}
+    <h2 class="font-heading-md margin-top-8">Approved content guides</h2>
+    <div class="usa-prose">
+      <p>
+        Download a blank approved content guide and work offline.
+      </p>
+    </div>
+    <table class="usa-table usa-table--borderless width-full table--section">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Last saved by</th>
+          <th scope="col">Created</th>
+          <th scope="col">Updated</th>
+          <th scope="col" class="w-5 text-center">Download</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guide in content_guides %}
+          <tr>
+            <th scope="row">
+              {{ guide.title }}
+            </th>
+            <td>{{ guide.updated_by_display }}</td>
+            {% timezone "America/New_York" %}
+              <td> {{ guide.created_display }}</td>
+              <td> {{ guide.updated_display }} </td>
+            {% endtimezone %}
+            <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% include "includes/_getting_started_index_table.html" %}
+{% endblock %}

@@ -74,8 +74,6 @@ class ComposerListViewTests(TestCase):
         self.assertContains(response, "Create a new content guide")
 
 
-
-
 class ComposerImportViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(

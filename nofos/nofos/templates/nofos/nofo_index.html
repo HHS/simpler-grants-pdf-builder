@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static tz %}
+{% load static tz nofo_name %}
 
 {% block title %}
 	{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
@@ -76,7 +76,7 @@
 				<tbody>
 					{% for nofo in nofo_list %}
 						<tr {% if nofo.status == 'ready-for-qa' %}class="ready-for-qa"{% endif %}>
-							<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{% if nofo.short_name %}{{ nofo.short_name }}{% else %}{{ nofo.title }}{% endif %}</a></th>
+							<th scope="row"><a href="{% url 'nofos:nofo_edit' nofo.id %}">{{ nofo|nofo_name }}</a></th>
 							<td>{% if nofo.number %}{{ nofo.number }}{% else %}—{% endif %}</td>
 							{% if user.group == 'bloom' %}
 								<td>

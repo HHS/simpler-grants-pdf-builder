@@ -160,22 +160,33 @@ class BaseNofo(models.Model):
 
     @property
     def created_display(self):
-        today = timezone.now().date()
-        created_date = self.created.date()
-        if created_date != today:
-            return format(self.created, "M j")
+        # Timezone-aware conversion
+        created_localtime = timezone.localtime(self.created)
 
-        return f"{format(self.created, 'M j')}, {format(self.created, 'g:i A')}"
+        today = timezone.localtime().date()
+        created_date = created_localtime.date()
+
+        if created_date != today:
+            return format(created_localtime, "M j")
+
+        return (
+            f"{format(created_localtime, 'M j')}, {format(created_localtime, 'g:i A')}"
+        )
 
     @property
     def updated_display(self):
-        today = timezone.now().date()
-        updated_date = self.updated.date()
+        # Timezone-aware conversion
+        updated_localtime = timezone.localtime(self.updated)
+
+        today = timezone.localtime().date()
+        updated_date = updated_localtime.date()
 
         if updated_date != today:
-            return format(self.updated, "M j")
+            return format(updated_localtime, "M j")
 
-        return f"{format(self.updated, 'M j')}, {format(self.updated, 'g:i A')}"
+        return (
+            f"{format(updated_localtime, 'M j')}, {format(updated_localtime, 'g:i A')}"
+        )
 
     @property
     def updated_by_display(self):

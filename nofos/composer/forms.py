@@ -3,11 +3,17 @@ from martor.fields import MartorFormField
 
 from nofos.forms import create_object_model_form
 
-from .models import ContentGuide, ContentGuideSubsection
+from .models import ContentGuide, ContentGuideInstance, ContentGuideSubsection
+from .utils import get_opdiv_label
 
 create_composer_form_class = create_object_model_form(ContentGuide)
 
 CompareTitleForm = create_composer_form_class(["title"])
+
+
+###########################################################
+###################### SYSTEM ADMINS ######################
+###########################################################
 
 
 class ComposerSubsectionCreateForm(forms.ModelForm):
@@ -89,3 +95,86 @@ class ComposerSubsectionInstructionsEditForm(forms.ModelForm):
     class Meta:
         model = ContentGuideSubsection
         fields = ["instructions"]
+
+
+###########################################################
+###################### NOFO WRITERS #######################
+###########################################################
+
+
+class WriterInstanceStartForm(forms.Form):
+    """
+    Step 1: choose which ContentGuide to base the draft NOFO on.
+
+    TODO: should only show 'published' Content Guides, but this is not ready yet
+    """
+
+    parent = forms.ModelChoiceField(
+        queryset=ContentGuide.objects.none(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Choose an approved content guide as a basis for your draft NOFO.",
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        qs = ContentGuide.objects.filter(
+            archived__isnull=True,
+            successor__isnull=True,
+            # status="published", # TODO: only show published
+        )
+        # if not a bloom user, only show content guides from that user's group
+        if user and getattr(user, "group", None) != "bloom":
+            qs = qs.filter(group=user.group)
+
+        self.fields["parent"].queryset = qs.order_by("title")
+        self.fields["parent"].label_from_instance = lambda obj: obj.title or obj
+
+
+class WriterInstanceDetailsForm(forms.ModelForm):
+    """
+    Step 2: capture basic NOFO metadata for the new ContentGuideInstance.
+    opdiv and title are required; others are optional.
+    """
+
+    class Meta:
+        model = ContentGuideInstance
+        fields = [
+            "opdiv",
+            "agency",
+            "title",
+            "short_name",
+            "number",
+        ]
+        labels = {
+            "opdiv": "Operating Division",
+            "agency": "Agency",
+            "title": "NOFO title",
+            "short_name": "Short name",
+            "number": "NOFO number",
+        }
+        help_texts = {
+            "opdiv": "The HHS operating division responsible for this NOFO (eg, CDC).",
+            "agency": "The agency or office within the operating division (eg, Global Health Center).",
+            "short_name": "A name that makes it easier to find this NOFO later. It won’t be public.",
+            "title": "The official name for this NOFO.",
+            "number": "The opportunity number for this NOFO.",
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Make opdiv + title required
+        self.fields["opdiv"].required = True
+        self.fields["title"].required = True
+
+        # Prefill opdiv with the user's group for the initial GET only.
+        # Don't overwrite user input on POST (self.is_bound == True).
+        if not self.is_bound and user:
+            self.fields["opdiv"].initial = get_opdiv_label(getattr(user, "group", ""))
+
+        # Basic USWDS styling on widgets
+        for name, field in self.fields.items():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = (existing + " " + "usa-input").strip()

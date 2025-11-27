@@ -47,7 +47,7 @@
                 <td> {{ draft.created_display }}</td>
                 <td> {{ draft.updated_display }} </td>
               {% endtimezone %}
-              <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
+              <td><a href="{% url 'composer:composer_archive' draft.pk %}" class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--icon--usa-red usa-button--delete"><span class="usa-sr-only">Delete this document</span></a></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -85,7 +85,7 @@
                   {{ active.updated|date:'M j' }}, {{ active.updated|date:'g:i A' }}
                 </td>
               {% endtimezone %}
-              <td><a href="" class="usa-button usa-button--unstyled usa-button--icon  usa-button--icon--before usa-button--file_download">Download</a></td>
+              <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -109,20 +109,5 @@
     Start a new content guide
   </a>
 
-  <details class="usa-accordion usa-accordion--bordered margin-top-15">
-    <summary class="usa-accordion__button" aria-expanded="false">
-      <h2 class="usa-accordion--heading">
-        Need help getting started?
-      </h2>
-    </summary>
-
-    <div class="usa-accordion__content usa-prose">
-      <ul class="usa-list usa-list--unstyled">
-        <li>Watch the short <a href="#">Composer overview video</a></li>
-        <li>Review the <a href="#">Composer how-to user guide</a></li>
-      </ul>
-    </div>
-  </details>
-
-
+  {% include "includes/_getting_started_index_table.html" %}
 {% endblock %}
