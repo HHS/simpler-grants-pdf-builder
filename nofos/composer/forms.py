@@ -166,14 +166,12 @@ class WriterInstanceDetailsForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Make opdiv + title required
-        if "opdiv" in self.fields:
-            self.fields["opdiv"].required = True
-        if "title" in self.fields:
-            self.fields["title"].required = True
+        self.fields["opdiv"].required = True
+        self.fields["title"].required = True
 
         # Prefill opdiv with the user's group for the initial GET only.
         # Don't overwrite user input on POST (self.is_bound == True).
-        if not self.is_bound and user and "opdiv" in self.fields:
+        if not self.is_bound and user:
             self.fields["opdiv"].initial = get_opdiv_label(getattr(user, "group", ""))
 
         # Basic USWDS styling on widgets
