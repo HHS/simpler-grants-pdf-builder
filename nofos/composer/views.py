@@ -46,6 +46,8 @@ def create_archived_ancestor_duplicate(original):
     new_content_guide.successor = original
     new_content_guide.archived = timezone.now().date()
 
+    new_content_guide.save()
+
     # Clone all sections and bulk create
     original_sections = list(ContentGuideSection.objects.filter(content_guide=original))
     section_map = {}
@@ -53,11 +55,11 @@ def create_archived_ancestor_duplicate(original):
     new_sections = [
         ContentGuideSection(
             **model_to_dict(original_section, exclude=["id", "content_guide"]),
-            content_guide=original,
+            content_guide=new_content_guide,
         )
         for original_section in original_sections
     ]
-    created_sections = ContentGuideSection.bulk_create(new_sections)
+    created_sections = ContentGuideSection.objects.bulk_create(new_sections)
 
     # Map old section IDs to new section objects, to enable linking new created subsections
     # to new sections
@@ -73,12 +75,12 @@ def create_archived_ancestor_duplicate(original):
     new_subsections = [
         ContentGuideSubsection(
             **model_to_dict(original_subsection, exclude=["id", "section"]),
-            section=section_map[original_subsection.id],
+            section=section_map[original_subsection.section.id],
         )
         for original_subsection in original_subsections
     ]
 
-    ContentGuideSubsection.bulk_create(new_subsections)
+    ContentGuideSubsection.objects.bulk_create(new_subsections)
 
     return new_content_guide
 
@@ -119,7 +121,7 @@ class ComposerListView(LoginRequiredMixin, ListView):
 
         qs = self.get_queryset()
         context["draft_documents"] = qs.filter(status="draft")
-        context["active_documents"] = qs.filter(status="active")
+        context["published_documents"] = qs.filter(status="published")
         return context
 
 
@@ -267,7 +269,7 @@ class ComposerUnpublishView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateVi
                 "This document is not yet published, and cannot be unpublished"
             )
 
-        return super.dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         document = self.get_object()
@@ -329,6 +331,9 @@ def compare_section_redirect(request, pk):
         return HttpResponseNotFound(
             "<p><strong>This content guide has no steps.</strong></p>"
         )
+
+    if document.status == "published":
+        return redirect("composer:composer_preview", pk=document.pk)
 
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 

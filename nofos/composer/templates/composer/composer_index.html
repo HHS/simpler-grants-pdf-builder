@@ -19,7 +19,7 @@
     </p>
   </div>
 
-  {% if draft_documents or active_documents %}
+  {% if draft_documents or published_documents %}
     {% if draft_documents %}
       <h2 class="font-heading-md margin-top-6">Edit draft content guides</h2>
       <div class="usa-prose">
@@ -54,7 +54,7 @@
       </table>
     {% endif %}
 
-    {%if active_documents %}
+    {%if published_documents %}
       <h2 class="font-heading-md margin-top-6">Review published content guides</h2>
       <div class="usa-prose">
         <p>
@@ -72,17 +72,17 @@
           </tr>
         </thead>
         <tbody>
-          {% for active in active_documents %}
+          {% for published in published_documents %}
             <tr>
               <th scope="row">
-                <a href="{% url 'composer:composer_document_redirect' active.pk %}">{{ active.title }}</a></th>
-              <td>{{ active.updated_by_display }}</td>
+                <a href="{% url 'composer:composer_document_redirect' published.pk %}">{{ published.title }}</a></th>
+              <td>{{ published.updated_by_display }}</td>
               {% timezone "America/New_York" %}
                 <td>
-                  {{ active.created|date:'M j' }}, {{ active.created|date:'g:i A' }}
+                  {{ published.created|date:'M j' }}, {{ published.created|date:'g:i A' }}
                 </td>
                 <td>
-                  {{ active.updated|date:'M j' }}, {{ active.updated|date:'g:i A' }}
+                  {{ published.updated|date:'M j' }}, {{ published.updated|date:'g:i A' }}
                 </td>
               {% endtimezone %}
               <td><a href="" class="usa-button usa-button--unstyled usa-button--icon  usa-button--icon--before usa-button--file_download">Download</a></td>

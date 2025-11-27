@@ -1,4 +1,4 @@
-{% extend 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}
   Unpublish "{{document.title}}"
@@ -17,21 +17,24 @@
 
   <form method="post">
     {% csrf_token %}
-    <p>
-      Are you absolutely sure you want to unpublish and make edits to “{{ document.title }}”?
+    <div class="usa-prose">
+      <p>
+        Are you absolutely sure you want to unpublish and make edits to “{{ document.title }}”?
+      </p>
       <ul>
         <li>Unpublishing this content guide means you can make edits to it again.</li>
         <li>When you unpublish, NOFO Writers will not be able to start a new draft NOFO based on this content guide.</li>
         <li>Make sure to re-publish your content guide when you are finished with your edits.</li>
       </ul>
-    </p>
+    </div>
+
 
     <ul class="usa-button-group margin-top-3">
       <li class="usa-button-group__item">
-        <button class="usa-button usa-button--secondary" type="submit">Yes, delete it</button>
+        <button class="usa-button usa-button--secondary" type="submit">Yes, unpublish</button>
       </li>
       <li class="usa-button-group__item">
-        <a href="{{ back_href }}" class="usa-button usa-button--outline">Never mind, I don’t want to delete this document</a>
+        <a href="{{ back_href }}" class="usa-button usa-button--outline">Never mind, I don’t want to un-publish this document</a>
       </li>
     </ul>
   </form>
