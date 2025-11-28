@@ -1274,6 +1274,29 @@ class ComposerPreviewViewTests(TestCase):
         resp = self.client.get(self.url)
         self.assertNotContains(resp, "Steps in this content guide")
 
+    def test_warning_when_archived__no_successor(self):
+        # Not archived → no warning
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, "Archived content guide")
+
+        # Archived → shows warning
+        self.guide.archived = timezone.now()
+        self.guide.save()
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Archived content guide")
+
+    def test_warning_when_archived__with_successor(self):
+        # Archived → shows warning
+        self.guide.archived = timezone.now()
+        self.guide.successor = ContentGuide.objects.create(
+            title="New Guide", opdiv="CDC", group="bloom", status="draft"
+        )
+        self.guide.save()
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Past version of New Guide")
+
 
 class ComposerUnpublishViewTests(TestCase):
     def setUp(self):

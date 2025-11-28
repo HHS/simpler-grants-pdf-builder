@@ -15,6 +15,7 @@
 {% block body_class %}composer_document_section composer_document_section--preview{% endblock %}
 
 {% block content %}
+  {% include "includes/_warning_archived.html" with document=document %}
   {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading only %}
 
   <div class="grid-row">
