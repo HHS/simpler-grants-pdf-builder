@@ -1224,12 +1224,12 @@ class ComposerPreviewViewTests(TestCase):
 
         # Session variable set for success heading
         follow_resp = self.client.get(resp["Location"])
-        self.assertEqual(follow_resp.context["success_heading"], "Content guide successfully saved")
+        self.assertEqual(follow_resp.context["success_heading"], "Your content guide was successfully saved")
 
         # Success message was added
         msgs = list(get_messages(resp.wsgi_request))
-        self.assertTrue(any("You saved:" in str(m) for m in msgs))
-        self.assertTrue(any(self.guide.title in str(m) for m in msgs))
+        edit_link = reverse("composer:composer_document_redirect", kwargs={"pk": self.guide.pk})
+        self.assertTrue(any(f"You saved: “<a href='{edit_link}'>{self.guide.title}</a>”" in str(m) for m in msgs))
 
     def test_post_publish_action_updates_status(self):
         resp = self.client.post(self.url, {"action": "publish"}, follow=False)
@@ -1252,6 +1252,15 @@ class ComposerPreviewViewTests(TestCase):
         # Success message was added
         msgs = list(get_messages(resp.wsgi_request))
         self.assertTrue(any("available for writers" in str(m) for m in msgs))
+
+    def test_post_publish_action_errors_if_already_published(self):
+        self.guide.status = "published"
+        self.guide.save()
+
+        resp = self.client.post(self.url, {"action": "publish"}, follow=False)
+
+        # Stays on same page with error
+        self.assertEqual(resp.status_code, 400)
 
     def test_sidenav_hidden_when_published(self):
         # Initially draft → sidenav shown
@@ -1368,6 +1377,25 @@ class ComposerUnpublishViewTests(TestCase):
         self.assertEqual(archived_subsections[1].body, "Second body")
         self.assertEqual(archived_subsections[1].instructions, "Second instructions")
         self.assertFalse(archived_subsections[1].enabled)
+
+    def test_duplicate_not_created_if_something_fails(self):
+        # Simulate failure by making the ContentGuideSubsection save raise an error
+        original_bulk_create = ContentGuideSubsection.objects.bulk_create
+
+        def failing_save(self, *args, **kwargs):
+            raise Exception("Simulated subsection bulk_create failure")
+
+        ContentGuideSubsection.objects.bulk_create = failing_save
+
+        with self.assertRaises(Exception):
+            self.client.post(self.url)
+
+        # Ensure no archived duplicate was created
+        archived = ContentGuide.objects.filter(successor=self.guide, archived__isnull=False).first()
+        self.assertIsNone(archived)
+
+        # Restore original save method
+        ContentGuideSubsection.objects.bulk_create = original_bulk_create
 
     def test_anonymous_user_forbidden(self):
         self.client.logout()
