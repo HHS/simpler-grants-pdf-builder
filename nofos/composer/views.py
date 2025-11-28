@@ -476,6 +476,9 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
     exit_url = reverse_lazy("composer:composer_index")
     fields = []
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("successor")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Make sure sections are ordered
