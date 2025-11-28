@@ -2,6 +2,7 @@ from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
@@ -37,6 +38,7 @@ from .utils import create_content_guide_document, render_curly_variable_list_htm
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(ContentGuide)
 
 
+@transaction.atomic
 def create_archived_ancestor_duplicate(original):
     # Clone the content guide
     new_content_guide = ContentGuide.objects.get(pk=original.pk)
@@ -268,7 +270,7 @@ class ComposerUnpublishView(GroupAccessObjectMixin, LoginRequiredMixin, UpdateVi
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        document = self.get_object()
+        document = self.object
 
         create_archived_ancestor_duplicate(document)
 
@@ -505,7 +507,9 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
         action = request.POST.get("action")
         if action == "exit":
-            self.request.session["success_heading"] = "Content guide successfully saved"
+            self.request.session["success_heading"] = (
+                "Your content guide was successfully saved"
+            )
             edit_link = reverse_lazy(
                 "composer:composer_document_redirect", args=[document.pk]
             )
@@ -516,6 +520,10 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
             return redirect(self.exit_url)
 
         if action == "publish":
+            if document.status != "draft":
+                # This shouldn't happen -- the publish button is only shown for draft documents
+                return HttpResponseBadRequest("Only draft documents can be published.")
+
             document.status = "published"
             document.save(update_fields=["status"])
 
