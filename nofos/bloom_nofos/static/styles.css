@@ -242,8 +242,18 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/delete.svg");
 }
 
-.usa-button--icon--before.usa-button--add::before {
+.usa-button--icon--before.usa-button--add::before,
+.usa-button--icon--after.usa-button--add::after {
   background-image: url("/static/img/usa-icons/add.svg");
+  height: 11px;
+  width: 18px;
+}
+
+.usa-button--icon--before.usa-button--remove::before,
+.usa-button--icon--after.usa-button--remove::after {
+  background-image: url("/static/img/usa-icons/remove.svg");
+  height: 11px;
+  width: 18px;
 }
 
 .usa-button--icon--before.usa-button--arrow_back::before {
