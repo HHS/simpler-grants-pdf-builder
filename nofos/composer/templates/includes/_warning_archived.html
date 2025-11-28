@@ -1,0 +1,17 @@
+{% if document.archived %}
+<div class="margin-bottom-2 usa-alert usa-alert--warning{% if class_name %} {{ class_name }}{% endif %}">
+  <div class="usa-alert__body">
+    <h4 class="usa-alert__heading text-base-darkest">{%if not document.successor %}Archived content guide{% else %}Past version of {{ document.successor.title }}{% endif %}</h4>
+    <p class="usa-alert__text">
+      {%if not document.successor %}
+        This content guide was archived on {{ document.archived|date:"F j, Y" }}. Archived content guides exist as a record for posterity but can't be edited in any way.
+      {% else %}
+        This content guide was unpublished on {{ document.archived|date:"F j, Y" }}. This is a past version of <a href="{% url 'composer:composer_document_redirect' document.successor.pk %}">{{ document.successor.title }}</a>
+        {% if not user.is_superuser %}
+          To restore to this version, contact Paul or Adam.
+        {% endif %}
+      {% endif %}
+    </p>
+  </div>
+</div>
+{% endif %}
