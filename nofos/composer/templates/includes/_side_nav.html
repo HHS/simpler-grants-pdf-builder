@@ -16,8 +16,7 @@
       <li class="usa-sidenav__item">
         <a
           href="{% url 'composer:composer_preview' document_pk %}"
-          aria-current="page"
-          class="usa-current">
+          {% if is_preview %}aria-current="page" class="usa-current"{% endif %}>
           Preview content guide
         </a>
       </li>
