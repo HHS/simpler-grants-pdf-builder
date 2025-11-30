@@ -7,6 +7,7 @@ from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTE
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
 from django.db import models
+from django.urls import reverse
 from martor.models import MartorField
 from slugify import slugify
 
@@ -43,6 +44,18 @@ class ContentGuide(BaseNofo):
 
     def __str__(self) -> str:
         return "(ContentGuide) {}".format(self.title)
+
+    def get_admin_url(self):
+        """
+        Returns the admin URL for this ContentGuide.
+        """
+        return reverse("admin:composer_contentguide_change", args=(self.id,))
+
+    def get_absolute_url(self):
+        """
+        Returns the main edit view for this NOFO.
+        """
+        return reverse("composer:composer_document_redirect", args=(self.id,))
 
 
 class ContentGuideInstance(BaseNofo):
