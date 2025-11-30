@@ -6,7 +6,7 @@
     <p class="usa-alert__text">
       This {% if not document.number %}Compare Document{% else %}NOFO{% endif %} revision is from {{ document.archived|date:"F j, Y" }}.
       {% if not user.is_superuser %}
-        To restore to this version, contact Paul or Adam.
+        To restore to this version, contact Paul or Ben.
       {% endif %}
       {% if not document.number %}
       <br />
