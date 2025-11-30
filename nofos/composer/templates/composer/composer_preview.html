@@ -25,7 +25,7 @@
   </div>
   <div class="grid-row cg-layout">
     {% if document.status != 'published' %}
-      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections only%}
+      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections is_preview=True only%}
     {% endif %}
     <!-- Full-document preview -->
     <main class="{% if document.status != 'published' %}grid-col-9{% else %}grid-col-12{% endif %}">
