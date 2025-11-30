@@ -13,10 +13,29 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.20.0] - 2025-10-31
+
+### Added
+
+- Add "Published" status to ContentGuides
+- Add a publishing and unpublishing flow for ContentGuides
+- Create a duplicate ContentGuide when unpublishing a ContentGuide
+  - This is so that we can track version history of published ContentGuides
+
+### Changed
+
+- Show an "Archived" warning banner when viewing an archived ContentGuide
+
+### Migrations
+
+- Add new "published" status for ContentGuide objects
+- Remove "active" and "retired" statuses for ContentGuide objects
+
 ## [3.19.0] - 2025-10-31
 
 ### Added
 
+- Add right-aligned "Preview" button to Section overview pages in Composer
 - Add "Optional/Required" field to Subsection edit field
 - Add labels to the subsection edit radio button labels
 - Add a "search NOFOs" page for superusers
@@ -32,6 +51,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Add updated_display and created_display utils for consistent date presentation in index tables
 - Detect presence of variables ("{var}") on composer import
 - Change Composer tags to new format
 - Scroll-to-top button now on multiple composer pages
