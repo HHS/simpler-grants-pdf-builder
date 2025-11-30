@@ -63,13 +63,13 @@ class WriterDashboardViewTests(TestCase):
             title="ACF Content Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Content Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="active",
+            status="draft",
         )
 
         self.client.login(email="acf@example.com", password="testpass123")
@@ -105,13 +105,13 @@ class WriterDashboardViewTests(TestCase):
             title="ACF Content Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Content Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="active",
+            status="draft",
         )
 
         self.client.login(email="bloom@example.com", password="testpass123")
@@ -188,13 +188,13 @@ class WriterInstanceStartViewTests(TestCase):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="active",
+            status="draft",
         )
 
         self.client.login(email="acf@example.com", password="testpass123")
@@ -213,13 +213,13 @@ class WriterInstanceStartViewTests(TestCase):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="active",
+            status="draft",
         )
 
         self.client.login(email="bloom@example.com", password="testpass123")
@@ -238,7 +238,7 @@ class WriterInstanceStartViewTests(TestCase):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
         self.client.login(email="acf@example.com", password="testpass123")
 
@@ -290,7 +290,7 @@ class WriterInstanceDetailsViewTests(TestCase):
             title="ACF Core Content Guide",
             opdiv="acf",
             group="acf",
-            status="active",
+            status="draft",
         )
 
         self.url = reverse(
