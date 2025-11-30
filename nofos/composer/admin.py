@@ -59,7 +59,7 @@ class ContentGuideAdmin(admin.ModelAdmin):
 
     inlines = [ContentGuideSectionInline]
 
-    fieldsets = (
+    fieldsets = [
         (
             None,
             {
@@ -68,6 +68,7 @@ class ContentGuideAdmin(admin.ModelAdmin):
                     "group",
                     "status",
                     "archived",
+                    "successor",
                     "filename",
                     "created",
                     "updated",
@@ -79,10 +80,10 @@ class ContentGuideAdmin(admin.ModelAdmin):
             "Advanced options",
             {
                 "classes": ("collapse",),
-                "fields": ("opdiv", "successor"),
+                "fields": ("opdiv",),
             },
         ),
-    )
+    ]
 
     # --- Computed columns / helpers -----------------------------------------
 
