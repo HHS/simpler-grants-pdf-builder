@@ -1444,9 +1444,9 @@ main .back-link a::before,
   color: var(--color--text-default);
 }
 
-/* add button */
+/* NOFO section_details add button */
 
-.usa-button--add {
+.section_edit .usa-button--add {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -1456,12 +1456,12 @@ main .back-link a::before,
   box-shadow: inset 0 0 0 0.75px var(--color--text-default);
 }
 
-.usa-button--add:hover {
+.section_edit .usa-button--add:hover {
   box-shadow: inset 0 0 0 1px var(--color--usa-link-hover); /* match text colour */
   background-color: white;
 }
 
-.usa-button--add::before {
+.section_edit .usa-button--add::before {
   height: 9px;
   width: 16px;
 }
