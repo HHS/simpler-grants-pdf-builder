@@ -2,6 +2,7 @@
   {
     "key": "cost_sharing",
     "label": "Does this NOFO include a cost-sharing requirement?",
+    "page": 1,
     "subsections": [
       "Cost sharing",
       "Method 1: Start with the federal share",
@@ -14,40 +15,74 @@
   {
     "key": "maintenance_of_effort",
     "label": "Is there is a statutory maintenance of effort requirement?",
+    "page": 1,
     "subsections": ["Maintenance of effort"]
   },
   {
     "key": "data_management_plans",
     "label": "Does this project include a data management and sharing plan?",
+    "page": 1,
     "subsections": ["Data management plan"]
   },
-
   {
     "key": "training_awards",
     "label": "Does this NOFO include training awards?",
+    "page": 1,
     "subsections": ["Indirect costs: training awards"]
   },
-
   {
     "key": "foreign_awards",
     "label": "Does this NOFO include foreign awards?",
+    "page": 1,
     "subsections": ["Indirect costs: foreign awards"]
   },
   {
-    "key": "letters_of_support",
-    "label": "Are letters of support required?",
-    "subsections": ["Letters of support"]
-  },
-
-  {
     "key": "intergovernmental_review",
     "label": "Is this NOFO subject to Intergovernmental Review?",
+    "page": 1,
     "subsections": ["Intergovernmental review"]
   },
-
   {
     "key": "cooperative_agreement",
     "label": "Is this a cooperative agreement?",
+    "page": 1,
     "subsections": ["Cooperative agreement terms", "CDC’s role"]
+  },
+  {
+    "key": "table_of_contents",
+    "label": "Is a table of contents required?",
+    "page": 2,
+    "subsections": ["Table of contents"]
+  },
+  {
+    "key": "indirect_cost_agreement",
+    "label": "Is an indirect cost agreement required?",
+    "page": 2,
+    "subsections": ["Indirect cost agreement"]
+  },
+  {
+    "key": "resumes_and_job_descriptions",
+    "label": "Do you require resumes and job descriptions?",
+    "page": 2,
+    "subsections": ["Resumes and job descriptions"]
+  },
+  {
+    "key": "organizational_chart",
+    "label": "Is an organizational chart required?",
+    "page": 2,
+    "subsections": ["Organizational chart"]
+  },
+
+  {
+    "key": "letters_of_support",
+    "label": "Are letters of support required?",
+    "page": 2,
+    "subsections": ["Letters of support"]
+  },
+  {
+    "key": "report_on_overlap",
+    "label": "Do you require a report on overlap?",
+    "page": 2,
+    "subsections": ["Report on overlap"]
   }
 ]

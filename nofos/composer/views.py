@@ -34,11 +34,13 @@ from nofos.nofo import (
 from nofos.utils import create_nofo_audit_event, create_subsection_html_id
 from nofos.views import BaseNofoHistoryView, BaseNofoImportView
 
+from .conditional.conditional_questions import CONDITIONAL_QUESTIONS
 from .forms import (
     CompareTitleForm,
     ComposerSubsectionCreateForm,
     ComposerSubsectionEditForm,
     ComposerSubsectionInstructionsEditForm,
+    WriterInstanceConditionalQuestionsForm,
     WriterInstanceDetailsForm,
     WriterInstanceStartForm,
 )
@@ -1030,9 +1032,82 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
         instance.group = user_group
         instance.save()
 
+        return redirect("composer:writer_conditional_questions", pk=instance.pk, page=1)
+
+
+class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
+    """
+    Step 3: YES/NO conditional questions for a ContentGuideInstance.
+    One page at a time, driven by the conditional_questions.json config.
+    """
+
+    template_name = "composer/writer/writer_conditional_questions.html"
+    form_class = WriterInstanceConditionalQuestionsForm
+
+    def dispatch(self, request, *args, **kwargs):
+        # Fetch instance and enforce access
+        self.instance = get_object_or_404(
+            ContentGuideInstance,
+            pk=kwargs["pk"],
+            archived__isnull=True,
+            successor__isnull=True,
+        )
+
+        user_group = getattr(request.user, "group", None)
+        if user_group != "bloom" and self.instance.group != user_group:
+            return HttpResponseForbidden("You don't have access to this NOFO.")
+
+        # Page number is a valid integer
+        try:
+            self.page = int(kwargs.get("page", 1))
+        except (TypeError, ValueError):
+            raise Http404("Invalid page number.")
+
+        # Page number has questions associated with it
+        if not CONDITIONAL_QUESTIONS.for_page(self.page):
+            raise Http404("No conditional questions found for this page.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_page_title(self, page):
+        default_title = "Great! Let’s add a few details about your program"
+
+        titles = {
+            1: "Great! Let’s add a few details about your program",
+            2: "Tell us about the attachments you require from applicants",
+        }
+
+        return titles.get(page, default_title)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.instance
+        kwargs["page"] = self.page
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["page_title"] = self.get_page_title(self.page)
+        return ctx
+
+    def form_valid(self, form):
+        form.save()
+
+        max_page = CONDITIONAL_QUESTIONS.max_page
+        next_page = self.page + 1
+
+        if next_page <= max_page:
+            return redirect(
+                "composer:writer_conditional_questions",
+                pk=self.instance.pk,
+                page=next_page,
+            )
+
         messages.success(
             self.request,
-            f"Draft NOFO “{instance.short_name or instance.title or instance.pk}” created successfully.",
+            "Draft NOFO “{}” created successfully.".format(
+                self.instance.short_name or self.instance.title or self.instance.pk
+            ),
         )
         return redirect("composer:writer_index")
 

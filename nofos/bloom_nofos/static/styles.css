@@ -169,6 +169,10 @@ footer .usa-footer__primary-link:visited {
   box-shadow: inset 0 0 0 0.75px var(--color--text-default);
 }
 
+.usa-fieldset + .usa-fieldset {
+  margin-top: 1.5rem; /* Matches usa-label top-margin */
+}
+
 /* Icon Buttons */
 .usa-button--icon--before::before {
   content: "";
@@ -2370,7 +2374,7 @@ del + ins > br {
   color: var(--color--text-grey);
   font-size: 105%;
   font-weight: 700;
-  margin: .5em 2.5rem 1em 0;
+  margin: 0.5em 2.5rem 1em 0;
 }
 
 .composer_document_section #side-nav {
@@ -2411,7 +2415,7 @@ del + ins > br {
   bottom: 0;
 }
 
-.composer_writer_details hr,
+.usa-prose hr,
 .composer_document_section hr {
   border: 2px solid var(--color--light-grey);
 }
