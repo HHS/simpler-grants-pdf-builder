@@ -530,7 +530,6 @@ class ComposerSectionView(GroupAccessContentGuideMixin, DetailView):
         return context
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerPreviewView(LoginRequiredMixin, DetailView):
     """
     Read-only preview of an entire Composer document.
@@ -548,6 +547,23 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
     template_name = "composer/composer_preview.html"
     exit_url = reverse_lazy("composer:composer_index")
     fields = []
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the object to check if it's archived
+        document = self.get_object()
+
+        # Require staff status if the content guide is not published
+        if document.status != "published" and not request.user.is_staff:
+            from django.contrib.auth import REDIRECT_FIELD_NAME
+            from django.contrib.auth.views import redirect_to_login
+            from django.urls import reverse
+
+            # Redirect to admin login (mimicking staff_member_required behavior)
+            return redirect_to_login(
+                request.get_full_path(), reverse("admin:login"), REDIRECT_FIELD_NAME
+            )
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         return super().get_queryset().select_related("successor")
