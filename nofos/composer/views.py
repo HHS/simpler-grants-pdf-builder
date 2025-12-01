@@ -1,6 +1,7 @@
 from bloom_nofos.logs import log_exception
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -14,6 +15,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -172,6 +174,7 @@ class BaseComposerArchiveView(LoginRequiredMixin, UpdateView):
 ###########################################################
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerListView(LoginRequiredMixin, ListView):
     model = ContentGuide
     template_name = "composer/composer_index.html"
@@ -204,6 +207,7 @@ class ComposerListView(LoginRequiredMixin, ListView):
         return context
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
     """
     Handles importing a NEW ContentGuide from an uploaded file.
@@ -267,6 +271,7 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
     model = ContentGuide
     form_class = CompareTitleForm
@@ -288,6 +293,7 @@ class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
         return redirect("composer:composer_index")
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerEditTitleView(GroupAccessContentGuideMixin, UpdateView):
     model = ContentGuide
     form_class = CompareTitleForm
@@ -307,13 +313,14 @@ class ComposerEditTitleView(GroupAccessContentGuideMixin, UpdateView):
 
         return redirect("composer:composer_index")
 
-
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiveView):
     model = ContentGuide
     back_link_text = "All content guides"
     success_url = reverse_lazy("composer:composer_index")
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerUnpublishView(
     GroupAccessContentGuideMixin, LoginRequiredMixin, UpdateView
 ):
@@ -348,6 +355,7 @@ class ComposerUnpublishView(
         return redirect(reverse_lazy("composer:composer_preview", args=[document.pk]))
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
     model = ContentGuide
     template_name = "composer/composer_history.html"
@@ -369,6 +377,7 @@ class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
         return "contentguidesubsection"
 
 
+@staff_member_required
 def compare_section_redirect(request, pk):
     document = ContentGuide.objects.prefetch_related("sections").filter(pk=pk).first()
     if not document:
@@ -398,6 +407,7 @@ def compare_section_redirect(request, pk):
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSectionView(GroupAccessContentGuideMixin, DetailView):
     """
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
@@ -520,6 +530,7 @@ class ComposerSectionView(GroupAccessContentGuideMixin, DetailView):
         return context
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerPreviewView(LoginRequiredMixin, DetailView):
     """
     Read-only preview of an entire Composer document.
@@ -610,7 +621,7 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
             return redirect(self.request.path)
 
-
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSectionEditView(GroupAccessContentGuideMixin, DetailView):
     """
     Edit a single ContentGuideSection's subsections.
@@ -640,7 +651,7 @@ class ComposerSectionEditView(GroupAccessContentGuideMixin, DetailView):
         context["include_scroll_to_top"] = True
         return context
 
-
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionCreateView(GroupAccessContentGuideMixin, CreateView):
     """
     Create a new ContentGuideSubsection within a given section.
@@ -724,7 +735,7 @@ class ComposerSubsectionCreateView(GroupAccessContentGuideMixin, CreateView):
         anchor = getattr(self.object, "html_id", "")
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
-
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
@@ -786,6 +797,7 @@ class ComposerSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionDeleteView(GroupAccessContentGuideMixin, DeleteView):
     model = ContentGuideSubsection
     pk_url_kwarg = "subsection_pk"
@@ -837,7 +849,7 @@ class ComposerSubsectionDeleteView(GroupAccessContentGuideMixin, DeleteView):
 
         return super().form_valid(form)
 
-
+@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionInstructionsEditView(GroupAccessContentGuideMixin, UpdateView):
     """
     Edit a single ContentGuideSubsection's instructions.
