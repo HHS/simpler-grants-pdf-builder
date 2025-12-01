@@ -1,5 +1,5 @@
 <fieldset class="usa-fieldset">
-  <legend class="usa-legend" id="{{ id_for_label }}">{{ label }}</legend>
+  <legend class="usa-legend" id="{{ id_for_label }}">{{ label }}{% if required %}<span class="label--required margin-left-1px text-secondary-dark" aria-label="(required)">*</span>{% endif %}</legend>
 
   {% if hint %}
     <div class="usa-hint" id="{{ id }}--hint-1">

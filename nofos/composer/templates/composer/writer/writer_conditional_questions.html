@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ page_title }}
+{% endblock %}
+
+{% block body_class %}composer_writer_conditional_questions{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">{{ page_title }}</h1>
+
+    <p class="usa-prose">Let us know the answers to these yes/no questions. This will help Composer know what sections to put in your NOFO.</p>
+
+    <div class="usa-prose margin-top-3">
+      <hr>
+
+      {% include "includes/error_summary.html" with form=form %}
+
+      <p aria-hidden="true">
+        <span class="label--required text-secondary-dark">*</span>
+        <span>Indicates required field</span>
+      </p>
+
+      <form method="post" class="margin-top-3">
+        {% csrf_token %}
+
+        {% include "includes/form_macro.html" with show_required_asterisk=True %}
+
+        <button class="usa-button margin-top-3" type="submit">Save and continue</button>
+      </form>
+    </div>
+
+{% endblock %}

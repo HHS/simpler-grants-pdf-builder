@@ -1,8 +1,10 @@
+from bloom_nofos.utils import cast_to_boolean
 from django import forms
 from martor.fields import MartorFormField
 
 from nofos.forms import create_object_model_form
 
+from .conditional.conditional_questions import CONDITIONAL_QUESTIONS
 from .models import ContentGuide, ContentGuideInstance, ContentGuideSubsection
 from .utils import get_opdiv_label
 
@@ -178,3 +180,72 @@ class WriterInstanceDetailsForm(forms.ModelForm):
         for name, field in self.fields.items():
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = (existing + " " + "usa-input").strip()
+
+
+class WriterInstanceConditionalQuestionsForm(forms.Form):
+    """
+    A dynamic form that renders all conditional questions for a given page.
+    """
+
+    def __init__(
+        self,
+        *args,
+        instance: ContentGuideInstance,
+        page: int,
+        **kwargs,
+    ):
+        self.instance = instance
+        self.page = page
+        super().__init__(*args, **kwargs)
+
+        questions = CONDITIONAL_QUESTIONS.for_page(page)
+
+        for question in questions:
+            field_name = question.key
+            self.fields[field_name] = forms.TypedChoiceField(
+                label=question.label,
+                choices=(
+                    ("true", "Yes"),
+                    ("false", "No"),
+                ),
+                coerce=cast_to_boolean,
+                required=True,
+                widget=forms.RadioSelect(
+                    attrs={
+                        "class": "usa-radio__input",
+                    }
+                ),
+            )
+
+            # Initial value from instance.conditional_questions
+            existing = self.instance.get_conditional_question_answer(question.key)
+            if existing is True:
+                self.initial[field_name] = "true"
+            elif existing is False:
+                self.initial[field_name] = "false"
+
+    def save(self):
+        """
+        Merge cleaned values into instance.conditional_questions, only touching
+        keys for this page, and preserving others.
+        """
+        if not self.is_valid():
+            raise ValueError("Cannot save an invalid form")
+
+        # Start with existing ContentGuideInstance.conditional_questions JSON blob (or empty object)
+        current = dict(self.instance.conditional_questions or {})
+
+        # Restrict updates to questions on this page
+        questions = CONDITIONAL_QUESTIONS.for_page(self.page)
+        keys_for_page = {question.key for question in questions}
+
+        for key in keys_for_page:
+            value = self.cleaned_data.get(key, None)
+            if value is None:
+                current.pop(key, None)  # No answer -> drop the key
+            else:
+                current[key] = value  # Set as True / False
+
+        self.instance.conditional_questions = current
+        self.instance.save(update_fields=["conditional_questions", "updated"])
+        return self.instance

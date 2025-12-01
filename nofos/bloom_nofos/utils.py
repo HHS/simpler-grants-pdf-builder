@@ -4,7 +4,6 @@ import sys
 from socket import gaierror, gethostbyname, gethostname
 
 from django.conf import settings
-from django.utils.timezone import now, timedelta
 from google.cloud import secretmanager
 
 
