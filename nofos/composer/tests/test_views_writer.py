@@ -626,3 +626,135 @@ class WriterInstanceConditionalQuestionViewTests(TestCase):
         self.assertTrue(
             any("Draft NOFO “First Draft” created successfully." in m for m in messages)
         )
+
+
+class WriterInstanceReviewViewTests(TestCase):
+    def setUp(self):
+        # Users
+        self.acf_user = User.objects.create_user(
+            email="acf@example.com",
+            password="testpass123",
+            group="acf",
+            force_password_reset=False,
+        )
+        self.hrsa_user = User.objects.create_user(
+            email="hrsa@example.com",
+            password="testpass123",
+            group="hrsa",
+            force_password_reset=False,
+        )
+        self.bloom_user = User.objects.create_user(
+            email="bloom@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+
+        # Parent content guide (ACF)
+        self.parent_guide = ContentGuide.objects.create(
+            title="ACF Core Content Guide",
+            opdiv="acf",
+            group="acf",
+            status="draft",
+        )
+
+        # Draft NOFO instance with some details + conditional answers
+        self.instance = ContentGuideInstance.objects.create(
+            opdiv="acf",
+            agency="Some ACF Office",
+            title="My Draft NOFO",
+            short_name="Draft 1",
+            number="ACF-123",
+            group="acf",
+            parent=self.parent_guide,
+            conditional_questions={
+                # page 1
+                "cost_sharing": True,
+                "maintenance_of_effort": False,
+                # page 2
+                "letters_of_support": True,
+                "table_of_contents": False,
+            },
+        )
+
+        self.review_url = reverse(
+            "composer:writer_review", kwargs={"pk": str(self.instance.pk)}
+        )
+
+        # For later URL comparisons
+        self.details_url = reverse(
+            "composer:writer_details",
+            kwargs={"parent_pk": str(self.parent_guide.pk)},
+        )
+        self.page1_url = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 1},
+        )
+        self.page2_url = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 2},
+        )
+        self.writer_index_url = reverse("composer:writer_index")
+
+    def test_anonymous_user_gets_403_permissions_error(self):
+        """
+        Anonymous users should get a 403 (per LoginRequiredMixin behavior in this project).
+        """
+        response = self.client.get(self.review_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_bloom_wrong_group_gets_403(self):
+        """
+        A non-bloom user whose group doesn't match the instance's group gets 403.
+        """
+        self.client.login(email="hrsa@example.com", password="testpass123")
+        response = self.client.get(self.review_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloom_user_can_access_any_group_instance(self):
+        """
+        Bloom users can access the review page for any group.
+        """
+        self.client.login(email="bloom@example.com", password="testpass123")
+        response = self.client.get(self.review_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "This information is ready to be added to your draft NOFO",
+        )
+
+    def test_same_group_user_sees_details_and_questions(self):
+        """
+        Same-group user sees the review page with details and conditional questions rendered.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.review_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Heading
+        self.assertContains(
+            response,
+            "This information is ready to be added to your draft NOFO",
+        )
+
+        # Page 1 conditional questions: should show label + mapped Yes/No
+        page1_questions = CONDITIONAL_QUESTIONS.for_page(1)
+        # cost_sharing is True -> "Yes"
+        cost_sharing = next(q for q in page1_questions if q.key == "cost_sharing")
+        self.assertContains(response, cost_sharing.label)
+        self.assertContains(response, "Yes")
+
+        # maintenance_of_effort is False -> "No"
+        moe = next(q for q in page1_questions if q.key == "maintenance_of_effort")
+        self.assertContains(response, moe.label)
+        self.assertContains(response, "No")
+
+        # Page 2 conditional questions: letters_of_support True, table_of_contents False
+        page2_questions = CONDITIONAL_QUESTIONS.for_page(2)
+        los = next(q for q in page2_questions if q.key == "letters_of_support")
+        toc = next(q for q in page2_questions if q.key == "table_of_contents")
+
+        self.assertContains(response, los.label)
+        self.assertContains(response, "Yes")  # letters_of_support=True
+        self.assertContains(response, toc.label)
+        self.assertContains(response, "No")  # table_of_contents=False
