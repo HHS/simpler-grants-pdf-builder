@@ -20,7 +20,11 @@
 
   <div class="grid-row">
     <div class="back-link font-body-md margin-bottom-0">
-      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
+      {% if user.is_staff %}
+        <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
+      {% else %}
+        <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:writer_index' %}">Home</a>
+      {% endif %}
     </div>
   </div>
   <div class="grid-row cg-layout">
@@ -36,6 +40,7 @@
 
       <hr />
 
+      {% if user.is_staff %}
       <form method="post">
         {% csrf_token %}
         <ul class="usa-button-group flex-justify-end margin-y-2 margin-x-0">
@@ -49,6 +54,7 @@
           {% endif %}
         </ul>
       </form>
+      {% endif %}
 
       <div class="nofo_view">
         <!-- Render each section with all its subsections -->
