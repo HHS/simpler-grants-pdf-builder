@@ -1,3 +1,4 @@
+from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -125,3 +126,79 @@ class PreventIfArchivedOrCancelledMixin(
     """Prevents editing archived or cancelled objects, returns HttpResponseBadRequest."""
 
     pass
+
+
+class PreventIfContentGuideArchivedMixin:
+    """
+    Prevents editing archived ContentGuide objects.
+
+    This mixin works with views where:
+    - The object is a ContentGuide
+      directly
+    - The object is a ContentGuideSection or ContentGuideSubsection (checks parent)
+
+    Returns HttpResponseBadRequest with an error message if the ContentGuide is archived.
+
+    Usage examples:
+        # For a view where the object is a ContentGuide directly
+        class ComposerEditTitleView(PreventContentGuideArchivedMixin, UpdateView):
+            model = ContentGuide
+            ...
+
+        # For a view where the object is a ContentGuideSubsection
+        class ComposerSubsectionEditView(PreventContentGuideArchivedMixin, UpdateView):
+            model = ContentGuideSubsection
+            ...
+
+        # Can be combined with other mixins (put it early in the MRO)
+        class MyView(PreventContentGuideArchivedMixin, LoginRequiredMixin, UpdateView):
+            ...
+    """
+
+    archived_error_message = "This Content Guide is archived and can't be changed."
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the document object - either directly or via parent relationships
+        document = self._get_content_guide_document()
+
+        # Check if the document is archived
+        if document and document.archived:
+            return HttpResponseBadRequest(self.archived_error_message)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _get_content_guide_document(self):
+        """
+        Get the ContentGuide or ContentGuideInstance from the view object.
+
+        Handles multiple scenarios:
+        1. View object is ContentGuide or ContentGuideInstance directly
+        2. View object is ContentGuideSection (has get_document() method)
+        3. View object is ContentGuideSubsection (has section.get_document() method)
+        4. View has a 'document' attribute set during get_object() or dispatch()
+        """
+        # Check if the view has already set a document attribute
+        if hasattr(self, "document"):
+            return self.document
+
+        # Try to get the object from the view
+        obj = getattr(self, "object", None)
+        if obj is None:
+            # Object hasn't been set yet, try to get it
+            try:
+                obj = self.get_object()
+            except Exception:
+                # Can't get object yet, return None
+                return None
+
+        # Check object type and navigate to the document
+        if isinstance(obj, ContentGuide):
+            return obj
+        elif isinstance(obj, ContentGuideSection):
+            # Section has `get_document()` method
+            return obj.get_document()
+        elif isinstance(obj, ContentGuideSubsection):
+            # Subsection has `section` attribute
+            return obj.section.get_document()
+
+        return None
