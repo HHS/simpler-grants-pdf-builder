@@ -1,7 +1,9 @@
+from composer.conditional.conditional_questions import CONDITIONAL_QUESTIONS
 from composer.models import ContentGuide, ContentGuideInstance
+from composer.views import WriterInstanceConditionalQuestionView
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
 User = get_user_model()
@@ -352,9 +354,6 @@ class WriterInstanceDetailsViewTests(TestCase):
             "number": "ACF-123",
         }
         response = self.client.post(self.url, data=data)
-        # Should redirect to writer_index
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("composer:writer_index"))
 
         # Instance was created
         instance = ContentGuideInstance.objects.get(title="My First Draft NOFO")
@@ -365,10 +364,14 @@ class WriterInstanceDetailsViewTests(TestCase):
         self.assertEqual(instance.short_name, "First Draft")
         self.assertEqual(instance.number, "ACF-123")
 
-        # Success message present
-        messages = [m.message for m in get_messages(response.wsgi_request)]
-        self.assertTrue(
-            any("Draft NOFO “First Draft” created successfully." in m for m in messages)
+        # Should redirect to first page of yes/no questions
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse(
+                "composer:writer_conditional_questions",
+                kwargs={"pk": str(instance.pk), "page": 1},
+            ),
         )
 
     def test_invalid_post_shows_errors_and_does_not_create_instance(self):
@@ -396,3 +399,230 @@ class WriterInstanceDetailsViewTests(TestCase):
 
         self.assertIn("title", form.errors)
         self.assertEqual(form.errors["title"], ["This field is required."])
+
+
+class GetWriterConditionalQuestionsPageTitleTests(SimpleTestCase):
+    def setUp(self):
+        # You don't need a full CBV setup; direct instantiation is fine
+        self.view = WriterInstanceConditionalQuestionView()
+
+    def test_page_title_for_known_pages(self):
+        self.assertEqual(
+            self.view.get_page_title(1),
+            "Great! Let’s add a few details about your program",
+        )
+        self.assertEqual(
+            self.view.get_page_title(2),
+            "Tell us about the attachments you require from applicants",
+        )
+
+    def test_page_title_defaults_for_unknown_page(self):
+        # page 3 isn't in the mapping, so we expect the default
+        self.assertEqual(
+            self.view.get_page_title(3),
+            "Great! Let’s add a few details about your program",
+        )
+
+
+class WriterInstanceConditionalQuestionViewTests(TestCase):
+    def setUp(self):
+        # Users
+        self.acf_user = User.objects.create_user(
+            email="acf@example.com",
+            password="testpass123",
+            group="acf",
+            force_password_reset=False,
+        )
+        self.hrsa_user = User.objects.create_user(
+            email="hrsa@example.com",
+            password="testpass123",
+            group="hrsa",
+            force_password_reset=False,
+        )
+        self.bloom_user = User.objects.create_user(
+            email="bloom@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+
+        # Parent content guide (ACF)
+        self.parent_guide = ContentGuide.objects.create(
+            title="ACF Core Content Guide",
+            opdiv="acf",
+            group="acf",
+            status="draft",
+        )
+
+        # Draft NOFO instance based on the guide
+        self.instance = ContentGuideInstance.objects.create(
+            title="My First Draft NOFO",
+            short_name="First Draft",
+            opdiv="acf",
+            group="acf",
+            parent=self.parent_guide,
+            conditional_questions={},
+        )
+
+        self.url_page1 = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 1},
+        )
+        self.url_page2 = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 2},
+        )
+
+    def test_anonymous_user_gets_403_permissions_error(self):
+        """Anonymous users should get a 403 (per project LoginRequired behavior)."""
+        response = self.client.get(self.url_page1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_bloom_wrong_group_gets_403(self):
+        """
+        A non-bloom user cannot access a ContentGuideInstance that doesn't match their group.
+        """
+        self.client.login(email="hrsa@example.com", password="testpass123")
+        response = self.client.get(self.url_page1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloom_user_can_access_any_group_instance(self):
+        """
+        A bloom user can access the conditional questions page even if groups differ.
+        """
+        self.client.login(email="bloom@example.com", password="testpass123")
+        response = self.client.get(self.url_page1)
+        self.assertEqual(response.status_code, 200)
+        # Page 1 title
+        self.assertContains(
+            response, "Great! Let’s add a few details about your program"
+        )
+
+    def test_same_group_user_can_access_instance(self):
+        """
+        Same-group user (acf) can access the conditional questions page.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.url_page1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["page_title"],
+            "Great! Let’s add a few details about your program",
+        )
+
+    def test_page_with_no_questions_returns_404(self):
+        """
+        Requesting a page number with no questions should return 404.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+
+        # Assuming our JSON only has pages 1 and 2,
+        # a higher page like 3 should not have any questions.
+        url_page3 = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 3},
+        )
+        response = self.client.get(url_page3)
+        self.assertEqual(response.status_code, 404)
+
+    def test_valid_post_on_page1_saves_answers_and_redirects_to_next_page(self):
+        """
+        POST on page 1 should save boolean answers for page 1 questions,
+        preserve other keys in conditional_questions, and redirect to the next page.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+
+        # Build POST data based on page 1 keys in the JSON
+        post_data = {
+            "cost_sharing": "true",
+            "maintenance_of_effort": "false",
+            "data_management_plans": "true",
+            "training_awards": "false",
+            "foreign_awards": "true",
+            "intergovernmental_review": "false",
+            "cooperative_agreement": "true",
+        }
+
+        response = self.client.post(self.url_page1, data=post_data)
+        # Should redirect to page 2 (next page)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url_page2)
+
+        # Reload instance from DB
+        self.instance.refresh_from_db()
+        cq = self.instance.conditional_questions
+
+        # Page 1 answers saved as booleans
+        self.assertEqual(cq["cost_sharing"], True)
+        self.assertEqual(cq["maintenance_of_effort"], False)
+        self.assertEqual(cq["data_management_plans"], True)
+        self.assertEqual(cq["training_awards"], False)
+        self.assertEqual(cq["foreign_awards"], True)
+        self.assertEqual(cq["intergovernmental_review"], False)
+        self.assertEqual(cq["cooperative_agreement"], True)
+
+    def test_subset_of_answers_on_page1_causes_error(self):
+        """
+        POST with not all keys expected should raise an error summary with each field required.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+
+        # Only 1 key, missing 6 others
+        post_data = {"cost_sharing": "true"}
+
+        response = self.client.post(self.url_page1, data=post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.wsgi_request.path, self.url_page1)
+
+        page_2_questions = [
+            q.label
+            for q in CONDITIONAL_QUESTIONS.for_page(1)
+            if q.key != "cost_sharing"
+        ]
+        for question in page_2_questions:
+            self.assertContains(
+                response, "{}: This field is required.".format(question)
+            )
+
+        # Reload instance from DB
+        self.instance.refresh_from_db()
+        cq = self.instance.conditional_questions
+        # "cost_sharing" key did not get saved
+        self.assertNotIn("cost_sharing", cq)
+
+    def test_valid_post_on_last_page_redirects_to_writer_index_and_sets_message(self):
+        """
+        POST on the last page should save answers and redirect to the writer index with
+        a success message that uses the instance's name.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+
+        post_data = {
+            "table_of_contents": "true",
+            "indirect_cost_agreement": "true",
+            "resumes_and_job_descriptions": "true",
+            "organizational_chart": "true",
+            "letters_of_support": "true",
+            "report_on_overlap": "true",
+        }
+
+        response = self.client.post(self.url_page2, data=post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("composer:writer_index"))
+
+        # Instance updated
+        self.instance.refresh_from_db()
+        cq = self.instance.conditional_questions
+
+        self.assertEqual(cq["table_of_contents"], True)
+        self.assertEqual(cq["indirect_cost_agreement"], True)
+        self.assertEqual(cq["resumes_and_job_descriptions"], True)
+        self.assertEqual(cq["organizational_chart"], True)
+        self.assertEqual(cq["letters_of_support"], True)
+        self.assertEqual(cq["report_on_overlap"], True)
+
+        # Success message present
+        messages = [m.message for m in get_messages(response.wsgi_request)]
+        self.assertTrue(
+            any("Draft NOFO “First Draft” created successfully." in m for m in messages)
+        )
