@@ -2,7 +2,9 @@ from bloom_nofos.logs import log_exception
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms.models import model_to_dict
@@ -541,10 +543,14 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
     Model is a required argument for instantiation, like:
             views.ComposerPreviewView.as_view(model=ContentGuide),
 
-    If draft:
+    If draft + user is staff:
         Left pane: sections + a 'Preview' item (current page).
         Right pane: full document printed section-by-section.
-    If published:
+
+    If draft + user is not staff:
+        Redirect to login (only staff can preview drafts).
+
+    If published, user is staff or not staff:
         Full-width: full document printed section-by-section.
     """
 
@@ -559,13 +565,11 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
         # Require staff status if the content guide is not published
         if document.status != "published" and not request.user.is_staff:
-            from django.contrib.auth import REDIRECT_FIELD_NAME
-            from django.contrib.auth.views import redirect_to_login
-            from django.urls import reverse
-
             # Redirect to admin login (mimicking staff_member_required behavior)
             return redirect_to_login(
-                request.get_full_path(), reverse("admin:login"), REDIRECT_FIELD_NAME
+                request.get_full_path(),
+                reverse_lazy("admin:login"),
+                REDIRECT_FIELD_NAME,
             )
 
         return super().dispatch(request, *args, **kwargs)
