@@ -86,6 +86,14 @@ def get_conditional_question_note(subsection):
     )
 
 
+def get_yes_no_label(value):
+    if value is True:
+        return "Yes"
+    if value is False:
+        return "No"
+    return "Not answered"
+
+
 def render_curly_variable_list_html_string(extracted_variables) -> str:
     """
     Render the HTML string for the inline variable list shown after the

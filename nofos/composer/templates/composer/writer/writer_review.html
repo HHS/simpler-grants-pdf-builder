@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}
+  This information is ready to be added to your draft NOFO
+{% endblock %}
+
+{% block body_class %}composer_writer_review{% endblock %}
+
+{% block content %}
+  <h1 class="font-heading-xl margin-y-0">This information is ready<br> to be added to your draft NOFO</h1>
+  <p class="usa-prose">
+    Review the information and when everything looks right, select “Get started!” to continue.
+  </p>
+
+  <div class="usa-prose tablet:grid-col-10">
+
+    {# --- Details section --------------------------------------------------- #}
+    <section class="position-relative">
+      <hr class="margin-y-3">
+
+      {% spaceless %}
+      <a href="{{ edit_details_url }}" class="usa-button usa-button--outline position-absolute right-1">
+        Edit<span class="usa-sr-only"> draft NOFO details</span>
+      </a>
+      {% endspaceless %}
+
+      <dl class="grid-col-9">
+        {% for field in details_fields %}
+          <div class="margin-top-2">
+            <dt class="text-bold display-inline-block">{{ field.label }}:</dt>
+            <dd class="margin-left-05 display-inline-block">{{ field.value|default:"—" }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    {# --- Conditional questions page 1 -------------------------------------- #}
+    <section class="position-relative">
+      <hr class="margin-y-3">
+
+      {% spaceless %}
+      <a href="{{ edit_page1_url }}" class="usa-button usa-button--outline position-absolute right-1">
+        Edit<span class="usa-sr-only"> draft NOFO conditional questions</span>
+      </a>
+      {% endspaceless %}
+
+      <dl class="grid-col-9">
+        {% for question in page1_questions %}
+          <div class="margin-top-2">
+            <dt class="text-bold display-inline-block">{{ question.label }}</dt>
+            <dd class="margin-left-05 display-inline-block">{{ question.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    {# --- Conditional questions page 2 -------------------------------------- #}
+    <section class="position-relative">
+      <hr class="margin-y-3">
+
+      {% spaceless %}
+      <a href="{{ edit_page2_url }}" class="usa-button usa-button--outline position-absolute right-1">
+        Edit<span class="usa-sr-only"> draft NOFO attachments questions</span>
+      </a>
+      {% endspaceless %}
+
+      <dl class="grid-col-9">
+        {% for question in page2_questions %}
+          <div class="margin-top-2">
+            <dt class="text-bold display-inline-block">{{ question.label }}</dt>
+            <dd class="margin-left-05 display-inline-block">{{ question.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    {# --- Footer ----------------------------------------------------- #}
+    <div>
+      <hr class="margin-top-3 margin-bottom-4">
+
+      <a href="{{ get_started_url }}" class="usa-button">
+        Get started!
+      </a>
+    </div>
+
+    <p class="margin-top-2 text-base">
+      Drafting your NOFO takes about 20–30 minutes to complete.
+    </p>
+  <div>
+{% endblock %}
