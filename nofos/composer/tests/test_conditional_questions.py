@@ -22,6 +22,7 @@ class ConditionalQuestionTests(TestCase):
             key="letters_of_support",
             label="Are letters of support required?",
             subsections=["Letters of support"],
+            page=1,
         )
 
         # Matching subsection names
