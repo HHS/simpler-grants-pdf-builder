@@ -301,7 +301,9 @@ class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
 
 
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerEditTitleView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView):
+class ComposerEditTitleView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+):
     model = ContentGuide
     form_class = CompareTitleForm
     template_name = "composer/composer_edit_title.html"
@@ -320,8 +322,13 @@ class ComposerEditTitleView(PreventIfContentGuideArchivedMixin, GroupAccessConte
 
         return redirect("composer:composer_index")
 
+
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerArchiveView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, BaseComposerArchiveView):
+class ComposerArchiveView(
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    BaseComposerArchiveView,
+):
     model = ContentGuide
     back_link_text = "All content guides"
     success_url = reverse_lazy("composer:composer_index")
@@ -329,7 +336,10 @@ class ComposerArchiveView(PreventIfContentGuideArchivedMixin, GroupAccessContent
 
 @method_decorator(staff_member_required, name="dispatch")
 class ComposerUnpublishView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, LoginRequiredMixin, UpdateView
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    LoginRequiredMixin,
+    UpdateView,
 ):
     model = ContentGuide
     template_name = "composer/composer_confirm_unpublish.html"
@@ -415,7 +425,9 @@ def compare_section_redirect(request, pk):
 
 
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSectionView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView):
+class ComposerSectionView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView
+):
     """
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
     URL params:
@@ -646,8 +658,11 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
             return redirect(self.request.path)
 
+
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSectionEditView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView):
+class ComposerSectionEditView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView
+):
     """
     Edit a single ContentGuideSection's subsections.
     URL: /<pk>/section/<section_pk>/edit
@@ -676,8 +691,11 @@ class ComposerSectionEditView(PreventIfContentGuideArchivedMixin, GroupAccessCon
         context["include_scroll_to_top"] = True
         return context
 
+
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSubsectionCreateView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, CreateView):
+class ComposerSubsectionCreateView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, CreateView
+):
     """
     Create a new ContentGuideSubsection within a given section.
     URL: /<pk>/section/<section_pk>/subsection/add
@@ -760,8 +778,11 @@ class ComposerSubsectionCreateView(PreventIfContentGuideArchivedMixin, GroupAcce
         anchor = getattr(self.object, "html_id", "")
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
+
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSubsectionEditView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView):
+class ComposerSubsectionEditView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
     URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
@@ -823,7 +844,9 @@ class ComposerSubsectionEditView(PreventIfContentGuideArchivedMixin, GroupAccess
 
 
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSubsectionDeleteView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DeleteView):
+class ComposerSubsectionDeleteView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DeleteView
+):
     model = ContentGuideSubsection
     pk_url_kwarg = "subsection_pk"
     template_name = "composer/subsection_confirm_delete.html"
@@ -874,8 +897,11 @@ class ComposerSubsectionDeleteView(PreventIfContentGuideArchivedMixin, GroupAcce
 
         return super().form_valid(form)
 
+
 @method_decorator(staff_member_required, name="dispatch")
-class ComposerSubsectionInstructionsEditView(PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView):
+class ComposerSubsectionInstructionsEditView(
+    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+):
     """
     Edit a single ContentGuideSubsection's instructions.
     URL: /<pk>/section/<section_pk>/subsection/<subsection_pk>/instructions/edit
