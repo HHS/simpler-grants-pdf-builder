@@ -996,9 +996,7 @@ class WriterDashboardView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         guides_queryset = ContentGuide.objects.filter(
-            archived__isnull=True,
-            successor__isnull=True,
-            # status="published", # TODO: only show published
+            archived__isnull=True, successor__isnull=True, status="published"
         ).order_by("title")
 
         # If not a "bloom" user, return ContentGuides belonging to user's group
