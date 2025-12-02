@@ -98,6 +98,11 @@ urlpatterns = [
         name="writer_conditional_questions",
     ),
     path(
+        "writer/<uuid:pk>/review",
+        views.WriterInstanceReviewView.as_view(),
+        name="writer_review",
+    ),
+    path(
         "writer/<uuid:pk>/delete",
         views.WriterInstanceArchiveView.as_view(),
         name="writer_archive",

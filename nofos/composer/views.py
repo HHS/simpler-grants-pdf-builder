@@ -57,7 +57,11 @@ from .models import (
     ContentGuideSection,
     ContentGuideSubsection,
 )
-from .utils import create_content_guide_document, render_curly_variable_list_html_string
+from .utils import (
+    create_content_guide_document,
+    get_yes_no_label,
+    render_curly_variable_list_html_string,
+)
 
 GroupAccessContentGuideMixin = GroupAccessObjectMixinFactory(ContentGuide)
 GroupAccessContentGuideInstanceMixin = GroupAccessObjectMixinFactory(
@@ -1171,6 +1175,101 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
             ),
         )
         return redirect("composer:writer_index")
+
+
+class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
+    """
+    Review page for a ContentGuideInstance.
+
+    Shows:
+      1) Details fields (opdiv, agency, title, short_name, number)
+      2) Conditional questions for page 1
+      3) Conditional questions for page 2
+    """
+
+    template_name = "composer/writer/writer_review.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Fetch instance and enforce access
+        self.instance = get_object_or_404(
+            ContentGuideInstance,
+            pk=kwargs["pk"],
+            archived__isnull=True,
+            successor__isnull=True,
+        )
+
+        user_group = getattr(request.user, "group", None)
+        if user_group != "bloom" and self.instance.group != user_group:
+            return HttpResponseForbidden("You don't have access to this draft NOFO.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _build_details_fields(self):
+        """
+        Use WriterInstanceDetailsForm.Meta to build a list of
+        {name, label, value} dicts for display.
+        """
+        meta = WriterInstanceDetailsForm.Meta
+        # fields is the canonical list of fields in the form
+        fields = getattr(meta, "fields", [])
+        # labels is decorative, may not include all fields
+        labels = getattr(meta, "labels", {})
+
+        items = []
+        for field_name in fields:
+            label = labels.get(field_name, field_name.replace("_", " ").title())
+            value = getattr(self.instance, field_name, "")
+            items.append(
+                {
+                    "key": field_name,
+                    "label": label,
+                    "value": value,
+                }
+            )
+        return items
+
+    def _build_conditional_questions_for_page(self, page: int):
+        """
+        Return a list of {key, label, answer_label} for the given page.
+        """
+        items = []
+        for question in CONDITIONAL_QUESTIONS.for_page(page):
+            raw_answer = self.instance.get_conditional_question_answer(question.key)
+            items.append(
+                {
+                    "key": question.key,
+                    "label": question.label,
+                    "value": get_yes_no_label(raw_answer),
+                }
+            )
+
+        return items
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Details
+        context["details_fields"] = self._build_details_fields()
+        context["page1_questions"] = self._build_conditional_questions_for_page(1)
+        context["page2_questions"] = self._build_conditional_questions_for_page(2)
+
+        context["edit_details_url"] = reverse_lazy(
+            "composer:writer_details",
+            kwargs={"parent_pk": str(self.instance.parent.pk)},
+        )
+        context["edit_page1_url"] = reverse_lazy(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 1},
+        )
+        context["edit_page2_url"] = reverse_lazy(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": 2},
+        )
+
+        # Where "Get started!" goes – placeholder for now
+        context["get_started_url"] = reverse_lazy("composer:writer_index")
+
+        return context
 
 
 class WriterInstanceArchiveView(
