@@ -1815,3 +1815,288 @@ class ComposerPreviewViewStaffRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("users:login"), response.url)
+
+
+class PreventIfContentGuideArchivedMixinTests(TestCase):
+    """
+    Tests for the PreventIfContentGuideArchivedMixin to ensure that all views
+    using this mixin properly prevent access to archived ContentGuides.
+
+    The mixin is applied to the following views:
+    - ComposerEditTitleView
+    - ComposerArchiveView
+    - ComposerUnpublishView
+    - ComposerSectionView
+    - ComposerSectionEditView
+    - ComposerSubsectionCreateView
+    - ComposerSubsectionEditView
+    - ComposerSubsectionDeleteView
+    - ComposerSubsectionInstructionsEditView
+    """
+
+    def setUp(self):
+        # Create a staff user for testing
+        self.user = User.objects.create_user(
+            email="staff@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="staff@example.com", password="testpass123")
+
+        # Create a non-archived content guide
+        self.content_guide = ContentGuide.objects.create(
+            title="Test Content Guide",
+            opdiv="CDC",
+            group="bloom",
+            status="draft",
+        )
+
+        # Create a section with subsections for testing
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.content_guide,
+            name="Test Section",
+            order=1,
+        )
+
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            name="Test Subsection",
+            body="Test body content",
+            order=1,
+            html_id="test-subsection",
+        )
+
+        # Create another subsection for create tests
+        self.subsection2 = ContentGuideSubsection.objects.create(
+            section=self.section,
+            name="Test Subsection 2",
+            body="Test body content 2",
+            order=2,
+            html_id="test-subsection-2",
+        )
+
+    def test_composer_edit_title_view_prevents_archived(self):
+        """ComposerEditTitleView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse("composer:composer_edit_title", args=[self.content_guide.pk])
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url, {"title": "New Title"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_archive_view_prevents_archived(self):
+        """ComposerArchiveView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse("composer:composer_archive", args=[self.content_guide.pk])
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_unpublish_view_prevents_archived(self):
+        """ComposerUnpublishView should return 400 for archived content guide"""
+        # Set content guide to published, then archive it
+        self.content_guide.status = "published"
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse("composer:composer_unpublish", args=[self.content_guide.pk])
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_section_view_prevents_archived(self):
+        """ComposerSectionView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse("composer:section_view", args=[self.content_guide.pk, self.section.pk])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_section_edit_view_prevents_archived(self):
+        """ComposerSectionEditView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse("composer:section_edit", args=[self.content_guide.pk, self.section.pk])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_subsection_create_view_prevents_archived(self):
+        """ComposerSubsectionCreateView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse(
+            "composer:subsection_create",
+            args=[self.content_guide.pk, self.section.pk]
+        ) + f"?prev_subsection={self.subsection.pk}"
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url, {
+            "name": "New Subsection",
+            "body": "New body",
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_subsection_edit_view_prevents_archived(self):
+        """ComposerSubsectionEditView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse(
+            "composer:subsection_edit",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url, {
+            "name": "Updated Subsection",
+            "body": "Updated body",
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_subsection_delete_view_prevents_archived(self):
+        """ComposerSubsectionDeleteView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse(
+            "composer:subsection_confirm_delete",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_composer_subsection_instructions_edit_view_prevents_archived(self):
+        """ComposerSubsectionInstructionsEditView should return 400 for archived content guide"""
+        # Archive the content guide
+        self.content_guide.archived = timezone.now()
+        self.content_guide.save()
+
+        url = reverse(
+            "composer:instructions_edit",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+
+        # Test GET request
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+        # Test POST request
+        response = self.client.post(url, {
+            "instructions": "Updated instructions",
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+
+    def test_non_archived_content_guide_allows_access(self):
+        """All views should allow access to non-archived content guides"""
+        # Test ComposerEditTitleView
+        url = reverse("composer:composer_edit_title", args=[self.content_guide.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerArchiveView
+        url = reverse("composer:composer_archive", args=[self.content_guide.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSectionView
+        url = reverse("composer:section_view", args=[self.content_guide.pk, self.section.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSectionEditView
+        url = reverse("composer:section_edit", args=[self.content_guide.pk, self.section.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSubsectionCreateView
+        url = reverse(
+            "composer:subsection_create",
+            args=[self.content_guide.pk, self.section.pk]
+        ) + f"?prev_subsection={self.subsection.pk}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSubsectionEditView
+        url = reverse(
+            "composer:subsection_edit",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSubsectionDeleteView
+        url = reverse(
+            "composer:subsection_confirm_delete",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Test ComposerSubsectionInstructionsEditView
+        url = reverse(
+            "composer:instructions_edit",
+            args=[self.content_guide.pk, self.section.pk, self.subsection.pk]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
