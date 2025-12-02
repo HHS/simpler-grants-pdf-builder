@@ -76,9 +76,9 @@ class WriterDashboardViewTests(BaseWriterViewTests):
 
         self.assertContains(response, "Welcome to Composer")
 
-    def test_non_bloom_user_sees_only_their_group_instances_and_guides(self):
+    def test_non_bloom_user_sees_only_their_group_instances_and_published_guides(self):
         """
-        A non-bloom user only sees ContentGuideInstances and ContentGuides
+        A non-bloom user only sees ContentGuideInstances and published ContentGuides
         whose group matches their own.
         """
         # Instances
@@ -98,12 +98,18 @@ class WriterDashboardViewTests(BaseWriterViewTests):
             title="ACF Content Guide",
             opdiv="acf",
             group="acf",
-            status="draft",
+            status="published",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Content Guide",
             opdiv="hrsa",
             group="hrsa",
+            status="published",
+        )
+        _draft_guide = ContentGuide.objects.create(
+            title="Draft Content Guide",
+            opdiv="acf",
+            group="acf",
             status="draft",
         )
 
@@ -121,9 +127,9 @@ class WriterDashboardViewTests(BaseWriterViewTests):
         self.assertIn(acf_guide, content_guides)
         self.assertNotIn(hrsa_guide, content_guides)
 
-    def test_bloom_user_sees_all_groups_instances_and_guides(self):
+    def test_bloom_user_sees_all_groups_instances_and_published_guides(self):
         """
-        A bloom user can see ALL groups' ContentGuideInstances and ContentGuides.
+        A bloom user can see ALL groups' ContentGuideInstances and published ContentGuides.
         """
         acf_instance = ContentGuideInstance.objects.create(
             title="ACF Draft NOFO",
@@ -140,12 +146,18 @@ class WriterDashboardViewTests(BaseWriterViewTests):
             title="ACF Content Guide",
             opdiv="acf",
             group="acf",
-            status="draft",
+            status="published",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Content Guide",
             opdiv="hrsa",
             group="hrsa",
+            status="published",
+        )
+        _draft_guide = ContentGuide.objects.create(
+            title="Draft Content Guide",
+            opdiv="bloom",
+            group="bloom",
             status="draft",
         )
 
