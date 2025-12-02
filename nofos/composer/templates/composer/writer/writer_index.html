@@ -81,7 +81,7 @@
         {% for guide in content_guides %}
           <tr>
             <th scope="row">
-              {{ guide.title }}
+              <a href="{% url 'composer:composer_preview' guide.pk %}">{{ guide.title }}</a>
             </th>
             <td>{{ guide.updated_by_display }}</td>
             {% timezone "America/New_York" %}
