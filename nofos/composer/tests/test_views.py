@@ -18,6 +18,7 @@ class ComposerListViewTests(TestCase):
             email="composer@example.com",
             password="testpass123",
             group="bloom",  # or whatever default group is fine
+            is_staff=True,
             force_password_reset=False,
         )
 
@@ -36,7 +37,7 @@ class ComposerListViewTests(TestCase):
         url = reverse("composer:composer_index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("users:login"), response.url)
+        self.assertIn(reverse("admin:login"), response.url)
 
     def test_no_content_guides(self):
         """When no draft or published content guides exist, the user should see the empty state"""
@@ -80,6 +81,7 @@ class ComposerImportViewTests(TestCase):
             email="importer@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="importer@example.com", password="testpass123")
@@ -121,6 +123,7 @@ class ComposerImportTitleViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -155,15 +158,16 @@ class ComposerImportTitleViewTests(TestCase):
     def test_unauthorized_user_redirected(self):
         self.client.logout()
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
 
-class CompareEditTitleViewTests(TestCase):
+class ComposerEditTitleViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -198,7 +202,7 @@ class CompareEditTitleViewTests(TestCase):
     def test_unauthorized_user_redirected(self):
         self.client.logout()
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
 
 class ComposerArchiveViewTests(TestCase):
@@ -207,6 +211,7 @@ class ComposerArchiveViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             force_password_reset=False,
+            is_staff=True,
             group="bloom",
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -238,17 +243,24 @@ class ComposerArchiveViewTests(TestCase):
 
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"already archived", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed.", response.content)
 
     def test_anonymous_user_forbidden(self):
         self.client.logout()
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
-        self.assertIn(b"Permission denied", response.content)
+        self.assertEqual(response.status_code, 302)
 
 
 class ComposerDocumentRedirectTests(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            is_staff=True,
+            group="bloom",
+        )
+        self.client.login(email="test@example.com", password="testpass123")
         # Base URL for the redirect route
         self.redirect_url_name = "composer:composer_document_redirect"
 
@@ -474,6 +486,7 @@ class ComposerSectionViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -571,7 +584,7 @@ class ComposerSectionViewTests(TestCase):
     def test_anonymous_user_is_forbidden(self):
         self.client.logout()
         resp = self.client.get(self.url_sec1)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_404_when_section_not_in_document(self):
         # Make a section in a different guide and try to view with current guide pk
@@ -603,6 +616,7 @@ class ComposerSectionEditViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -636,9 +650,7 @@ class ComposerSectionEditViewTests(TestCase):
     def test_anonymous_redirects_to_login_or_forbidden(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        # In other Composer tests you assert 403 for anonymous;
-        # keep the same expectation here.
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_404_section_not_in_document(self):
         """
@@ -692,6 +704,7 @@ class ComposerSubsectionEditViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -734,7 +747,7 @@ class ComposerSubsectionEditViewTests(TestCase):
     def test_anonymous_redirects_to_login(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_post_updates_and_redirects_with_anchor_prefers_html_id(self):
         payload = {
@@ -807,6 +820,7 @@ class ComposerSubsectionCreateViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -848,7 +862,7 @@ class ComposerSubsectionCreateViewTests(TestCase):
     def test_anonymous_redirects_to_login(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_post_updates_and_redirects_with_anchor_prefers_html_id(self):
         payload = {
@@ -922,6 +936,7 @@ class ComposerSubsectionDeleteViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -965,7 +980,7 @@ class ComposerSubsectionDeleteViewTests(TestCase):
     def test_anonymous_redirects_to_login(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_post_deletes_and_redirects(self):
         resp = self.client.post(self.url, follow=False)
@@ -1043,6 +1058,7 @@ class ComposerSubsectionInstructionsEditViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -1083,10 +1099,10 @@ class ComposerSubsectionInstructionsEditViewTests(TestCase):
         self.assertEqual(resp.context["section"].pk, self.section.pk)
         self.assertEqual(resp.context["subsection"].pk, self.subsection.pk)
 
-    def test_anonymous_returns_403(self):
+    def test_anonymous_redirects_to_login(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_post_updates_instructions_and_redirects(self):
         payload = {
@@ -1180,6 +1196,7 @@ class ComposerPreviewViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -1302,6 +1319,7 @@ class ComposerUnpublishViewTests(TestCase):
             email="test@example.com",
             password="testpass123",
             group="bloom",
+            is_staff=True,
             force_password_reset=False,
         )
         self.client.login(email="test@example.com", password="testpass123")
@@ -1418,11 +1436,10 @@ class ComposerUnpublishViewTests(TestCase):
         # Restore original save method
         ContentGuideSubsection.objects.bulk_create = original_bulk_create
 
-    def test_anonymous_user_forbidden(self):
+    def test_anonymous_redirects_to_login(self):
         self.client.logout()
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
+        self.assertEqual(resp.status_code, 302)
 
 class StaffMemberRequiredTests(TestCase):
     """Tests to verify that staff_member_required is properly enforced on composer views."""
@@ -1840,6 +1857,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
             email="staff@example.com",
             password="testpass123",
             force_password_reset=False,
+            is_staff=True,
             group="bloom",
         )
         self.client.login(email="staff@example.com", password="testpass123")
@@ -1862,6 +1880,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         self.subsection = ContentGuideSubsection.objects.create(
             section=self.section,
             name="Test Subsection",
+            tag="h4",
             body="Test body content",
             order=1,
             html_id="test-subsection",
@@ -1871,6 +1890,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         self.subsection2 = ContentGuideSubsection.objects.create(
             section=self.section,
             name="Test Subsection 2",
+            tag="h4",
             body="Test body content 2",
             order=2,
             html_id="test-subsection-2",
@@ -1887,12 +1907,12 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url, {"title": "New Title"})
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_archive_view_prevents_archived(self):
         """ComposerArchiveView should return 400 for archived content guide"""
@@ -1905,12 +1925,12 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_unpublish_view_prevents_archived(self):
         """ComposerUnpublishView should return 400 for archived content guide"""
@@ -1924,12 +1944,12 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_section_view_prevents_archived(self):
         """ComposerSectionView should return 400 for archived content guide"""
@@ -1941,7 +1961,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_section_edit_view_prevents_archived(self):
         """ComposerSectionEditView should return 400 for archived content guide"""
@@ -1953,7 +1973,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_subsection_create_view_prevents_archived(self):
         """ComposerSubsectionCreateView should return 400 for archived content guide"""
@@ -1969,7 +1989,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url, {
@@ -1977,7 +1997,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
             "body": "New body",
         })
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_subsection_edit_view_prevents_archived(self):
         """ComposerSubsectionEditView should return 400 for archived content guide"""
@@ -1993,7 +2013,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url, {
@@ -2001,7 +2021,7 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
             "body": "Updated body",
         })
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_composer_subsection_delete_view_prevents_archived(self):
         """ComposerSubsectionDeleteView should return 400 for archived content guide"""
@@ -2017,13 +2037,12 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
-
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
     def test_composer_subsection_instructions_edit_view_prevents_archived(self):
         """ComposerSubsectionInstructionsEditView should return 400 for archived content guide"""
         # Archive the content guide
@@ -2038,14 +2057,14 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
         # Test GET request
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
         # Test POST request
         response = self.client.post(url, {
             "instructions": "Updated instructions",
         })
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"This Content Guide is archived and can't be changed", response.content)
+        self.assertIn(b"This Content Guide is archived and can&#x27;t be changed", response.content)
 
     def test_non_archived_content_guide_allows_access(self):
         """All views should allow access to non-archived content guides"""
