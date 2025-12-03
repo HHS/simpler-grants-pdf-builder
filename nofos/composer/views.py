@@ -1219,12 +1219,12 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
                 self.instance.short_name or self.instance.title or self.instance.pk
             ),
         )
-        return redirect("composer:writer_review", pk=self.instance.pk)
+        return redirect("composer:writer_confirmation", pk=self.instance.pk)
 
 
-class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
+class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
     """
-    Review page for a ContentGuideInstance.
+    Confirmation page for a ContentGuideInstance.
 
     Shows:
       1) Details fields (opdiv, agency, title, short_name, number)
@@ -1232,7 +1232,7 @@ class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
       3) Conditional questions for page 2
     """
 
-    template_name = "composer/writer/writer_review.html"
+    template_name = "composer/writer/writer_confirmation.html"
 
     def dispatch(self, request, *args, **kwargs):
         # Fetch instance and enforce access

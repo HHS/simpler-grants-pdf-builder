@@ -561,7 +561,9 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
         # "cost_sharing" key did not get saved
         self.assertNotIn("cost_sharing", cq)
 
-    def test_valid_post_on_last_page_redirects_to_writer_review_and_sets_message(self):
+    def test_valid_post_on_last_page_redirects_to_writer_confirmation_and_sets_message(
+        self,
+    ):
         """
         POST on the last page should save answers and redirect to the writer index with
         a success message that uses the instance's name.
@@ -581,7 +583,9 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            reverse("composer:writer_review", kwargs={"pk": str(self.instance.pk)}),
+            reverse(
+                "composer:writer_confirmation", kwargs={"pk": str(self.instance.pk)}
+            ),
         )
 
         # Instance updated
@@ -602,7 +606,7 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
         )
 
 
-class WriterInstanceReviewViewTests(BaseWriterViewTests):
+class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
     def setUp(self):
         super().setUp()
 
@@ -628,8 +632,8 @@ class WriterInstanceReviewViewTests(BaseWriterViewTests):
             },
         )
 
-        self.review_url = reverse(
-            "composer:writer_review", kwargs={"pk": str(self.instance.pk)}
+        self.confirmation_url = reverse(
+            "composer:writer_confirmation", kwargs={"pk": str(self.instance.pk)}
         )
 
         # For later URL comparisons
@@ -651,7 +655,7 @@ class WriterInstanceReviewViewTests(BaseWriterViewTests):
         """
         Anonymous users should get a 403 (per LoginRequiredMixin behavior in this project).
         """
-        response = self.client.get(self.review_url)
+        response = self.client.get(self.confirmation_url)
         self.assertEqual(response.status_code, 403)
 
     def test_non_bloom_wrong_group_gets_403(self):
@@ -659,15 +663,15 @@ class WriterInstanceReviewViewTests(BaseWriterViewTests):
         A non-bloom user whose group doesn't match the instance's group gets 403.
         """
         self.client.login(email="hrsa@example.com", password="testpass123")
-        response = self.client.get(self.review_url)
+        response = self.client.get(self.confirmation_url)
         self.assertEqual(response.status_code, 403)
 
     def test_bloom_user_can_access_any_group_instance(self):
         """
-        Bloom users can access the review page for any group.
+        Bloom users can access the confirmation page for any group.
         """
         self.client.login(email="bloom@example.com", password="testpass123")
-        response = self.client.get(self.review_url)
+        response = self.client.get(self.confirmation_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
@@ -676,10 +680,10 @@ class WriterInstanceReviewViewTests(BaseWriterViewTests):
 
     def test_same_group_user_sees_details_and_questions(self):
         """
-        Same-group user sees the review page with details and conditional questions rendered.
+        Same-group user sees the confirmation page with details and conditional questions rendered.
         """
         self.client.login(email="acf@example.com", password="testpass123")
-        response = self.client.get(self.review_url)
+        response = self.client.get(self.confirmation_url)
         self.assertEqual(response.status_code, 200)
 
         # Heading
