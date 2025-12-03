@@ -9,22 +9,55 @@ from django.urls import reverse
 User = get_user_model()
 
 
-class WriterDashboardViewTests(TestCase):
-    def setUp(self):
-        # Two users: bloom (super group) and a regular opdiv user
-        self.bloom_user = User.objects.create_user(
+class BaseWriterViewTests(TestCase):
+    """
+    Base test case for Writer views.
+
+    - Creates shared bloom/acf/hrsa users once for all subclasses.
+    - Provides small helpers for common objects.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.password = "testpass123"
+
+        cls.bloom_user = User.objects.create_user(
             email="bloom@example.com",
-            password="testpass123",
+            password=cls.password,
             group="bloom",
             force_password_reset=False,
         )
-        self.acf_user = User.objects.create_user(
+        cls.acf_user = User.objects.create_user(
             email="acf@example.com",
-            password="testpass123",
+            password=cls.password,
             group="acf",
             force_password_reset=False,
         )
+        cls.hrsa_user = User.objects.create_user(
+            email="hrsa@example.com",
+            password=cls.password,
+            group="hrsa",
+            force_password_reset=False,
+        )
 
+    # Optional convenience helpers; use them where you like
+    def login_as(self, user):
+        self.client.login(email=user.email, password=self.password)
+
+    def create_acf_parent_guide(self, **overrides):
+        data = {
+            "title": "ACF Core Content Guide",
+            "opdiv": "acf",
+            "group": "acf",
+            "status": "draft",
+        }
+        data.update(overrides)
+        return ContentGuide.objects.create(**data)
+
+
+class WriterDashboardViewTests(BaseWriterViewTests):
+    def setUp(self):
+        super().setUp()
         self.url = reverse("composer:writer_index")
 
     def test_anonymous_user_is_redirected_to_login(self):
@@ -127,14 +160,9 @@ class WriterDashboardViewTests(TestCase):
         self.assertEqual(content_guides, {acf_guide, hrsa_guide})
 
 
-class WriterInstanceBeforeStartViewTests(TestCase):
+class WriterInstanceBeforeStartViewTests(BaseWriterViewTests):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="acf@example.com",
-            password="testpass123",
-            group="acf",
-            force_password_reset=False,
-        )
+        super().setUp()
         self.url = reverse("composer:writer_before_start")
 
     def test_anonymous_redirects_to_login(self):
@@ -148,20 +176,9 @@ class WriterInstanceBeforeStartViewTests(TestCase):
         self.assertContains(response, "Before you begin")
 
 
-class WriterInstanceStartViewTests(TestCase):
+class WriterInstanceStartViewTests(BaseWriterViewTests):
     def setUp(self):
-        self.bloom_user = User.objects.create_user(
-            email="bloom@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-        )
-        self.acf_user = User.objects.create_user(
-            email="acf@example.com",
-            password="testpass123",
-            group="acf",
-            force_password_reset=False,
-        )
+        super().setUp()
         self.url = reverse("composer:writer_start")
 
     def test_anonymous_user_is_redirected_to_login(self):
@@ -265,35 +282,12 @@ class WriterInstanceStartViewTests(TestCase):
         self.assertEqual(form.errors["parent"], ["This field is required."])
 
 
-class WriterInstanceDetailsViewTests(TestCase):
+class WriterInstanceDetailsViewTests(BaseWriterViewTests):
     def setUp(self):
-        # Users
-        self.acf_user = User.objects.create_user(
-            email="acf@example.com",
-            password="testpass123",
-            group="acf",
-            force_password_reset=False,
-        )
-        self.hrsa_user = User.objects.create_user(
-            email="hrsa@example.com",
-            password="testpass123",
-            group="hrsa",
-            force_password_reset=False,
-        )
-        self.bloom_user = User.objects.create_user(
-            email="bloom@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-        )
+        super().setUp()
 
         # Parent content guide (ACF)
-        self.parent_guide = ContentGuide.objects.create(
-            title="ACF Core Content Guide",
-            opdiv="acf",
-            group="acf",
-            status="draft",
-        )
+        self.parent_guide = self.create_acf_parent_guide()
 
         self.url = reverse(
             "composer:writer_details",
@@ -424,35 +418,12 @@ class GetWriterConditionalQuestionsPageTitleTests(SimpleTestCase):
         )
 
 
-class WriterInstanceConditionalQuestionViewTests(TestCase):
+class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
     def setUp(self):
-        # Users
-        self.acf_user = User.objects.create_user(
-            email="acf@example.com",
-            password="testpass123",
-            group="acf",
-            force_password_reset=False,
-        )
-        self.hrsa_user = User.objects.create_user(
-            email="hrsa@example.com",
-            password="testpass123",
-            group="hrsa",
-            force_password_reset=False,
-        )
-        self.bloom_user = User.objects.create_user(
-            email="bloom@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-        )
+        super().setUp()
 
         # Parent content guide (ACF)
-        self.parent_guide = ContentGuide.objects.create(
-            title="ACF Core Content Guide",
-            opdiv="acf",
-            group="acf",
-            status="draft",
-        )
+        self.parent_guide = self.create_acf_parent_guide()
 
         # Draft NOFO instance based on the guide
         self.instance = ContentGuideInstance.objects.create(
@@ -590,7 +561,7 @@ class WriterInstanceConditionalQuestionViewTests(TestCase):
         # "cost_sharing" key did not get saved
         self.assertNotIn("cost_sharing", cq)
 
-    def test_valid_post_on_last_page_redirects_to_writer_index_and_sets_message(self):
+    def test_valid_post_on_last_page_redirects_to_writer_review_and_sets_message(self):
         """
         POST on the last page should save answers and redirect to the writer index with
         a success message that uses the instance's name.
@@ -608,7 +579,10 @@ class WriterInstanceConditionalQuestionViewTests(TestCase):
 
         response = self.client.post(self.url_page2, data=post_data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("composer:writer_index"))
+        self.assertEqual(
+            response.url,
+            reverse("composer:writer_review", kwargs={"pk": str(self.instance.pk)}),
+        )
 
         # Instance updated
         self.instance.refresh_from_db()
@@ -628,35 +602,12 @@ class WriterInstanceConditionalQuestionViewTests(TestCase):
         )
 
 
-class WriterInstanceReviewViewTests(TestCase):
+class WriterInstanceReviewViewTests(BaseWriterViewTests):
     def setUp(self):
-        # Users
-        self.acf_user = User.objects.create_user(
-            email="acf@example.com",
-            password="testpass123",
-            group="acf",
-            force_password_reset=False,
-        )
-        self.hrsa_user = User.objects.create_user(
-            email="hrsa@example.com",
-            password="testpass123",
-            group="hrsa",
-            force_password_reset=False,
-        )
-        self.bloom_user = User.objects.create_user(
-            email="bloom@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-        )
+        super().setUp()
 
         # Parent content guide (ACF)
-        self.parent_guide = ContentGuide.objects.create(
-            title="ACF Core Content Guide",
-            opdiv="acf",
-            group="acf",
-            status="draft",
-        )
+        self.parent_guide = self.create_acf_parent_guide()
 
         # Draft NOFO instance with some details + conditional answers
         self.instance = ContentGuideInstance.objects.create(
