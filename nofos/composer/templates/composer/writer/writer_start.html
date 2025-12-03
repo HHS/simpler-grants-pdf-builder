@@ -9,9 +9,9 @@
 {% block content %}
   <h1 class="font-heading-xl margin-y-0">Start drafting a new NOFO</h1>
 
-  <form method="post" class="margin-top-3">
+  <form method="post" class="margin-top-3 width-mobile-lg">
     {% csrf_token %}
-    {% include "includes/form_macro.html" %}
+    {% include "includes/form_macro.html" with_radio_tiles=True %}
     <button class="usa-button margin-top-3" type="submit">Continue</button>
   </form>
 {% endblock %}
