@@ -118,6 +118,10 @@
   width: 5%;
 }
 
+.flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
 .usa-button--green,
 .usa-button--green:visited {
   color: var(--color--white);

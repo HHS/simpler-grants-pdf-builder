@@ -36,7 +36,14 @@
 
         {% include "includes/form_macro.html" with show_required_asterisk=True %}
 
-        <button class="usa-button margin-top-3" type="submit">Save and continue</button>
+        <ul class="usa-button-group margin-top-3 flex-row-reverse flex-justify-end">
+          <li class="usa-button-group__item margin-left-2">
+            <button class="usa-button" type="submit">Save and continue</button>
+          </li>
+          <li class="usa-button-group__item">
+            <a href="{% url 'composer:writer_start' %}" class="usa-button usa-button--outline">Back</a>
+          </li>
+        </ul>
       </form>
     </div>
 
