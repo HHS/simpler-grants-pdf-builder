@@ -59,7 +59,11 @@ class ConditionalQuestionRegistry(dict[str, ConditionalQuestion]):
 
     @property
     def max_page(self) -> int:
-        """Highest page number in the registry (for navigation)."""
+        """
+        Highest page number in the registry (for navigation).
+
+        Note: WriterInstanceConfirmationView assumes the max page number is 2
+        """
         pages = [question.page for question in self.values()]
         return max(pages) if pages else 1
 
