@@ -1,6 +1,11 @@
 import uuid
 
-from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from composer.models import (
+    ContentGuide,
+    ContentGuideInstance,
+    ContentGuideSection,
+    ContentGuideSubsection,
+)
 from composer.views import ComposerSectionView
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
@@ -608,6 +613,93 @@ class ComposerSectionViewTests(TestCase):
         )
         resp = self.client.get(bad_url)
         self.assertEqual(resp.status_code, 404)
+
+    def test_works_with_content_guide_instance(self):
+        """Test that ComposerSectionView works with ContentGuideInstance"""
+        # Create a ContentGuideInstance
+        instance = ContentGuideInstance.objects.create(
+            title="My Draft NOFO",
+            opdiv="CDC",
+            group="bloom",
+            parent=self.guide,
+        )
+
+        # Create sections for the instance
+        instance_sec1 = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=1,
+            name="Instance Section 1",
+            html_id="is1",
+        )
+        instance_sec2 = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=2,
+            name="Instance Section 2",
+            html_id="is2",
+        )
+
+        # Create a subsection
+        ContentGuideSubsection.objects.create(
+            section=instance_sec1,
+            order=1,
+            name="Instance Subsection",
+            tag="h4",
+            body="Instance body",
+            enabled=True,
+        )
+
+        # Test the URL with instance pk
+        url = reverse(
+            "composer:section_view",
+            kwargs={"pk": instance.pk, "section_pk": instance_sec1.pk},
+        )
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["current_section"].pk, instance_sec1.pk)
+        self.assertEqual(resp.context["document"].pk, instance.pk)
+
+        # Verify prev/next work
+        self.assertIsNone(resp.context["prev_sec"])
+        self.assertIsNotNone(resp.context["next_sec"])
+        self.assertEqual(resp.context["next_sec"].pk, instance_sec2.pk)
+
+    def test_group_access_denied_for_wrong_group_instance(self):
+        """Test that group access control works for ContentGuideInstance"""
+        # Create a user in a different group
+        other_user = User.objects.create_user(
+            email="other@example.com",
+            password="testpass123",
+            group="hrsa",  # Different group
+            is_staff=True,
+            force_password_reset=False,
+        )
+
+        # Create a ContentGuideInstance for CDC group
+        instance = ContentGuideInstance.objects.create(
+            title="CDC Draft NOFO",
+            opdiv="CDC",
+            group="cdc",  # Different from user's group
+            parent=self.guide,
+        )
+
+        instance_sec = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=1,
+            name="Instance Section",
+            html_id="is1",
+        )
+
+        # Login as the other user
+        self.client.login(email="other@example.com", password="testpass123")
+
+        url = reverse(
+            "composer:section_view",
+            kwargs={"pk": instance.pk, "section_pk": instance_sec.pk},
+        )
+        resp = self.client.get(url)
+        # Should get 403 Forbidden
+        self.assertEqual(resp.status_code, 403)
+
 
 
 class ComposerSectionEditViewTests(TestCase):

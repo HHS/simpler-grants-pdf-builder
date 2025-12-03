@@ -80,7 +80,10 @@
 
       <ul class="usa-button-group margin-top-3 flex-row-reverse flex-justify-end">
         <li class="usa-button-group__item margin-left-2">
-          <a href="{{ get_started_url }}" class="usa-button">Get started!</a>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="usa-button">Get started!</button>
+            </form>
         </li>
         <li class="usa-button-group__item">
           <a href="{{ edit_page2_url }}" class="usa-button usa-button--outline">Back</a>
