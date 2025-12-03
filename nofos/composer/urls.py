@@ -23,7 +23,7 @@ urlpatterns = [
     ),
     path(
         "<uuid:pk>",
-        views.compare_section_redirect,
+        views.composer_section_redirect,
         name="composer_document_redirect",
     ),
     path(
@@ -101,6 +101,11 @@ urlpatterns = [
         "writer/<uuid:pk>/confirmation",
         views.WriterInstanceConfirmationView.as_view(),
         name="writer_confirmation",
+    ),
+    path(
+        "writer/<uuid:pk>",
+        views.writer_section_redirect,
+        name="writer_instance_redirect",
     ),
     path(
         "writer/<uuid:pk>/delete",

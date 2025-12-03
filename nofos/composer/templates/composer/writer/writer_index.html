@@ -38,8 +38,7 @@
         {% for draft in draft_nofos %}
           <tr>
             <th scope="row">
-              {{ draft|nofo_name }}
-              {{ draft.pk}}
+              <a href="{% url 'composer:writer_instance_redirect' draft.pk %}">{{ draft|nofo_name }}</a>
             </th>
             <td>{{ draft.updated_by_display }}</td>
             {% timezone "America/New_York" %}
