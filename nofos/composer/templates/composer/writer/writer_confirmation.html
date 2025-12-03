@@ -78,13 +78,18 @@
     <div>
       <hr class="margin-top-3 margin-bottom-4">
 
-      <a href="{{ get_started_url }}" class="usa-button">
-        Get started!
-      </a>
-    </div>
+      <ul class="usa-button-group margin-top-3 flex-row-reverse flex-justify-end">
+        <li class="usa-button-group__item margin-left-2">
+          <a href="{{ get_started_url }}" class="usa-button">Get started!</a>
+        </li>
+        <li class="usa-button-group__item">
+          <a href="{{ edit_page2_url }}" class="usa-button usa-button--outline">Back</a>
+        </li>
+      </ul>
 
-    <p class="margin-top-2 text-base">
-      Drafting your NOFO takes about 20–30 minutes to complete.
-    </p>
-  <div>
+      <p class="margin-top-2 usa-hint">
+        Drafting your NOFO takes about 20–30 minutes to complete.
+      </p>
+    </div>
+  </div>
 {% endblock %}
