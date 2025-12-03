@@ -493,7 +493,6 @@ def composer_section_redirect(request, pk):
     return redirect("composer:section_view", pk=document.pk, section_pk=first.pk)
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSectionView(
     PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView
 ):
@@ -511,6 +510,19 @@ class ComposerSectionView(
     template_name = "composer/composer_section.html"
     context_object_name = "current_section"
     pk_url_kwarg = "section_pk"
+
+    def dispatch(self, request, *args, **kwargs):
+        document = self._get_document()
+        if isinstance(document, ContentGuide):
+            # Only staff can view ContentGuide section pages
+            if not request.user.is_staff:
+                return redirect_to_login(
+                    request.get_full_path(),
+                    reverse_lazy("admin:login"),
+                    REDIRECT_FIELD_NAME,
+                )
+
+        return super().dispatch(request, *args, **kwargs)
 
     def group_subsections(self, subsections):
         """
@@ -566,6 +578,10 @@ class ComposerSectionView(
             subsection_groups[current_idx]["items"].append(subsection)
 
         return subsection_groups
+
+    def _get_document(self):
+        section = self.get_object()
+        return section.get_document()
 
     def get_queryset(self):
         document_pk = self.kwargs["pk"]

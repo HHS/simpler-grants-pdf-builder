@@ -670,7 +670,6 @@ class ComposerSectionViewTests(TestCase):
             email="other@example.com",
             password="testpass123",
             group="hrsa",  # Different group
-            is_staff=True,
             force_password_reset=False,
         )
 
@@ -1679,43 +1678,22 @@ class StaffMemberRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_compare_section_redirect_requires_staff(self):
-        """compare_section_redirect should redirect non-staff users to admin login."""
+    def test_composer_document_redirect_requires_staff(self):
+        """composer_document_redirect should redirect non-staff users to admin login."""
         self.client.login(email="nonstaff@example.com", password="testpass123")
         url = reverse("composer:composer_document_redirect", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response.url)
 
-    def test_compare_section_redirect_allows_staff(self):
-        """compare_section_redirect should allow staff users."""
+    def test_composer_document_redirect_allows_staff(self):
+        """composer_document_redirect should allow staff users."""
         self.client.login(email="staff@example.com", password="testpass123")
         url = reverse("composer:composer_document_redirect", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         # Should redirect to section_view or composer_preview
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("/admin/login/", response.url)
-
-    def test_composer_section_view_requires_staff(self):
-        """ComposerSectionView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
-        url = reverse(
-            "composer:section_view",
-            kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
-
-    def test_composer_section_view_allows_staff(self):
-        """ComposerSectionView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
-        url = reverse(
-            "composer:section_view",
-            kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
 
     def test_composer_section_edit_view_requires_staff(self):
         """ComposerSectionEditView should redirect non-staff users to admin login."""
@@ -1925,6 +1903,86 @@ class ComposerPreviewViewStaffRequiredTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("users:login"), response.url)
 
+
+class ComposerSectionViewStaffRequiredTests(TestCase):
+    """Tests for the custom staff requirement logic in ComposerSectionView."""
+
+    def setUp(self):
+        # Create a non-staff user
+        self.non_staff_user = User.objects.create_user(
+            email="nonstaff@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+            is_staff=False,
+        )
+
+        # Create a staff user
+        self.staff_user = User.objects.create_user(
+            email="staff@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+            is_staff=True,
+        )
+
+        # Create a content guide with a section
+        self.guide = ContentGuide.objects.create(
+            title="Test Guide",
+            opdiv="CDC",
+            group="bloom",
+            status="draft",
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide=self.guide, name="Test Section", order=1
+        )
+
+        # Create a content guide instance with a section
+        self.instance = ContentGuideInstance.objects.create(
+            parent=self.guide,
+            opdiv="CDC",
+            group="bloom",
+        )
+        self.instance_section = ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            name="Test instance section",
+            order=1,
+        )
+
+    def test_section_view_requires_staff__if_ContentGuide(self):
+        """Non-staff users should be redirected when accessing sections of content guides."""
+        self.client.login(email="nonstaff@example.com", password="testpass123")
+        url = reverse("composer:section_view", kwargs={"pk": self.guide.pk, "section_pk": self.section.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("users:login"), response.url)
+
+        # Publish content guide and confirm we still cannot access
+        self.guide.status = "published"
+        self.guide.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("users:login"), response.url)
+
+    def test_section_view_allows_staff__if_ContentGuide(self):
+        """Staff users should be able to access sections of content guides."""
+        self.client.login(email="staff@example.com", password="testpass123")
+        url = reverse("composer:section_view", kwargs={"pk": self.guide.pk, "section_pk": self.section.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.guide.status = "published"
+        self.guide.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_section_view_allows_non_staff__if_ContentGuideInstance(self):
+        """Non-staff users should be able to access sections of content guide instances."""
+        self.client.login(email="nonstaff@example.com", password="testpass123")
+        url = reverse("composer:writer_section_view", kwargs={"pk": self.instance.pk, "section_pk": self.instance_section.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
 class PreventIfContentGuideArchivedMixinTests(TestCase):
     """
