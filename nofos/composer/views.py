@@ -1230,6 +1230,8 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
       1) Details fields (opdiv, agency, title, short_name, number)
       2) Conditional questions for page 1
       3) Conditional questions for page 2
+
+    Note: this view assumes the max page number is 2
     """
 
     template_name = "composer/writer/writer_confirmation.html"
@@ -1293,7 +1295,6 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # 1. Details
         context["details_fields"] = self._build_details_fields()
         context["page1_questions"] = self._build_conditional_questions_for_page(1)
         context["page2_questions"] = self._build_conditional_questions_for_page(2)
