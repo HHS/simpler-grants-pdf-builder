@@ -202,3 +202,104 @@ class PreventIfContentGuideArchivedMixin:
             return obj.section.get_document()
 
         return None
+
+
+class GroupAccessContentGuideMixin:
+    """
+    Restricts access based on user's group for ContentGuide/ContentGuideInstance objects.
+
+    This mixin works with views where:
+    - The view's model is ContentGuide or ContentGuideInstance directly
+    - The view's model is ContentGuideSection (navigates to parent via get_document())
+    - The view's model is ContentGuideSubsection (navigates via section.get_document())
+    - The view has a 'pk' URL parameter pointing to a ContentGuide/ContentGuideInstance
+
+    For Section/Subsection views, it also checks the 'pk' URL parameter to find the
+    parent document when the object itself may not be loaded yet.
+
+    Access rules:
+    - If document is archived: only 'bloom' users can access
+    - If user is not 'bloom' and group doesn't match document: deny access
+    - Otherwise: allow access
+
+    Usage examples:
+        # For a view where model is ContentGuide
+        class ComposerEditTitleView(GroupAccessContentGuideMixin, UpdateView):
+            model = ContentGuide
+            ...
+
+        # For a view where model is ContentGuideSection
+        class ComposerSectionView(GroupAccessContentGuideMixin, DetailView):
+            model = ContentGuideSection
+            ...
+
+        # For a view where model is ContentGuideSubsection
+        class ComposerSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
+            model = ContentGuideSubsection
+            ...
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the document object - either directly or via parent relationships
+        document = self._get_content_guide_document_for_access()
+
+        if document and not has_group_permission_func(request.user, document):
+            object_name = document._meta.verbose_name
+            raise PermissionDenied(
+                f"You don't have permission to view this {object_name}."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _get_content_guide_document_for_access(self):
+        """
+        Get the ContentGuide or ContentGuideInstance for permission checking.
+
+        Handles multiple scenarios:
+        1. View object is ContentGuide or ContentGuideInstance directly
+        2. View object is ContentGuideSection (has get_document() method)
+        3. View object is ContentGuideSubsection (has section.get_document() method)
+        4. View has a 'pk' URL parameter pointing to ContentGuide/ContentGuideInstance
+        5. View has a 'document' attribute set during get_object() or dispatch()
+        """
+        from composer.models import ContentGuideInstance
+
+        # Check if the view has already set a document attribute
+        if hasattr(self, "document"):
+            return self.document
+
+        # Try to get the object from the view
+        obj = getattr(self, "object", None)
+        if obj is None:
+            # Object hasn't been set yet, try to get it
+            try:
+                obj = self.get_object()
+            except Exception:
+                # Can't get object yet, try to look up via URL parameter
+                obj = None
+
+        # Check object type and navigate to the document
+        if obj:
+            if isinstance(obj, (ContentGuide, ContentGuideInstance)):
+                return obj
+            elif isinstance(obj, ContentGuideSection):
+                # Section has `get_document()` method
+                return obj.get_document()
+            elif isinstance(obj, ContentGuideSubsection):
+                # Subsection has `section` attribute
+                return obj.section.get_document()
+
+        # If we couldn't get the document from the object, try the 'pk' URL parameter
+        # This is useful for Section/Subsection views where 'pk' refers to the parent document
+        document_pk = self.kwargs.get("pk")
+        if document_pk:
+            # Try ContentGuide first, then ContentGuideInstance
+            try:
+                return ContentGuide.objects.get(pk=document_pk)
+            except ContentGuide.DoesNotExist:
+                try:
+                    return ContentGuideInstance.objects.get(pk=document_pk)
+                except ContentGuideInstance.DoesNotExist:
+                    pass
+
+        return None

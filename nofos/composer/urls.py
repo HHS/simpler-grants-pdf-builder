@@ -107,4 +107,9 @@ urlpatterns = [
         views.WriterInstanceArchiveView.as_view(),
         name="writer_archive",
     ),
+    path(
+        "writer/<uuid:pk>/section/<uuid:section_pk>",
+        views.ComposerSectionView.as_view(),
+        name="writer_section_view",
+    ),
 ]

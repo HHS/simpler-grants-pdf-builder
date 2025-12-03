@@ -11,12 +11,12 @@
   <div class="grid-row">
     {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
     <div class="back-link font-body-md margin-bottom-105">
-      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
+      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{{ home_url }}">Home</a>
     </div>
   </div>
   <div class="grid-row cg-layout">
     <!-- sticky sidenav -->
-    {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections %}
+    {% include 'includes/_side_nav.html' with document_pk=document.pk document_is_instance=document_is_instance sections=sections %}
 
     <!-- current_section content -->
     <main class="grid-col-9">
@@ -34,51 +34,25 @@
           <em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em> — <a href="{% url 'composer:composer_history' document.id %}">See all updates</a>
         </p>
       {% endtimezone %}
-      <ul class="line-height-sans-5">
-        <li>Review and update the content guide.</li>
-        <li>Select “Edit” to set how much control OpDivs and writers have.</li>
-        <li>Tags (e.g., Locked, Certain text, Optional) show those permissions and can be changed when editing.</li>
-      </ul>
-      <details class="explainer-box">
-        <summary class="bg-accent-warm-dark text-white padding-1">Guide to the tags</summary>
-        <div class="explainer-box--content border border-accent-warm-dark border-radius-sm">
-          <ul class="usa-prose">
-            <li>No tag means all text in the section can be edited and changed.</li>
-            <li>
-              <div class="display-flex">
-                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='locked' %}</div>
-                <div>is a section writers cannot edit or make changes.</div>
-              </div>
-            </li>
-            <li>
-              <div class="display-flex">
-                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='variables' %}</div>
-                <div>means writers can edit certain text only in this section. Only text inside the brackets can be changed.</div>
-              </div>
-            </li>
-            <li>
-              <div class="display-flex">
-                <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with optional=True %}</div>
-                <div>means this section is not required for the writer to answer. No text in the section can be edited or changed. </div>
-              </div>
-            </li>
-            <li>
-              <div class="display-flex">
-                <div class="minw-fit-content margin-right-1">
-                  <div class="margin-bottom-1">{% include "includes/subsection_labels.html" with conditional_answer=True %}</div>
-                  <div>{% include "includes/subsection_labels.html" with conditional_answer=False %}</div>
-                </div>
-                <div>means this section has associated text if writer has selected yes or no.</div>
-              </div>
 
-            </li>
-          </ul>
-        </div>
-      </details>
+      {% if document_is_instance == False %}
+        <ul class="line-height-sans-5">
+          <li>Review and update the content guide.</li>
+          <li>Select “Edit” to set how much control OpDivs and writers have.</li>
+          <li>Tags (e.g., Locked, Certain text, Optional) show those permissions and can be changed when editing.</li>
+        </ul>
+        {% include "includes/_composer_tags_explainer_box.html" %}
+      {% else %}
+        {% include "includes/_writer_tags_explainer_box.html" %}
+      {% endif %}
+
       <hr />
+
       <ul class="margin-top-2 margin-x-0 usa-button-group flex-justify-end">
-        <li><a class="usa-button usa-button--unstyled" href="{% url 'composer:section_edit' document.pk current_section.pk %}">Configure section</a></li>
-        <li><button id="expand-collapse-all" class="usa-button usa-button--outline usa-button--icon--after usa-button--add usa-button--icon--usa-blue">Expand all</button></li>
+        {% if document_is_instance == False %}
+          <li><a class="usa-button usa-button--unstyled" href="{% url 'composer:section_edit' document.pk current_section.pk %}">Configure section</a></li>
+        {% endif %}
+          <li><button id="expand-collapse-all" class="usa-button usa-button--outline usa-button--icon--after usa-button--add usa-button--icon--usa-blue">Expand all</button></li>
       </ul>
 
       <div class="border-bottom border-base-lighter border-bottom-width-1px">
@@ -100,7 +74,9 @@
                       >
                 {{ subsection.name|default:"(No title)" }}
                 <div class="flex-row">
-                  {% include "includes/subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
+                  {% if document_is_instance == False %}
+                    {% include "includes/subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
+                  {% endif %}
                 </div>
               </button>
             </h4>
@@ -117,11 +93,13 @@
                 <div class="bg-primary-lighter padding-2">
                   <div class="display-flex flex-justify flex-align-center">
                     <div class="font-heading-lg text-bold padding-top-1">Instructions</div>
-                    <span class="bg-white"><a
-                      class="usa-button usa-button--outline usa-button--compact"
-                      href="{% url 'composer:instructions_edit' document.pk current_section.pk subsection.pk %}">
-                        Edit instructions
-                    </a></span>
+                    {% if document_is_instance == False %}
+                      <span class="bg-white"><a
+                        class="usa-button usa-button--outline usa-button--compact"
+                        href="{% url 'composer:instructions_edit' document.pk current_section.pk subsection.pk %}">
+                          Edit instructions
+                      </a></span>
+                    {% endif %}
                   </div>
                   <div>
                     {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
@@ -148,24 +126,29 @@
       </div>
 
       <!-- Pager -->
-      <nav class="display-flex flex-justify margin-top-4">
+      <nav class="display-flex {% if document_is_instance == False %}flex-justify{% endif %} margin-top-4">
         <div>
           {% if prev_sec %}
             <a class="usa-button usa-button--outline"
-                href="{% url 'composer:section_view' document.pk prev_sec.pk %}">
-                ← {{ prev_sec.name }}
+                href="{{ prev_sec_url }}">
+                {% if document_is_instance == False %}← {{ prev_sec.name }}{% else %}Back{% endif %}
             </a>
           {% endif %}
         </div>
         <div>
           {% if next_sec %}
             <a class="usa-button"
-                href="{% url 'composer:section_view' document.pk next_sec.pk %}">
-                {{ next_sec.name }} →
+                href="{{ next_sec_url }}">
+                {% if document_is_instance == False %}{{ next_sec.name }} →{% else %}Save and continue{% endif %}
             </a>
           {% endif %}
         </div>
       </nav>
+      {% if document_is_instance and next_sec %}
+        {% with next_sec.name|nofo_section_name_separator as next_sec_name %}
+          <p>Up next: {{next_sec_name.name }}</p>
+        {% endwith %}
+      {% endif %}
     </main>
   </div>
 

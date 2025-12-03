@@ -29,6 +29,7 @@ from django.views.generic import (
 )
 
 from nofos.mixins import (
+    GroupAccessContentGuideMixin,
     GroupAccessObjectMixinFactory,
     PreventIfContentGuideArchivedMixin,
 )
@@ -41,7 +42,10 @@ from nofos.nofo import (
 from nofos.utils import create_nofo_audit_event, create_subsection_html_id
 from nofos.views import BaseNofoHistoryView, BaseNofoImportView
 
-from .conditional.conditional_questions import CONDITIONAL_QUESTIONS
+from .conditional.conditional_questions import (
+    CONDITIONAL_QUESTIONS,
+    find_question_for_subsection,
+)
 from .forms import (
     CompareTitleForm,
     ComposerSubsectionCreateForm,
@@ -62,12 +66,6 @@ from .utils import (
     get_yes_no_label,
     render_curly_variable_list_html_string,
 )
-
-GroupAccessContentGuideMixin = GroupAccessObjectMixinFactory(ContentGuide)
-GroupAccessContentGuideInstanceMixin = GroupAccessObjectMixinFactory(
-    ContentGuideInstance
-)
-
 
 ###########################################################
 ##################### VIEWS UTILS #######################
@@ -133,6 +131,73 @@ def create_archived_ancestor_duplicate(original):
     ContentGuideSubsection.objects.bulk_create(new_subsections)
 
     return new_content_guide
+
+
+@transaction.atomic
+def create_instance_sections_and_subsections(instance: ContentGuideInstance):
+    """
+    Create ContentGuideInstanceSection and ContentGuideInstanceSubsection objects
+    for the given ContentGuideInstance, based on its parent ContentGuide and the
+    conditional question answers.
+    """
+    parent_guide = instance.parent
+
+    # Clone all sections and bulk create
+    original_sections = list(
+        ContentGuideSection.objects.filter(content_guide=parent_guide)
+    )
+
+    new_sections = [
+        ContentGuideSection(
+            **model_to_dict(
+                original_section,
+                exclude=["id", "content_guide", "content_guide_instance"],
+            ),
+            content_guide_instance=instance,
+        )
+        for original_section in original_sections
+    ]
+    created_sections = ContentGuideSection.objects.bulk_create(new_sections)
+
+    # Map old section IDs to new section objects, to enable linking new created subsections
+    # to new sections
+    section_map = {}
+    for original, new in zip(original_sections, created_sections):
+        section_map[original.id] = new
+
+    # Clone all subsections, filter based on conditional question answers, associate with
+    # corresponding cloned and created section, and bulk create
+    original_subsections = list(
+        ContentGuideSubsection.objects.filter(section__in=original_sections)
+    )
+
+    subsections_to_include = []
+    for subsection in original_subsections:
+        # Always include non-conditional subsections
+        if not subsection.is_conditional:
+            subsections_to_include.append(subsection)
+
+        # Include conditional subsections only if the condition is met
+        else:
+            question = find_question_for_subsection(subsection)
+            if not question:
+                continue  # No matching question found -- something is wrong; skip
+
+            instance_answer = instance.get_conditional_question_answer(question.key)
+            if instance_answer is True and subsection.conditional_answer is True:
+                subsections_to_include.append(subsection)
+            if instance_answer is False and subsection.conditional_answer is False:
+                subsections_to_include.append(subsection)
+
+    new_subsections = [
+        ContentGuideSubsection(
+            **model_to_dict(original_subsection, exclude=["id", "section"]),
+            section=section_map[original_subsection.section.id],
+        )
+        for original_subsection in subsections_to_include
+    ]
+
+    ContentGuideSubsection.objects.bulk_create(new_subsections)
 
 
 ###########################################################
@@ -433,9 +498,12 @@ class ComposerSectionView(
     PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView
 ):
     """
+    View of a single Section within a ContentGuide or ContentGuideInstance, with
+    a sidenav displaying all sections.
+
     Rule: h2/h3 are rendered as large headings; h4+ go into accordions.
     URL params:
-      pk          -> ContentGuide.pk
+      pk          -> (ContentGuide or ContentGuideInstance).pk
       section_pk  -> ContentGuideSection.pk (within that guide)
     """
 
@@ -501,9 +569,21 @@ class ComposerSectionView(
 
     def get_queryset(self):
         document_pk = self.kwargs["pk"]
-        # hardcoded "content_guide__pk": reimplement this method if we genericize this view
+
+        # Get the section to determine which parent field to use
+        section_pk = self.kwargs.get("section_pk")
+        if not section_pk:
+            return HttpResponseNotFound("Missing section pk")
+
+        section = ContentGuideSection.objects.get(pk=section_pk)
+        if not section:
+            return HttpResponseNotFound("Section not found")
+        document_field_name = section.get_document_field_name()
+
         return (
-            ContentGuideSection.objects.filter(content_guide__pk=document_pk)
+            ContentGuideSection.objects.filter(
+                **{f"{document_field_name}__pk": document_pk}
+            )
             .order_by("order", "pk")
             .prefetch_related("subsections")
         )
@@ -535,6 +615,36 @@ class ComposerSectionView(
             sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
+        # URLs
+        context["home_url"] = reverse_lazy(
+            "composer:composer_index"
+            if document_field_name == "content_guide"
+            else "composer:writer_index"
+        )
+        context["history_url"] = reverse_lazy(
+            (
+                "composer:composer_history"
+                if document_field_name == "content_guide"
+                else ""
+            ),
+            args=[document.pk],
+        )
+        sec_url_name = (
+            "composer:section_view"
+            if document_field_name == "content_guide"
+            else "composer:writer_section_view"
+        )
+        context["prev_sec_url"] = (
+            reverse_lazy(sec_url_name, args=[document.pk, prev_sec.pk])
+            if prev_sec
+            else None
+        )
+        context["next_sec_url"] = (
+            reverse_lazy(sec_url_name, args=[document.pk, next_sec.pk])
+            if next_sec
+            else None
+        )
+
         # Allow per-request success/error headings stored in the session
         context["error_heading"] = self.request.session.pop("error_heading", "Error")
         context["success_heading"] = self.request.session.pop(
@@ -543,6 +653,7 @@ class ComposerSectionView(
 
         context.update(
             document=document,
+            document_is_instance=document_field_name == "content_guide_instance",
             sections=sections,
             grouped_subsections=grouped_subsections,
             prev_sec=prev_sec,
@@ -1310,15 +1421,21 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
             kwargs={"pk": str(self.instance.pk), "page": 2},
         )
 
-        # TODO: replace this once we are creating sections and subsections
-        context["get_started_url"] = reverse_lazy("composer:writer_index")
-
         return context
 
+    def post(self, request, *args, **kwargs):
+        # Create ContentGuideInstance sections and subsections
+        create_instance_sections_and_subsections(self.instance)
 
-class WriterInstanceArchiveView(
-    GroupAccessContentGuideInstanceMixin, BaseComposerArchiveView
-):
+        # Navigate to the overview view
+        return redirect(
+            "composer:writer_section_view",
+            pk=self.instance.pk,
+            section_pk=self.instance.sections.first().pk,
+        )
+
+
+class WriterInstanceArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiveView):
     model = ContentGuideInstance
     back_link_text = "All draft NOFOs"
     success_url = reverse_lazy("composer:writer_index")
