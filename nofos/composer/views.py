@@ -1074,11 +1074,35 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
             return HttpResponseForbidden("You don't have access to this content guide.")
 
         self.parent_content_guide = parent_content_guide
+
+        # Optional: existing instance when returning from review page
+        self.existing_instance = None
+        instance_pk = request.GET.get("instance_pk")
+        if instance_pk:
+            try:
+                instance = ContentGuideInstance.objects.get(
+                    pk=instance_pk,
+                    parent=self.parent_content_guide,
+                    archived__isnull=True,
+                    successor__isnull=True,
+                )
+            except ContentGuideInstance.DoesNotExist:
+                self.existing_instance = None
+            else:
+                # Enforce the same group rule on the instance itself
+                if user_group == "bloom" or instance.group == user_group:
+                    self.existing_instance = instance
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+
+        # If we have an existing instance, bind the form to it so fields prefill
+        if self.existing_instance:
+            kwargs["instance"] = self.existing_instance
+
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -1144,6 +1168,25 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
 
         return titles.get(page, default_title)
 
+    def get_back_url(self):
+        """
+        If we are on page 1, go back to the details step.
+        Otherwise, go back one conditional-questions page.
+        """
+        if self.page == 1:
+            base_url = reverse_lazy(
+                "composer:writer_details",
+                kwargs={"parent_pk": str(self.instance.parent.pk)},
+            )
+
+            # Pass in the instance so the details view knows what to preload/edit
+            return "{}?instance_pk={}".format(base_url, self.instance.pk)
+
+        return reverse_lazy(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": str(self.instance.pk), "page": self.page - 1},
+        )
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.instance
@@ -1153,6 +1196,7 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["page_title"] = self.get_page_title(self.page)
+        ctx["back_url"] = self.get_back_url()
         return ctx
 
     def form_valid(self, form):
@@ -1168,13 +1212,14 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
                 page=next_page,
             )
 
+        # TODO: remove message once we are creating sections and subsections
         messages.success(
             self.request,
             "Draft NOFO “{}” created successfully.".format(
                 self.instance.short_name or self.instance.title or self.instance.pk
             ),
         )
-        return redirect("composer:writer_index")
+        return redirect("composer:writer_review", pk=self.instance.pk)
 
 
 class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
@@ -1253,10 +1298,14 @@ class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
         context["page1_questions"] = self._build_conditional_questions_for_page(1)
         context["page2_questions"] = self._build_conditional_questions_for_page(2)
 
-        context["edit_details_url"] = reverse_lazy(
+        base_details_url = reverse_lazy(
             "composer:writer_details",
             kwargs={"parent_pk": str(self.instance.parent.pk)},
         )
+        context["edit_details_url"] = "{}?instance_pk={}".format(
+            base_details_url, self.instance.pk
+        )
+
         context["edit_page1_url"] = reverse_lazy(
             "composer:writer_conditional_questions",
             kwargs={"pk": str(self.instance.pk), "page": 1},
@@ -1266,7 +1315,7 @@ class WriterInstanceReviewView(LoginRequiredMixin, TemplateView):
             kwargs={"pk": str(self.instance.pk), "page": 2},
         )
 
-        # Where "Get started!" goes – placeholder for now
+        # TODO: replace this once we are creating sections and subsections
         context["get_started_url"] = reverse_lazy("composer:writer_index")
 
         return context
