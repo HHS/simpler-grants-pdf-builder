@@ -107,8 +107,6 @@ class ComposerSubsectionInstructionsEditForm(forms.ModelForm):
 class WriterInstanceStartForm(forms.Form):
     """
     Step 1: choose which ContentGuide to base the draft NOFO on.
-
-    TODO: should only show 'published' Content Guides, but this is not ready yet
     """
 
     parent = forms.ModelChoiceField(
@@ -124,7 +122,7 @@ class WriterInstanceStartForm(forms.Form):
         qs = ContentGuide.objects.filter(
             archived__isnull=True,
             successor__isnull=True,
-            # status="published", # TODO: only show published
+            status="published",
         )
         # if not a bloom user, only show content guides from that user's group
         if user and getattr(user, "group", None) != "bloom":

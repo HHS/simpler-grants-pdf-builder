@@ -49,7 +49,7 @@ class BaseWriterViewTests(TestCase):
             "title": "ACF Core Content Guide",
             "opdiv": "acf",
             "group": "acf",
-            "status": "draft",
+            "status": "published",
         }
         data.update(overrides)
         return ContentGuide.objects.create(**data)
@@ -219,13 +219,13 @@ class WriterInstanceStartViewTests(BaseWriterViewTests):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="draft",
+            status="published",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="draft",
+            status="published",
         )
 
         self.client.login(email="acf@example.com", password="testpass123")
@@ -244,13 +244,13 @@ class WriterInstanceStartViewTests(BaseWriterViewTests):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="draft",
+            status="published",
         )
         hrsa_guide = ContentGuide.objects.create(
             title="HRSA Guide",
             opdiv="hrsa",
             group="hrsa",
-            status="draft",
+            status="published",
         )
 
         self.client.login(email="bloom@example.com", password="testpass123")
@@ -269,7 +269,7 @@ class WriterInstanceStartViewTests(BaseWriterViewTests):
             title="ACF Guide",
             opdiv="acf",
             group="acf",
-            status="draft",
+            status="published",
         )
         self.client.login(email="acf@example.com", password="testpass123")
 
