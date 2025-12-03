@@ -98,9 +98,9 @@ urlpatterns = [
         name="writer_conditional_questions",
     ),
     path(
-        "writer/<uuid:pk>/review",
-        views.WriterInstanceReviewView.as_view(),
-        name="writer_review",
+        "writer/<uuid:pk>/confirmation",
+        views.WriterInstanceConfirmationView.as_view(),
+        name="writer_confirmation",
     ),
     path(
         "writer/<uuid:pk>/delete",
