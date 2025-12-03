@@ -1,5 +1,10 @@
 from composer.conditional.conditional_questions import CONDITIONAL_QUESTIONS
-from composer.models import ContentGuide, ContentGuideInstance
+from composer.models import (
+    ContentGuide,
+    ContentGuideInstance,
+    ContentGuideSection,
+    ContentGuideSubsection,
+)
 from composer.views import WriterInstanceConditionalQuestionView
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
@@ -725,3 +730,299 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         self.assertContains(response, "Yes")  # letters_of_support=True
         self.assertContains(response, toc.label)
         self.assertContains(response, "No")  # table_of_contents=False
+
+    def test_post_creates_sections_and_subsections_from_parent_guide(self):
+        """
+        POST to confirmation page creates ContentGuideInstanceSection and
+        ContentGuideInstanceSubsection objects based on the parent ContentGuide.
+        """
+        # Create sections and subsections in the parent guide
+        section1 = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Basic Information",
+            html_id="sec-basic",
+        )
+        subsection1a = ContentGuideSubsection.objects.create(
+            section=section1,
+            order=1,
+            name="Program Overview",
+            tag="h3",
+            body="This is the program overview.",
+            edit_mode="full",
+            enabled=True,
+        )
+        subsection1b = ContentGuideSubsection.objects.create(
+            section=section1,
+            order=2,
+            name="Agency Details",
+            tag="h3",
+            body="This is agency details, with { variable }.",
+            edit_mode="variables",
+            enabled=True,
+        )
+
+        section2 = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=2,
+            name="Funding Details",
+            html_id="sec-funding",
+        )
+        subsection2a = ContentGuideSubsection.objects.create(
+            section=section2,
+            order=1,
+            name="Award Information",
+            tag="h3",
+            body="Award information goes here.",
+            edit_mode="locked",
+            enabled=True,
+        )
+
+        # Before POST, instance should have no sections/subsections
+        self.assertEqual(self.instance.sections.count(), 0)
+
+        # Login and POST
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+
+        # Should redirect to the writer section view for the first section
+        first_instance_section = self.instance.sections.order_by("order", "pk").first()
+        self.assertIsNotNone(first_instance_section)
+        expected_redirect = reverse(
+            "composer:writer_section_view",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(first_instance_section.pk),
+            },
+        )
+        self.assertRedirects(response, expected_redirect)
+
+        # Check that sections were created
+        instance_sections = list(self.instance.sections.order_by("order", "pk"))
+        self.assertEqual(len(instance_sections), 2)
+
+        # Verify section 1
+        inst_sec1 = instance_sections[0]
+        self.assertEqual(inst_sec1.name, "Basic Information")
+        self.assertEqual(inst_sec1.html_id, "sec-basic")
+        self.assertEqual(inst_sec1.order, 1)
+
+        # Verify section 2
+        inst_sec2 = instance_sections[1]
+        self.assertEqual(inst_sec2.name, "Funding Details")
+        self.assertEqual(inst_sec2.html_id, "sec-funding")
+        self.assertEqual(inst_sec2.order, 2)
+
+        # Check that subsections were created for section 1
+        inst_subsections1 = list(inst_sec1.subsections.order_by("order", "pk"))
+        self.assertEqual(len(inst_subsections1), 2)
+        self.assertEqual(inst_subsections1[0].name, "Program Overview")
+        self.assertEqual(inst_subsections1[0].body, "This is the program overview.")
+        self.assertEqual(inst_subsections1[0].edit_mode, "full")
+        self.assertEqual(inst_subsections1[1].name, "Agency Details")
+        self.assertEqual(
+            inst_subsections1[1].body, "This is agency details, with { variable }."
+        )
+        self.assertEqual(inst_subsections1[1].edit_mode, "variables")
+
+        # Check that subsections were created for section 2
+        inst_subsections2 = list(inst_sec2.subsections.order_by("order", "pk"))
+        self.assertEqual(len(inst_subsections2), 1)
+        self.assertEqual(inst_subsections2[0].name, "Award Information")
+        self.assertEqual(inst_subsections2[0].body, "Award information goes here.")
+        self.assertEqual(inst_subsections2[0].edit_mode, "locked")
+
+    def test_post_includes_only_conditional_subsections_matching_answers(self):
+        """
+        POST to confirmation page should include/exclude conditional subsections
+        based on the instance's conditional question answers.
+        """
+        # Create a section with conditional subsections
+        section = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Funding Policies",
+            html_id="sec-policies",
+        )
+
+        # Non-conditional subsection (always included) -- no instructions, so not conditional
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=1,
+            name="General Policies",
+            tag="h3",
+            body="General policies body.",
+            edit_mode="full",
+            enabled=True,
+        )
+
+        # Conditional subsection for cost_sharing=True
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=2,
+            name="Cost Sharing",
+            tag="h3",
+            body="Cost sharing body.",
+            edit_mode="full",
+            enabled=True,
+            instructions="Instructions indicating this is conditional: (YES)",
+        )
+
+        # Conditional subsection for cost_sharing=False (should NOT be included)
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=3,
+            name="Cost Sharing",
+            tag="h3",
+            body="No cost sharing body.",
+            edit_mode="full",
+            enabled=True,
+            instructions="Instructions indicating this is conditional: (NO)",
+        )
+
+        # Conditional subsection for maintenance_of_effort=False
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=4,
+            name="Maintenance of effort",
+            tag="h3",
+            body="No MOE body.",
+            edit_mode="full",
+            enabled=True,
+            instructions="Instructions indicating this is conditional: (NO)",
+        )
+
+        # Conditional subsection for maintenance_of_effort=True (should NOT be included)
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=5,
+            name="Maintenance of effort",
+            tag="h3",
+            body="MOE required body.",
+            edit_mode="full",
+            enabled=True,
+            instructions="Instructions indicating this is conditional: (YES)",
+        )
+
+        # Recall: self.instance has cost_sharing=True, maintenance_of_effort=False
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+
+        # Should redirect successfully
+        self.assertEqual(response.status_code, 302)
+
+        # Check created subsections
+        instance_section = self.instance.sections.first()
+        self.assertIsNotNone(instance_section)
+
+        subsections = list(instance_section.subsections.order_by("order", "pk"))
+        self.assertEqual(len(subsections), 3)
+
+        subsection_names = [sub.name for sub in subsections]
+        self.assertIn("General Policies", subsection_names)
+        self.assertIn("Cost Sharing ", subsection_names)
+        # Confirm Cost Sharing is the "Yes" option
+        cost_sharing_sub = next(
+            sub for sub in subsections if sub.name == "Cost Sharing"
+        )
+        self.assertEqual(cost_sharing_sub.body, "Cost sharing body.")
+        self.assertIn("Maintenance of effort", subsection_names)
+        # Confirm Maintenance of effort is the "No" option
+        moe_sub = next(
+            sub for sub in subsections if sub.name == "Maintenance of effort"
+        )
+        self.assertEqual(moe_sub.body, "No MOE body.")
+
+    def test_post_handles_conditional_subsection_without_matching_question(self):
+        """
+        If a conditional subsection doesn't have a matching question in the registry,
+        it should be skipped (not create an error).
+        """
+        section = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Test Section",
+            html_id="sec-test",
+        )
+
+        # Conditional subsection with a name that doesn't match any question
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=1,
+            name="Nonexistent Conditional Question",
+            tag="h3",
+            body="This should be skipped.",
+            edit_mode="full",
+            instructions="Instructions indicating this is conditional: (YES)",
+            enabled=True,
+        )
+
+        # Non-conditional subsection -- no instructions, so not conditional
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=2,
+            name="Regular Subsection",
+            tag="h3",
+            body="This should be included.",
+            edit_mode="full",
+            enabled=True,
+        )
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+
+        # Should not error
+        self.assertEqual(response.status_code, 302)
+
+        # Only the non-conditional subsection should be created
+        instance_section = self.instance.sections.first()
+        self.assertIsNotNone(instance_section)
+
+        subsections = list(instance_section.subsections.all())
+        self.assertEqual(len(subsections), 1)
+        self.assertEqual(subsections[0].name, "Regular Subsection")
+
+    def test_post_preserves_subsection_attributes(self):
+        """
+        Verify that subsection attributes (instructions, optional, etc.) are
+        correctly copied from parent guide to instance.
+        """
+        from composer.models import ContentGuideSection, ContentGuideSubsection
+
+        section = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Test Section",
+            html_id="sec-test",
+        )
+
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=1,
+            name="Test Subsection",
+            tag="h4",
+            body="Test body with {variable}.",
+            edit_mode="variables",
+            enabled=True,
+            optional=True,
+            instructions="These are instructions for the writer.",
+        )
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+
+        self.assertEqual(response.status_code, 302)
+
+        instance_section = self.instance.sections.first()
+        subsection = instance_section.subsections.first()
+
+        # Verify all attributes were copied
+        self.assertEqual(subsection.name, "Test Subsection")
+        self.assertEqual(subsection.tag, "h4")
+        self.assertEqual(subsection.body, "Test body with {variable}.")
+        self.assertEqual(subsection.edit_mode, "variables")
+        self.assertEqual(subsection.enabled, True)
+        self.assertEqual(subsection.optional, True)
+        self.assertEqual(
+            subsection.instructions, "These are instructions for the writer."
+        )
