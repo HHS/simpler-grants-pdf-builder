@@ -16,9 +16,9 @@
   {% elif field|input_type == 'RadioSelect' %}
     {% with id=field.name label=field.label id_for_label=field.id_for_label hint=field.help_text value=field.value choices=field.field.choices required=field.field.required error=field.errors.0 %}
       {% if show_required_asterisk %}
-        {% include "includes/radio_group.html" with id=id label=label id_for_label=id_for_label hint=hint value=value choices=choices required=required error=error only %}
+        {% include "includes/radio_group.html" with id=id label=label id_for_label=id_for_label hint=hint value=value choices=choices required=required with_radio_tiles=with_radio_tiles error=error only %}
       {% else %}
-        {% include "includes/radio_group.html" with id=id label=label id_for_label=id_for_label hint=hint value=value choices=choices error=error only %}
+        {% include "includes/radio_group.html" with id=id label=label id_for_label=id_for_label hint=hint value=value choices=choices with_radio_tiles=with_radio_tiles error=error only %}
       {% endif %}
     {% endwith %}
   {% else %}

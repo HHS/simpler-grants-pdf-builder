@@ -17,7 +17,7 @@
     {% for choice_id, choice_label in choices %}
       <div class="usa-radio">
         <input
-          class="usa-radio__input"
+          class="usa-radio__input {% if with_radio_tiles %}usa-radio__input--tile{% endif %}"
           id="{{ id }}_{{ forloop.counter0 }}"
           type="radio"
           name="{{ id }}"

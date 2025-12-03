@@ -11,7 +11,7 @@
 
   <form method="post" class="margin-top-3 width-mobile-lg">
     {% csrf_token %}
-    {% include "includes/form_macro.html" with_radio_tiles=True %}
+    {% include "includes/form_macro.html" with with_radio_tiles=True %}
     <button class="usa-button margin-top-3" type="submit">Continue</button>
   </form>
 {% endblock %}
