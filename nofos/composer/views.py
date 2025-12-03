@@ -464,7 +464,7 @@ class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
 
 
 @staff_member_required
-def compare_section_redirect(request, pk):
+def composer_section_redirect(request, pk):
     document = ContentGuide.objects.prefetch_related("sections").filter(pk=pk).first()
     if not document:
         log_exception(
@@ -1445,3 +1445,35 @@ class WriterInstanceArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiv
     model = ContentGuideInstance
     back_link_text = "All draft NOFOs"
     success_url = reverse_lazy("composer:writer_index")
+
+
+@staff_member_required
+def writer_section_redirect(request, pk):
+    """
+    Handles redirecting to the first section of a ContentGuideInstance for section view.
+    """
+    instance = (
+        ContentGuideInstance.objects.prefetch_related("sections").filter(pk=pk).first()
+    )
+    if not instance:
+        log_exception(
+            request,
+            Exception("NOFO missing"),
+            context="writer_section_redirect",
+            status=404,
+        )
+        return HttpResponseNotFound("<p><strong>NOFO not found.</strong></p>")
+
+    first = instance.sections.order_by("order", "pk").first()
+    if not first:
+        log_exception(
+            request,
+            Exception("No steps"),
+            context="writer_section_redirect",
+            status=404,
+        )
+        return HttpResponseNotFound(
+            "<p><strong>This content guide has no steps.</strong></p>"
+        )
+
+    return redirect("composer:writer_section_view", pk=instance.pk, section_pk=first.pk)
