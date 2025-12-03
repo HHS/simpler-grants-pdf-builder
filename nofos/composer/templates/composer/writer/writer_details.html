@@ -14,7 +14,7 @@
     <h2 class="font-serif-md margin-top-4">Your NOFO is based on this content guide</h2>
     <div class="previous-subsection-widget outline-box">
       <p class="outline-box--content margin-top-0">
-        <a href="#" class="usa-link usa-link--external" target="blank" title="Program focus (Opens in a new tab)">
+        <a href="{% url "composer:composer_preview" parent_content_guide.id %}" class="usa-link usa-link--external" target="blank" title="Program focus (Opens in a new tab)">
           {{ parent_content_guide.title }}
         </a>
       </p>

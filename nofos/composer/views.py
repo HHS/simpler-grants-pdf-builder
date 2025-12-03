@@ -975,8 +975,6 @@ class WriterDashboardView(LoginRequiredMixin, ListView):
     Shows:
       - Draft NOFOs (ContentGuideInstance objects) for this user's group.
       - All Content Guides for this user's group
-
-    TODO: should only show 'published' Content Guides, but this is not ready yet
     """
 
     model = ContentGuideInstance
@@ -1017,11 +1015,10 @@ class WriterInstanceBeforeStartView(LoginRequiredMixin, TemplateView):
 class WriterInstanceStartView(LoginRequiredMixin, FormView):
     """
     Step 1 for writers: choose which ContentGuide to base the draft NOFO on.
-    TODO: should only show 'published' Content Guides, but this is not ready yet
     """
 
     template_name = "composer/writer/writer_start.html"
-    form_class = WriterInstanceStartForm  # TODO: only show published
+    form_class = WriterInstanceStartForm
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -1040,7 +1037,6 @@ class WriterInstanceStartView(LoginRequiredMixin, FormView):
 class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
     """
     Step 2 for writers: enter initial NOFO details and create a ContentGuideInstance.
-    TODO: should error out on non-'published' Content Guides, but this is not ready yet
     """
 
     model = ContentGuideInstance
@@ -1064,7 +1060,7 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
             pk=kwargs["parent_pk"],
             archived__isnull=True,
             successor__isnull=True,
-            # status="published", # TODO: only allow a published guide
+            status="published",
         )
 
         user_group = getattr(request.user, "group", None)
