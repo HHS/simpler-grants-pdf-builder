@@ -1092,11 +1092,15 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         new_body = "Updated body content."
         response = self.client.post(self.url, data={"body": new_body})
         self.assertEqual(response.status_code, 302)
-        expected_redirect = reverse(
+        url = reverse(
             "composer:writer_section_view",
             kwargs={
                 "pk": str(self.instance.pk),
                 "section_pk": str(self.section.pk),
             },
+        )
+        anchor = getattr(self.subsection, "html_id", "")
+        expected_redirect = (
+            "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
         )
         self.assertEqual(response.url, expected_redirect)
