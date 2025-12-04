@@ -632,7 +632,6 @@ class ComposerSectionView(
             sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
-        print("DOCUMENT FIELD NAME", document_field_name)
         # URLs
         context["home_url"] = reverse_lazy(
             "composer:composer_index"
@@ -647,12 +646,13 @@ class ComposerSectionView(
             ),
             args=[document.pk],
         )
+
+        # Only name and not full URL because each subsection id is needed for full URL
         context["edit_subsection_url_name"] = (
             "composer:subsection_edit"
             if document_field_name == "content_guide"
             else "composer:writer_subsection_edit"
         )
-        print("EDIT SUBSECTION URL NAME", context["edit_subsection_url_name"])
         sec_url_name = (
             "composer:section_view"
             if document_field_name == "content_guide"
