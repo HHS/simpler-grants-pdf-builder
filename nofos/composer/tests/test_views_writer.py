@@ -1010,3 +1010,93 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         self.assertEqual(
             subsection.instructions, "These are instructions for the writer."
         )
+
+
+class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
+    def setUp(self):
+        super().setUp()
+
+        # Parent content guide (ACF)
+        self.parent_guide = self.create_acf_parent_guide()
+
+        # Draft NOFO instance
+        self.instance = ContentGuideInstance.objects.create(
+            title="My Draft NOFO",
+            short_name="Draft 1",
+            opdiv="acf",
+            group="acf",
+            parent=self.parent_guide,
+        )
+
+        # Section and subsection
+        self.section = ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            order=1,
+            name="Section 1",
+            html_id="sec-1",
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Subsection 1",
+            tag="h3",
+            body="Initial body content.",
+            edit_mode="full",
+            enabled=True,
+        )
+
+        self.url = reverse(
+            "composer:writer_subsection_edit",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+                "subsection_pk": str(self.subsection.pk),
+            },
+        )
+
+    def test_anonymous_user_gets_403_permissions_error(self):
+        """Anonymous users should get a 403 (per LoginRequiredMixin behavior)."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_bloom_wrong_group_gets_403(self):
+        """
+        A non-bloom user whose group doesn't match the instance's group gets 403.
+        """
+        self.client.login(email="hrsa@example.com", password="testpass123")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloom_user_can_access_any_group_instance(self):
+        """
+        Bloom users can access the subsection edit page for any group.
+        """
+        self.client.login(email="bloom@example.com", password="testpass123")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_same_group_user_can_access_subsection_edit(self):
+        """
+        Same-group user can access the subsection edit page.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_updates_subsection_body_and_redirects(self):
+        """
+        POST with new body content should update the subsection and redirect
+        back to the section view.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        new_body = "Updated body content."
+        response = self.client.post(self.url, data={"body": new_body})
+        self.assertEqual(response.status_code, 302)
+        expected_redirect = reverse(
+            "composer:writer_section_view",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+            },
+        )
+        self.assertEqual(response.url, expected_redirect)
