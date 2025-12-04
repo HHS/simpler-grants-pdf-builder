@@ -428,7 +428,11 @@ class ComposerUnpublishView(
     def post(self, request, *args, **kwargs):
         document = self.object
 
-        create_archived_ancestor_duplicate(document)
+        archived_ancestor = create_archived_ancestor_duplicate(document)
+
+        ContentGuideInstance.objects.filter(parent=document).update(
+            parent=archived_ancestor
+        )
 
         document.archived = None
         document.status = "draft"
