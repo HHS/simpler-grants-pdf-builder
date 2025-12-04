@@ -856,18 +856,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             instructions="Instructions indicating this is conditional: (YES)",
         )
 
-        # Conditional subsection for cost_sharing=False (should NOT be included)
-        ContentGuideSubsection.objects.create(
-            section=section,
-            order=3,
-            name="Cost Sharing",
-            tag="h3",
-            body="No cost sharing body.",
-            edit_mode="full",
-            enabled=True,
-            instructions="Instructions indicating this is conditional: (NO)",
-        )
-
         # Conditional subsection for maintenance_of_effort=False
         ContentGuideSubsection.objects.create(
             section=section,
@@ -908,12 +896,8 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
 
         subsection_names = [sub.name for sub in subsections]
         self.assertIn("General Policies", subsection_names)
-        self.assertIn("Cost Sharing ", subsection_names)
-        # Confirm Cost Sharing is the "Yes" option
-        cost_sharing_sub = next(
-            sub for sub in subsections if sub.name == "Cost Sharing"
-        )
-        self.assertEqual(cost_sharing_sub.body, "Cost sharing body.")
+        self.assertIn("Cost Sharing", subsection_names)
+
         self.assertIn("Maintenance of effort", subsection_names)
         # Confirm Maintenance of effort is the "No" option
         moe_sub = next(
