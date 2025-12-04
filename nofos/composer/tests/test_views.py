@@ -1955,7 +1955,7 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
         url = reverse("composer:section_view", kwargs={"pk": self.guide.pk, "section_pk": self.section.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("users:login"), response.url)
+        self.assertIn(reverse("admin:login"), response.url)
 
         # Publish content guide and confirm we still cannot access
         self.guide.status = "published"
@@ -1963,7 +1963,7 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("users:login"), response.url)
+        self.assertIn(reverse("admin:login"), response.url)
 
     def test_section_view_allows_staff__if_ContentGuide(self):
         """Staff users should be able to access sections of content guides."""
