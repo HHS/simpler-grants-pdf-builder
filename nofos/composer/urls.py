@@ -117,4 +117,9 @@ urlpatterns = [
         views.ComposerSectionView.as_view(),
         name="writer_section_view",
     ),
+    path(
+        "writer/<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
+        views.WriterInstanceSubsectionEditView.as_view(),
+        name="writer_subsection_edit",
+    ),
 ]

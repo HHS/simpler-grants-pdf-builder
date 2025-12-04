@@ -247,3 +247,11 @@ class WriterInstanceConditionalQuestionsForm(forms.Form):
         self.instance.conditional_questions = current
         self.instance.save(update_fields=["conditional_questions", "updated"])
         return self.instance
+
+
+class WriterInstanceSubsectionEditForm(forms.ModelForm):
+    body = MartorFormField(required=False)
+
+    class Meta:
+        model = ContentGuideSubsection
+        fields = ["body"]

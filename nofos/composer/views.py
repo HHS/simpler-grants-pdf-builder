@@ -54,6 +54,7 @@ from .forms import (
     WriterInstanceConditionalQuestionsForm,
     WriterInstanceDetailsForm,
     WriterInstanceStartForm,
+    WriterInstanceSubsectionEditForm,
 )
 from .models import (
     ContentGuide,
@@ -631,6 +632,7 @@ class ComposerSectionView(
             sections[idx + 1] if (idx is not None and idx < len(sections) - 1) else None
         )
 
+        print("DOCUMENT FIELD NAME", document_field_name)
         # URLs
         context["home_url"] = reverse_lazy(
             "composer:composer_index"
@@ -645,6 +647,12 @@ class ComposerSectionView(
             ),
             args=[document.pk],
         )
+        context["edit_subsection_url_name"] = (
+            "composer:subsection_edit"
+            if document_field_name == "content_guide"
+            else "composer:writer_subsection_edit"
+        )
+        print("EDIT SUBSECTION URL NAME", context["edit_subsection_url_name"])
         sec_url_name = (
             "composer:section_view"
             if document_field_name == "content_guide"
@@ -1455,6 +1463,66 @@ class WriterInstanceArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiv
     model = ContentGuideInstance
     back_link_text = "All draft NOFOs"
     success_url = reverse_lazy("composer:writer_index")
+
+
+class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
+    """
+    Edit a single ContentGuideSubsection's body for a ContentGuideInstance.
+    URL: /writer/<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
+    """
+
+    model = ContentGuideSubsection
+    form_class = WriterInstanceSubsectionEditForm
+    template_name = "composer/writer/writer_subsection_edit.html"
+    context_object_name = "subsection"
+
+    def get_object(self, queryset=None):
+        subsection = get_object_or_404(
+            ContentGuideSubsection,
+            pk=self.kwargs["subsection_pk"],
+        )
+
+        self.section = subsection.section
+        self.instance = self.section.get_document()
+
+        # Validate that URL matches the real hierarchy
+        expected_section_pk = str(self.kwargs["section_pk"])
+        if expected_section_pk != str(self.section.pk):
+            raise Http404("Subsection does not belong to this section.")
+
+        expected_doc_pk = str(self.kwargs["pk"])
+        if expected_doc_pk != str(self.instance.pk):
+            raise Http404("Subsection does not belong to this document.")
+
+        return subsection
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["instance"] = self.instance
+        context["section"] = self.section
+        context["subsection_variables"] = render_curly_variable_list_html_string(
+            self.get_object().extract_variables()
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            "Updated section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
+                self.object.name or "(#{})".format(self.object.order),
+                self.object.section.name,
+            ),
+        )
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Back to the section page with an anchor to this subsection
+        url = reverse_lazy(
+            "composer:writer_section_view", args=[self.instance.pk, self.section.pk]
+        )
+        anchor = getattr(self.object, "html_id", "")
+        return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
 @staff_member_required
