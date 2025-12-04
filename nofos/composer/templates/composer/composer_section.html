@@ -113,7 +113,7 @@
                 <div class="font-heading-lg text-bold padding-top-1 margin-right-10">{{ subsection.name }}</div>
                 <a
                   class="usa-button usa-button--outline usa-button--compact position-absolute top-0 right-0"
-                  href="{% url 'composer:subsection_edit' document.pk current_section.pk subsection.pk %}">
+                  href="{% url edit_subsection_url_name document.pk current_section.pk subsection.pk %}">
                     Edit
                 </a>
                 <div class="usa-prose styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">

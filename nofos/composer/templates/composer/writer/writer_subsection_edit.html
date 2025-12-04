@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static martortags add_classes_to_paragraphs add_classes_to_lists convert_paragraphs_to_hrs add_classes_to_tables add_footnote_ids add_captions_to_tables %}
+
+{% block title %}
+  Edit {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}writer_subsection_edit{% endblock %}
+
+{% block content %}
+    <div class="back-link font-body-md margin-bottom-105">
+      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:writer_section_view' instance.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
+    </div>
+
+    <h1 class="font-heading-xl margin-y-0">Edit “{{ subsection.name|default:"This subsection" }}”</h1>
+    <hr />
+    {% if subsection.instructions %}
+      <div class="maxw-fit-content">
+        <div class="bg-primary-lighter padding-2">
+          <div class="display-flex flex-justify flex-align-center">
+            <div class="font-heading-lg text-bold">Instructions <span class="usa-sr-only">(locked)</span></div>
+            <svg class="usa-icon" aria-hidden="true" focusable="false" role="img" style="height: 22px; width: 19px;">
+              <use href="/static/img/usa-icons/lock.svg"></use>
+            </svg>
+          </div>
+          <div class="padding-right-6">
+            {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+          </div>
+        </div>
+      </div>
+      <hr />
+    {% endif %}
+    {% if subsection.edit_mode == 'full' %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="margin-top-4">
+        <label class="usa-label text-bold" for="{{ form.body.id_for_label }}">Section content</label>
+        <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
+        <br>
+        Select “Preview” to see how content will appear.</p>
+
+        {% if form.body.errors %}
+          <div class="usa-error-message margin-bottom-1">{{ form.body.errors.0 }}</div>
+        {% endif %}
+
+        <div class="main-martor--container {% if form.body.errors %}main-martor--container--error{% endif %} {% if form.edit_mode.value == 'full' %}styled-subsection-body--full{% endif %}">
+          {{ form.body }}
+        </div>
+      </div>
+      <ul class="usa-button-group margin-top-3 flex-row-reverse flex-justify-end">
+        <li class="usa-button-group__item margin-left-2">
+        <button class="usa-button" type="submit">Save</button>
+        </li>
+        <li class="usa-button-group__item">
+        <a class="usa-button usa-button--outline"
+           href="{% url 'composer:writer_section_view' instance.pk section.pk %}">Cancel</a></li>
+      </ul>
+    </form>
+    {% elif subsection.edit_mode == 'variables' %}
+      PLACEHOLDER FOR VARIABLES EDITING
+    {% else %}
+      <p>This subsection is not editable.</p>
+      <div class="usa-prose">
+        {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+      </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/composer/martor-curly-variables.js' %}"></script>
+{% endblock %}

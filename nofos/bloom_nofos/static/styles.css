@@ -73,6 +73,10 @@ blockquote {
   max-height: fit-content;
 }
 
+.maxw-fit-content {
+  max-width: fit-content;
+}
+
 .minw-fit-content {
   min-width: fit-content;
 }
