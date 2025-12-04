@@ -81,13 +81,15 @@
               </button>
             </h4>
             <div id="accordion-{{ subsection.pk }}" class="usa-accordion__content usa-prose">
-              {% with subsection|conditional_questions_note as conditional_note %}
-                {% if conditional_note %}
-                  <p class="margin-top-1">
-                    {{ conditional_note|safe }}
-                  </p>
-                {% endif %}
-              {% endwith %}
+              {% if document_is_instance == False %}
+                {% with subsection|conditional_questions_note as conditional_note %}
+                  {% if conditional_note %}
+                    <p class="margin-top-1">
+                      {{ conditional_note|safe }}
+                    </p>
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
               {% if subsection.instructions %}
               <div class="position-relative padding-bottom-2 border-bottom border-base-lighter">
                 <div class="bg-primary-lighter padding-2">
