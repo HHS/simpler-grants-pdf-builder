@@ -363,6 +363,10 @@ class WriterInstanceDetailsViewTests(BaseWriterViewTests):
             "title": "My First Draft NOFO",
             "short_name": "First Draft",
             "number": "ACF-123",
+            # New metadata fields using the updated widgets
+            "author": "Jane Doe",
+            "subject": "Health equity program",
+            "keywords": "health, equity, child welfare",
         }
         response = self.client.post(self.url, data=data)
 
@@ -374,6 +378,11 @@ class WriterInstanceDetailsViewTests(BaseWriterViewTests):
         self.assertEqual(instance.agency, "Some ACF Office")
         self.assertEqual(instance.short_name, "First Draft")
         self.assertEqual(instance.number, "ACF-123")
+
+        # New field assertions
+        self.assertEqual(instance.author, "Jane Doe")
+        self.assertEqual(instance.subject, "Health equity program")
+        self.assertEqual(instance.keywords, "health, equity, child welfare")
 
         # Should redirect to first page of yes/no questions
         self.assertEqual(response.status_code, 302)
