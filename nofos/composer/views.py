@@ -1501,14 +1501,13 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         context["instance"] = self.instance
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
-            self.get_object().extract_variables()
+            self.object.extract_variables()
         )
         return context
 
     def form_valid(self, form):
-        messages.add_message(
+        messages.success(
             self.request,
-            messages.SUCCESS,
             "Updated section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
                 self.object.name or "(#{})".format(self.object.order),
                 self.object.section.name,
