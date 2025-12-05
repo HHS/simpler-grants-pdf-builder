@@ -146,6 +146,12 @@ class WriterInstanceDetailsForm(forms.ModelForm):
             "title",
             "short_name",
             "number",
+            "activity_code",
+            "federal_assistance_listing",
+            "tagline",
+            "author",
+            "subject",
+            "keywords",
         ]
         labels = {
             "opdiv": "Operating Division",
@@ -153,6 +159,12 @@ class WriterInstanceDetailsForm(forms.ModelForm):
             "title": "NOFO title",
             "short_name": "Short name",
             "number": "NOFO number",
+            "activity_code": "Activity Code",
+            "federal_assistance_listing": "Federal Assistance Listing",
+            "tagline": "Tagline",
+            "author": "Metadata Author",
+            "subject": "Metadata Subject",
+            "keywords": "Metadata Keywords",
         }
         help_texts = {
             "opdiv": "The HHS operating division responsible for this NOFO (eg, CDC).",
@@ -168,6 +180,10 @@ class WriterInstanceDetailsForm(forms.ModelForm):
         # Make opdiv + title required
         self.fields["opdiv"].required = True
         self.fields["title"].required = True
+
+        # Make "author" and "subject" into text fields, not text areas
+        self.fields["author"].widget = forms.TextInput()
+        self.fields["subject"].widget = forms.TextInput()
 
         # Prefill opdiv with the user's group for the initial GET only.
         # Don't overwrite user input on POST (self.is_bound == True).
