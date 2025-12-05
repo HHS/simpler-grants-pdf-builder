@@ -36,7 +36,7 @@ class ContentGuide(BaseNofo):
         choices=STATUS_CHOICES,
         blank=False,
         default="draft",
-        help_text="Visibility/lifecycle for writers. NOFO Writers only see ACTIVE.",
+        help_text="Visibility/lifecycle for writers. NOFO Writers only see Published.",
     )
 
     class Meta:
@@ -104,6 +104,54 @@ class ContentGuideInstance(BaseNofo):
         validators=[MaxLengthValidator(511)],
         blank=True,
         help_text="The agency within the operating division (eg, Bureau of Health Workforce)",
+    )
+
+    activity_code = models.CharField(
+        "Activity code",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="Used to identify related NOFO types or templates, if applicable.",
+    )
+
+    federal_assistance_listing = models.CharField(
+        "Federal assistance listing",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="Associated assistance listing for this program.",
+    )
+
+    statutory_authority = models.CharField(
+        "Statutory authority",
+        max_length=511,
+        validators=[MaxLengthValidator(511)],
+        blank=True,
+        help_text="Primary authority or legislation governing this program’s funding.",
+    )
+
+    tagline = models.TextField(
+        "NOFO tagline",
+        blank=True,
+        help_text="A short phrase that describes your program. Leave blank if not known.",
+    )
+
+    author = models.TextField(
+        "NOFO author",
+        blank=True,
+        help_text="Request your subagency name (e.g., OPHDST) instead of CDC as the author. (Optional)",
+    )
+
+    subject = models.TextField(
+        "NOFO subject",
+        blank=True,
+        help_text='Add a one-line statement, 25 words or less. eg: "A notice of funding opportunity from the [Agency or OpDiv] about/on/to [the purpose of the NOFO]." (Optional).',
+    )
+
+    keywords = models.TextField(
+        "NOFO keywords",
+        blank=True,
+        help_text="Suggest keywords to help someone get the overall sense of this opportunity. Provide 5 to 10 keywords, separate them by commas. (Optional)",
     )
 
     conditional_questions = models.JSONField(
