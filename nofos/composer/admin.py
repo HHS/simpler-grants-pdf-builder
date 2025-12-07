@@ -19,7 +19,6 @@ class ContentGuideSubsectionInline(admin.TabularInline):
         "order",
         "name",
         "tag",
-        "enabled",
         "callout_box",
         "edit_mode",
     )
