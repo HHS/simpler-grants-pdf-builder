@@ -35,6 +35,10 @@
         </p>
       {% endtimezone %}
 
+      {% if document_is_instance and not_started_subsections %}
+        {% include "includes/_writer_not_started_alert.html" %}
+      {% endif %}
+
       {% if document_is_instance == False %}
         <ul class="line-height-sans-5">
           <li>Review and update the content guide.</li>

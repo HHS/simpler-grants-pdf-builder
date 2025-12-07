@@ -627,6 +627,15 @@ class ComposerSectionView(
         ).order_by("order", "pk")
         grouped_subsections = self.group_subsections(subsections)
 
+        # "not started" subsections for Writer instances
+        not_started_subsections = []
+        if document_field_name == "content_guide_instance":
+            not_started_subsections = [
+                subsection
+                for subsection in subsections
+                if subsection.edit_mode != "locked" and subsection.status == "default"
+            ]
+
         # Prev/Next
         idx = next(
             (i for i, s in enumerate(sections) if s.pk == current_section.pk), None
@@ -688,6 +697,7 @@ class ComposerSectionView(
             next_sec=next_sec,
             anchor=self.request.GET.get("anchor"),
             include_scroll_to_top=True,
+            not_started_subsections=not_started_subsections,
         )
         return context
 

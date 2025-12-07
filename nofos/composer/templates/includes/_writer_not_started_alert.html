@@ -1,0 +1,32 @@
+<section
+  class="usa-alert usa-alert--warning usa-alert--not-started margin-bottom-3"
+  aria-label="You have not started some sections."
+>
+  <div class="usa-alert__body">
+    <h3 class="usa-alert__heading font-sans-sm">You have not started some sections</h3>
+    <div>
+      <details class="usa-details">
+        <summary>
+          {% with count=not_started_subsections|length %}
+            {% if count == 1 %}
+              <span>You have not yet looked at <strong>1 section</strong> below</span>
+            {% else %}
+              <span>You have not yet looked at <strong>{{ count }} sections</strong> below</span>
+            {% endif %}
+          {% endwith %}
+        </summary>
+        <div class="margin-top-1">
+          <ul class="usa-list usa-list--no-max-width margin-top-1">
+            {% for subsection in not_started_subsections %}
+              <li>
+                <a href="#{{ subsection.html_id }}">
+                  {{ subsection.name|default:"(Untitled subsection)" }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
