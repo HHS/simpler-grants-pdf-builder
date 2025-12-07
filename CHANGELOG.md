@@ -13,6 +13,41 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.21.0] - 2025-12-06
+
+### Added
+
+- Added "Writer" flow
+  - Writer dashboard
+  - Writer "start" page: pick from published content guides
+  - Writer "details" page: add your NOFO info
+  - Writer "Yes/No" conditional questions
+  - Writer section overview page
+  - Writer subsection edit page for subsection.body
+- Add "status" to ContentGuideSubsections
+- Remove "enabled" from ContentGuideSubsections
+- Add "expand all" button to section overview page
+
+### Changed
+
+- System Admin content guide creation routes are just for "staff" users
+- Move "configure section" link to top of section overview page
+
+### Migrations
+
+- Add new fields to ContentGuideInstance:
+  - activity_code
+  - federal_assistance_listing
+  - statutory_authority
+  - tagline
+  - author
+  - subject
+  - keywords
+- Add new field to ContentGuideSubsection:
+  - status
+- Remove field from ContentGuideSubsection:
+  - enabled
+
 ## [3.20.0] - 2025-10-31
 
 ### Added
