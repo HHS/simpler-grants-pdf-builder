@@ -36,6 +36,18 @@
       {% endtimezone %}
 
       {% if document_is_instance %}
+        {# if brand new instance and on first page, show "success" alert #}
+        {% if request.GET.new_instance and current_section.order == 1 %}
+          <div class="usa-alert usa-alert--success usa-alert--heading-sm margin-bottom-3">
+            <div class="usa-alert__body">
+              <h4 class="usa-alert__heading">Your draft NOFO has been created!</h4>
+              <p class="usa-alert__text">
+                You’re ready to start setting up your program details.
+              </p>
+            </div>
+          </div>
+        {% endif %}
+
         {# if NOT a new instance and "not started" subsections exist, show "warning" alert #}
         {% if not request.GET.new_instance and not_started_subsections %}
           {% include "includes/_writer_not_started_alert.html" %}
