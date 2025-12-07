@@ -801,7 +801,7 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
                 "section_pk": str(first_instance_section.pk),
             },
         )
-        self.assertRedirects(response, expected_redirect)
+        self.assertRedirects(response, "{}?new_instance=1".format(expected_redirect))
 
         # Check that sections were created
         instance_sections = list(self.instance.sections.order_by("order", "pk"))
@@ -1008,6 +1008,140 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         self.assertEqual(
             subsection.instructions, "These are instructions for the writer."
         )
+
+
+class WriterSectionViewAlertsTests(TestCase):
+    def setUp(self):
+        # Auth user in bloom group
+        self.user = User.objects.create_user(
+            email="writer@example.com",
+            password="testpass123",
+            group="bloom",
+            is_staff=True,
+            force_password_reset=False,
+        )
+        self.client.login(email="writer@example.com", password="testpass123")
+
+        # Base ContentGuide used as parent
+        self.guide = ContentGuide.objects.create(
+            title="Guide",
+            opdiv="CDC",
+            group="bloom",
+        )
+
+    def _create_instance_with_two_sections_and_not_started_subsections(self):
+        """
+        Helper: create a ContentGuideInstance with two sections, each having at least
+        one 'not started' subsection (edit_mode != 'locked' and status == 'default').
+        """
+        instance = ContentGuideInstance.objects.create(
+            title="My Draft NOFO",
+            opdiv="CDC",
+            group="bloom",
+            parent=self.guide,
+        )
+
+        sec1 = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=1,
+            name="Instance Section 1",
+            html_id="is1",
+        )
+        sec2 = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=2,
+            name="Instance Section 2",
+            html_id="is2",
+        )
+
+        # For both sections, create at least one eligible "not started" subsection
+        ContentGuideSubsection.objects.create(
+            section=sec1,
+            order=1,
+            name="Sec1 Sub 1",
+            tag="h4",
+            body="Body",
+            edit_mode="full",
+            status="default",
+        )
+        ContentGuideSubsection.objects.create(
+            section=sec2,
+            order=1,
+            name="Sec2 Sub 1",
+            tag="h4",
+            body="Body",
+            edit_mode="full",
+            status="default",
+        )
+
+        return instance, sec1, sec2
+
+    def test_new_instance_first_section_shows_created_alert_not_not_started(self):
+        """
+        ?new_instance=1 on the first section:
+        - shows the 'created' alert
+        - hides the 'not started' alert
+        """
+        instance, sec1, _ = (
+            self._create_instance_with_two_sections_and_not_started_subsections()
+        )
+
+        url = reverse(
+            "composer:writer_section_view",
+            kwargs={"pk": instance.pk, "section_pk": sec1.pk},
+        )
+        resp = self.client.get(f"{url}?new_instance=1")
+        self.assertEqual(resp.status_code, 200)
+
+        # Should show the "created" alert
+        self.assertContains(resp, "Your draft NOFO has been created!")
+        # Should not show the "not started" alert
+        self.assertNotContains(resp, "You have not started some sections")
+
+    def test_new_instance_second_section_shows_no_created_and_no_not_started_alert(
+        self,
+    ):
+        """
+        ?new_instance=1 on the second section:
+        - does NOT show the 'created' alert (first section only)
+        - does NOT show the 'not started' alert (suppressed by new_instance)
+        """
+        instance, _, sec2 = (
+            self._create_instance_with_two_sections_and_not_started_subsections()
+        )
+
+        url = reverse(
+            "composer:writer_section_view",
+            kwargs={"pk": instance.pk, "section_pk": sec2.pk},
+        )
+        resp = self.client.get(f"{url}?new_instance=1")
+        self.assertEqual(resp.status_code, 200)
+
+        # Should not show either alert
+        self.assertNotContains(resp, "Your draft NOFO has been created!")
+        self.assertNotContains(resp, "You have not started some sections")
+
+    def test_first_section_without_new_instance_shows_not_started_alert_only(self):
+        """
+        No new_instance param on first section:
+        - does NOT show the 'created' alert
+        - DOES show the 'not started' alert
+        """
+        instance, sec1, _ = (
+            self._create_instance_with_two_sections_and_not_started_subsections()
+        )
+
+        url = reverse(
+            "composer:writer_section_view",
+            kwargs={"pk": instance.pk, "section_pk": sec1.pk},
+        )
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        # Should NOT show the "created" alert
+        self.assertNotContains(resp, "Your draft NOFO has been created!")
+        # Should show the "not started" alert
+        self.assertContains(resp, "You have not started some sections")
 
 
 class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):

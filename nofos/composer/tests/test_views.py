@@ -676,6 +676,137 @@ class ComposerSectionViewTests(TestCase):
         # Should get 403 Forbidden
         self.assertEqual(resp.status_code, 403)
 
+    def test_not_started_subsections_present_for_instance(self):
+        """
+        For a ContentGuideInstance, not_started_subsections should include only
+        subsections where edit_mode != 'locked' and status == 'default'.
+        """
+        instance = ContentGuideInstance.objects.create(
+            title="My Draft NOFO",
+            opdiv="CDC",
+            group="bloom",
+            parent=self.guide,
+        )
+
+        instance_sec = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=1,
+            name="Instance Section",
+            html_id="is1",
+        )
+
+        # s1: editable + default → should be included
+        s1 = ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=1,
+            name="Editable default",
+            tag="h4",
+            body="Body",
+            edit_mode="full",
+            status="default",
+        )
+
+        # s2: locked + default → should be excluded
+        s2 = ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=2,
+            name="Locked default",
+            tag="h4",
+            body="Body",
+            edit_mode="locked",
+            status="default",
+        )
+
+        # s3: editable but not default → should be excluded
+        s3 = ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=3,
+            name="Editable viewed",
+            tag="h4",
+            body="Body with {variables}",
+            edit_mode="variables",
+            status="viewed",
+        )
+
+        url = reverse(
+            "composer:section_view",
+            kwargs={"pk": instance.pk, "section_pk": instance_sec.pk},
+        )
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertIn("not_started_subsections", resp.context)
+        not_started = resp.context["not_started_subsections"]
+
+        # Only s1 should be in the list
+        self.assertEqual(len(not_started), 1)
+        self.assertEqual(not_started[0].pk, s1.pk)
+
+    def test_not_started_subsections_empty_for_instance_when_none_match(self):
+        """
+        For a ContentGuideInstance with subsections, not_started_subsections should be
+        empty if no subsection matches (edit_mode != 'locked' and status == 'default').
+        """
+        instance = ContentGuideInstance.objects.create(
+            title="My Other Draft NOFO",
+            opdiv="CDC",
+            group="bloom",
+            parent=self.guide,
+        )
+
+        instance_sec = ContentGuideSection.objects.create(
+            content_guide_instance=instance,
+            order=1,
+            name="Instance Section 2",
+            html_id="is2",
+        )
+
+        # s1: locked + default → excluded (locked)
+        ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=1,
+            name="Locked default",
+            tag="h4",
+            body="Body",
+            edit_mode="locked",
+            status="default",
+        )
+
+        # s2: editable but viewed → excluded (not default)
+        ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=2,
+            name="Editable viewed",
+            tag="h4",
+            body="Body",
+            edit_mode="full",
+            status="viewed",
+        )
+
+        # s3: editable but done → excluded (not default)
+        ContentGuideSubsection.objects.create(
+            section=instance_sec,
+            order=3,
+            name="Editable done",
+            tag="h4",
+            body="Body with {variables}",
+            edit_mode="variables",
+            status="done",
+        )
+
+        url = reverse(
+            "composer:section_view",
+            kwargs={"pk": instance.pk, "section_pk": instance_sec.pk},
+        )
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertIn("not_started_subsections", resp.context)
+        not_started = resp.context["not_started_subsections"]
+
+        # We *do* have subsections, but none should qualify as "not started"
+        self.assertEqual(len(not_started), 0)
+
 
 class ComposerSectionEditViewTests(TestCase):
     def setUp(self):
