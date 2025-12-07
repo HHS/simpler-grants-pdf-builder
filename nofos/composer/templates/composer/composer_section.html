@@ -75,7 +75,9 @@
                 {{ subsection.name|default:"(No title)" }}
                 <div class="flex-row">
                   {% if document_is_instance == False %}
-                    {% include "includes/subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
+                    {% include "includes/_composer_subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
+                  {% else %}
+                    {% include "includes/_writer_subsection_labels.html" with edit_mode=subsection.edit_mode status=subsection.status only %}
                   {% endif %}
                 </div>
               </button>

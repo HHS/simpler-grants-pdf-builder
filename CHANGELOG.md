@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add subsection labels to writer section overview
+
 ### Changed
 
 ### Fixed

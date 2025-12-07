@@ -5,27 +5,27 @@
       <li>No tag means all text in the section can be edited and changed.</li>
       <li>
         <div class="display-flex">
-          <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='locked' %}</div>
+          <div class="minw-fit-content margin-right-1">{% include "includes/_composer_subsection_labels.html" with edit_mode='locked' %}</div>
           <div>is a section writers cannot edit or make changes.</div>
         </div>
       </li>
       <li>
         <div class="display-flex">
-          <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with edit_mode='variables' %}</div>
+          <div class="minw-fit-content margin-right-1">{% include "includes/_composer_subsection_labels.html" with edit_mode='variables' %}</div>
           <div>means writers can edit certain text only in this section. Only text inside the brackets can be changed.</div>
         </div>
       </li>
       <li>
         <div class="display-flex">
-          <div class="minw-fit-content margin-right-1">{% include "includes/subsection_labels.html" with optional=True %}</div>
-          <div>means this section is not required for the writer to answer. No text in the section can be edited or changed. </div>
+          <div class="minw-fit-content margin-right-1">{% include "includes/_composer_subsection_labels.html" with optional=True %}</div>
+          <div>means this section is not required for the writer to answer. No text in the section can be edited or changed.</div>
         </div>
       </li>
       <li>
         <div class="display-flex">
           <div class="minw-fit-content margin-right-1">
-            <div class="margin-bottom-1">{% include "includes/subsection_labels.html" with conditional_answer=True %}</div>
-            <div>{% include "includes/subsection_labels.html" with conditional_answer=False %}</div>
+            <div class="margin-bottom-1">{% include "includes/_composer_subsection_labels.html" with conditional_answer=True %}</div>
+            <div>{% include "includes/_composer_subsection_labels.html" with conditional_answer=False %}</div>
           </div>
           <div>means this section has associated text if writer has selected yes or no.</div>
         </div>

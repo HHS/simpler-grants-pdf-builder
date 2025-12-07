@@ -51,10 +51,35 @@ def get_edit_mode_label(value: str) -> str:
 
 
 def get_edit_mode_label_class(value: str) -> str:
-    """Return a class string to apply to the label tag <span> for a ContentGuideSubsection."""
+    """Return a class string to apply to the label tag <span> for a ContentGuideSubsection edit_mode label."""
     if not value:
         return ""
     return EDIT_MODE_LABEL_CLASSES.get(value) or ""
+
+
+SUBSECTION_STATUS_LABELS = {
+    "default": "Not started",
+    "done": "Done",
+}
+
+SUBSECTION_STATUS_LABEL_CLASSES = {
+    "default": "bg-yellow",
+    "done": "bg-green text-white",
+}
+
+
+def get_subsection_status_label(value: str) -> str:
+    """Return a human-readable label for an ContentGuideSubsection status value."""
+    if not value:
+        return ""
+    return SUBSECTION_STATUS_LABELS.get(value) or ""
+
+
+def get_subsection_status_label_class(value: str) -> str:
+    """Return a class string to apply to the label tag <span> for a ContentGuideSubsection.status label."""
+    if not value:
+        return ""
+    return SUBSECTION_STATUS_LABEL_CLASSES.get(value) or ""
 
 
 def get_conditional_questions_label(conditional_answer=None) -> str:

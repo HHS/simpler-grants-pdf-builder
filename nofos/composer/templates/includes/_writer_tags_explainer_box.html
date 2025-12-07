@@ -3,6 +3,24 @@
   <div class="explainer-box--content border border-accent-warm-dark border-radius-sm">
     <ul class="usa-prose">
       <li>No tag means all text in the section can be edited and changed.</li>
+      <li>
+        <div class="display-flex">
+          <div class="minw-fit-content margin-right-1">{% include "includes/_composer_subsection_labels.html" with edit_mode='locked' %}</div>
+          <div>is a section you cannot edit or make changes.</div>
+        </div>
+      </li>
+      <li>
+        <div class="display-flex">
+          <div class="minw-fit-content margin-right-1">{% include "includes/_writer_subsection_labels.html" with status='default' %}</div>
+          <div>is a section you can edit but have not looked at yet.</div>
+        </div>
+      </li>
+      <li>
+        <div class="display-flex">
+          <div class="minw-fit-content margin-right-1">{% include "includes/_writer_subsection_labels.html" with status='done' %}</div>
+          <div>means you’ve marked this section as complete.</div>
+        </div>
+      </li>
     </ul>
   </div>
 </details>
