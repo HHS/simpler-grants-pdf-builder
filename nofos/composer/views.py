@@ -676,11 +676,18 @@ class ComposerSectionView(
             if prev_sec
             else None
         )
-        context["next_sec_url"] = (
+        next_sec_url = (
             reverse_lazy(sec_url_name, args=[document.pk, next_sec.pk])
             if next_sec
             else None
         )
+
+        # Preserve ?new_instance=1 across "Save and continue"
+        if next_sec_url and self.request.GET.get("new_instance"):
+            separator = "&" if "?" in next_sec_url else "?"
+            next_sec_url = f"{next_sec_url}{separator}new_instance=1"
+
+        context["next_sec_url"] = next_sec_url
 
         # Allow per-request success/error headings stored in the session
         context["error_heading"] = self.request.session.pop("error_heading", "Error")
@@ -1465,12 +1472,15 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
         # Create ContentGuideInstance sections and subsections
         create_instance_sections_and_subsections(self.instance)
 
-        # Navigate to the overview view
-        return redirect(
+        # Navigate to the overview view, with "new_instance=1" in query param
+        base_url = reverse_lazy(
             "composer:writer_section_view",
-            pk=self.instance.pk,
-            section_pk=self.instance.sections.first().pk,
+            kwargs={
+                "pk": self.instance.pk,
+                "section_pk": self.instance.sections.first().pk,
+            },
         )
+        return redirect("{}?new_instance=1".format(base_url))
 
 
 class WriterInstanceArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiveView):

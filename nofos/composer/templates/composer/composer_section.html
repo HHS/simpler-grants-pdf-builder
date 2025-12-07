@@ -35,8 +35,11 @@
         </p>
       {% endtimezone %}
 
-      {% if document_is_instance and not_started_subsections %}
-        {% include "includes/_writer_not_started_alert.html" %}
+      {% if document_is_instance %}
+        {# if NOT a new instance and "not started" subsections exist, show "warning" alert #}
+        {% if not request.GET.new_instance and not_started_subsections %}
+          {% include "includes/_writer_not_started_alert.html" %}
+        {% endif %}
       {% endif %}
 
       {% if document_is_instance == False %}
