@@ -19,7 +19,9 @@
     </div>
 
     <h1 class="font-heading-xl margin-y-0">Edit “{{ subsection.name|default:"This subsection" }}”</h1>
-    <hr />
+
+    <hr class="usa-prose">
+
     {% if subsection.instructions %}
       <div class="maxw-fit-content">
         <div class="bg-primary-lighter padding-2">
@@ -34,7 +36,8 @@
           </div>
         </div>
       </div>
-      <hr />
+
+      <hr class="usa-prose">
     {% endif %}
     {% if subsection.edit_mode == 'full' %}
     <form method="post" novalidate>
@@ -53,6 +56,11 @@
           {{ form.body }}
         </div>
       </div>
+
+      {% include "includes/_subsection_done_checkbox.html" with status=subsection.status only %}
+
+      <hr class="usa-prose">
+
       <ul class="usa-button-group margin-top-3 flex-row-reverse flex-justify-end">
         <li class="usa-button-group__item margin-left-2">
         <button class="usa-button" type="submit">Save</button>

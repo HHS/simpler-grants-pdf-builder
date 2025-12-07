@@ -1498,6 +1498,10 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         if expected_doc_pk != str(self.instance.pk):
             raise Http404("Subsection does not belong to this document.")
 
+        # Mark as viewed on first GET
+        if self.request.method == "GET":
+            subsection.mark_as_viewed_on_first_open()
+
         return subsection
 
     def get_context_data(self, **kwargs):
@@ -1517,6 +1521,13 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
                 self.object.section.name,
             ),
         )
+
+        # Mark as done if "done" checkbox is checked, else "viewed"
+        if self.request.POST.get("subsection_done"):
+            self.object.status = "done"
+        else:
+            self.object.status = "viewed"
+
         return super().form_valid(form)
 
     def get_success_url(self):

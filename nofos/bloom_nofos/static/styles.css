@@ -2420,7 +2420,8 @@ del + ins > br {
 }
 
 .usa-prose hr,
-.composer_document_section hr {
+.composer_document_section hr,
+hr.usa-prose {
   border: 2px solid var(--color--light-grey);
 }
 

@@ -1,0 +1,16 @@
+<div class="usa-checkbox margin-top-4">
+  <input
+    class="usa-checkbox__input"
+    id="subsection_done"
+    name="subsection_done"
+    type="checkbox"
+    value="1"
+    {% if status == 'done' %}checked{% endif %}
+  >
+  <label class="usa-checkbox__label" for="subsection_done">
+    This section is done
+    <span class="usa-checkbox__label-description usa-hint">
+      Mark this section as complete to keep track of which sections you’re finished editing.
+    </span>
+  </label>
+</div>

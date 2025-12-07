@@ -283,6 +283,22 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Decide how NOFO Writers can edit this subsection.",
     )
 
+    WRITER_STATUS_CHOICES = [
+        ("default", "Not started"),
+        ("viewed", "Viewed at least once"),
+        ("done", "Done editing"),
+    ]
+
+    status = models.CharField(
+        max_length=16,
+        choices=WRITER_STATUS_CHOICES,
+        default="default",
+        help_text=(
+            "Subsection progress status field used by NOFO Writers."
+            "Only relevant for subsections that belong to a ContentGuideInstance."
+        ),
+    )
+
     optional = models.BooleanField(
         default=False,
         help_text="Decide if this subsection is required, or can be removed by NOFO Writers",
@@ -396,6 +412,16 @@ class ContentGuideSubsection(BaseSubsection):
         Replace escaped '\\{' and '\\}' with literal braces for display.
         """
         return text.replace(r"\{", "{").replace(r"\}", "}")
+
+    # ---------- Subsection status helpers ---------- #
+
+    def mark_as_viewed_on_first_open(self):
+        """
+        Change subsection.status to "viewed". No-op if already viewed or done.
+        """
+        if self.status == "default":
+            self.status = "viewed"
+            self.save(update_fields=["status"])
 
     # ---------- Validation ---------- #
 
