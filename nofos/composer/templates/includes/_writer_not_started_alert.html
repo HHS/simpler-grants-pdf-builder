@@ -30,3 +30,32 @@
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // Find only the links inside the "not started" warning alert
+  const links = document.querySelectorAll(
+    ".usa-alert.usa-alert--not-started a[href^='#']"
+  );
+
+  links.forEach(link => {
+    link.addEventListener("click", function (e) {
+      const id = this.getAttribute("href").substring(1); // remove leading '#'
+      // Find accordion for subsection
+      const accordion = document.getElementById(id);
+      if (!accordion) return;
+
+      // Find accordion heading button that controls open/close behaviour
+      const button = accordion.querySelector(".usa-accordion__button");
+      if (!button) return;
+
+      // USWDS accordions expand when aria-expanded="true"
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      if (!isExpanded) {
+        button.click();
+        }
+    });
+  });
+});
+</script>
