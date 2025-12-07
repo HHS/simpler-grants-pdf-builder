@@ -34,7 +34,7 @@
         <label class="usa-radio__label" for="em-variables">
           <div class="display-flex flex-justify">
             Edit certain text only
-            {% include "includes/subsection_labels.html" with edit_mode='variables' %}
+            {% include "includes/_composer_subsection_labels.html" with edit_mode='variables' %}
           </div>
           <span class="usa-checkbox__label-description">
             {% if subsection_variables %}
@@ -56,7 +56,7 @@
         <label class="usa-radio__label" for="em-locked">
           <div class="display-flex flex-justify">
             Nothing. All content is locked
-            {% include "includes/subsection_labels.html" with edit_mode='locked' %}
+            {% include "includes/_composer_subsection_labels.html" with edit_mode='locked' %}
           </div>
           <span class="usa-checkbox__label-description">
             Writers cannot modify or remove this text.

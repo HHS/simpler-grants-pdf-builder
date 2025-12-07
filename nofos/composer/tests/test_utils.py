@@ -1,6 +1,7 @@
 from composer.utils import (
     get_conditional_questions_label,
     get_edit_mode_label,
+    get_subsection_status_label,
     render_curly_variable_list_html_string,
 )
 from django.test import SimpleTestCase
@@ -43,6 +44,20 @@ class GetConditionalQuestionsLabelTests(SimpleTestCase):
         for value in ("yes", "no", "", 0, 1, [], {}, object()):
             with self.subTest(value=value):
                 self.assertEqual(get_conditional_questions_label(value), "")
+
+
+class GetSubsectionStatusLabelTests(SimpleTestCase):
+    def test_known_values(self):
+        self.assertEqual(get_subsection_status_label("default"), "Not started")
+        self.assertEqual(get_subsection_status_label("viewed"), "")
+        self.assertEqual(get_subsection_status_label("done"), "Done")
+
+    def test_unknown_value_returns_empty_string(self):
+        self.assertEqual(get_subsection_status_label("fake_value"), "")
+
+    def test_none_or_empty_returns_empty_string(self):
+        self.assertEqual(get_subsection_status_label(None), "")
+        self.assertEqual(get_subsection_status_label(""), "")
 
 
 class RenderCurlyVariableListHtmlStringTests(SimpleTestCase):
