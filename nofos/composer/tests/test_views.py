@@ -351,7 +351,6 @@ class GroupSubsectionsTests(TestCase):
             tag=tag or "",
             body=body,
             instructions=instructions,
-            enabled=True,
         )
 
     def test_empty_list_returns_empty_groups(self):
@@ -515,39 +514,15 @@ class ComposerSectionViewTests(TestCase):
 
         # Subsections for sec1 (ensure grouping behavior)
         self.subsection1 = ContentGuideSubsection.objects.create(
-            section=self.sec1,
-            order=1,
-            name="Intro",
-            tag="h4",
-            body="Body 1",
-            enabled=True,
+            section=self.sec1, order=1, name="Intro", tag="h4", body="Body 1"
         )
         # Preset header name → starts new group
         self.subsection2 = ContentGuideSubsection.objects.create(
-            section=self.sec1,
-            order=2,
-            name="Funding details",
-            tag="h4",
-            body="Body 2",
-            enabled=True,
+            section=self.sec1, order=2, name="Funding details", tag="h4", body="Body 2"
         )
         # Not a header → belongs to previous group
         self.subsection3 = ContentGuideSubsection.objects.create(
-            section=self.sec1,
-            order=3,
-            name="Budget table",
-            tag="h5",
-            body="Body 3",
-            enabled=True,
-        )
-        # Disabled → should appear anyway
-        self.subsection4_disabled = ContentGuideSubsection.objects.create(
-            section=self.sec1,
-            order=4,
-            name="(Disabled)",
-            tag="h4",
-            body="x",
-            enabled=False,
+            section=self.sec1, order=3, name="Budget table", tag="h5", body="Body 3"
         )
 
         self.url_sec1 = reverse(
@@ -574,7 +549,7 @@ class ComposerSectionViewTests(TestCase):
         self.assertEqual(grouped[1]["heading"], "Funding details")
         self.assertEqual(
             [i.pk for i in grouped[1]["items"]],
-            [self.subsection2.pk, self.subsection3.pk, self.subsection4_disabled.pk],
+            [self.subsection2.pk, self.subsection3.pk],
         )
 
     def test_prev_next_sections_in_context_first_section(self):
@@ -648,7 +623,6 @@ class ComposerSectionViewTests(TestCase):
             name="Instance Subsection",
             tag="h4",
             body="Instance body",
-            enabled=True,
         )
 
         # Test the URL with instance pk
@@ -815,7 +789,6 @@ class ComposerSubsectionEditViewTests(TestCase):
             name="SS1",
             tag="h3",
             body="Initial body",
-            enabled=True,
             edit_mode="full",
             html_id="ss-1",
         )
@@ -932,7 +905,6 @@ class ComposerSubsectionCreateViewTests(TestCase):
             name="SS1",
             tag="h3",
             body="Initial body",
-            enabled=True,
             edit_mode="full",
             html_id="ss-1",
         )
@@ -1048,7 +1020,6 @@ class ComposerSubsectionDeleteViewTests(TestCase):
             name="SS1",
             tag="h3",
             body="Initial body",
-            enabled=True,
             edit_mode="full",
             html_id="ss-1",
         )
@@ -1170,7 +1141,6 @@ class ComposerSubsectionInstructionsEditViewTests(TestCase):
             tag="h3",
             body="Initial body",
             instructions="Initial instructions",
-            enabled=True,
             edit_mode="full",
             html_id="ss-1",
         )
@@ -1306,7 +1276,6 @@ class ComposerPreviewViewTests(TestCase):
             name="Subsection 1",
             tag="h3",
             body="Test body",
-            enabled=True,
         )
 
         self.url = reverse("composer:composer_preview", kwargs={"pk": self.guide.pk})
@@ -1441,7 +1410,6 @@ class ComposerUnpublishViewTests(TestCase):
             tag="h3",
             body="Test body",
             instructions="Test instructions",
-            enabled=True,
         )
 
         self.url = reverse("composer:composer_unpublish", kwargs={"pk": self.guide.pk})
@@ -1500,7 +1468,6 @@ class ComposerUnpublishViewTests(TestCase):
             tag="h4",
             body="Second body",
             instructions="Second instructions",
-            enabled=False,
         )
 
         self.client.post(self.url)
@@ -1516,13 +1483,11 @@ class ComposerUnpublishViewTests(TestCase):
         self.assertEqual(archived_subsections[0].name, "Subsection 1")
         self.assertEqual(archived_subsections[0].body, "Test body")
         self.assertEqual(archived_subsections[0].instructions, "Test instructions")
-        self.assertTrue(archived_subsections[0].enabled)
 
         # Verify second subsection
         self.assertEqual(archived_subsections[1].name, "Subsection 2")
         self.assertEqual(archived_subsections[1].body, "Second body")
         self.assertEqual(archived_subsections[1].instructions, "Second instructions")
-        self.assertFalse(archived_subsections[1].enabled)
 
     def test_duplicate_not_created_if_something_fails(self):
         # Simulate failure by making the ContentGuideSubsection save raise an error

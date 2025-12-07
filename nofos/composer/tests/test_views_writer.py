@@ -759,7 +759,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="This is the program overview.",
             edit_mode="full",
-            enabled=True,
         )
         subsection1b = ContentGuideSubsection.objects.create(
             section=section1,
@@ -768,7 +767,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="This is agency details, with { variable }.",
             edit_mode="variables",
-            enabled=True,
         )
 
         section2 = ContentGuideSection.objects.create(
@@ -784,7 +782,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="Award information goes here.",
             edit_mode="locked",
-            enabled=True,
         )
 
         # Before POST, instance should have no sections/subsections
@@ -862,7 +859,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="General policies body.",
             edit_mode="full",
-            enabled=True,
         )
 
         # Conditional subsection for cost_sharing=True
@@ -873,7 +869,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="Cost sharing body.",
             edit_mode="full",
-            enabled=True,
             instructions="Instructions indicating this is conditional: (YES)",
         )
 
@@ -885,7 +880,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="No MOE body.",
             edit_mode="full",
-            enabled=True,
             instructions="Instructions indicating this is conditional: (NO)",
         )
 
@@ -897,7 +891,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="MOE required body.",
             edit_mode="full",
-            enabled=True,
             instructions="Instructions indicating this is conditional: (YES)",
         )
 
@@ -947,7 +940,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             body="This should be skipped.",
             edit_mode="full",
             instructions="Instructions indicating this is conditional: (YES)",
-            enabled=True,
         )
 
         # Non-conditional subsection -- no instructions, so not conditional
@@ -958,7 +950,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="This should be included.",
             edit_mode="full",
-            enabled=True,
         )
 
         self.client.login(email="acf@example.com", password="testpass123")
@@ -996,7 +987,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h4",
             body="Test body with {variable}.",
             edit_mode="variables",
-            enabled=True,
             optional=True,
             instructions="These are instructions for the writer.",
         )
@@ -1014,7 +1004,6 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         self.assertEqual(subsection.tag, "h4")
         self.assertEqual(subsection.body, "Test body with {variable}.")
         self.assertEqual(subsection.edit_mode, "variables")
-        self.assertEqual(subsection.enabled, True)
         self.assertEqual(subsection.optional, True)
         self.assertEqual(
             subsection.instructions, "These are instructions for the writer."
@@ -1051,7 +1040,6 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             tag="h3",
             body="Initial body content.",
             edit_mode="full",
-            enabled=True,
         )
 
         self.url = reverse(

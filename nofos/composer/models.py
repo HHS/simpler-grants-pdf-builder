@@ -311,12 +311,6 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Guidance for NOFO Writers on filling out this section.",
     )
 
-    # Default include flag for yes/no mode.
-    enabled = models.BooleanField(
-        default=True,
-        help_text="Whether to show this section in the content guide.",
-    )
-
     # ---------- Conditional answer helpers ---------- #
 
     _YES_NO_PATTERN = re.compile(r"\((YES|NO)\)")

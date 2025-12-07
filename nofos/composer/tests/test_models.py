@@ -24,7 +24,6 @@ class ExtractVariablesTests(TestCase):
             tag="h3",
             body=body,
             edit_mode="full",
-            enabled=True,
         )
 
     def test_no_variables(self):
@@ -200,7 +199,6 @@ class ConditionalAnswerTests(TestCase):
             body="",
             instructions=instructions or "",
             edit_mode=edit_mode,
-            enabled=True,
         )
 
     def test_no_instructions_returns_none_and_not_conditional(self):
@@ -271,7 +269,6 @@ class ContentGuideSubsectionStatusTests(TestCase):
             body="Hello",
             instructions="",
             edit_mode="full",
-            enabled=True,
         )
 
     def test_default_status_is_default(self):
