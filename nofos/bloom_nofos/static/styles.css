@@ -85,9 +85,12 @@ blockquote {
   background-color: var(--color--optional-purple);
 }
 
+details > summary {
+  width: fit-content;
+}
+
 details.explainer-box summary {
   border-radius: 2px;
-  width: fit-content;
 }
 
 details.explainer-box summary:hover {
@@ -175,6 +178,10 @@ footer .usa-footer__primary-link:visited {
 
 .usa-fieldset + .usa-fieldset {
   margin-top: 1.5rem; /* Matches usa-label top-margin */
+}
+
+.usa-alert .usa-alert__heading.font-sans-sm {
+  font-size: 1.06rem;
 }
 
 /* Icon Buttons */
@@ -2467,4 +2474,12 @@ hr.usa-prose {
 
 .styled-subsection-body--full {
   color: var(--color--green-dark);
+}
+
+.composer_document_section
+  .usa-alert--warning.usa-alert--not-started
+  .usa-alert__body::before {
+  height: 1.6rem;
+  -webkit-mask-size: 1.6rem 1.6rem;
+  mask-size: 1.6rem 1.6rem;
 }
