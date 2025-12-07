@@ -10,6 +10,8 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add subsection labels to writer section overview
+- Add "new draft NOFO" alert to writer section overview for new drafts
+- Add "Not started" alert to writer section overview for no-longer-new drafts
 
 ### Changed
 
