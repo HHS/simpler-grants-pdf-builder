@@ -1,5 +1,6 @@
 from composer.models import (
     ContentGuide,
+    ContentGuideInstance,
     ContentGuideSection,
     ContentGuideSubsection,
 )
@@ -248,3 +249,61 @@ class ConditionalAnswerTests(TestCase):
         subsection = self._mk("Include for (YES).", edit_mode="full")
         self.assertIs(subsection.conditional_answer, True)
         self.assertTrue(subsection.is_conditional)
+
+
+class ContentGuideSubsectionStatusTests(TestCase):
+    def setUp(self):
+        self.guide = ContentGuideInstance.objects.create(
+            title="Guide Instance", opdiv="CDC", group="bloom"
+        )
+        self.section = ContentGuideSection.objects.create(
+            content_guide_instance=self.guide,
+            order=1,
+            name="Section 1",
+            html_id="sec-1",
+        )
+
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Sub 1",
+            tag="h3",
+            body="Hello",
+            instructions="",
+            edit_mode="full",
+            enabled=True,
+        )
+
+    def test_default_status_is_default(self):
+        """New subsections start with status='default'."""
+        self.assertEqual(self.subsection.status, "default")
+
+    def test_mark_as_viewed_on_first_open_moves_default_to_viewed(self):
+        """Helper should move default → viewed and persist it."""
+        self.subsection.status = "default"
+        self.subsection.save()
+
+        self.subsection.mark_as_viewed_on_first_open()
+        self.subsection.refresh_from_db()
+
+        self.assertEqual(self.subsection.status, "viewed")
+
+    def test_mark_as_viewed_on_first_open_noop_if_already_viewed(self):
+        """Helper should be a no-op if status is already 'viewed'."""
+        self.subsection.status = "viewed"
+        self.subsection.save()
+
+        self.subsection.mark_as_viewed_on_first_open()
+        self.subsection.refresh_from_db()
+
+        self.assertEqual(self.subsection.status, "viewed")
+
+    def test_mark_as_viewed_on_first_open_noop_if_done(self):
+        """Helper should be a no-op if status is already 'done'."""
+        self.subsection.status = "done"
+        self.subsection.save()
+
+        self.subsection.mark_as_viewed_on_first_open()
+        self.subsection.refresh_from_db()
+
+        self.assertEqual(self.subsection.status, "done")

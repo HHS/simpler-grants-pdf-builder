@@ -1113,3 +1113,85 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
         )
         self.assertEqual(response.url, expected_redirect)
+
+    def test_first_get_marks_status_viewed(self):
+        """
+        First GET should mark a 'default' subsection as 'viewed'.
+        """
+        self.assertEqual(self.subsection.status, "default")
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.status, "viewed")
+
+    def test_get_does_not_downgrade_done_status(self):
+        """
+        GET should not change status if it's already 'done'.
+        """
+        self.subsection.status = "done"
+        self.subsection.save()
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.status, "done")
+
+    def test_post_without_done_checkbox_sets_status_viewed(self):
+        """
+        POST without subsection_done should leave status as 'viewed'.
+        If it was 'default', it effectively becomes 'viewed'.
+        """
+        self.subsection.status = "default"
+        self.subsection.save()
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.url, data={"body": "Updated body"})
+
+        self.assertEqual(response.status_code, 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.status, "viewed")
+
+    def test_post_with_done_checkbox_sets_status_done(self):
+        """
+        POST with subsection_done checked should set status to 'done'.
+        """
+        self.subsection.status = "default"
+        self.subsection.save()
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(
+            self.url,
+            data={
+                "body": "Updated body",
+                "subsection_done": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.status, "done")
+
+    def test_post_can_toggle_done_back_to_viewed(self):
+        """
+        If status is 'done' and the checkbox is not checked, POST should set status to 'viewed'.
+        """
+        self.subsection.status = "done"
+        self.subsection.save()
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(
+            self.url,
+            data={
+                "body": "Updated again",
+                # no subsection_done → unchecked
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.status, "viewed")
