@@ -265,9 +265,64 @@ class WriterInstanceConditionalQuestionsForm(forms.Form):
         return self.instance
 
 
-class WriterInstanceSubsectionEditForm(forms.ModelForm):
-    body = MartorFormField(required=False)
+class WriterInstanceSubsectionEditForm(forms.Form):
+    """
+    A dynamic form that renders the body field for a given ContentGuideSubsection, as well as invidiual
+    fields for each variables in that subsection body if edit_mode = 'variables'.
+    """
 
-    class Meta:
-        model = ContentGuideSubsection
-        fields = ["body"]
+    def __init__(
+        self,
+        *args,
+        instance: ContentGuideInstance,
+        **kwargs,
+    ):
+        self.instance = instance
+        super().__init__(*args, **kwargs)
+
+        if instance.edit_mode == "full":
+            print("Adding full body field")
+            self.fields["body"] = MartorFormField(required=False)
+
+        elif instance.edit_mode == "variables":
+            for variable_key, variable_info in instance.variables.items():
+                field_name = variable_key
+                self.fields[field_name] = forms.CharField(
+                    label=variable_info.get("label", variable_key),
+                    required=False,
+                    widget=forms.TextInput(
+                        attrs={
+                            "class": "usa-input",
+                        }
+                    ),
+                )
+                existing = self.instance.get_variable_value(variable_key)
+                if existing is not None:
+                    self.initial[field_name] = existing
+
+    def save(self):
+        """
+        Merge cleaned values into instance.variables.
+        """
+        if not self.is_valid():
+            raise ValueError("Cannot save an invalid form")
+
+        if self.instance.edit_mode == "full":
+            self.instance.body = self.cleaned_data.get("body", "")
+            self.instance.save(update_fields=["body"])
+            return self.instance
+
+        elif self.instance.edit_mode == "variables":
+            current = dict(self.instance.variables or {})
+
+            for key in self.fields:
+                if key == "body":
+                    continue
+                updated = self.cleaned_data.get(key, None)
+                existing = current.get(key, {})
+                # Update with new value
+                current[key] = {**existing, "value": updated}
+
+            self.instance.variables = current
+            self.instance.save(update_fields=["variables"])
+            return self.instance

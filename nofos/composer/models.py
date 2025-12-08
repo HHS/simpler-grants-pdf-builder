@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import Dict, List
 
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from django.core.exceptions import ValidationError
@@ -311,6 +311,12 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Guidance for NOFO Writers on filling out this section.",
     )
 
+    variables = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Variables from the subsection body, keyed by variable key. If ContentGuideInstance, also includes writer-provided values.",
+    )
+
     # ---------- Conditional answer helpers ---------- #
 
     _YES_NO_PATTERN = re.compile(r"\((YES|NO)\)")
@@ -351,12 +357,12 @@ class ContentGuideSubsection(BaseSubsection):
     def is_conditional(self) -> bool:
         return self.conditional_answer is not None
 
-    # ---------- Variable parsing helpers ---------- #
+    # ---------- Variable helpers ---------- #
 
     # Unified pattern - no nested braces allowed
     _VAR_PATTERN = re.compile(CURLY_VARIABLE_PATTERN)
 
-    def extract_variables(self, text: str | None = None) -> List[dict]:
+    def extract_variables(self, text: str | None = None) -> Dict[str, dict]:
         """
         Parse this subsection's body for variable placeholders.
 
@@ -366,10 +372,10 @@ class ContentGuideSubsection(BaseSubsection):
         Escape literal braces with '\\{' or '\\}'.
 
         Returns:
-            List[{"key": "total_budget_amount", "type": "string", "label": "Enter total budget amount"}]
+            Dict{"total_budget_amount": {"key": "total_budget_amount", "type": "string", "label": "Enter total budget amount"}}
         """
         text = (text if text is not None else self.body) or ""
-        results: List[dict] = []
+        results: Dict[str, dict] = {}
         used_keys = set()
 
         for m in self._VAR_PATTERN.finditer(text):
@@ -397,7 +403,7 @@ class ContentGuideSubsection(BaseSubsection):
                 i += 1
 
             used_keys.add(key)
-            results.append({"key": key, "type": var_type, "label": label})
+            results[key] = {"key": key, "type": var_type, "label": label}
 
         return results
 
@@ -406,6 +412,18 @@ class ContentGuideSubsection(BaseSubsection):
         Replace escaped '\\{' and '\\}' with literal braces for display.
         """
         return text.replace(r"\{", "{").replace(r"\}", "}")
+
+    def get_variable_value(self, key: str) -> str | None:
+        """
+        Get the value for a variable by key.
+
+        Returns:
+            The variable value (str or List[str]) if set, else None.
+        """
+        var_info = self.variables.get(key)
+        if not var_info:
+            return None
+        return var_info.get("value")
 
     # ---------- Subsection status helpers ---------- #
 
