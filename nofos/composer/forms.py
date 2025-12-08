@@ -274,18 +274,18 @@ class WriterInstanceSubsectionEditForm(forms.Form):
     def __init__(
         self,
         *args,
-        instance: ContentGuideInstance,
+        subsection: ContentGuideSubsection,
         **kwargs,
     ):
-        self.instance = instance
+        self.subsection = subsection
         super().__init__(*args, **kwargs)
 
-        if instance.edit_mode == "full":
-            print("Adding full body field")
+        if self.subsection.edit_mode == "full":
             self.fields["body"] = MartorFormField(required=False)
+            self.initial["body"] = self.subsection.body
 
-        elif instance.edit_mode == "variables":
-            for variable_key, variable_info in instance.variables.items():
+        elif self.subsection.edit_mode == "variables":
+            for variable_key, variable_info in self.subsection.variables.items():
                 field_name = variable_key
                 self.fields[field_name] = forms.CharField(
                     label=variable_info.get("label", variable_key),
@@ -296,24 +296,24 @@ class WriterInstanceSubsectionEditForm(forms.Form):
                         }
                     ),
                 )
-                existing = self.instance.get_variable_value(variable_key)
+                existing = self.subsection.get_variable_value(variable_key)
                 if existing is not None:
                     self.initial[field_name] = existing
 
     def save(self):
         """
-        Merge cleaned values into instance.variables.
+        Merge cleaned values into subsection.variables.
         """
         if not self.is_valid():
             raise ValueError("Cannot save an invalid form")
 
-        if self.instance.edit_mode == "full":
-            self.instance.body = self.cleaned_data.get("body", "")
-            self.instance.save(update_fields=["body"])
-            return self.instance
+        if self.subsection.edit_mode == "full":
+            self.subsection.body = self.cleaned_data.get("body", "")
+            self.subsection.save(update_fields=["body"])
+            return self.subsection
 
-        elif self.instance.edit_mode == "variables":
-            current = dict(self.instance.variables or {})
+        elif self.subsection.edit_mode == "variables":
+            current = dict(self.subsection.variables or {})
 
             for key in self.fields:
                 if key == "body":
@@ -323,6 +323,6 @@ class WriterInstanceSubsectionEditForm(forms.Form):
                 # Update with new value
                 current[key] = {**existing, "value": updated}
 
-            self.instance.variables = current
-            self.instance.save(update_fields=["variables"])
-            return self.instance
+            self.subsection.variables = current
+            self.subsection.save(update_fields=["variables"])
+            return self.subsection
