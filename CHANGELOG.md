@@ -9,6 +9,17 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.22.0] - 2025-12-08
+
+### Added
+
+- Add Composer screen for NOFO Writer variable editing
+- Add "Show/Hide" radios to subsection editing screen for optional subsections
+  - Hide the rest of the inputs (except done) if user selects "hide" option
 - Add subsection labels to writer section overview
 - Add "new draft NOFO" alert to writer section overview for new drafts
 - Add "Not started" alert to writer section overview for no-longer-new drafts
@@ -16,6 +27,12 @@ Versioning since version 1.0.0.
 ### Changed
 
 ### Fixed
+
+### Migrations
+
+- Add fields to ContentGuideSubsection:
+  - variables
+  - hidden
 
 ## [3.21.0] - 2025-12-06
 
