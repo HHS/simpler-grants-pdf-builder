@@ -1,3 +1,5 @@
+import json
+
 from composer.conditional.conditional_questions import CONDITIONAL_QUESTIONS
 from composer.models import (
     ContentGuide,
@@ -1183,9 +1185,9 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             tag="h3",
             body="Initial body with { variable }.",
             edit_mode="variables",
-            variables={
-                "variable": {"key": "variable", "type": "string", "label": "variable"}
-            },
+            variables=json.dumps(
+                {"variable": {"key": "variable", "type": "string", "label": "variable"}}
+            ),
         )
 
         self.url_full = reverse(
