@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, List
+from typing import Dict
 
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from django.core.exceptions import ValidationError

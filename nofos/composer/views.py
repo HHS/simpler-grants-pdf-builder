@@ -201,11 +201,7 @@ def create_instance_sections_and_subsections(instance: ContentGuideInstance):
     ContentGuideSubsection.objects.bulk_create(new_subsections)
 
 
-# def get_variable_values_for_subsection(self, subsection):
-#     if subsection.edit_mode != "variables":
-#         return None
 
-#     variables =
 ###########################################################
 ##################### GENERIC VIEWS #######################
 ###########################################################
@@ -992,7 +988,7 @@ class ComposerSubsectionEditView(
         return context
 
     def form_valid(self, form):
-        # Update variables incase the body changed
+        # Update variables in case the body changed
         form.instance.variables = form.instance.extract_variables()
         messages.add_message(
             self.request,
