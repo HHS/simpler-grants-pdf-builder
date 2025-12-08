@@ -130,7 +130,7 @@ class WriterInstanceStartForm(forms.Form):
         if user and getattr(user, "group", None) != "bloom":
             qs = qs.filter(group=user.group)
 
-        self.fields["parent"].queryset = qs.order_by("title")
+        self.fields["parent"].queryset = qs.order_by("-updated")
         self.fields["parent"].label_from_instance = lambda obj: obj.title or obj
 
 
