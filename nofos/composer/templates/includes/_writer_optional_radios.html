@@ -1,0 +1,59 @@
+<fieldset class="usa-fieldset margin-bottom-4">
+  <legend class="usa-label padding-bottom-2 text-bold">Do you want this section in your NOFO?</legend>
+  <div class="grid-row grid-gap width-mobile-lg">
+    <div class="grid-col-12">
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+              id="id_hidden_false"
+              type="radio"
+              name="hidden"
+              value="False"
+              {% if not form.hidden.value %}checked{% endif %} />
+        <label class="usa-radio__label" for="id_hidden_false">
+          Yes, I want this section
+        </label>
+      </div>
+      <div class="usa-radio">
+        <input class="usa-radio__input usa-radio__input--tile"
+              id="id_hidden_true"
+              type="radio"
+              name="hidden"
+              value="True"
+              {% if form.hidden.value %}checked{% endif %} />
+        <label class="usa-radio__label" for="id_hidden_true">
+          No, I want to hide this section
+        </label>
+      </div>
+    </div>
+  </div>
+</fieldset>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const yesRadio = document.getElementById('id_hidden_false');
+    const noRadio  = document.getElementById('id_hidden_true');
+
+    if (!yesRadio || !noRadio) return;
+
+    function updateHiddenSections() {
+      const targets = document.querySelectorAll('.hide-if-hidden');
+      if (!targets.length) return;
+
+      const shouldHide = noRadio.checked;
+
+      targets.forEach(function (el) {
+        if (shouldHide) {
+          el.classList.add('display-none');
+        } else {
+          el.classList.remove('display-none');
+        }
+      });
+    }
+
+    yesRadio.addEventListener('change', updateHiddenSections);
+    noRadio.addEventListener('change', updateHiddenSections);
+
+    // Ensure initial state matches whichever radio is pre-checked
+    updateHiddenSections();
+  });
+</script>
