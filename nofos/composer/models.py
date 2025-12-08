@@ -54,7 +54,7 @@ class ContentGuide(BaseNofo):
 
     def get_absolute_url(self):
         """
-        Returns the main edit view for this NOFO.
+        Returns the main edit view for this ContentGuide.
         """
         return reverse("composer:composer_document_redirect", args=(self.id,))
 
@@ -179,6 +179,18 @@ class ContentGuideInstance(BaseNofo):
 
     def __str__(self) -> str:
         return "(ContentGuideInstance) {}".format(self.title or self.short_name)
+
+    def get_admin_url(self):
+        """
+        Returns the admin URL for this ContentGuideInstance.
+        """
+        return reverse("admin:composer_contentguideinstance_change", args=(self.id,))
+
+    def get_absolute_url(self):
+        """
+        Returns the main edit view for this ContentGuideInstance.
+        """
+        return reverse("composer:writer_instance_redirect", args=(self.id,))
 
 
 class ContentGuideSection(BaseSection):
