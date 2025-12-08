@@ -1167,7 +1167,7 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             name="Section 1",
             html_id="sec-1",
         )
-        self.subsection = ContentGuideSubsection.objects.create(
+        self.subsection_edit_full = ContentGuideSubsection.objects.create(
             section=self.section,
             order=1,
             name="Subsection 1",
@@ -1176,18 +1176,39 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             edit_mode="full",
         )
 
-        self.url = reverse(
+        self.subsection_edit_variables = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=2,
+            name="Subsection 2",
+            tag="h3",
+            body="Initial body with { variable }.",
+            edit_mode="variables",
+            variables={
+                "variable": {"key": "variable", "type": "string", "label": "variable"}
+            },
+        )
+
+        self.url_full = reverse(
             "composer:writer_subsection_edit",
             kwargs={
                 "pk": str(self.instance.pk),
                 "section_pk": str(self.section.pk),
-                "subsection_pk": str(self.subsection.pk),
+                "subsection_pk": str(self.subsection_edit_full.pk),
+            },
+        )
+
+        self.url_variables = reverse(
+            "composer:writer_subsection_edit",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+                "subsection_pk": str(self.subsection_edit_variables.pk),
             },
         )
 
     def test_anonymous_user_gets_403_permissions_error(self):
         """Anonymous users should get a 403 (per LoginRequiredMixin behavior)."""
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
         self.assertEqual(response.status_code, 403)
 
     def test_non_bloom_wrong_group_gets_403(self):
@@ -1195,7 +1216,7 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         A non-bloom user whose group doesn't match the instance's group gets 403.
         """
         self.client.login(email="hrsa@example.com", password="testpass123")
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
         self.assertEqual(response.status_code, 403)
 
     def test_bloom_user_can_access_any_group_instance(self):
@@ -1203,7 +1224,7 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         Bloom users can access the subsection edit page for any group.
         """
         self.client.login(email="bloom@example.com", password="testpass123")
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
         self.assertEqual(response.status_code, 200)
 
     def test_same_group_user_can_access_subsection_edit(self):
@@ -1211,17 +1232,17 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         Same-group user can access the subsection edit page.
         """
         self.client.login(email="acf@example.com", password="testpass123")
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
         self.assertEqual(response.status_code, 200)
 
-    def test_post_updates_subsection_body_and_redirects(self):
+    def test_post_updates_edit_full_subsection_body_and_redirects(self):
         """
         POST with new body content should update the subsection and redirect
         back to the section view.
         """
         self.client.login(email="acf@example.com", password="testpass123")
         new_body = "Updated body content."
-        response = self.client.post(self.url, data={"body": new_body})
+        response = self.client.post(self.url_full, data={"body": new_body})
         self.assertEqual(response.status_code, 302)
         url = reverse(
             "composer:writer_section_view",
@@ -1230,64 +1251,90 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
                 "section_pk": str(self.section.pk),
             },
         )
-        anchor = getattr(self.subsection, "html_id", "")
+        anchor = getattr(self.subsection_edit_full, "html_id", "")
         expected_redirect = (
             "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
         )
         self.assertEqual(response.url, expected_redirect)
 
+    def test_post_updates_variables_and_redirects(self):
+        """
+        POST with new body content for a 'variables' edit_mode subsection
+        should update the subsection 'variables' and redirect back to the section view.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        post_data = {"variable": "Value from writer"}
+        response = self.client.post(self.url_variables, data=post_data)
+        self.assertEqual(response.status_code, 302)
+        url = reverse(
+            "composer:writer_section_view",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+            },
+        )
+        anchor = getattr(self.subsection_edit_variables, "html_id", "")
+        expected_redirect = (
+            "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+        )
+        self.assertEqual(response.url, expected_redirect)
+        self.subsection_edit_variables.refresh_from_db()
+        variable = self.subsection_edit_variables.variables.get("variable", {})
+        variable_value = variable.get("value", "")
+        self.assertEqual(variable_value, "Value from writer")
+
     def test_first_get_marks_status_viewed(self):
         """
         First GET should mark a 'default' subsection as 'viewed'.
         """
-        self.assertEqual(self.subsection.status, "default")
+        self.assertEqual(self.subsection_edit_full.status, "default")
 
         self.client.login(email="acf@example.com", password="testpass123")
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
 
         self.assertEqual(response.status_code, 200)
-        self.subsection.refresh_from_db()
-        self.assertEqual(self.subsection.status, "viewed")
+        self.subsection_edit_full.refresh_from_db()
+        self.assertEqual(self.subsection_edit_full.status, "viewed")
 
     def test_get_does_not_downgrade_done_status(self):
         """
         GET should not change status if it's already 'done'.
         """
-        self.subsection.status = "done"
-        self.subsection.save()
+        self.subsection_edit_full.status = "done"
+        self.subsection_edit_full.save()
 
         self.client.login(email="acf@example.com", password="testpass123")
-        response = self.client.get(self.url)
+        response = self.client.get(self.url_full)
 
         self.assertEqual(response.status_code, 200)
-        self.subsection.refresh_from_db()
-        self.assertEqual(self.subsection.status, "done")
+        self.subsection_edit_full.refresh_from_db()
+        self.assertEqual(self.subsection_edit_full.status, "done")
 
     def test_post_without_done_checkbox_sets_status_viewed(self):
         """
         POST without subsection_done should leave status as 'viewed'.
         If it was 'default', it effectively becomes 'viewed'.
         """
-        self.subsection.status = "default"
-        self.subsection.save()
+        self.subsection_edit_full.status = "default"
+        self.subsection_edit_full.save()
 
         self.client.login(email="acf@example.com", password="testpass123")
-        response = self.client.post(self.url, data={"body": "Updated body"})
+        response = self.client.post(self.url_full, data={"body": "Updated body"})
 
         self.assertEqual(response.status_code, 302)
-        self.subsection.refresh_from_db()
-        self.assertEqual(self.subsection.status, "viewed")
+        self.subsection_edit_full.refresh_from_db()
+        self.assertEqual(self.subsection_edit_full.status, "viewed")
 
     def test_post_with_done_checkbox_sets_status_done(self):
         """
         POST with subsection_done checked should set status to 'done'.
         """
-        self.subsection.status = "default"
-        self.subsection.save()
+        self.subsection_edit_full.status = "default"
+        self.subsection_edit_full.save()
 
         self.client.login(email="acf@example.com", password="testpass123")
         response = self.client.post(
-            self.url,
+            self.url_full,
             data={
                 "body": "Updated body",
                 "subsection_done": "1",
@@ -1295,19 +1342,19 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         )
 
         self.assertEqual(response.status_code, 302)
-        self.subsection.refresh_from_db()
-        self.assertEqual(self.subsection.status, "done")
+        self.subsection_edit_full.refresh_from_db()
+        self.assertEqual(self.subsection_edit_full.status, "done")
 
     def test_post_can_toggle_done_back_to_viewed(self):
         """
         If status is 'done' and the checkbox is not checked, POST should set status to 'viewed'.
         """
-        self.subsection.status = "done"
-        self.subsection.save()
+        self.subsection_edit_full.status = "done"
+        self.subsection_edit_full.save()
 
         self.client.login(email="acf@example.com", password="testpass123")
         response = self.client.post(
-            self.url,
+            self.url_full,
             data={
                 "body": "Updated again",
                 # no subsection_done → unchecked
@@ -1315,5 +1362,5 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         )
 
         self.assertEqual(response.status_code, 302)
-        self.subsection.refresh_from_db()
-        self.assertEqual(self.subsection.status, "viewed")
+        self.subsection_edit_full.refresh_from_db()
+        self.assertEqual(self.subsection_edit_full.status, "viewed")
