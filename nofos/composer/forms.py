@@ -1,3 +1,5 @@
+import json
+
 from bloom_nofos.utils import cast_to_boolean
 from django import forms
 from martor.fields import MartorFormField
@@ -285,7 +287,7 @@ class WriterInstanceSubsectionEditForm(forms.Form):
             self.initial["body"] = self.subsection.body
 
         elif self.subsection.edit_mode == "variables":
-            for variable_key, variable_info in self.subsection.variables.items():
+            for variable_key, variable_info in self.subsection.get_variables().items():
                 field_name = variable_key
                 self.fields[field_name] = forms.CharField(
                     label=variable_info.get("label", variable_key),
@@ -313,16 +315,19 @@ class WriterInstanceSubsectionEditForm(forms.Form):
             return self.subsection
 
         elif self.subsection.edit_mode == "variables":
-            current = dict(self.subsection.variables or {})
+            current = dict(self.subsection.get_variables() or {})
 
             for key in self.fields:
-                if key == "body":
-                    continue
                 updated = self.cleaned_data.get(key, None)
                 existing = current.get(key, {})
                 # Update with new value
                 current[key] = {**existing, "value": updated}
 
-            self.subsection.variables = current
+            self.subsection.variables = json.dumps(current)
             self.subsection.save(update_fields=["variables"])
             return self.subsection
+
+        else:
+            raise ValueError(
+                "Cannot save subsection with edit_mode=" + self.subsection.edit_mode
+            )

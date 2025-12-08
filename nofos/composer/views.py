@@ -1,3 +1,5 @@
+import json
+
 from bloom_nofos.logs import log_exception
 from django.conf import settings
 from django.contrib import messages
@@ -199,7 +201,6 @@ def create_instance_sections_and_subsections(instance: ContentGuideInstance):
     ]
 
     ContentGuideSubsection.objects.bulk_create(new_subsections)
-
 
 
 ###########################################################
@@ -922,7 +923,7 @@ class ComposerSubsectionCreateView(
         )
 
         # Save the variables extracted from the body to the subsection
-        form.instance.variables = form.instance.extract_variables()
+        form.instance.variables = json.dumps(form.instance.extract_variables())
 
         messages.success(
             self.request,
@@ -983,13 +984,13 @@ class ComposerSubsectionEditView(
         context["document"] = self.document
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
-            self.get_object().variables.values()
+            self.get_object().get_variables().values()
         )
         return context
 
     def form_valid(self, form):
         # Update variables in case the body changed
-        form.instance.variables = form.instance.extract_variables()
+        form.instance.variables = json.dumps(form.instance.extract_variables())
         messages.add_message(
             self.request,
             messages.SUCCESS,
@@ -1536,7 +1537,7 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, FormView):
         context["instance"] = self.instance
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
-            self.object.variables.values()
+            self.object.get_variables().values()
         )
         return context
 
