@@ -1499,16 +1499,14 @@ class WriterInstanceArchiveView(GroupAccessContentGuideMixin, BaseComposerArchiv
     success_url = reverse_lazy("composer:writer_index")
 
 
-class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView):
+class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, FormView):
     """
     Edit a single ContentGuideSubsection's body for a ContentGuideInstance.
     URL: /writer/<pk>/section/<section_pk>/subsection/<subsection_pk>/edit
     """
 
-    model = ContentGuideSubsection
     form_class = WriterInstanceSubsectionEditForm
     template_name = "composer/writer/writer_subsection_edit.html"
-    context_object_name = "subsection"
 
     def get_object(self, queryset=None):
         subsection = get_object_or_404(
@@ -1532,10 +1530,13 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         if self.request.method == "GET":
             subsection.mark_as_viewed_on_first_open()
 
+        # Set self.object, since we are not leveraging UpdateView due to dynamic form
+        self.object = subsection
         return subsection
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["subsection"] = self.object
         context["instance"] = self.instance
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
@@ -1543,7 +1544,14 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         )
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["subsection"] = self.object
+        return kwargs
+
     def form_valid(self, form):
+        form.save()
+
         messages.success(
             self.request,
             "Updated section: “<strong>{}</strong>” in ‘<strong>{}</strong>’".format(
@@ -1558,15 +1566,13 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         else:
             self.object.status = "viewed"
 
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        # Back to the section page with an anchor to this subsection
+        self.object.save(update_fields=["status"])
         url = reverse_lazy(
             "composer:writer_section_view", args=[self.instance.pk, self.section.pk]
         )
         anchor = getattr(self.object, "html_id", "")
-        return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+        final_url = "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+        return redirect(final_url)
 
 
 @staff_member_required
