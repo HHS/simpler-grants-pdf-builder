@@ -85,6 +85,10 @@ blockquote {
   background-color: var(--color--optional-purple);
 }
 
+.bg-error-darker {
+  background-color: var(--color--usa-error-bg-darker);
+}
+
 details > summary {
   width: fit-content;
 }

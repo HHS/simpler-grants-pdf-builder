@@ -302,7 +302,12 @@ class ContentGuideSubsection(BaseSubsection):
 
     optional = models.BooleanField(
         default=False,
-        help_text="Decide if this subsection is required, or can be removed by NOFO Writers",
+        help_text="Decide if this subsection is required, or can be hidden by NOFO Writers",
+    )
+
+    hidden = models.BooleanField(
+        default=False,
+        help_text="If optional, whether the subsection is currently hidden by the NOFO Writer.",
     )
 
     # Admin-only Markdown field for guidance.
@@ -312,6 +317,8 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Guidance for NOFO Writers on filling out this section.",
     )
 
+    # Stored as TextField instead of JSONField to ensure no DB sorting or re-ordering happens.
+    # Values will JSON-encoded/decoded upon retrieval/storage.
     variables = models.TextField(
         default="",
         blank=True,

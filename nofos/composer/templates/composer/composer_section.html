@@ -96,7 +96,7 @@
                   {% if document_is_instance == False %}
                     {% include "includes/_composer_subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
                   {% else %}
-                    {% include "includes/_writer_subsection_labels.html" with edit_mode=subsection.edit_mode status=subsection.status only %}
+                    {% include "includes/_writer_subsection_labels.html" with hidden=subsection.hidden optional=subsection.optional edit_mode=subsection.edit_mode status=subsection.status only %}
                   {% endif %}
                 </div>
               </button>
@@ -113,15 +113,19 @@
               {% endif %}
               {% if subsection.instructions %}
               <div class="position-relative padding-bottom-2 border-bottom border-base-lighter">
-                <div class="bg-primary-lighter padding-2">
+                <div class="{% if subsection.hidden %}bg-base-lighter text-gray-50{% else %}bg-primary-lighter{% endif %} padding-2">
                   <div class="display-flex flex-justify flex-align-center">
-                    <div class="font-heading-lg text-bold padding-top-1">Instructions</div>
+                    <div class="font-heading-lg text-bold padding-top-1">Instructions{%if document_is_instance == True %}<span class="usa-sr-only">(locked)</span>{% endif %}</div>
                     {% if document_is_instance == False %}
                       <span class="bg-white"><a
                         class="usa-button usa-button--outline usa-button--compact"
                         href="{% url 'composer:instructions_edit' document.pk current_section.pk subsection.pk %}">
                           Edit instructions
                       </a></span>
+                    {% else %}
+                      <svg class="usa-icon" aria-hidden="true" focusable="false" role="img" style="height: 22px; width: 19px;">
+                        <use href="/static/img/usa-icons/lock.svg"></use>
+                      </svg>
                     {% endif %}
                   </div>
                   <div>
@@ -130,7 +134,7 @@
                 </div>
               </div>
               {% endif %}
-              <div class="position-relative">
+              <div class="{% if subsection.hidden %}text-gray-50{% endif %} position-relative">
                 <div class="font-heading-lg text-bold padding-top-1 margin-right-10">{{ subsection.name }}</div>
                 <a
                   class="usa-button usa-button--outline usa-button--compact position-absolute top-0 right-0"

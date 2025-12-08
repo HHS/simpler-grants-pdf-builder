@@ -1,5 +1,9 @@
 {% load edit_mode_label subsection_status_label %}
 
+{% if hidden is True %}
+    <span class="usa-tag maxh-fit-content text-white text-normal text-no-uppercase bg-error-darker">Hidden</span>
+{% endif %}
+
 {% if optional is True %}
     <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-optional-purple">Optional</span>
 {% endif %}

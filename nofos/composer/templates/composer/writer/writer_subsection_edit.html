@@ -22,28 +22,61 @@
 
     <hr class="usa-prose">
 
-    {% if subsection.instructions %}
-      <div class="maxw-fit-content">
-        <div class="bg-primary-lighter padding-2">
-          <div class="display-flex flex-justify flex-align-center">
-            <div class="font-heading-lg text-bold">Instructions <span class="usa-sr-only">(locked)</span></div>
-            <svg class="usa-icon" aria-hidden="true" focusable="false" role="img" style="height: 22px; width: 19px;">
-              <use href="/static/img/usa-icons/lock.svg"></use>
-            </svg>
-          </div>
-          <div class="padding-right-6">
-            {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
-          </div>
-        </div>
-      </div>
-
-      <hr class="usa-prose">
-    {% endif %}
-    {% if subsection.edit_mode != 'locked' %}
     <form method="post" novalidate>
       {% csrf_token %}
-      <div class="margin-top-4">
-        {% if subsection.edit_mode == 'full' %}
+
+      {% if subsection.optional %}
+      <fieldset class="usa-fieldset margin-bottom-4">
+        <legend class="usa-label padding-bottom-2 text-bold">Do you want this section in your NOFO?</legend>
+        <div class="grid-row grid-gap width-mobile-lg">
+          <div class="grid-col-12">
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                    id="id_hidden_false"
+                    type="radio"
+                    name="hidden"
+                    value="False"
+                    {% if not form.hidden.value %}checked{% endif %} />
+              <label class="usa-radio__label" for="id_hidden_false">
+                Yes, I want this section
+              </label>
+            </div>
+            <div class="usa-radio">
+              <input class="usa-radio__input usa-radio__input--tile"
+                    id="id_hidden_true"
+                    type="radio"
+                    name="hidden"
+                    value="True"
+                    {% if form.hidden.value %}checked{% endif %} />
+              <label class="usa-radio__label" for="id_hidden_true">
+                No, I want to hide this section
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      {% endif %}
+
+      {% if subsection.instructions %}
+        <div class="maxw-fit-content">
+          <div class="bg-primary-lighter padding-2">
+            <div class="display-flex flex-justify flex-align-center">
+              <div class="font-heading-lg text-bold">Instructions <span class="usa-sr-only">(locked)</span></div>
+              <svg class="usa-icon" aria-hidden="true" focusable="false" role="img" style="height: 22px; width: 19px;">
+                <use href="/static/img/usa-icons/lock.svg"></use>
+              </svg>
+            </div>
+            <div class="width-tablet-lg">
+              {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+            </div>
+          </div>
+        </div>
+
+        <hr class="usa-prose">
+      {% endif %}
+
+      {% if subsection.edit_mode == 'full' %}
+      <div class="margin-y-4">
         <label class="usa-label text-bold" for="{{ form.body.id_for_label }}">Section content</label>
         <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
         <br>
@@ -71,15 +104,10 @@
         </li>
         <li class="usa-button-group__item">
         <a class="usa-button usa-button--outline"
-           href="{% url 'composer:writer_section_view' instance.pk section.pk %}">Cancel</a></li>
+          href="{% url 'composer:writer_section_view' instance.pk section.pk %}">Cancel</a></li>
       </ul>
     </form>
-    {% else %}
-      <p>This subsection is not editable.</p>
-      <div class="usa-prose">
-        {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-      </div>
-    {% endif %}
+
 
 {% endblock %}
 

@@ -282,6 +282,11 @@ class WriterInstanceSubsectionEditForm(forms.Form):
         self.subsection = subsection
         super().__init__(*args, **kwargs)
 
+        self.fields["hidden"] = forms.BooleanField(
+            required=True,
+        )
+        self.initial["hidden"] = self.subsection.hidden
+
         if self.subsection.edit_mode == "full":
             self.fields["body"] = MartorFormField(required=False)
             self.initial["body"] = self.subsection.body
@@ -309,11 +314,14 @@ class WriterInstanceSubsectionEditForm(forms.Form):
         if not self.is_valid():
             raise ValueError("Cannot save an invalid form")
 
+        # Update hidden field
+        self.subsection.hidden = self.cleaned_data.get("hidden", False)
+        update_fields = ["hidden"]
+
+        # Update body or variables based on edit_mode
         if self.subsection.edit_mode == "full":
             self.subsection.body = self.cleaned_data.get("body", "")
-            self.subsection.save(update_fields=["body"])
-            return self.subsection
-
+            update_fields.append("body")
         elif self.subsection.edit_mode == "variables":
             current = dict(self.subsection.get_variables() or {})
 
@@ -324,10 +332,7 @@ class WriterInstanceSubsectionEditForm(forms.Form):
                 current[key] = {**existing, "value": updated}
 
             self.subsection.variables = json.dumps(current)
-            self.subsection.save(update_fields=["variables"])
-            return self.subsection
+            update_fields.append("variables")
 
-        else:
-            raise ValueError(
-                "Cannot save subsection with edit_mode=" + self.subsection.edit_mode
-            )
+        self.subsection.save(update_fields=update_fields)
+        return self.subsection
