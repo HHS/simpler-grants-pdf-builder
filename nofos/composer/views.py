@@ -201,6 +201,11 @@ def create_instance_sections_and_subsections(instance: ContentGuideInstance):
     ContentGuideSubsection.objects.bulk_create(new_subsections)
 
 
+# def get_variable_values_for_subsection(self, subsection):
+#     if subsection.edit_mode != "variables":
+#         return None
+
+#     variables =
 ###########################################################
 ##################### GENERIC VIEWS #######################
 ###########################################################
@@ -920,6 +925,9 @@ class ComposerSubsectionCreateView(
             section.subsections.count(), form.instance
         )
 
+        # Save the variables extracted from the body to the subsection
+        form.instance.variables = form.instance.extract_variables()
+
         messages.success(
             self.request,
             "Created new section: “{}” in ‘{}’".format(
@@ -979,11 +987,13 @@ class ComposerSubsectionEditView(
         context["document"] = self.document
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
-            self.get_object().extract_variables()
+            self.get_object().variables.values()
         )
         return context
 
     def form_valid(self, form):
+        # Update variables incase the body changed
+        form.instance.variables = form.instance.extract_variables()
         messages.add_message(
             self.request,
             messages.SUCCESS,
@@ -1529,7 +1539,7 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, UpdateView)
         context["instance"] = self.instance
         context["section"] = self.section
         context["subsection_variables"] = render_curly_variable_list_html_string(
-            self.object.extract_variables()
+            self.object.variables.values()
         )
         return context
 

@@ -39,10 +39,11 @@
 
       <hr class="usa-prose">
     {% endif %}
-    {% if subsection.edit_mode == 'full' %}
+    {% if subsection.edit_mode != 'locked' %}
     <form method="post" novalidate>
       {% csrf_token %}
       <div class="margin-top-4">
+        {% if subsection.edit_mode == 'full' %}
         <label class="usa-label text-bold" for="{{ form.body.id_for_label }}">Section content</label>
         <p>Editor view uses Markdown to display content. Find out more about <a href="#">Markdown</a>.
         <br>
@@ -56,6 +57,9 @@
           {{ form.body }}
         </div>
       </div>
+      {% elif subsection.edit_mode == 'variables' %}
+        {% include "includes/form_macro.html" %}
+      {% endif %}
 
       {% include "includes/_subsection_done_checkbox.html" with status=subsection.status only %}
 
@@ -70,8 +74,6 @@
            href="{% url 'composer:writer_section_view' instance.pk section.pk %}">Cancel</a></li>
       </ul>
     </form>
-    {% elif subsection.edit_mode == 'variables' %}
-      PLACEHOLDER FOR VARIABLES EDITING
     {% else %}
       <p>This subsection is not editable.</p>
       <div class="usa-prose">
