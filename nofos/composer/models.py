@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from typing import Dict
 
@@ -311,11 +312,19 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Guidance for NOFO Writers on filling out this section.",
     )
 
-    variables = models.JSONField(
-        default=dict,
+    variables = models.TextField(
+        default="",
         blank=True,
         help_text="Variables from the subsection body, keyed by variable key. If ContentGuideInstance, also includes writer-provided values.",
     )
+
+    def get_variables(self) -> dict:
+        if not self.variables:
+            return {}
+        try:
+            return json.loads(self.variables)
+        except json.JSONDecodeError as e:
+            return {}
 
     # ---------- Conditional answer helpers ---------- #
 
@@ -420,7 +429,7 @@ class ContentGuideSubsection(BaseSubsection):
         Returns:
             The variable value (str or List[str]) if set, else None.
         """
-        var_info = self.variables.get(key)
+        var_info = self.get_variables().get(key)
         if not var_info:
             return None
         return var_info.get("value")

@@ -138,7 +138,7 @@
                     Edit
                 </a>
                 <div class="usa-prose styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
-                  {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.variables }}
+                  {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
                 </div>
               </div>
             </div>

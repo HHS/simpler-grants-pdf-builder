@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import re
@@ -416,7 +417,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 variables = subsection_obj.extract_variables()
                 if variables:
                     subsection_obj.edit_mode = "variables"
-                    subsection_obj.variables = variables
+                    subsection_obj.variables = json.dumps(variables)
 
             add_html_id_to_subsection(subsection_obj)
             try:
