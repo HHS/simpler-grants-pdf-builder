@@ -24,8 +24,8 @@
     <form method="post" novalidate>
       {% csrf_token %}
 
-      {% include "includes/_optional_radios.html" with field=form.optional only %}
-      {% include "includes/_edit_mode_radios.html" with field=form.edit_mode subsection_variables=subsection_variables only %}
+      {% include "includes/_composer_optional_radios.html" with field=form.optional only %}
+      {% include "includes/_composer_edit_mode_radios.html" with field=form.edit_mode subsection_variables=subsection_variables only %}
 
       {# --- Body (Martor) --- #}
       <div class="margin-top-4">

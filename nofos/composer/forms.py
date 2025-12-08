@@ -282,9 +282,8 @@ class WriterInstanceSubsectionEditForm(forms.Form):
         self.subsection = subsection
         super().__init__(*args, **kwargs)
 
-        self.fields["hidden"] = forms.BooleanField(
-            required=True,
-        )
+        # the "Yes, keep it" radio does not actually get sent
+        self.fields["hidden"] = forms.BooleanField(required=False)
         self.initial["hidden"] = self.subsection.hidden
 
         if self.subsection.edit_mode == "full":
@@ -315,17 +314,21 @@ class WriterInstanceSubsectionEditForm(forms.Form):
             raise ValueError("Cannot save an invalid form")
 
         # Update hidden field
-        self.subsection.hidden = self.cleaned_data.get("hidden", False)
+        self.subsection.hidden = bool(self.cleaned_data.get("hidden", False))
         update_fields = ["hidden"]
 
         # Update body or variables based on edit_mode
         if self.subsection.edit_mode == "full":
             self.subsection.body = self.cleaned_data.get("body", "")
             update_fields.append("body")
+
         elif self.subsection.edit_mode == "variables":
             current = dict(self.subsection.get_variables() or {})
 
             for key in self.fields:
+                # don't save "hidden" to JSON fields
+                if key == "hidden":
+                    continue
                 updated = self.cleaned_data.get(key, None)
                 existing = current.get(key, {})
                 # Update with new value
