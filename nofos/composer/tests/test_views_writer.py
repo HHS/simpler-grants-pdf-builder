@@ -1178,6 +1178,15 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             edit_mode="full",
         )
 
+        self.url_full = reverse(
+            "composer:writer_subsection_edit",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+                "subsection_pk": str(self.subsection_edit_full.pk),
+            },
+        )
+
         self.subsection_edit_variables = ContentGuideSubsection.objects.create(
             section=self.section,
             order=2,
@@ -1190,21 +1199,31 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
             ),
         )
 
-        self.url_full = reverse(
-            "composer:writer_subsection_edit",
-            kwargs={
-                "pk": str(self.instance.pk),
-                "section_pk": str(self.section.pk),
-                "subsection_pk": str(self.subsection_edit_full.pk),
-            },
-        )
-
         self.url_variables = reverse(
             "composer:writer_subsection_edit",
             kwargs={
                 "pk": str(self.instance.pk),
                 "section_pk": str(self.section.pk),
                 "subsection_pk": str(self.subsection_edit_variables.pk),
+            },
+        )
+
+        self.subsection_optional = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=3,
+            name="Subsection 3",
+            tag="h3",
+            body="Optional subsection body.",
+            edit_mode="locked",
+            optional=True,
+        )
+
+        self.url_optional = reverse(
+            "composer:writer_subsection_edit",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+                "subsection_pk": str(self.subsection_optional.pk),
             },
         )
 
@@ -1284,6 +1303,31 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         variable = self.subsection_edit_variables.get_variables().get("variable", {})
         variable_value = variable.get("value", "")
         self.assertEqual(variable_value, "Value from writer")
+
+    def test_post_updates_optional_locked_subsection_and_redirects(self):
+        """
+        POST to an optional 'locked' edit_mode subsection should update
+        the body and redirect back to the section view.
+        """
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.url_optional, data={"hidden": True})
+        self.assertEqual(response.status_code, 302)
+
+        url = reverse(
+            "composer:writer_section_view",
+            kwargs={
+                "pk": str(self.instance.pk),
+                "section_pk": str(self.section.pk),
+            },
+        )
+        anchor = getattr(self.subsection_optional, "html_id", "")
+        expected_redirect = (
+            "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
+        )
+        self.assertEqual(response.url, expected_redirect)
+
+        self.subsection_optional.refresh_from_db()
+        self.assertEqual(self.subsection_optional.hidden, True)
 
     def test_first_get_marks_status_viewed(self):
         """
