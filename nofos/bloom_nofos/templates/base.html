@@ -18,6 +18,8 @@
           <em class="usa-logo__text">
             {% if '/compare/' in request.path %}
               <a href="{% url 'compare:compare_index' %}">NOFO Compare</a>
+            {% elif '/composer/writer' in request.path %}
+              <a href="{% url 'composer:writer_index' %}">NOFO Composer</a>
             {% elif '/composer/' in request.path %}
               <a href="{% url 'composer:composer_index' %}">NOFO Composer</a>
             {% else %}
