@@ -267,7 +267,7 @@ class WriterInstanceConditionalQuestionsForm(forms.Form):
 
 class WriterInstanceSubsectionEditForm(forms.Form):
     """
-    A dynamic form that renders the body field for a given ContentGuideSubsection, as well as invidiual
+    A dynamic form that renders the body field for a given ContentGuideSubsection, as well as individual
     fields for each variables in that subsection body if edit_mode = 'variables'.
     """
 
