@@ -199,7 +199,7 @@ def create_instance_sections_and_subsections(instance: ContentGuideInstance):
             **model_to_dict(
                 original_subsection, exclude=["id", "section", "variables"]
             ),
-            variables=json.dumps(
+            variables=serialize_variables(
                 prefill_variables_from_instance_details(
                     instance, original_subsection.get_variables()
                 )
@@ -222,12 +222,25 @@ def prefill_variables_from_instance_details(
     field_labels = ContentGuideInstance.FIELD_TO_LABEL_MAP.items()
     for field_name, field_label in field_labels:
         for var_key, var_info in variables.items():
-            if field_label in var_info["label"]:
+            if field_label.lower() in var_info.label.lower():
                 details_value = getattr(instance, field_name, "")
                 if details_value:
-                    variables[var_key]["value"] = details_value
+                    var_info.value = details_value
 
     return variables
+
+
+def serialize_variables(variables: Dict[str, VariableInfo]) -> str:
+    """
+    Serialize a dictionary of VariableInfo instances to JSON string.
+
+    Args:
+        variables: Dict mapping variable keys to VariableInfo instances
+
+    Returns:
+        JSON string representation
+    """
+    return json.dumps({key: var.to_dict() for key, var in variables.items()})
 
 
 ###########################################################
@@ -1001,7 +1014,7 @@ class ComposerSubsectionCreateView(
         )
 
         # Save the variables extracted from the body to the subsection
-        form.instance.variables = json.dumps(form.instance.extract_variables())
+        form.instance.variables = serialize_variables(form.instance.extract_variables())
 
         messages.success(
             self.request,
@@ -1068,7 +1081,7 @@ class ComposerSubsectionEditView(
 
     def form_valid(self, form):
         # Update variables in case the body changed
-        form.instance.variables = json.dumps(form.instance.extract_variables())
+        form.instance.variables = serialize_variables(form.instance.extract_variables())
         messages.add_message(
             self.request,
             messages.SUCCESS,

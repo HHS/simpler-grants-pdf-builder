@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Dict, NotRequired, TypedDict
+from dataclasses import asdict, dataclass
+from typing import Any, Dict
 
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from django.core.exceptions import ValidationError
@@ -15,13 +16,28 @@ from slugify import slugify
 from nofos.models import BaseNofo, BaseSection, BaseSubsection
 
 
-class VariableInfo(TypedDict):
-    """Type definition for variable information extracted from text."""
+@dataclass
+class VariableInfo:
+    """Data class for variable information extracted from text."""
 
     key: str
     type: str
     label: str
-    value: NotRequired[str]
+    value: str | None = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "VariableInfo":
+        """Create VariableInfo from dictionary."""
+        return cls(
+            key=data["key"],
+            type=data["type"],
+            label=data["label"],
+            value=data.get("value"),
+        )
 
 
 class ContentGuide(BaseNofo):
@@ -360,12 +376,19 @@ class ContentGuideSubsection(BaseSubsection):
         help_text="Variables from the subsection body, keyed by variable key. If ContentGuideInstance, also includes writer-provided values.",
     )
 
-    def get_variables(self) -> dict:
+    def get_variables(self) -> Dict[str, VariableInfo]:
+        """
+        Get variables from the stored JSON field.
+
+        Returns:
+            Dict mapping variable keys to VariableInfo instances.
+        """
         if not self.variables:
             return {}
         try:
-            return json.loads(self.variables)
-        except json.JSONDecodeError as e:
+            data = json.loads(self.variables)
+            return {key: VariableInfo.from_dict(val) for key, val in data.items()}
+        except (json.JSONDecodeError, KeyError, TypeError):
             return {}
 
     # ---------- Conditional answer helpers ---------- #
@@ -423,7 +446,7 @@ class ContentGuideSubsection(BaseSubsection):
         Escape literal braces with '\\{' or '\\}'.
 
         Returns:
-            Dict{"total_budget_amount": {"key": "total_budget_amount", "type": "string", "label": "Enter total budget amount"}}
+            Dict{"total_budget_amount": VariableInfo(key="total_budget_amount", type="string", label="Enter total budget amount", value=None)}
         """
         text = (text if text is not None else self.body) or ""
         results: Dict[str, VariableInfo] = {}
@@ -454,7 +477,7 @@ class ContentGuideSubsection(BaseSubsection):
                 i += 1
 
             used_keys.add(key)
-            results[key] = {"key": key, "type": var_type, "label": label}
+            results[key] = VariableInfo(key=key, type=var_type, label=label)
 
         return results
 
@@ -474,7 +497,7 @@ class ContentGuideSubsection(BaseSubsection):
         var_info = self.get_variables().get(key)
         if not var_info:
             return None
-        return var_info.get("value")
+        return var_info.value
 
     # ---------- Subsection status helpers ---------- #
 

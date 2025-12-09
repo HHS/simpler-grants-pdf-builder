@@ -18,7 +18,7 @@ def replace_variable_keys_with_values(html_string, variables_dict):
 
         # If a matching variable exists, replace the content
         if var_key:
-            var_value = var_info.get("value", None)
+            var_value = var_info.value
             if var_value:
                 # Update the span with the variable value
                 span.string = var_value
@@ -30,6 +30,6 @@ def replace_variable_keys_with_values(html_string, variables_dict):
 
 def find_variable_by_label(variables_dict, label):
     for var_key, var_info in variables_dict.items():
-        if var_info.get("label") == label:
+        if var_info.label == label:
             return var_key, var_info
     return None, None

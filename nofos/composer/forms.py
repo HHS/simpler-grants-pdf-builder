@@ -7,7 +7,12 @@ from martor.fields import MartorFormField
 from nofos.forms import create_object_model_form
 
 from .conditional.conditional_questions import CONDITIONAL_QUESTIONS
-from .models import ContentGuide, ContentGuideInstance, ContentGuideSubsection
+from .models import (
+    ContentGuide,
+    ContentGuideInstance,
+    ContentGuideSubsection,
+    VariableInfo,
+)
 from .utils import get_opdiv_label
 
 create_composer_form_class = create_object_model_form(ContentGuide)
@@ -286,7 +291,7 @@ class WriterInstanceSubsectionEditForm(forms.Form):
             for variable_key, variable_info in self.subsection.get_variables().items():
                 field_name = variable_key
                 self.fields[field_name] = forms.CharField(
-                    label=variable_info.get("label", variable_key),
+                    label=variable_info.label,
                     required=False,
                     widget=forms.TextInput(
                         attrs={
@@ -322,11 +327,16 @@ class WriterInstanceSubsectionEditForm(forms.Form):
                 if key == "hidden":
                     continue
                 updated = self.cleaned_data.get(key, None)
-                existing = current.get(key, {})
-                # Update with new value
-                current[key] = {**existing, "value": updated}
+                existing = current.get(key)
+                if existing:
+                    # Update the value field of the existing VariableInfo
+                    existing.value = updated
+                    current[key] = existing
 
-            self.subsection.variables = json.dumps(current)
+            # Serialize VariableInfo instances to JSON
+            self.subsection.variables = json.dumps(
+                {key: var.to_dict() for key, var in current.items()}
+            )
             update_fields.append("variables")
 
         self.subsection.save(update_fields=update_fields)
