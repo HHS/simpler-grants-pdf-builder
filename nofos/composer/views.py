@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
@@ -63,6 +64,7 @@ from .models import (
     ContentGuideInstance,
     ContentGuideSection,
     ContentGuideSubsection,
+    VariableInfo,
 )
 from .utils import (
     create_content_guide_document,
@@ -194,13 +196,38 @@ def create_instance_sections_and_subsections(instance: ContentGuideInstance):
 
     new_subsections = [
         ContentGuideSubsection(
-            **model_to_dict(original_subsection, exclude=["id", "section"]),
+            **model_to_dict(
+                original_subsection, exclude=["id", "section", "variables"]
+            ),
+            variables=json.dumps(
+                prefill_variables_from_instance_details(
+                    instance, original_subsection.get_variables()
+                )
+            ),
             section=section_map[original_subsection.section.id],
         )
         for original_subsection in subsections_to_include
     ]
 
     ContentGuideSubsection.objects.bulk_create(new_subsections)
+
+
+def prefill_variables_from_instance_details(
+    instance: ContentGuideInstance, variables: Dict[str, VariableInfo]
+) -> Dict[str, VariableInfo]:
+    """
+    Prefill variables with values from the instance's details fields, where applicable.
+    Match instance details fields to variables based on the field label being present in the variable label.
+    """
+    field_labels = ContentGuideInstance.FIELD_TO_LABEL_MAP.items()
+    for field_name, field_label in field_labels:
+        for var_key, var_info in variables.items():
+            if field_label in var_info["label"]:
+                details_value = getattr(instance, field_name, "")
+                if details_value:
+                    variables[var_key]["value"] = details_value
+
+    return variables
 
 
 ###########################################################

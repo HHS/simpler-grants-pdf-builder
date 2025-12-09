@@ -1011,6 +1011,197 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             subsection.instructions, "These are instructions for the writer."
         )
 
+    def test_post_prefills_variables_from_instance_details(self):
+        """
+        POST to confirmation page should prefill variable values from instance details
+        when variable labels contain the field labels from FIELD_TO_LABEL_MAP.
+        """
+        # Set up instance with title and number filled in
+        self.instance.title = "Community Health Centers NOFO"
+        self.instance.number = "HRSA-24-001"
+        self.instance.save()
+
+        # Create section with subsections containing variables that match field labels
+        section = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Introduction",
+            html_id="sec-intro",
+        )
+
+        # Subsection 1: Variable with label containing "NOFO title"
+        subsection1 = ContentGuideSubsection.objects.create(
+            section=section,
+            order=1,
+            name="Title Section",
+            tag="h3",
+            body="Please insert the NOFO title here: {Insert the NOFO title}",
+            edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "insert_the_nofo_title": {
+                        "key": "insert_the_nofo_title",
+                        "label": "Insert the NOFO title",
+                        "type": "string",
+                    }
+                }
+            ),
+        )
+
+        # Subsection 2: Variable with label containing "NOFO number"
+        subsection2 = ContentGuideSubsection.objects.create(
+            section=section,
+            order=2,
+            name="Number Section",
+            tag="h3",
+            body="The number is: {Insert NOFO number.}",
+            edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "insert_nofo_number": {
+                        "key": "insert_nofo_number",
+                        "label": "Insert NOFO number.",
+                        "type": "string",
+                    }
+                }
+            ),
+        )
+
+        # Subsection 3: Variable that doesn't match any field (should not be prefilled)
+        subsection3 = ContentGuideSubsection.objects.create(
+            section=section,
+            order=3,
+            name="Other Section",
+            tag="h3",
+            body="Enter your budget: {Total budget amount}",
+            edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "total_budget_amount": {
+                        "key": "total_budget_amount",
+                        "label": "Total budget amount",
+                        "type": "string",
+                    }
+                }
+            ),
+        )
+
+        # Subsection 4: Multiple variables, one matching
+        subsection4 = ContentGuideSubsection.objects.create(
+            section=section,
+            order=4,
+            name="Mixed Section",
+            tag="h3",
+            body="Title: {insert NOFO title} and deadline: {insert Application deadline}",
+            edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "insert_nofo_title": {
+                        "key": "insert_nofo_title",
+                        "label": "insert NOFO title",
+                        "type": "string",
+                    },
+                    "insert_application_deadline": {
+                        "key": "insert_application_deadline",
+                        "label": "insert Application deadline",
+                        "type": "string",
+                    },
+                }
+            ),
+        )
+
+        # Login and POST
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+        self.assertEqual(response.status_code, 302)
+
+        # Get created subsections
+        self.instance.refresh_from_db()
+        instance_section = self.instance.sections.first()
+        instance_subsections = list(instance_section.subsections.order_by("order"))
+        self.assertEqual(len(instance_subsections), 4)
+
+        # Check subsection 1: variable with "NOFO title" should be prefilled
+        sub1 = instance_subsections[0]
+        sub1_variables = sub1.get_variables()
+        self.assertEqual(len(sub1_variables), 1)
+        title_var = list(sub1_variables.values())[0]
+        self.assertEqual(title_var["label"], "Insert the NOFO title")
+        self.assertEqual(title_var["value"], "Community Health Centers NOFO")
+
+        # Check subsection 2: variable with "NOFO number" should be prefilled
+        sub2 = instance_subsections[1]
+        sub2_variables = sub2.get_variables()
+        self.assertEqual(len(sub2_variables), 1)
+        number_var = list(sub2_variables.values())[0]
+        self.assertEqual(number_var["label"], "Insert NOFO number.")
+        self.assertEqual(number_var["value"], "HRSA-24-001")
+
+        # Check subsection 3: variable should NOT be prefilled (no match)
+        sub3 = instance_subsections[2]
+        sub3_variables = sub3.get_variables()
+        self.assertEqual(len(sub3_variables), 1)
+        budget_var = list(sub3_variables.values())[0]
+        self.assertEqual(budget_var["label"], "Total budget amount")
+        self.assertNotIn("value", budget_var)
+
+        # Check subsection 4: only the matching variable should be prefilled
+        sub4 = instance_subsections[3]
+        sub4_variables = sub4.get_variables()
+        self.assertEqual(len(sub4_variables), 2)
+
+        # Find the title variable (should be prefilled)
+        title_var4 = next(
+            v for v in sub4_variables.values() if "title" in v["label"].lower()
+        )
+        self.assertEqual(title_var4["value"], "Community Health Centers NOFO")
+
+        # Find the deadline variable (should NOT be prefilled)
+        deadline_var = next(
+            v for v in sub4_variables.values() if "deadline" in v["label"].lower()
+        )
+        self.assertNotIn("value", deadline_var)
+
+    def test_post_does_not_prefill_when_instance_details_are_empty(self):
+        """
+        POST should not prefill variables when instance details are empty/blank.
+        """
+        # Ensure instance has no title or number
+        self.instance.title = ""
+        self.instance.number = ""
+        self.instance.save()
+
+        # Create section with subsection containing matching variable
+        section = ContentGuideSection.objects.create(
+            content_guide=self.parent_guide,
+            order=1,
+            name="Test Section",
+            html_id="sec-test",
+        )
+
+        ContentGuideSubsection.objects.create(
+            section=section,
+            order=1,
+            name="Title Section",
+            tag="h3",
+            body="Title: {Enter NOFO title}",
+            edit_mode="variables",
+        )
+
+        # Login and POST
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+        self.assertEqual(response.status_code, 302)
+
+        # Check that variable is NOT prefilled (empty instance field)
+        instance_section = self.instance.sections.first()
+        subsection = instance_section.subsections.first()
+        variables = subsection.get_variables()
+
+        self.assertEqual(len(variables), 1)
+        var = list(variables.values())[0]
+        self.assertNotIn("value", var)
+
 
 class WriterSectionViewAlertsTests(TestCase):
     def setUp(self):

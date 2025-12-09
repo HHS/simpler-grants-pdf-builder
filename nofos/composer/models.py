@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Dict
+from typing import Dict, NotRequired, TypedDict
 
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from django.core.exceptions import ValidationError
@@ -13,6 +13,15 @@ from martor.models import MartorField
 from slugify import slugify
 
 from nofos.models import BaseNofo, BaseSection, BaseSubsection
+
+
+class VariableInfo(TypedDict):
+    """Type definition for variable information extracted from text."""
+
+    key: str
+    type: str
+    label: str
+    value: NotRequired[str]
 
 
 class ContentGuide(BaseNofo):
@@ -64,6 +73,20 @@ class ContentGuideInstance(BaseNofo):
     An instance of a ContentGuide, to be filled out by NOFO Writers.
     Guides remain editable by admins even when ACTIVE.
     """
+
+    FIELD_TO_LABEL_MAP = {
+        "opdiv": "Operating Division",
+        "agency": "Agency",
+        "title": "NOFO title",
+        "short_name": "Short name",
+        "number": "NOFO number",
+        "activity_code": "Activity Code",
+        "federal_assistance_listing": "Federal Assistance Listing",
+        "tagline": "Tagline",
+        "author": "Metadata Author",
+        "subject": "Metadata Subject",
+        "keywords": "Metadata Keywords",
+    }
 
     title = models.TextField(
         "Content Guide title",
@@ -390,7 +413,7 @@ class ContentGuideSubsection(BaseSubsection):
     # Unified pattern - no nested braces allowed
     _VAR_PATTERN = re.compile(CURLY_VARIABLE_PATTERN)
 
-    def extract_variables(self, text: str | None = None) -> Dict[str, dict]:
+    def extract_variables(self, text: str | None = None) -> Dict[str, VariableInfo]:
         """
         Parse this subsection's body for variable placeholders.
 
@@ -403,7 +426,7 @@ class ContentGuideSubsection(BaseSubsection):
             Dict{"total_budget_amount": {"key": "total_budget_amount", "type": "string", "label": "Enter total budget amount"}}
         """
         text = (text if text is not None else self.body) or ""
-        results: Dict[str, dict] = {}
+        results: Dict[str, VariableInfo] = {}
         used_keys = set()
 
         for m in self._VAR_PATTERN.finditer(text):

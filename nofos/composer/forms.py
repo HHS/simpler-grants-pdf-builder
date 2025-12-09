@@ -155,19 +155,7 @@ class WriterInstanceDetailsForm(forms.ModelForm):
             "subject",
             "keywords",
         ]
-        labels = {
-            "opdiv": "Operating Division",
-            "agency": "Agency",
-            "title": "NOFO title",
-            "short_name": "Short name",
-            "number": "NOFO number",
-            "activity_code": "Activity Code",
-            "federal_assistance_listing": "Federal Assistance Listing",
-            "tagline": "Tagline",
-            "author": "Metadata Author",
-            "subject": "Metadata Subject",
-            "keywords": "Metadata Keywords",
-        }
+        labels = ContentGuideInstance.FIELD_TO_LABEL_MAP
         help_texts = {
             "opdiv": "The HHS operating division responsible for this NOFO (eg, CDC).",
             "agency": "The agency or office within the operating division (eg, Global Health Center).",
