@@ -42,7 +42,7 @@
       {% if document_is_instance %}
         {# if brand new instance and on first page, show "success" alert #}
         {% if request.GET.new_instance and current_section.order == 1 %}
-          <div class="usa-alert usa-alert--success usa-alert--heading-sm margin-bottom-3">
+          <div class="usa-alert usa-alert--success usa-alert--heading-sm margin-y-2">
             <div class="usa-alert__body">
               <h4 class="usa-alert__heading">Your draft NOFO has been created!</h4>
               <p class="usa-alert__text">
@@ -54,7 +54,9 @@
 
         {# if NOT a new instance and "not started" subsections exist, show "warning" alert #}
         {% if not request.GET.new_instance and not_started_subsections %}
-          {% include "includes/_writer_not_started_alert.html" %}
+          <div class="margin-y-2">
+            {% include "includes/_writer_not_started_alert.html" %}
+          </div>
         {% endif %}
       {% endif %}
 
@@ -64,9 +66,13 @@
           <li>Select “Edit” to set how much control OpDivs and writers have.</li>
           <li>Tags (e.g., Locked, Certain text, Optional) show those permissions and can be changed when editing.</li>
         </ul>
-        {% include "includes/_composer_tags_explainer_box.html" %}
+        <div class="margin-y-2">
+          {% include "includes/_composer_tags_explainer_box.html" %}
+        </div>
       {% else %}
-        {% include "includes/_writer_tags_explainer_box.html" with is_open=request.GET.new_instance %}
+        <div class="margin-y-2">
+          {% include "includes/_writer_tags_explainer_box.html" with is_open=request.GET.new_instance %}
+        </div>
       {% endif %}
 
       <hr>
