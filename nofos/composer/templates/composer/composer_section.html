@@ -140,11 +140,15 @@
               {% endif %}
               <div class="{% if subsection.hidden %}text-gray-50{% endif %} position-relative">
                 <div class="font-heading-lg text-bold padding-top-1 margin-right-10">{{ subsection.name }}</div>
-                <a
-                  class="usa-button usa-button--outline usa-button--compact position-absolute top-0 right-0"
-                  href="{% url edit_subsection_url_name document.pk current_section.pk subsection.pk %}">
-                    Edit
-                </a>
+                {% if document_is_instance and subsection.edit_mode == 'locked' and not subsection.optional %}
+                  {# don't show edit links for locked subsections in draft nofos, unless optional #}
+                {% else %}
+                  <a
+                    class="usa-button usa-button--outline usa-button--compact position-absolute top-0 right-0"
+                    href="{% url edit_subsection_url_name document.pk current_section.pk subsection.pk %}">
+                      Edit
+                  </a>
+                {% endif %}
                 <div class="usa-prose styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
                   {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
                 </div>
