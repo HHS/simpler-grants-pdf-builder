@@ -283,7 +283,11 @@ class WriterInstanceSubsectionEditForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # the "Yes, keep it" radio does not actually get sent
-        self.fields["hidden"] = forms.BooleanField(required=False)
+        self.fields["hidden"] = forms.BooleanField(
+            required=False,
+            widget=forms.HiddenInput,
+        )
+
         self.initial["hidden"] = self.subsection.hidden
 
         if self.subsection.edit_mode == "full":
