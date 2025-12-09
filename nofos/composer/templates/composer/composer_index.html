@@ -30,11 +30,11 @@
       <table class="usa-table usa-table--borderless width-full table--section">
         <thead>
           <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Last saved by</th>
-            <th scope="col">Created</th>
-            <th scope="col">Updated</th>
-            <th scope="col" class="w-5">Delete</th>
+            <th scope="col" class="w-40">Name</th>
+            <th scope="col" class="w-15">Last saved by</th>
+            <th scope="col" class="w-15">Created</th>
+            <th scope="col" class="w-15">Updated</th>
+            <th scope="col" class="w-10">Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -64,11 +64,11 @@
       <table class="usa-table usa-table--borderless width-full table--section">
         <thead>
           <tr>
-            <th data-sortable scope="col" role="columnheader">Name</th>
-            <th data-sortable scope="col" role="columnheader"">Last saved by</th>
-            <th data-sortable scope="col" role="columnheader">Created</th>
-            <th data-sortable scope="col" role="columnheader">Updated</th>
-            <th data-sortable scope="col" role="columnheader">Download</th>
+            <th scope="col" class="w-40">Name</th>
+            <th scope="col" class="w-15">Last saved by</th>
+            <th scope="col" class="w-15">Created</th>
+            <th scope="col" class="w-15">Updated</th>
+            <th scope="col" class="w-10">Download</th>
           </tr>
         </thead>
         <tbody>
@@ -78,12 +78,8 @@
                 <a href="{% url 'composer:composer_document_redirect' published.pk %}">{{ published.title }}</a></th>
               <td>{{ published.updated_by_display }}</td>
               {% timezone "America/New_York" %}
-                <td>
-                  {{ published.created|date:'M j' }}, {{ published.created|date:'g:i A' }}
-                </td>
-                <td>
-                  {{ published.updated|date:'M j' }}, {{ published.updated|date:'g:i A' }}
-                </td>
+                <td> {{ published.created_display }}</td>
+                <td> {{ published.updated_display }} </td>
               {% endtimezone %}
               <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
             </tr>
