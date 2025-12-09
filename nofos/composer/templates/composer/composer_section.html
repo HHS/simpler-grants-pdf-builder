@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note nofo_section_name_separator replace_variable_keys_with_values %}
+{% load static tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note nofo_section_name_separator replace_variable_keys_with_values subsection_name_or_placeholder %}
 
 {% block title %}
   {{ document.title }} — {{ current_section.name }}</title>
@@ -95,7 +95,7 @@
                         aria-expanded="false"
                       {% endif %}
                       >
-                {{ subsection.name|default:"(No title)" }}
+                {{ subsection|subsection_name_or_placeholder }}
                 <div class="flex-row">
                   {% if document_is_instance == False %}
                     {% include "includes/_composer_subsection_labels.html" with conditional_answer=subsection.conditional_answer optional=subsection.optional edit_mode=subsection.edit_mode only %}
