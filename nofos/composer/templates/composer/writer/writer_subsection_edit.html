@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static martortags add_classes_to_paragraphs add_classes_to_lists convert_paragraphs_to_hrs add_classes_to_tables add_footnote_ids add_captions_to_tables %}
+{% load static martortags add_classes_to_paragraphs add_classes_to_lists convert_paragraphs_to_hrs add_classes_to_tables add_footnote_ids add_captions_to_tables subsection_name_or_placeholder %}
 
 {% block title %}
   Edit {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
@@ -18,7 +18,7 @@
       <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:writer_section_view' instance.pk section.pk %}#accordion-{{ subsection.pk }}">{{ section.name }}</a>
     </div>
 
-    <h1 class="font-heading-xl margin-y-0">Edit “{{ subsection.name|default:"This subsection" }}”</h1>
+    <h1 class="font-heading-xl margin-y-0">Edit “{{ subsection|subsection_name_or_placeholder }}”</h1>
 
     <hr class="usa-prose">
 
