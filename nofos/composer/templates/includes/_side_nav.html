@@ -14,11 +14,15 @@
         </li>
       {% endfor %}
       <li class="usa-sidenav__item">
-        <a
-          href="{% url 'composer:composer_preview' document_pk %}"
-          {% if is_preview %}aria-current="page" class="usa-current"{% endif %}>
-          Preview {% if document_is_instance == True %}NOFO{% else %}content guide{% endif %}
-        </a>
+        {% if document_is_instance %}
+          <a href="{% url 'composer:writer_preview' document_pk %}" {% if is_preview %}aria-current="page" class="usa-current"{% endif %}>
+            Preview NOFO
+          </a>
+        {% else %}
+          <a href="{% url 'composer:composer_preview' document_pk %}" {% if is_preview %}aria-current="page" class="usa-current"{% endif %}>
+            Preview content guide
+          </a>
+        {% endif %}
       </li>
     </ul>
   </nav>

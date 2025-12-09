@@ -10,7 +10,7 @@
 {% block content %}
   <div class="grid-row">
     {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
-    <div class="back-link font-body-md margin-bottom-105">
+    <div class="back-link font-body-md margin-bottom-105 line-height-sans-2">
       <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{{ home_url }}">Home</a>
     </div>
   </div>
@@ -19,7 +19,7 @@
     {% include 'includes/_side_nav.html' with document_pk=document.pk document_is_instance=document_is_instance sections=sections %}
 
     <!-- current_section content -->
-    <main class="grid-col-9">
+    <div class="grid-col-9">
         <div class="subhead--document-name font-sans-md text-base margin-bottom-05">{{ document.title }}</div>
         <div class="display-flex flex-justify flex-align-start margin-bottom-1">
           <h1 class="margin-bottom-0 margin-top-05 font-serif-xl">
@@ -180,7 +180,7 @@
           <p>Up next: {{next_sec_name.name }}</p>
         {% endwith %}
       {% endif %}
-    </main>
+    </div>
   </div>
 
   <script src="{% static 'js/composer/composer_section.js' %}"></script>

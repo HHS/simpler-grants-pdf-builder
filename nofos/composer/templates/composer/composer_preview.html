@@ -19,7 +19,7 @@
   {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading only %}
 
   <div class="grid-row">
-    <div class="back-link font-body-md margin-bottom-0">
+    <div class="back-link font-body-md margin-bottom-105 line-height-sans-2">
       {% if user.is_staff %}
         <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:composer_index' %}">Home</a>
       {% else %}
@@ -29,7 +29,7 @@
   </div>
   <div class="grid-row cg-layout">
     {% if show_side_nav %}
-      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections is_preview=True only %}
+      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections is_preview=True document_is_instance=document_is_instance only %}
     {% endif %}
     <!-- Full-document preview -->
     <div class="{% if document.status != 'published' %}grid-col-9{% else %}grid-col-12{% endif %}">
