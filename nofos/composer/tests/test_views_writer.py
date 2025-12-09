@@ -1110,6 +1110,25 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             ),
         )
 
+        # Subsection 5: Variable label is case-insensitive match (should fill)
+        subsection5 = ContentGuideSubsection.objects.create(
+            section=section,
+            order=5,
+            name="Case Insensitive Section",
+            tag="h3",
+            body="Please provide the NOFO TITLE here: {NOFO TITLE}",
+            edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "nofo_title": {
+                        "key": "nofo_title",
+                        "label": "NOFO title",
+                        "type": "string",
+                    }
+                }
+            ),
+        )
+
         # Login and POST
         self.client.login(email="acf@example.com", password="testpass123")
         response = self.client.post(self.confirmation_url)
@@ -1119,32 +1138,31 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         self.instance.refresh_from_db()
         instance_section = self.instance.sections.first()
         instance_subsections = list(instance_section.subsections.order_by("order"))
-        self.assertEqual(len(instance_subsections), 4)
+        self.assertEqual(len(instance_subsections), 5)
 
         # Check subsection 1: variable with "NOFO title" should be prefilled
         sub1 = instance_subsections[0]
         sub1_variables = sub1.get_variables()
         self.assertEqual(len(sub1_variables), 1)
         title_var = list(sub1_variables.values())[0]
-        self.assertEqual(title_var["label"], "Insert the NOFO title")
-        self.assertEqual(title_var["value"], "Community Health Centers NOFO")
+        self.assertEqual(title_var.label, "Insert the NOFO title")
+        self.assertEqual(title_var.value, "Community Health Centers NOFO")
 
         # Check subsection 2: variable with "NOFO number" should be prefilled
         sub2 = instance_subsections[1]
         sub2_variables = sub2.get_variables()
         self.assertEqual(len(sub2_variables), 1)
         number_var = list(sub2_variables.values())[0]
-        self.assertEqual(number_var["label"], "Insert NOFO number.")
-        self.assertEqual(number_var["value"], "HRSA-24-001")
+        self.assertEqual(number_var.label, "Insert NOFO number.")
+        self.assertEqual(number_var.value, "HRSA-24-001")
 
         # Check subsection 3: variable should NOT be prefilled (no match)
         sub3 = instance_subsections[2]
         sub3_variables = sub3.get_variables()
         self.assertEqual(len(sub3_variables), 1)
         budget_var = list(sub3_variables.values())[0]
-        self.assertEqual(budget_var["label"], "Total budget amount")
-        self.assertNotIn("value", budget_var)
-
+        self.assertEqual(budget_var.label, "Total budget amount")
+        self.assertIsNone(budget_var.value)
         # Check subsection 4: only the matching variable should be prefilled
         sub4 = instance_subsections[3]
         sub4_variables = sub4.get_variables()
@@ -1152,15 +1170,23 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
 
         # Find the title variable (should be prefilled)
         title_var4 = next(
-            v for v in sub4_variables.values() if "title" in v["label"].lower()
+            v for v in sub4_variables.values() if "title" in v.label.lower()
         )
-        self.assertEqual(title_var4["value"], "Community Health Centers NOFO")
+        self.assertEqual(title_var4.value, "Community Health Centers NOFO")
 
         # Find the deadline variable (should NOT be prefilled)
         deadline_var = next(
-            v for v in sub4_variables.values() if "deadline" in v["label"].lower()
+            v for v in sub4_variables.values() if "deadline" in v.label.lower()
         )
-        self.assertNotIn("value", deadline_var)
+        self.assertIsNone(deadline_var.value)
+
+        # Check subsection 5: case-insensitive match should be prefilled
+        sub5 = instance_subsections[4]
+        sub5_variables = sub5.get_variables()
+        self.assertEqual(len(sub5_variables), 1)
+        case_var = list(sub5_variables.values())[0]
+        self.assertEqual(case_var.label, "NOFO title")
+        self.assertEqual(case_var.value, "Community Health Centers NOFO")
 
     def test_post_does_not_prefill_when_instance_details_are_empty(self):
         """
@@ -1186,6 +1212,15 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
             tag="h3",
             body="Title: {Enter NOFO title}",
             edit_mode="variables",
+            variables=json.dumps(
+                {
+                    "enter_nofo_title": {
+                        "key": "enter_nofo_title",
+                        "label": "Enter NOFO title",
+                        "type": "string",
+                    }
+                }
+            ),
         )
 
         # Login and POST
@@ -1200,7 +1235,7 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
 
         self.assertEqual(len(variables), 1)
         var = list(variables.values())[0]
-        self.assertNotIn("value", var)
+        self.assertIsNone(var.value)
 
 
 class WriterSectionViewAlertsTests(TestCase):

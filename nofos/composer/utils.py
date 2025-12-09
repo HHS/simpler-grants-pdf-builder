@@ -126,16 +126,13 @@ def render_curly_variable_list_html_string(extracted_variables) -> str:
 
     Example:
         >>> render_curly_variable_list_html_string([
-        ...   {"label": "first"}, {"label": "second"}
+        ...   VariableInfo(key="k1", type="string", label="first"),
+        ...   VariableInfo(key="k2", type="string", label="second")
         ... ])
         ': <span class="curly-var font-mono-xs">{first}</span>, '
         '<span class="curly-var font-mono-xs">{second}</span>'
     """
-    variables = [
-        escape(v.get("label", "").strip())
-        for v in extracted_variables or []
-        if v.get("label")
-    ]
+    variables = [escape(v.label.strip()) for v in extracted_variables or [] if v.label]
 
     if not variables:
         return ""

@@ -3,6 +3,7 @@ from composer.models import (
     ContentGuideInstance,
     ContentGuideSection,
     ContentGuideSubsection,
+    VariableInfo,
 )
 from django.test import TestCase
 
@@ -36,7 +37,9 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "variable": {"key": "variable", "type": "string", "label": "variable"},
+                "variable": VariableInfo(
+                    key="variable", type="string", label="variable"
+                ),
             },
         )
 
@@ -46,11 +49,11 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "variable_with_spaces": {
-                    "key": "variable_with_spaces",
-                    "type": "string",
-                    "label": "variable with spaces",
-                },
+                "variable_with_spaces": VariableInfo(
+                    key="variable_with_spaces",
+                    type="string",
+                    label="variable with spaces",
+                ),
             },
         )
 
@@ -61,14 +64,14 @@ class ExtractVariablesTests(TestCase):
             variables[0],
             (
                 "project_name",
-                {"key": "project_name", "type": "string", "label": "Project name"},
+                VariableInfo(key="project_name", type="string", label="Project name"),
             ),
         )
         self.assertEqual(
             variables[1],
             (
                 "project_name_2",
-                {"key": "project_name_2", "type": "string", "label": "Project name"},
+                VariableInfo(key="project_name_2", type="string", label="Project name"),
             ),
         )
 
@@ -78,8 +81,8 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "first": {"key": "first", "type": "string", "label": "first"},
-                "second": {"key": "second", "type": "string", "label": "second"},
+                "first": VariableInfo(key="first", type="string", label="first"),
+                "second": VariableInfo(key="second", type="string", label="second"),
             },
         )
 
@@ -95,22 +98,24 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "variable": {"key": "variable", "type": "string", "label": "Variable"},
+                "variable": VariableInfo(
+                    key="variable", type="string", label="Variable"
+                ),
             },
         )
 
     def test_nested_braces(self):
-        """Nested braces should match first complete set of braces: '{outer {inner}'"""
+        """Nested braces should match first complete set of braces: '{outer {inner}'}"""
         subsection = self._mk("This {outer {inner} text} has nesting.")
         variables = subsection.extract_variables()
         self.assertEqual(
             variables,
             {
-                "outer_inner": {
-                    "key": "outer_inner",
-                    "label": "outer {inner",
-                    "type": "string",
-                }
+                "outer_inner": VariableInfo(
+                    key="outer_inner",
+                    label="outer {inner",
+                    type="string",
+                )
             },
         )
 
@@ -138,11 +143,11 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "choose_from_grant_or_cooperative_agreement": {
-                    "key": "choose_from_grant_or_cooperative_agreement",
-                    "type": "list",
-                    "label": "Choose from Grant or Cooperative agreement",
-                }
+                "choose_from_grant_or_cooperative_agreement": VariableInfo(
+                    key="choose_from_grant_or_cooperative_agreement",
+                    type="list",
+                    label="Choose from Grant or Cooperative agreement",
+                )
             },
         )
 
@@ -151,7 +156,7 @@ class ExtractVariablesTests(TestCase):
         variables = subsection.extract_variables()
         self.assertEqual(
             variables,
-            {"variable": {"key": "variable", "type": "string", "label": "variable"}},
+            {"variable": VariableInfo(key="variable", type="string", label="variable")},
         )
 
     def test_attr_list_block_not_wrapped_colon(self):
@@ -176,11 +181,9 @@ class ExtractVariablesTests(TestCase):
         self.assertEqual(
             variables,
             {
-                "fresh_var": {
-                    "key": "fresh_var",
-                    "type": "string",
-                    "label": "Fresh var",
-                },
+                "fresh_var": VariableInfo(
+                    key="fresh_var", type="string", label="Fresh var"
+                ),
             },
         )
 
