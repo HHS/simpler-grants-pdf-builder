@@ -1475,7 +1475,7 @@ class WriterInstancePreviewViewTests(BaseWriterViewTests):
         self.assertTrue(response.context["show_download_button"])
 
         # Optional sanity check if your template has this copy
-        self.assertContains(response, "Steps in this content guide")
+        self.assertContains(response, "Steps in this NOFO")
 
         # Make sure we are NOT showing any publish/unpublish UI
         self.assertNotContains(response, "Publish")

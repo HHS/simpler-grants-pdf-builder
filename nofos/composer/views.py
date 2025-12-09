@@ -295,6 +295,7 @@ class BaseComposerPreviewView(LoginRequiredMixin, DetailView):
         context["show_back_link"] = True
         context["is_preview"] = True
         context["include_scroll_to_top"] = True
+        context["document_is_instance"] = isinstance(self.object, ContentGuideInstance)
 
         # Layout flags
         context.setdefault("show_side_nav", True)
