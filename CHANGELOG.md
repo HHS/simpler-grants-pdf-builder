@@ -14,10 +14,13 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Prefill "key facts" variables with values from the NOFO Writer "details" page
 - Add new style for variables with filled-in values
 - Add "optional" and "hidden" labels to the "Guide to tags"
   - Auto-open "Guide to tags" when looking at a newly-created ContentGuideInstance
-- Published contnet guides on "start" page now sorted by latest updated
+- Published content guides on "start" page now sorted by latest updated
+- [Temporary] Prefill OpDiv field of "staging" ContentGuideInstances with "CDC" name
+- Remove the lock icon from instructions for NOFO writers
 
 ### Fixed
 
@@ -25,6 +28,9 @@ Versioning since version 1.0.0.
 - Don't show the "hidden" field on subsection edit page for "variables" subsections
 - NOFO Composer header links to admin/writer index depending on current url
 - Hide edit buttons for locked, non-optional subsections
+- Add html ID attribute to callout boxes with no headings
+- Standardize table widths for composer index pages
+- Standardize vertical spacing for the top of the section_overview page
 
 ## [3.22.0] - 2025-12-08
 
