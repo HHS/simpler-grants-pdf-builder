@@ -1,6 +1,6 @@
 {% load static martortags callout_box_contents add_classes_to_tables is_floating_callout_box %}
 
-<div class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %} {% if subsection.html_class %}{{ subsection.html_class }}{% endif %}">
+<div {% if not subsection.name %}id="{{ subsection.html_id }}"{% endif %} class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
   {% if subsection.name %}
     {% with "callout-box--title "|add:subsection.html_class as class %}
       {% include "includes/heading.html" with tag=subsection.tag content=subsection.name id=subsection.html_id class=class only %}
