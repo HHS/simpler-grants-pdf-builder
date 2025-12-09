@@ -1,6 +1,6 @@
 {% load input_type %}
 
-{% for field in form %}
+{% for field in form.visible_fields %}
   {% if field|input_type in 'TextInput Textarea PasswordInput EmailInput URLInput' %}
     {% with id=field.name label=field.label value=field.value id_for_label=field.id_for_label hint=field.help_text hint2=hint2 hint2for=hint2for error=field.errors.0 disabled=field.field.widget.attrs.is_disabled required=field.field.required input_type=field|input_type %}
       {% if show_required_asterisk %}
