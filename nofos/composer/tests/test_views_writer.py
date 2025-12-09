@@ -1512,6 +1512,90 @@ class WriterInstancePreviewViewTests(BaseWriterViewTests):
             f"Expected to find {expected_fragment!r} in messages, got: {msgs!r}",
         )
 
+    def test_hidden_and_variable_subsections_render_correctly(self):
+        """
+        Writer preview should:
+        - Skip hidden subsections entirely
+        - Render variable placeholders and mark only those with values
+          using 'md-curly-variable--value'.
+        """
+        self.login_as(self.acf_user)
+
+        # Normal subsection (full edit)
+        normal_subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=10,
+            name="Normal subsection",
+            tag="h3",
+            body="Normal body",
+            edit_mode="full",
+        )
+
+        # Variables subsection: 3 placeholders, 2 variables defined in JSON, but only 1 has a value
+        variables_body = (
+            "Opportunity name: {Insert opportunity name.}\n\n"
+            "Opportunity number: {Insert opportunity number.}\n\n"
+            "Assistance listing: {Insert assistance listing number.}\n"
+        )
+        variables_subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=20,
+            name="Variables subsection",
+            tag="h3",
+            body=variables_body,
+            edit_mode="variables",
+        )
+
+        # Two variables defined, but only one has a 'value'
+        variables_subsection.variables = json.dumps(
+            {
+                "insert_opportunity_name": {
+                    "key": "insert_opportunity_name",
+                    "type": "string",
+                    "label": "Insert opportunity name.",
+                    "value": "NOFO 5000 deluxe",
+                },
+                "insert_opportunity_number": {
+                    "key": "insert_opportunity_number",
+                    "type": "string",
+                    "label": "Insert opportunity number.",
+                    # no value
+                },
+                # Note: third placeholder ("Insert assistance listing number.") has no entry
+            }
+        )
+        variables_subsection.save()
+
+        # Hidden subsection: should not appear in preview at all
+        hidden_subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=30,
+            name="Hidden subsection",
+            tag="h3",
+            body="<p>Should not appear</p>",
+            optional=True,
+            hidden=True,
+        )
+
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        html = resp.content.decode()
+
+        # Hidden heading should NOT appear
+        self.assertNotIn(hidden_subsection.name, html)
+        self.assertNotIn(hidden_subsection.body, html)
+
+        # Normal + variables headings should appear
+        self.assertIn(normal_subsection.name, html)
+        self.assertIn(normal_subsection.body, html)
+        self.assertIn(variables_subsection.name, html)
+
+        # 3 "md-curly-variable" spans, but only one has the '--value' class
+        self.assertEqual(html.count('<span class="md-curly-variable'), 3)
+        self.assertEqual(
+            html.count('<span class="md-curly-variable md-curly-variable--value'), 1
+        )
+
     def test_post_unknown_action_returns_400(self):
         self.login_as(self.acf_user)
         resp = self.client.post(self.url, {"action": "bogus"}, follow=False)
