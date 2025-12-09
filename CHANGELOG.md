@@ -17,10 +17,14 @@ Versioning since version 1.0.0.
 - Add new style for variables with filled-in values
 - Add "optional" and "hidden" labels to the "Guide to tags"
   - Auto-open "Guide to tags" when looking at a newly-created ContentGuideInstance
+- Published contnet guides on "start" page now sorted by latest updated
 
 ### Fixed
 
+- "Admin" link for superusers now works as expected for ContentGuideInstances
 - Don't show the "hidden" field on subsection edit page for "variables" subsections
+- NOFO Composer header links to admin/writer index depending on current url
+- Hide edit buttons for locked, non-optional subsections
 
 ## [3.22.0] - 2025-12-08
 
