@@ -1,7 +1,13 @@
 from html import escape
+from typing import List
 
 from composer.conditional.conditional_questions import find_question_for_subsection
-from composer.models import ContentGuide, ContentGuideSection, ContentGuideSubsection
+from composer.models import (
+    ContentGuide,
+    ContentGuideSection,
+    ContentGuideSubsection,
+    VariableInfo,
+)
 from django.conf import settings
 from django.forms import ValidationError
 
@@ -119,7 +125,9 @@ def get_yes_no_label(value):
     return "Not answered"
 
 
-def render_curly_variable_list_html_string(extracted_variables) -> str:
+def render_curly_variable_list_html_string(
+    extracted_variables: List[VariableInfo],
+) -> str:
     """
     Render the HTML string for the inline variable list shown after the
     "Only variables in curly braces can be changed" label.

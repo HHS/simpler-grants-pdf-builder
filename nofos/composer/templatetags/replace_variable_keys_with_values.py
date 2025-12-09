@@ -1,4 +1,7 @@
+from typing import Dict
+
 from bs4 import BeautifulSoup
+from composer.models import VariableInfo
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -28,7 +31,7 @@ def replace_variable_keys_with_values(html_string, variables_dict):
     return mark_safe(str(soup))
 
 
-def find_variable_by_label(variables_dict, label):
+def find_variable_by_label(variables_dict: Dict[str, VariableInfo], label: str):
     for var_key, var_info in variables_dict.items():
         if var_info.label == label:
             return var_key, var_info

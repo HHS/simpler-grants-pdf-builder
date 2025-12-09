@@ -1527,8 +1527,7 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         self.assertEqual(response.url, expected_redirect)
         self.subsection_edit_variables.refresh_from_db()
         variable = self.subsection_edit_variables.get_variables().get("variable", {})
-        variable_value = variable.get("value", "")
-        self.assertEqual(variable_value, "Value from writer")
+        self.assertEqual(variable.value, "Value from writer")
 
     def test_post_updates_optional_locked_subsection_and_redirects(self):
         """
