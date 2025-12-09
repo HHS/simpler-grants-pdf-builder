@@ -38,6 +38,12 @@
         <p><em>Last updated on <strong>{{ document.updated|date:'F j' }} at {{ document.updated|date:'g:i A' }}</strong></em>.</p>
       {% endtimezone %}
 
+      {% if document_is_instance %}
+        <p class="margin-y-2">
+          Review your draft. You can download the NOFO as a Word document for offline editing, or save your progress and return to Composer anytime.
+        </p>
+      {% endif %}
+
       <hr>
 
       {% if show_unpublish_button or show_save_exit_button or show_publish_button or show_download_button %}
