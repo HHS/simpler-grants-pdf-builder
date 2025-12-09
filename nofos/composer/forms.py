@@ -183,7 +183,11 @@ class WriterInstanceDetailsForm(forms.ModelForm):
         # Prefill opdiv with the user's group for the initial GET only.
         # Don't overwrite user input on POST (self.is_bound == True).
         if not self.is_bound and user:
-            self.fields["opdiv"].initial = get_opdiv_label(getattr(user, "group", ""))
+            opdiv_label = get_opdiv_label(getattr(user, "group", ""))
+            # TODO: remove this once the user testing round is over
+            if opdiv_label == "Staging environment":
+                opdiv_label = "Centers for Disease Control and Prevention"
+            self.fields["opdiv"].initial = opdiv_label
 
         # Basic USWDS styling on widgets
         for name, field in self.fields.items():
