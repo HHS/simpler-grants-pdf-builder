@@ -2472,14 +2472,20 @@ hr.usa-prose {
 .subsection_edit--composer
   .main-martor--container
   div.martor-preview
-  .md-curly-variable {
+  .md-curly-variable,
+.styled-subsection-body--variables .md-curly-variable {
   background-color: var(--color--yellow);
   padding: 0 2px;
 }
 
-.styled-subsection-body--variables .md-curly-variable {
-  background-color: var(--color--yellow);
-  padding: 0 2px;
+.subsection_edit--composer
+  .main-martor--container
+  div.martor-preview
+  .md-curly-variable--value,
+.styled-subsection-body--variables .md-curly-variable--value {
+  background-color: transparent;
+  border: 1px solid var(--color--yellow);
+  border-radius: 4px;
 }
 
 .styled-subsection-body--full {

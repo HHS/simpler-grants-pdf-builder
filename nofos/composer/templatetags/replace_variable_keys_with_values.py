@@ -22,6 +22,9 @@ def replace_variable_keys_with_values(html_string, variables_dict):
             if var_value:
                 # Update the span with the variable value
                 span.string = var_value
+                # Add the "md-curly-variable--value" class to the list of classes
+                span["class"] = span.get("class", []) + ["md-curly-variable--value"]
+
     return mark_safe(str(soup))
 
 
