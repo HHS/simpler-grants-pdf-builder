@@ -178,6 +178,10 @@
                 href="{{ next_sec_url }}">
                 {% if document_is_instance == False %}{{ next_sec.name }} →{% else %}Save and continue{% endif %}
             </a>
+          {% else %}
+            {% if document_is_instance %}
+              <a href="{% url 'composer:writer_preview' document.pk %}" class="usa-button">Preview draft NOFO</a>
+            {% endif %}
           {% endif %}
         </div>
       </nav>
