@@ -21,7 +21,10 @@
               value="True"
               {% if form.hidden.value %}checked{% endif %} />
         <label class="usa-radio__label" for="id_hidden_true">
-          No, I want to hide this section
+          <div class="display-flex flex-justify">
+            No, I want to hide this section.
+            {% include "includes/_writer_subsection_labels.html" with hidden=True only %}
+          </div>
         </label>
       </div>
     </div>
