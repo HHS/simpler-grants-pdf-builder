@@ -1423,6 +1423,10 @@ class ComposerPreviewViewTests(TestCase):
         resp = self.client.get(self.url)
         self.assertIn(resp.status_code, [302, 403])
 
+    def test_post_unknown_action_returns_400(self):
+        resp = self.client.post(self.url, {"action": "bogus"}, follow=False)
+        self.assertEqual(resp.status_code, 400)
+
     def test_post_exit_action_redirects_with_message(self):
         resp = self.client.post(self.url, {"action": "exit"}, follow=False)
 

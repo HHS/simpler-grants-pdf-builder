@@ -1410,3 +1410,109 @@ class WriterInstanceSubsectionEditViewTests(BaseWriterViewTests):
         self.assertEqual(response.status_code, 302)
         self.subsection_edit_full.refresh_from_db()
         self.assertEqual(self.subsection_edit_full.status, "viewed")
+
+
+class WriterInstancePreviewViewTests(BaseWriterViewTests):
+    def setUp(self):
+        super().setUp()
+
+        # Use the helper to create an ACF parent guide
+        self.parent_guide = self.create_acf_parent_guide()
+
+        # Create a ContentGuideInstance in the same group/opdiv
+        self.instance = ContentGuideInstance.objects.create(
+            title="ACF Draft NOFO",
+            opdiv="acf",
+            group="acf",
+            parent=self.parent_guide,
+            status="draft",
+            short_name="ACF Draft NOFO (short)",
+        )
+
+        # Attach a section + subsection to the *instance* using shared models
+        self.section = ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            order=1,
+            name="Instance Section 1",
+            html_id="inst-sec-1",
+        )
+        self.subsection = ContentGuideSubsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Instance Subsection 1",
+            tag="h3",
+            body="Instance body",
+        )
+
+        self.url = reverse(
+            "composer:writer_preview",
+            kwargs={"pk": self.instance.pk},
+        )
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        """Anonymous users should be redirected to the login page."""
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("users:login"), response.url)
+
+    def test_logged_in_writer_can_view_preview_page(self):
+        """
+        A logged-in writer can view the instance preview, with 2-column layout and buttons.
+        """
+        self.login_as(self.acf_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+        # Document and preview context
+        self.assertEqual(response.context["document"].pk, self.instance.pk)
+        self.assertTrue(response.context["is_preview"])
+        self.assertIsNotNone(response.context["sections"])
+
+        # Layout and button flags for instances
+        self.assertTrue(response.context["show_side_nav"])
+        self.assertTrue(response.context["show_save_exit_button"])
+        self.assertTrue(response.context["show_download_button"])
+
+        # Optional sanity check if your template has this copy
+        self.assertContains(response, "Steps in this content guide")
+
+        # Make sure we are NOT showing any publish/unpublish UI
+        self.assertNotContains(response, "Publish")
+        self.assertNotContains(response, "Unpublish")
+
+    def test_post_exit_action_redirects_with_message(self):
+        """
+        Submitting 'exit' should redirect to writer_index, set success heading,
+        and include a link back to the instance in the success message.
+        """
+        self.login_as(self.acf_user)
+        resp = self.client.post(self.url, {"action": "exit"}, follow=False)
+
+        # Redirects to writer index
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("composer:writer_index"))
+
+        # Session variable set for success heading
+        follow_resp = self.client.get(resp["Location"])
+        self.assertEqual(
+            follow_resp.context["success_heading"],
+            "Draft NOFO saved",
+        )
+
+        # Success message was added, with link to writer_instance_redirect
+        msgs = list(get_messages(resp.wsgi_request))
+        redirect_link = reverse(
+            "composer:writer_instance_redirect",
+            kwargs={"pk": self.instance.pk},
+        )
+        expected_fragment = f'You saved: “<a href="{redirect_link}">'
+        self.assertTrue(
+            any(expected_fragment in str(m) for m in msgs),
+            f"Expected to find {expected_fragment!r} in messages, got: {msgs!r}",
+        )
+
+    def test_post_unknown_action_returns_400(self):
+        self.login_as(self.acf_user)
+        resp = self.client.post(self.url, {"action": "bogus"}, follow=False)
+        self.assertEqual(resp.status_code, 400)
