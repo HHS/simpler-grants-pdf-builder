@@ -66,7 +66,7 @@
         </ul>
         {% include "includes/_composer_tags_explainer_box.html" %}
       {% else %}
-        {% include "includes/_writer_tags_explainer_box.html" %}
+        {% include "includes/_writer_tags_explainer_box.html" with is_open=request.GET.new_instance %}
       {% endif %}
 
       <hr>
