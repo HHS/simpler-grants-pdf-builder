@@ -1,6 +1,6 @@
 <details class="explainer-box">
   <summary class="bg-accent-warm-dark text-white padding-1">Guide to the tags</summary>
-  <div class="explainer-box--content border border-accent-warm-dark border-radius-sm">
+  <div class="explainer-box--content border border-accent-warm-dark border-radius-sm padding-right-2">
     <ul class="usa-prose">
       <li>No tag means all text in the section can be edited and changed.</li>
       <li>
@@ -19,6 +19,18 @@
         <div class="display-flex">
           <div class="minw-fit-content margin-right-1">{% include "includes/_writer_subsection_labels.html" with status='done' %}</div>
           <div>means you’ve marked this section as complete.</div>
+        </div>
+      </li>
+      <li>
+        <div class="display-flex">
+          <div class="minw-fit-content margin-right-1">{% include "includes/_writer_subsection_labels.html" with optional=True %}</div>
+          <div>is a section you can decide to answer. It is a yes or no question. No text in the section can be edited or changed.</div>
+        </div>
+      </li>
+      <li>
+        <div class="display-flex">
+          <div class="minw-fit-content margin-right-1">{% include "includes/_writer_subsection_labels.html" with hidden=True %}</div>
+          <div>is an optional section that you decided to not include. This section will not be included in your downloaded Word document.</div>
         </div>
       </li>
     </ul>
