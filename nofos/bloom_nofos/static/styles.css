@@ -2436,9 +2436,11 @@ del + ins > br {
   bottom: 0;
 }
 
-.usa-prose hr,
-.composer_document_section hr,
-hr.usa-prose {
+.usa-prose hr:not([size]),
+.composer_document_section hr:not([size]),
+hr.usa-prose:not([size]) {
+  opacity: 1;
+  height: 0;
   border: 2px solid var(--color--light-grey);
 }
 
