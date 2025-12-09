@@ -1,3 +1,4 @@
+from composer.models import VariableInfo
 from composer.utils import (
     get_conditional_questions_label,
     get_edit_mode_label,
@@ -65,12 +66,16 @@ class RenderCurlyVariableListHtmlStringTests(SimpleTestCase):
         self.assertEqual(render_curly_variable_list_html_string([]), "")
 
     def test_single_variable(self):
-        data = [{"label": "one"}]
+        data = [VariableInfo(key="var1", type="string", label="one")]
         expected = ': <span class="curly-var font-mono-xs">{one}</span>'
         self.assertEqual(render_curly_variable_list_html_string(data), expected)
 
     def test_multiple_variables_comma_separated(self):
-        data = [{"label": "one"}, {"label": "two"}, {"label": "three"}]
+        data = [
+            VariableInfo(key="var1", type="string", label="one"),
+            VariableInfo(key="var2", type="string", label="two"),
+            VariableInfo(key="var3", type="string", label="three"),
+        ]
         expected = (
             ': <span class="curly-var font-mono-xs">{one}</span>, '
             '<span class="curly-var font-mono-xs">{two}</span>, '
@@ -79,7 +84,10 @@ class RenderCurlyVariableListHtmlStringTests(SimpleTestCase):
         self.assertEqual(render_curly_variable_list_html_string(data), expected)
 
     def test_labels_are_trimmed(self):
-        data = [{"label": "  first  "}, {"label": "\tsecond\t"}]
+        data = [
+            VariableInfo(key="var1", type="string", label="  first  "),
+            VariableInfo(key="var2", type="string", label="\tsecond\t"),
+        ]
         expected = (
             ': <span class="curly-var font-mono-xs">{first}</span>, '
             '<span class="curly-var font-mono-xs">{second}</span>'
@@ -87,7 +95,11 @@ class RenderCurlyVariableListHtmlStringTests(SimpleTestCase):
         self.assertEqual(render_curly_variable_list_html_string(data), expected)
 
     def test_preserves_input_order(self):
-        data = [{"label": "z"}, {"label": "a"}, {"label": "m"}]
+        data = [
+            VariableInfo(key="var1", type="string", label="z"),
+            VariableInfo(key="var2", type="string", label="a"),
+            VariableInfo(key="var3", type="string", label="m"),
+        ]
         expected = (
             ': <span class="curly-var font-mono-xs">{z}</span>, '
             '<span class="curly-var font-mono-xs">{a}</span>, '

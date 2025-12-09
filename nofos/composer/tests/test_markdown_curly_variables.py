@@ -5,6 +5,7 @@ Tests for curly variable syntax in markdown rendering.
 import re
 
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
+from composer.models import VariableInfo
 from composer.templatetags.replace_variable_keys_with_values import (
     find_variable_by_label,
     replace_variable_keys_with_values,
@@ -226,7 +227,9 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_single_variable_replacement(self):
         """A single variable should be replaced with its value."""
         html_string = '<p>Hello <span class="md-curly-variable">{Name}</span>!</p>'
-        variables_dict = {"var1": {"label": "Name", "value": "Alice"}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("Alice", str(result))
         self.assertNotIn("{Name}", str(result))
@@ -235,8 +238,12 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
         """Multiple variables should be replaced with their values."""
         html_string = '<p><span class="md-curly-variable">{First}</span> and <span class="md-curly-variable">{Second}</span></p>'
         variables_dict = {
-            "var1": {"label": "First", "value": "Alice"},
-            "var2": {"label": "Second", "value": "Bob"},
+            "var1": VariableInfo(
+                key="var1", type="string", label="First", value="Alice"
+            ),
+            "var2": VariableInfo(
+                key="var2", type="string", label="Second", value="Bob"
+            ),
         }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("Alice", str(result))
@@ -247,7 +254,11 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_variable_with_spaces_in_label(self):
         """Variables with spaces in labels should be replaced."""
         html_string = '<p><span class="md-curly-variable">{ Project Name }</span></p>'
-        variables_dict = {"var1": {"label": "Project Name", "value": "My Project"}}
+        variables_dict = {
+            "var1": VariableInfo(
+                key="var1", type="string", label="Project Name", value="My Project"
+            )
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("My Project", str(result))
         self.assertNotIn("{ Project Name }", str(result))
@@ -255,28 +266,34 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_variable_without_value(self):
         """Variables without a value should not be replaced."""
         html_string = '<p><span class="md-curly-variable">{Name}</span></p>'
-        variables_dict = {"var1": {"label": "Name"}}
+        variables_dict = {"var1": VariableInfo(key="var1", type="string", label="Name")}
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("{Name}", str(result))
 
     def test_variable_with_empty_value(self):
         """Variables with empty string value should not be replaced."""
         html_string = '<p><span class="md-curly-variable">{Name}</span></p>'
-        variables_dict = {"var1": {"label": "Name", "value": ""}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="")
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("{Name}", str(result))
 
     def test_variable_with_none_value(self):
         """Variables with None value should not be replaced."""
         html_string = '<p><span class="md-curly-variable">{Name}</span></p>'
-        variables_dict = {"var1": {"label": "Name", "value": None}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value=None)
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("{Name}", str(result))
 
     def test_variable_not_in_dict(self):
         """Variables not in the dict should remain unchanged."""
         html_string = '<p><span class="md-curly-variable">{Unknown}</span></p>'
-        variables_dict = {"var1": {"label": "Name", "value": "Alice"}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("{Unknown}", str(result))
         self.assertNotIn("Alice", str(result))
@@ -284,7 +301,9 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_duplicate_variables(self):
         """Duplicate variables should all be replaced."""
         html_string = '<p><span class="md-curly-variable">{Name}</span> and <span class="md-curly-variable">{Name}</span></p>'
-        variables_dict = {"var1": {"label": "Name", "value": "Alice"}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         # Both instances should be replaced
         self.assertEqual(str(result).count("Alice"), 2)
@@ -302,9 +321,15 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
             </div>
         """
         variables_dict = {
-            "var1": {"label": "User", "value": "Alice"},
-            "var2": {"label": "Project", "value": "Demo"},
-            "var3": {"label": "Status", "value": "Active"},
+            "var1": VariableInfo(
+                key="var1", type="string", label="User", value="Alice"
+            ),
+            "var2": VariableInfo(
+                key="var2", type="string", label="Project", value="Demo"
+            ),
+            "var3": VariableInfo(
+                key="var3", type="string", label="Status", value="Active"
+            ),
         }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("Alice", str(result))
@@ -317,7 +342,11 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_non_variable_spans_unchanged(self):
         """Spans without md-curly-variable class should be unchanged."""
         html_string = '<p><span class="other-class">{NotAVariable}</span></p>'
-        variables_dict = {"var1": {"label": "NotAVariable", "value": "Value"}}
+        variables_dict = {
+            "var1": VariableInfo(
+                key="var1", type="string", label="NotAVariable", value="Value"
+            )
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         self.assertIn("{NotAVariable}", str(result))
         self.assertNotIn("Value", str(result))
@@ -325,7 +354,9 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
     def test_returns_safe_string(self):
         """The result should be a SafeString (marked safe for templates)."""
         html_string = '<p><span class="md-curly-variable">{Name}</span></p>'
-        variables_dict = {"var1": {"label": "Name", "value": "Alice"}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        }
         result = replace_variable_keys_with_values(html_string, variables_dict)
         from django.utils.safestring import SafeString
 
@@ -338,16 +369,22 @@ class FindVariableByLabelTests(SimpleTestCase):
     def test_find_existing_variable(self):
         """Should return key and info for existing variable."""
         variables_dict = {
-            "var1": {"label": "Name", "value": "Alice"},
-            "var2": {"label": "Age", "value": "30"},
+            "var1": VariableInfo(
+                key="var1", type="string", label="Name", value="Alice"
+            ),
+            "var2": VariableInfo(key="var2", type="string", label="Age", value="30"),
         }
         key, info = find_variable_by_label(variables_dict, "Name")
         self.assertEqual(key, "var1")
-        self.assertEqual(info, {"label": "Name", "value": "Alice"})
+        self.assertEqual(
+            info, VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        )
 
     def test_find_nonexistent_variable(self):
         """Should return None, None for nonexistent variable."""
-        variables_dict = {"var1": {"label": "Name", "value": "Alice"}}
+        variables_dict = {
+            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        }
         key, info = find_variable_by_label(variables_dict, "Unknown")
         self.assertIsNone(key)
         self.assertIsNone(info)
@@ -362,20 +399,14 @@ class FindVariableByLabelTests(SimpleTestCase):
     def test_find_first_matching_label(self):
         """Should return first match if multiple variables have same label."""
         variables_dict = {
-            "var1": {"label": "Name", "value": "Alice"},
-            "var2": {"label": "Name", "value": "Bob"},
+            "var1": VariableInfo(
+                key="var1", type="string", label="Name", value="Alice"
+            ),
+            "var2": VariableInfo(key="var2", type="string", label="Name", value="Bob"),
         }
         key, info = find_variable_by_label(variables_dict, "Name")
         # Should return the first one found (dict iteration order)
-        self.assertIn(key, ["var1", "var2"])
-        self.assertIn(info["value"], ["Alice", "Bob"])
-
-    def test_find_variable_without_label(self):
-        """Should handle variables without label key."""
-        variables_dict = {
-            "var1": {"value": "Alice"},
-            "var2": {"label": "Name", "value": "Bob"},
-        }
-        key, info = find_variable_by_label(variables_dict, "Name")
-        self.assertEqual(key, "var2")
-        self.assertEqual(info, {"label": "Name", "value": "Bob"})
+        self.assertEqual(key, "var1")
+        self.assertEqual(
+            info, VariableInfo(key="var1", type="string", label="Name", value="Alice")
+        )
