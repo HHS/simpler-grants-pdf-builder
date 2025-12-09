@@ -27,7 +27,11 @@
               {{ section_name.name }}
             {% endwith %}
           </h1>
-          <a href="{% url 'composer:composer_preview' document.pk %}" class="usa-button">Preview</a>
+          {% if document_is_instance %}
+            <a href="{% url 'composer:writer_preview' document.pk %}" class="usa-button">Preview</a>
+          {% else %}
+            <a href="{% url 'composer:composer_preview' document.pk %}" class="usa-button">Preview</a>
+          {% endif %}
         </div>
       {% timezone "America/New_York" %}
         <p>

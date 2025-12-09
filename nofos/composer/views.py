@@ -1,10 +1,10 @@
 import json
 
 from bloom_nofos.logs import log_exception
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ValidationError
@@ -20,6 +20,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -32,7 +33,6 @@ from django.views.generic import (
 
 from nofos.mixins import (
     GroupAccessContentGuideMixin,
-    GroupAccessObjectMixinFactory,
     PreventIfContentGuideArchivedMixin,
 )
 from nofos.nofo import (
@@ -246,6 +246,66 @@ class BaseComposerArchiveView(LoginRequiredMixin, UpdateView):
             ),
         )
         return redirect(self.get_success_url())
+
+
+class BaseComposerPreviewView(LoginRequiredMixin, DetailView):
+    """
+    Base read-only preview for Composer documents (ContentGuide / ContentGuideInstance).
+
+    - Provides ordered sections + subsections
+    - Sets generic preview flags and headings
+    - Uses the shared 2-column preview template
+    """
+
+    context_object_name = "document"
+    template_name = "composer/composer_preview.html"
+    exit_url = reverse_lazy("composer:composer_index")
+    fields = []
+
+    def get_queryset(self):
+        # Subclasses can extend/optimize this
+        return super().get_queryset()
+
+    def get_ordered_sections(self):
+        # Make sure sections are ordered
+        sections = self.object.sections.prefetch_related("subsections").order_by(
+            "order", "id"
+        )
+        # Make sure subsections are ordered
+        for section in sections:
+            section.ordered_subsections = sorted(
+                section.subsections.all(),
+                key=lambda subsection: (getattr(subsection, "order", 0), subsection.id),
+            )
+        return sections
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        sections = self.get_ordered_sections()
+
+        # Allow per-request success/error headings stored in the session
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop(
+            "success_heading", "Your document was saved successfully"
+        )
+
+        context["sections"] = sections
+        context["current_section"] = None
+        context["show_back_link"] = True
+        context["is_preview"] = True
+        context["include_scroll_to_top"] = True
+
+        # Layout flags
+        context.setdefault("show_side_nav", True)
+
+        # Button flags (all off by default)
+        context.setdefault("show_unpublish_button", False)
+        context.setdefault("show_save_exit_button", False)
+        context.setdefault("show_publish_button", False)
+        context.setdefault("show_download_button", False)
+
+        return context
 
 
 ###########################################################
@@ -711,11 +771,9 @@ class ComposerSectionView(
         return context
 
 
-class ComposerPreviewView(LoginRequiredMixin, DetailView):
+class ComposerPreviewView(BaseComposerPreviewView):
     """
     Read-only preview of an entire Composer document.
-    Model is a required argument for instantiation, like:
-            views.ComposerPreviewView.as_view(model=ContentGuide),
 
     If draft + user is staff:
         Left pane: sections + a 'Preview' item (current page).
@@ -728,10 +786,8 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
         Full-width: full document printed section-by-section.
     """
 
-    context_object_name = "document"
-    template_name = "composer/composer_preview.html"
+    model = ContentGuide
     exit_url = reverse_lazy("composer:composer_index")
-    fields = []
 
     def dispatch(self, request, *args, **kwargs):
         # Get the object to check if it's archived
@@ -753,28 +809,20 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Make sure sections are ordered
-        sections = self.object.sections.prefetch_related("subsections").order_by(
-            "order", "id"
-        )
-        # Make sure subsections are ordered
-        for section in sections:
-            section.ordered_subsections = sorted(
-                section.subsections.all(),
-                key=lambda subsection: (getattr(subsection, "order", 0), subsection.id),
-            )
+        document = self.object
 
-        # Allow per-request success/error headings stored in the session
-        context["error_heading"] = self.request.session.pop("error_heading", "Error")
-        context["success_heading"] = self.request.session.pop(
-            "success_heading", "Content Guide saved successfully"
-        )
+        # Side nav only when not published
+        context["show_side_nav"] = document.status != "published"
 
-        context["sections"] = sections
-        context["current_section"] = None  # not on a specific section in preview
-        context["show_back_link"] = True
-        context["is_preview"] = True
-        context["include_scroll_to_top"] = True
+        # Buttons:
+        if document.status == "published":
+            # Published: only "Unpublish"
+            context["show_unpublish_button"] = True
+        else:
+            # Not published (draft): "Save and exit" + "Publish"
+            context["show_save_exit_button"] = True
+            context["show_publish_button"] = True
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -819,6 +867,8 @@ class ComposerPreviewView(LoginRequiredMixin, DetailView):
             )
 
             return redirect(self.request.path)
+
+        return HttpResponseBadRequest("Unknown action.")
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -1572,7 +1622,7 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, FormView):
         return redirect(final_url)
 
 
-@staff_member_required
+@login_required
 def writer_section_redirect(request, pk):
     """
     Handles redirecting to the first section of a ContentGuideInstance for section view.
@@ -1602,3 +1652,52 @@ def writer_section_redirect(request, pk):
         )
 
     return redirect("composer:writer_section_view", pk=instance.pk, section_pk=first.pk)
+
+
+class WriterInstancePreviewView(BaseComposerPreviewView):
+    """
+    Read-only preview of a ContentGuideInstance.
+
+    - Always uses the 2-column layout (side nav + document).
+    - No publish / unpublish / save-and-exit.
+    """
+
+    model = ContentGuideInstance
+    template_name = "composer/composer_preview.html"
+    exit_url = reverse_lazy("composer:writer_index")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["show_side_nav"] = True
+
+        # Show "Save and exit" + "Download" buttons
+        context["show_save_exit_button"] = True
+        context["show_download_button"] = True
+
+        # New heading text for ContentGuideInstances
+        context.setdefault(
+            "success_heading",
+            "Your NOFO draft was successfully saved",
+        )
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+        action = request.POST.get("action")
+
+        if action == "exit":
+            messages.success(
+                self.request,
+                format_html(
+                    'You saved: “<a href="{}">{}</a>”',
+                    reverse_lazy(
+                        "composer:writer_instance_redirect", args=[document.pk]
+                    ),
+                    document.short_name or document.title,
+                ),
+            )
+            return redirect(self.exit_url)
+
+        return HttpResponseBadRequest("Unknown action.")

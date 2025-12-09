@@ -38,7 +38,7 @@ urlpatterns = [
     ),
     path(
         "<uuid:pk>/preview",
-        views.ComposerPreviewView.as_view(model=ContentGuide),
+        views.ComposerPreviewView.as_view(),
         name="composer_preview",
     ),
     path(
@@ -121,5 +121,10 @@ urlpatterns = [
         "writer/<uuid:pk>/section/<uuid:section_pk>/subsection/<uuid:subsection_pk>/edit",
         views.WriterInstanceSubsectionEditView.as_view(),
         name="writer_subsection_edit",
+    ),
+    path(
+        "writer/<uuid:pk>/preview",
+        views.WriterInstancePreviewView.as_view(),
+        name="writer_preview",
     ),
 ]

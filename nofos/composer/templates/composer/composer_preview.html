@@ -28,8 +28,8 @@
     </div>
   </div>
   <div class="grid-row cg-layout">
-    {% if document.status != 'published' %}
-      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections is_preview=True only%}
+    {% if show_side_nav %}
+      {% include 'includes/_side_nav.html' with document_pk=document.pk sections=sections is_preview=True only %}
     {% endif %}
     <!-- Full-document preview -->
     <main class="{% if document.status != 'published' %}grid-col-9{% else %}grid-col-12{% endif %}">
@@ -40,20 +40,60 @@
 
       <hr>
 
-      {% if user.is_staff %}
-      <form method="post">
-        {% csrf_token %}
-        <ul class="usa-button-group flex-justify-end margin-y-2 margin-x-0">
-          {% if document.status == 'published' %}
-            <li class="usa-button-group__item"><a href="{% url 'composer:composer_unpublish' document.pk%}" class="usa-button">Unpublish</a></li>
-          {% else %}
-            <li class="usa-button-group__item">
-              <button class="usa-button usa-button--outline" type="submit" name="action" value="exit">Save and exit</button>
-            </li>
-            <li class="usa-button-group__item"><button class="usa-button"  type="submit" name="action" value="publish">Publish</button></li>
-          {% endif %}
-        </ul>
-      </form>
+      {% if show_unpublish_button or show_save_exit_button or show_publish_button or show_download_button %}
+        <form method="post">
+          {% csrf_token %}
+          <ul class="usa-button-group flex-justify-end margin-y-2 margin-x-0">
+            {# 1. Unpublish (link) #}
+            {% if show_unpublish_button %}
+              <li class="usa-button-group__item">
+                <a href="{% url 'composer:composer_unpublish' document.pk %}" class="usa-button">
+                  Unpublish
+                </a>
+              </li>
+            {% endif %}
+
+            {# 2. Save and exit #}
+            {% if show_save_exit_button %}
+              <li class="usa-button-group__item">
+                <button
+                  class="usa-button usa-button--outline"
+                  type="submit"
+                  name="action"
+                  value="exit"
+                >
+                  Save and exit
+                </button>
+              </li>
+            {% endif %}
+
+            {# 3. Publish #}
+            {% if show_publish_button %}
+              <li class="usa-button-group__item">
+                <button
+                  class="usa-button"
+                  type="submit"
+                  name="action"
+                  value="publish"
+                >
+                  Publish
+                </button>
+              </li>
+            {% endif %}
+
+            {# 4. Download (no-op) #}
+            {% if show_download_button %}
+              <li class="usa-button-group__item">
+                <button
+                  class="usa-button"
+                  type="button"
+                >
+                  Download
+                </button>
+              </li>
+            {% endif %}
+          </ul>
+        </form>
       {% endif %}
 
       <div class="nofo_view">
