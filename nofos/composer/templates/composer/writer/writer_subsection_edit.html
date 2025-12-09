@@ -34,9 +34,6 @@
           <div class="bg-primary-lighter padding-2">
             <div class="display-flex flex-justify flex-align-center">
               <div class="font-heading-lg text-bold">Instructions <span class="usa-sr-only">(locked)</span></div>
-              <svg class="usa-icon" aria-hidden="true" focusable="false" role="img" style="height: 22px; width: 19px;">
-                <use href="/static/img/usa-icons/lock.svg"></use>
-              </svg>
             </div>
             <div class="width-tablet-lg">
               {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
