@@ -9,9 +9,18 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add preview page for NOFO writers
+  - Make sure preview page hides hidden sections and shows values for variables
+
 ### Changed
 
+- Add new style for variables with filled-in values
+- Add "optional" and "hidden" labels to the "Guide to tags"
+  - Auto-open "Guide to tags" when looking at a newly-created ContentGuideInstance
+
 ### Fixed
+
+- Don't show the "hidden" field on subsection edit page for "variables" subsections
 
 ## [3.22.0] - 2025-12-08
 
