@@ -9,11 +9,20 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.23.0] - 2025-12-10
+
+### Added
+
 - Add preview page for NOFO writers
   - Make sure preview page hides hidden sections and shows values for variables
 
 ### Changed
 
+- Upgrade Python from 3.12.12 to 3.14.2
 - Show a title derived from subsection.body for subsections with no name on Composer pages
 - Prefill "key facts" variables with values from the NOFO Writer "details" page
 - Add new style for variables with filled-in values
