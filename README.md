@@ -48,7 +48,7 @@ Once a NOFO is reviewed and approved, our workflow is:
 
 `python` is a high-level, general-purpose programming language, popular for programming web applications.
 
-This project uses Python >=3.12.
+This project uses Python >=3.14.
 
 You can find the exact version of python that is being used by referencing the [Dockerfile](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/Dockerfile#L1). If you want to change your Python version, I would recommend [pyenv](https://github.com/pyenv/pyenv).
 
