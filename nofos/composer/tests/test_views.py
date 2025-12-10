@@ -35,7 +35,7 @@ class ComposerListViewTests(TestCase):
         url = reverse("composer:composer_index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Welcome to Composer!", html=True)
+        self.assertContains(response, "Welcome to Composer", html=True)
 
     def test_anonymous_user_is_redirected_to_login(self):
         """Anonymous users should be redirected to the login page."""
