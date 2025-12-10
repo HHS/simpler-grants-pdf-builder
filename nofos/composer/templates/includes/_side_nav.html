@@ -1,3 +1,5 @@
+{% load nofo_section_name_separator %}
+
 <aside class="grid-col-12 tablet:grid-col-3 cg-sidenav">
   <p class="side-nav-list--intro">Steps in this {% if document_is_instance == True %}NOFO{% else %}content guide{% endif %}</p>
 
@@ -8,7 +10,14 @@
           <a
             href="{% url 'composer:section_view' document_pk section.pk %}"
             {% if section.id == current_section.id %}aria-current="page" class="usa-current"{% endif %}>
-            {{ section.name }}
+            {% with section.name|nofo_section_name_separator as section_name %}
+              <div class="display-inline-flex">
+                {% if section_name.number %}
+                <span class="margin-right-05">{{ section_name.number }}.</span>
+                {% endif %}
+                <span>{{ section_name.name }}</span>
+              </div>
+            {% endwith %}
           </a>
         </li>
       {% endfor %}
