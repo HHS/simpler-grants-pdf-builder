@@ -417,7 +417,10 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 variables = subsection_obj.extract_variables()
                 if variables:
                     subsection_obj.edit_mode = "variables"
-                    subsection_obj.variables = json.dumps(variables)
+                    serializable_variables = {
+                        key: var.to_dict() for key, var in variables.items()
+                    }
+                    subsection_obj.variables = json.dumps(serializable_variables)
 
             add_html_id_to_subsection(subsection_obj)
             try:

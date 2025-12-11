@@ -14,6 +14,7 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Show a title derived from subsection.body for subsections with no name on Composer pages
 - Prefill "key facts" variables with values from the NOFO Writer "details" page
 - Add new style for variables with filled-in values
 - Add "optional" and "hidden" labels to the "Guide to tags"
@@ -24,6 +25,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Add a fix for importing ContentGuides
 - "Admin" link for superusers now works as expected for ContentGuideInstances
 - Don't show the "hidden" field on subsection edit page for "variables" subsections
 - NOFO Composer header links to admin/writer index depending on current url
