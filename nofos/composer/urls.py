@@ -104,7 +104,7 @@ urlpatterns = [
     ),
     path(
         "writer/<uuid:pk>",
-        views.writer_section_redirect,
+        views.writer_instance_redirect,
         name="writer_instance_redirect",
     ),
     path(

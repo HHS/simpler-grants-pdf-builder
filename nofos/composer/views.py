@@ -1664,9 +1664,13 @@ class WriterInstanceSubsectionEditView(GroupAccessContentGuideMixin, FormView):
 
 
 @login_required
-def writer_section_redirect(request, pk):
+def writer_instance_redirect(request, pk):
     """
-    Handles redirecting to the first section of a ContentGuideInstance for section view.
+    Handles redirecting to the appropriate view for a ContentGuideInstance, based on completeness
+    - If some page 1 conditional questions are unanswered, redirect to page 1 conditional questions
+    - If some page 2 conditional questions are unanswered, redirect to page 2 conditional questions
+    - If no sections/subsections yet (did not advance beyond 'confirm'), redirect to confirmation page
+    - Otherwise, 'draft NOFO' is fully inititalized, so redirect to first section of a ContentGuideInstance for section view.
     """
     instance = (
         ContentGuideInstance.objects.prefetch_related("sections").filter(pk=pk).first()
@@ -1680,17 +1684,23 @@ def writer_section_redirect(request, pk):
         )
         return HttpResponseNotFound("<p><strong>NOFO not found.</strong></p>")
 
+    # Check for unanswered conditional questions
+    for page in range(1, CONDITIONAL_QUESTIONS.max_page + 1):
+        questions = CONDITIONAL_QUESTIONS.for_page(page)
+        for question in questions:
+            answer = instance.get_conditional_question_answer(question.key)
+            if answer not in [True, False]:
+                return redirect(
+                    "composer:writer_conditional_questions",
+                    pk=instance.pk,
+                    page=page,
+                )
+
+    # Check for first section
     first = instance.sections.order_by("order", "pk").first()
     if not first:
-        log_exception(
-            request,
-            Exception("No steps"),
-            context="writer_section_redirect",
-            status=404,
-        )
-        return HttpResponseNotFound(
-            "<p><strong>This content guide has no steps.</strong></p>"
-        )
+        # Assume this means the user did not click 'Get started!'
+        return redirect("composer:writer_confirmation", pk=instance.pk)
 
     return redirect("composer:writer_section_view", pk=instance.pk, section_pk=first.pk)
 
