@@ -2437,7 +2437,7 @@ def add_instructions_to_subsections(sections, instructions_tables):
     Returns:
         None: The function modifies the sections in place.
     """
-
+    logger = logging.getLogger(__name__)
     all_subsections = [
         subsection
         for section in sections
@@ -2450,21 +2450,75 @@ def add_instructions_to_subsections(sections, instructions_tables):
             instruction_table.find("td").decode_contents(), "html.parser"
         )
 
+        # Get the instructions title as any element with text starting with "instructions for nofo writers"
+        # or "instructions for new nofo team"
+        try:
+            instructions_title = instructions_body.find(
+                string=re.compile(
+                    r"^(instructions for nofo writers|instructions for new nofo team)",
+                    re.IGNORECASE,
+                )
+            )
+            # Split at the first colon, and take what is after to get the actual title
+            instructions_title = re.match(
+                r"[^:]*:\s*(.*)", instructions_title.get_text().strip()
+            ).group(1)
+        except AttributeError:
+            logger.warning(
+                "Failed to extract expected instructions title from table.",
+                extra={"table": instruction_table.prettify()},
+            )
+            # TODO: should we continue or skip here?
+            continue
+
+        # Remove anything trailing in parens
+        REMOVE_TRAILING_PARENS_REGEX = r"\s*\(.*\)\s*$"
+        instructions_title = re.sub(
+            REMOVE_TRAILING_PARENS_REGEX, "", instructions_title
+        ).lower()
+
         # Check each subsection for a matching name
+        found_match = False
         for subsection in all_subsections:
-            subsection_name_lower = subsection.get("name", "").lower()
-            # Skip if subsection name is empty
-            if not subsection_name_lower:
-                continue
+            if name := subsection.get("name", "").strip():
+                # Get the subsection name, less any trailing parens
+                subsection_name = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", name).lower()
+                if subsection_name.lower() == instructions_title.lower():
+                    # If subsection already has instructions, skip it -- only one set of instructions per subsection
+                    # This is unexpected
+                    if "instructions" in subsection:
+                        continue
 
-            if subsection_name_lower in instructions_body.get_text().lower():
-                # If subsection already has instructions, skip it -- only one set of instructions per subsection
-                if "instructions" in subsection:
-                    # TODO: Alert that something unexpected has happened ?
-                    continue
+                    subsection["instructions"] = instructions_body
+                    found_match = True
+                    break  # Stop searching after the first match
 
-                subsection["instructions"] = instructions_body
-                break  # Stop searching after the first match
+            # For subsections without a name, check if the body starts with the instructions title
+            else:
+                body = subsection.get("body", "")
+                if isinstance(body, Tag):
+                    body = body.get_text()
+                elif isinstance(body, list) and len(body) > 0:
+                    if isinstance(body[0], Tag):
+                        body = body[0].get_text()
+                else:
+                    body = body.strip()
+
+                if body.lower().startswith(instructions_title.lower()):
+                    # If subsection already has instructions, skip it -- only one set of instructions per subsection
+                    # This is unexpected
+                    if "instructions" in subsection:
+                        continue
+
+                    subsection["instructions"] = instructions_body
+                    found_match = True
+                    break  # Stop searching after the first match
+
+        if not found_match:
+            logger.warning(
+                "No matching subsection found for instructions.",
+                extra={"instructions_title": instructions_title},
+            )
 
 
 def normalize_whitespace_img_alt_text(soup):
