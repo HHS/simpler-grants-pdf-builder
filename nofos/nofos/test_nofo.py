@@ -6846,19 +6846,25 @@ class AddInstructionsToSubsectionsTests(TestCase):
         sections = [
             {
                 "subsections": [
-                    {"name": "Section A", "body": "<p>Content A</p>"},
-                    {"name": "Section B", "body": "<p>Content B</p>"},
+                    {
+                        "name": "Section A",
+                        "body": BeautifulSoup("<p>Content A</p>", "html.parser").p,
+                    },
+                    {
+                        "name": "Section B",
+                        "body": BeautifulSoup("<p>Content B</p>", "html.parser").p,
+                    },
                 ]
             }
         ]
 
         instructions = [
             BeautifulSoup(
-                "<table><tr><td><div>Instructions for Section A</div><div>Do this!</div></td></tr></table>",
+                "<table><tr><td><div>Instructions for NOFO writers: Section A</div><div>Do this!</div></td></tr></table>",
                 "html.parser",
             ).table,
             BeautifulSoup(
-                "<table><tr><td><div>Instructions for Section B</div></td></tr></table>",
+                "<table><tr><td><div>Instructions for NOFO writers: Section B</div></td></tr></table>",
                 "html.parser",
             ).table,
         ]
@@ -6866,25 +6872,32 @@ class AddInstructionsToSubsectionsTests(TestCase):
         add_instructions_to_subsections(sections, instructions)
 
         assert sections[0]["subsections"][0]["instructions"] == BeautifulSoup(
-            "<div>Instructions for Section A</div><div>Do this!</div>", "html.parser"
+            "<div>Instructions for NOFO writers: Section A</div><div>Do this!</div>",
+            "html.parser",
         )
         assert sections[0]["subsections"][1]["instructions"] == BeautifulSoup(
-            "<div>Instructions for Section B</div>", "html.parser"
+            "<div>Instructions for NOFO writers: Section B</div>", "html.parser"
         )
 
     def test_add_instructions_to_subsections_matches_instructions_once(self):
         sections = [
             {
                 "subsections": [
-                    {"name": "Section A", "body": "<p>Content A</p>"},
-                    {"name": "Section A", "body": "<p>Another A</p>"},
+                    {
+                        "name": "Section A",
+                        "body": BeautifulSoup("<p>Content A</p>", "html.parser").p,
+                    },
+                    {
+                        "name": "Section A",
+                        "body": BeautifulSoup("<p>Another A</p>", "html.parser").p,
+                    },
                 ]
             }
         ]
 
         instructions = [
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section A</td></tr></table>",
+                "<table><tr><td><p>Instructions for NOFO writers: Section A</p></td></tr></table>",
                 "html.parser",
             ).table
         ]
@@ -6898,66 +6911,67 @@ class AddInstructionsToSubsectionsTests(TestCase):
         sections = [
             {
                 "subsections": [
-                    {"name": "Section A", "body": "<p>Content A</p>"},
-                    {"name": "Section B", "body": "<p>Content B</p>"},
-                    {"name": "Section A", "body": "<p>Another A</p>"},
+                    {
+                        "name": "Section A",
+                        "body": BeautifulSoup("<p>Content A</p>", "html.parser").p,
+                    },
+                    {
+                        "name": "Section B",
+                        "body": BeautifulSoup("<p>Content B</p>", "html.parser").p,
+                    },
+                    {
+                        "name": "Section A",
+                        "body": BeautifulSoup("<p>Another A</p>", "html.parser").p,
+                    },
                 ]
             }
         ]
 
         instructions = [
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section A</td></tr></table>",
+                "<table><tr><td>Instructions for NOFO writers: Section A</td></tr></table>",
                 "html.parser",
             ).table,
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section A</td></tr></table>",
+                "<table><tr><td>Instructions for NOFO writers: Section A</td></tr></table>",
                 "html.parser",
             ),
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section B</td></tr></table>",
+                "<table><tr><td>Instructions for NOFO writers: Section B</td></tr></table>",
                 "html.parser",
             ).table,
         ]
 
         add_instructions_to_subsections(sections, instructions)
 
-        assert (
-            "Instructions for Section A"
-            in sections[0]["subsections"][0]["instructions"]
-        )
-        assert (
-            "Instructions for Section B"
-            in sections[0]["subsections"][1]["instructions"]
-        )
-        assert (
-            "Instructions for Section A"
-            in sections[0]["subsections"][2]["instructions"]
-        )
+        assert "Section A" in sections[0]["subsections"][0]["instructions"].get_text()
+        assert "Section B" in sections[0]["subsections"][1]["instructions"].get_text()
+        assert "Section A" in sections[0]["subsections"][2]["instructions"].get_text()
 
-    def test_add_instructions_to_subsections_skips_subsections_with_no_title(self):
+    def test_add_instructions_to_subsections_matches_body_if_no_name(self):
         sections = [
             {
                 "subsections": [
-                    {"name": "", "body": "<p>Content A</p>"},
-                    {"name": "Section B", "body": "<p>Content B</p>"},
+                    {
+                        "name": "",
+                        "body": BeautifulSoup("<p>Content A</p>", "html.parser").p,
+                    },
                 ]
             }
         ]
 
         instructions = [
             BeautifulSoup(
-                "<table><tr><td>Instructions for Section B</td></tr></table>",
+                "<table><tr><td>Instructions for NOFO writers: Content A</td></tr></table>",
                 "html.parser",
             ).table
         ]
 
         add_instructions_to_subsections(sections, instructions)
 
-        assert "instructions" not in sections[0]["subsections"][0]
         assert (
-            "Instructions for Section B"
-            in sections[0]["subsections"][1]["instructions"]
+            "Instructions for NOFO writers: Content A"
+            in sections[0]["subsections"][0]["instructions"].get_text()
         )
 
 
