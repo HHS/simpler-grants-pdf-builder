@@ -410,6 +410,11 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                     subsection.get("instructions", "")
                 )
                 subsection_fields["instructions"] = instructions_md_body
+                if hasattr(SubsectionModel, "optional"):
+                    is_optional = (
+                        "section is only required if" in instructions_md_body.lower()
+                    )
+                    subsection_fields["optional"] = is_optional
 
             subsection_obj = SubsectionModel(**subsection_fields)
 
