@@ -2480,23 +2480,32 @@ def add_instructions_to_subsections(sections, instructions_tables):
         # Check each subsection for a matching name
         found_match = False
         for subsection in all_subsections:
-            # Skip if subsection name is empty
-            if not subsection.get("name", "").strip():
-                continue
+            if name := subsection.get("name", "").strip():
+                # Get the subsection name, less any trailing parens
+                subsection_name = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", name).lower()
+                if subsection_name.lower() == instructions_title.lower():
+                    # If subsection already has instructions, skip it -- only one set of instructions per subsection
+                    # This is unexpected
+                    if "instructions" in subsection:
+                        continue
 
-            # Get the subsection name, less any trailing parens
-            subsection_name = re.sub(
-                REMOVE_TRAILING_PARENS_REGEX, "", subsection.get("name", "")
-            ).lower()
-            if subsection_name.lower() == instructions_title.lower():
-                # If subsection already has instructions, skip it -- only one set of instructions per subsection
-                # This is unexpected
-                if "instructions" in subsection:
-                    continue
+                    subsection["instructions"] = instructions_body
+                    found_match = True
+                    break  # Stop searching after the first match
 
-                subsection["instructions"] = instructions_body
-                found_match = True
-                break  # Stop searching after the first match
+            # For subsections without a name, check if the body starts with the instructions title
+            else:
+                body = get_as_markdown(subsection.get("body", "")).strip().lower()
+
+                if body.startswith(instructions_title):
+                    # If subsection already has instructions, skip it -- only one set of instructions per subsection
+                    # This is unexpected
+                    if "instructions" in subsection:
+                        continue
+
+                    subsection["instructions"] = instructions_body
+                    found_match = True
+                    break  # Stop searching after the first match
 
         if not found_match:
             logger.warning(
