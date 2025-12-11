@@ -1825,3 +1825,107 @@ class WriterInstancePreviewViewTests(BaseWriterViewTests):
         self.login_as(self.acf_user)
         resp = self.client.post(self.url, {"action": "bogus"}, follow=False)
         self.assertEqual(resp.status_code, 400)
+
+
+class WriterInstanceRedirectTests(BaseWriterViewTests):
+    def setUp(self):
+        super().setUp()
+
+        # Use the helper to create an ACF parent guide
+        self.parent_guide = self.create_acf_parent_guide()
+
+        # Create a ContentGuideInstance in the same group/opdiv
+        self.instance = ContentGuideInstance.objects.create(
+            title="ACF Draft NOFO",
+            opdiv="acf",
+            group="acf",
+            parent=self.parent_guide,
+            status="draft",
+            short_name="ACF Draft NOFO (short)",
+        )
+
+        self.url = reverse(
+            "composer:writer_instance_redirect",
+            kwargs={"pk": self.instance.pk},
+        )
+
+    def test_redirects_to_page1_conditional_questions_when_unanswered(self):
+        """Test that the view redirects to the first page of conditional questions when they are unanswered."""
+        self.login_as(self.acf_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": self.instance.pk, "page": 1},
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_redirects_to_page2_conditional_questions_when_page1_answered(self):
+        """Test that the view redirects to the second page of conditional questions when page 1 is answered but page 2 is unanswered."""
+        self.login_as(self.acf_user)
+
+        # Simulate answering page 1 questions
+        completed_page_1 = {}
+        all_questions = CONDITIONAL_QUESTIONS.for_page(1)
+        keys_for_page = {question.key for question in all_questions}
+        for key in keys_for_page:
+            completed_page_1[key] = True
+
+        self.instance.conditional_questions = completed_page_1
+        self.instance.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse(
+            "composer:writer_conditional_questions",
+            kwargs={"pk": self.instance.pk, "page": 2},
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_redirects_to_confirmation_when_all_conditional_questions_answered(self):
+        """Test that the view redirects to the confirmation page when all conditional questions are answered."""
+        self.login_as(self.acf_user)
+
+        # Simulate answering all conditional questions
+        completed_questions = {}
+        for question in CONDITIONAL_QUESTIONS.values():
+            completed_questions[question.key] = True
+
+        self.instance.conditional_questions = completed_questions
+        self.instance.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse(
+            "composer:writer_confirmation",
+            kwargs={"pk": self.instance.pk},
+        )
+        self.assertEqual(response.url, expected_url)
+
+    def test_redirects_to_section_view_when_sections_exist(self):
+        """Test that the view redirects to the first section view when sections exist."""
+        self.login_as(self.acf_user)
+
+        # Simulate answering all conditional questions
+        completed_questions = {}
+        for question in CONDITIONAL_QUESTIONS.values():
+            completed_questions[question.key] = True
+
+        self.instance.conditional_questions = completed_questions
+        self.instance.save()
+
+        # Create a section for the instance
+        section = ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            order=1,
+            name="Instance Section 1",
+            html_id="inst-sec-1",
+        )
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse(
+            "composer:writer_section_view",
+            kwargs={"pk": self.instance.pk, "section_pk": section.pk},
+        )
+        self.assertEqual(response.url, expected_url)
