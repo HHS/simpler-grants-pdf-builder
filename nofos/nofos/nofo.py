@@ -2495,9 +2495,16 @@ def add_instructions_to_subsections(sections, instructions_tables):
 
             # For subsections without a name, check if the body starts with the instructions title
             else:
-                body = get_as_markdown(subsection.get("body", "")).strip().lower()
+                body = subsection.get("body", "")
+                if isinstance(body, Tag):
+                    body = body.get_text()
+                elif isinstance(body, list) and len(body) > 0:
+                    if isinstance(body[0], Tag):
+                        body = body[0].get_text()
+                else:
+                    body = body.strip()
 
-                if body.startswith(instructions_title):
+                if body.lower().startswith(instructions_title.lower()):
                     # If subsection already has instructions, skip it -- only one set of instructions per subsection
                     # This is unexpected
                     if "instructions" in subsection:
