@@ -11,7 +11,11 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Allow title casing for "Key Facts" and "Key Dates" subsections
+
 ### Fixed
+
+- Explicitly mark "Style Bold" text as bold on import
 
 ## [3.23.0] - 2025-12-10
 
