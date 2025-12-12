@@ -403,6 +403,11 @@ style_map_manager.add_style(
     note="Print it out so we can see it, but this should not be in the document.",
 )
 style_map_manager.add_style(
+    style_rule="r[style-name='Style Bold'] => strong.style-bold",
+    location_in_nofo="All over the place",
+    note="Most of the time the intent here is bold text.",
+)
+style_map_manager.add_style(
     style_rule="r[style-name='Subtle Emphasis'] => strong.subtle-emphasis",
     location_in_nofo="Step 3 > Required format > Fonts/Spacing",
     note="Bold is safe, but they might possibly be headings.",
