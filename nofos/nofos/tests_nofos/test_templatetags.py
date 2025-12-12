@@ -1003,7 +1003,9 @@ class TestIsFloatingCalloutBox(TestCase):
         """Test that the subsection is identified as a floating callout box by name."""
         names = [
             "Key facts",
+            "Key Facts",
             "Key dates",
+            "Key Dates",
             "Questions?",
             "Have questions?",
             "**Have questions?",
@@ -1025,6 +1027,17 @@ class TestIsFloatingCalloutBox(TestCase):
         subsection = Subsection.objects.create(
             section=self.section,
             name="Random name",
+            callout_box=True,
+            tag="h4",
+            order=2,  # Use order=2 since order=1 is taken by default subsection
+        )
+        self.assertFalse(is_floating_callout_box(subsection))
+
+    def test_wrong_casing_name_does_not_match(self):
+        """Test subsections are not identified as floating callout boxes if the capitalization is wrong."""
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="KEY FACTS",
             callout_box=True,
             tag="h4",
             order=2,  # Use order=2 since order=1 is taken by default subsection
