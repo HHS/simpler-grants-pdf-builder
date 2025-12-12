@@ -359,7 +359,9 @@ def is_floating_callout_box(subsection):
     # maybe not the best idea long-term but it works for now
     floating_subsection_strings = [
         "Key facts",
+        "Key Facts",
         "Key dates",
+        "Key Dates",
         "Questions?",
         "Have questions?",
         "**Have questions?",
