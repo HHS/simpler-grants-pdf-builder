@@ -1369,7 +1369,7 @@ class WriterInstanceDetailsView(LoginRequiredMixin, CreateView):
         instance.group = user_group
         instance.save()
 
-        return redirect("composer:writer_conditional_questions", pk=instance.pk, page=1)
+        return redirect("composer:writer_instance_redirect", pk=instance.pk)
 
 
 class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
@@ -1449,25 +1449,7 @@ class WriterInstanceConditionalQuestionView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         form.save()
-
-        max_page = CONDITIONAL_QUESTIONS.max_page
-        next_page = self.page + 1
-
-        if next_page <= max_page:
-            return redirect(
-                "composer:writer_conditional_questions",
-                pk=self.instance.pk,
-                page=next_page,
-            )
-
-        # TODO: remove message once we are creating sections and subsections
-        messages.success(
-            self.request,
-            "Draft NOFO “{}” created successfully.".format(
-                self.instance.short_name or self.instance.title or self.instance.pk
-            ),
-        )
-        return redirect("composer:writer_confirmation", pk=self.instance.pk)
+        return redirect("composer:writer_instance_redirect", pk=self.instance.pk)
 
 
 class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
