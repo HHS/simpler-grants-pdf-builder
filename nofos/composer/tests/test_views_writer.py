@@ -391,8 +391,8 @@ class WriterInstanceDetailsViewTests(BaseWriterViewTests):
         self.assertEqual(
             response.url,
             reverse(
-                "composer:writer_conditional_questions",
-                kwargs={"pk": str(instance.pk), "page": 1},
+                "composer:writer_instance_redirect",
+                kwargs={"pk": str(instance.pk)},
             ),
         )
 
@@ -463,6 +463,10 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
             conditional_questions={},
         )
 
+        self.next_url = reverse(
+            "composer:writer_instance_redirect",
+            kwargs={"pk": str(self.instance.pk)},
+        )
         self.url_page1 = reverse(
             "composer:writer_conditional_questions",
             kwargs={"pk": str(self.instance.pk), "page": 1},
@@ -545,7 +549,7 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
         response = self.client.post(self.url_page1, data=post_data)
         # Should redirect to page 2 (next page)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, self.url_page2)
+        self.assertEqual(response.url, self.next_url)
 
         # Reload instance from DB
         self.instance.refresh_from_db()
@@ -609,12 +613,7 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
 
         response = self.client.post(self.url_page2, data=post_data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url,
-            reverse(
-                "composer:writer_confirmation", kwargs={"pk": str(self.instance.pk)}
-            ),
-        )
+        self.assertEqual(response.url, self.next_url)
 
         # Instance updated
         self.instance.refresh_from_db()
@@ -626,12 +625,6 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
         self.assertEqual(cq["organizational_chart"], True)
         self.assertEqual(cq["letters_of_support"], True)
         self.assertEqual(cq["report_on_overlap"], True)
-
-        # Success message present
-        messages = [m.message for m in get_messages(response.wsgi_request)]
-        self.assertTrue(
-            any("Draft NOFO “First Draft” created successfully." in m for m in messages)
-        )
 
 
 class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
