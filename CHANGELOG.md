@@ -16,6 +16,7 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Explicitly mark "Style Bold" text as bold on import
+- Don't duplicate sections and subsections by repeatedly confirming a draft NOFO
 
 ## [3.23.0] - 2025-12-10
 
