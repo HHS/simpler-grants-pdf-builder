@@ -1230,6 +1230,51 @@ class WriterInstanceConfirmationViewTests(BaseWriterViewTests):
         var = list(variables.values())[0]
         self.assertIsNone(var.value)
 
+    def test_get_redirects_if_instance_already_built(self):
+        """
+        Once the instance has sections, GET to the confirmation page
+        should redirect to writer_instance_redirect.
+        """
+        # 1 section marks an instance as 'already built'
+        ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            order=1,
+            name="Already Exists",
+            html_id="sec-existing",
+        )
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.get(self.confirmation_url)
+
+        expected_url = reverse(
+            "composer:writer_instance_redirect",
+            kwargs={"pk": str(self.instance.pk)},
+        )
+        self.assertRedirects(
+            response,
+            expected_url,
+            status_code=302,
+            target_status_code=302,  # destination view also redirects
+        )
+
+    def test_post_returns_400_if_instance_already_built(self):
+        """
+        POST should return 400 Bad Request if the instance already has sections.
+        """
+        # Mark instance as 'already built'
+        ContentGuideSection.objects.create(
+            content_guide_instance=self.instance,
+            order=1,
+            name="Already Exists",
+            html_id="sec-existing",
+        )
+
+        self.client.login(email="acf@example.com", password="testpass123")
+        response = self.client.post(self.confirmation_url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"already been initialized", response.content.lower())
+
 
 class WriterSectionViewAlertsTests(TestCase):
     def setUp(self):

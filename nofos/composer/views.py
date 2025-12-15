@@ -1466,6 +1466,12 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
 
     template_name = "composer/writer/writer_confirmation.html"
 
+    def _document_already_built(self) -> bool:
+        """
+        Simplisticly, an instance is 'built' once it has any sections.
+        """
+        return self.instance.sections.exists()
+
     def dispatch(self, request, *args, **kwargs):
         # Fetch instance and enforce access
         self.instance = get_object_or_404(
@@ -1548,7 +1554,24 @@ class WriterInstanceConfirmationView(LoginRequiredMixin, TemplateView):
 
         return context
 
+    def get(self, request, *args, **kwargs):
+        # If already initialized; redirect to section redirect view
+        if self._document_already_built():
+            return redirect(
+                reverse_lazy(
+                    "composer:writer_instance_redirect", kwargs={"pk": self.instance.pk}
+                )
+            )
+
+        return super().get(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
+        # If already initialized; throw error
+        if self._document_already_built():
+            return HttpResponseBadRequest(
+                "This draft NOFO has already been initialized."
+            )
+
         # Create ContentGuideInstance sections and subsections
         create_instance_sections_and_subsections(self.instance)
 
