@@ -2450,40 +2450,20 @@ def add_instructions_to_subsections(sections, instructions_tables):
             instruction_table.find("td").decode_contents(), "html.parser"
         )
 
-        # Get the instructions title as any element with text starting with "instructions for nofo writers"
-        # or "instructions for new nofo team"
-        try:
-            instructions_title = instructions_body.find(
-                string=re.compile(
-                    r"^(instructions for nofo writers|instructions for new nofo team)",
-                    re.IGNORECASE,
-                )
-            )
-            # Split at the first colon, and take what is after to get the actual title
-            instructions_title = re.match(
-                r"[^:]*:\s*(.*)", instructions_title.get_text().strip()
-            ).group(1)
-        except AttributeError:
-            logger.warning(
-                "Failed to extract expected instructions title from table.",
-                extra={"table": instruction_table.prettify()},
-            )
-            # TODO: should we continue or skip here?
-            continue
+        instructions_title = _extract_instructions_title(instructions_body)
+        if not instructions_title:
+            continue  # Skip if we couldn't extract a title
 
         # Remove anything trailing in parens
-        REMOVE_TRAILING_PARENS_REGEX = r"\s*\(.*\)\s*$"
-        instructions_title = re.sub(
-            REMOVE_TRAILING_PARENS_REGEX, "", instructions_title
-        ).lower()
+        instructions_title = _normalize_title(instructions_title)
 
         # Check each subsection for a matching name
         found_match = False
         for subsection in all_subsections:
-            if name := subsection.get("name", "").strip():
+            if name := subsection.get("name", ""):
                 # Get the subsection name, less any trailing parens
-                subsection_name = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", name).lower()
-                if subsection_name.lower() == instructions_title.lower():
+                subsection_name = _normalize_title(name)
+                if subsection_name == instructions_title:
                     # If subsection already has instructions, skip it -- only one set of instructions per subsection
                     # This is unexpected
                     if "instructions" in subsection:
@@ -2508,6 +2488,10 @@ def add_instructions_to_subsections(sections, instructions_tables):
                     # If subsection already has instructions, skip it -- only one set of instructions per subsection
                     # This is unexpected
                     if "instructions" in subsection:
+                        logger.info(
+                            "Duplicate instructions found",
+                            extra={"instructions_title": instructions_title},
+                        )
                         continue
 
                     subsection["instructions"] = instructions_body
@@ -2519,6 +2503,57 @@ def add_instructions_to_subsections(sections, instructions_tables):
                 "No matching subsection found for instructions.",
                 extra={"instructions_title": instructions_title},
             )
+
+
+def _extract_instructions_title(instructions_body):
+    """
+    Extract and return the instructions title (text after the first colon) or None.
+    """
+    logger = logging.getLogger(__name__)
+
+    try:
+        node = instructions_body.find(
+            string=re.compile(
+                r"^(instructions for nofo writers|instructions for new nofo team)",
+                re.IGNORECASE,
+            )
+        )
+
+        if not node:
+            raise ValueError("No instructions title line found")
+
+        title_text = str(node).strip()
+
+        if ":" not in title_text:
+            raise ValueError("Instructions title is missing a colon")
+
+        # Split on first colon
+        _, title = title_text.split(":", 1)
+        title = title.strip()
+
+        if not title:
+            raise ValueError("Instructions title is empty after colon")
+
+        return title
+
+    except Exception as e:
+        logger.warning(
+            "Failed to extract expected instructions title from instructions body.",
+            extra={
+                "error": str(e),
+                "instructions": instructions_body,
+            },
+        )
+        return None
+
+
+def _normalize_title(title: str):
+    """Trim and remove trailing parentheses, then normalize case for comparison."""
+    REMOVE_TRAILING_PARENS_REGEX = r"\s*\(.*\)\s*$"
+
+    normalized = title.strip()
+    normalized = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", normalized)
+    return normalized.casefold()
 
 
 def normalize_whitespace_img_alt_text(soup):
