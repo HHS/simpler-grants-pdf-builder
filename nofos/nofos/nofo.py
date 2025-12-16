@@ -2437,6 +2437,56 @@ def add_instructions_to_subsections(sections, instructions_tables):
     Returns:
         None: The function modifies the sections in place.
     """
+
+    def _extract_instructions_title(instructions_body):
+        """
+        Extract and return the instructions title (text after the first colon) or None.
+        """
+        logger = logging.getLogger(__name__)
+
+        try:
+            node = instructions_body.find(
+                string=re.compile(
+                    r"^(instructions for nofo writers|instructions for new nofo team)",
+                    re.IGNORECASE,
+                )
+            )
+
+            if not node:
+                raise ValueError("No instructions title line found")
+
+            title_text = str(node).strip()
+
+            if ":" not in title_text:
+                raise ValueError("Instructions title is missing a colon")
+
+            # Split on first colon
+            _, title = title_text.split(":", 1)
+            title = title.strip()
+
+            if not title:
+                raise ValueError("Instructions title is empty after colon")
+
+            return title
+
+        except Exception as e:
+            logger.warning(
+                "Failed to extract expected instructions title from instructions body.",
+                extra={
+                    "error": str(e),
+                    "instructions": instructions_body,
+                },
+            )
+            return None
+
+    def _normalize_title(title: str):
+        """Trim and remove trailing parentheses, then normalize case for comparison."""
+        REMOVE_TRAILING_PARENS_REGEX = r"\s*\(.*\)\s*$"
+
+        normalized = title.strip()
+        normalized = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", normalized)
+        return normalized.casefold()
+
     logger = logging.getLogger(__name__)
     all_subsections = [
         subsection
@@ -2503,57 +2553,6 @@ def add_instructions_to_subsections(sections, instructions_tables):
                 "No matching subsection found for instructions.",
                 extra={"instructions_title": instructions_title},
             )
-
-
-def _extract_instructions_title(instructions_body):
-    """
-    Extract and return the instructions title (text after the first colon) or None.
-    """
-    logger = logging.getLogger(__name__)
-
-    try:
-        node = instructions_body.find(
-            string=re.compile(
-                r"^(instructions for nofo writers|instructions for new nofo team)",
-                re.IGNORECASE,
-            )
-        )
-
-        if not node:
-            raise ValueError("No instructions title line found")
-
-        title_text = str(node).strip()
-
-        if ":" not in title_text:
-            raise ValueError("Instructions title is missing a colon")
-
-        # Split on first colon
-        _, title = title_text.split(":", 1)
-        title = title.strip()
-
-        if not title:
-            raise ValueError("Instructions title is empty after colon")
-
-        return title
-
-    except Exception as e:
-        logger.warning(
-            "Failed to extract expected instructions title from instructions body.",
-            extra={
-                "error": str(e),
-                "instructions": instructions_body,
-            },
-        )
-        return None
-
-
-def _normalize_title(title: str):
-    """Trim and remove trailing parentheses, then normalize case for comparison."""
-    REMOVE_TRAILING_PARENS_REGEX = r"\s*\(.*\)\s*$"
-
-    normalized = title.strip()
-    normalized = re.sub(REMOVE_TRAILING_PARENS_REGEX, "", normalized)
-    return normalized.casefold()
 
 
 def normalize_whitespace_img_alt_text(soup):
