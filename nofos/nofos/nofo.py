@@ -420,12 +420,18 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
 
             if hasattr(SubsectionModel, "extract_variables"):
                 variables = subsection_obj.extract_variables()
+                # If variables are detected, edit_mode = "variables"
                 if variables:
                     subsection_obj.edit_mode = "variables"
                     serializable_variables = {
                         key: var.to_dict() for key, var in variables.items()
                     }
                     subsection_obj.variables = json.dumps(serializable_variables)
+                # If no variables, and subsection is optional, then edit_mode = "full"
+                elif subsection_obj.optional:
+                    subsection_obj.edit_mode = "full"
+
+                # Otherwise, default edit_mode = "locked" remains
 
             add_html_id_to_subsection(subsection_obj)
             try:
