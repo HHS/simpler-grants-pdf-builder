@@ -11,10 +11,13 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Use pencil icon for "Build your application" step
+- Automatically assign "optional" to ContentGuideInstance subsections based on instructions
 - Allow title casing for "Key Facts" and "Key Dates" subsections
 
 ### Fixed
 
+- Fixed how instructions are associated with subsections when creating a ContentGuideInstance
 - Explicitly mark "Style Bold" text as bold on import
 - Don't duplicate sections and subsections by repeatedly confirming a draft NOFO
 
