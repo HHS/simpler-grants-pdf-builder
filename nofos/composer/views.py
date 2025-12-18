@@ -758,7 +758,7 @@ class ComposerSectionView(
             (
                 "composer:composer_history"
                 if document_field_name == "content_guide"
-                else ""
+                else "composer:writer_instance_history"
             ),
             args=[document.pk],
         )
@@ -1757,3 +1757,25 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
             return redirect(self.exit_url)
 
         return HttpResponseBadRequest("Unknown action.")
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class WriterInstanceHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
+    model = ContentGuideInstance
+    template_name = "composer/writer/writer_history.html"
+    context_object_name = "document"
+
+    def get_event_formatting_options(self):
+        return {
+            "SubsectionModel": ContentGuideSubsection,
+            "document_display_prefix": "Draft Nofo",
+        }
+
+    def get_document_model_name(self):
+        return "contentguideinstance"
+
+    def get_section_model_name(self):
+        return "contentguidesection"
+
+    def get_subsection_model_name(self):
+        return "contentguidesubsection"

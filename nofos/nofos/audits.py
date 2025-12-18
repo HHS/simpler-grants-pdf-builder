@@ -37,7 +37,7 @@ def format_audit_event(event, formatting_options=None):
     Takes a CRUDEvent and returns a formatted dictionary for display in the UI.
     Includes enhanced labels and object details.
     """
-    BASE_DOCUMENT_TYPES = ["nofo", "contentguide"]
+    BASE_DOCUMENT_TYPES = ["nofo", "contentguide", "contentguideinstance"]
 
     formatting_options = formatting_options or {}
     SubsectionModel = formatting_options.get("SubsectionModel", Subsection)
@@ -73,7 +73,6 @@ def format_audit_event(event, formatting_options=None):
     if event.changed_fields:
         try:
             changed_fields = json.loads(event.changed_fields)
-
             if isinstance(changed_fields, dict):
                 # Handle custom actions
                 if "action" in changed_fields:
@@ -105,6 +104,10 @@ def format_audit_event(event, formatting_options=None):
         except Exception:
             pass
 
+    # Still do name formatting for "created" (event_type == 1) events
+    elif event.event_type == 1:
+        if event.content_type.model in BASE_DOCUMENT_TYPES:
+            event_details["object_description"] = f"{document_display_prefix} Created"
     return event_details
 
 
