@@ -64,7 +64,7 @@ class NofoHistoryViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, event.get_event_type_display())
-        self.assertContains(response, str(self.nofo))
+        self.assertContains(response, "NOFO Created")
 
     def test_history_view_shows_custom_audit_events(self):
         """Test that history view shows custom audit events (import, print, reimport)"""
