@@ -154,6 +154,7 @@ def render_curly_variable_list_html_string(
 def get_audit_event_object_display_name(value: str) -> str:
     OBJECT_DISPLAY_NAMES = {
         "Contentguide": "Content guide",
+        "Contentguideinstance": "Draft NOFO",
         "Contentguidesection": "Step",
         "Contentguidesubsection": "Section",
     }
