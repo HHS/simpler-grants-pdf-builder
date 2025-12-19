@@ -120,7 +120,7 @@ Subsections:
 
 - A ContentGuideSubsection has instructions (these are never a part of NOFO Subsections)
 - A ContentGuideSubsection has an “edit mode” which defines how this subsection can be edited by a NOFO Writer.
-- A ContentGuideSubsection _can_ have “variables”, which are a list of variables in the body text formatted between curly braces (eg, `{This is a variable.}`). NOFO Writers will be asked to enter a string value for each variable. A subsection can only have variables if the edit_mode is “variables”.
+- A ContentGuideSubsection _can_ have “variables”, which are a list of variables in the body text formatted between curly braces (e.g., `{This is a variable.}`). NOFO Writers will be asked to enter a string value for each variable. A subsection can only have variables if the edit_mode is “variables”.
 - A ContentGuideSubsection can be optional, which lets NOFO Writers show or hide the section.
 - A ContentGuideSubsection knows if it is affected by a conditional question, and can tell you if it should appear based on a “Yes” or “No” answer from a Writer.
 
@@ -154,7 +154,7 @@ All users have the ability to create ContentGuideInstances, which we call “dra
 
 - In order of importance, it is strongly recommended to support:
   - import from a Word document (this is working)
-  - preserve formatting and elements from Word when pasting in (eg lists, tables) (this is not working)
+  - preserve formatting and elements from Word when pasting in (e.g., lists, tables) (this is not working)
   - swap the markdown editor for a rich text editor.
 
 ---
