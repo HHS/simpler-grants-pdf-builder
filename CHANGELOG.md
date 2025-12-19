@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add "README" overview to the composer app
+
 ### Changed
 
 - Use pencil icon for "Build your application" step
