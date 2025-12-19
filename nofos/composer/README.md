@@ -1,6 +1,6 @@
 # NOFO Composer MVP — Product Documentation
 
-This page documents how the NOFO Composer MVP was researched, designed, and built during Quad 4 (through January 6, 2026). It is intended to enable any future product, design, or engineering team to understand the decisions behind Composer and confidently take over ownership.
+This page documents how the NOFO Composer MVP was researched, designed, built, and evaluated. It is intended to support long-term ownership, maintenance, and iteration by any product, design, and engineering teams.
 
 ## Overview
 
@@ -13,6 +13,8 @@ This page documents how the NOFO Composer MVP was researched, designed, and buil
 - The _why_ (user needs and policy context)
 - The _what_ (MVP scope and product decisions)
 - The _how_ (design patterns, architecture, and implementation notes)
+
+Composer is intentionally positioned as a **starting point for authoring**, not a replacement for downstream drafting or review tools.
 
 ---
 
@@ -40,7 +42,7 @@ This page documents how the NOFO Composer MVP was researched, designed, and buil
 
 ---
 
-## Using the Composer
+## Using Composer
 
 Follow the startup steps to get the app running [in the main README.md](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/README.md#build-and-run-locally-with-poetry).
 
@@ -70,7 +72,29 @@ _Note: The OpDiv Admin/Policy Admin role (bureau directors, lead authors, agency
 
 ## Research Foundations
 
-TBD, or remove
+### Research Framing
+
+Research examined governance needs and authoring workflows together, with the understanding that:
+
+- **Policy governance establishes the foundation**
+- **Writer workflows build on that foundation**
+- Adoption depends on trust, clarity, and workflow fit — not feature completeness
+
+Composer MVP was evaluated as a **validated starting point**, not an end-to-end authoring solution.
+
+### Methods
+
+- Foundational interviews with HHS Office of Grants stakeholders
+- Participatory interviews with Policy Admins and NOFO writers
+- Concept evaluation using a clickable prototype
+- Task-based usability and acceptance testing with Writers and HHS Admins
+
+### Key Insights
+
+- Centralized governance and visibility into changes are prerequisites for scale
+- Writers need Composer to reflect real-world drafting stages, not a single-pass flow
+- Word remains the system of record for drafting, collaboration, and clearance
+- Clear cues about locking, permissions, and system behavior are critical to trust
 
 ---
 
@@ -78,10 +102,23 @@ TBD, or remove
 
 ### Design Principles
 
-- Mirror existing NOFO structure to reduce user learning curve
-- Make permissions and locked content explicit
-- Prioritize clarity over feature density
-- Design for offline review workflows, even if not fully supported in MVP, for example, support for Word download and eventual Word re-import of draft NOFOs
+Composer MVP design prioritized:
+
+- **Governance-first design**
+- **Progressive disclosure of complexity**
+- **Familiar structure aligned to content guides**
+- **Clarity about constraints, roles, and system behavior**
+
+### MVP Scope Decisions
+
+The MVP intentionally:
+
+- Focuses on Writer and HHS Admin experiences
+- Validates governance, permissions, and structured content behavior
+- Excludes full OpDiv Policy Admin tooling
+- Does not include Word export (approved and in progress as a fast follow)
+
+These constraints were intentional to validate foundational assumptions before scaling.
 
 ---
 
@@ -142,6 +179,65 @@ NOFO Writers are not expected to have the `is_staff`. A non-staff user can see p
 
 All users have the ability to create ContentGuideInstances, which we call “draft NOFOs” in the UI. We don’t anticipate that System Admin users will be creating draft NOFOs but there didn’t seem to be any reason to prevent it.
 
+---
+
+## Validation and Outcomes
+
+### Success Criteria
+
+Composer MVP met its Quad 4 (ending on January 6, 2026) success criteria for:
+
+- Ease of use
+- Workflow improvement
+- Adoption readiness
+- Validation of core governance behaviors
+
+### What This Means
+
+Composer MVP is a **validated starting point**, but **not ready for launch**.
+
+Results indicate readiness for fast-follow iterations focused on:
+
+- Governance clarity
+- Clear transitions between Composer and existing drafting, review, and collaboration workflows
+- Flexibility to support existing drafting and review workflows, including Word import and export
+
+---
+
+## Gaps and Future Work
+
+### ⏱️ Now: Establish governance and workflow foundations
+
+- Deliver reliable Word export as a core workflow bridge
+- Establish a three-tier role model (HHS Admin, OpDiv Policy Admin, Writer)
+- Implement multi-level locking and approvals
+- Provide clear system cues explaining what is locked, why, and by whom
+- Introduce version history and restore capabilities
+
+### ➡️ Next: Improve workflow transitions and drafting confidence
+
+- Clarify when and how to move work into Word
+- Align save, preview, and exit behaviors with drafting expectations
+- Support deferred setup decisions
+- Enable sharing drafts for offline review
+
+### 🔮 Later: Converge tools and scale
+
+- Fold NOFO Compare into the core authoring experience
+- Explore safe pathways to re-import approved content
+- Consolidate Composer and NOFO Builder once export/import is reliable
+
+---
+
+## Linked Artifacts
+
+- [Composer MVP Research Report](https://gartner365.sharepoint.com/:p:/r/sites/HHS947/Shared%20Documents/General/%5BINTERNAL%5D%20Bloom%20Works/NOFO%20Composer/Quad%204%20Agile%20Deliverable%20-%20Deliver%20the%20NOFO%20Composer%20MVP/04%20Findings/NOFO%20Composer%20MVP%20Research%20Report.pptx?d=wc89205ed36d14993803a4d54dcf67c14&csf=1&web=1&e=SLnKd3)
+- [Figma HHS Admin Prototype](https://www.figma.com/proto/J41kYT5DvfnxYgqzaB6FKP/NOFO-Composer?page-id=98%3A4490&node-id=1265-15979&viewport=951%2C-975%2C0.08&t=Z2nXEH5Cynl955z2-8&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=1265%3A15979&hide-ui=1)
+- Figma Writer Prototype
+- [Composer MVP overview demo video](https://gartner365.sharepoint.com/:v:/r/sites/HHS947/Shared%20Documents/General/%5BINTERNAL%5D%20Bloom%20Works/NOFO%20Composer/Quad%204%20Agile%20Deliverable%20-%20Deliver%20the%20NOFO%20Composer%20MVP/04%20Findings/Composer-MVP-visual-overview.mov?csf=1&web=1&e=7taIz0)
+
+---
+
 ## Known Limitations and Risks
 
 - Variables are as simple as we could feasibly make them, and are not prime-time
@@ -156,16 +252,6 @@ All users have the ability to create ContentGuideInstances, which we call “dra
   - import from a Word document (this is working)
   - preserve formatting and elements from Word when pasting in (e.g., lists, tables) (this is not working)
   - swap the markdown editor for a rich text editor.
-
----
-
-## Future Work and Releases
-
-- No Word export or re-import in MVP
-- Limited governance features (no approvals, version history, or notifications)
-- OpDiv Admin role not fully implemented
-- Adoption depends on successful fast-follow releases
-  These limitations are documented intentionally to inform future roadmap planning.
 
 ---
 
