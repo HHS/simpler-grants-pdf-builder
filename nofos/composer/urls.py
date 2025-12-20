@@ -127,4 +127,9 @@ urlpatterns = [
         views.WriterInstancePreviewView.as_view(),
         name="writer_preview",
     ),
+    path(
+        "writer/<uuid:pk>/history",
+        views.WriterInstanceHistoryView.as_view(),
+        name="writer_instance_history",
+    ),
 ]
