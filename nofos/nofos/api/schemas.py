@@ -6,9 +6,9 @@ from nofos.models import Nofo, Section, Subsection
 
 
 class SubsectionSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Subsection
-        model_fields = [
+        fields = [
             "name",
             "html_id",
             "order",
@@ -17,14 +17,14 @@ class SubsectionSchema(ModelSchema):
             "callout_box",
             "html_class",
         ]
-        model_fields_optional = ["html_class"]  # Fields that should have defaults
+        fields_optional = ["html_class"]  # Fields that should have defaults
 
 
 class SectionBaseSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Section
-        model_fields = ["name", "html_id", "order", "has_section_page", "html_class"]
-        model_fields_optional = ["html_class"]
+        fields = ["name", "html_id", "order", "has_section_page", "html_class"]
+        fields_optional = ["html_class"]
 
 
 class SectionSchema(SectionBaseSchema):
@@ -32,9 +32,9 @@ class SectionSchema(SectionBaseSchema):
 
 
 class NofoBaseSchema(ModelSchema):
-    class Config:
+    class Meta:
         model = Nofo
-        model_fields = [
+        fields = [
             "id",
             "title",
             "filename",
@@ -49,7 +49,7 @@ class NofoBaseSchema(ModelSchema):
             "icon_style",
             "status",
         ]
-        model_fields_optional = [
+        fields_optional = [
             "subagency",
             "subagency2",
             "author",
