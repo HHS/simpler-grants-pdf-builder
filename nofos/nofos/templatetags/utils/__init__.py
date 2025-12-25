@@ -393,34 +393,40 @@ def match_numbered_sublist(text):
 
 
 def wrap_text_before_colon_in_strong(p, soup):
+    def _first_colon_in_text_node(p):
+        for node in p.contents:
+            if isinstance(node, NavigableString) and ":" in node:
+                return node
+        return None
+
+    # no colon in phrase
     if not ":" in p.get_text():
         return p
 
-    # Initialize a flag to track when the colon is found
-    found_colon = False
+    # no colon in a text node
+    first_text_with_colon = _first_colon_in_text_node(p)
+    if first_text_with_colon is None:
+        return p
+
     # Create a strong tag
     strong_tag = soup.new_tag("strong")
     span_tag = soup.new_tag("span")
 
-    # Iterate over contents, moving elements before the colon to the strong tag
-    for content in p.contents[:]:
-        if found_colon:
-            span_tag.append(content.extract())
-        else:
-            if isinstance(content, str) and ":" in content:
-                before_colon, after_colon = content.split(":", 1)
-                strong_tag.append(before_colon + ":")
-                # Replace the original content with what's after the colon
-                span_tag.append(after_colon)
-                found_colon = True  # Mark colon as found
-            else:
-                # Move content to strong tag if colon not yet found
-                strong_tag.append(content.extract())
+    # Move nodes into strong until we reach the text node that contains the colon
+    for node in p.contents[:]:
+        if node is first_text_with_colon:
+            before, after = str(first_text_with_colon).split(":", 1)
+            strong_tag.append(before + ": ")
+            if after:
+                span_tag.append(after)
+            node.extract()
+            break
+        strong_tag.append(node.extract())
 
-    # insert an extra space after the colon in the strong tag
-    strong_tag.append(" ")
+    # Everything remaining goes into span
+    for node in p.contents[:]:
+        span_tag.append(node.extract())
 
-    # Insert the strong tag at the beginning of the paragraph
     p.clear()
     p.append(strong_tag)
     p.append(span_tag)

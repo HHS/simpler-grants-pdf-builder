@@ -1220,3 +1220,25 @@ class WrapTextBeforeColonInStrongTests(TestCase):
 
         expected_html = "<p><strong>: </strong><span></span></p>"
         self.assertEqual(str(paragraph), expected_html)
+
+    def test_strong_with_colon_already(self):
+        """Test a paragraph with a strong tag in a colon already."""
+        html = "<p><strong>Opportunity Name:</strong> NOFO 100</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = "<p><strong>Opportunity Name:</strong> NOFO 100</p>"
+        self.assertEqual(str(paragraph), expected_html)
+
+    def test_strong_with_NO_colon_already(self):
+        """Test a paragraph with a strong tag in a colon already."""
+        html = "<p><strong>Opportunity</strong> Name: NOFO 100</p>"
+        soup = BeautifulSoup(html, "html.parser")
+        paragraph = soup.find("p")
+
+        wrap_text_before_colon_in_strong(paragraph, soup)
+
+        expected_html = "<p><strong><strong>Opportunity</strong> Name: </strong><span> NOFO 100</span></p>"
+        self.assertEqual(str(paragraph), expected_html)
