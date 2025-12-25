@@ -638,17 +638,17 @@ django = ">=2.2"
 
 [[package]]
 name = "django-ninja"
-version = "1.4.5"
+version = "1.5.1"
 description = "Django Ninja - Fast Django REST framework"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django_ninja-1.4.5-py3-none-any.whl", hash = "sha256:d779702ddc6e17b10739049ddb075a6a1e6c6270bdc04e0b0429f6adbf670373"},
-    {file = "django_ninja-1.4.5.tar.gz", hash = "sha256:aa1a2ee2b22c5f1c2f4bfbc004386be7074cbfaf133680c2b359a31221965503"},
+    {file = "django_ninja-1.5.1-py3-none-any.whl", hash = "sha256:135aaa1117dce8dfd7a1e80b4487a8cccee3a4182c3c8b562d08ea94e4d2cbdf"},
+    {file = "django_ninja-1.5.1.tar.gz", hash = "sha256:6acda68a64d60934c6fdccb4d97c3ac7f02cfefd78a5d87ae053effe081b17c7"},
 ]
 
 [package.dependencies]
-Django = ">=3.1"
+Django = ">=3.1,<6.1"
 pydantic = ">=2.0,<3.0.0"
 
 [package.extras]
@@ -1813,4 +1813,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.14"
-content-hash = "96b9a515064ae3dc2abd56434b13d3f7d780667c5380f985776282db85d4ee76"
+content-hash = "ffd11536449af906fd66d778d65aed77e12c379c78d426959e8567b572d4521d"
