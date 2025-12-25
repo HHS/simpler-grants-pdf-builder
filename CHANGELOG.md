@@ -22,6 +22,7 @@ Versioning since version 1.0.0.
 - Fixed how instructions are associated with subsections when creating a ContentGuideInstance
 - Explicitly mark "Style Bold" text as bold on import
 - Don't duplicate sections and subsections by repeatedly confirming a draft NOFO
+- Fix how callout box phrases with a colon ":" are bolded if they already have bold styling
 
 ## [3.23.0] - 2025-12-10
 
