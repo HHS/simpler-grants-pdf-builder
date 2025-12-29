@@ -54,6 +54,7 @@ def format_audit_event(event, formatting_options=None):
     document_display_prefix = formatting_options.get("document_display_prefix", "NOFO")
 
     event_details = {
+        "event_id": event.id,
         "event_type": event.get_event_type_display(),
         "object_type": event.content_type.model.title(),
         "object_description": event.object_repr,
@@ -191,6 +192,7 @@ def get_audit_events_for_document(
         object_id__in=[str(sid) for sid in section_ids],
         content_type__model=section_model,
     )
+    section_events = _filter_updated_events(section_events)
 
     # Get audit events for Subsections (even if they have been deleted)
     subsection_filter = Q()
@@ -200,6 +202,7 @@ def get_audit_events_for_document(
     subsection_events = CRUDEvent.objects.filter(
         content_type__model=subsection_model
     ).filter(subsection_filter)
+    subsection_events = _filter_updated_events(subsection_events)
 
     subsection_events = _filter_events(subsection_events)
 
@@ -243,3 +246,14 @@ def get_audit_events_for_document(
         list(document_events) + list(section_events) + list(subsection_events)
     )
     return sorted(combined_events, key=sort_key, reverse=reverse)
+
+
+def get_audit_event_by_id(event_id):
+    """
+    Retrieve a CRUDEvent by its ID.
+    """
+    try:
+        event = CRUDEvent.objects.get(id=event_id)
+        return event
+    except CRUDEvent.DoesNotExist:
+        return None

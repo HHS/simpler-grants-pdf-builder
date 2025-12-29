@@ -378,21 +378,23 @@ def filter_comparison_by_status(comparison, statuses_to_ignore=[]):
     return [item for item in comparison if item.status not in statuses_to_ignore]
 
 
+def extract_old_diff(diff_html: str) -> str:
+    soup = BeautifulSoup(diff_html, "html.parser")
+    for ins in soup.find_all("ins"):
+        ins.decompose()
+    decompose_empty_tags(soup)
+    return str(soup) or ""
+
+
+def extract_new_diff(diff_html: str) -> str:
+    soup = BeautifulSoup(diff_html, "html.parser")
+    for delete in soup.find_all("del"):
+        delete.decompose()
+    decompose_empty_tags(soup)
+    return str(soup) or ""
+
+
 def annotate_side_by_side_diffs(comparison):
-    def extract_old_diff(diff_html: str) -> str:
-        soup = BeautifulSoup(diff_html, "html.parser")
-        for ins in soup.find_all("ins"):
-            ins.decompose()
-        decompose_empty_tags(soup)
-        return str(soup) or ""
-
-    def extract_new_diff(diff_html: str) -> str:
-        soup = BeautifulSoup(diff_html, "html.parser")
-        for delete in soup.find_all("del"):
-            delete.decompose()
-        decompose_empty_tags(soup)
-        return str(soup) or ""
-
     for item in comparison:
         # Section-based comparison (has subsections)
         if isinstance(item, dict) and "subsections" in item:
