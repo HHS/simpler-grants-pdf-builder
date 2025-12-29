@@ -1,4 +1,5 @@
 import json
+import re
 from collections import OrderedDict
 
 from django.db.models import Q
@@ -39,6 +40,14 @@ def format_audit_event(event, formatting_options=None):
     """
     BASE_DOCUMENT_TYPES = ["nofo", "contentguide", "contentguideinstance"]
 
+    def format_name(field_name):
+        return " ".join(word.title() for word in field_name.split("_"))
+
+    def remove_model_from_description(description, model_name):
+        return re.sub(
+            r"\(" + re.escape(model_name) + r"\)", "", description, flags=re.IGNORECASE
+        )
+
     formatting_options = formatting_options or {}
     SubsectionModel = formatting_options.get("SubsectionModel", Subsection)
     document_display_prefix = formatting_options.get("document_display_prefix", "NOFO")
@@ -76,14 +85,18 @@ def format_audit_event(event, formatting_options=None):
             if isinstance(changed_fields, dict):
                 # Handle custom actions
                 if "action" in changed_fields:
+                    event_details["object_description"] = remove_model_from_description(
+                        event_details["object_description"],
+                        event.content_type.model,
+                    )
                     action = changed_fields["action"]
                     if action == "nofo_import":
                         event_details["event_type"] = (
-                            f"{document_display_prefix} Imported"
+                            f"{document_display_prefix} imported"
                         )
                     elif action == "nofo_print":
                         event_details["event_type"] = (
-                            f"{document_display_prefix} Printed"
+                            f"{document_display_prefix} printed"
                         )
                         if "print_mode" in changed_fields:
                             event_details[
@@ -91,23 +104,24 @@ def format_audit_event(event, formatting_options=None):
                             ] += f" ({changed_fields['print_mode'][0]} mode)"
                     elif action == "nofo_reimport":
                         event_details["event_type"] = (
-                            f"{document_display_prefix} Re-imported"
+                            f"{document_display_prefix} re-imported"
                         )
 
                 # Improve object description for Nofo field changes
                 elif event.content_type.model in BASE_DOCUMENT_TYPES:
                     field_name = next(iter(changed_fields.keys()))
-                    formatted_field = " ".join(
-                        word.title() for word in field_name.split("_")
-                    )
-                    event_details["object_description"] = formatted_field
+                    event_details["object_description"] = format_name(field_name)
         except Exception:
             pass
 
-    # Still do name formatting for "created" (event_type == 1) events
+    # Still do event object formatting for "created" (event_type == 1) events
     elif event.event_type == 1:
         if event.content_type.model in BASE_DOCUMENT_TYPES:
-            event_details["object_description"] = f"{document_display_prefix} Created"
+            # Remove '([model])' in object repr string, to ensure consistency with display name
+            event_details["object_description"] = remove_model_from_description(
+                event_details["object_description"],
+                event.content_type.model,
+            )
     return event_details
 
 
@@ -129,28 +143,46 @@ def get_audit_events_for_document(
     its sections, and its subsections.
     """
 
-    def _filter_updated_events(events):
-        """Remove events where only the 'updated' field changed."""
+    def _filter_events(events):
+        """
+        Remove events that should not be displayed to the user:
+            - where 'changed_fields' is null
+            - where only excluded fields were changed. These are excluded because they are
+                either not relevant to the user (e.g. updated, status) or can never be
+                changed after initial update (e.g. filename, conditional_questions).
+        """
+        EXCLUDED_FIELDS = set(
+            ["updated", "status", "conditional_questions", "filename"]
+        )
         filtered_events = []
         for event in events:
+            # Include all CREATED/DELETE events
             if event.event_type != CRUDEvent.UPDATE:
                 filtered_events.append(event)
                 continue
+
+            # Exclude UPDATE events with changed fields == 'null'
+            if event.changed_fields == "null" or not event.changed_fields:
+                continue
             try:
                 changed = json.loads(event.changed_fields or "{}")
-                if not (
-                    changed.keys() == {"updated"} or list(changed.keys()) == ["updated"]
-                ):
-                    filtered_events.append(event)
-            except Exception:
+                # Exclude UPDATE events that only changed excluded fields
+                changed_keys = set(changed.keys())
+                if changed_keys and changed_keys.issubset(EXCLUDED_FIELDS):
+                    continue
+                # Otherwise, include
                 filtered_events.append(event)
+            except Exception:
+                # Include events we can't parse -- unexpected edge case
+                filtered_events.append(event)
+
         return filtered_events
 
     # Get audit events for the NOFO
     document_events = CRUDEvent.objects.filter(
         object_id=document.id, content_type__model=document_model
     )
-    document_events = _filter_updated_events(document_events)
+    document_events = _filter_events(document_events)
 
     # Get audit events for Sections
     section_ids = list(document.sections.values_list("id", flat=True))
@@ -168,8 +200,40 @@ def get_audit_events_for_document(
         content_type__model=subsection_model
     ).filter(subsection_filter)
 
-    return sorted(
-        list(document_events) + list(section_events) + list(subsection_events),
-        key=lambda e: e.datetime,
-        reverse=reverse,
+    subsection_events = _filter_events(subsection_events)
+
+    # Sort and combine all events. If key datetime is the same, order by event type
+    def sort_key(event):
+        """
+        Sort by datetime first (excluding seconds/ms), then prioritize nofo_import events.
+        When datetime is equal (same minute), nofo_import actions should come first.
+        """
+        # Truncate datetime to minute level (exclude microseconds)
+        dt_truncated = event.datetime.replace(second=0, microsecond=0)
+
+        # For events in the same minute, sort based on custom event priority:
+        # 1. nofo_import events (priority 0)
+        # 2. create events
+        # 3. update events
+        event_priority = (
+            2 if event.event_type == CRUDEvent.UPDATE else 1
+        )  # Default priority for non-nofo_import events
+        if event.changed_fields:
+            try:
+                changed_fields = json.loads(event.changed_fields)
+                if (
+                    isinstance(changed_fields, dict)
+                    and changed_fields.get("action") == "nofo_import"
+                ):
+                    event_priority = 0
+            except Exception:
+                pass
+
+        # Return tuple: (datetime_truncated, priority_flag)
+        # Lower priority_flag means higher priority, so comes first in sorting
+        return (dt_truncated, event_priority)
+
+    combined_events = (
+        list(document_events) + list(section_events) + list(subsection_events)
     )
+    return sorted(combined_events, key=sort_key, reverse=reverse)
