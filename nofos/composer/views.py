@@ -1,6 +1,7 @@
 import json
 from typing import Dict
 
+from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -17,7 +18,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
 )
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -30,8 +31,11 @@ from django.views.generic import (
     ListView,
     TemplateView,
     UpdateView,
+    View,
 )
+from martor.utils import markdownify
 
+from nofos.audits import get_audit_event_by_id
 from nofos.mixins import (
     GroupAccessContentGuideMixin,
     PreventIfContentGuideArchivedMixin,
@@ -1779,3 +1783,38 @@ class WriterInstanceHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryVie
 
     def get_subsection_model_name(self):
         return "contentguidesubsection"
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
+    """
+    View to compare two historical versions of a ContentGuideSubsection.
+    URL: /composer/writer/<pk>/history/compare/<event_id>
+    """
+
+    def get(self, request, pk, event_id):
+        context = {}
+
+        document = get_object_or_404(
+            ContentGuideInstance,
+            pk=pk,
+            archived__isnull=True,
+            successor__isnull=True,
+        )
+
+        event = get_audit_event_by_id(event_id)
+        subsection = get_object_or_404(ContentGuideSubsection, pk=event.object_id)
+
+        context["event"] = event
+        context["document"] = document
+        context["subsection"] = subsection
+
+        print("Event changed fields:", event.changed_fields)
+
+        # if has_diff(
+        #     html_diff(
+        #         markdownify(event.data.get("body", "") or "" ),
+        #     )
+        # ):
+
+        return render(request, "composer/writer/writer_history_compare.html", context)
