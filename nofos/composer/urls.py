@@ -132,4 +132,9 @@ urlpatterns = [
         views.WriterInstanceHistoryView.as_view(),
         name="writer_instance_history",
     ),
+    path(
+        "writer/<uuid:pk>/history/compare/<int:event_id>",
+        views.WriterInstanceHistoryCompareView.as_view(),
+        name="writer_instance_history_compare",
+    ),
 ]

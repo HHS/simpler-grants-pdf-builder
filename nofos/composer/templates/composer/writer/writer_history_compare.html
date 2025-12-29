@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Section update
+{% endblock %}
+
+{% block content %}
+  {% with "All updates for “"|add:document.title|add:"”" as back_text %}
+    {% url 'composer:writer_instance_history' document.id as back_href %}
+    {% include "includes/page_heading.html" with title="Update to “"|add:subsection.name|add:"”" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+
+{% endblock %}
