@@ -39,7 +39,13 @@
   <tbody id="audit-events-body">
     {% for event in audit_events %}
     <tr>
-      <td>{{ event.event_type }}</td>
+      <td>
+        {% if event.object_type == 'Contentguidesubsection' and event.event_type == 'Update' %}
+          <a href="{% url 'composer:writer_instance_history_compare' document.id event.event_id %}">{{ event.event_type }}</a>
+        {% else %}
+          {{ event.event_type }}
+        {% endif %}
+      </td>
       <td><em>{{ event.object_type|audit_event_object_display_name }}</em><br>{{ event.object_description }}</td>
       <td>{{ event.user.email }}</td>
       {% timezone "America/New_York" %}

@@ -1,6 +1,7 @@
 from html import escape
-from typing import List
+from typing import Dict, List
 
+from bs4 import BeautifulSoup
 from composer.conditional.conditional_questions import find_question_for_subsection
 from composer.models import (
     ContentGuide,
@@ -10,6 +11,7 @@ from composer.models import (
 )
 from django.conf import settings
 from django.forms import ValidationError
+from django.utils.safestring import mark_safe
 
 from nofos.nofo import _build_document
 
@@ -163,3 +165,47 @@ def get_audit_event_object_display_name(value: str) -> str:
         return ""
 
     return OBJECT_DISPLAY_NAMES.get(value) or value
+
+
+def do_replace_variable_keys_with_values(html_string, variables_dict):
+    """
+    Replace variable keys in curly braces within the HTML string
+    with their corresponding values from the variables_dict.
+
+    Example:
+        >>> replace_variable_keys_with_values(
+        ...   "Hello, {name}! Your balance is {balance}.",
+        ...   {"name": "Alice", "balance": "$100"}
+        ... )
+        "Hello, Alice! Your balance is $100."
+    """
+    soup = BeautifulSoup(html_string, "html.parser")
+
+    # Find all span elements with class 'md-curly-variable'
+    var_spans = soup.find_all("span", class_="md-curly-variable")
+    for span in var_spans:
+        # Look for a variable that matches the label
+        label = span.text.strip().strip("{}").strip()
+        try:
+            var_key, var_info = _find_variable_by_label(variables_dict, label)
+        except Exception as e:
+            print("ERROR FINDING VAR BY LABEL", e)
+            continue
+
+        # If a matching variable exists, replace the content
+        if var_key:
+            var_value = var_info.value
+            if var_value:
+                # Update the span with the variable value
+                span.string = var_value
+                # Add the "md-curly-variable--value" class to the list of classes
+                span["class"] = span.get("class", []) + ["md-curly-variable--value"]
+
+    return mark_safe(str(soup))
+
+
+def _find_variable_by_label(variables_dict: Dict[str, VariableInfo], label: str):
+    for var_key, var_info in variables_dict.items():
+        if var_info.label == label:
+            return var_key, var_info
+    return None, None

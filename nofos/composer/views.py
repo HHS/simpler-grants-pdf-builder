@@ -1,7 +1,9 @@
 import json
 from typing import Dict
 
+from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
+from composer.utils import do_replace_variable_keys_with_values
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -17,7 +19,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
 )
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -30,8 +32,11 @@ from django.views.generic import (
     ListView,
     TemplateView,
     UpdateView,
+    View,
 )
+from martor.utils import markdownify
 
+from nofos.audits import get_audit_event_by_id
 from nofos.mixins import (
     GroupAccessContentGuideMixin,
     PreventIfContentGuideArchivedMixin,
@@ -42,6 +47,7 @@ from nofos.nofo import (
     add_page_breaks_to_headings,
     suggest_nofo_opdiv,
 )
+from nofos.nofo_compare import extract_new_diff, extract_old_diff
 from nofos.utils import create_nofo_audit_event, create_subsection_html_id
 from nofos.views import BaseNofoHistoryView, BaseNofoImportView
 
@@ -1779,3 +1785,69 @@ class WriterInstanceHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryVie
 
     def get_subsection_model_name(self):
         return "contentguidesubsection"
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
+    """
+    View to compare two historical versions of a ContentGuideSubsection.
+    URL: /composer/writer/<pk>/history/compare/<event_id>
+    """
+
+    def get(self, request, pk, event_id):
+        context = {}
+
+        document = get_object_or_404(
+            ContentGuideInstance,
+            pk=pk,
+            archived__isnull=True,
+            successor__isnull=True,
+        )
+
+        event = get_audit_event_by_id(event_id)
+        subsection = get_object_or_404(ContentGuideSubsection, pk=event.object_id)
+
+        context["event"] = event
+        context["document"] = document
+        context["subsection"] = subsection
+
+        changed_fields = safe_get_changed_fields(event)
+        if body := changed_fields.get("body"):
+            old, new = body
+            if has_diff(
+                diff := html_diff(
+                    markdownify(old),
+                    markdownify(new),
+                )
+            ):
+                context["diff_old"] = extract_old_diff(diff)
+                context["diff_new"] = extract_new_diff(diff)
+
+        elif variables := changed_fields.get("variables"):
+            old, new = variables
+            body_with_old = do_replace_variable_keys_with_values(
+                markdownify(subsection.body), parse_variables(old)
+            )
+            body_with_new = do_replace_variable_keys_with_values(
+                markdownify(subsection.body), parse_variables(new)
+            )
+            if has_diff(diff := html_diff(body_with_old, body_with_new)):
+                context["diff_old"] = extract_old_diff(diff)
+                context["diff_new"] = extract_new_diff(diff)
+
+        return render(request, "composer/writer/writer_history_compare.html", context)
+
+
+def safe_get_changed_fields(event):
+    try:
+        return json.loads(event.changed_fields)
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
+def parse_variables(vars: str):
+    try:
+        data = json.loads(vars)
+        return {key: VariableInfo.from_dict(val) for key, val in data.items()}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return {}
