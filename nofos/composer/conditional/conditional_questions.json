@@ -84,5 +84,11 @@
     "label": "Do you require a report on overlap?",
     "page": 2,
     "subsections": ["Report on overlap"]
+  },
+  {
+    "key": "bonafide_agents",
+    "label": "Do you allow bonafide agents?",
+    "page": 2,
+    "subsections": ["Bona fide agent documentation"]
   }
 ]

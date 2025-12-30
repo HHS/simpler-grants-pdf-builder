@@ -121,6 +121,11 @@
                   {% endif %}
                 {% endwith %}
               {% endif %}
+              {% if document_is_instance == True and subsection.hidden %}
+                <p class="margin-top-1">
+                  Note: this subsection is hidden and will not appear in the draft NOFO document.
+                </p>
+              {% endif %}
               {% if subsection.instructions %}
               <div class="position-relative padding-bottom-2 border-bottom border-base-lighter">
                 <div class="{% if subsection.hidden %}bg-base-lighter text-gray-50{% else %}bg-primary-lighter{% endif %} padding-2">
@@ -151,9 +156,16 @@
                       Edit
                   </a>
                 {% endif %}
-                <div class="usa-prose styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
-                  {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
-                </div>
+
+                {% if subsection.hidden %}
+                  <div class="margin-y-2">
+                    <em>This section is hidden</em>
+                  </div>
+                {% else %}
+                  <div class="usa-prose styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
+                    {{ subsection.body|safe_markdown|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
+                  </div>
+              {% endif %}
               </div>
             </div>
           </div>
