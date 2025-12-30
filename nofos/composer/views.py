@@ -3,6 +3,7 @@ from typing import Dict
 
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
+from composer.utils import do_replace_variable_keys_with_values
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -46,6 +47,7 @@ from nofos.nofo import (
     add_page_breaks_to_headings,
     suggest_nofo_opdiv,
 )
+from nofos.nofo_compare import extract_new_diff, extract_old_diff
 from nofos.utils import create_nofo_audit_event, create_subsection_html_id
 from nofos.views import BaseNofoHistoryView, BaseNofoImportView
 
@@ -1809,12 +1811,43 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
         context["document"] = document
         context["subsection"] = subsection
 
-        print("Event changed fields:", event.changed_fields)
+        changed_fields = safe_get_changed_fields(event)
+        if body := changed_fields.get("body"):
+            old, new = body
+            if has_diff(
+                diff := html_diff(
+                    markdownify(old),
+                    markdownify(new),
+                )
+            ):
+                context["diff_old"] = extract_old_diff(diff)
+                context["diff_new"] = extract_new_diff(diff)
 
-        # if has_diff(
-        #     html_diff(
-        #         markdownify(event.data.get("body", "") or "" ),
-        #     )
-        # ):
+        elif variables := changed_fields.get("variables"):
+            old, new = variables
+            body_with_old = do_replace_variable_keys_with_values(
+                markdownify(subsection.body), parse_variables(old)
+            )
+            body_with_new = do_replace_variable_keys_with_values(
+                markdownify(subsection.body), parse_variables(new)
+            )
+            if has_diff(diff := html_diff(body_with_old, body_with_new)):
+                context["diff_old"] = extract_old_diff(diff)
+                context["diff_new"] = extract_new_diff(diff)
 
         return render(request, "composer/writer/writer_history_compare.html", context)
+
+
+def safe_get_changed_fields(event):
+    try:
+        return json.loads(event.changed_fields)
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
+def parse_variables(vars: str):
+    try:
+        data = json.loads(vars)
+        return {key: VariableInfo.from_dict(val) for key, val in data.items()}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return {}
