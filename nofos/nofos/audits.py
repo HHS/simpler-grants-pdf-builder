@@ -154,7 +154,14 @@ def get_audit_events_for_document(
                 changed after initial update (e.g. filename, conditional_questions).
         """
         EXCLUDED_FIELDS = set(
-            ["updated", "status", "conditional_questions", "filename"]
+            [
+                "updated",
+                "status",
+                "hidden",
+                "optional",
+                "conditional_questions",
+                "filename",
+            ]
         )
         filtered_events = []
         for event in events:
@@ -192,7 +199,7 @@ def get_audit_events_for_document(
         object_id__in=[str(sid) for sid in section_ids],
         content_type__model=section_model,
     )
-    section_events = _filter_updated_events(section_events)
+    section_events = _filter_events(section_events)
 
     # Get audit events for Subsections (even if they have been deleted)
     subsection_filter = Q()
@@ -202,7 +209,6 @@ def get_audit_events_for_document(
     subsection_events = CRUDEvent.objects.filter(
         content_type__model=subsection_model
     ).filter(subsection_filter)
-    subsection_events = _filter_updated_events(subsection_events)
 
     subsection_events = _filter_events(subsection_events)
 

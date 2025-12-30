@@ -133,7 +133,8 @@ urlpatterns = [
         name="writer_instance_history",
     ),
     path(
-        "writer/<uuid:pk>/history/compare/<int:event_id>",
+        # NOTE: 'compare' cannot be in the URL path so that header links from base.html work correctly
+        "writer/<uuid:pk>/history/<int:event_id>",
         views.WriterInstanceHistoryCompareView.as_view(),
         name="writer_instance_history_compare",
     ),

@@ -1,38 +1,11 @@
 from typing import Dict
 
-from bs4 import BeautifulSoup
-from composer.models import VariableInfo
+from composer.utils import do_replace_variable_keys_with_values
 from django import template
-from django.utils.safestring import mark_safe
 
 register = template.Library()
 
 
 @register.filter
 def replace_variable_keys_with_values(html_string, variables_dict):
-    soup = BeautifulSoup(html_string, "html.parser")
-
-    # Find all span elements with class 'md-curly-variable'
-    var_spans = soup.find_all("span", class_="md-curly-variable")
-    for span in var_spans:
-        # Look for a variable that matches the label
-        label = span.text.strip().strip("{}").strip()
-        var_key, var_info = find_variable_by_label(variables_dict, label)
-
-        # If a matching variable exists, replace the content
-        if var_key:
-            var_value = var_info.value
-            if var_value:
-                # Update the span with the variable value
-                span.string = var_value
-                # Add the "md-curly-variable--value" class to the list of classes
-                span["class"] = span.get("class", []) + ["md-curly-variable--value"]
-
-    return mark_safe(str(soup))
-
-
-def find_variable_by_label(variables_dict: Dict[str, VariableInfo], label: str):
-    for var_key, var_info in variables_dict.items():
-        if var_info.label == label:
-            return var_key, var_info
-    return None, None
+    return do_replace_variable_keys_with_values(html_string, variables_dict)
