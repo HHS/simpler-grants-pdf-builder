@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static tz audit_event_object_display_name %}
+
+{% block title %}
+  All updates for "{{ document }}"
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'js/nofos/nofo_history.js' %}" defer></script>
+{% endblock %}
+
+{% block body_class %}writer_history{% endblock %}
+
+{% block content %}
+  {% with "Edit “"|add:document.title|add:"”" as back_text %}
+    {% url 'composer:writer_instance_redirect' document.id as back_href %}
+    {% include "includes/page_heading.html" with title="All updates for “"|add:document.title|add:"”" back_text=back_text back_href=back_href only %}
+  {% endwith %}
+
+
+<div class="margin-top-2 margin-bottom-5">
+  <span class="usa-tag usa-tag--big bg-group bg-group--not-uppercase bg-group--{{ document.group }}">{{ document.get_group_display }}</span>
+</div>
+
+<table class="usa-table" id="audit-events-table">
+  <caption>
+    <div>
+      <h2 class="margin-bottom-0">Latest Changes</h2>
+    </div>
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col"><span class="usa-sr-only">Event </span>Type</th>
+      <th scope="col">Object</th>
+      <th scope="col">User</th>
+      <th scope="col" class="w-20">Timestamp</th>
+    </tr>
+  </thead>
+  <tbody id="audit-events-body">
+    {% for event in audit_events %}
+    <tr>
+      <td>{{ event.event_type }}</td>
+      <td><em>{{ event.object_type|audit_event_object_display_name }}</em><br>{{ event.object_description }}</td>
+      <td>{{ event.user.email }}</td>
+      {% timezone "America/New_York" %}
+        <td>
+          {{ event.timestamp|date:'F j' }}, {{ event.timestamp|date:'g:i A' }}
+        </td>
+      {% endtimezone %}
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" class="text-center">No audit events found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if has_more %}
+  <div class="text-center margin-y-3">
+    <button class="usa-button" id="load-more-btn"
+            data-next-offset="{{ next_offset }}">
+      Load More Events
+    </button>
+  </div>
+{% endif %}
+
+{% endblock %}
