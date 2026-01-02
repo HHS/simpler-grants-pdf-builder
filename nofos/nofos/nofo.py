@@ -1851,7 +1851,7 @@ def unwrap_empty_elements(soup):
     Unwraps empty span, strong, sup, a, and em tags from the BeautifulSoup `soup`.
     """
     elements = soup.find_all(
-        ["em", "span", "strong", "sup"], text=lambda t: not t or not t.strip()
+        ["em", "span", "strong", "sup"], string=lambda t: not t or not t.strip()
     )
     for el in elements:
         el.unwrap()

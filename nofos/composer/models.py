@@ -242,7 +242,7 @@ class ContentGuideSection(BaseSection):
         unique_together = ("content_guide", "content_guide_instance", "order")
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(
                         content_guide__isnull=False, content_guide_instance__isnull=True
                     )
