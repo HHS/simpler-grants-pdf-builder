@@ -227,7 +227,12 @@ class SubsectionCreateForm(forms.ModelForm):
 
 # Simple form for URL input
 class CheckNOFOLinkSingleForm(forms.Form):
-    url = forms.URLField(label="Check this URL", max_length=2048, required=True)
+    url = forms.URLField(
+        label="Check this URL",
+        max_length=2048,
+        required=True,
+        assume_scheme="https",
+    )
 
 
 # Simple form for searching for a NOFO

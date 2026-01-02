@@ -20,6 +20,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -854,7 +855,7 @@ class NofoEditTitleView(BaseNofoEditView):
                 ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
                 len(updated_subsections),
                 "" if len(updated_subsections) == 1 else "s",
-                format_html(subsection_list_html),
+                mark_safe(subsection_list_html),
             )
 
         messages.success(self.request, success_message)
@@ -917,7 +918,7 @@ class NofoEditNumberView(BaseNofoEditView):
                 ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
                 len(updated_subsections),
                 "" if len(updated_subsections) == 1 else "s",
-                format_html(subsection_list_html),
+                mark_safe(subsection_list_html),
             )
 
         messages.success(self.request, success_message)
@@ -973,7 +974,7 @@ class NofoEditApplicationDeadlineView(BaseNofoEditView):
                 ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
                 len(updated_subsections),
                 "" if len(updated_subsections) == 1 else "s",
-                format_html(subsection_list_html),
+                mark_safe(subsection_list_html),
             )
 
         messages.success(self.request, success_message)
@@ -1340,7 +1341,7 @@ class NofoFindReplaceView(
                     replace_text,
                     len(updated_subsections),
                     "" if len(updated_subsections) == 1 else "s",
-                    format_html(subsection_list_html),
+                    mark_safe(subsection_list_html),
                 )
                 messages.success(request, success_message)
             else:
