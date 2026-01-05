@@ -33,6 +33,12 @@ def deduplicate_audit_events_by_day_and_object(events):
     return list(deduplicated.values())
 
 
+def remove_model_from_description(description, model_name):
+    return re.sub(
+        r"\(" + re.escape(model_name) + r"\)", "", description, flags=re.IGNORECASE
+    )
+
+
 def format_audit_event(event, formatting_options=None):
     """
     Takes a CRUDEvent and returns a formatted dictionary for display in the UI.
@@ -42,11 +48,6 @@ def format_audit_event(event, formatting_options=None):
 
     def format_name(field_name):
         return " ".join(word.title() for word in field_name.split("_"))
-
-    def remove_model_from_description(description, model_name):
-        return re.sub(
-            r"\(" + re.escape(model_name) + r"\)", "", description, flags=re.IGNORECASE
-        )
 
     formatting_options = formatting_options or {}
     SubsectionModel = formatting_options.get("SubsectionModel", Subsection)
@@ -215,9 +216,14 @@ def get_audit_events_for_document(
         # 1. nofo_import events (priority 0)
         # 2. create events
         # 3. update events
-        event_priority = (
-            2 if event.event_type == CRUDEvent.UPDATE else 1
-        )  # Default priority for non-nofo_import events
+        # 4. delete events
+        if event.event_type == CRUDEvent.DELETE:
+            event_priority = 3
+        elif event.event_type == CRUDEvent.UPDATE:
+            event_priority = 2
+        elif event.event_type == CRUDEvent.CREATE:
+            event_priority = 1
+
         if event.changed_fields:
             try:
                 changed_fields = json.loads(event.changed_fields)
