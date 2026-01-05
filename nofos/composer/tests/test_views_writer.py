@@ -609,6 +609,7 @@ class WriterInstanceConditionalQuestionViewTests(BaseWriterViewTests):
             "organizational_chart": "true",
             "letters_of_support": "true",
             "report_on_overlap": "true",
+            "bonafide_agents": "true",
         }
 
         response = self.client.post(self.url_page2, data=post_data)
