@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.utils import timezone
 from easyaudit.models import CRUDEvent
 
+from nofos.audits import remove_model_from_description
+
 from ..models import Nofo, Section, Subsection
 
 User = get_user_model()
@@ -64,7 +66,9 @@ class NofoHistoryViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, event.get_event_type_display())
-        self.assertContains(response, "NOFO Created")
+        self.assertContains(
+            response, remove_model_from_description(str(self.nofo), "nofo")
+        )
 
     def test_history_view_shows_custom_audit_events(self):
         """Test that history view shows custom audit events (import, print, reimport)"""
@@ -94,8 +98,8 @@ class NofoHistoryViewTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "NOFO Imported")
-        self.assertContains(response, "NOFO Printed (test mode)")
+        self.assertContains(response, "NOFO imported")
+        self.assertContains(response, "NOFO printed (test mode)")
 
     def test_history_view_shows_section_and_subsection_events(self):
         """Test that history view shows events from sections and subsections"""
@@ -125,6 +129,7 @@ class NofoHistoryViewTests(TestCase):
                     },
                 }
             ],
+            changed_fields='{"body": ["Old content", "Test content"]}',
             user=self.user,
             datetime=timezone.now(),
         )
@@ -137,3 +142,21 @@ class NofoHistoryViewTests(TestCase):
         self.assertContains(response, subsection_event.get_event_type_display())
         self.assertContains(response, "Section")
         self.assertContains(response, "Subsection")
+
+    def test_history_view_does_not_show_change_events_without_changed_fields(self):
+        """Test that history view does not show change events without changed_fields"""
+        # Create a subsection update event without changed_fields
+        subsection_event = CRUDEvent.objects.create(
+            event_type=CRUDEvent.UPDATE,
+            object_id=self.subsection.id,
+            content_type=self.subsection_content_type,
+            object_repr=str(self.subsection),
+            user=self.user,
+            datetime=timezone.now(),
+        )
+
+        url = reverse("nofos:nofo_history", args=[self.nofo.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, subsection_event.get_event_type_display())
