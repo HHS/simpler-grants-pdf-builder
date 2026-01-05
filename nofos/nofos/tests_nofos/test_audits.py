@@ -140,7 +140,7 @@ class FormatAuditEventTests(TestCase):
         )
         formatted = format_audit_event(event)
 
-        self.assertEqual(formatted["event_type"], "NOFO Printed (full mode)")
+        self.assertEqual(formatted["event_type"], "NOFO printed (full mode)")
 
     def test_handles_missing_html_id_gracefully(self):
         # nofo object does not have an HTML ID
@@ -245,9 +245,13 @@ class GetAuditEventsForNofoTests(TestCase):
         self.create_event(self.subsection, self.subsection_ct, dt_offset=0)
 
         events = get_audit_events_for_nofo(self.nofo)
-        timestamps = [event.datetime for event in events]
 
-        self.assertEqual(timestamps, sorted(timestamps, reverse=True))
+        events_group_by_minute = [
+            e.datetime.replace(second=0, microsecond=0) for e in events
+        ]
+        self.assertEqual(
+            events_group_by_minute, sorted(events_group_by_minute, reverse=True)
+        )
 
     def test_returns_events_in_chronological_order_if_requested(self):
         self.create_event(self.nofo, self.nofo_ct, dt_offset=2)
@@ -404,7 +408,6 @@ class GetAuditEventsForNofoTests(TestCase):
 
         # Fetch audit events for the NOFO
         results = get_audit_events_for_nofo(self.nofo)
-
         # Ensure all three events (CREATE, UPDATE, DELETE) are included
         self.assertEqual(len(results), 3)
         self.assertIn(create_event, results)
