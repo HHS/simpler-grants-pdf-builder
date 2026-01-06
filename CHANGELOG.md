@@ -9,7 +9,17 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.24.0] - 2026-01-06
+
+### Added
+
+- Added new theme: "SAMHSA Light"
 - Add "README" overview to the composer app
+- Add an audit history page for the Composer Writer app
 
 ### Changed
 

@@ -1,0 +1,218 @@
+/* Page rules */
+
+/* Headings */
+
+/* Cover page */
+
+.nofo--cover-page--title,
+.nofo--cover-page--footer {
+  background-color: var(--color--white);
+}
+
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--intro,
+.nofo--cover-page--title h1,
+.nofo--cover-page--title .nofo--cover-page--title--subheading {
+  color: var(--color--samhsa-blue);
+}
+
+/* Cover page: medium image */
+
+.nofo--cover-page--medium .nofo--cover-page--footer--subheading {
+  color: var(--color--samhsa-teal);
+}
+
+/* Cover page: hero image */
+/* Note that there is no "white" version of the hero cover page */
+
+.nofo--cover-page--hero .nofo--cover-page--header {
+  background-color: var(--color--samhsa-blue);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--hero .nofo--cover-page--header--intro,
+.nofo--cover-page--hero .nofo--cover-page--title h1,
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  color: var(--color--white);
+}
+
+.nofo--cover-page--hero .nofo--cover-page--title {
+  background-color: var(--color--samhsa-blue);
+}
+
+/* Table of contents */
+
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--samhsa-teal);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--samhsa-teal);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--samhsa-teal);
+}
+
+/* Before you begin */
+
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--samhsa-teal);
+}
+
+.nofo--icons--border
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--samhsa-teal);
+}
+
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--samhsa-teal);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  color: var(--color--med-grey);
+}
+
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--med-grey);
+  color: var(--color--med-grey);
+}
+
+.section--title-page--header-nav li a[aria-current] {
+  border-top: 4px solid var(--color--samhsa-teal);
+  color: var(--color--samhsa-teal);
+}
+
+.section--title-page--name {
+  color: var(--color--samhsa-teal);
+}
+
+.section--title-page--toc p,
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+.nofo--icons--solid .section--title-page--icon svg {
+  color: var(--color--samhsa-teal);
+}
+
+.nofo--icons--border .section--title-page--icon svg {
+  color: var(--color--white);
+  fill: var(--color--samhsa-teal);
+}
+
+.nofo--icons--border .section--title-page--icon svg circle {
+  stroke: var(--color--samhsa-teal);
+}
+
+/* Section contents */
+
+.nofo--tagline {
+  color: var(--color--samhsa-blue);
+}
+
+.callout-box {
+  background-color: var(--color--light-grey);
+  color: var(--color--black);
+}
+
+.callout-box--icon {
+  background-color: var(--color-white);
+  border: 2px solid var(--color--samhsa-teal);
+}
+
+.callout-box--icon .callout-box--contents svg {
+  color: var(--color--samhsa-teal);
+}
+
+table th {
+  color: var(--color--white);
+  background-color: var(--color--samhsa-teal);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:first-of-type {
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:last-of-type {
+  border-right: 2px solid var(--color--light-grey);
+}
+
+table td {
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table td {
+  border: none;
+}
+
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist),
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist)
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading),
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading)
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
