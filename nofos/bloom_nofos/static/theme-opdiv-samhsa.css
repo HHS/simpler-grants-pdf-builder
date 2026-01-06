@@ -1,0 +1,153 @@
+/* CSS vars */
+:root {
+  --color--samhsa-blue: #1e384b;
+  --color--samhsa-teal: #1a6986;
+}
+
+/* Set @page rules */
+
+/* Regular CSS */
+
+html {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Headings */
+
+h1 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-weight: 700;
+}
+
+h2 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  font-weight: 800;
+}
+
+h3 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--samhsa-blue);
+}
+
+h4 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--samhsa-teal);
+}
+
+h5 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--black);
+}
+
+h6 {
+  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
+    Roboto, Arial, sans-serif;
+  color: var(--color--black);
+}
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top-color: var(--color--samhsa-teal);
+  color: var(--color--samhsa-teal);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--title .nofo--cover-page--title--subheading,
+.nofo--cover-page--header--intro span:first-of-type {
+  font-weight: 700;
+}
+
+.nofo--cover-page--medium
+  .nofo--cover-page--header
+  .nofo--cover-page--header--intro
+  span:last-of-type {
+  font-weight: 700;
+}
+
+.portrait .nofo--cover-page--medium .nofo--cover-page--title {
+  padding: 5mm 20mm 10mm 20mm;
+  color: var(--color--white);
+}
+
+.nofo--cover-page--header--logo svg,
+.nofo--cover-page--header--logo img {
+  fill: var(--color--samhsa-blue);
+  margin-left: 3px;
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo--subheading p,
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading,
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading
+  p {
+  font-weight: 700;
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg,
+.nofo--cover-page--text .nofo--cover-page--header--logo img {
+  width: 160px;
+}
+
+/* Cover page: hero image */
+
+.nofo--cover-page--hero .nofo--cover-page--header--logo svg,
+.nofo--cover-page--hero .nofo--cover-page--title--logo svg {
+  fill: var(--color--white);
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  font-weight: 700;
+}
+
+section.nofo--cover-page.nofo--cover-page--hero {
+  background-color: var(--color--samhsa-teal);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--samhsa-blue);
+}
+
+.toc--section-name--a {
+  color: var(--color--samhsa-teal);
+}
+
+/* Before you begin page */
+
+.before-you-begin h2 {
+  color: var(--color--samhsa-teal);
+}
+
+/* Section title page */
+
+/* Section contents */
+
+.section--content .section--content--intro {
+  color: var(--color--samhsa-blue);
+}
+
+.callout-box .callout-box--title {
+  color: var(--color--samhsa-blue);
+}
+
+.section--content--right-col .callout-box--contents p {
+  color: var(--color--samhsa-blue);
+}

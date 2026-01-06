@@ -78,6 +78,7 @@ THEME_CHOICES = [
     ("portrait-hrsa-blue", "HRSA (Default)"),
     ("portrait-hrsa-white", "HRSA (Light)"),
     ("portrait-ihs-white", "IHS (Light)"),
+    ("portrait-samhsa-white", "SAMHSA (Light)"),
 ]
 
 
