@@ -1811,7 +1811,7 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
         context["document"] = document
         context["subsection"] = subsection
 
-        changed_fields = safe_get_changed_fields(event)
+        changed_fields = self._safe_get_changed_fields(event)
         if body := changed_fields.get("body"):
             old, new = body
             if has_diff(
@@ -1826,10 +1826,10 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
         elif variables := changed_fields.get("variables"):
             old, new = variables
             body_with_old = do_replace_variable_keys_with_values(
-                markdownify(subsection.body), parse_variables(old)
+                markdownify(subsection.body), self._parse_variables(old)
             )
             body_with_new = do_replace_variable_keys_with_values(
-                markdownify(subsection.body), parse_variables(new)
+                markdownify(subsection.body), self._parse_variables(new)
             )
             if has_diff(diff := html_diff(body_with_old, body_with_new)):
                 context["diff_old"] = extract_old_diff(diff)
@@ -1837,17 +1837,27 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
 
         return render(request, "composer/writer/writer_history_compare.html", context)
 
+    def _safe_get_changed_fields(event):
+        """
+        Helper function to get changed_fields from an audit event, safely parsing JSON string
+        or returning None if parsing fails.
 
-def safe_get_changed_fields(event):
-    try:
-        return json.loads(event.changed_fields)
-    except (json.JSONDecodeError, TypeError):
-        return None
+        :param event: CRUDEvent instance
+        """
+        try:
+            return json.loads(event.changed_fields)
+        except (json.JSONDecodeError, TypeError):
+            return None
 
+    def _parse_variables(vars: str):
+        """
+        Docstring for _parse_variables
 
-def parse_variables(vars: str):
-    try:
-        data = json.loads(vars)
-        return {key: VariableInfo.from_dict(val) for key, val in data.items()}
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return {}
+        :param vars: JSON string representing variables for a ContentGuideSubsection
+        :return: Dictionary mapping variable keys to VariableInfo objects
+        """
+        try:
+            data = json.loads(vars)
+            return {key: VariableInfo.from_dict(val) for key, val in data.items()}
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return {}
