@@ -106,6 +106,21 @@ class TestGetIconPathChoices(TestCase):
         result = get_icon_path_choices("portrait-acf-white")
         self.assertEqual(result, expected_choices)
 
+    def test_get_icon_path_choices_ihs_white(self):
+        """Test that 'solid' + 'thin' icon choices are returned for the 'portrait-ihs-white' theme."""
+        expected_choices = [
+            (
+                "nofo--icons--solid",
+                "(Outlined) White background, color icon, color outline",
+            ),
+            (
+                "nofo--icons--thin",
+                "(Thin) White background, color icon, color outline",
+            ),
+        ]
+        result = get_icon_path_choices("portrait-ihs-white")
+        self.assertEqual(result, expected_choices)
+
     def test_get_icon_path_choices_other_theme(self):
         """Test that only 'border' and 'solid' icon choices are returned for other themes."""
         expected_choices = [

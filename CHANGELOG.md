@@ -26,6 +26,7 @@ Versioning since version 1.0.0.
 - Use pencil icon for "Build your application" step
 - Automatically assign "optional" to ContentGuideInstance subsections based on instructions
 - Allow title casing for "Key Facts" and "Key Dates" subsections
+- Add "thin" icon variant for IHS theme
 
 ### Fixed
 

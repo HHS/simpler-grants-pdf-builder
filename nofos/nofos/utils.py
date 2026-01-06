@@ -184,6 +184,18 @@ def get_icon_path_choices(theme):
             ),
         ]
 
+    if theme == "portrait-ihs-white":
+        return [
+            (
+                "nofo--icons--solid",
+                "(Outlined) White background, color icon, color outline",
+            ),
+            (
+                "nofo--icons--thin",
+                "(Thin) White background, color icon, color outline",
+            ),
+        ]
+
     return [
         ("nofo--icons--border", "(Filled) Color background, white icon, white outline"),
         (
