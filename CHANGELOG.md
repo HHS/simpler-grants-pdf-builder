@@ -20,6 +20,7 @@ Versioning since version 1.0.0.
 - Added new theme: "SAMHSA Light"
 - Add "README" overview to the composer app
 - Add an audit history page for the Composer Writer app
+- Add a "compare" page for UPDATE audit actions in the Composer Writer
 
 ### Changed
 
