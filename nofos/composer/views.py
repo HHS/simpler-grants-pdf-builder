@@ -1837,6 +1837,7 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
 
         return render(request, "composer/writer/writer_history_compare.html", context)
 
+    @staticmethod
     def _safe_get_changed_fields(event):
         """
         Helper function to get changed_fields from an audit event, safely parsing JSON string
@@ -1849,6 +1850,7 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
         except (json.JSONDecodeError, TypeError):
             return None
 
+    @staticmethod
     def _parse_variables(vars: str):
         """
         Docstring for _parse_variables
