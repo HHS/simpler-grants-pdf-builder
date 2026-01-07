@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
-{% load static tz martortags add_classes_to_tables add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs conditional_questions_note nofo_section_name_separator %}
-
+{% load static tz martortags add_classes_to_tables add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs safe_br %}
 
 {% block title %}
-  Update to "{{ subsection.name }}"
+  Update to {% if subsection.name %}“{{ subsection.name|safe_br }}”{% else %}Section #{{ subsection.order }}{% endif %}
 {% endblock %}
 
 {% block content %}
-  {% with "All updates for “"|add:document.title|add:"”" as back_text %}
-    {% url 'composer:writer_instance_history' document.id as back_href %}
-    {% include "includes/page_heading.html" with title="Update to “"|add:subsection.name|add:"”" back_text=back_text back_href=back_href only %}
-  {% endwith %}
+  <div class="back-link font-body-md margin-bottom-105">
+    <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:writer_instance_history' document.id %}">All updates for “{{ document.title }}”</a>
+  </div>
+  <div class="subsection_edit--header">
+    <h1 class="font-heading-xl margin-y-0">Update to {% if subsection.name %}“{{ subsection.name|safe_br }}”{% else %}Section #{{ subsection.order }}{% endif %}</h1>
+  </div>
 
   <table class="usa-table margin-top-4 width-full">
     <thead>
@@ -22,9 +23,9 @@
     <tbody>
       <tr>
       {# old diff cell #}
-        <td>{{ diff_old|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
+        <td>{{ diff_old|safe|add_classes_to_tables|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
       {# new diff cell #}
-        <td>{{ diff_new|safe|add_classes_to_tables|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
+        <td>{{ diff_new|safe|add_classes_to_tables|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}</td>
       </tr>
     </tbody>
   </table>
