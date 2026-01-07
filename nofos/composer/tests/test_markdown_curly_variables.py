@@ -7,7 +7,6 @@ import re
 from bloom_nofos.markdown_extensions.curly_variables import CURLY_VARIABLE_PATTERN
 from composer.models import VariableInfo
 from composer.templatetags.replace_variable_keys_with_values import (
-    find_variable_by_label,
     replace_variable_keys_with_values,
 )
 from django.test import SimpleTestCase
@@ -361,52 +360,3 @@ class ReplaceVariableKeysWithValuesTests(SimpleTestCase):
         from django.utils.safestring import SafeString
 
         self.assertIsInstance(result, SafeString)
-
-
-class FindVariableByLabelTests(SimpleTestCase):
-    """Test the find_variable_by_label helper function."""
-
-    def test_find_existing_variable(self):
-        """Should return key and info for existing variable."""
-        variables_dict = {
-            "var1": VariableInfo(
-                key="var1", type="string", label="Name", value="Alice"
-            ),
-            "var2": VariableInfo(key="var2", type="string", label="Age", value="30"),
-        }
-        key, info = find_variable_by_label(variables_dict, "Name")
-        self.assertEqual(key, "var1")
-        self.assertEqual(
-            info, VariableInfo(key="var1", type="string", label="Name", value="Alice")
-        )
-
-    def test_find_nonexistent_variable(self):
-        """Should return None, None for nonexistent variable."""
-        variables_dict = {
-            "var1": VariableInfo(key="var1", type="string", label="Name", value="Alice")
-        }
-        key, info = find_variable_by_label(variables_dict, "Unknown")
-        self.assertIsNone(key)
-        self.assertIsNone(info)
-
-    def test_find_in_empty_dict(self):
-        """Should return None, None for empty dict."""
-        variables_dict = {}
-        key, info = find_variable_by_label(variables_dict, "Name")
-        self.assertIsNone(key)
-        self.assertIsNone(info)
-
-    def test_find_first_matching_label(self):
-        """Should return first match if multiple variables have same label."""
-        variables_dict = {
-            "var1": VariableInfo(
-                key="var1", type="string", label="Name", value="Alice"
-            ),
-            "var2": VariableInfo(key="var2", type="string", label="Name", value="Bob"),
-        }
-        key, info = find_variable_by_label(variables_dict, "Name")
-        # Should return the first one found (dict iteration order)
-        self.assertEqual(key, "var1")
-        self.assertEqual(
-            info, VariableInfo(key="var1", type="string", label="Name", value="Alice")
-        )
