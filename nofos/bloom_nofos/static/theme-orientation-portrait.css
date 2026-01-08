@@ -282,6 +282,19 @@ section.before-you-begin {
   font-size: 9.5pt;
 }
 
+.section--content--right-col--tiny .callout-box .callout-box--title {
+  font-size: 12pt;
+}
+
+.section--content--right-col.section--content--right-col--tiny
+  .callout-box--questions
+  .callout-box--contents
+  p,
+.section--content--right-col.section--content--right-col--tiny
+  .callout-box--contents {
+  font-size: 8.5pt;
+}
+
 .section--content--right-col .callout-box--contents p {
   padding-right: 5px;
 }
