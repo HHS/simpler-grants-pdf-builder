@@ -317,6 +317,10 @@ table td ol li:first-of-type {
   margin-top: 0;
 }
 
+table td .application-list--left-indent {
+  padding-left: 20px;
+}
+
 body[class*="-iod"] table td img.usa-icon--check_box_outline_blank,
 body[class*="-blue"] table td img.usa-icon--check_box_outline_blank,
 body.cms-white table td img.usa-icon--check_box_outline_blank {
