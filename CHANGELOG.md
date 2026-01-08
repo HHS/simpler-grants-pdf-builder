@@ -17,6 +17,10 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Show validation message for "no opdiv" import error
+- Allow whitespace before "Opdiv:" keyword when looking for Opdiv
+  - This works for all "suggest\_\*" functions
+
 ## [3.24.0] - 2026-01-06
 
 ### Added
