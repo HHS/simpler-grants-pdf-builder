@@ -1509,6 +1509,10 @@ def suggest_nofo_theme(nofo_number):
     if "ihs-" in nofo_number.lower():
         return "portrait-ihs-white"
 
+    # NOFO numbers with "RFA" are also CDC, but do this check last
+    if "rfa-" in nofo_number.lower():
+        return "portrait-cdc-blue"
+
     return "portrait-hrsa-blue"
 
 

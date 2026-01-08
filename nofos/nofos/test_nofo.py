@@ -3562,6 +3562,16 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_theme = "portrait-cms-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
+    def test_suggest_nofo_number_rfa_returns_cdc_theme(self):
+        nofo_number = "RFA-CK-26-104"
+        nofo_theme = "portrait-cdc-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_ihs_and_rfa_returns_ihs_theme(self):
+        nofo_number = "IHS-RFA-CK-26-104"
+        nofo_theme = "portrait-ihs-white"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
     def test_suggest_nofo_number_no_match_returns_hrsa_theme(self):
         nofo_number = "abc-def-ghi"
         nofo_theme = "portrait-hrsa-blue"

@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- NOFO numbers that include "RFA-" will default to the CDC theme
+
 ### Fixed
 
 ## [3.24.0] - 2026-01-06
