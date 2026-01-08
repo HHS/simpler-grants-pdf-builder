@@ -3624,6 +3624,11 @@ class SuggestNofoOpDivTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
 
+    def test_opdiv_present_with_predecing_whitespace(self):
+        html = "<div><p>  Opdiv: Center for Awesome NOFOs</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
     def test_opdiv_not_present(self):
         html = "<div><p>Center for Awesome NOFOs</p></div>"
         soup = BeautifulSoup(html, "html.parser")

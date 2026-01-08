@@ -1457,7 +1457,7 @@ def get_side_nav_links(nofo):
 
 def _suggest_by_startswith_string(soup, startswith_string):
     suggestion = ""
-    regex = re.compile("^{}".format(startswith_string), re.IGNORECASE)
+    regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
     element = soup.find(string=regex)
 
     # look for the paragraph
