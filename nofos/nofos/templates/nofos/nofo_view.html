@@ -366,7 +366,7 @@
             {% if nofo_theme_orientation == 'portrait' %}
               {% with callouts=section|get_floating_callout_boxes_from_section %}
                 {% if callouts %}
-                  <div class="section--content--right-col{% if callouts|get_combined_wordcount_for_subsections > 79 %} section--content--right-col--smaller{% endif %}">
+                  <div class="section--content--right-col{% if callouts|get_combined_wordcount_for_subsections > 99 %} section--content--right-col--tiny{% elif callouts|get_combined_wordcount_for_subsections > 79 %} section--content--right-col--smaller{% endif %}">
                     {% for subsection in callouts %}
                       {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
                     {% endfor %}

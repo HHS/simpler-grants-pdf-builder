@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add smaller size for very large right column callout boxes
+
 ### Changed
 
 - NOFO numbers that include "RFA-" will default to the CDC theme
