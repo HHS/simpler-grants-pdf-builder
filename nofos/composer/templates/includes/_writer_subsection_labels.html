@@ -1,18 +1,18 @@
 {% load edit_mode_label subsection_status_label %}
 
 {% if hidden is True %}
-    <span class="usa-tag maxh-fit-content text-white text-normal text-no-uppercase bg-error-darker">Hidden</span>
+    <span class="usa-tag maxh-fit-content text-white text-normal text-no-uppercase text-pre bg-error-darker">Hidden</span>
 {% endif %}
 
 {% if optional is True %}
-    <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-optional-purple">Optional</span>
+    <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase text-pre bg-optional-purple">Optional</span>
 {% endif %}
 
 {% if edit_mode and edit_mode == "locked" %}
   {% with edit_mode|edit_mode_label as label %}
     {% with edit_mode|edit_mode_label_class as class %}
       {% if label %}
-        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{ class }}">{{ label }}</span>
+        <span class="usa-tag maxh-fit-content text-black text-normal text-pre text-no-uppercase {{ class }}">{{ label }}</span>
       {% endif %}
     {% endwith %}
   {% endwith %}
@@ -20,7 +20,7 @@
   {% with status|subsection_status_label as status_label %}
     {% with status|subsection_status_label_class as status_class %}
       {% if status_label %}
-        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{ status_class }}">{{ status_label }}</span>
+        <span class="usa-tag maxh-fit-content text-black text-normal text-pre text-no-uppercase {{ status_class }}">{{ status_label }}</span>
       {% endif %}
     {% endwith %}
   {% endwith %}

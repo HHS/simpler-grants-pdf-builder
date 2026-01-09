@@ -3,20 +3,20 @@
 {% if conditional_answer is True or conditional_answer is False %}
   {% with conditional_answer|conditional_questions_label as conditional_label %}
       {% if conditional_label %}
-        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-accent-warm-light">{{ conditional_label }}</span>
+        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase text-pre bg-accent-warm-light">{{ conditional_label }}</span>
       {% endif %}
   {% endwith %}
 {% endif %}
 
 {% if optional is True %}
-    <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase bg-optional-purple">Optional</span>
+    <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase text-pre bg-optional-purple">Optional</span>
 {% endif %}
 
 {% if edit_mode %}
   {% with edit_mode|edit_mode_label as label %}
     {% with edit_mode|edit_mode_label_class as class %}
       {% if label %}
-        <span class="usa-tag maxh-fit-content text-black text-normal text-no-uppercase {{class}}">{{ label }}</span>
+        <span class="usa-tag maxh-fit-content text-black text-normal text-pre text-no-uppercase {{class}}">{{ label }}</span>
       {% endif %}
     {% endwith %}
   {% endwith %}
