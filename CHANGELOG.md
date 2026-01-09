@@ -14,12 +14,16 @@ Versioning since version 1.0.0.
 ### Changed
 
 - NOFO numbers that include "RFA-" will default to the CDC theme
+- Default "getting started" accordion to open on Composer index pages
 
 ### Fixed
 
 - Show validation message for "no opdiv" import error
 - Allow whitespace before "Opdiv:" keyword when looking for Opdiv
   - This works for all "suggest\_\*" functions
+- Show names of untitled subsections in the "not started" alert for composer writers
+- No more line-breaks on the composer subsection accordion tags
+- Make "small" font size smaller for right-col callout boxes
 
 ## [3.24.0] - 2026-01-06
 

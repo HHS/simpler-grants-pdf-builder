@@ -1,3 +1,5 @@
+{% load subsection_name_or_placeholder %}
+
 <section
   class="usa-alert usa-alert--warning usa-alert--not-started usa-alert--heading-sm"
   aria-label="You have not started some sections."
@@ -20,7 +22,7 @@
             {% for subsection in not_started_subsections %}
               <li>
                 <a href="#{{ subsection.html_id }}">
-                  {{ subsection.name|default:"(Untitled subsection)" }}
+                  {{ subsection|subsection_name_or_placeholder }}
                 </a>
               </li>
             {% endfor %}
