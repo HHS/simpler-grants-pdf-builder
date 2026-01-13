@@ -418,8 +418,14 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
 
             subsection_obj = SubsectionModel(**subsection_fields)
 
+            # If the SubsectionModel has an extract_variables method, then it is a
+            # ContentGuideSubsection and the edit_mode should be determined
             if hasattr(SubsectionModel, "extract_variables"):
                 variables = subsection_obj.extract_variables()
+                body_contains_insert = "insert" in subsection_obj.body.lower()
+                instructions_contains_insert = (
+                    "insert" in subsection_obj.instructions.lower()
+                )
                 # If variables are detected, edit_mode = "variables"
                 if variables:
                     subsection_obj.edit_mode = "variables"
@@ -427,8 +433,13 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                         key: var.to_dict() for key, var in variables.items()
                     }
                     subsection_obj.variables = json.dumps(serializable_variables)
-                # If no variables, and subsection is optional, then edit_mode = "full"
-                elif subsection_obj.optional:
+                # If no variables, and subsection is optional or the word "insert" is present in the
+                # subsection body or instructions, then edit_mode = "full"
+                elif (
+                    subsection_obj.optional
+                    or body_contains_insert
+                    or instructions_contains_insert
+                ):
                     subsection_obj.edit_mode = "full"
 
                 # Otherwise, default edit_mode = "locked" remains
