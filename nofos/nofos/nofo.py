@@ -433,8 +433,10 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                         key: var.to_dict() for key, var in variables.items()
                     }
                     subsection_obj.variables = json.dumps(serializable_variables)
-                # If no variables, and subsection is optional or the word "insert" is present in the
-                # subsection body or instructions, then edit_mode = "full"
+                # Subsection edit_mode = "full" if no variables, and:
+                #   - subsection is optional OR
+                #   - the word "insert" is present in the subsection body OR
+                #   - the word "insert" is present in the instructions
                 elif (
                     subsection_obj.optional
                     or body_contains_insert
