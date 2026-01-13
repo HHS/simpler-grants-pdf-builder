@@ -70,7 +70,13 @@
   <tbody id="audit-events-body">
     {% for event in audit_events %}
     <tr>
-      <td>{{ event.event_type }}</td>
+      <td>
+        {% if event.should_link_to_diff %}
+          <a href="{% url 'nofos:nofo_history_compare' nofo.id event.event_id %}">{{ event.event_type }}</a>
+        {% else %}
+          {{ event.event_type }}
+        {% endif %}
+      </td>
       <td><em>{{ event.object_type }}</em><br>{{ event.object_description }}</td>
       <td>{{ event.user.email }}</td>
       {% timezone "America/New_York" %}

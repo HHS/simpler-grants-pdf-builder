@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 import docraptor
+from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean
 from bs4 import BeautifulSoup
@@ -30,12 +31,17 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from martor.utils import markdownify
+
+from nofos.nofo_compare import extract_new_diff, extract_old_diff
 
 from .audits import (
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
+    get_audit_event_by_id,
     get_audit_events_for_document,
     get_audit_events_for_nofo,
+    safe_get_changed_fields,
 )
 from .forms import (
     CheckNOFOLinkSingleForm,
@@ -1184,7 +1190,64 @@ class NofoHistoryView(
             "created"
         )
 
+        context["audit_events"] = [
+            self.annotate_event_with_should_link_to_diff(e)
+            for e in context["audit_events"]
+        ]
+
         return context
+
+    @staticmethod
+    def annotate_event_with_should_link_to_diff(event):
+        """
+        Annotate an audit event with a 'should_link_to_diff' boolean attribute.
+        This indicates whether the event should link to a diff view.
+        """
+        event["should_link_to_diff"] = False
+
+        # An event should link to a diff view if:
+        # - It is for a subsection
+        # - The 'body' field was changed in this event
+        changed_fields = event.get("changed_fields", {})
+        if "subsection" in event["object_type"].lower() and "body" in changed_fields:
+            event["should_link_to_diff"] = True
+        return event
+
+
+class NofoHistoryCompareView(GroupAccessObjectMixin, View):
+    """
+    View to compare two versions of a subsection and show the diff
+    between their bodies.
+    URL: /nofos/<nofo_id>/history/compare/<event_id>
+    """
+
+    def get(self, request, pk, event_id):
+        context = {}
+
+        document = get_object_or_404(Nofo, pk=pk)
+        event = get_audit_event_by_id(event_id)
+        subsection = get_object_or_404(Subsection, pk=event.object_id)
+
+        context["event"] = event
+        context["document"] = document
+        context["subsection"] = subsection
+
+        context["back_url"] = reverse_lazy("nofos:nofo_history", kwargs={"pk": pk})
+
+        changed_fields = safe_get_changed_fields(event)
+        # We can assume presence of 'body' on the event -- we only link to
+        # this page if 'body' was changed
+        old_body, new_body = changed_fields.get("body")
+        if has_diff(
+            diff := html_diff(
+                markdownify(old_body),
+                markdownify(new_body),
+            )
+        ):
+            context["diff_old"] = extract_old_diff(diff)
+            context["diff_new"] = extract_new_diff(diff)
+
+        return render(request, "nofos/nofo_history_compare.html", context)
 
 
 class NofoModificationsHistoryView(

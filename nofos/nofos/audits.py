@@ -82,39 +82,33 @@ def format_audit_event(event, formatting_options=None):
 
     # Handle custom audit events
     if event.changed_fields:
-        try:
-            changed_fields = json.loads(event.changed_fields)
-            if isinstance(changed_fields, dict):
-                # Handle custom actions
-                if "action" in changed_fields:
-                    event_details["object_description"] = remove_model_from_description(
-                        event_details["object_description"],
-                        event.content_type.model,
+        changed_fields = safe_get_changed_fields(event)
+        event_details["changed_fields"] = changed_fields
+        if isinstance(changed_fields, dict):
+            # Handle custom actions
+            if "action" in changed_fields:
+                event_details["object_description"] = remove_model_from_description(
+                    event_details["object_description"],
+                    event.content_type.model,
+                )
+                action = changed_fields["action"]
+                if action == "nofo_import":
+                    event_details["event_type"] = f"{document_display_prefix} imported"
+                elif action == "nofo_print":
+                    event_details["event_type"] = f"{document_display_prefix} printed"
+                    if "print_mode" in changed_fields:
+                        event_details[
+                            "event_type"
+                        ] += f" ({changed_fields['print_mode'][0]} mode)"
+                elif action == "nofo_reimport":
+                    event_details["event_type"] = (
+                        f"{document_display_prefix} re-imported"
                     )
-                    action = changed_fields["action"]
-                    if action == "nofo_import":
-                        event_details["event_type"] = (
-                            f"{document_display_prefix} imported"
-                        )
-                    elif action == "nofo_print":
-                        event_details["event_type"] = (
-                            f"{document_display_prefix} printed"
-                        )
-                        if "print_mode" in changed_fields:
-                            event_details[
-                                "event_type"
-                            ] += f" ({changed_fields['print_mode'][0]} mode)"
-                    elif action == "nofo_reimport":
-                        event_details["event_type"] = (
-                            f"{document_display_prefix} re-imported"
-                        )
 
-                # Improve object description for Nofo field changes
-                elif event.content_type.model in BASE_DOCUMENT_TYPES:
-                    field_name = next(iter(changed_fields.keys()))
-                    event_details["object_description"] = format_name(field_name)
-        except Exception:
-            pass
+            # Improve object description for Nofo field changes
+            elif event.content_type.model in BASE_DOCUMENT_TYPES:
+                field_name = next(iter(changed_fields.keys()))
+                event_details["object_description"] = format_name(field_name)
 
     # Still do event object formatting for "created" (event_type == 1) events
     elif event.event_type == 1:
@@ -263,3 +257,14 @@ def get_audit_event_by_id(event_id):
         return event
     except CRUDEvent.DoesNotExist:
         return None
+
+
+def safe_get_changed_fields(event):
+    """
+    Safely parse the changed_fields of a CRUDEvent.
+    Returns an empty dict if parsing fails.
+    """
+    try:
+        return json.loads(event.changed_fields) if event.changed_fields else {}
+    except Exception:
+        return {}
