@@ -160,3 +160,64 @@ class NofoHistoryViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, subsection_event.get_event_type_display())
+
+    def test_history_view_has_links_for_subsection_changes_with_updated_body(self):
+        """Test that history view has links to compare for subsection changes with updated body"""
+        # Create a subsection update event with body change
+        subsection_body_changed_event = CRUDEvent.objects.create(
+            event_type=CRUDEvent.UPDATE,
+            object_id=self.subsection.id,
+            content_type=self.subsection_content_type,
+            object_repr=str(self.subsection),
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
+            changed_fields='{"body": ["Old content", "Test content"]}',
+            user=self.user,
+            datetime=timezone.now(),
+        )
+
+        # And create a subsection event that should not have a link
+        subsection_event = CRUDEvent.objects.create(
+            event_type=CRUDEvent.UPDATE,
+            object_id=self.subsection.id,
+            content_type=self.subsection_content_type,
+            object_repr=str(self.subsection),
+            object_json_repr=[
+                {
+                    "model": "nofos.subsection",
+                    "pk": str(self.subsection.id),
+                    "fields": {
+                        "name": self.subsection.name,
+                        "section": str(self.section.id),
+                    },
+                }
+            ],
+            changed_fields='{"name": ["Old name", "New name"]}',
+            user=self.user,
+            datetime=timezone.now(),
+        )
+
+        url = reverse("nofos:nofo_history", args=[self.nofo.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+        expected_compare_url = reverse(
+            "nofos:nofo_history_compare",
+            args=[self.nofo.id, subsection_body_changed_event.id],
+        )
+        self.assertContains(response, expected_compare_url)
+
+        unexpected_compare_url = reverse(
+            "nofos:nofo_history_compare",
+            args=[self.nofo.id, subsection_event.id],
+        )
+        self.assertNotContains(response, unexpected_compare_url)
