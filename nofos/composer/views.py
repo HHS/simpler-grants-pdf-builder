@@ -36,7 +36,7 @@ from django.views.generic import (
 )
 from martor.utils import markdownify
 
-from nofos.audits import get_audit_event_by_id
+from nofos.audits import get_audit_event_by_id, safe_get_changed_fields
 from nofos.mixins import (
     GroupAccessContentGuideMixin,
     PreventIfContentGuideArchivedMixin,
@@ -1811,7 +1811,11 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
         context["document"] = document
         context["subsection"] = subsection
 
-        changed_fields = self._safe_get_changed_fields(event)
+        context["back_url"] = reverse_lazy(
+            "composer:writer_instance_history", kwargs={"pk": document.pk}
+        )
+
+        changed_fields = safe_get_changed_fields(event)
         if body := changed_fields.get("body"):
             old, new = body
             if has_diff(
@@ -1835,20 +1839,7 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
                 context["diff_old"] = extract_old_diff(diff)
                 context["diff_new"] = extract_new_diff(diff)
 
-        return render(request, "composer/writer/writer_history_compare.html", context)
-
-    @staticmethod
-    def _safe_get_changed_fields(event):
-        """
-        Helper function to get changed_fields from an audit event, safely parsing JSON string
-        or returning None if parsing fails.
-
-        :param event: CRUDEvent instance
-        """
-        try:
-            return json.loads(event.changed_fields)
-        except (json.JSONDecodeError, TypeError):
-            return None
+        return render(request, "nofos/nofo_history_compare.html", context)
 
     @staticmethod
     def _parse_variables(vars: str):

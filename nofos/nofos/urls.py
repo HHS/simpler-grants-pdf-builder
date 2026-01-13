@@ -14,6 +14,11 @@ urlpatterns = [
         name="nofo_history",
     ),
     path(
+        "<uuid:pk>/history/<int:event_id>",
+        views.NofoHistoryCompareView.as_view(),
+        name="nofo_history_compare",
+    ),
+    path(
         "<uuid:pk>/history-modifications",
         views.NofoModificationsHistoryView.as_view(),
         name="nofo_history_modifications",
