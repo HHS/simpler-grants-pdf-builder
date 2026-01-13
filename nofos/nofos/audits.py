@@ -81,8 +81,8 @@ def format_audit_event(event, formatting_options=None):
             pass
 
     # Handle custom audit events
-    if event.changed_fields:
-        changed_fields = safe_get_changed_fields(event)
+    changed_fields = safe_get_changed_fields(event)
+    if changed_fields:
         event_details["changed_fields"] = changed_fields
         if isinstance(changed_fields, dict):
             # Handle custom actions
@@ -105,7 +105,7 @@ def format_audit_event(event, formatting_options=None):
                         f"{document_display_prefix} re-imported"
                     )
 
-            # Improve object description for Nofo field changes
+            # Improve object description for Nofo field changes if changed_fields is not empty
             elif event.content_type.model in BASE_DOCUMENT_TYPES:
                 field_name = next(iter(changed_fields.keys()))
                 event_details["object_description"] = format_name(field_name)
@@ -167,17 +167,15 @@ def get_audit_events_for_document(
             # Exclude UPDATE events with changed fields == 'null'
             if event.changed_fields == "null" or not event.changed_fields:
                 continue
-            try:
-                changed = json.loads(event.changed_fields or "{}")
-                # Exclude UPDATE events that only changed excluded fields
-                changed_keys = set(changed.keys())
-                if changed_keys and changed_keys.issubset(EXCLUDED_FIELDS):
-                    continue
-                # Otherwise, include
-                filtered_events.append(event)
-            except Exception:
-                # Include events we can't parse -- unexpected edge case
-                filtered_events.append(event)
+
+            # Exclude UPDATE events that only changed excluded fields
+            changed = safe_get_changed_fields(event)
+            changed_keys = set(changed.keys())
+            if changed_keys and changed_keys.issubset(EXCLUDED_FIELDS):
+                continue
+
+            # Otherwise, include
+            filtered_events.append(event)
 
         return filtered_events
 
@@ -227,16 +225,13 @@ def get_audit_events_for_document(
         elif event.event_type == CRUDEvent.CREATE:
             event_priority = 1
 
-        if event.changed_fields:
-            try:
-                changed_fields = json.loads(event.changed_fields)
-                if (
-                    isinstance(changed_fields, dict)
-                    and changed_fields.get("action") == "nofo_import"
-                ):
-                    event_priority = 0
-            except Exception:
-                pass
+        changed_fields = safe_get_changed_fields(event)
+        if (
+            changed_fields
+            and isinstance(changed_fields, dict)
+            and changed_fields.get("action") == "nofo_import"
+        ):
+            event_priority = 0
 
         # Return tuple: (datetime_truncated, priority_flag)
         # Lower priority_flag means higher priority, so comes first in sorting
