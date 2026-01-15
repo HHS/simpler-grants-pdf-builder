@@ -87,8 +87,11 @@
             <p>{{ nofo.agency }}</p>
             <p>{% if nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
-            {% if nofo.number == 'HHS-2025-ACF-OCS-EF-0177' or nofo.number == 'HHS-2025-ACF-OCS-EE-0118' %}
+            {% if nofo.number == 'RFA-CK-26-036' %}
               <p>{{ nofo.agency }}</p>
+              {% if nofo.subagency %}
+                <p>{{ nofo.subagency }}</p>
+              {% endif %}
             {% else %}
               <p>{% if nofo.subagency and nofo_opdiv != 'hrsa' %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
             {% endif %}
@@ -106,7 +109,7 @@
           {% endfor %}
           </ul>
         {% else %}
-          <span>Application due {{ nofo.application_deadline }}</span>
+          <span>Application due <span>{{ nofo.application_deadline }}</span></span>
           <br>
         {% endif %}
         {% if nofo.modifications %}
