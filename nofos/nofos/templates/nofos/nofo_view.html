@@ -87,7 +87,7 @@
             <p>{{ nofo.agency }}</p>
             <p>{% if nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
           {% else %}
-            {% if nofo.number == 'RFA-CK-26-036' %}
+            {% if nofo.number == 'RFA-CK-26-036' or nofo.number == 'RFA-CK-26-035' %}
               <p>{{ nofo.agency }}</p>
               {% if nofo.subagency %}
                 <p>{{ nofo.subagency }}</p>
