@@ -7,7 +7,7 @@
 
 {% block content %}
   <div class="back-link font-body-md margin-bottom-105">
-    <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'composer:writer_instance_history' document.id %}">All updates for “{{ document.title }}”</a>
+    <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{{ back_url }}">All updates for “{{ document.title }}”</a>
   </div>
   <div class="subsection_edit--header">
     <h1 class="font-heading-xl margin-y-0">Update to {% if subsection.name %}“{{ subsection.name|safe_br }}”{% else %}Section #{{ subsection.order }}{% endif %}</h1>
