@@ -9,7 +9,16 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.25.0] - 2026-01-20
+
+### Added
+
 - Add smaller size for very large right column callout boxes
+- Add a diff UI for subsection body updates in the NOFO Builder
 
 ### Changed
 
@@ -18,6 +27,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- The API now returns optional fields in an optional manner
+  - (Works for GET and POST)
 - Show validation message for "no opdiv" import error
 - Allow whitespace before "Opdiv:" keyword when looking for Opdiv
   - This works for all "suggest\_\*" functions
