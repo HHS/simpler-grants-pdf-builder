@@ -2,9 +2,11 @@ import json
 import os
 
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from nofos.models import Nofo, Section, Subsection
+
+from .utils import strip_null_and_blank_nofo_keys
 
 
 class HealthCheckAPITest(TestCase):
@@ -304,3 +306,79 @@ class NofoAPITest(TestCase):
         # Returns subsections in ascending order
         api_subsection_orders = [s["order"] for s in data["sections"][0]["subsections"]]
         self.assertEqual(api_subsection_orders, sorted(api_subsection_orders))
+
+
+class StripNullAndBlankNofoKeysTest(SimpleTestCase):
+    def test_removes_none_and_empty_string_at_top_level(self):
+        payload = {
+            "title": "My NOFO",
+            "subagency": "",
+            "author": None,
+            "before_you_begin": "full",
+            "inline_css": None,
+        }
+
+        cleaned = strip_null_and_blank_nofo_keys(payload, preserve_keys=["sections"])
+
+        self.assertEqual(
+            cleaned,
+            {
+                "title": "My NOFO",
+                "before_you_begin": "full",
+            },
+        )
+
+    def test_preserve_keys_are_left_untouched(self):
+        sections = [
+            {
+                "name": "Step 1",
+                "html_class": "",  # intentionally blank
+                "subsections": [{"body": ""}],  # intentionally blank
+            }
+        ]
+        payload = {
+            "title": "My NOFO",
+            "sections": sections,
+            "subagency": "",
+            "author": None,
+        }
+
+        cleaned = strip_null_and_blank_nofo_keys(payload, preserve_keys=["sections"])
+
+        # "sections" should still be present and identical (not deep-cleaned)
+        self.assertIn("sections", cleaned)
+        self.assertIs(cleaned["sections"], sections)  # same object reference, unchanged
+        self.assertEqual(cleaned["sections"], sections)
+
+        # top-level blanks should be removed
+        self.assertNotIn("subagency", cleaned)
+        self.assertNotIn("author", cleaned)
+
+    def test_keeps_false_zero_and_empty_list_values(self):
+        # Important: you only want to remove None / "", not falsy values in general
+        payload = {
+            "callout_box": False,
+            "order": 0,
+            "tags": [],
+            "notes": "",
+            "author": None,
+        }
+
+        cleaned = strip_null_and_blank_nofo_keys(payload, preserve_keys=[])
+
+        self.assertEqual(
+            cleaned,
+            {
+                "callout_box": False,
+                "order": 0,
+                "tags": [],
+            },
+        )
+
+    def test_preserve_keys_can_be_any_iterable(self):
+        # Your function checks "if k in preserve_keys", so list/tuple/set should all work.
+        payload = {"sections": [], "author": None}
+
+        cleaned = strip_null_and_blank_nofo_keys(payload, preserve_keys=("sections",))
+
+        self.assertEqual(cleaned, {"sections": []})

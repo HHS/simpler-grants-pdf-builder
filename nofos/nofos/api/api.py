@@ -10,6 +10,7 @@ from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import _build_document
 
 from .schemas import ErrorSchema, NofoSchema, SuccessSchema
+from .utils import strip_null_and_blank_nofo_keys
 
 
 class BearerAuth(HttpBearer):
@@ -70,25 +71,6 @@ def create_nofo(request, payload: NofoSchema):
         return 400, {"message": "Model validation error", "details": e.message_dict}
     except Exception as e:
         return 400, {"message": str(e)}
-
-
-def strip_null_and_blank_nofo_keys(nofo_dict, *, preserve_keys):
-    """
-    Remove top-level keys whose value is None or "".
-    Leaves preserved keys (like "sections") completely untouched.
-    """
-    cleaned = {}
-    for k, v in nofo_dict.items():
-        if k in preserve_keys:
-            cleaned[k] = v
-            continue
-
-        if v is None or v == "":
-            continue
-
-        cleaned[k] = v
-
-    return cleaned
 
 
 @api.get("/nofos/{nofo_id}", response={200: dict, 404: ErrorSchema})
