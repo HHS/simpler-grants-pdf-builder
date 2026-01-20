@@ -92,6 +92,29 @@ class NofoAPITest(TestCase):
             data["sections"][0]["subsections"][0]["name"], self.default_subsection.name
         )
 
+    def test_export_includes_subagency_when_present(self):
+        """GET should include subagency when it has a non-empty value."""
+        self.nofo.subagency = "Division of Medicine and Dentistry"
+        self.nofo.save()
+
+        response = self.client.get(f"/api/nofos/{self.nofo.id}", **self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertIn("subagency", data)
+        self.assertEqual(data["subagency"], "Division of Medicine and Dentistry")
+
+    def test_export_omits_subagency_when_blank(self):
+        """GET should omit subagency when it is blank."""
+        self.nofo.subagency = ""  # blank should be stripped
+        self.nofo.save()
+
+        response = self.client.get(f"/api/nofos/{self.nofo.id}", **self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertNotIn("subagency", data)
+
     def test_export_nofo_no_subsections(self):
         """Test exporting a NOFO via API"""
 
@@ -162,6 +185,29 @@ class NofoAPITest(TestCase):
         first_section = nofo.sections.first()
         self.assertEqual(first_section.name, "Step 1: Review the Opportunity")
         self.assertEqual(first_section.subsections.first().name, "Basic information")
+
+    def test_import_nofo_with_subagency_is_okay(self):
+        """POST should accept a NOFO payload with subagency set."""
+        payload = self.minimal_compliant_payload.copy()
+        payload["subagency"] = "Division of Global Migration Health"
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Verify it was saved (fetch newest created NOFO from this test)
+        nofo = Nofo.objects.get(title="Minimal NOFO")
+        self.assertEqual(nofo.subagency, "Division of Global Migration Health")
+
+        # Verify GET returns it too (end-to-end check)
+        response2 = self.client.get(f"/api/nofos/{nofo.id}", **self.headers)
+        self.assertEqual(response2.status_code, 200)
+        data2 = response2.json()
+        self.assertEqual(data2["subagency"], "Division of Global Migration Health")
 
     def test_import_nofo_without_sections(self):
         """Test importing a NOFO without sections"""
