@@ -2199,6 +2199,14 @@ del h6,
   background-color: #ffebe9;
 }
 
+/* 
+  When del wraps a table, style all table elements
+  and supercede usa table styles
+*/
+del table th, del table td {
+  background-color: #ffebe9 !important;
+}
+
 ins {
   background-color: #aceebb;
 }
@@ -2211,6 +2219,14 @@ ins h5,
 ins h6,
 .ins {
   background-color: #aceebb;
+}
+
+/* 
+  When ins wraps a table, style all table elements
+  and supercede usa table styles
+*/
+ins table th, ins table td {
+  background-color: #aceebb !important;
 }
 
 .ins-updated {
