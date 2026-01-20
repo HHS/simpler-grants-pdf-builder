@@ -1,0 +1,54 @@
+      <div class="nofo_view">
+        <!-- Render each section with all its subsections -->
+        {% for section in sections %}
+          <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+            <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
+            {% if forloop.counter == 1 %}
+              <div>
+                Opdiv: {{ document.opdiv }}
+                Agency: {{ document.agency }}
+                Subagency: {{ document.subagency }}
+                Subagency 2: {{ document.subagency2 }}
+                Opportunity name: {{ document.name  }}
+                Opportunity number: {{ document.number }}
+                Application deadline: {{ document.application_deadline }}
+                Tagline: {{ document.tagline }}
+                Metadata author: {{ document.author }}
+                Metadata subject: {{ document.subject }}
+                Metadata keywords: {{ document.keywords }}
+              </div>
+            {% endif %}
+
+            <div class="section--content">
+              {% for subsection in section.ordered_subsections %}
+                {# skip "hidden" subsections #}
+                {% if not subsection.hidden %}
+                  {# Callout boxes: wrap entire subsection (heading + body) in a single-cell table #}
+                  {% if subsection.callout_box %}
+                    <table>
+                      <tr>
+                        <td>
+                          {% if subsection.name %}
+                            {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                            {% endwith %}
+                          {% endif %}
+                          {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
+                        </td>
+                      </tr>
+                    </table>
+                  {% else %}
+                    {# Regular subsections: render heading and body normally #}
+                    {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                      {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                    {% endwith %}
+                    <div class="styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
+                      {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </section>
+        {% endfor %}
+      </div>
