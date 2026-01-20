@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from ninja import NinjaAPI
 from ninja.security import HttpBearer
 
@@ -39,7 +40,7 @@ api = NinjaAPI(
 @api.post("/nofos", response={201: SuccessSchema, 400: ErrorSchema})
 def create_nofo(request, payload: NofoSchema):
     try:
-        data = payload.dict()
+        data = payload.dict(exclude_unset=True)
         sections = data.pop("sections", [])
 
         # Raise validation error if sections is empty
@@ -71,24 +72,47 @@ def create_nofo(request, payload: NofoSchema):
         return 400, {"message": str(e)}
 
 
-@api.get("/nofos/{nofo_id}", response={200: NofoSchema, 404: ErrorSchema})
+def strip_null_and_blank_nofo_keys(nofo_dict, *, preserve_keys):
+    """
+    Remove top-level keys whose value is None or "".
+    Leaves preserved keys (like "sections") completely untouched.
+    """
+    cleaned = {}
+    for k, v in nofo_dict.items():
+        if k in preserve_keys:
+            cleaned[k] = v
+            continue
+
+        if v is None or v == "":
+            continue
+
+        cleaned[k] = v
+
+    return cleaned
+
+
+@api.get("/nofos/{nofo_id}", response={200: dict, 404: ErrorSchema})
 def get_nofo(request, nofo_id: uuid.UUID):
     """Export a NOFO by ID"""
     try:
         nofo = Nofo.objects.get(id=nofo_id, archived__isnull=True)
 
-        # Use a dictionary representation of the NOFO to sort
-        nofo_dict = NofoSchema.from_orm(nofo).dict()
+        nofo_dict = NofoSchema.from_orm(nofo).dict(exclude_none=True)
+        # remove blank keys from the dict
+        nofo_dict = strip_null_and_blank_nofo_keys(
+            nofo_dict, preserve_keys=["sections"]
+        )
 
-        # Sort sections
+        # Sort sections and subsections
         nofo_dict["sections"] = sorted(nofo_dict["sections"], key=lambda x: x["order"])
-
-        # Sort subsections
         for section in nofo_dict["sections"]:
             section["subsections"] = sorted(
                 section["subsections"], key=lambda x: x["order"]
             )
 
-        return 200, nofo_dict
+        # Return raw JSON so Ninja doesn't re-apply NofoSchema and re-add keys
+        # the problem with NofoSchema is that it will return keys with blanks and nulls
+        return JsonResponse(nofo_dict, status=200)
+
     except Nofo.DoesNotExist:
         return 404, {"message": "NOFO not found"}

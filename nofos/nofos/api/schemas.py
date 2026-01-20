@@ -48,6 +48,16 @@ class NofoBaseSchema(ModelSchema):
             "cover",
             "icon_style",
             "status",
+            # optional fields start here
+            "subagency",
+            "subagency2",
+            "author",
+            "subject",
+            "keywords",
+            "cover_image",
+            "cover_image_alt_text",
+            "inline_css",
+            "before_you_begin",
         ]
         fields_optional = [
             "subagency",
