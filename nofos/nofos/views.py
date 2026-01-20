@@ -1205,11 +1205,25 @@ class NofoHistoryView(
         """
         event["should_link_to_diff"] = False
 
-        # An event should link to a diff view if:
-        # - It is for a subsection
-        # - The 'body' field was changed in this event
+        # Events for non-subsections do not get diffs
+        if "subsection" not in event["object_type"].lower():
+            return event
+
+        # Events where 'body' was not changed do not get diffs
         changed_fields = event.get("changed_fields", {})
-        if "subsection" in event["object_type"].lower() and "body" in changed_fields:
+        if "body" not in changed_fields:
+            return event
+
+        old_body, new_body = changed_fields.get("body")
+        event_has_diff = has_diff(
+            html_diff(
+                markdownify(old_body),
+                markdownify(new_body),
+            )
+        )
+        # If the event is for 'subsection', the 'body' was changed, and there is a displayable diff,
+        # then there should be a link to the diff view
+        if event_has_diff:
             event["should_link_to_diff"] = True
         return event
 

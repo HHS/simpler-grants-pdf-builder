@@ -118,9 +118,21 @@ def diff_leaf(tag1, tag2, dmp):
 
 def wrap_tag(tag, wrapper):
     if tag.name in BLOCK_WRAPPER_UNSAFE_TAGS:
-        return (
-            f"<{tag.name}><{wrapper}>{tag.decode_contents()}</{wrapper}></{tag.name}>"
-        )
+        # Special handling for <tr> - wrap each child cell individually
+        # because <tr><ins>...</ins></tr> is invalid HTML and may get reformatted by the browser
+        if tag.name == "tr":
+            wrapped_children = []
+            for child in tag.children:
+                if hasattr(child, "name") and child.name in ("td", "th"):
+                    wrapped_children.append(
+                        f"<{child.name}><{wrapper}>{child.decode_contents()}</{wrapper}></{child.name}>"
+                    )
+                else:
+                    # Handle text nodes or other content
+                    wrapped_children.append(str(child))
+            return f"<{tag.name}>{''.join(wrapped_children)}</{tag.name}>"
+        else:
+            return f"<{tag.name}><{wrapper}>{tag.decode_contents()}</{wrapper}></{tag.name}>"
     else:
         return f"<{wrapper}>{str(tag)}</{wrapper}>"
 
