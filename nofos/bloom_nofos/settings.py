@@ -562,6 +562,10 @@ if is_prod:
 DOCRAPTOR_IPS = env.get_value("DOCRAPTOR_IPS", default="")
 DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 
+# Grabzit API keys for DOCX conversion
+GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
+GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
+
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
