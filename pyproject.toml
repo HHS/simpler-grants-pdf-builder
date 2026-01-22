@@ -34,6 +34,7 @@ boto3 = "^1.42.54"
 python-json-logger = "^4.0.0"
 diff-match-patch = "^20241021"
 pre-commit = "^4.5.0"
+grabzit = "^3.5.7.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"

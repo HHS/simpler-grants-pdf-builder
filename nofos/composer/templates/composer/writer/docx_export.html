@@ -1,54 +1,71 @@
-      <div class="nofo_view">
+{% extends 'base.html' %}
+{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs replace_variable_keys_with_values %}
+
+{% block content %}
+     <div id="download_target" class="nofo_view">
         <!-- Render each section with all its subsections -->
         {% for section in sections %}
           <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
             <h2 id="{{ section.html_id }}" >{{ section.name }}</h2>
             {% if forloop.counter == 1 %}
               <div>
-                Opdiv: {{ document.opdiv }}
-                Agency: {{ document.agency }}
-                Subagency: {{ document.subagency }}
-                Subagency 2: {{ document.subagency2 }}
-                Opportunity name: {{ document.name  }}
-                Opportunity number: {{ document.number }}
-                Application deadline: {{ document.application_deadline }}
-                Tagline: {{ document.tagline }}
-                Metadata author: {{ document.author }}
-                Metadata subject: {{ document.subject }}
-                Metadata keywords: {{ document.keywords }}
+                <ul>
+                  <li>Opdiv: {{ document.opdiv }}</li>
+                  <li>Agency: {{ document.agency }}</li>
+                  <li>Subagency: {{ document.subagency }}</li>
+                  <li>Subagency 2: {{ document.subagency2 }}</li>
+                  <li>Opportunity name: {{ document.name  }}</li>
+                  <li>Opportunity number: {{ document.number }}</li>
+                  <li>Application deadline: {{ document.application_deadline }}</li>
+                  <li>Tagline: {{ document.tagline }}</li>
+                  <li>Metadata author: {{ document.author }}</li>
+                  <li>Metadata subject: {{ document.subject }}</li>
+                  <li>Metadata keywords: {{ document.keywords }}</li>
+                </ul>
+
               </div>
             {% endif %}
 
             <div class="section--content">
-              {% for subsection in section.ordered_subsections %}
+               {% for subsection in section.ordered_subsections %}
                 {# skip "hidden" subsections #}
                 {% if not subsection.hidden %}
-                  {# Callout boxes: wrap entire subsection (heading + body) in a single-cell table #}
+                <div class="margin-top-4 margin-bottom-2">
+                  {% if subsection.instructions %}
+                    <div class="bg-primary-lighter padding-2">
+                      {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                    </div>
+                  {% endif %}
                   {% if subsection.callout_box %}
-                    <table>
-                      <tr>
-                        <td>
-                          {% if subsection.name %}
-                            {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
-                            {% endwith %}
-                          {% endif %}
-                          {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
-                        </td>
-                      </tr>
-                    </table>
+                  <table>
+                    <tr>
+                      <td>
+                        <div class="{% if subsection.callout_box%}border margin-top-1 padding-x-2 padding-bottom-2 {%if not subsection.name %} padding-top-2{% endif %} {% endif %}">
+                          {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                            {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                          {% endwith %}
+                          <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2{% endif %} styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
+                            {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
                   {% else %}
-                    {# Regular subsections: render heading and body normally #}
+                  <div class="{% if subsection.callout_box%}border margin-top-1 padding-x-2 padding-bottom-2 {%if not subsection.name %} padding-top-2{% endif %} {% endif %}">
                     {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                       {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
                     {% endwith %}
-                    <div class="styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
+                    <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2{% endif %} styled-subsection-body{% if subsection.edit_mode == 'variables' %}--variables{% elif subsection.edit_mode == 'full' %}--full{% endif %}">
                       {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|replace_variable_keys_with_values:subsection.get_variables }}
                     </div>
+                  </div>
                   {% endif %}
+                </div>
                 {% endif %}
               {% endfor %}
             </div>
           </section>
         {% endfor %}
       </div>
+{% endblock %}

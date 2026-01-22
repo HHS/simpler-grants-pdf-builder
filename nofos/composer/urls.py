@@ -138,4 +138,9 @@ urlpatterns = [
         views.WriterInstanceHistoryCompareView.as_view(),
         name="writer_instance_history_compare",
     ),
+    path(
+        "writer/<uuid:pk>/export",
+        views.WriterInstanceExportView.as_view(),
+        name="writer_instance_export",
+    ),
 ]
