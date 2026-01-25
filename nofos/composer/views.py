@@ -20,6 +20,7 @@ from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseNotFound,
+    HttpResponseServerError,
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -1782,8 +1783,15 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
         grabzit = GrabzItClient.GrabzItClient(
             settings.GRABZIT_APPLICATION_KEY, settings.GRABZIT_APPLICATION_SECRET
         )
-        grabzit.SetCookie("sessionid", session_value)
-        grabzit.SetCookie("csrftoken", csrf_value)
+
+        domain = request.get_host().split(":")[0]  # Remove port if present
+        set_session_cookie = grabzit.SetCookie("sessionid", domain, session_value)
+        set_csrf_cookie = grabzit.SetCookie("csrftoken", domain, csrf_value)
+
+        if not set_session_cookie or not set_csrf_cookie:
+            return HttpResponseServerError(
+                "Failed to set cookies for Grabzit conversion."
+            )
 
         export_url = request.build_absolute_uri(
             reverse("composer:writer_instance_export", args=[document.pk])
