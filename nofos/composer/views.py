@@ -1,6 +1,7 @@
 import json
 from typing import Dict
 
+from bloom_nofos import settings
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
 from composer.utils import do_replace_variable_keys_with_values
@@ -15,12 +16,14 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import (
     Http404,
+    HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseNotFound,
+    HttpResponseServerError,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
@@ -34,7 +37,9 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from GrabzIt import GrabzItClient, GrabzItDOCXOptions
 from martor.utils import markdownify
+from requests import request
 
 from nofos.audits import get_audit_event_by_id, safe_get_changed_fields
 from nofos.mixins import (
@@ -1762,7 +1767,51 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
             )
             return redirect(self.exit_url)
 
+        if action == "download":
+            return self._handle_download_request(document, request)
+
         return HttpResponseBadRequest("Unknown action.")
+
+    def _handle_download_request(self, document, request):
+        """
+        Handle the download action for a ContentGuideInstance.
+        Makes a call to the Grabzit conversion API to convert the HTML to a DOCX file.
+        """
+        session_value = request.COOKIES["sessionid"]
+        csrf_value = request.COOKIES["csrftoken"]
+
+        grabzit = GrabzItClient.GrabzItClient(
+            settings.GRABZIT_APPLICATION_KEY, settings.GRABZIT_APPLICATION_SECRET
+        )
+
+        domain = request.get_host().split(":")[0]  # Remove port if present
+        set_session_cookie = grabzit.SetCookie("sessionid", domain, session_value)
+        set_csrf_cookie = grabzit.SetCookie("csrftoken", domain, csrf_value)
+
+        if not set_session_cookie or not set_csrf_cookie:
+            return HttpResponseServerError(
+                "Failed to set cookies for Grabzit conversion."
+            )
+
+        export_url = request.build_absolute_uri(
+            reverse("composer:writer_instance_export", args=[document.pk])
+        )
+        options = GrabzItDOCXOptions.GrabzItDOCXOptions()
+        options.targetElement = "#download_target"
+        grabzit.URLToDOCX(export_url, options)
+
+        filePath = f"/tmp/{document.pk}.docx"
+        grabzit.SaveTo(filePath)
+
+        with open(filePath, "rb") as docx_file:
+            response = HttpResponse(
+                docx_file.read(),
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = (
+                f'attachment; filename="{document.short_name or document.title}.docx"'
+            )
+            return response
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -1854,3 +1903,33 @@ class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
             return {key: VariableInfo.from_dict(val) for key, val in data.items()}
         except (json.JSONDecodeError, KeyError, TypeError):
             return {}
+
+
+class WriterInstanceExportView(GroupAccessContentGuideMixin, DetailView):
+    """
+    The template view to use for conversion to docx via Grabzit conversion API.
+    """
+
+    model = ContentGuideInstance
+    template_name = "composer/writer/docx_export.html"
+    context_object_name = "document"
+
+    def get_ordered_sections(self):
+        # Make sure sections are ordered
+        sections = self.object.sections.prefetch_related("subsections").order_by(
+            "order", "id"
+        )
+        # Make sure subsections are ordered
+        for section in sections:
+            section.ordered_subsections = sorted(
+                section.subsections.all(),
+                key=lambda subsection: (getattr(subsection, "order", 0), subsection.id),
+            )
+        return sections
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # attached sections and subsections for rendering
+        context["sections"] = self.get_ordered_sections()
+
+        return context
