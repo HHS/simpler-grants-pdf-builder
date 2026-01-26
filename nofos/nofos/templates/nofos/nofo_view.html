@@ -84,32 +84,32 @@
         {% endif %}
         <div class="nofo--cover-page--header--logo--subheading">
           {% if nofo.cover == 'nofo--cover-page--text' %}
-            <p>{{ nofo.agency }}</p>
-            <p>{% if nofo.subagency %}{{ nofo.subagency }}{% endif %}</p>
+            <p class="nofo--cover-page--header--agency">{{ nofo.agency }}</p>
+            {% if nofo.subagency %}<p class="nofo--cover-page--header--subagency">{{ nofo.subagency }}</p>{% endif %}
           {% else %}
             {% if nofo.number == 'RFA-CK-26-036' or nofo.number == 'RFA-CK-26-035' %}
-              <p>{{ nofo.agency }}</p>
+              <p class="nofo--cover-page--header--agency">{{ nofo.agency }}</p>
               {% if nofo.subagency %}
-                <p>{{ nofo.subagency }}</p>
+                <p class="nofo--cover-page--header--subagency">{{ nofo.subagency }}</p>
               {% endif %}
             {% else %}
-              <p>{% if nofo.subagency and nofo_opdiv != 'hrsa' %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
+              <p class="nofo--cover-page--header--agency">{% if nofo.subagency and nofo_opdiv != 'hrsa' %}{{ nofo.subagency }}{% else %}{{ nofo.agency }}{% endif %}</p>
             {% endif %}
           {% endif %}
         </div>
       </div>
       <div class="nofo--cover-page--header--intro">
-        <span>Notice of Funding Opportunity</span>
+        <span class="nofo--cover-page--header--nofo">Notice of Funding Opportunity</span>
         <br>
         {% if "|" in nofo.application_deadline %}
-          <span>Applications are due by 11:59 p.m. ET</span>
-          <ul class="usa-nav__submenu-list">
+          <span class="nofo--cover-page--header--app-date-midnight">Applications are due by 11:59 p.m. ET</span>
+          <ul class="usa-nav__submenu-list  nofo--cover-page--header--app-date-list">
           {% for application_deadline in nofo.application_deadline|split_char_to_list %}
             <li>{{ application_deadline }}</li>
           {% endfor %}
           </ul>
         {% else %}
-          <span>Application due <span>{{ nofo.application_deadline }}</span></span>
+          <span class="nofo--cover-page--header--app-date-intro">Application due <span class="nofo--cover-page--header--app-date">{{ nofo.application_deadline }}</span></span>
           <br>
         {% endif %}
         {% if nofo.modifications %}
@@ -136,7 +136,7 @@
       <div class="nofo--cover-page--title--block">
         <h1 class="{{ nofo.title|add_classes_to_nofo_title }}">{{ nofo.title }}</h1>
         <div class="nofo--cover-page--title--subheading">
-          <span>Opportunity number: {{ nofo.number }}</span>
+          <span class="nofo--cover-page--title--subheading-intro">Opportunity number: <span class="nofo--cover-page--title--subheading-text">{{ nofo.number }}</span></span>
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
@@ -156,8 +156,8 @@
         {% endif%}
       </div>
       <div class="nofo--cover-page--footer--subheading">
-        <span>Notice of Funding Opportunity</span>
-        <span>Application due {{ nofo.application_deadline }}</span>
+        <span class="nofo--cover-page--footer--nofo">Notice of Funding Opportunity</span>
+        <span class="nofo--cover-page--footer--app-date-intro">Application due <span class="nofo--cover-page--footer--app-date">{{ nofo.application_deadline }}</span></span>
       </div>
       <div class="nofo--cover-page--footer--image">
         {% spaceless%}
