@@ -1,24 +1,15 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs replace_variable_keys_with_values %}
 
-<html>
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
 
-    <link href="{% static 'uswds/uswds.css' %}" rel="stylesheet">
-    <link href="{% static 'shared.css' %}" rel="stylesheet">
-    <link href="{% static 'theme-base.css' %}" type="text/css" media="all" rel="stylesheet">  <link href="{% static 'styles.css' %}" rel="stylesheet">
-    <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
-    <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
-    <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
-    <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
-  </head>
-
-  <body>
-    <main>
-     <div class="nofo_view">
+{% block content %}
+     <div id="download_target" class="nofo_view">
         <!-- Render each section with all its subsections -->
         {% for section in sections %}
           <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
@@ -84,6 +75,4 @@
           </section>
         {% endfor %}
       </div>
-    </main>
-  </body>
-</html>
+{% endblock %}
