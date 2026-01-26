@@ -1796,7 +1796,10 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
         export_url = request.build_absolute_uri(
             reverse("composer:writer_instance_export", args=[document.pk])
         )
-        grabzit.URLToDOCX(export_url)
+        options = GrabzItDOCXOptions.GrabzItDOCXOptions()
+        options.targetElement = "#download_target"
+        grabzit.URLToDOCX(export_url, options)
+
         filePath = f"/tmp/{document.pk}.docx"
         grabzit.SaveTo(filePath)
 
