@@ -4358,6 +4358,43 @@ class UnwrapEmptyElementsTests(TestCase):
             str(soup), "<div> <strong>Text</strong><span>More text</span> </div>"
         )
 
+    def test_unwrap_strong_wrapping_image(self):
+        html = '<p><strong><img alt="example" src="img.png"></strong></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        self.assertEqual(
+            str(soup),
+            '<p><img alt="example" src="img.png"/></p>',
+        )
+
+    def test_unwrap_strong_em_wrapping_image(self):
+        html = '<p><strong><em><img alt="example" src="img.png"></em></strong></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        self.assertEqual(
+            str(soup),
+            '<p><img alt="example" src="img.png"/></p>',
+        )
+
+    def test_not_unwrap_em_with_image_and_text(self):
+        html = '<p><em><img alt="example" src="img.png"> Caption</em></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        # same as html but with a backslash "/" in img tag
+        self.assertEqual(
+            str(soup),
+            '<p><em><img alt="example" src="img.png"/> Caption</em></p>',
+        )
+
+    def test_unwrap_span_wrapping_image(self):
+        html = '<p><span><img alt="example" src="img.png"></span></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        unwrap_empty_elements(soup)
+        self.assertEqual(
+            str(soup),
+            '<p><img alt="example" src="img.png"/></p>',
+        )
+
 
 class TestRemoveGoogleTrackingInfoFromLinks(TestCase):
     def test_remove_tracking_from_google_links(self):

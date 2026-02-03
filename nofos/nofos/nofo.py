@@ -1830,6 +1830,35 @@ def combine_consecutive_links(soup):
                 link.next_sibling.replace_with("")
 
 
+def unwrap_empty_elements(soup):
+    """
+    This function mutates the soup!
+
+    Unwraps empty or image-only span, strong, sup, a, and em tags from the BeautifulSoup `soup`.
+    """
+    elements = soup.find_all(["em", "span", "strong", "sup"])
+
+    for el in elements:
+        # Case 1: no text content
+        has_text = bool(el.get_text(strip=True))
+
+        # Case 2: contains images
+        has_img = el.find("img") is not None
+
+        # Case 3: any non-whitespace, non-img children?
+        meaningful_children = [
+            child
+            for child in el.contents
+            if getattr(child, "name", None)
+            and child.name != "img"
+            and child.get_text(strip=True)
+        ]
+
+        # Only formatting wrappers with no meaningful text
+        if not has_text and (has_img or not meaningful_children):
+            el.unwrap()
+
+
 def decompose_empty_tags(soup):
     """
     This function mutates the soup!
@@ -1859,19 +1888,6 @@ def decompose_empty_tags(soup):
     elements = soup.find_all(["li", "p"])
     for element in elements:
         _decompose_empty_elements(element)
-
-
-def unwrap_empty_elements(soup):
-    """
-    This function mutates the soup!
-
-    Unwraps empty span, strong, sup, a, and em tags from the BeautifulSoup `soup`.
-    """
-    elements = soup.find_all(
-        ["em", "span", "strong", "sup"], string=lambda t: not t or not t.strip()
-    )
-    for el in elements:
-        el.unwrap()
 
 
 def clean_table_cells(soup):
