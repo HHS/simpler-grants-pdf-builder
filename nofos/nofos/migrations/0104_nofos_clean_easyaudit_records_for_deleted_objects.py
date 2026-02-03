@@ -7,51 +7,39 @@ def clean_easyaudit_deleted_nofos(apps, schema_editor):
 
     if db_vendor == "postgresql":
         with connection.cursor() as cursor:
-            cursor.execute(
-                """
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.nofo"%'
                 AND object_id::bigint NOT IN (SELECT id FROM nofos_nofo);
-                """
-            )
-            cursor.execute(
-                """
+                """)
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.section"%'
                 AND object_id::bigint NOT IN (SELECT id FROM nofos_section);
-                """
-            )
-            cursor.execute(
-                """
+                """)
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.subsection"%'
                 AND object_id::bigint NOT IN (SELECT id FROM nofos_subsection);
-                """
-            )
+                """)
 
     elif db_vendor == "sqlite":
         with connection.cursor() as cursor:
-            cursor.execute(
-                """
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.nofo"%'
                 AND object_id NOT IN (SELECT CAST(id AS TEXT) FROM nofos_nofo);
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.section"%'
                 AND object_id NOT IN (SELECT CAST(id AS TEXT) FROM nofos_section);
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 DELETE FROM easyaudit_crudevent 
                 WHERE object_json_repr LIKE '%"model": "nofos.subsection"%'
                 AND object_id NOT IN (SELECT CAST(id AS TEXT) FROM nofos_subsection);
-            """
-            )
+            """)
 
     else:
         raise RuntimeError("Unsupported database type: " + db_vendor)

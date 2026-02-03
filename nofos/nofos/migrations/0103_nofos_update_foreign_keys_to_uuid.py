@@ -9,34 +9,28 @@ def update_foreign_keys_to_uuid_nofos(apps, schema_editor):
     if db_vendor == "postgresql":
         with connection.cursor() as cursor:
             # NOFO Successor
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE nofos_nofo AS n1
                 SET successor = n2.uuid::text
                 FROM nofos_nofo n2
                 WHERE n1.successor IS NOT NULL AND n1.successor::text = n2.id::text;
-                """
-            )
+                """)
 
             # Section NOFO Foreign Key
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE nofos_section AS s
                 SET nofo = n.uuid::text
                 FROM nofos_nofo n
                 WHERE s.nofo::text = n.id::text;
-                """
-            )
+                """)
 
             # Subsection Section Foreign Key
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE nofos_subsection AS ss
                 SET section = s.uuid::text
                 FROM nofos_section s
                 WHERE ss.section::text = s.id::text;
-                """
-            )
+                """)
 
     elif db_vendor == "sqlite":
         with connection.cursor() as cursor:
@@ -44,8 +38,7 @@ def update_foreign_keys_to_uuid_nofos(apps, schema_editor):
             cursor.execute("PRAGMA foreign_keys=OFF;")
 
             # Split the SQLite queries into separate commands
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE nofos_nofo 
                 SET successor = (
                     SELECT n2.uuid 
@@ -53,20 +46,15 @@ def update_foreign_keys_to_uuid_nofos(apps, schema_editor):
                     WHERE n2.id = nofos_nofo.successor
                 )
                 WHERE successor IS NOT NULL;
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 UPDATE nofos_section 
                 SET nofo = (SELECT uuid FROM nofos_nofo WHERE id = nofo);
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 UPDATE nofos_subsection 
                 SET section = (SELECT uuid FROM nofos_section WHERE id = section);
-            """
-            )
+            """)
 
             # Re-enable foreign key checks
             cursor.execute("PRAGMA foreign_keys=ON;")

@@ -15,15 +15,15 @@ repos:
 
   # Black code formatter
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 26.1.0
     hooks:
       - id: black
         language_version: python3
-        args: ['--line-length=88']
+        args: ["--line-length=88"]
 
   # isort import sorter
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
-        args: ['--profile', 'black', '--line-length=88']
+        args: ["--profile", "black", "--line-length=88"]

@@ -21,36 +21,30 @@ def promote_uuid_to_id_nofos(apps, schema_editor):
             cursor.execute("UPDATE nofos_subsection SET temp_id = uuid;")
 
             # Step 2: Dynamically fetch and drop primary key constraints
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT constraint_name 
                 FROM information_schema.table_constraints 
                 WHERE table_name='nofos_nofo' 
                 AND constraint_type='PRIMARY KEY';
-                """
-            )
+                """)
             nofo_pkey = cursor.fetchone()[0]
             cursor.execute(f"ALTER TABLE nofos_nofo DROP CONSTRAINT {nofo_pkey};")
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT constraint_name 
                 FROM information_schema.table_constraints 
                 WHERE table_name='nofos_section' 
                 AND constraint_type='PRIMARY KEY';
-                """
-            )
+                """)
             section_pkey = cursor.fetchone()[0]
             cursor.execute(f"ALTER TABLE nofos_section DROP CONSTRAINT {section_pkey};")
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT constraint_name 
                 FROM information_schema.table_constraints 
                 WHERE table_name='nofos_subsection' 
                 AND constraint_type='PRIMARY KEY';
-                """
-            )
+                """)
             subsection_pkey = cursor.fetchone()[0]
             cursor.execute(
                 f"ALTER TABLE nofos_subsection DROP CONSTRAINT {subsection_pkey};"
