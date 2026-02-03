@@ -36,7 +36,7 @@ diff-match-patch = "^20241021"
 pre-commit = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^25.12.0"
+black = "^26.1.0"
 freezegun = "^1.5.5"
 isort = "^7.0.0"
 

@@ -37,8 +37,7 @@ def update_easyaudit_nofos_to_uuid(apps, schema_editor):
     elif db_vendor == "sqlite":
         with connection.cursor() as cursor:
             # NOFOs
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE easyaudit_crudevent
                 SET object_id = (
                     SELECT
@@ -61,12 +60,10 @@ def update_easyaudit_nofos_to_uuid(apps, schema_editor):
                     || '"'
                 )
                 WHERE object_json_repr LIKE '%"model": "nofos.nofo"%';
-                """
-            )
+                """)
 
             # Sections
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE easyaudit_crudevent
                 SET object_id = (
                     SELECT
@@ -89,12 +86,10 @@ def update_easyaudit_nofos_to_uuid(apps, schema_editor):
                     || '"'
                 )
                 WHERE object_json_repr LIKE '%"model": "nofos.section"%';
-                """
-            )
+                """)
 
             # Subsections
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE easyaudit_crudevent
                 SET object_id = (
                     SELECT
@@ -117,8 +112,7 @@ def update_easyaudit_nofos_to_uuid(apps, schema_editor):
                     || '"'
                 )
                 WHERE object_json_repr LIKE '%"model": "nofos.subsection"%';
-                """
-            )
+                """)
 
     else:
         raise RuntimeError("Unsupported database type: " + db_vendor)

@@ -8,32 +8,26 @@ class Migration(migrations.Migration):
 
     operations = [
         # 1) Remove admin log rows that reference 'guides' content types
-        migrations.RunSQL(
-            """
+        migrations.RunSQL("""
             DELETE FROM django_admin_log
             WHERE content_type_id IN (
               SELECT id FROM django_content_type WHERE app_label = 'guides'
             );
-        """
-        ),
+        """),
         # 2) Remove EasyAudit rows that reference 'guides' content types
-        migrations.RunSQL(
-            """
+        migrations.RunSQL("""
             DELETE FROM easyaudit_crudevent
             WHERE content_type_id IN (
               SELECT id FROM django_content_type WHERE app_label = 'guides'
             );
-        """
-        ),
+        """),
         # 3) Remove auth permissions tied to 'guides' content types
-        migrations.RunSQL(
-            """
+        migrations.RunSQL("""
             DELETE FROM auth_permission
             WHERE content_type_id IN (
               SELECT id FROM django_content_type WHERE app_label = 'guides'
             );
-        """
-        ),
+        """),
         # 4) Drop legacy tables (child → parent). No CASCADE for SQLite compatibility.
         migrations.RunSQL("DROP TABLE IF EXISTS guides_contentguidesubsection;"),
         migrations.RunSQL("DROP TABLE IF EXISTS guides_contentguidesection;"),
