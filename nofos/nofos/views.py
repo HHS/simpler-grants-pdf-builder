@@ -286,6 +286,23 @@ class NofosDetailView(DetailView):
         return context
 
 
+class NOFOsExportView(DetailView):
+    model = Nofo
+    template_name = "nofos/nofo_export.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+        # Most non-authed users are filtered out by middleware.py
+        if request.user.is_authenticated:
+            # do not let users from other groups print this nofo
+            if not has_group_permission_func(request.user, nofo):
+                raise PermissionDenied("You don’t have permission to view this NOFO.")
+
+        # Continue with the normal flow for anonymous or authorized users
+        return super().dispatch(request, *args, **kwargs)
+
+
 class NofosEditView(GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
