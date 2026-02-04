@@ -228,18 +228,21 @@
       <h2 id="section--before-you-begin--heading">Before you begin</h2>
       <div class="before-you-begin--content">
 
-        {% if nofo.before_you_begin == 'sole_source' %}
-          <p class="section--before-you-begin--psuedo-header">Make sure you are an approved applicant for this funding opportunity.</p>
-        {% else %}
+        {% if nofo.before_you_begin == 'full' %}
           <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.</p>
-          <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
-          <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
-          {% if step_2_section %}
-            <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
-          {% else %}
-            <p class="highlight-strong">STEP 2 SECTION MISSING</p>
-          {% endif %}
+        {% else %}
+          <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> registration now. If you are already registered, make sure your registration is active and up-to-date.</p>
+        {% endif %}
 
+        <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
+        <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
+        {% if step_2_section %}
+          <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+        {% else %}
+          <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+        {% endif %}
+
+        {% if nofo.before_you_begin == 'full' %}
           <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
           <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
           {% if step_2_section %}
