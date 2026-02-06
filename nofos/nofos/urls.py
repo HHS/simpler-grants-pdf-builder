@@ -24,6 +24,16 @@ urlpatterns = [
         name="nofo_history_modifications",
     ),
     path(
+        "<uuid:pk>/duplicate",
+        views.NofoDuplicateView.as_view(),
+        name="nofo_duplicate",
+    ),
+    path(
+        "<uuid:pk>/duplicate/title",
+        views.NofoDuplicateTitleView.as_view(),
+        name="nofo_duplicate_title",
+    ),
+    path(
         "<uuid:pk>/import",
         views.NofosImportOverwriteView.as_view(),
         name="nofo_import_overwrite",

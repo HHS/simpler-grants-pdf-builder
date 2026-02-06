@@ -138,7 +138,9 @@ def duplicate_nofo(original_nofo, is_successor=False):
         else:
             # else, we are just duplicating it, no familial relationship is implied
             new_nofo.title += " (copy)"
-            new_nofo.short_name += " (copy)"
+            if new_nofo.short_name:
+                # only add "copy" if the original has a short_name
+                new_nofo.short_name += " (copy)"
             new_nofo.status = "draft"
 
         new_nofo.save()
@@ -706,6 +708,19 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
         )
 
 
+class NofoDuplicateView(
+    PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, DetailView
+):
+    model = Nofo
+
+    def get(self, request, pk):
+        original = get_object_or_404(Nofo, pk=pk)
+
+        new_nofo = duplicate_nofo(original)
+
+        return redirect("nofos:nofo_duplicate_title", pk=new_nofo.pk)
+
+
 class BaseNofoEditView(
     PreventIfArchivedOrCancelledMixin, GroupAccessObjectMixin, UpdateView
 ):
@@ -717,27 +732,73 @@ class BaseNofoEditView(
         return self.object.get_absolute_url()
 
 
-class NofoImportTitleView(BaseNofoEditView):
+class BaseNofoImportTitleView(BaseNofoEditView):
+    """
+    Base view for setting or updating a NOFO title and short name.
+    Child classes decide what happens next.
+    """
+
+    success_message = None  # override in subclasses
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Name your NOFO"
+        return context
+
+    def save_title(self, form):
+        nofo = self.object
+        nofo.title = form.cleaned_data["title"]
+        nofo.short_name = form.cleaned_data.get("short_name")
+        nofo.save()
+        return nofo
+
+    def form_valid(self, form):
+        nofo = self.save_title(form)
+
+        if self.success_message:
+            messages.success(
+                self.request,
+                self.success_message.format(
+                    nofo_id=nofo.id, nofo_name=nofo.short_name or nofo.title
+                ),
+            )
+
+        return self.handle_success(nofo)
+
+    def handle_success(self, nofo):
+        """
+        Subclasses must implement redirect behavior.
+        """
+        raise NotImplementedError
+
+
+class NofoImportTitleView(BaseNofoImportTitleView):
     form_class = NofoImportTitleForm
     template_name = "nofos/nofo_import_title.html"
 
-    def form_valid(self, form):
-        nofo = self.object
-        nofo.title = form.cleaned_data["title"]
-        nofo.short_name = form.cleaned_data["short_name"]
-        nofo.save()
+    success_message = "View NOFO: <a href='/nofos/{nofo_id}/edit'>{nofo_name}</a>"
 
-        messages.add_message(
-            self.request,
-            messages.SUCCESS,
-            "View NOFO: <a href='/nofos/{}/edit'>{}</a>".format(
-                nofo.id, nofo.short_name or nofo.title
-            ),
-        )
-
+    def handle_success(self, nofo):
         if nofo.number.startswith("NOFO #"):
             return redirect("nofos:nofo_import_number", pk=nofo.id)
 
+        return redirect("nofos:nofo_index")
+
+
+class NofoDuplicateTitleView(BaseNofoImportTitleView):
+    form_class = NofoImportTitleForm
+    template_name = "nofos/nofo_import_title.html"
+
+    success_message = (
+        "View duplicated NOFO: <a href='/nofos/{nofo_id}/edit'>{nofo_name}</a>"
+    )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Name your duplicated NOFO"
+        return context
+
+    def handle_success(self, nofo):
         return redirect("nofos:nofo_index")
 
 
