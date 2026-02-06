@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Name your NOFO
+  {{ page_title }}
 {% endblock %}
 
 {% block content %}
   {% url 'nofos:nofo_index' as back_href %}
-  {% include "includes/page_heading.html" with title="Name your NOFO" back_text="All NOFOs" back_href=back_href only %}
+  {% include "includes/page_heading.html" with title=page_title back_text="All NOFOs" back_href=back_href only %}
 
   <form id="nofo-name--form" method="post">
     {% csrf_token %}

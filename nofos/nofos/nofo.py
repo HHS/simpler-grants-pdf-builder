@@ -1188,6 +1188,13 @@ def get_nofo_action_links(nofo):
             "external": True,
         }
 
+    def _link_duplicate(nofo):
+        return {
+            "key": "duplicate",
+            "label": "Duplicate NOFO",
+            "href": reverse_lazy("nofos:nofo_duplicate", args=[nofo.pk]),
+        }
+
     def _link_reimport(nofo):
         return {
             "key": "reimport",
@@ -1212,21 +1219,24 @@ def get_nofo_action_links(nofo):
 
     # Status → allowed actions
     _STATUS_ACTIONS = {
-        "draft": ("find_replace", "compare", "reimport", "delete"),
-        "active": ("find_replace", "compare", "reimport"),
-        "ready-for-qa": ("find_replace", "compare", "reimport"),
+        "draft": ("find_replace", "compare", "duplicate", "reimport", "delete"),
+        "active": ("find_replace", "compare", "duplicate", "reimport"),
+        "ready-for-qa": ("find_replace", "compare", "duplicate", "reimport"),
         "review": (
             "find_replace",
             "compare",
+            "duplicate",
         ),
         "doge": (
             "find_replace",
             "compare",
+            "duplicate",
         ),  # Deputy Secretary review
         "published": (),  # no actions ("modifications" is not part of this)
         "paused": (
             "find_replace",
             "compare",
+            "duplicate",
         ),
         "cancelled": (),
     }
@@ -1238,6 +1248,7 @@ def get_nofo_action_links(nofo):
     link_builders = {
         "find_replace": lambda: _link_find_replace(nofo),
         "compare": lambda: _link_compare(nofo),
+        "duplicate": lambda: _link_duplicate(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "delete": lambda: _link_delete(nofo),
     }
