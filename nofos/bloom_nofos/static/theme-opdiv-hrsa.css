@@ -9,9 +9,10 @@
 
 @font-face {
   font-family: "Helvetica Condensed";
-  src: url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff2")
+  src:
+    url("/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff2")
       format("woff2"),
-    url("https://bn-ptzepiewjq-uc.a.run.app/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff")
+    url("/static/fonts/helvetica-condensed/helvetica_lt_condensed_bold-webfont.woff")
       format("woff");
   font-weight: normal;
   font-style: normal;
@@ -21,14 +22,24 @@
 
 @page {
   @bottom-left {
-    font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+    font-family:
+      "Helvetica Condensed",
+      Helvetica Neue,
+      Helvetica,
+      Roboto,
+      Arial,
       sans-serif;
     font-weight: 700;
     color: var(--color--hrsa-red);
   }
 
   @bottom-right {
-    font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+    font-family:
+      "Helvetica Condensed",
+      Helvetica Neue,
+      Helvetica,
+      Roboto,
+      Arial,
       sans-serif;
     font-weight: 700;
     color: var(--color--hrsa-red);
@@ -40,7 +51,12 @@
 /* Running header */
 
 .header-nav {
-  font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial;
+  font-family:
+    "Helvetica Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial;
 }
 
 .header-nav.header-nav--running-header li a {
@@ -60,34 +76,69 @@
 /* Headings */
 
 h1 {
-  font-family: "Helvetica Condensed", Helvetica Neue, Helvetica, Roboto, Arial,
+  font-family:
+    "Helvetica Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
     sans-serif;
   letter-spacing: -0.5px;
 }
 
 h2 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
+  font-family:
+    "Open Sans",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 h3 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
+  font-family:
+    "Open Sans",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 h4 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
+  font-family:
+    "Open Sans",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 h5 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
+  font-family:
+    "Open Sans",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 h6 {
-  font-family: "Open Sans", Source Sans Pro Web, Helvetica Neue, Helvetica,
-    Roboto, Arial, sans-serif;
+  font-family:
+    "Open Sans",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 /* Cover page */

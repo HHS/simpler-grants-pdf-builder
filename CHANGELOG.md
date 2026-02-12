@@ -16,6 +16,7 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Fix for no longer removing "bolded" images
+- Use relative urls for fonts and image srcs
 
 ## [3.25.0] - 2026-01-20
 
