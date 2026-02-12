@@ -20,7 +20,7 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3
   chown -R appuser:appuser /app
 
 # Upgrade system pip and virtualenv
-RUN python -m pip install --no-cache-dir --upgrade "pip>=25.3" "virtualenv>=20.29.1"
+RUN python -m pip install --no-cache-dir --upgrade pip
 
 # Make "db-migrate" a shell command in the container
 RUN echo '#!/bin/sh\nmake migrate' > /usr/local/bin/db-migrate && \
@@ -35,7 +35,7 @@ RUN poetry config virtualenvs.in-project true && \
   rm -rf ~/.cache/pypoetry/{cache,artifacts}
 
 # Upgrade venv pip
-RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade "pip>=25.3"
+RUN /app/.venv/bin/python -m pip install --no-cache-dir --upgrade pip
 
 # Copy app and collect static files
 COPY --chown=appuser:appuser . .
