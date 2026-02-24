@@ -2135,9 +2135,10 @@ def clean_heading_tags(soup):
     - Unwrap span tags in the heading
     - Collapse multiple spaces into one
     - Trim leading and trailing spaces
+    - Decomposes headings that are empty after cleanup
     """
     # Find all headings (h1, h2, ..., h6)
-    headings = soup.find_all(re.compile("^h[1-6]$"))
+    headings = soup.find_all(re.compile(r"^h[1-6]$"))
 
     for heading in headings:
         # Unwrap spans
@@ -2155,6 +2156,10 @@ def clean_heading_tags(soup):
 
         # Replace the original heading text with the cleaned text
         heading.string = text
+
+        # If heading is empty after cleanup, remove it
+        if not text:
+            heading.decompose()
 
 
 def _change_existing_anchor_links_to_new_id(soup, element, new_id):

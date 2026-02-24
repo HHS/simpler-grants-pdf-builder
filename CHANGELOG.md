@@ -15,6 +15,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Decompose empty headings during import
 - Fix for no longer removing "bolded" images
 - Use relative urls for fonts and image srcs
 
