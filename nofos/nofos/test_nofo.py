@@ -4942,11 +4942,38 @@ class CleanHeadingsTestCase(TestCase):
         clean_heading_tags(soup)
         self.assertEqual(soup.find("h1").get_text(), "Step 1: Review the Opportunity")
 
-    def test_clean_heading_tags_with_empty_heading(self):
+    def test_clean_heading_tags_decomposes_empty_heading(self):
         html = "<h1> </h1>"
         soup = BeautifulSoup(html, "html.parser")
         clean_heading_tags(soup)
-        self.assertEqual(soup.find("h1").get_text(), "")
+
+        # It should be removed entirely
+        self.assertIsNone(soup.find("h1"))
+
+    def test_clean_heading_tags_decomposes_deeply_nested_empty_heading(self):
+        html = """
+        <table>
+          <tbody>
+            <tr>
+              <td>
+                <p>Before</p>
+                <h2> </h2>
+                <p>for HIV, TB and associated pathogens</p>
+                <p>After</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        clean_heading_tags(soup)
+
+        # Even though it's inside a table cell, it should be removed
+        self.assertIsNone(soup.find("h2"))
+
+        # Optional sanity checks: surrounding content still exists
+        self.assertIn("Before", soup.get_text())
+        self.assertIn("After", soup.get_text())
 
     def test_clean_heading_tags_with_no_change_needed(self):
         html = "<h1>Perfect Heading</h1>"
