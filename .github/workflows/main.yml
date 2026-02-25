@@ -16,24 +16,3 @@ jobs:
     with:
       branch: ${{ github.ref_name }}
     secrets: inherit
-
-  migrate:
-    if: github.event_name == 'push' && github.ref_name == 'main'
-    needs: ci
-    uses: ./.github/workflows/django_gcp_migrate.yml
-    secrets:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      GCP_CLOUD_CONNECTION_NAME: ${{ secrets.GCP_CLOUD_CONNECTION_NAME }}
-      GCP_IAM_SA_CREDENTIALS: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
-
-  deploy:
-    if: github.event_name == 'push' && github.ref_name == 'main'
-    needs: migrate
-    uses: ./.github/workflows/django_gcp_deploy.yml # Call the Deploy workflow
-    with:
-      github_sha: ${{ github.sha }}
-    secrets:
-      GCP_AR_REPO_NAME: ${{ secrets.GCP_AR_REPO_NAME }}
-      GCP_IAM_SA_CREDENTIALS: ${{ secrets.GCP_IAM_SA_CREDENTIALS }}
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GCP_SERVICE_NAME: ${{ secrets.GCP_SERVICE_NAME }}
