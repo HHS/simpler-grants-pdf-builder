@@ -1,0 +1,231 @@
+/* Page rules */
+
+/* Regular CSS */
+
+/* Headings */
+
+h2 {
+  color: var(--color--nih-blue);
+}
+
+h3 {
+  color: var(--color--nih-blue);
+}
+
+/* Cover page */
+
+.nofo--cover-page--header {
+  background-color: var(--color--pale-blue);
+}
+
+.nofo--cover-page--header--logo--subheading,
+.nofo--cover-page--header--intro {
+  color: var(--color--nih-blue);
+}
+
+.nofo--cover-page--title,
+.nofo--cover-page--footer {
+  color: var(--color--nih-blue);
+  background-color: var(--color--white);
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header {
+  background-color: var(--color--white);
+}
+
+/* Table of contents */
+
+.toc h2 {
+  color: var(--color--nih-blue);
+}
+
+.toc .toc--section-name .toc--section-name--a {
+  color: var(--color--nih-blue);
+}
+
+.toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--nih-blue);
+}
+
+.nofo--icons--border .toc .toc--section-name .toc--section-name--img svg {
+  color: var(--color--white);
+  fill: var(--color--nih-blue);
+}
+
+.nofo--icons--border
+  .toc
+  .toc--section-name
+  .toc--section-name--img
+  svg
+  circle {
+  stroke: var(--color--nih-blue);
+}
+
+/* Before you begin */
+
+.nofo--icons--border .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--white);
+  fill: var(--color--nih-blue);
+}
+
+.nofo--icons--border
+  .before-you-begin
+  .section--before-you-begin--icon
+  svg
+  circle {
+  stroke: var(--color--nih-blue);
+}
+
+.nofo--icons--solid .before-you-begin .section--before-you-begin--icon svg {
+  color: var(--color--nih-blue);
+}
+
+.before-you-begin h2 {
+  color: var(--color--nih-blue);
+}
+
+/* Section title page */
+
+.section--title-page--header-nav {
+  background-color: var(--color--pale-blue);
+  color: var(--color--nih-blue);
+}
+
+.header-nav li a {
+  border-top: 4px solid var(--color--nih-blue);
+  color: var(--color--nih-blue);
+}
+
+.section--title-page--header-nav a[aria-current] {
+  border-top: 4px solid var(--color--nih-red);
+  color: var(--color--nih-red);
+}
+
+.section--title-page--name {
+  color: var(--color--nih-blue);
+}
+
+.section--title-page--toc,
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+.nofo--icons--border .section--title-page--icon svg {
+  color: var(--color--white);
+  fill: var(--color--nih-blue);
+}
+
+.nofo--icons--border .section--title-page--icon svg circle {
+  stroke: var(--color--nih-blue);
+}
+
+/* Section contents */
+
+/* Running header */
+
+.header-nav--running-header li a[aria-current] {
+  border-top-color: var(--color--nih-red);
+  color: var(--color--nih-red);
+}
+
+.callout-box {
+  background-color: var(--color--pale-blue);
+  color: var(--color--black);
+}
+
+.callout-box--contents a {
+  color: var(--color--black);
+}
+
+.callout-box--icon {
+  background-color: var(--color--white);
+  border: 2px solid var(--color--nih-blue);
+}
+
+.callout-box--icon .callout-box--contents svg {
+  fill: var(--color--white);
+}
+
+/* .callout-box--icon .callout-box--contents svg circle {
+  stroke: var(--color--white);
+} */
+
+table th {
+  color: var(--color--white);
+  background-color: var(--color--nih-blue);
+  border-top: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:first-of-type {
+  border-left: 2px solid var(--color--light-grey);
+}
+
+table th:last-of-type {
+  border-right: 2px solid var(--color--light-grey);
+}
+
+table td {
+  border-left: 2px solid var(--color--light-grey);
+  border-right: 2px solid var(--color--light-grey);
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+/* Application checklist table */
+
+.section--step-5-submit-your-application table td {
+  border: none;
+}
+
+.section--step-5-submit-your-application table tr td:first-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application table tr td:last-of-type {
+  border-left: var(--color--light-grey) 2px solid;
+  border-right: var(--color--light-grey) 2px solid;
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist),
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist)
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist,
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td--before-sublist
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading),
+.section--step-5-submit-your-application
+  table
+  tr
+  td.usa-icon__td:not(.usa-icon__td--sublist):not(.usa-icon__td--list-heading)
+  ~ td {
+  border-bottom: 2px solid var(--color--light-grey);
+}
+
+.section--step-5-submit-your-application table tr:last-of-type td {
+  border-bottom: 2px solid var(--color--light-grey);
+}

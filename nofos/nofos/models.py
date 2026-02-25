@@ -79,6 +79,7 @@ THEME_CHOICES = [
     ("portrait-hrsa-white", "HRSA (Light)"),
     ("portrait-ihs-white", "IHS (Light)"),
     ("portrait-samhsa-white", "SAMHSA (Light)"),
+    ("portrait-nih-white", "NIH (Light)"),
 ]
 
 

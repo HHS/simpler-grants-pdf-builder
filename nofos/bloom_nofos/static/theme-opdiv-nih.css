@@ -1,0 +1,157 @@
+/* CSS vars */
+
+:root {
+  --color--nih-red: #981b1e;
+}
+
+/* Page rules */
+
+@page {
+  @bottom-left {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: var(--color--nih-blue);
+  }
+
+  @bottom-right {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: var(--color--nih-blue);
+  }
+}
+
+/* Regular CSS */
+
+html {
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
+}
+
+/* Running header */
+
+.header-nav.header-nav--running-header li a {
+  border-top-color: var(--color--light-grey);
+  color: var(--color--med-grey);
+}
+
+/* Headings */
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, serif;
+}
+
+h4,
+h5,
+h6 {
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
+  font-weight: 700;
+}
+
+h5 {
+  line-height: 1.4;
+}
+
+/* this functions as an h7 */
+div[role="heading"] {
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
+  font-weight: 700;
+}
+
+/* Cover page */
+
+.nofo--cover-page--title h1 {
+  font-weight: 600;
+}
+
+.nofo--cover-page--footer--subheading {
+  display: none;
+}
+
+.nofo--cover-page--title {
+  padding: 5mm 20mm 10mm 20mm;
+}
+
+.nofo--cover-page--footer {
+  padding-left: 20mm;
+}
+
+.nofo--cover-page--header--logo,
+.nofo--cover-page--header--logo img {
+  width: 250px;
+}
+
+.nofo--cover-page--header--logo--subheading {
+  font-size: 11pt;
+}
+
+.nofo--cover-page--header--intro span:first-of-type {
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.nofo--cover-page--footer .nofo--cover-page--footer--image {
+  float: right;
+}
+
+.nofo--cover-page--footer .nofo--cover-page--footer--image img {
+  height: 100%;
+  border-radius: 80px 0 0 0;
+  object-fit: cover;
+}
+
+.nofo--cover-page--footer .nofo--cover-page--footer--logo svg {
+  width: 100px;
+}
+
+/* Cover page: text */
+
+.nofo--cover-page--text .nofo--cover-page--header--logo svg {
+  width: 250px;
+}
+
+.nofo--cover-page--text .nofo--cover-page--header--intro {
+  width: 120%;
+}
+
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  .nofo--cover-page--title--subheading {
+  font-size: 14.5pt;
+  font-weight: 600;
+}
+
+/* Cover page: standard image */
+.nofo--cover-page--header--logo svg {
+  width: 220px;
+}
+
+.nofo--cover-page--title .nofo--cover-page--title--subheading {
+  font-size: 14.5pt;
+  font-weight: 600;
+}
+
+/* Before you begin page */
+
+/* Section title page */
+
+/* Section contents */
+
+.section--content--intro p.nofo--tagline {
+  font-weight: 300;
+}
