@@ -9,15 +9,26 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add a "Duplicate NOFO action"
-
 ### Changed
+
+### Fixed
+
+## [3.26.0] - 2026-02-25
+
+### Added
+
+- Added new theme: "NIH Light"
+- Add a "Duplicate NOFO action"
 
 ### Fixed
 
 - Decompose empty headings during import
 - Fix for no longer removing "bolded" images
 - Use relative urls for fonts and image srcs
+
+### Migrations
+
+- Add new theme "portrait-nih-white"
 
 ## [3.25.0] - 2026-01-20
 
@@ -106,10 +117,6 @@ Versioning since version 1.0.0.
 - Add subsection labels to writer section overview
 - Add "new draft NOFO" alert to writer section overview for new drafts
 - Add "Not started" alert to writer section overview for no-longer-new drafts
-
-### Changed
-
-### Fixed
 
 ### Migrations
 
