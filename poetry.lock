@@ -821,6 +821,17 @@ protobuf = ">=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4
 grpc = ["grpcio (>=1.44.0,<2.0.0)"]
 
 [[package]]
+name = "grabzit"
+version = "3.5.7.1"
+description = "GrabzIt enables allows you to programmatically convert web pages and HTML into images, DOCX, videos, rendered HTML, PDFs, CSVs and spreadsheets. Additionally GrabzIt allows you to convert online videos into animated GIFs"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "grabzit-3.5.7.1.tar.gz", hash = "sha256:86a445cb9cd3c520a23ea5a7fda3d435ec9c0542f9408767c65e0f529ba9d899"},
+]
+
+[[package]]
 name = "grpc-google-iam-v1"
 version = "0.14.3"
 description = "IAM API client library"
@@ -1926,4 +1937,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "3f95f555c1ecc88d8ef7d3198db1bb084733cddeff245751da69655bc4336929"
+content-hash = "4c918a462abfaae28a6b8895f373631601689d438eb5a6638f817e280528dd59"
