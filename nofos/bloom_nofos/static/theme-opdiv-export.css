@@ -1,0 +1,148 @@
+/* CSS vars */
+
+:root {
+  --color--powder-blue: #c0e9ff;
+}
+
+/* Set @page rules */
+
+/* Utility classes for tables */
+
+.table-row--blue-med td {
+  background-color: var(--color--cdc-blue);
+  color: var(--color--white);
+}
+
+.table-row--blue-light td {
+  background-color: var(--color--powder-blue);
+}
+
+.table-row--blue-pale td {
+  background-color: var(--color--pale-blue);
+}
+
+/* Regular CSS */
+
+html {
+  line-height: 1.5;
+}
+
+body {
+  font-family:
+    "Aptos",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+/* Headings */
+
+h1 {
+  font-family:
+    "Fira Sans Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+h2 {
+  font-family:
+    "Fira Sans Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+  font-weight: 600;
+}
+
+h3 {
+  font-family:
+    "Fira Sans Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+  color: var(--color--dark-blue);
+}
+
+h4 {
+  font-family:
+    "Fira Sans Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+  color: var(--color--cdc-blue);
+}
+
+h5 {
+  font-family:
+    "Calibri",
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+  color: var(--color--black);
+}
+
+h6 {
+  font-family:
+    "Calibri",
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
+    sans-serif;
+  color: var(--color--black);
+}
+
+.nofo_view h2,
+.nofo_view h3,
+.nofo_view h4,
+.nofo_view h5 {
+  color: var(--color--word-blue);
+}
+
+.nofo_view h2 {
+  border-top: 2px dashed var(--color--word-blue);
+}
+
+.nofo_view h6 {
+  font-weight: 600;
+}
+
+.nofo_view h2,
+.nofo_view h3,
+.nofo_view h4,
+.nofo_view h5,
+.nofo_view h6 {
+  margin-bottom: 8px;
+}
+
+.section--content > h3 + div > h4:first-of-type,
+.section--content > h4 + div > h5:first-of-type,
+.section--content > h5 + div > h6:first-of-type {
+  margin-top: 8px;
+}
+
+/* Section contents */
+
+.styled-subsection-body table th {
+  background: var(--color--word-blue);
+  color: var(--color--white);
+}
+
+.styled-subsection-body table th,
+.styled-subsection-body table td {
+  border: 1px solid black;
+}
