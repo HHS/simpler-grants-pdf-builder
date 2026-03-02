@@ -2,7 +2,8 @@
 
 @font-face {
   font-family: "Calibri";
-  src: url("/static/fonts/calibri/calibri-webfont.woff2") format("woff2"),
+  src:
+    url("/static/fonts/calibri/calibri-webfont.woff2") format("woff2"),
     url("/static/fonts/calibri/calibri-webfont.woff") format("woff");
   font-weight: normal;
   font-style: normal;
@@ -10,7 +11,8 @@
 
 @font-face {
   font-family: "Calibri";
-  src: url("/static/fonts/calibri/calibrib-webfont.woff2") format("woff2"),
+  src:
+    url("/static/fonts/calibri/calibrib-webfont.woff2") format("woff2"),
     url("/static/fonts/calibri/calibrib-webfont.woff") format("woff");
   font-weight: 700;
   font-style: normal;
@@ -18,9 +20,30 @@
 
 @font-face {
   font-family: "Calibri";
-  src: url("/static/fonts/calibri/calibril-webfont.woff2") format("woff2"),
+  src:
+    url("/static/fonts/calibri/calibril-webfont.woff2") format("woff2"),
     url("/static/fonts/calibri/calibril-webfont.woff") format("woff");
   font-weight: 300;
+  font-style: normal;
+}
+
+/* Add Aptos */
+
+@font-face {
+  font-family: "Aptos";
+  src:
+    url("/static/fonts/aptos/aptos.woff2") format("woff2"),
+    url("/static/fonts/aptos/aptos.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Aptos";
+  src:
+    url("/static/fonts/aptos/aptos-semibold.woff2") format("woff2"),
+    url("/static/fonts/aptos/aptos-semibold.woff") format("woff");
+  font-weight: 600;
   font-style: normal;
 }
 
@@ -86,7 +109,82 @@
     format("woff2");
 }
 
+/* Add Fira Sans Condensed */
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: normal;
+  font-weight: 400;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-regular-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: italic;
+  font-weight: 400;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-italic-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: normal;
+  font-weight: 500;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-medium-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: italic;
+  font-weight: 500;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-mediumitalic-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-semibold-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: italic;
+  font-weight: 600;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-semibolditalic-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-bold-webfont.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Sans Condensed";
+  font-style: italic;
+  font-weight: 700;
+  font-display: fallback;
+  src: url(/static/fonts/fira-sans-condensed/firasanscondensed-bolditalic-webfont.woff2)
+    format("woff2");
+}
+
 /* Add source sans pro */
+
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: normal;
@@ -164,17 +262,17 @@ p + p {
 }
 
 .nofo_view .section--content table th,
-.nofo_view .section--content table td,
+.nofo_view .section--content table:not(.callout-box) td,
 .nofo_view .section--content table caption {
   font-size: 10pt;
 }
 
 .nofo_view .section--content table th,
-.nofo_view .section--content table td {
+.nofo_view .section--content table:not(.callout-box) td {
   padding: 0.4rem 0.8rem;
 }
 
-.nofo_view .section--content table td {
+.nofo_view .section--content table:not(.callout-box) td {
   vertical-align: baseline;
 }
 

@@ -4,8 +4,7 @@
 {% block css %}
   <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
   <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-opdiv-cdc.css" %}" type="text/css" media="all" rel="stylesheet">
-  <link href="{% static "theme-opdiv-cdc-blue.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-opdiv-export.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -33,33 +32,35 @@
             <div class="section--content">
                 {% for subsection in section.subsections.all|dictsort:"order" %}
                 {# skip "hidden" subsections #}
-                <div class="margin-top-4 margin-bottom-2">
+                  {% if subsection.body %}
+                    <div class="{% if subsection.callout_box %}margin-top-4{% else %}margin-top-2{% endif %} margin-bottom-2">
+                  {% endif %}
                   {% if subsection.callout_box %}
-                  <table>
-                    <tr>
-                      <td>
-                        <div class="{% if subsection.callout_box%}border margin-top-1 padding-x-2 padding-bottom-2 {%if not subsection.name %} padding-top-2{% endif %} {% endif %}">
-                          {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                            {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
-                          {% endwith %}
-                          <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2{% endif %} styled-subsection-body">
-                            {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
+                    <table class="callout-box">
+                      <tr>
+                        <td class="{% if subsection.callout_box%}border margin-top-1 padding-x-2 padding-bottom-2 padding-top-2{% endif %}">
+                            {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+                              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+                            {% endwith %}
+                            <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2 {% endif %}styled-subsection-body">
+                              {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                            </div>
+                        </td>
+                      </tr>
+                    </table>
                   {% else %}
-                  <div class="{%if not subsection.name %} padding-top-2{% endif %}">
                     {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                       {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
                     {% endwith %}
-                    <div class="{% if not subsection.name %}margin-top-2{% endif %} styled-subsection-body">
-                      {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                    </div>
-                  </div>
+                    {% if subsection.body %}
+                      <div class="{% if not subsection.name %}margin-top-2{% endif %} styled-subsection-body">
+                        {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                      </div>
+                    {% endif %}
                   {% endif %}
-                </div>
+                  {% if subsection.body %}
+                      </div>
+                  {% endif %}
               {% endfor %}
             </div>
           </section>
