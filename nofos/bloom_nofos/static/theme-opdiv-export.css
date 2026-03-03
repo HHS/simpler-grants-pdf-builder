@@ -115,6 +115,14 @@ body {
   margin-top: -8px;
 }
 
+/* Section */
+
+section,
+span.page-break {
+  break-after: page;
+  break-inside: avoid;
+}
+
 /* Lists */
 
 .nofo_view ul li,
