@@ -1,27 +1,4 @@
-/* CSS vars */
-
-:root {
-  --color--powder-blue: #c0e9ff;
-}
-
-/* Set @page rules */
-
-/* Utility classes for tables */
-
-.table-row--blue-med td {
-  background-color: var(--color--cdc-blue);
-  color: var(--color--white);
-}
-
-.table-row--blue-light td {
-  background-color: var(--color--powder-blue);
-}
-
-.table-row--blue-pale td {
-  background-color: var(--color--pale-blue);
-}
-
-/* Regular CSS */
+/* Global CSS */
 
 html {
   line-height: 1.5;
@@ -33,116 +10,163 @@ body {
     Source Sans Pro Web,
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
 }
 
 /* Headings */
 
-h1 {
-  font-family:
-    "Fira Sans Condensed",
-    Helvetica Neue,
-    Helvetica,
-    Roboto,
-    Arial,
-    sans-serif;
+.nofo_view h1,
+.nofo_view h2,
+.nofo_view h3,
+.nofo_view h4,
+.nofo_view h5,
+.nofo_view h6 {
+  line-height: 1;
 }
 
-h2 {
+.nofo_view h1 {
   font-family:
     "Fira Sans Condensed",
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
-  font-weight: 600;
+  font-size: 36pt;
+  margin-top: 28px;
+  margin-bottom: 12px;
 }
 
-h3 {
+.nofo_view h2 {
   font-family:
     "Fira Sans Condensed",
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
+  font-weight: 500;
+  font-size: 28pt;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.nofo_view h3 {
+  font-family:
+    "Fira Sans Condensed",
+    Helvetica Neue,
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-weight: 500;
   color: var(--color--dark-blue);
+  font-size: 22pt;
+  margin-top: 16px;
+  margin-bottom: 10px;
 }
 
-h4 {
+.nofo_view h4 {
   font-family:
     "Fira Sans Condensed",
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
   color: var(--color--cdc-blue);
+  font-size: 18pt;
+  margin-top: 14px;
+  margin-bottom: 10px;
 }
 
-h5 {
+.nofo_view h5 {
   font-family:
     "Calibri",
     Source Sans Pro Web,
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
   color: var(--color--black);
+  font-size: 16pt;
+  margin-top: 12px;
+  margin-bottom: 10px;
 }
 
-h6 {
+.nofo_view h6 {
   font-family:
     "Calibri",
     Helvetica Neue,
     Helvetica,
-    Roboto,
     Arial,
     sans-serif;
   color: var(--color--black);
-}
-
-.nofo_view h2,
-.nofo_view h3,
-.nofo_view h4,
-.nofo_view h5 {
-  color: var(--color--word-blue);
+  font-size: 14pt;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 10px;
 }
 
 .nofo_view h2 {
   border-top: 2px dashed var(--color--word-blue);
 }
 
-.nofo_view h6 {
-  font-weight: 600;
-}
-
-.nofo_view h2,
-.nofo_view h3,
-.nofo_view h4,
-.nofo_view h5,
-.nofo_view h6 {
-  margin-bottom: 8px;
-}
-
 .section--content > h3 + div > h4:first-of-type,
 .section--content > h4 + div > h5:first-of-type,
 .section--content > h5 + div > h6:first-of-type {
-  margin-top: 8px;
+  margin-top: -8px;
 }
 
-/* Section contents */
+/* Lists */
 
-.styled-subsection-body table th {
+.nofo_view ul li,
+.nofo_view ol li {
+  line-height: 1.75;
+}
+
+.nofo_view p + ul,
+.nofo_view p + ol {
+  margin-top: 6px;
+}
+
+.nofo_view ul li:not(:last-of-type),
+.nofo_view ol li:not(:last-of-type) {
+  margin-bottom: 8px;
+}
+
+.nofo_view ul ul:last-child,
+.nofo_view ol ol:last-child {
+  margin-bottom: 0;
+}
+
+/* Tables */
+
+.nofo_view .section--content table th,
+.nofo_view .section--content table:not(.callout-box) td,
+.nofo_view .section--content table caption {
+  font-size: 11pt;
+}
+
+.nofo_view .section--content table th {
+  padding: 0.8rem 0.8rem;
   background: var(--color--word-blue);
   color: var(--color--white);
+  vertical-align: top;
 }
 
-.styled-subsection-body table th,
-.styled-subsection-body table td {
+.nofo_view .section--content table:not(.callout-box) td {
+  vertical-align: top;
+}
+
+.nofo_view .section--content table th,
+.nofo_view .section--content table td {
   border: 1px solid black;
+}
+
+/* Callout boxes */
+
+.nofo_view .callout-box .styled-subsection-body > *:last-child {
+  margin-bottom: 0px;
+}
+
+.nofo_view .callout-box td {
+  padding-bottom: 0;
 }
