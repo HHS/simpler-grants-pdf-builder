@@ -1,5 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'base_barebones.html' %}
 {% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+
+{% block base_css %}
+  <link href="{% static 'styles.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block css %}
   <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
@@ -7,7 +11,41 @@
   <link href="{% static "theme-opdiv-export.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
+{% block header %}
+  <header class="usa-header usa-header--basic">
+    <div class="usa-nav-container">
+      <div class="usa-navbar">
+        <div class="usa-logo" style="margin-top: 1rem;">
+          <em class="usa-logo__text">
+            <a href="{% url 'nofos:nofo_index' %}" class="usa-nav-link">NOFO Builder</a>
+          </em>
+        </div>
+      </div>
+      <nav aria-label="Primary navigation" class="usa-nav">
+        <ul class="usa-nav__primary usa-accordion">
+          <li class="usa-nav__primary-item usa-nav__primary-item__right-padding">
+            <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
+          </li>
+        </ul>
+        <form method="post" action="{% url 'nofos:nofo_export' nofo.id %}">
+          {% csrf_token %}
+          <button
+            type="submit"
+            name="action"
+            value="download"
+            class="usa-button usa-button--outline font-sans-2xs text-normal inline-block"
+            {% if 'localhost' in request.get_host %}disabled{% endif %}
+          >
+            Download<span class="hide-on-tablet"> Word</span>
+          </button>
+        </form>
+      </nav>
+    </div>
+  </header>
+{% endblock %}
+
 {% block content %}
+  <div class="usa-section">
      <div id="download_target" class="nofo_view">
         <!-- Render each section with all its subsections -->
         {% for section in nofo.sections.all|dictsort:"order" %}
@@ -70,4 +108,5 @@
           </section>
         {% endfor %}
       </div>
+    </div>
 {% endblock %}

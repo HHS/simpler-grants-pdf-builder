@@ -4,7 +4,9 @@ import sys
 from socket import gaierror, gethostbyname, gethostname
 
 from django.conf import settings
+from django.http import HttpResponse, HttpResponseServerError
 from google.cloud import secretmanager
+from GrabzIt import GrabzItClient, GrabzItDOCXOptions
 
 
 def cast_to_boolean(value_str):
@@ -99,3 +101,62 @@ def get_login_gov_keys(environment: str = "dev", testing: bool = "test" in sys.a
         public_key = ""
 
     return private_key, public_key
+
+
+def generate_docx_download_response(
+    *,
+    request,
+    export_url: str,
+    target_element: str,
+    filename_base: str,
+    tmp_name: str,
+):
+    """
+    Convert a URL to DOCX using GrabzIt and return it as an attachment response.
+    """
+    session_value = request.COOKIES.get("sessionid")
+    csrf_value = request.COOKIES.get("csrftoken")
+
+    if not session_value or not csrf_value:
+        return HttpResponseServerError(
+            "Missing session/csrf cookies for DOCX conversion."
+        )
+
+    grabzit = GrabzItClient.GrabzItClient(
+        settings.GRABZIT_APPLICATION_KEY,
+        settings.GRABZIT_APPLICATION_SECRET,
+    )
+
+    domain = request.get_host().split(":")[0]  # Remove port if present
+    if not grabzit.SetCookie("sessionid", domain, session_value):
+        return HttpResponseServerError(
+            "Failed to set session cookie for GrabzIt conversion."
+        )
+    if not grabzit.SetCookie("csrftoken", domain, csrf_value):
+        return HttpResponseServerError(
+            "Failed to set csrf cookie for GrabzIt conversion."
+        )
+
+    options = GrabzItDOCXOptions.GrabzItDOCXOptions()
+    options.targetElement = target_element
+
+    grabzit.URLToDOCX(export_url, options)
+
+    file_path = f"/tmp/{tmp_name}.docx"
+    grabzit.SaveTo(file_path)
+
+    with open(file_path, "rb") as f:
+        content = f.read()
+
+    # Optional cleanup (safe even if it fails)
+    try:
+        os.remove(file_path)
+    except OSError:
+        pass
+
+    response = HttpResponse(
+        content,
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename_base}.docx"'
+    return response
