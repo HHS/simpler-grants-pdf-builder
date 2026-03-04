@@ -6,7 +6,7 @@ from datetime import datetime
 import docraptor
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
-from bloom_nofos.utils import cast_to_boolean
+from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -301,6 +301,25 @@ class NOFOsExportView(DetailView):
 
         # Continue with the normal flow for anonymous or authorized users
         return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        nofo = self.get_object()
+        action = request.POST.get("action")
+
+        if action != "download":
+            return HttpResponseBadRequest("Unknown action.")
+
+        export_url = request.build_absolute_uri(
+            reverse_lazy("nofos:nofo_export", args=[nofo.pk])
+        )
+
+        return generate_docx_download_response(
+            request=request,
+            export_url=export_url,
+            target_element="#download_target",
+            filename_base=(nofo.short_name or nofo.title),
+            tmp_name=str(nofo.pk),
+        )
 
 
 class NofosEditView(GroupAccessObjectMixin, DetailView):
