@@ -11,6 +11,13 @@
   <link href="{% static "theme-opdiv-export.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
+{% block uswds_js %}
+  <script src="{% static 'uswds/uswds-init.js' %}"></script>
+  <link rel="preload" href="{% static 'uswds/uswds.js' %}" as="script">
+  <script src="{% static 'uswds/uswds.js' %}" defer></script>
+{% endblock %}
+
+
 {% block header %}
   <header class="usa-header usa-header--basic">
     <div class="usa-nav-container">
@@ -27,18 +34,171 @@
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
           </li>
         </ul>
-        <form method="post" action="{% url 'nofos:nofo_export' nofo.id %}">
+        <form
+          id="docx-download-form"
+          method="post"
+          action="{% url 'nofos:nofo_export' nofo.id %}"
+          data-csrf-token="{{ csrf_token }}"
+        >
           {% csrf_token %}
           <button
             type="submit"
-            name="action"
+            name="export_action"
             value="download"
             class="usa-button usa-button--outline font-sans-2xs text-normal inline-block"
-            {% if 'localhost' in request.get_host %}disabled{% endif %}
+            aria-controls="docx-modal"
+            data-open-modal
+            {% if 'localhost123' in request.get_host %}disabled{% endif %}
           >
             Download<span class="hide-on-tablet"> Word</span>
           </button>
         </form>
+        <div
+  class="usa-modal"
+  id="docx-modal"
+  aria-labelledby="docx-modal-heading"
+  aria-describedby="docx-modal-body"
+  data-force-action
+>
+  <div class="usa-modal__content">
+    <div class="usa-modal__main">
+      <h2 class="usa-modal__heading" id="docx-modal-heading">
+        Generating your document…
+      </h2>
+
+      <div class="usa-prose" id="docx-modal-body">
+        <!-- Loading state -->
+        <div id="docx-state-loading">
+          <p>This can take about 20 seconds.</p>
+          <div class="margin-top-2 display-flex flex-align-center">
+            <img src="/static/img/loading-horse.gif" alt="" width="48" height="48" class="margin-right-2" />
+            <span class="usa-sr-only" aria-live="polite" id="docx-status">
+              Generating your document.
+            </span>
+            <span aria-hidden="true">Working…</span>
+          </div>
+        </div>
+
+        <!-- Success state -->
+        <div id="docx-state-success" hidden>
+          <p>Your document is ready.</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="docx-state-error" hidden>
+          <p class="text-red" id="docx-error-text">
+            Something went wrong generating the document.
+          </p>
+        </div>
+      </div>
+
+      <div class="usa-modal__footer">
+        <ul class="usa-button-group">
+          <!-- This is the ONLY way to close (force-action modal) -->
+          <li class="usa-button-group__item">
+            <button
+              type="button"
+              class="usa-button"
+              id="docx-done-btn"
+              data-close-modal
+              hidden
+            >
+              OK
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- IMPORTANT: no close “X” button when using data-force-action -->
+  </div>
+</div>
+        <script>
+  (function () {
+    const form = document.getElementById("docx-download-form");
+    const loading = document.getElementById("docx-state-loading");
+    const success = document.getElementById("docx-state-success");
+    const error = document.getElementById("docx-state-error");
+    const errorText = document.getElementById("docx-error-text");
+    const status = document.getElementById("docx-status");
+    const doneBtn = document.getElementById("docx-done-btn");
+
+    console.log('form', form)
+    console.log('form.action', form.action)
+
+    if (!form) return;
+
+    function setState(state, message) {
+      loading.hidden = state !== "loading";
+      success.hidden = state !== "success";
+      error.hidden = state !== "error";
+
+      if (state === "loading") {
+        doneBtn.hidden = true;
+        status.textContent = message || "Generating your document.";
+      } else {
+        doneBtn.hidden = false;
+        status.textContent = "";
+      }
+
+      if (state === "error" && message) {
+        errorText.textContent = message;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      // USWDS will open the modal automatically from the button click.
+      // We just stop the real form submit and do fetch instead.
+      e.preventDefault();
+      setState("loading");
+
+      try {
+
+        const action_url = form.getAttribute("action");
+        const csrfToken = form.dataset.csrfToken;
+
+        const formData = new FormData(form);
+        formData.set("export_action", "download");
+
+        const resp = await fetch(action_url, {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": csrfToken,
+          },
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text().catch(() => "");
+          throw new Error(text || `Request failed (${resp.status})`);
+        }
+
+        const blob = await resp.blob();
+
+        let filename = "document.docx";
+        const cd = resp.headers.get("Content-Disposition");
+        const match = cd && cd.match(/filename="([^"]+)"/i);
+        if (match?.[1]) filename = match[1];
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        setState("success");
+      } catch (err) {
+        console.error(err);
+        setState("error", "Sorry — something went wrong generating the document. Please try again.");
+      }
+    });
+  })();
+</script>
       </nav>
     </div>
   </header>
