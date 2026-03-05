@@ -1,0 +1,137 @@
+{% load static %}
+
+<script src="{% static 'js/nofo_export.js' %}" defer></script>
+<style>
+  /* Download modal */
+  .usa-modal__footer .usa-button[hidden] {
+    visibility: hidden;
+  }
+
+  /* Track stays the same */
+  .docx-horse-track {
+    position: relative;
+    height: 56px;
+    overflow: hidden;
+    margin-top: 8px;
+    border-radius: 6px;
+  }
+
+  /* Default: centered, no animation */
+  .docx-loading-horse {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scaleX(-1); /* centered + flipped */
+    height: 48px;
+    width: auto;
+    animation: none;
+  }
+
+  /* Start running only when modal is opened (we add .is-running) */
+  .docx-horse-track.is-running .docx-loading-horse {
+    /* snap to the start position, then animate */
+    left: -60px;
+    transform: translateY(-50%) scaleX(-1);
+    animation: docxHorseRun 20s linear infinite;
+  }
+
+  @keyframes docxHorseRun {
+    from {
+      left: -60px;
+    }
+    to {
+      left: calc(100% - 77px);
+    }
+  }
+
+  /* When finished: stop looping and glide to the right edge */
+  .docx-horse-track.is-finished .docx-loading-horse {
+    animation: none;
+    left: calc(100% - 77px);
+    transform: translateY(-50%) scaleX(-1);
+    transition: left 250ms ease-out;
+  }
+</style>
+<form
+  id="docx-download-form"
+  method="post"
+  action="{% url 'nofos:nofo_export' nofo.id %}"
+  data-csrf-token="{{ csrf_token }}"
+>
+  {% csrf_token %}
+  <button
+    type="submit"
+    name="export_action"
+    value="download"
+    class="usa-button usa-button--outline font-sans-2xs text-normal inline-block"
+    aria-controls="docx-modal"
+    data-open-modal
+    {% if 'localhost' in request.get_host %}disabled{% endif %}
+  >
+    Download<span class="hide-on-tablet"> Word</span>
+  </button>
+</form>
+<!-- No close “X” button when using data-force-action -->
+<div
+  class="usa-modal"
+  id="docx-modal"
+  aria-labelledby="docx-modal-heading"
+  aria-describedby="docx-modal-body"
+  data-force-action
+>
+  <div class="usa-modal__content">
+    <div class="usa-modal__main">
+      <h2 class="usa-modal__heading" id="docx-modal-heading">
+        Generating Word document…
+      </h2>
+
+      <div class="usa-prose" id="docx-modal-body">
+        <!-- Loading state -->
+        <div id="docx-state-loading">
+          <p>It takes about 20 seconds to prepare your document.</p>
+
+          <div class="margin-top-2">
+            <div class="docx-horse-track" id="docx-horse-track" aria-hidden="true">
+              <img
+                src="/static/img/loading-horse.gif"
+                alt=""
+                class="docx-loading-horse"
+                id="docx-loading-horse"
+              />
+            </div>
+
+            <span class="usa-sr-only" aria-live="polite" id="docx-status">
+              Generating your document.
+            </span>
+            <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
+          </div>
+
+        </div>
+
+        <!-- Success state -->
+        <div id="docx-state-success" hidden>
+          <p>Your document is ready.</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="docx-state-error" hidden>
+          <p class="text-red" id="docx-error-text">
+            Something went wrong generating the document.
+          </p>
+        </div>
+      </div><!-- end of docx-modal-body -->
+
+      <div class="usa-modal__footer text-center">
+        <button
+          type="button"
+          class="usa-button"
+          id="docx-done-btn"
+          data-close-modal
+          hidden
+        >
+          OK
+        </button>
+      </div><!-- end of usa-modal__footer -->
+    </div><!-- end of usa-modal__main -->
+  </div>
+</div>
