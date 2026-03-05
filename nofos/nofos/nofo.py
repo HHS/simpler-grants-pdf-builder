@@ -1195,6 +1195,14 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:nofo_duplicate", args=[nofo.pk]),
         }
 
+    def _link_export(nofo):
+        return {
+            "key": "export",
+            "label": "Export Word doc",
+            "href": reverse_lazy("nofos:nofo_export", args=[nofo.pk]),
+            "external": True,
+        }
+
     def _link_reimport(nofo):
         return {
             "key": "reimport",
@@ -1219,26 +1227,31 @@ def get_nofo_action_links(nofo):
 
     # Status → allowed actions
     _STATUS_ACTIONS = {
-        "draft": ("find_replace", "compare", "duplicate", "reimport", "delete"),
-        "active": ("find_replace", "compare", "duplicate", "reimport"),
-        "ready-for-qa": ("find_replace", "compare", "duplicate", "reimport"),
+        "draft": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "reimport",
+            "export",
+            "delete",
+        ),
+        "active": ("find_replace", "compare", "duplicate", "reimport", "export"),
+        "ready-for-qa": ("find_replace", "compare", "duplicate", "reimport", "export"),
         "review": (
             "find_replace",
             "compare",
             "duplicate",
+            "export",
         ),
         "doge": (
             "find_replace",
             "compare",
             "duplicate",
+            "export",
         ),  # Deputy Secretary review
-        "published": (),  # no actions ("modifications" is not part of this)
-        "paused": (
-            "find_replace",
-            "compare",
-            "duplicate",
-        ),
-        "cancelled": (),
+        "published": ("export",),
+        "paused": ("find_replace", "compare", "duplicate", "export"),
+        "cancelled": ("export",),
     }
 
     status = (nofo.status or "").lower()
@@ -1250,6 +1263,7 @@ def get_nofo_action_links(nofo):
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
         "reimport": lambda: _link_reimport(nofo),
+        "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
     }
 
