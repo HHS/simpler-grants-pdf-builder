@@ -27,6 +27,7 @@ from nofos.templatetags.utils import (
     is_footnote_ref,
     match_numbered_sublist,
     truncate_anchor_links,
+    truncate_heading_ids,
     wrap_text_before_colon_in_strong,
 )
 
@@ -1153,6 +1154,43 @@ class MatchNumberedSublistTest(TestCase):
         self.assertFalse(match_numbered_sublist(""))
 
 
+class TruncateHeadingIdsTest(TestCase):
+    def test_returns_input_when_none(self):
+        self.assertIsNone(truncate_heading_ids(None))
+
+    def test_returns_input_when_empty_string(self):
+        self.assertEqual(truncate_heading_ids(""), "")
+
+    def test_does_not_change_non_matching_id(self):
+        # Does not start with "<digits>--"
+        value = "step-3-prepare-your-application"
+        self.assertEqual(truncate_heading_ids(value), value)
+
+    def test_does_not_change_nb_bookmark_id(self):
+        value = "nb_bookmark_AwardsFour"
+        self.assertEqual(truncate_heading_ids(value), value)
+
+    def test_does_not_truncate_matching_id_under_limit(self):
+        value = "7--short"
+        self.assertEqual(truncate_heading_ids(value), value)
+
+    def test_does_not_truncate_matching_id_equal_to_limit(self):
+        value = "7--" + ("x" * 37)  # 40 chars total
+        self.assertEqual(len(value), 40)
+        self.assertEqual(truncate_heading_ids(value), value)
+
+    def test_truncates_matching_id_over_limit(self):
+        value = "7--" + ("x" * 100)
+        out = truncate_heading_ids(value)
+        self.assertEqual(len(out), 40)
+        self.assertEqual(out, value[:40])
+
+    def test_coerces_non_string_to_string(self):
+        # Should not crash; should stringify; does not match pattern so unchanged after str()
+        value = 12345
+        self.assertEqual(truncate_heading_ids(value), "12345")
+
+
 class TruncateAnchorLinksTest(TestCase):
     def test_returns_input_when_none(self):
         self.assertIsNone(truncate_anchor_links(None))
@@ -1173,23 +1211,22 @@ class TruncateAnchorLinksTest(TestCase):
         self.assertEqual(truncate_anchor_links(html), html)
 
     def test_truncates_matching_anchor_over_40_chars_default(self):
-        # fragment length intentionally > 40
         href = "#7--step-1-review-the-opportunity--eligibility"
-        # Exactly 40 chars AFTER '#'
-        truncated_href = "#7--step-1-review-the-opportunity--eligib"
+        truncated_href = "#" + href[1:][:40]
         html = f'<p>Check out <a href="{href}">Eligibility</a>.</p>'
 
-        out = truncate_anchor_links(html)  # default max_len=40
+        out = truncate_anchor_links(html)
 
         self.assertIn(f'href="{truncated_href}"', out)
         self.assertNotIn(f'href="{href}"', out)
 
     def test_does_not_truncate_matching_anchor_equal_to_limit(self):
         fragment = "7--" + ("x" * 37)  # 40 chars total fragment
+        self.assertEqual(len(fragment), 40)
         href = "#" + fragment
         html = f'<p><a href="{href}">Link</a></p>'
 
-        out = truncate_anchor_links(html, max_len=40)
+        out = truncate_anchor_links(html)
         self.assertIn(f'href="{href}"', out)
 
     def test_does_not_truncate_matching_anchor_under_limit(self):
@@ -1197,32 +1234,13 @@ class TruncateAnchorLinksTest(TestCase):
         href = "#" + fragment
         html = f'<p><a href="{href}">Link</a></p>'
 
-        out = truncate_anchor_links(html, max_len=40)
+        out = truncate_anchor_links(html)
         self.assertIn(f'href="{href}"', out)
-
-    def test_truncates_with_custom_max_len(self):
-        href = "#6--step-1-review-the-opportunity--eligible-applicants"
-        html = f'<p><a href="{href}">Eligible applicants</a></p>'
-
-        out = truncate_anchor_links(html, max_len=10)
-
-        expected_href = "#" + href[1:][:10]
-        self.assertIn(f'href="{expected_href}"', out)
-        self.assertNotIn(f'href="{href}"', out)
-
-    def test_invalid_max_len_falls_back_to_40(self):
-        href = "#7--step-1-review-the-opportunity--eligibility"
-        html = f'<p><a href="{href}">Eligibility</a></p>'
-
-        out = truncate_anchor_links(html, max_len="not-a-number")
-
-        expected_href = "#" + href[1:][:40]
-        self.assertIn(f'href="{expected_href}"', out)
 
     def test_truncates_only_matching_links_when_multiple_links_present(self):
         href1 = "#7--step-1-review-the-opportunity--eligibility"
         href2 = "#nb_bookmark_AwardsFour"
-        href3 = "#3--" + ("y" * 80)  # definitely > 40
+        href3 = "#3--" + ("y" * 80)
         html = (
             f"<p>"
             f'<a href="{href1}">Eligibility</a> '
@@ -1243,7 +1261,6 @@ class TruncateAnchorLinksTest(TestCase):
     def test_ignores_anchor_without_href(self):
         html = "<p><a>Missing href</a></p>"
         out = truncate_anchor_links(html)
-        # BeautifulSoup may normalize <a> tags but should not add href
         self.assertIn("<a>Missing href</a>", out)
 
 
