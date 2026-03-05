@@ -1,5 +1,5 @@
 {% extends 'base_barebones.html' %}
-{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs %}
+{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs truncate_anchor_links_for_docx %}
 
 {% block base_css %}
   <link href="{% static 'styles.css' %}" rel="stylesheet">
@@ -81,7 +81,7 @@
                               {% include "includes/heading.html" with tag=tag content=content id=id only %}
                             {% endwith %}
                             <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2 {% endif %}styled-subsection-body">
-                              {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                              {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
                             </div>
                         </td>
                       </tr>
@@ -92,7 +92,7 @@
                     {% endwith %}
                     {% if subsection.body %}
                       <div class="{% if not subsection.name %}margin-top-2{% endif %} styled-subsection-body">
-                        {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                        {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
                       </div>
                     {% endif %}
                   {% endif %}
