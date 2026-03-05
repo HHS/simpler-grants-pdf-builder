@@ -26,6 +26,7 @@ from nofos.templatetags.utils import (
     is_floating_callout_box,
     is_footnote_ref,
     match_numbered_sublist,
+    truncate_anchor_links,
     wrap_text_before_colon_in_strong,
 )
 
@@ -1150,6 +1151,100 @@ class MatchNumberedSublistTest(TestCase):
 
     def test_empty_string(self):
         self.assertFalse(match_numbered_sublist(""))
+
+
+class TruncateAnchorLinksTest(TestCase):
+    def test_returns_input_when_none(self):
+        self.assertIsNone(truncate_anchor_links(None))
+
+    def test_returns_input_when_empty_string(self):
+        self.assertEqual(truncate_anchor_links(""), "")
+
+    def test_does_not_change_non_matching_hash_anchor(self):
+        html = '<p><a href="#step-3-prepare-your-application">Step 3</a></p>'
+        self.assertEqual(truncate_anchor_links(html), html)
+
+    def test_does_not_change_nb_bookmark_anchor(self):
+        html = '<p><a href="#nb_bookmark_AwardsFour">Awards</a></p>'
+        self.assertEqual(truncate_anchor_links(html), html)
+
+    def test_does_not_change_external_link(self):
+        html = '<p><a href="https://example.com/#7--step-1-review-the-opportunity--eligibility">External</a></p>'
+        self.assertEqual(truncate_anchor_links(html), html)
+
+    def test_truncates_matching_anchor_over_40_chars_default(self):
+        # fragment length intentionally > 40
+        href = "#7--step-1-review-the-opportunity--eligibility"
+        # Exactly 40 chars AFTER '#'
+        truncated_href = "#7--step-1-review-the-opportunity--eligib"
+        html = f'<p>Check out <a href="{href}">Eligibility</a>.</p>'
+
+        out = truncate_anchor_links(html)  # default max_len=40
+
+        self.assertIn(f'href="{truncated_href}"', out)
+        self.assertNotIn(f'href="{href}"', out)
+
+    def test_does_not_truncate_matching_anchor_equal_to_limit(self):
+        fragment = "7--" + ("x" * 37)  # 40 chars total fragment
+        href = "#" + fragment
+        html = f'<p><a href="{href}">Link</a></p>'
+
+        out = truncate_anchor_links(html, max_len=40)
+        self.assertIn(f'href="{href}"', out)
+
+    def test_does_not_truncate_matching_anchor_under_limit(self):
+        fragment = "7--short"
+        href = "#" + fragment
+        html = f'<p><a href="{href}">Link</a></p>'
+
+        out = truncate_anchor_links(html, max_len=40)
+        self.assertIn(f'href="{href}"', out)
+
+    def test_truncates_with_custom_max_len(self):
+        href = "#6--step-1-review-the-opportunity--eligible-applicants"
+        html = f'<p><a href="{href}">Eligible applicants</a></p>'
+
+        out = truncate_anchor_links(html, max_len=10)
+
+        expected_href = "#" + href[1:][:10]
+        self.assertIn(f'href="{expected_href}"', out)
+        self.assertNotIn(f'href="{href}"', out)
+
+    def test_invalid_max_len_falls_back_to_40(self):
+        href = "#7--step-1-review-the-opportunity--eligibility"
+        html = f'<p><a href="{href}">Eligibility</a></p>'
+
+        out = truncate_anchor_links(html, max_len="not-a-number")
+
+        expected_href = "#" + href[1:][:40]
+        self.assertIn(f'href="{expected_href}"', out)
+
+    def test_truncates_only_matching_links_when_multiple_links_present(self):
+        href1 = "#7--step-1-review-the-opportunity--eligibility"
+        href2 = "#nb_bookmark_AwardsFour"
+        href3 = "#3--" + ("y" * 80)  # definitely > 40
+        html = (
+            f"<p>"
+            f'<a href="{href1}">Eligibility</a> '
+            f'<a href="{href2}">Awards</a> '
+            f'<a href="{href3}">Another</a>'
+            f"</p>"
+        )
+
+        out = truncate_anchor_links(html)
+
+        expected_href1 = "#" + href1[1:][:40]
+        expected_href3 = "#" + href3[1:][:40]
+
+        self.assertIn(f'href="{expected_href1}"', out)
+        self.assertIn(f'href="{href2}"', out)  # unchanged
+        self.assertIn(f'href="{expected_href3}"', out)
+
+    def test_ignores_anchor_without_href(self):
+        html = "<p><a>Missing href</a></p>"
+        out = truncate_anchor_links(html)
+        # BeautifulSoup may normalize <a> tags but should not add href
+        self.assertIn("<a>Missing href</a>", out)
 
 
 class WrapTextBeforeColonInStrongTests(TestCase):
