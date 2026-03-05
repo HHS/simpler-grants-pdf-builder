@@ -13,6 +13,13 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.27.0] - 2026-03-05
+
+### Added
+
+- Add a new option to NOFOs: export
+  - Exporting to Word is a MAJOR release but not a breaking one
+
 ## [3.26.0] - 2026-02-25
 
 ### Added
