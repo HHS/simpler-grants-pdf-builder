@@ -303,11 +303,8 @@ class NOFOsExportView(DetailView):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        print("306")
         nofo = self.get_object()
-        print("nofo", nofo)
         action = request.POST.get("export_action")
-        print("action", action)
 
         if action != "download":
             return HttpResponseBadRequest("Unknown action.")
