@@ -35,7 +35,8 @@
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
           </li>
         </ul>
-        {% include "includes/download_docx_button.html" %}
+        {% url 'nofos:nofo_export' nofo.id as action_url %}
+        {% include "includes/download_docx_button.html" with action_url=action_url %}
       </nav>
     </div>
   </header>

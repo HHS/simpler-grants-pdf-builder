@@ -59,7 +59,7 @@
 <form
   id="docx-download-form"
   method="post"
-  action="{% url 'nofos:nofo_export' nofo.id %}"
+  action="{{ action_url }}"
   data-csrf-token="{{ csrf_token }}"
 >
   {% csrf_token %}
