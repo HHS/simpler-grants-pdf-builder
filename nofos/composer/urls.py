@@ -47,6 +47,9 @@ urlpatterns = [
         name="composer_unpublish",
     ),
     path(
+        "<uuid:pk>/export", views.ComposerExportView.as_view(), name="composer_export"
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/edit",
         views.ComposerSectionEditView.as_view(),
         name="section_edit",

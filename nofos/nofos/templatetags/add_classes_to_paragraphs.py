@@ -19,3 +19,19 @@ def add_classes_to_paragraphs(html_string):
         p["aria-level"] = "7"
 
     return mark_safe(str(soup))
+
+
+@register.filter
+def add_class_to_first_paragraph(html_string, class_name="instructions-heading"):
+    soup = BeautifulSoup(html_string, "html.parser")
+    first_p = soup.find("p")
+
+    if not first_p:
+        return str(soup)
+
+    existing_classes = first_p.get("class", [])
+    if class_name not in existing_classes:
+        existing_classes.append(class_name)
+        first_p["class"] = existing_classes
+
+    return str(soup)
