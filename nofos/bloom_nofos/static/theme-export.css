@@ -199,3 +199,14 @@ span.page-break {
 .nofo_view .subsection-instructions p:not(.instructions-heading) strong {
   color: var(--color--word-blue);
 }
+
+.nofo_view .section--content table.subsection-instructions td {
+  background-color: #d9e8f6;
+  border-style: none;
+}
+
+/* Composer elements */
+
+.nofo_view .styled-subsection-body--variables .md-curly-variable {
+  background-color: yellow;
+}
