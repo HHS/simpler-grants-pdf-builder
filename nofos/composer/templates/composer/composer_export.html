@@ -83,9 +83,14 @@
                         {% endif %}
 
                         {% if subsection.instructions %}
-                          <div class="subsection-instructions bg-primary-lighter padding-2">
-                            {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_class_to_first_paragraph|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                          </div>
+                          <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
+                          <table class="subsection-instructions bg-primary-lighter padding-2">
+                            <tr>
+                              <td>
+                                {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_class_to_first_paragraph|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                              </td>
+                            </tr>
+                          </table>
                         {% endif %}
 
                         {% if subsection.body %}
