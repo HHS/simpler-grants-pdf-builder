@@ -1,4 +1,4 @@
-{% extends 'base_barebones.html' %}
+    {% extends 'base_barebones.html' %}
 {% load static martortags nofo_section_name_separator add_classes_to_tables add_footnote_ids callout_box_contents replace_unicode_with_icon add_classes_to_paragraphs add_classes_to_lists add_classes_to_headings add_classes_to_toc add_captions_to_tables split_char_and_remove get_breadcrumb convert_paragraphs_to_hrs is_floating_callout_box get_floating_callout_boxes_from_section safe_br %}
 
 {% block metadata %}
@@ -26,9 +26,7 @@
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
-  {% if nofo.inline_css %}
-    <style>{{ nofo.inline_css|safe }}</style>
-  {% endif %}
+
 {% endblock %}
 
 {% block title %}{{ nofo.title }}{% endblock %}
@@ -216,7 +214,7 @@
   </section>
 
   <!-- BEFORE YOU BEGIN PAGE -->
-  {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'sole_source' %}
+  {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'sole_source' or nofo.before_you_begin == 'era' %}
     <section id="section--before-you-begin" class="before-you-begin{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}">
       <div class="section--before-you-begin--icon">
         {% if "thin" in nofo.icon_style %}
@@ -225,56 +223,61 @@
           {% include "includes/icons/0-before.svg" %}
         {% endif %}
       </div>
-      <h2 id="section--before-you-begin--heading">Before you begin</h2>
-      <div class="before-you-begin--content">
 
-        {% if nofo.before_you_begin == 'full' %}
-          <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.</p>
-        {% else %}
-          <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> registration now. If you are already registered, make sure your registration is active and up-to-date.</p>
-        {% endif %}
-
-        <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
-        <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
-        {% if step_2_section %}
-          <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
-        {% else %}
-          <p class="highlight-strong">STEP 2 SECTION MISSING</p>
-        {% endif %}
-
-        {% if nofo.before_you_begin == 'full' %}
-          <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
-          <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
-          {% if step_2_section %}
-            <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+      {% if nofo.before_you_begin == 'era' %}
+        {% include "nofos/byb_page_with_era.html" %}
+      {% else %}
+        <h2 id="section--before-you-begin--heading">Before you begin</h2>
+        <div class="before-you-begin--content">
+          {% if nofo.before_you_begin == 'sole_source' %}
+            <p class="section--before-you-begin--psuedo-header">
+              Make sure you are an approved applicant for this funding opportunity.
+            </p>
           {% else %}
-            <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+            <p>
+              If you believe you are a good candidate for this funding opportunity, secure your
+              <a href="https://sam.gov">SAM.gov</a> and
+              <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already
+              registered, make sure your registrations are active and up-to-date.
+            </p>
+            <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
+            <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
+            {% if step_2_section %}
+              <a href="#{{ step_2_section.html_id }}">See Step 2: Get Ready to Apply</a>
+            {% else %}
+              <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+            {% endif %}
+            <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
+            <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
+            {% if step_2_section %}
+              <a href="#{{ step_2_section.html_id }}">See Step 2: Get Ready to Apply</a>
+            {% else %}
+              <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+            {% endif %}
+            <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
+            {% if "|" in nofo.application_deadline %}
+              <p>Applications are due by 11:59 p.m. Eastern Time:</p>
+              <ul>
+              {% for application_deadline in nofo.application_deadline|split_char_to_list %}
+                <li>{{ application_deadline }}</li>
+              {% endfor %}
+              </ul>
+            {% else %}
+              <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+            {% endif %}
+            <div class="callout-box callout-box--icon callout-box--keyboard">
+              <div class="callout-box--contents">
+                  {% if "thin" in nofo.icon_style %}
+                    {% include "includes/icons/thin/00-adobe-pdf.svg" %}
+                  {% else %}
+                    {% include "includes/icons/00-adobe-pdf.svg" %}
+                  {% endif %}
+                  <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
+              </div>
+            </div>
           {% endif %}
-        {% endif %}
-
-        <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
-        {% if "|" in nofo.application_deadline %}
-          <p>Applications are due by 11:59 p.m. Eastern Time:</p>
-          <ul>
-          {% for application_deadline in nofo.application_deadline|split_char_to_list %}
-            <li>{{ application_deadline }}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
-        {% endif %}
-
-        <div class="callout-box callout-box--icon callout-box--keyboard">
-          <div class="callout-box--contents">
-              {% if "thin" in nofo.icon_style %}
-                {% include "includes/icons/thin/00-adobe-pdf.svg" %}
-              {% else %}
-                {% include "includes/icons/00-adobe-pdf.svg" %}
-              {% endif %}
-              <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
-          </div>
         </div>
-      </div>
+      {% endif %}
     </section>
   {% endif %}
 
@@ -404,7 +407,7 @@
                 {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
               {% endwith %}
                 {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-            {% endif %}
+              {% endif %}
           {% endif %}
         {% endfor %}
       </div>

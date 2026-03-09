@@ -16,6 +16,7 @@ from .utils import add_html_id_to_subsection
 
 BYB_CHOICES = [
     ("full", "Full BYB page"),
+    ("era", "BYB page with eRA"),
     ("sole_source", "Sole Source Justification"),
     ("none", "No BYB page"),
 ]
@@ -434,7 +435,7 @@ class Nofo(BaseNofo):
         choices=BYB_CHOICES,
         default="full",
         help_text=(
-            "Controls how the 'Before you begin' page is presented. Choices are 'Full', 'Sole Source' (for 1 applicant), and 'None'."
+            "Controls how the 'Before you begin' page is presented. Choices are 'Full', 'BYB page with eRA', 'Sole Source' (for 1 applicant), and 'None'."
         ),
     )
 
