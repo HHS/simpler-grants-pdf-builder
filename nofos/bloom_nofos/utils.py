@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from socket import gaierror, gethostbyname, gethostname
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
@@ -122,17 +123,34 @@ def generate_docx_download_response(
             "Missing session/csrf cookies for DOCX conversion."
         )
 
+    parsed = urlparse(export_url)
+    export_host = parsed.hostname
+    export_scheme = parsed.scheme
+
+    if not export_host or export_scheme != "https":
+        return HttpResponseServerError("Invalid export URL for DOCX conversion.")
+
+    request_host = request.get_host().split(":")[0]
+
+    # Defensive check: the cookies we are copying came from this incoming request,
+    # so the request host should match the host GrabzIt will fetch.
+    if request_host != export_host:
+        return HttpResponseServerError(
+            f"Host mismatch for DOCX conversion. request_host={request_host}, export_host={export_host}"
+        )
+
     grabzit = GrabzItClient.GrabzItClient(
         settings.GRABZIT_APPLICATION_KEY,
         settings.GRABZIT_APPLICATION_SECRET,
     )
 
-    domain = request.get_host().split(":")[0]  # Remove port if present
-    if not grabzit.SetCookie("sessionid", domain, session_value):
+    # Set cookies only for the exact host GrabzIt will request.
+    if not grabzit.SetCookie("sessionid", export_host, session_value):
         return HttpResponseServerError(
             "Failed to set session cookie for GrabzIt conversion."
         )
-    if not grabzit.SetCookie("csrftoken", domain, csrf_value):
+
+    if not grabzit.SetCookie("csrftoken", export_host, csrf_value):
         return HttpResponseServerError(
             "Failed to set csrf cookie for GrabzIt conversion."
         )
