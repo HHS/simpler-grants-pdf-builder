@@ -51,6 +51,30 @@ class NofosLoginRequiredMiddleware:
                 flush=True,
             )
 
+            print(
+                "[SESSION_DEBUG]",
+                {
+                    "session_key": request.session.session_key,
+                    "has_auth_user_id": "_auth_user_id" in request.session,
+                    "has_auth_user_backend": "_auth_user_backend" in request.session,
+                    "session_auth_user_id": request.session.get("_auth_user_id"),
+                    "user_authenticated": request.user.is_authenticated,
+                    "user_id": getattr(request.user, "id", None),
+                    "session_items": list(request.session.items()),
+                },
+                flush=True,
+            )
+
+            print(
+                "[SESSION_COOKIE_RAW]",
+                {
+                    "cookie_sessionid": request.COOKIES.get("sessionid"),
+                    "cookie_csrftoken": request.COOKIES.get("csrftoken"),
+                    "session_key": request.session.session_key,
+                },
+                flush=True,
+            )
+
             if (
                 is_view_url
                 and is_secure
