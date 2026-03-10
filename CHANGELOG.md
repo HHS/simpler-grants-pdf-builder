@@ -13,6 +13,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- More explicit "set cookie" logic for grabzit
+
 ## [3.28.0] - 2026-03-10
 
 ### Added
