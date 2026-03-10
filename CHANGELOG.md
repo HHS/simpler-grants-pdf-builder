@@ -13,6 +13,16 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.28.0] - 2026-03-10
+
+### Added
+
+- Added a new Before You Begin page option to the NOFO Builder: "BYB page with eRA"
+
+### Migrations
+
+- Add new "before_you_begin" attribute: "era"
+
 ## [3.27.0] - 2026-03-05
 
 ### Added
