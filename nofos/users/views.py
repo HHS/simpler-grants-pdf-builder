@@ -224,6 +224,21 @@ def logout_view(request):
 
 def traditional_login_view(request):
     """Handle traditional login with username/password."""
+    print(
+        "[TRADITIONAL_LOGIN_VIEW]",
+        {
+            "method": request.method,
+            "path": request.get_full_path(),
+            "host": request.get_host(),
+            "user_authenticated": request.user.is_authenticated,
+            "user_id": getattr(request.user, "id", None),
+            "next_get": request.GET.get("next"),
+            "next_post": request.POST.get("next"),
+            "cookie_names": list(request.COOKIES.keys()),
+        },
+        flush=True,
+    )
+
     form = LoginForm(request.POST or None)
     redirect_to = request.POST.get("next") or request.GET.get("next") or ""
 

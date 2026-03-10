@@ -24,26 +24,73 @@ class NofosLoginRequiredMiddleware:
             )
 
         user = request.user
-        if (
-            resolve(request.path).app_name == self.APP_NAME
-        ):  # match app_name defined in myapp.urls.py
+
+        resolved = resolve(request.path)
+
+        if resolved.app_name == self.APP_NAME:
             safe_ips = parse_docraptor_ip_addresses(config.DOCRAPTOR_IPS)
             incoming_ip = request.headers.get("x-forwarded-for")
+            is_view_url = match_view_url(request.get_full_path())
+            is_secure = request.is_secure()
+
+            print(
+                "[NOFOS_LOGIN_MIDDLEWARE]",
+                {
+                    "path": request.get_full_path(),
+                    "host": request.get_host(),
+                    "method": request.method,
+                    "user_authenticated": user.is_authenticated,
+                    "user_id": getattr(user, "id", None),
+                    "incoming_ip": incoming_ip,
+                    "is_view_url": is_view_url,
+                    "is_secure": is_secure,
+                    "incoming_ip_in_docraptor_allowlist": bool(
+                        incoming_ip and incoming_ip in safe_ips
+                    ),
+                },
+                flush=True,
+            )
 
             if (
-                match_view_url(request.get_full_path())  # is a view URL
-                and request.is_secure()  # https request
+                is_view_url
+                and is_secure
                 and incoming_ip
-                and len(incoming_ip)  # there is an incoming ip
+                and len(incoming_ip)
                 and incoming_ip in safe_ips
             ):
+                print(
+                    "[NOFOS_LOGIN_MIDDLEWARE_ALLOW_DOC_RAPTOR_IP]",
+                    {
+                        "incoming_ip": incoming_ip,
+                        "path": request.get_full_path(),
+                    },
+                    flush=True,
+                )
                 pass
 
             elif not user.is_authenticated:
                 path = request.get_full_path()
+                print(
+                    "[NOFOS_LOGIN_MIDDLEWARE_REDIRECT_TO_LOGIN]",
+                    {
+                        "path": path,
+                        "host": request.get_host(),
+                        "incoming_ip": incoming_ip,
+                        "cookies_present": list(request.COOKIES.keys()),
+                    },
+                    flush=True,
+                )
                 return redirect_to_login(path)
 
             elif user.force_password_reset:
+                print(
+                    "[NOFOS_LOGIN_MIDDLEWARE_FORCE_PASSWORD_RESET]",
+                    {
+                        "user_id": user.id,
+                        "path": request.get_full_path(),
+                    },
+                    flush=True,
+                )
                 return redirect("users:user_force_password_reset")
 
         return self.get_response(request)

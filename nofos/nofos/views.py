@@ -293,8 +293,31 @@ class NOFOsExportView(DetailView):
     def dispatch(self, request, *args, **kwargs):
         nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
 
+        print(
+            "[NOFO_EXPORT_DISPATCH]",
+            {
+                "method": request.method,
+                "path": request.get_full_path(),
+                "host": request.get_host(),
+                "user_authenticated": request.user.is_authenticated,
+                "user_id": getattr(request.user, "id", None),
+                "nofo_pk": str(nofo.pk),
+            },
+            flush=True,
+        )
+
         # Most non-authed users are filtered out by middleware.py
         if request.user.is_authenticated:
+            has_permission = has_group_permission_func(request.user, nofo)
+            print(
+                "[NOFO_EXPORT_DISPATCH_PERMISSION]",
+                {
+                    "user_id": request.user.id,
+                    "nofo_pk": str(nofo.pk),
+                    "has_group_permission": has_permission,
+                },
+                flush=True,
+            )
             # do not let users from other groups print this nofo
             if not has_group_permission_func(request.user, nofo):
                 raise PermissionDenied("You don’t have permission to view this NOFO.")
@@ -306,11 +329,37 @@ class NOFOsExportView(DetailView):
         nofo = self.get_object()
         action = request.POST.get("export_action")
 
+        print(
+            "[NOFO_EXPORT_POST_START]",
+            {
+                "host": request.get_host(),
+                "path": request.get_full_path(),
+                "user_authenticated": request.user.is_authenticated,
+                "user_id": getattr(request.user, "id", None),
+                "nofo_pk": str(nofo.pk),
+                "action": action,
+            },
+            flush=True,
+        )
+
         if action != "download":
+            print(
+                "[NOFO_EXPORT_POST_BAD_ACTION]",
+                {"action": action},
+                flush=True,
+            )
             return HttpResponseBadRequest("Unknown action.")
 
         export_url = request.build_absolute_uri(
             reverse_lazy("nofos:nofo_export", args=[nofo.pk])
+        )
+
+        print(
+            "[NOFO_EXPORT_POST_EXPORT_URL]",
+            {
+                "export_url": export_url,
+            },
+            flush=True,
         )
 
         return generate_docx_download_response(

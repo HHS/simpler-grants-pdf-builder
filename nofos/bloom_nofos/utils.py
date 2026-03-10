@@ -117,7 +117,37 @@ def generate_docx_download_response(
     session_value = request.COOKIES.get("sessionid")
     csrf_value = request.COOKIES.get("csrftoken")
 
+    print(
+        "[DOCX_EXPORT_START]",
+        {
+            "host": request.get_host(),
+            "export_url": export_url,
+            "target_element": target_element,
+            "filename_base": filename_base,
+            "tmp_name": tmp_name,
+            "has_session_cookie": bool(session_value),
+            "has_csrf_cookie": bool(csrf_value),
+            "session_cookie_preview": (
+                f"{session_value[:6]}...{session_value[-4:]}" if session_value else None
+            ),
+            "csrf_cookie_preview": (
+                f"{csrf_value[:6]}...{csrf_value[-4:]}" if csrf_value else None
+            ),
+            "user_authenticated": request.user.is_authenticated,
+            "user_id": getattr(request.user, "id", None),
+        },
+        flush=True,
+    )
+
     if not session_value or not csrf_value:
+        print(
+            "[DOCX_EXPORT_MISSING_COOKIES]",
+            {
+                "has_session_cookie": bool(session_value),
+                "has_csrf_cookie": bool(csrf_value),
+            },
+            flush=True,
+        )
         return HttpResponseServerError(
             "Missing session/csrf cookies for DOCX conversion."
         )
@@ -128,11 +158,34 @@ def generate_docx_download_response(
     )
 
     domain = request.get_host().split(":")[0]  # Remove port if present
-    if not grabzit.SetCookie("sessionid", domain, session_value):
+
+    print(
+        "[DOCX_EXPORT_COOKIE_DOMAIN]",
+        {
+            "request_host": request.get_host(),
+            "cookie_domain": domain,
+        },
+        flush=True,
+    )
+
+    session_cookie_ok = grabzit.SetCookie("sessionid", domain, session_value)
+    csrf_cookie_ok = grabzit.SetCookie("csrftoken", domain, csrf_value)
+
+    print(
+        "[DOCX_EXPORT_SET_COOKIE_RESULTS]",
+        {
+            "session_cookie_ok": session_cookie_ok,
+            "csrf_cookie_ok": csrf_cookie_ok,
+            "cookie_domain": domain,
+        },
+        flush=True,
+    )
+
+    if not session_cookie_ok:
         return HttpResponseServerError(
             "Failed to set session cookie for GrabzIt conversion."
         )
-    if not grabzit.SetCookie("csrftoken", domain, csrf_value):
+    if not csrf_cookie_ok:
         return HttpResponseServerError(
             "Failed to set csrf cookie for GrabzIt conversion."
         )
@@ -140,13 +193,51 @@ def generate_docx_download_response(
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element
 
+    print(
+        "[DOCX_EXPORT_BEFORE_URLTODOCX]",
+        {
+            "export_url": export_url,
+            "target_element": target_element,
+        },
+        flush=True,
+    )
+
     grabzit.URLToDOCX(export_url, options)
 
     file_path = f"/tmp/{tmp_name}.docx"
+
+    print(
+        "[DOCX_EXPORT_BEFORE_SAVETO]",
+        {
+            "file_path": file_path,
+        },
+        flush=True,
+    )
+
     grabzit.SaveTo(file_path)
+
+    print(
+        "[DOCX_EXPORT_AFTER_SAVETO]",
+        {
+            "file_path": file_path,
+            "file_exists": os.path.exists(file_path),
+            "file_size": (
+                os.path.getsize(file_path) if os.path.exists(file_path) else None
+            ),
+        },
+        flush=True,
+    )
 
     with open(file_path, "rb") as f:
         content = f.read()
+
+    print(
+        "[DOCX_EXPORT_FILE_READ]",
+        {
+            "content_bytes": len(content),
+        },
+        flush=True,
+    )
 
     # Optional cleanup (safe even if it fails)
     try:
@@ -159,4 +250,14 @@ def generate_docx_download_response(
         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
     response["Content-Disposition"] = f'attachment; filename="{filename_base}.docx"'
+
+    print(
+        "[DOCX_EXPORT_RESPONSE_READY]",
+        {
+            "filename": f"{filename_base}.docx",
+            "content_bytes": len(content),
+        },
+        flush=True,
+    )
+
     return response
