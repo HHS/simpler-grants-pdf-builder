@@ -229,6 +229,10 @@ section.before-you-begin {
   padding-top: 150px;
 }
 
+section.before-you-begin--era {
+  padding-top: 80px;
+}
+
 /* Section title page */
 
 .section--title-page .section--title-page--header-nav > ol {
