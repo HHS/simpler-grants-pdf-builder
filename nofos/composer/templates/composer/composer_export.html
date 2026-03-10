@@ -83,14 +83,16 @@
                         {% endif %}
 
                         {% if subsection.instructions %}
-                          <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
-                          <table class="subsection-instructions bg-primary-lighter padding-2">
-                            <tr>
-                              <td>
-                                {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_class_to_first_paragraph|add_classes_to_lists|convert_paragraphs_to_hrs }}
-                              </td>
-                            </tr>
-                          </table>
+                          <div class="margin-top-2 margin-bottom-2">
+                            <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
+                            <table class="subsection-instructions bg-primary-lighter padding-2">
+                              <tr>
+                                <td>
+                                  {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_class_to_first_paragraph|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                                </td>
+                              </tr>
+                            </table>
+                          </div>
                         {% endif %}
 
                         {% if subsection.body %}
