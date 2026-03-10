@@ -1,0 +1,76 @@
+{% load split_char_and_remove %}
+
+<section id="section--before-you-begin" class="before-you-begin{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}{% if nofo.before_you_begin == 'era' %} before-you-begin--era{% endif %}">
+  <div class="section--before-you-begin--icon">
+    {% if "thin" in nofo.icon_style %}
+      {% include "includes/icons/thin/0-before.svg" %}
+    {% else %}
+      {% include "includes/icons/0-before.svg" %}
+    {% endif %}
+  </div>
+  <h2 id="section--before-you-begin--heading">Before you begin</h2>
+  <div class="before-you-begin--content">
+
+    {% if nofo.before_you_begin == 'full' %}
+      <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.</p>
+    {% elif nofo.before_you_begin == 'era' %}
+      <p>
+        If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov" target="_blank">SAM.gov</a>, <a href="https://grants.gov" target="_blank">Grants.gov</a>, and <a href="https://era.nih.gov" target="_blank">eRA.NIH.gov</a> registrations now. If you are already registered, make sure your registrations are active and up-to-date.
+      </p>
+    {% elif nofo.before_you_begin == 'sole_source' %}
+      <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> registration now. If you are already registered, make sure your registration is active and up-to-date.</p>
+    {% endif %}
+
+    <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
+    <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
+    {% if step_2_section %}
+      <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+    {% else %}
+      <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+    {% endif %}
+
+    {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'era' %}
+      <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
+      <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
+      {% if step_2_section %}
+        <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
+      {% else %}
+        <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+      {% endif %}
+    {% endif %}
+
+    {% if nofo.before_you_begin == 'era' %}
+      <!-- eRA.NIH.gov registration section moved above Apply by the application due date -->
+      <p class="section--before-you-begin--psuedo-header">eRA.NIH.gov registration</p>
+      <p>Once an organization has established its unique organization identifier, organizations can <a href="https://www.era.nih.gov/" target="_blank">register with eRA Commons</a> in tandem with completing Grants.gov registration. You must have all registrations in place at the time of submission. eRA Commons requires organizations to identify at least one Signing Official (SO) and at least one Program Director/Principal Investigator (PD/PI) account in order to submit an application.</p>
+      {% if step_2_section %}
+        <a href="#{{ step_2_section.html_id }}">See Step 2: Get Ready to Apply</a>
+      {% else %}
+        <p class="highlight-strong">STEP 2 SECTION MISSING</p>
+      {% endif %}
+    {% endif %}
+
+    <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
+    {% if "|" in nofo.application_deadline %}
+      <p>Applications are due by 11:59 p.m. Eastern Time:</p>
+      <ul>
+      {% for application_deadline in nofo.application_deadline|split_char_to_list %}
+        <li>{{ application_deadline }}</li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>Applications are due by 11:59 p.m. Eastern Time on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+    {% endif %}
+
+    <div class="callout-box callout-box--icon callout-box--keyboard">
+      <div class="callout-box--contents">
+          {% if "thin" in nofo.icon_style %}
+            {% include "includes/icons/thin/00-adobe-pdf.svg" %}
+          {% else %}
+            {% include "includes/icons/00-adobe-pdf.svg" %}
+          {% endif %}
+          <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
