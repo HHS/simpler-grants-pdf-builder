@@ -26,6 +26,9 @@
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
+  {% if nofo.inline_css %}
+    <style>{{ nofo.inline_css|safe }}</style>
+  {% endif %}
 {% endblock %}
 
 {% block title %}{{ nofo.title }}{% endblock %}
