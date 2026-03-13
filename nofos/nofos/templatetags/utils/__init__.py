@@ -101,14 +101,11 @@ def add_class_to_table(table):
     """
     Adds a size class to a BeautifulSoup table based on column and row count.
 
-    First checks if the table is a "callout box" using the `is_callout_box_table_markdown` function.
-     - "table--callout-box": this table is a callout box
-
-    Secondly, checks for content of table headings:
+    First, checks for content of table headings:
     - "table--large": th found with "Recommended For"
     - "table--criterion": th found with "Criterion"
 
-    Finally, look at columns and word count:
+    Next, look at columns and word count:
     - "table--small": fewer than 4 columns and no words
     - "table--large": total word count exceeds 120 words
     - "table--small" for 2 columns or less
@@ -120,9 +117,6 @@ def add_class_to_table(table):
             return "table--large"
 
         return "table--small"
-
-    if is_callout_box_table_markdown(table):
-        return "table--callout-box"
 
     rows = table.find_all("tr")
     if rows:
@@ -275,23 +269,6 @@ def get_parent_td(element):
     for parent in element.parents:
         if parent.name == "td":
             return parent
-
-    return False
-
-
-def is_callout_box_table_markdown(table):
-    rows = table.find_all("tr")
-    if rows:
-        cols = rows[0].find_all("th") + rows[0].find_all("td")
-        tds = table.find_all("td")
-
-        return (
-            len(cols) == 1  # 1 column
-            and len(rows) == 2  # 2 rows (thead and tbody generated automatically)
-            and len(tds) == 1  # 1 cell
-            and tds[0]
-            and tds[0].get_text().strip() == ""  # the cell is empty
-        )
 
     return False
 

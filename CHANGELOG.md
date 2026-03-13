@@ -13,6 +13,7 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Stop 1-cell tables getting a "table--callout-box" class
 - More explicit "set cookie" logic for grabzit
 
 ## [3.28.0] - 2026-03-10
