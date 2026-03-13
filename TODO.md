@@ -1,9 +1,6 @@
 # TODO
 
-- Write ADRs
-  - Why Python
-- Password reset flow on command line
-- Password reset flow exists
+- Export Word docs from Composer
 
 # DONE
 

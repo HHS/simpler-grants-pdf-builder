@@ -32,7 +32,12 @@ body.instructions_edit {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+  font-family:
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
     sans-serif;
 }
 body > main {
@@ -874,12 +879,14 @@ label.usa-label {
   border-radius: 4px;
   margin-top: 0;
   cursor: pointer;
-  background-image: url("/static/img/usa-icons/expand_more.svg"),
+  background-image:
+    url("/static/img/usa-icons/expand_more.svg"),
     linear-gradient(transparent, transparent);
 }
 
 .nofo_edit .menu-button-links .menu-button-links__button[aria-expanded="true"] {
-  background-image: url("/static/img/usa-icons/expand_less.svg"),
+  background-image:
+    url("/static/img/usa-icons/expand_less.svg"),
     linear-gradient(transparent, transparent);
 }
 
@@ -1082,7 +1089,10 @@ label.usa-label {
   pointer-events: none;
 
   /* smooth fade */
-  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    visibility 0s linear 0.3s;
   transform: translateY(25px);
 }
 
@@ -1098,7 +1108,9 @@ label.usa-label {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition: opacity 0.3s ease, visibility 0s;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s;
 
   transform: translateY(0);
 }
@@ -1844,10 +1856,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: -0.5rem;
 }
 
-.table--callout-box {
-  display: none;
-}
-
 .usa-footer__not-actually-a-link {
   color: var(--color--med-grey);
   font-weight: 400;
@@ -2203,7 +2211,8 @@ del h6,
   When del wraps a table, style all table elements
   and supercede usa table styles
 */
-del table th, del table td {
+del table th,
+del table td {
   background-color: #ffebe9 !important;
 }
 
@@ -2225,7 +2234,8 @@ ins h6,
   When ins wraps a table, style all table elements
   and supercede usa table styles
 */
-ins table th, ins table td {
+ins table th,
+ins table td {
   background-color: #aceebb !important;
 }
 
@@ -2329,7 +2339,9 @@ del + ins > br {
 }
 
 .side-nav-container.is-open .side-nav-content {
-  transition: left 0.3s ease, transform 0.3s ease;
+  transition:
+    left 0.3s ease,
+    transform 0.3s ease;
   left: 60px;
   transform: translateY(-50%);
 }
