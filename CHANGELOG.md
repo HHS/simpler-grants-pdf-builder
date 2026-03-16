@@ -9,10 +9,13 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add an export view for a ContentGuide (not a ContentGuideInstance)
+
 ### Changed
 
 ### Fixed
 
+- Add titles for "export" views
 - Stop 1-cell tables getting a "table--callout-box" class
 - More explicit "set cookie" logic for grabzit
 
