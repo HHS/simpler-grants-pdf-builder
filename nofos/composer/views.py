@@ -1,9 +1,9 @@
 import json
 from typing import Dict
 
-from bloom_nofos import settings
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
+from bloom_nofos.utils import generate_docx_download_response
 from composer.utils import do_replace_variable_keys_with_values
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -16,11 +16,9 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import (
     Http404,
-    HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseNotFound,
-    HttpResponseServerError,
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -37,9 +35,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-from GrabzIt import GrabzItClient, GrabzItDOCXOptions
 from martor.utils import markdownify
-from requests import request
 
 from nofos.audits import get_audit_event_by_id, safe_get_changed_fields
 from nofos.mixins import (
@@ -352,6 +348,7 @@ class BaseComposerPreviewView(LoginRequiredMixin, DetailView):
         context.setdefault("show_side_nav", True)
 
         # Button flags (all off by default)
+        context.setdefault("show_export_button", False)
         context.setdefault("show_unpublish_button", False)
         context.setdefault("show_save_exit_button", False)
         context.setdefault("show_publish_button", False)
@@ -871,9 +868,11 @@ class ComposerPreviewView(BaseComposerPreviewView):
             # Published: only "Unpublish"
             context["show_unpublish_button"] = True
         else:
-            # Not published (draft): "Save and exit" + "Publish"
-            context["show_save_exit_button"] = True
+            # Not published (draft): "Publish"
             context["show_publish_button"] = True
+
+        # Always show the export button
+        context["show_export_button"] = True
 
         return context
 
@@ -921,6 +920,43 @@ class ComposerPreviewView(BaseComposerPreviewView):
             return redirect(self.request.path)
 
         return HttpResponseBadRequest("Unknown action.")
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class ComposerExportView(
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    DetailView,
+):
+    model = ContentGuide
+    template_name = "composer/composer_export.html"
+    context_object_name = "document"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sections"] = self.object.sections.prefetch_related(
+            "subsections"
+        ).order_by("order", "id")
+        return context
+
+    def post(self, request, *args, **kwargs):
+        document = self.get_object()
+        action = request.POST.get("export_action")
+
+        if action != "download":
+            return HttpResponseBadRequest("Unknown action.")
+
+        export_url = request.build_absolute_uri(
+            reverse_lazy("composer:composer_export", args=[document.pk])
+        )
+
+        return generate_docx_download_response(
+            request=request,
+            export_url=export_url,
+            target_element="#download_target",
+            filename_base=(document.title or "content-guide"),
+            tmp_name=str(document.pk),
+        )
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -1768,50 +1804,19 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
             return redirect(self.exit_url)
 
         if action == "download":
-            return self._handle_download_request(document, request)
+            export_url = request.build_absolute_uri(
+                reverse("composer:writer_instance_export", args=[document.pk])
+            )
+
+            return generate_docx_download_response(
+                request=request,
+                export_url=export_url,
+                target_element="#download_target",
+                filename_base=document.short_name or document.title,
+                tmp_name=str(document.pk),
+            )
 
         return HttpResponseBadRequest("Unknown action.")
-
-    def _handle_download_request(self, document, request):
-        """
-        Handle the download action for a ContentGuideInstance.
-        Makes a call to the Grabzit conversion API to convert the HTML to a DOCX file.
-        """
-        session_value = request.COOKIES["sessionid"]
-        csrf_value = request.COOKIES["csrftoken"]
-
-        grabzit = GrabzItClient.GrabzItClient(
-            settings.GRABZIT_APPLICATION_KEY, settings.GRABZIT_APPLICATION_SECRET
-        )
-
-        domain = request.get_host().split(":")[0]  # Remove port if present
-        set_session_cookie = grabzit.SetCookie("sessionid", domain, session_value)
-        set_csrf_cookie = grabzit.SetCookie("csrftoken", domain, csrf_value)
-
-        if not set_session_cookie or not set_csrf_cookie:
-            return HttpResponseServerError(
-                "Failed to set cookies for Grabzit conversion."
-            )
-
-        export_url = request.build_absolute_uri(
-            reverse("composer:writer_instance_export", args=[document.pk])
-        )
-        options = GrabzItDOCXOptions.GrabzItDOCXOptions()
-        options.targetElement = "#download_target"
-        grabzit.URLToDOCX(export_url, options)
-
-        filePath = f"/tmp/{document.pk}.docx"
-        grabzit.SaveTo(filePath)
-
-        with open(filePath, "rb") as docx_file:
-            response = HttpResponse(
-                docx_file.read(),
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = (
-                f'attachment; filename="{document.short_name or document.title}.docx"'
-            )
-            return response
 
 
 @method_decorator(staff_member_required, name="dispatch")

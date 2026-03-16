@@ -1,3 +1,9 @@
+/* CSS vars */
+:root {
+  --color--word-blue: #185393;
+  --color--word-navy: #0d2b4d;
+}
+
 /* Global CSS */
 
 html {
@@ -177,4 +183,30 @@ span.page-break {
 
 .nofo_view .callout-box td {
   padding-bottom: 0;
+}
+
+/* Instructions boxes */
+
+.nofo_view .subsection-instructions {
+  font-size: 14px;
+}
+
+.nofo_view .subsection-instructions .instructions-heading {
+  font-size: 16px;
+  color: var(--color--word-navy);
+}
+
+.nofo_view .subsection-instructions p:not(.instructions-heading) strong {
+  color: var(--color--word-blue);
+}
+
+.nofo_view .section--content table.subsection-instructions td {
+  background-color: #d9e8f6;
+  border-style: none;
+}
+
+/* Composer elements */
+
+.nofo_view .styled-subsection-body--variables .md-curly-variable {
+  background-color: yellow;
 }

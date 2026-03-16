@@ -1,6 +1,8 @@
 {% extends 'base_barebones.html' %}
 {% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs truncate_anchor_links_for_docx %}
 
+{% block title %}{{ nofo.title }}{% endblock %}
+
 {% block base_css %}
   <link href="{% static 'styles.css' %}" rel="stylesheet">
 {% endblock %}
@@ -16,8 +18,6 @@
   <link rel="preload" href="{% static 'uswds/uswds.js' %}" as="script">
   <script src="{% static 'uswds/uswds.js' %}" defer></script>
 {% endblock %}
-
-{% block title %}{{ nofo.title }}{% endblock %}
 
 {% block header %}
   <header class="usa-header usa-header--basic">
@@ -35,7 +35,8 @@
             <a href="{% url 'nofos:nofo_edit' nofo.id %}" class="usa-nav-link">Edit this NOFO</a>
           </li>
         </ul>
-        {% include "includes/download_docx_button.html" %}
+        {% url 'nofos:nofo_export' nofo.id as action_url %}
+        {% include "includes/download_docx_button.html" with action_url=action_url %}
       </nav>
     </div>
   </header>

@@ -1,0 +1,142 @@
+{% extends 'base_barebones.html' %}
+{% load static tz martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs truncate_anchor_links_for_docx %}
+
+{% block title %}
+  {{ document.title }} </title>
+{% endblock %}
+
+{% block base_css %}
+  <link href="{% static 'styles.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block css %}
+  <link href="{% static "styles-theme-base.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-orientation-portrait.css" %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static "theme-export.css" %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block uswds_js %}
+  <script src="{% static 'uswds/uswds-init.js' %}"></script>
+  <link rel="preload" href="{% static 'uswds/uswds.js' %}" as="script">
+  <script src="{% static 'uswds/uswds.js' %}" defer></script>
+{% endblock %}
+
+{% block header %}
+  <header class="usa-header usa-header--basic">
+    <div class="usa-nav-container">
+      <div class="usa-navbar">
+        <div class="usa-logo" style="margin-top: 1rem;">
+          <em class="usa-logo__text">
+            <a href="{% url 'composer:composer_index' %}" class="usa-nav-link">NOFO Composer</a>
+          </em>
+        </div>
+      </div>
+      <nav aria-label="Primary navigation" class="usa-nav">
+        <ul class="usa-nav__primary usa-accordion">
+          <li class="usa-nav__primary-item usa-nav__primary-item__right-padding">
+            <a href="{% url 'composer:composer_preview' document.id %}" class="usa-nav-link">Content Guide Preview</a>
+          </li>
+        </ul>
+        {% url 'composer:composer_export' document.id as action_url %}
+        {% include "includes/download_docx_button.html" with action_url=action_url %}
+      </nav>
+    </div>
+  </header>
+{% endblock %}
+
+{% block content %}
+  <div class="usa-section">
+     <div id="download_target" class="nofo_view">
+        <!-- Render each section with all its subsections -->
+        {% for section in document.sections.all|dictsort:"order" %}
+          <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+            <h2 id="{{ section.html_id|truncate_heading_ids_for_docx }}" >{{ section.name }}</h2>
+            {% if forloop.counter == 1 %}
+              <div>
+                <h3>Basic information</h3>
+                <div class="styled-subsection-body">
+                  <p>Opdiv: {{ document.opdiv }}</p>
+                  {% if document.agency %}<p>Agency: {{ document.agency }}</p>{% endif %}
+                  {% if document.subagency %}<p>Subagency: {{ document.subagency }}</p>{% endif %}
+                  {% if document.subagency2 %}<p>Subagency 2: {{ document.subagency2 }}</p>{% endif %}
+                  {% if document.name %}<p>Opportunity name: {{ document.name  }}</p>{% endif %}
+                  {% if document.number %}<p>Opportunity number: {{ document.number }}</p>{% endif %}
+                  {% if document.application_deadline %}<p>Application deadline: {{ document.application_deadline }}</p>{% endif %}
+                  {% if document.tagline %}<p>Tagline: {{ document.tagline }}</p>{% endif %}
+                  {% if document.author %}<p>Metadata author: {{ document.author }}</p>{% endif %}
+                  {% if document.subject %}<p>Metadata subject: {{ document.subject }}</p>{% endif %}
+                  {% if document.keywords %}<p>Metadata keywords: {{ document.keywords }}</p>{% endif %}
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="section--content">
+                {% for subsection in section.subsections.all|dictsort:"order" %}
+                  {% with subname=subsection.name|default_if_none:""|lower %}
+
+                    {% if forloop.parentloop.first and forloop.first and subname == 'basic information'  %}
+                      {# Ignore "Basic information" subsection #}
+                    {% else %}
+
+                      {% if not subsection.hidden %}
+
+                        {# skip "hidden" subsections #}
+                        {% if 'page-break-before' in subsection.html_class %}
+                          <span class="page-break"></span>
+                        {% endif %}
+
+                        {% if subsection.instructions %}
+                          <div class="margin-top-2 margin-bottom-2">
+                            <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
+                            <table class="subsection-instructions bg-primary-lighter padding-2">
+                              <tr>
+                                <td>
+                                  {{ subsection.instructions|safe_markdown|add_classes_to_paragraphs|add_class_to_first_paragraph|add_classes_to_lists|convert_paragraphs_to_hrs }}
+                                </td>
+                              </tr>
+                            </table>
+                          </div>
+                        {% endif %}
+
+                        {% if subsection.body %}
+                          <div class="{% if subsection.callout_box %}margin-top-4{% else %}margin-top-2{% endif %} margin-bottom-2">
+                        {% endif %}
+                        {% if subsection.callout_box %}
+                          <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
+                          <table class="callout-box">
+                            <tr>
+                              <td class="{% if subsection.callout_box%}border margin-top-1 padding-x-2 padding-bottom-2 padding-top-2{% endif %}">
+                                  {% with tag=subsection.tag content=subsection.name id=subsection.html_id|truncate_heading_ids_for_docx %}
+                                    {% include "includes/heading.html" with tag=tag content=content id=id only %}
+                                  {% endwith %}
+                                  <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2 {% endif %}styled-subsection-body{% if subsection.edit_mode == 'variables' %} styled-subsection-body--variables{% elif subsection.edit_mode == 'full' %} styled-subsection-body--full{% endif %}">
+                                    {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
+                                  </div>
+                              </td>
+                            </tr>
+                          </table>
+                        {% else %}
+                          {% with tag=subsection.tag content=subsection.name id=subsection.html_id|truncate_heading_ids_for_docx %}
+                            {% include "includes/heading.html" with tag=tag content=content id=id only %}
+                          {% endwith %}
+                          {% if subsection.body %}
+                            <div class="{% if not subsection.name %}margin-top-2 {% endif %}styled-subsection-body{% if subsection.edit_mode == 'variables' %} styled-subsection-body--variables{% elif subsection.edit_mode == 'full' %} styled-subsection-body--full{% endif %}">
+                              {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
+                            </div>
+                          {% endif %}
+                        {% endif %}
+                        {% if subsection.body %}
+                            </div>
+                        {% endif %}
+
+                      {% endif %} {# end of "if not subsection.hidden" #}
+
+                    {% endif %} {# end of "if forloop.parentloop.first" etc #}
+                {% endwith %}
+              {% endfor %}
+            </div>
+          </section>
+        {% endfor %}
+      </div>
+    </div>
+{% endblock %}
