@@ -871,8 +871,8 @@ class ComposerPreviewView(BaseComposerPreviewView):
             # Published: only "Unpublish"
             context["show_unpublish_button"] = True
         else:
-            # Not published (draft): "Save and exit" + "Publish"
-            context["show_save_exit_button"] = True
+            # Not published (draft): "Export Word doc" + "Publish"
+            context["show_export_button"] = True
             context["show_publish_button"] = True
 
         return context

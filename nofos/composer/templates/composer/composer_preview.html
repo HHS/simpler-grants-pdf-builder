@@ -73,6 +73,19 @@
               </li>
             {% endif %}
 
+            {# 2. Export Word doc #}
+            {% if show_export_button %}
+              <li class="usa-button-group__item">
+                <a
+                  href="{% url 'composer:composer_export' document.pk %}"
+                  class="usa-button usa-button--outline usa-link--external usa-button--content-guide-export"
+                  target="_blank"
+                >
+                  Export Word doc
+                </a>
+              </li>
+            {% endif %}
+
             {# 3. Publish #}
             {% if show_publish_button %}
               <li class="usa-button-group__item">
