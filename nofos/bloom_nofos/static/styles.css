@@ -2486,6 +2486,15 @@ hr.usa-prose:not([size]) {
   width: 125%;
 }
 
+.composer_document_section--preview .usa-button--content-guide-export {
+  font-weight: 400;
+}
+
+.composer_document_section--preview
+  .usa-button--content-guide-export.usa-link--external::after {
+  margin-top: 0;
+}
+
 .subsection_edit--composer .usa-radio__label .curly-var {
   color: var(--color--variable-pink);
 }
