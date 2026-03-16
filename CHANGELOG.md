@@ -9,10 +9,13 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add an export view for a ContentGuide (not a ContentGuideInstance)
+
 ### Changed
 
 ### Fixed
 
+- Add titles for "export" views
 - Stronger sanitization for NOFO metadata on document import
 - Add new NIH logo to prevent undesired visual artefact
 
