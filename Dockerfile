@@ -12,6 +12,7 @@ RUN apt-get update && \
   wget \
   libffi-dev \
   libpq-dev \
+  libsqlite3-0 \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry and create user
