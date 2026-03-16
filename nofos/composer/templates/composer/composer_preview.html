@@ -50,6 +50,19 @@
         <form method="post">
           {% csrf_token %}
           <ul class="usa-button-group flex-justify-end margin-y-2 margin-x-0">
+            {# 0. Export Word doc #}
+            {% if show_export_button %}
+              <li class="usa-button-group__item">
+                <a
+                  href="{% url 'composer:composer_export' document.pk %}"
+                  class="usa-button usa-button--outline usa-link--external usa-button--content-guide-export"
+                  target="_blank"
+                >
+                  Export Word doc
+                </a>
+              </li>
+            {% endif %}
+
             {# 1. Unpublish (link) #}
             {% if show_unpublish_button %}
               <li class="usa-button-group__item">
@@ -70,19 +83,6 @@
                 >
                   Save and exit
                 </button>
-              </li>
-            {% endif %}
-
-            {# 2. Export Word doc #}
-            {% if show_export_button %}
-              <li class="usa-button-group__item">
-                <a
-                  href="{% url 'composer:composer_export' document.pk %}"
-                  class="usa-button usa-button--outline usa-link--external usa-button--content-guide-export"
-                  target="_blank"
-                >
-                  Export Word doc
-                </a>
               </li>
             {% endif %}
 
