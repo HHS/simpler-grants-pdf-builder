@@ -352,6 +352,7 @@ class BaseComposerPreviewView(LoginRequiredMixin, DetailView):
         context.setdefault("show_side_nav", True)
 
         # Button flags (all off by default)
+        context.setdefault("show_export_button", False)
         context.setdefault("show_unpublish_button", False)
         context.setdefault("show_save_exit_button", False)
         context.setdefault("show_publish_button", False)
@@ -871,9 +872,11 @@ class ComposerPreviewView(BaseComposerPreviewView):
             # Published: only "Unpublish"
             context["show_unpublish_button"] = True
         else:
-            # Not published (draft): "Export Word doc" + "Publish"
-            context["show_export_button"] = True
+            # Not published (draft): "Publish"
             context["show_publish_button"] = True
+
+        # Always show the export button
+        context["show_export_button"] = True
 
         return context
 
