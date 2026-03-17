@@ -13,8 +13,20 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.29.0] - 2026-03-17
+
+### Added
+
+- Add 2 new coaches: Ashley and Jennifer
+
+### Fixed
+
 - Stop 1-cell tables getting a "table--callout-box" class
 - More explicit "set cookie" logic for grabzit
+
+## Migrations
+
+- Migrations for 2 new coaches: "ashley", and "jennifer"
 
 ## [3.28.0] - 2026-03-10
 
