@@ -22,8 +22,10 @@ BYB_CHOICES = [
 ]
 
 COACH_CHOICES = [
-    ("laura", "Laura W"),
+    ("ashley", "Ashley"),
+    ("jennifer", "Jennifer"),
     ("julie", "Julie H"),
+    ("laura", "Laura W"),
     ("moira", "Moira"),
     ("sara_d", "Sara D"),
     ("sara_t", "Sara T"),
