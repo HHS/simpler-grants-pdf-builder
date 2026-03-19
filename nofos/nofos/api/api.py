@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Status
 from ninja.security import HttpBearer
 
 from nofos.models import Nofo, Section, Subsection
@@ -27,7 +27,7 @@ health_api = NinjaAPI(auth=None, urls_namespace=None)
 @health_api.api_operation(["GET", "HEAD"], "/health", auth=None)
 def health_check(request):
     """Health check endpoint that returns 200 OK."""
-    return 200, {"status": "ok"}
+    return Status(200, {"status": "ok"})
 
 
 # Main API instance for other endpoints
@@ -68,9 +68,11 @@ def create_nofo(request, payload: NofoSchema):
         return return_response
 
     except ValidationError as e:
-        return 400, {"message": "Model validation error", "details": e.message_dict}
+        return Status(
+            400, {"message": "Model validation error", "details": e.message_dict}
+        )
     except Exception as e:
-        return 400, {"message": str(e)}
+        return Status(400, {"message": str(e)})
 
 
 @api.get("/nofos/{nofo_id}", response={200: dict, 404: ErrorSchema})
@@ -97,4 +99,4 @@ def get_nofo(request, nofo_id: uuid.UUID):
         return JsonResponse(nofo_dict, status=200)
 
     except Nofo.DoesNotExist:
-        return 404, {"message": "NOFO not found"}
+        return Status(404, {"message": "NOFO not found"})
