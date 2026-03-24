@@ -13,6 +13,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Add new NIH logo to prevent visual defect
+
 ## [3.29.0] - 2026-03-17
 
 ### Added
