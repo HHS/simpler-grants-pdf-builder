@@ -63,6 +63,7 @@ from .nofo import (
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
+    sanitize_imported_text,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
@@ -3410,6 +3411,42 @@ class TestUpdateLinkStatuses(TestCase):
 #################### SUGGEST X TESTS ####################
 #########################################################
 
+from bs4 import BeautifulSoup
+from django.test import TestCase
+
+
+class SanitizeImportedTextTests(TestCase):
+    def test_removes_zero_width_spaces_from_ends(self):
+        value = "\u200bCDC-RFA-CK-26-0197\u200b"
+        self.assertEqual(
+            sanitize_imported_text(value),
+            "CDC-RFA-CK-26-0197",
+        )
+
+    def test_removes_multiple_zero_width_spaces_from_ends(self):
+        value = "\u200b\u200bAdvancing the Centers of Excellence in Newcomer Health\u200b\u200b"
+        self.assertEqual(
+            sanitize_imported_text(value),
+            "Advancing the Centers of Excellence in Newcomer Health",
+        )
+
+    def test_collapses_extra_whitespace(self):
+        value = "  CDC-RFA-CK-26-0197   "
+        self.assertEqual(
+            sanitize_imported_text(value),
+            "CDC-RFA-CK-26-0197",
+        )
+
+    def test_removes_zero_width_spaces_inside_string(self):
+        value = "CDC-\u200bRFA-\u200bCK-26-0197"
+        self.assertEqual(
+            sanitize_imported_text(value),
+            "CDC-RFA-CK-26-0197",
+        )
+
+    def test_returns_empty_string_for_empty_input(self):
+        self.assertEqual(sanitize_imported_text(""), "")
+
 
 class HTMLSuggestTitleTests(TestCase):
     def setUp(self):
@@ -3458,6 +3495,21 @@ class HTMLSuggestTitleTests(TestCase):
             name,
         )
 
+    def test_suggest_nofo_title_removes_zero_width_spaces(self):
+        html = """
+        <html>
+            <body>
+                <p>Opportunity Name: \u200b\u200bAdvancing the Centers of Excellence in Newcomer Health\u200b\u200b</p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        self.assertEqual(
+            suggest_nofo_title(soup),
+            "Advancing the Centers of Excellence in Newcomer Health",
+        )
+
 
 class HTMLSuggestNumberTests(TestCase):
     def setUp(self):
@@ -3466,7 +3518,7 @@ class HTMLSuggestNumberTests(TestCase):
         with open(self.html_filename, "r", encoding="UTF-8") as file:
             self.soup = BeautifulSoup(file, "html.parser")
 
-    def test_suggest_nofo_title_returns_correct_title(self):
+    def test_suggest_nofo_number_returns_correct_title(self):
         self.assertEqual(
             suggest_nofo_opportunity_number(self.soup), self.nofo_opportunity_number
         )
@@ -3505,6 +3557,39 @@ class HTMLSuggestNumberTests(TestCase):
                 )
             ),
             name,
+        )
+
+    def test_suggest_nofo_number_removes_zero_width_spaces(self):
+        html = """
+        <html>
+            <body>
+                <p>Opportunity Number: \u200bCDC-RFA-CK-26-0197\u200b</p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        self.assertEqual(
+            suggest_nofo_opportunity_number(soup),
+            "CDC-RFA-CK-26-0197",
+        )
+
+    def test_suggest_nofo_number_removes_zero_width_spaces_from_spans(self):
+        html = """
+        <html>
+            <body>
+                <p>
+                    <span>Opportunity Number: </span>
+                    <span>\u200bCDC-RFA-CK-26-0197\u200b</span>
+                </p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        self.assertEqual(
+            suggest_nofo_opportunity_number(soup),
+            "CDC-RFA-CK-26-0197",
         )
 
 

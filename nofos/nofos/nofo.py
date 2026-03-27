@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import sys
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import parse_qs, urlparse
 
@@ -1493,6 +1494,21 @@ def get_side_nav_links(nofo):
 ###########################################################
 
 
+def sanitize_imported_text(value: str) -> str:
+    if not value:
+        return ""
+
+    value = unicodedata.normalize("NFKC", value)
+
+    # Remove invisible/control/format characters, including zero-width chars.
+    value = "".join(ch for ch in value if unicodedata.category(ch)[0] != "C")
+
+    # Collapse whitespace and trim.
+    value = re.sub(r"\s+", " ", value).strip()
+
+    return value
+
+
 def _suggest_by_startswith_string(soup, startswith_string):
     suggestion = ""
     regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
@@ -1508,7 +1524,7 @@ def _suggest_by_startswith_string(soup, startswith_string):
     if element:
         suggestion = regex.sub("", element.text)
 
-    return suggestion.strip()
+    return sanitize_imported_text(suggestion)
 
 
 def suggest_nofo_opportunity_number(soup):

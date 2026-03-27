@@ -13,7 +13,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
-- Add new NIH logo to prevent visual defect
+- Stronger sanitization for NOFO metadata on document import
+- Add new NIH logo to prevent undesired visual artefact
 
 ## [3.29.0] - 2026-03-17
 
