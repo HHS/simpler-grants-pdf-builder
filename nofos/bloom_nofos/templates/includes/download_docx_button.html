@@ -63,10 +63,9 @@
   data-csrf-token="{{ csrf_token }}"
 >
   {% csrf_token %}
+  <input type="hidden" name="export_action" value="download" />
   <button
     type="submit"
-    name="export_action"
-    value="download"
     class="usa-button usa-button--outline font-sans-2xs text-normal inline-block"
     aria-controls="docx-modal"
     data-open-modal

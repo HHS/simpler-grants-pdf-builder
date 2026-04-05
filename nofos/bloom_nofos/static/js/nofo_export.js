@@ -75,9 +75,7 @@
     try {
       const action_url = form.getAttribute("action");
       const csrfToken = form.dataset.csrfToken;
-
       const formData = new FormData(form);
-      formData.set("export_action", "download");
 
       const resp = await fetch(action_url, {
         method: "POST",

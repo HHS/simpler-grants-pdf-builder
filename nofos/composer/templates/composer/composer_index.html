@@ -81,7 +81,11 @@
                 <td> {{ published.created_display }}</td>
                 <td> {{ published.updated_display }} </td>
               {% endtimezone %}
-              <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td>
+              <td>
+                {% url 'composer:composer_export' published.pk as action_url %}
+                {% include "includes/download_docx_table_cell.html" with action_url=action_url %}
+              </td>
+              <!-- <td><a href="#" class="usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download">Download<span class="usa-sr-only"> this document</span></a></td> -->
             </tr>
           {% endfor %}
         </tbody>
