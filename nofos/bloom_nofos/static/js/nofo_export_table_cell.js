@@ -1,45 +1,7 @@
 (function () {
   const cells = document.querySelectorAll(".content-guide-download-cell");
 
-  async function downloadBlob(form) {
-    const formData = new FormData(form);
-    const csrfToken = form.querySelector(
-      'input[name="csrfmiddlewaretoken"]',
-    )?.value;
-
-    const resp = await fetch(form.action, {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": csrfToken,
-      },
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text().catch(() => "");
-      throw new Error(text || `Request failed (${resp.status})`);
-    }
-
-    const blob = await resp.blob();
-
-    let filename = "document.docx";
-    const cd = resp.headers.get("Content-Disposition");
-    const match = cd && cd.match(/filename="([^"]+)"/i);
-    if (match?.[1]) {
-      filename = match[1];
-    }
-
-    const objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = objectUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(objectUrl);
-  }
+  if (!cells.length || !window.NofoExport?.downloadFormAsBlob) return;
 
   cells.forEach((root) => {
     if (root.dataset.downloadBound === "true") return;
@@ -65,7 +27,7 @@
       button.classList.add("usa-button--loader");
 
       try {
-        await downloadBlob(form);
+        await window.NofoExport.downloadFormAsBlob(form);
 
         setTimeout(() => {
           button.disabled = false;

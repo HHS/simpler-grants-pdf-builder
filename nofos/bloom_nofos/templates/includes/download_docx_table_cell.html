@@ -14,6 +14,7 @@
       class="content-guide-download-btn usa-button--unstyled usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download"
       data-default-label="Download"
       data-loading-label="Loading…"
+      {% if 'localhost' in request.get_host %}disabled{% endif %}
     >
       <span class="content-guide-download-label">Download</span>
       <span class="usa-sr-only"> this document</span>

@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 ### Added
 
 - Add an export view for a ContentGuide (not a ContentGuideInstance)
+- Add export functionality to "Download" cells on composer index table
 
 ### Changed
 
