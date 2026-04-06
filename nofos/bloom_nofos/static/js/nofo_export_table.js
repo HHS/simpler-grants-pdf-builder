@@ -55,12 +55,14 @@
       e.preventDefault();
 
       const defaultLabel = button.dataset.defaultLabel || "Download";
-      const loadingLabel = button.dataset.loadingLabel || "Preparing…";
+      const loadingLabel = button.dataset.loadingLabel || "Loading…";
 
       root.classList.remove("is-error");
       button.disabled = true;
       label.textContent = loadingLabel;
       root.classList.add("is-downloading");
+      button.classList.remove("usa-button--file_download");
+      button.classList.add("usa-button--loader");
 
       try {
         await downloadBlob(form);
@@ -69,6 +71,8 @@
           button.disabled = false;
           label.textContent = defaultLabel;
           root.classList.remove("is-downloading");
+          button.classList.remove("usa-button--loader");
+          button.classList.add("usa-button--file_download");
         }, 1000);
       } catch (err) {
         console.error(err);
@@ -76,6 +80,8 @@
         label.textContent = defaultLabel;
         root.classList.remove("is-downloading");
         root.classList.add("is-error");
+        button.classList.remove("usa-button--loader");
+        button.classList.add("usa-button--file_download");
       }
     });
   });
