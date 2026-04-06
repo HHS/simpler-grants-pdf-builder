@@ -2391,6 +2391,10 @@ del + ins > br {
   cursor: pointer;
 }
 
+.usa-button--icon[disabled] {
+  cursor: not-allowed;
+}
+
 .usa-button--icon::before {
   content: "";
   background-repeat: no-repeat;

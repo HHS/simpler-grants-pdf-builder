@@ -1,6 +1,7 @@
 {% load static %}
 
 <script src="{% static 'js/nofo_export.js' %}" defer></script>
+<script src="{% static 'js/nofo_export_button.js' %}" defer></script>
 <style>
   /* Download modal */
   .usa-modal__footer .usa-button[hidden] {
@@ -60,7 +61,6 @@
   id="docx-download-form"
   method="post"
   action="{{ action_url }}"
-  data-csrf-token="{{ csrf_token }}"
 >
   {% csrf_token %}
   <input type="hidden" name="export_action" value="download" />
