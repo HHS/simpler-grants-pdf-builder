@@ -1,42 +1,10 @@
 {% load static %}
 
-<style>
-  .content-guide-download-cell {
-    white-space: nowrap;
-  }
-
-  .content-guide-download-form {
-    display: inline;
-  }
-
-  .content-guide-download-spinner {
-    display: none;
-    width: 1rem;
-    height: 1rem;
-    flex: 0 0 auto;
-  }
-
-  .content-guide-download-cell.is-downloading .content-guide-download-spinner {
-    display: inline-block;
-  }
-
-  .content-guide-download-error {
-    display: none;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    line-height: 1.2;
-  }
-
-  .content-guide-download-cell.is-error .content-guide-download-error {
-    display: block;
-  }
-</style>
-
 <span class="content-guide-download-cell">
   <form
     method="post"
     action="{{ action_url }}"
-    class="content-guide-download-form"
+    class="content-guide-download-form display-inline"
   >
     {% csrf_token %}
     <input type="hidden" name="export_action" value="download" />
@@ -45,14 +13,8 @@
       type="submit"
       class="content-guide-download-btn usa-button--unstyled usa-button--icon usa-button--icon--before usa-button--icon--usa-blue usa-button--file_download"
       data-default-label="Download"
-      data-loading-label="Preparing…"
+      data-loading-label="Loading…"
     >
-      <img
-        src="{% static 'img/loader.svg' %}"
-        alt=""
-        class="content-guide-download-spinner"
-        aria-hidden="true"
-      />
       <span class="content-guide-download-label">Download</span>
       <span class="usa-sr-only"> this document</span>
     </button>
@@ -62,6 +24,6 @@
     class="content-guide-download-error text-secondary-dark"
     aria-live="polite"
   >
-    Sorry — download failed. Try again.
+    Sorry, download failed.
   </div>
 </span>

@@ -249,6 +249,10 @@ footer .usa-footer__primary-link:visited {
   background-image: url("/static/img/usa-icons/file_download.svg");
 }
 
+.usa-button--icon.usa-button--loader::before {
+  background-image: url("/static/img/loader.svg");
+}
+
 .usa-button--icon.usa-button--delete::before {
   background-image: url("/static/img/usa-icons/delete.svg");
 }
@@ -2413,6 +2417,27 @@ del + ins > br {
   background-size: contain;
   height: 25px;
   width: 23px;
+}
+
+.composer_index .usa-button--loader::before {
+  margin-right: 5px;
+}
+
+.composer_index .usa-button--loader[disabled] {
+  cursor: progress;
+  color: #73b3e7;
+}
+
+.composer_index .content-guide-download-cell .content-guide-download-error {
+  display: none;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.composer_index
+  .content-guide-download-cell.is-error
+  .content-guide-download-error {
+  display: block;
 }
 
 .composer_document_section--preview aside {
