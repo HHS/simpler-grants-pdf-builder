@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load tz %}
+{% load static tz %}
 
 {% block title %}
 	NOFO Composer
@@ -110,4 +110,8 @@
   </a>
 
   {% include "includes/_getting_started_index_table.html" %}
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'js/nofo_export_table.js' %}"></script>
 {% endblock %}
