@@ -1998,14 +1998,17 @@ class NofoSubsectionDeleteView(
 
     archived_error_message = "Subsections can’t be deleted from archived NOFOs."
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["nofo"] = self.nofo
-        return context
+    ALLOWED_RETURN_TO = ["subsection_edit", "section_detail"]
 
-    def get_success_url(self):
-        nofo = self.object.section.nofo
-        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": nofo.id})
+    def get_return_to(self):
+        """
+        Read the return target from POST first, then GET.
+        Default to subsection_edit to preserve existing behaviour.
+        """
+        value = self.request.POST.get("return_to") or self.request.GET.get("return_to")
+        if value in self.ALLOWED_RETURN_TO:
+            return value
+        return "subsection_edit"
 
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
@@ -2019,16 +2022,61 @@ class NofoSubsectionDeleteView(
                 "Only subsections of draft NOFOs can be deleted."
             )
 
+        self.return_to = self.get_return_to()
+
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo"] = self.nofo
+        context["return_to"] = self.return_to
+        context["cancel_url"] = self.get_cancel_url()
+        context["back_text"] = (
+            f"Back to section: {self.object.section.name}"
+            if self.return_to == "section_detail"
+            else f"Back to subsection: {self.object.name}"
+        )
+        return context
+
+    def get_cancel_url(self):
+        if self.return_to == "section_detail":
+            return reverse_lazy(
+                "nofos:section_detail",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.object.section.id,
+                },
+            )
+
+        return reverse_lazy(
+            "nofos:subsection_edit",
+            kwargs={
+                "pk": self.nofo.id,
+                "section_pk": self.object.section.id,
+                "subsection_pk": self.object.id,
+            },
+        )
+
+    def get_success_url(self):
+        if self.return_to == "section_detail":
+            return reverse_lazy(
+                "nofos:section_detail",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.object.section.id,
+                },
+            )
+
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+
     def form_valid(self, form):
-        # Store custom error heading in session for the redirect page
         self.request.session["error_heading"] = "Subsection deleted"
 
         messages.error(
             self.request,
             "You deleted subsection: “{}” from “{}”".format(
-                self.object.name or self.object.id, self.object.section.name
+                self.object.name or self.object.id,
+                self.object.section.name,
             ),
         )
 
