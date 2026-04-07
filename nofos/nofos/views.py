@@ -1877,12 +1877,23 @@ class NofoSubsectionCreateView(
     published_error_message = "Subsections can’t be added to published NOFOs."
     archived_error_message = "Subsections can’t be added to archived NOFOs."
 
+    ALLOWED_RETURN_TO = ["subsection_edit", "section_detail"]
+
+    def get_return_to(self):
+        value = self.request.POST.get("return_to") or self.request.GET.get("return_to")
+        if value in self.ALLOWED_RETURN_TO:
+            return value
+        return "subsection_edit"
+
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
         self.nofo = get_object_or_404(Nofo, pk=self.nofo_id)
+        self.return_to = self.get_return_to()
 
         # Check if prev_subsection is provided
-        self.prev_subsection_id = self.request.GET.get("prev_subsection")
+        self.prev_subsection_id = self.request.GET.get(
+            "prev_subsection"
+        ) or self.request.POST.get("prev_subsection")
         if not self.prev_subsection_id:
             return HttpResponseBadRequest("No subsection provided.")
 
@@ -1928,8 +1939,40 @@ class NofoSubsectionCreateView(
         return response
 
     def get_success_url(self):
-        url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+        if self.return_to == "section_detail":
+            url = reverse_lazy(
+                "nofos:section_detail",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.prev_subsection.section.id,
+                },
+            )
+        else:
+            url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+
         return "{}#{}".format(url, self.object.html_id)
+
+    def get_cancel_url(self):
+        if self.return_to == "section_detail":
+            url = reverse_lazy(
+                "nofos:section_detail",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.prev_subsection.section.id,
+                },
+            )
+            if self.prev_subsection.html_id:
+                return "{}#{}".format(url, self.prev_subsection.html_id)
+            return url
+
+        return reverse_lazy(
+            "nofos:subsection_edit",
+            kwargs={
+                "pk": self.nofo.id,
+                "section_pk": self.prev_subsection.section.id,
+                "subsection_pk": self.prev_subsection.id,
+            },
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1937,6 +1980,8 @@ class NofoSubsectionCreateView(
         context["nofo"] = self.nofo
         context["prev_subsection"] = self.prev_subsection
         context["prev_subsection_with_tag"] = self.prev_subsection_with_tag
+        context["cancel_url"] = self.get_cancel_url()
+        context["return_to"] = self.return_to
         return context
 
 
