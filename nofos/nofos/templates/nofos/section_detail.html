@@ -111,7 +111,7 @@
       </td>
       <td class="nofo-edit-table--subsection--manage">
         <span class="floating">
-          <a class="text-secondary-dark" href="{% url 'nofos:subsection_delete' section.nofo.id section.id subsection.id %}">
+          <a class="text-secondary-dark" href="{% url 'nofos:subsection_delete' section.nofo.id section.id subsection.id %}?return_to=section_detail">
             Delete <span class="usa-sr-only"> subsection: {{ subsection.name }}</span>
           </a>
         </span>

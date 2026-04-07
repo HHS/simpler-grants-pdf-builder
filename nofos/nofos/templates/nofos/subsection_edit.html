@@ -194,7 +194,7 @@
           </a> — add a new subsection after this one
         </li>
         <li>
-          <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.section.id subsection.id %}">
+          <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.section.id subsection.id %}?return_to=subsection_edit">
             Delete subsection
           </a> — remove this subsection completely
         </li>

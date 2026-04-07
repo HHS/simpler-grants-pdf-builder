@@ -14,6 +14,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Return to the page you were on after deleting a subsection
+
 ### Fixed
 
 - Add titles for "export" views
