@@ -2010,6 +2010,12 @@ class NofoSubsectionDeleteView(
             return value
         return "subsection_edit"
 
+    def get_return_anchor(self):
+        previous_subsection = self.subsection.get_previous_subsection()
+        if previous_subsection and previous_subsection.html_id:
+            return previous_subsection.html_id
+        return self.subsection.section.html_id
+
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
         self.subsection = self.get_object()
@@ -2023,6 +2029,7 @@ class NofoSubsectionDeleteView(
             )
 
         self.return_to = self.get_return_to()
+        self.return_anchor = self.get_return_anchor()
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -2040,34 +2047,38 @@ class NofoSubsectionDeleteView(
 
     def get_cancel_url(self):
         if self.return_to == "section_detail":
-            return reverse_lazy(
+            url = reverse_lazy(
                 "nofos:section_detail",
                 kwargs={
                     "pk": self.nofo.id,
                     "section_pk": self.object.section.id,
                 },
             )
+        else:
+            url = reverse_lazy(
+                "nofos:subsection_edit",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.object.section.id,
+                    "subsection_pk": self.object.id,
+                },
+            )
 
-        return reverse_lazy(
-            "nofos:subsection_edit",
-            kwargs={
-                "pk": self.nofo.id,
-                "section_pk": self.object.section.id,
-                "subsection_pk": self.object.id,
-            },
-        )
+        return f"{url}#{self.return_anchor}" if self.return_anchor else url
 
     def get_success_url(self):
         if self.return_to == "section_detail":
-            return reverse_lazy(
+            url = reverse_lazy(
                 "nofos:section_detail",
                 kwargs={
                     "pk": self.nofo.id,
                     "section_pk": self.object.section.id,
                 },
             )
+        else:
+            url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
 
-        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+        return f"{url}#{self.return_anchor}" if self.return_anchor else url
 
     def form_valid(self, form):
         self.request.session["error_heading"] = "Subsection deleted"
