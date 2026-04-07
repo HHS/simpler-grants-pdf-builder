@@ -15,6 +15,9 @@ Versioning since version 1.0.0.
 ### Changed
 
 - Return to the page you were on after deleting a subsection
+  - Scroll down to the subsection just _before_ the one you deleted
+- Return to the page you were on after adding a subsection
+  - Scroll down to newly added subsection
 
 ### Fixed
 

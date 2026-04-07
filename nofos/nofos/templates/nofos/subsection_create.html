@@ -16,7 +16,7 @@
 {% block content %}
   {% with nofo|nofo_name as nofo_name_str %}
     <div class="back-link font-body-md margin-bottom-105">
-      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'nofos:nofo_edit' nofo.id %}">Edit “{{ nofo_name_str }}”</a>
+      <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{{ cancel_url }}">Back</a>
     </div>
     <div class="subsection_edit--header">
       <h1 class="font-heading-xl margin-y-0">New subsection</h1>
@@ -42,6 +42,9 @@
 
   <form class="form" method="post">
     {% csrf_token %}
+    <input type="hidden" name="return_to" value="{{ return_to }}">
+    <input type="hidden" name="prev_subsection" value="{{ prev_subsection.id }}">
+
     <fieldset class="usa-fieldset">
 
       {% if form.non_field_errors %}

@@ -1485,6 +1485,10 @@ main .back-link a::before,
   color: var(--color--text-default);
 }
 
+.section_edit table.usa-table th.nofo-edit-table--subsection--name {
+  scroll-margin-top: 64px;
+}
+
 /* NOFO section_details add button */
 
 .section_edit .usa-button--add {
