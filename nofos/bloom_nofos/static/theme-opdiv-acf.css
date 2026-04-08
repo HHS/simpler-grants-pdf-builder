@@ -10,14 +10,24 @@
 
 @page {
   @bottom-left {
-    font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    font-family:
+      "Merriweather Web",
+      Georgia,
+      Cambria,
+      Times New Roman,
+      Times,
       serif;
     font-weight: 700;
     color: var(--color--dark-blue);
   }
 
   @bottom-right {
-    font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+    font-family:
+      "Merriweather Web",
+      Georgia,
+      Cambria,
+      Times New Roman,
+      Times,
       serif;
     font-weight: 700;
     color: var(--color--dark-blue);
@@ -36,36 +46,66 @@
 /* Headings */
 
 h1 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+  font-family:
+    "Merriweather Web",
+    Georgia,
+    Cambria,
+    Times New Roman,
+    Times,
     serif;
   font-size: 36pt;
   font-weight: 700;
 }
 
 h2 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+  font-family:
+    "Merriweather Web",
+    Georgia,
+    Cambria,
+    Times New Roman,
+    Times,
     serif;
 }
 
 h3 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+  font-family:
+    "Merriweather Web",
+    Georgia,
+    Cambria,
+    Times New Roman,
+    Times,
     serif;
 }
 
 h4 {
-  font-family: Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial,
+  font-family:
+    Source Sans Pro Web,
+    Helvetica Neue,
+    Helvetica,
+    Roboto,
+    Arial,
     sans-serif;
   font-weight: 600;
 }
 
 h5 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+  font-family:
+    "Merriweather Web",
+    Georgia,
+    Cambria,
+    Times New Roman,
+    Times,
     serif;
   font-size: 14pt;
 }
 
 h6 {
-  font-family: "Merriweather Web", Georgia, Cambria, Times New Roman, Times,
+  font-family:
+    "Merriweather Web",
+    Georgia,
+    Cambria,
+    Times New Roman,
+    Times,
     serif;
   font-size: 12.5pt;
 }
@@ -99,11 +139,6 @@ div[role="heading"] {
 .nofo--cover-page--header--logo--subheading {
   font-weight: 700;
   font-size: 11pt;
-}
-
-.nofo--cover-page--header--intro span:first-of-type {
-  display: inline-block;
-  margin-bottom: 5px;
 }
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {

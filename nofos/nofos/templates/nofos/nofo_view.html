@@ -109,7 +109,14 @@
           {% endfor %}
           </ul>
         {% else %}
-          <span class="nofo--cover-page--header--app-date-intro">Application due <span class="nofo--cover-page--header--app-date">{{ nofo.application_deadline }}</span></span>
+          <span class="nofo--cover-page--header--app-date">
+            <span class="nofo--cover-page--header--app-date--label">
+              Application due
+            </span>
+            <span class="nofo--cover-page--header--app-date--date">
+              {{ nofo.application_deadline }}
+            </span>
+          </span>
           <br>
         {% endif %}
         {% if nofo.modifications %}
@@ -136,7 +143,14 @@
       <div class="nofo--cover-page--title--block">
         <h1 class="{{ nofo.title|add_classes_to_nofo_title }}">{{ nofo.title }}</h1>
         <div class="nofo--cover-page--title--subheading">
-          <span class="nofo--cover-page--title--subheading-intro">Opportunity number: <span class="nofo--cover-page--title--subheading-text">{{ nofo.number }}</span></span>
+          <span class="nofo--cover-page--title--subheading-intro">
+            <span class="nofo--cover-page--title--subheading-intro--label">
+              Opportunity number:
+            </span>
+            <span class="nofo--cover-page--title--subheading-intro--text">
+              {{ nofo.number }}
+            </span>
+          </span>
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
@@ -157,7 +171,14 @@
       </div>
       <div class="nofo--cover-page--footer--subheading">
         <span class="nofo--cover-page--footer--nofo">Notice of Funding Opportunity</span>
-        <span class="nofo--cover-page--footer--app-date-intro">Application due <span class="nofo--cover-page--footer--app-date">{{ nofo.application_deadline }}</span></span>
+        <span class="nofo--cover-page--footer--app-date">
+          <span class="nofo--cover-page--footer--app-date--label">
+            Application due
+          </span>
+          <span class="nofo--cover-page--footer--app-date--date">
+            {{ nofo.application_deadline }}
+          </span>
+        </span>
       </div>
       <div class="nofo--cover-page--footer--image">
         {% spaceless%}
