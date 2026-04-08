@@ -41,6 +41,9 @@
 
 .nofo--cover-page--header--intro span:first-of-type {
   display: inline-block;
+}
+
+.nofo--cover-page--header--intro span.nofo--cover-page--header--nofo {
   margin-bottom: 5px;
 }
 

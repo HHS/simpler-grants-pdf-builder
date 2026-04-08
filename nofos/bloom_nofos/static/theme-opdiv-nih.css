@@ -100,11 +100,6 @@ div[role="heading"] {
   font-size: 11pt;
 }
 
-.nofo--cover-page--header--intro span:first-of-type {
-  display: inline-block;
-  margin-bottom: 5px;
-}
-
 .nofo--cover-page--footer .nofo--cover-page--footer--image {
   float: right;
 }
