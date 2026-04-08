@@ -34,6 +34,14 @@
   background-color: var(--color--aspr-blue);
 }
 
+.nofo--cover-page--hero .nofo--cover-page--header--logo svg,
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--logo
+  svg {
+  fill: var(--color--white);
+}
+
 .nofo--cover-page--hero .nofo--cover-page--header--logo--subheading,
 .nofo--cover-page--hero .nofo--cover-page--header--intro,
 .nofo--cover-page--hero .nofo--cover-page--title h1,

@@ -678,6 +678,7 @@ div[role="heading"] {
   svg {
   width: 100px;
   height: 120px;
+  fill: var(--color--hhs-blue);
 }
 
 .nofo--cover-page--hero .nofo--cover-page--footer {
