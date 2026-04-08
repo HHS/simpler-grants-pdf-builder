@@ -21,6 +21,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Fix the ASPR logo
+- Remove unneeded margin under application date
 - Add titles for "export" views
 - Stronger sanitization for NOFO metadata on document import
 - Add new NIH logo to prevent undesired visual artefact
