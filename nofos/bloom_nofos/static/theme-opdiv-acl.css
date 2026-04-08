@@ -24,7 +24,12 @@
 /* Regular CSS */
 
 html {
-  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
 }
 
 /* Running header */
@@ -45,7 +50,12 @@ h3 {
 h4,
 h5,
 h6 {
-  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
   font-weight: 700;
 }
 
@@ -55,7 +65,12 @@ h5 {
 
 /* this functions as an h7 */
 div[role="heading"] {
-  font-family: "Calibri", Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-family:
+    "Calibri",
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
   font-weight: 700;
 }
 
@@ -80,11 +95,6 @@ div[role="heading"] {
 
 .nofo--cover-page--header--logo--subheading {
   font-size: 11pt;
-}
-
-.nofo--cover-page--header--intro span:first-of-type {
-  display: inline-block;
-  margin-bottom: 5px;
 }
 
 .nofo--cover-page--title .nofo--cover-page--title--subheading {
