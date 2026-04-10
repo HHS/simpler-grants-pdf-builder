@@ -30,7 +30,7 @@
   <div class="previous-subsection-widget outline-box">
     <p class="outline-box--heading text-base-dark">{{ prev_subsection_with_tag.section.name }}</p>
     <p class="outline-box--content">
-      <a href="{% url 'nofos:subsection_edit' nofo.id prev_subsection_with_tag.section.id prev_subsection_with_tag.id %}" class="usa-link usa-link--external" target="blank" title="{{ prev_subsection_with_tag.name }} (Opens in a new tab)">
+      <a href="{% url 'nofos:subsection_edit' nofo.id prev_subsection_with_tag.section.id prev_subsection_with_tag.id %}" class="usa-link usa-link--external" target="_blank" title="{{ prev_subsection_with_tag.name }} (Opens in a new tab)">
         {{ prev_subsection_with_tag.name }}
         (<span class="small-caps">{{ prev_subsection_with_tag.tag }}</span>)
       </a>
@@ -42,8 +42,8 @@
 
   <form class="form" method="post">
     {% csrf_token %}
-    <input type="hidden" name="return_to" value="{{ return_to }}">
-    <input type="hidden" name="prev_subsection" value="{{ prev_subsection.id }}">
+    <input type="hidden" name="return_to" value="{{ return_to }}" />
+    <input type="hidden" name="prev_subsection" value="{{ prev_subsection.id }}" />
 
     <fieldset class="usa-fieldset">
 
@@ -60,6 +60,7 @@
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
           {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
         {% endwith %}
+      </div>
 
       <!-- tag -->
       <div class="form-group width-mobile">
@@ -80,7 +81,7 @@
                     border-secondary-dark
                   {% endif %}
               "
-        {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" aria-describedby="tag--hint-1">
+        {% endwhitespaceless %} name="tag" id="tag" aria-describedby="tag--hint-1">
           <option value="">---------</option>
           <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
           <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
@@ -93,7 +94,7 @@
       <!-- callout_box -->
       <div class="form-group margin-top-4 width-mobile">
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %}>
           <label class="usa-checkbox__label" for="callout_box">Is callout box?
             <span class="usa-checkbox__label-description">Callout boxes <span aria-hidden="true">(📦)</span> use an accent color to call attention to important content.</span>
           </label>
