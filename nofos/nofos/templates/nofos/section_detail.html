@@ -12,6 +12,8 @@
 {% block body_class %}section_edit{% endblock %}
 
 {% block content %}
+{% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
+
 <div class="back-link font-body-md margin-bottom-105">
   <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'nofos:nofo_edit' nofo.id %}">Edit “{{ nofo|nofo_name }}”</a>
 </div>
@@ -116,7 +118,7 @@
           </a>
         </span>
 
-        <a class="usa-button usa-button--outline usa-button--light text-primary usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add" type="button" href="{% url 'nofos:subsection_create' section.nofo.id subsection.section.id %}?prev_subsection={{ subsection.id }}&return_to=section_detail">
+        <a class="usa-button usa-button--outline usa-button--light text-primary usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add" type="button" href="{% url 'nofos:subsection_create' section.nofo.id section.id %}?section_id={{ section.id }}&insert_order={{ subsection.order|add:"1" }}&prev_subsection_id={{ subsection.id }}&return_to=section_detail">
           Add subsection
         </a>
       </td>

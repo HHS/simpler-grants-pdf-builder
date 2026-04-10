@@ -23,7 +23,19 @@
     </div>
   {% endwith %}
 
-  <p>Create a new subsection after {% if prev_subsection.name %}“{{ prev_subsection.name }}”{% else %}(#{{ prev_subsection.order }}){% endif %} in “{{ prev_subsection.section.name }}”.</p>
+  {% if prev_subsection %}
+    <p>
+      Create a new subsection after
+      {% if prev_subsection.name %}
+        “{{ prev_subsection.name }}”
+      {% else %}
+        (#{{ prev_subsection.order }})
+      {% endif %}
+      in “{{ section.name }}”.
+    </p>
+  {% else %}
+    <p>Create a new subsection at the top of “{{ section.name }}”.</p>
+  {% endif %}
 
   {% if prev_subsection_with_tag %}
   <h2 class="font-serif-md margin-top-4">Previous subsection{% if prev_subsection_with_tag.name != prev_subsection.name %} with a heading{% endif %}</h2>
@@ -42,8 +54,11 @@
 
   <form class="form" method="post">
     {% csrf_token %}
-    <input type="hidden" name="return_to" value="{{ return_to }}" />
-    <input type="hidden" name="prev_subsection" value="{{ prev_subsection.id }}" />
+    <input type="hidden" name="return_to" value="{{ return_to }}">
+    <input type="hidden" name="insert_order" value="{{ insert_order }}">
+    {% if prev_subsection %}
+      <input type="hidden" name="prev_subsection" value="{{ prev_subsection.id }}">
+    {% endif %}
 
     <fieldset class="usa-fieldset">
 

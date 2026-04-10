@@ -1799,6 +1799,8 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["section"] = self.object
         context["nofo"] = self.nofo
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop("success_heading", "")
         return context
 
     def get_object(self):
@@ -1887,38 +1889,59 @@ class NofoSubsectionCreateView(
 
     def dispatch(self, request, *args, **kwargs):
         self.nofo_id = kwargs.get("pk")
+        self.section_pk = kwargs.get("section_pk")
         self.nofo = get_object_or_404(Nofo, pk=self.nofo_id)
         self.return_to = self.get_return_to()
 
-        # Check if prev_subsection is provided
-        self.prev_subsection_id = self.request.GET.get(
-            "prev_subsection"
-        ) or self.request.POST.get("prev_subsection")
-        if not self.prev_subsection_id:
-            return HttpResponseBadRequest("No subsection provided.")
-
-        # Fetch previous subsection
-        self.prev_subsection = get_object_or_404(
-            Subsection,
-            pk=self.prev_subsection_id,
-            section__nofo=self.nofo,
+        self.section = get_object_or_404(
+            Section,
+            pk=self.section_pk,
+            nofo=self.nofo,
         )
 
-        # loop until you find the next previous subsection with a tag
-        self.prev_subsection_with_tag = self.prev_subsection
-        while (
-            self.prev_subsection_with_tag is not None
-            and not self.prev_subsection_with_tag.tag
-        ):
-            self.prev_subsection_with_tag = (
-                self.prev_subsection_with_tag.get_previous_subsection()
+        self.insert_order = request.POST.get("insert_order") or request.GET.get(
+            "insert_order"
+        )
+
+        if self.insert_order is None:
+            return HttpResponseBadRequest("No insert order provided.")
+
+        try:
+            self.insert_order = int(self.insert_order)
+        except (TypeError, ValueError):
+            return HttpResponseBadRequest("Invalid insert order.")
+
+        if self.insert_order < 1:
+            return HttpResponseBadRequest("Insert order must be 1 or greater.")
+
+        # Optional: only for UI context / copy
+        self.prev_subsection_id = request.POST.get(
+            "prev_subsection_id"
+        ) or request.GET.get("prev_subsection_id")
+        self.prev_subsection = None
+        self.prev_subsection_with_tag = None
+
+        if self.prev_subsection_id:
+            self.prev_subsection = get_object_or_404(
+                Subsection,
+                pk=self.prev_subsection_id,
+                section=self.section,
             )
+
+            self.prev_subsection_with_tag = self.prev_subsection
+            while (
+                self.prev_subsection_with_tag is not None
+                and not self.prev_subsection_with_tag.tag
+            ):
+                self.prev_subsection_with_tag = (
+                    self.prev_subsection_with_tag.get_previous_subsection()
+                )
 
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        section = self.prev_subsection.section
-        order = self.prev_subsection.order + 1
+        section = self.section
+        order = self.insert_order
 
         # create a gap in the "order" count to insert this new subsection
         section.insert_order_space(order)
@@ -1931,6 +1954,8 @@ class NofoSubsectionCreateView(
         )
 
         response = super().form_valid(form)
+
+        self.request.session["success_heading"] = "New subsection created"
 
         messages.success(
             self.request,
@@ -1948,7 +1973,7 @@ class NofoSubsectionCreateView(
                 "nofos:section_detail",
                 kwargs={
                     "pk": self.nofo.id,
-                    "section_pk": self.prev_subsection.section.id,
+                    "section_pk": self.section.id,
                 },
             )
         else:
@@ -1962,26 +1987,31 @@ class NofoSubsectionCreateView(
                 "nofos:section_detail",
                 kwargs={
                     "pk": self.nofo.id,
-                    "section_pk": self.prev_subsection.section.id,
+                    "section_pk": self.section.id,
                 },
             )
-            if self.prev_subsection.html_id:
+            if self.prev_subsection and self.prev_subsection.html_id:
                 return "{}#{}".format(url, self.prev_subsection.html_id)
             return url
 
-        return reverse_lazy(
-            "nofos:subsection_edit",
-            kwargs={
-                "pk": self.nofo.id,
-                "section_pk": self.prev_subsection.section.id,
-                "subsection_pk": self.prev_subsection.id,
-            },
-        )
+        if self.prev_subsection:
+            return reverse_lazy(
+                "nofos:subsection_edit",
+                kwargs={
+                    "pk": self.nofo.id,
+                    "section_pk": self.section.id,
+                    "subsection_pk": self.prev_subsection.id,
+                },
+            )
+
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["subsection"] = self.object
         context["nofo"] = self.nofo
+        context["section"] = self.section
+        context["insert_order"] = self.insert_order
         context["prev_subsection"] = self.prev_subsection
         context["prev_subsection_with_tag"] = self.prev_subsection_with_tag
         context["cancel_url"] = self.get_cancel_url()
