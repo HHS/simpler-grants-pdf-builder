@@ -1898,7 +1898,11 @@ class NofoSubsectionCreateView(
             return HttpResponseBadRequest("No subsection provided.")
 
         # Fetch previous subsection
-        self.prev_subsection = get_object_or_404(Subsection, pk=self.prev_subsection_id)
+        self.prev_subsection = get_object_or_404(
+            Subsection,
+            pk=self.prev_subsection_id,
+            section__nofo=self.nofo,
+        )
 
         # loop until you find the next previous subsection with a tag
         self.prev_subsection_with_tag = self.prev_subsection
