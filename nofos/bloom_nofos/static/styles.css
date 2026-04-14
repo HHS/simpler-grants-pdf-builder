@@ -1489,6 +1489,32 @@ main .back-link a::before,
   scroll-margin-top: 64px;
 }
 
+.section_edit table.usa-table .nofo-edit-table--subsection--add-subsection {
+  padding: 0.15rem;
+  text-align: center;
+}
+
+.section_edit
+  table.usa-table
+  .nofo-edit-table--subsection--add-subsection
+  .usa-button--icon--table-stretch {
+  position: initial;
+  transform: none;
+  width: 100%;
+  box-shadow: none;
+}
+
+.section_edit
+  table.usa-table
+  .nofo-edit-table--subsection--add-subsection
+  .usa-button--icon--table-stretch:hover,
+.section_edit
+  table.usa-table
+  .nofo-edit-table--subsection--add-subsection
+  .usa-button--icon--table-stretch:focus {
+  background-color: var(--color--table-blue);
+}
+
 /* NOFO section_details add button */
 
 .section_edit .usa-button--add {

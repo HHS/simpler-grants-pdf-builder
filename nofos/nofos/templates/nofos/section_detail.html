@@ -88,6 +88,13 @@
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td class="nofo-edit-table--subsection--add-subsection" colspan="4">
+        <a class="usa-button usa-button--outline usa-button--light text-primary usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add usa-button--icon--table-stretch" type="button" href="{% url 'nofos:subsection_create' section.nofo.id section.id %}?insert_order=1&return_to=section_detail">
+          Add subsection
+        </a>
+      </td>
+    </tr>
     {% for subsection in section.subsections.all|dictsort:"order" %}
     <tr>
       <th scope="row"
