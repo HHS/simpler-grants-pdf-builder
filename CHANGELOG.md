@@ -9,6 +9,8 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Add a "Using this Guide" variant of the BYB page for HRSA's content guide
+
 ### Changed
 
 ### Fixed

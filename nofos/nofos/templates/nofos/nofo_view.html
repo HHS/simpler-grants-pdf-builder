@@ -186,7 +186,11 @@
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
 
-      {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'sole_source' %}
+      {% if nofo.number == 'hrsa-application-guide' %}
+        <li class="toc--section-name toc--no-icon toc--before-you-begin">
+          <a href="#section--before-you-begin">Introduction</a>
+        </li>
+      {% elif nofo.before_you_begin == 'full' or nofo.before_you_begin == 'sole_source' %}
         <li class="toc--section-name toc--no-icon toc--before-you-begin">
           <a href="#section--before-you-begin">Before you begin</a>
         </li>
@@ -225,10 +229,13 @@
   </section>
 
   <!-- BEFORE YOU BEGIN PAGE -->
-  {% if nofo.before_you_begin != 'none' %}
+  {% if nofo.number == 'hrsa-application-guide' %}
+    {% include "includes/byb_page_guide.html" %}
+  {% elif nofo.before_you_begin != 'none' %}
     {% include "includes/byb_page.html" with nofo=nofo step_2_section=step_2_section only %}
   {% endif %}
 
+  <!-- NOFO CONTENT -->
   {% for section in nofo.sections.all|dictsort:"order" %}
     <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
       <!-- SECTION TITLE PAGE -->
