@@ -9,6 +9,7 @@ Versioning since version 1.0.0.
 
 ### Added
 
+- Allow adding a new subsection as the first subsection in a NOFO
 - Add an export view for a ContentGuide (not a ContentGuideInstance)
 - Add export functionality to "Download" cells on composer index table
 
@@ -22,6 +23,7 @@ Versioning since version 1.0.0.
 ### Fixed
 
 - Fix the ASPR logo
+- Prevent adding subsections to NOFOs other than the one you are looking at
 - Remove unneeded margin under application date
 - Add titles for "export" views
 - Stronger sanitization for NOFO metadata on document import
