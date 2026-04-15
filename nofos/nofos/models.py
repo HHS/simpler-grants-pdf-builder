@@ -33,6 +33,7 @@ COACH_CHOICES = [
 
 DESIGNER_CHOICES = [
     ("bloom-adam", "Adam"),
+    ("bloom-andrea-c", "Andrea C"),
     ("bloom-ben-b", "Ben B"),
     ("bloom-jana", "Jana"),
     ("bloom-yasmine", "Yasmine"),

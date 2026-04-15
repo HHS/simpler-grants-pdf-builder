@@ -9,6 +9,15 @@ Versioning since version 1.0.0.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [3.30.0] - 2026-04-15
+
+### Added
+
+- Added new designer: Andrea C
 - Allow adding a new subsection as the first subsection in a NOFO
 - Add an export view for a ContentGuide (not a ContentGuideInstance)
 - Add export functionality to "Download" cells on composer index table
@@ -28,6 +37,10 @@ Versioning since version 1.0.0.
 - Add titles for "export" views
 - Stronger sanitization for NOFO metadata on document import
 - Add new NIH logo to prevent undesired visual artefact
+
+### Migrations
+
+- Add migration for new HRSA designer
 
 ## [3.29.0] - 2026-03-17
 
