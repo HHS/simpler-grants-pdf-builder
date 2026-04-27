@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, resolve_url
@@ -11,7 +12,7 @@ from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from django.views.generic import DetailView, FormView
+from django.views.generic import DetailView, FormView, ListView
 
 from .auth.login_gov import LoginGovClient
 from .exports import export_nofo_report, get_filename
@@ -80,6 +81,24 @@ class BloomUserNameView(View):
             return redirect("users:user_view")
 
         return render(request, self.template_name, {"form": form})
+
+
+###########################################################
+######################## TEAM VIEWS #######################
+###########################################################
+
+
+class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = BloomUser
+    template_name = "users/team.html"
+    context_object_name = "users"
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return BloomUser.objects.all().order_by("email")
 
 
 ###########################################################

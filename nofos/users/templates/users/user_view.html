@@ -63,6 +63,14 @@
     </tbody>
   </table>
 
+  {% if user.is_superuser %}
+    <h2 class="margin-top-6">All users</h2>
+
+    <p>
+      <a href="{% url 'users:user_team' %}">See all users in the NOFO Builder</a>
+    </p>
+  {% endif %}
+
   <h2 class="margin-top-6">Other actions</h2>
 
   <p>
