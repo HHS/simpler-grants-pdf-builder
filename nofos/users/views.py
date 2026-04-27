@@ -12,11 +12,16 @@ from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from django.views.generic import DetailView, FormView, ListView
+from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from .auth.login_gov import LoginGovClient
 from .exports import export_nofo_report, get_filename
-from .forms import BloomUserNameForm, ExportNofoReportForm, LoginForm
+from .forms import (
+    BloomUserNameForm,
+    BloomUserTeamCreateForm,
+    ExportNofoReportForm,
+    LoginForm,
+)
 from .models import BloomUser
 
 
@@ -90,7 +95,7 @@ class BloomUserNameView(View):
 
 class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = BloomUser
-    template_name = "users/team.html"
+    template_name = "users/user_team.html"
     context_object_name = "users"
     raise_exception = True
 
@@ -99,6 +104,24 @@ class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         return BloomUser.objects.all().order_by("email")
+
+
+class BloomUserTeamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = BloomUser
+    form_class = BloomUserTeamCreateForm
+    template_name = "users/user_team_create.html"
+    success_url = reverse_lazy("users:user_team")
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request, "You added a new user: {}".format(self.object.email)
+        )
+        return response
 
 
 ###########################################################

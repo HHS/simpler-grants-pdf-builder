@@ -2323,9 +2323,15 @@ del + ins > br {
   width: 200px;
 }
 
-.user_view .form--export-report .form-group input {
+.user_view .form--export-report .form-group input,
+.user_team_create form input,
+.user_team_create form select {
   height: 2.6rem;
   border: 2px solid;
+}
+
+.user_team_create form .usa-error-message + input {
+  border-color: var(--color--usa-error-message);
 }
 
 /* Subsection matches table checkbox positioning */

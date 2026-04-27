@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Add user
+{% endblock %}
+
+{% block body_class %}user_team_create{% endblock %}
+
+{% block content %}
+  {% url 'users:user_team' as back_href %}
+  {% include "includes/page_heading.html" with title="Add new user" back_text="All users" back_href=back_href only %}
+
+  <p>Add a new user and assign them to a group.</p>
+
+  <form class="form" method="post">
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="usa-alert usa-alert--error margin-bottom-4" role="alert">
+        <div class="usa-alert__body">
+          <h2 class="usa-alert__heading font-heading-md">
+            User could not be created
+          </h2>
+          <div class="usa-alert__text">
+            <p>
+              Please fix the validation errors before creating this user.
+            </p>
+
+            <ul class="usa-list">
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+
+              {% for field in form %}
+                {% if field.errors %}
+                  <li>
+                    <a href="#{{ field.id_for_label }}">
+                      {{ field.label }}: {{ field.errors.0 }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <fieldset class="usa-fieldset">
+      <div class="form-group">
+        <label class="usa-label" for="{{ form.email.id_for_label }}">
+          {{ form.email.label }}
+        </label>
+        {% if form.email.errors %}
+          <div class="usa-error-message" id="{{ form.email.id_for_label }}--error">
+            {{ form.email.errors.0 }}
+          </div>
+        {% endif %}
+        {{ form.email }}
+      </div>
+
+      <div class="form-group">
+        <label class="usa-label" for="{{ form.full_name.id_for_label }}">
+          {{ form.full_name.label }}
+        </label>
+        {% if form.full_name.errors %}
+          <div class="usa-error-message" id="{{ form.full_name.id_for_label }}--error">
+            {{ form.full_name.errors.0 }}
+          </div>
+        {% endif %}
+        {{ form.full_name }}
+      </div>
+
+      <div class="form-group">
+        <label class="usa-label" for="{{ form.group.id_for_label }}">
+          {{ form.group.label }}
+        </label>
+        {% if form.group.help_text %}
+          <div class="usa-hint" id="{{ form.group.id_for_label }}--hint">
+            {{ form.group.help_text }}
+          </div>
+        {% endif %}
+        {% if form.group.errors %}
+          <div class="usa-error-message" id="{{ form.group.id_for_label }}--error">
+            {{ form.group.errors.0 }}
+          </div>
+        {% endif %}
+        {{ form.group }}
+      </div>
+
+      <div class="form-group">
+        <label class="usa-label" for="{{ form.password1.id_for_label }}">
+          {{ form.password1.label }}
+        </label>
+        {% if form.password1.help_text %}
+          <div class="usa-hint" id="{{ form.password1.id_for_label }}--hint">
+            {{ form.password1.help_text }}
+          </div>
+        {% endif %}
+        {% if form.password1.errors %}
+          <div class="usa-error-message" id="{{ form.password1.id_for_label }}--error">
+            {{ form.password1.errors.0 }}
+          </div>
+        {% endif %}
+        {{ form.password1 }}
+      </div>
+
+      <div class="form-group">
+        <label class="usa-label" for="{{ form.password2.id_for_label }}">
+          {{ form.password2.label }}
+        </label>
+        {% if form.password2.help_text %}
+          <div class="usa-hint" id="{{ form.password2.id_for_label }}--hint">
+            {{ form.password2.help_text }}
+          </div>
+        {% endif %}
+        {% if form.password2.errors %}
+          <div class="usa-error-message" id="{{ form.password2.id_for_label }}--error">
+            {{ form.password2.errors.0 }}
+          </div>
+        {% endif %}
+        {{ form.password2 }}
+      </div>
+
+      <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Permissions</h2>
+
+      <div class="form-group margin-top-4 width-mobile">
+        <div class="usa-checkbox">
+          <input
+            class="usa-checkbox__input usa-checkbox__input--tile"
+            id="{{ form.is_superuser.id_for_label }}"
+            type="checkbox"
+            name="{{ form.is_superuser.html_name }}"
+            {% if form.is_superuser.value %}checked{% endif %}
+          >
+          <label class="usa-checkbox__label" for="{{ form.is_superuser.id_for_label }}">
+            {{ form.is_superuser.label }}
+            <span class="usa-checkbox__label-description">
+              {{ form.is_superuser.help_text }}
+            </span>
+          </label>
+        </div>
+
+        {% if form.is_superuser.errors %}
+          <div class="usa-error-message" id="{{ form.is_superuser.id_for_label }}--error">
+            {{ form.is_superuser.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+    </fieldset>
+
+    <div class="form-group">
+      <button class="usa-button usa-button--green margin-top-3" type="submit">
+        Add user
+      </button>
+    </div>
+  </form>
+{% endblock %}
