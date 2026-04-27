@@ -46,10 +46,12 @@ class BloomTeamViewTests(TestCase):
         self.assertContains(response, "All users")
         self.assertContains(response, "admin@example.com")
         self.assertContains(response, "user@example.com")
-        self.assertContains(response, "Admin User")
         self.assertContains(response, "Regular User")
         self.assertContains(response, "ACF: Administration for Children and Families")
-        self.assertContains(response, "Bloomworks")
+
+        # the current user is not visible in the "team" table
+        self.assertNotContains(response, "Admin User")
+        self.assertNotContains(response, "Bloomworks")
 
     def test_team_page_uses_uswds_sortable_columns_for_email_and_group(self):
         self.client.force_login(self.superuser)
@@ -189,3 +191,91 @@ class BloomUserTeamCreateViewTests(TestCase):
         self.assertFalse(
             BloomUser.objects.filter(email="bad-admin@example.com").exists()
         )
+
+
+class BloomUserTeamDeleteViewTests(TestCase):
+    def setUp(self):
+        self.superuser = BloomUser.objects.create_user(
+            email="admin@example.com",
+            password="testpass123",
+            full_name="Admin User",
+            group="bloom",
+            is_staff=True,
+            is_superuser=True,
+            force_password_reset=False,
+        )
+
+        self.other_superuser = BloomUser.objects.create_user(
+            email="other-admin@example.com",
+            password="testpass123",
+            full_name="Other Admin",
+            group="bloom",
+            is_staff=True,
+            is_superuser=True,
+            force_password_reset=False,
+        )
+
+        self.regular_user = BloomUser.objects.create_user(
+            email="user@example.com",
+            password="testpass123",
+            full_name="Regular User",
+            group="acf",
+            force_password_reset=False,
+        )
+
+        self.url = reverse("users:user_team_delete", args=[self.regular_user.pk])
+
+    def test_anonymous_user_gets_403(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_superuser_gets_403(self):
+        self.client.force_login(self.regular_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_superuser_can_view_delete_confirmation_page(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Delete user")
+        self.assertContains(response, "user@example.com")
+        self.assertContains(response, "Yes, delete user")
+        self.assertContains(
+            response,
+            "Never mind, I don’t want to delete this user",
+        )
+
+    def test_superuser_can_delete_user(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.post(self.url)
+
+        self.assertRedirects(response, reverse("users:user_team"))
+        self.assertFalse(BloomUser.objects.filter(email="user@example.com").exists())
+
+    def test_superuser_cannot_delete_self(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.post(
+            reverse("users:user_team_delete", args=[self.superuser.pk])
+        )
+
+        self.assertRedirects(response, reverse("users:user_team"))
+        self.assertTrue(BloomUser.objects.filter(email="admin@example.com").exists())
+
+    def test_superuser_cannot_delete_last_superuser(self):
+        self.other_superuser.delete()
+        self.client.force_login(self.superuser)
+
+        response = self.client.post(
+            reverse("users:user_team_delete", args=[self.superuser.pk])
+        )
+
+        self.assertRedirects(response, reverse("users:user_team"))
+        self.assertTrue(BloomUser.objects.filter(email="admin@example.com").exists())

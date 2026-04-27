@@ -6,13 +6,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import PasswordChangeView
+from django.db.models import ProtectedError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from django.views.generic import CreateView, DetailView, FormView, ListView
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView
 
 from .auth.login_gov import LoginGovClient
 from .exports import export_nofo_report, get_filename
@@ -96,7 +97,7 @@ class BloomUserNameView(View):
 class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = BloomUser
     template_name = "users/user_team.html"
-    context_object_name = "users"
+    context_object_name = "team_users"
     raise_exception = True
 
     def test_func(self):
@@ -104,6 +105,12 @@ class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         return BloomUser.objects.all().order_by("email")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["error_heading"] = self.request.session.pop("error_heading", "Error")
+        context["success_heading"] = self.request.session.pop("success_heading", "")
+        return context
 
 
 class BloomUserTeamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -122,6 +129,62 @@ class BloomUserTeamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
             self.request, "You added a new user: {}".format(self.object.email)
         )
         return response
+
+
+class BloomUserTeamDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = BloomUser
+    template_name = "users/user_team_confirm_delete.html"
+    context_object_name = "team_user"
+    success_url = reverse_lazy("users:user_team")
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.object.pk == request.user.pk:
+            messages.error(request, "You cannot delete your own user account.")
+            return redirect(self.success_url)
+
+        if self.object.is_superuser and not self._another_superuser_exists():
+            messages.error(request, "You cannot delete the last superuser.")
+            return redirect(self.success_url)
+
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        user_to_delete = self.object
+        email = user_to_delete.email
+
+        if user_to_delete.pk == self.request.user.pk:
+            messages.error(self.request, "You cannot delete your own user account.")
+            return redirect(self.success_url)
+
+        if user_to_delete.is_superuser and not self._another_superuser_exists():
+            messages.error(self.request, "You cannot delete the last superuser.")
+            return redirect(self.success_url)
+
+        try:
+            user_to_delete.delete()
+        except ProtectedError:
+            messages.error(
+                self.request,
+                "This user could not be deleted because other records depend on them.",
+            )
+            return redirect(self.success_url)
+
+        self.request.session["error_heading"] = "User deleted"
+        messages.error(self.request, "You deleted user: {}.".format(email))
+        return redirect(self.success_url)
+
+    def _another_superuser_exists(self):
+        return (
+            BloomUser.objects.filter(is_superuser=True)
+            .exclude(pk=self.object.pk)
+            .exists()
+        )
 
 
 ###########################################################

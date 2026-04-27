@@ -40,4 +40,9 @@ urlpatterns = [
     ),
     path("team", views.BloomUserTeamView.as_view(), name="user_team"),
     path("team/new", views.BloomUserTeamCreateView.as_view(), name="user_team_create"),
+    path(
+        "team/<int:pk>/delete",
+        views.BloomUserTeamDeleteView.as_view(),
+        name="user_team_delete",
+    ),
 ]
