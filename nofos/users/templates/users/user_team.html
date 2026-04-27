@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-  All users
+  All users — NOFO Builder
 {% endblock %}
 
 {% block body_class %}user_team{% endblock %}
@@ -9,12 +9,12 @@
 {% block content %}
   {% now "Y" as current_year %}
 
-  {% include "includes/alerts.html" with messages=messages success_heading="User created" error_heading="User deleted" only %}
+  {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading only %}
 
   {% url 'users:user_view' as back_href %}
   {% include "includes/page_heading.html" with title="All users" back_text="Your account" back_href=back_href only %}
 
-  {% if users %}
+  {% if team_users %}
     <div class="usa-table-container">
       <table class="usa-table usa-table--borderless usa-table--sortable width-full">
         <caption>
@@ -27,47 +27,59 @@
             <th data-sortable scope="col" role="columnheader">Group</th>
             <th data-sortable scope="col" role="columnheader">Last login</th>
             <th scope="col">Superuser</th>
+            <th scope="col" class="w-05">Delete</th>
           </tr>
         </thead>
         <tbody>
-          {% for team_member in users %}
-            <tr>
-              <th scope="row" data-sort-value="{{ team_member.email }}">
-                {{ team_member.email }}
-              </th>
-              <td>
-                {% if team_member.full_name %}
-                  {{ team_member.full_name }}
-                {% else %}
-                  <span class="usa-sr-only">No name provided</span>
-                  <span aria-hidden="true">—</span>
-                {% endif %}
-              </td>
-              <td data-sort-value="{{ team_member.get_group_display }}">
-                <span class="usa-tag bg-group bg-group--{{ team_member.group }}">
-                  {{ team_member.group }}
-                </span>
-              </td>
-              <td data-sort-value="{% if team_member.last_login %}{{ team_member.last_login|date:"YmdHi" }}{% else %}0{% endif %}">
-                {% if team_member.last_login %}
-                  {% if team_member.last_login|date:"Y" == current_year %}
-                    {{ team_member.last_login|date:"j M" }}
+          {% for team_user in team_users %}
+            {# don't show the current user in this table #}
+            {% if user.email != team_user.email %}
+              <tr>
+                <th scope="row" data-sort-value="{{ team_user.email }}">
+                  {{ team_user.email }}
+                </th>
+                <td>
+                  {% if team_user.full_name %}
+                    {{ team_user.full_name }}
                   {% else %}
-                    {{ team_member.last_login|date:"M Y" }}
+                    <span class="usa-sr-only">No name provided</span>
+                    <span aria-hidden="true">—</span>
                   {% endif %}
-                {% else %}
-                  <span class="usa-sr-only">Never logged in</span>
-                  <span aria-hidden="true">—</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if team_member.is_superuser %}
-                  Yes
-                {% else %}
-                  No
-                {% endif %}
-              </td>
-            </tr>
+                </td>
+                <td data-sort-value="{{ team_user.get_group_display }}">
+                  <span class="usa-tag bg-group bg-group--{{ team_user.group }}">
+                    {{ team_user.group }}
+                  </span>
+                </td>
+                <td data-sort-value="{% if team_user.last_login %}{{ team_user.last_login|date:"YmdHi" }}{% else %}0{% endif %}">
+                  {% if team_user.last_login %}
+                    {% if team_user.last_login|date:"Y" == current_year %}
+                      {{ team_user.last_login|date:"j M" }}
+                    {% else %}
+                      {{ team_user.last_login|date:"M Y" }}
+                    {% endif %}
+                  {% else %}
+                    <span class="usa-sr-only">Never logged in</span>
+                    <span aria-hidden="true">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if team_user.is_superuser %}
+                    Yes
+                  {% else %}
+                    No
+                  {% endif %}
+                </td>
+                <td>
+                  <a
+                    href="{% url 'users:user_team_delete' team_user.pk %}"
+                    class="text-secondary-dark usa-button--icon--after usa-button--icon--only usa-button--icon--usa-red usa-button--delete"
+                  >
+                    <span class="usa-sr-only">Delete {{ team_user.email }}</span>
+                  </a>
+                </td>
+              </tr>
+            {% endif %}
           {% endfor %}
         </tbody>
       </table>

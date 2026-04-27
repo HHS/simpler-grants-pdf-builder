@@ -1759,7 +1759,8 @@ main .back-link a::before,
 }
 
 .compare_index .usa-button--delete::after,
-.composer_index .usa-button--delete::after {
+.composer_index .usa-button--delete::after,
+.user_team .usa-button--delete::after {
   width: 22px;
   height: 18px;
 }

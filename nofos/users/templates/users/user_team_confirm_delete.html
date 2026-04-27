@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Delete user — NOFO Builder
+{% endblock %}
+
+{% block body_class %}user_team_delete{% endblock %}
+
+{% block content %}
+  {% url 'users:user_team' as back_href %}
+  {% include "includes/page_heading.html" with title="Delete user" back_text="All users" back_href=back_href only %}
+
+  <p>
+    Are you sure you want to delete this user?
+  </p>
+
+  <table class="usa-table w-60">
+  <thead class="usa-sr-only">
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Name</th>
+      <td>{{ team_user.full_name }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Email</th>
+      <td>{{ team_user.email }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Group</th>
+      <td>{{ team_user.group }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Last login</th>
+      <td>
+        {% if team_user.last_login %}
+            {{ team_user.last_login|date:"j F, Y — g:m A" }}
+        {% else %}
+          <span class="usa-sr-only">Never logged in</span>
+          <span aria-hidden="true">—</span>
+        {% endif %}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <button class="usa-button usa-button--secondary" type="submit">
+      Yes, delete user
+    </button>
+
+    <a class="usa-button usa-button--outline" href="{% url 'users:user_team' %}">
+      Never mind, I don’t want to delete this user
+    </a>
+  </form>
+{% endblock %}
