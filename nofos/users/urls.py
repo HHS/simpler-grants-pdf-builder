@@ -39,4 +39,5 @@ urlpatterns = [
         name="export_nofo_report",
     ),
     path("team", views.BloomUserTeamView.as_view(), name="user_team"),
+    path("team/new", views.BloomUserTeamCreateView.as_view(), name="user_team_create"),
 ]
