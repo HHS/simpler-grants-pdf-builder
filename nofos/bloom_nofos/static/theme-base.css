@@ -341,7 +341,12 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   vertical-align: top;
 }
 
-.section--content table tr td.usa-icon__td span {
+.section--content
+  table
+  tr
+  td.usa-icon__td
+  .usa-icon--check_box_outline_blank
+  ~ * {
   line-height: 1.3;
 }
 
