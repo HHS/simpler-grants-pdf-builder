@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}
+  All users
+{% endblock %}
+
+{% block body_class %}team_view{% endblock %}
+
+{% block content %}
+  {% now "Y" as current_year %}
+
+  {% include "includes/alerts.html" with messages=messages only %}
+
+  {% url 'users:user_view' as back_href %}
+  {% include "includes/page_heading.html" with title="All users" back_text="Your account" back_href=back_href only %}
+
+  {% if users %}
+    <div class="usa-table-container">
+      <table class="usa-table usa-table--borderless usa-table--sortable width-full">
+        <caption>
+          All users in the NOFO Builder.
+        </caption>
+        <thead>
+          <tr>
+            <th data-sortable scope="col" role="columnheader">Email address</th>
+            <th scope="col">Name</th>
+            <th data-sortable scope="col" role="columnheader">Group</th>
+            <th data-sortable scope="col" role="columnheader">Last login</th>
+            <th scope="col">Superuser</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for team_member in users %}
+            <tr>
+              <th scope="row" data-sort-value="{{ team_member.email }}">
+                {{ team_member.email }}
+              </th>
+              <td>
+                {% if team_member.full_name %}
+                  {{ team_member.full_name }}
+                {% else %}
+                  <span class="usa-sr-only">No name provided</span>
+                  <span aria-hidden="true">—</span>
+                {% endif %}
+              </td>
+              <td data-sort-value="{{ team_member.get_group_display }}">
+                <span class="usa-tag bg-group bg-group--{{ team_member.group }}">
+                  {{ team_member.group }}
+                </span>
+              </td>
+              <td data-sort-value="{% if team_member.last_login %}{{ team_member.last_login|date:"YmdHi" }}{% else %}0{% endif %}">
+                {% if team_member.last_login %}
+                  {% if team_member.last_login|date:"Y" == current_year %}
+                    {{ team_member.last_login|date:"j M" }}
+                  {% else %}
+                    {{ team_member.last_login|date:"M Y" }}
+                  {% endif %}
+                {% else %}
+                  <span class="usa-sr-only">Never logged in</span>
+                  <span aria-hidden="true">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if team_member.is_superuser %}
+                  Yes
+                {% else %}
+                  No
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div
+        class="usa-sr-only usa-table__announcement-region"
+        aria-live="polite"
+      ></div>
+    </div>
+  {% else %}
+    <p>No users are available.</p>
+  {% endif %}
+{% endblock %}
