@@ -9,13 +9,31 @@ Versioning since version 1.0.0.
 
 ### Added
 
-- Add a "Using this Guide" variant of the BYB page for HRSA's content guide
-
 ### Changed
 
 ### Fixed
 
+## [3.31.0] - 2026-04-28
+
+### Added
+
+- Allow superusers to see all users
+- Allow superusers to add new users
+- Allow superusers to delete users
+- Add edit operations for other users:
+  - Edit name
+  - Edit group
+  - Edit password
+  - Edit superuser status (if a bloom employee)
+- Add a "Using this Guide" variant of the BYB page for HRSA's content guide
+
+### Fixed
+
 - Don't double up on strong tags in callout boxes
+
+### Migrations
+
+- Add migration to change description of Group for BloomUser
 
 ## [3.30.0] - 2026-04-15
 
