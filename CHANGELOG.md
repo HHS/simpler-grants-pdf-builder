@@ -15,6 +15,8 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+- Don't double up on strong tags in callout boxes
+
 ## [3.30.0] - 2026-04-15
 
 ### Added

@@ -426,6 +426,10 @@ def truncate_anchor_links(html_string):
 
 
 def wrap_text_before_colon_in_strong(p, soup):
+    # return early if we find an existing strong tag
+    if p.find("strong"):
+        return p
+
     def _first_colon_in_text_node(p):
         for node in p.contents:
             if isinstance(node, NavigableString) and ":" in node:
