@@ -1282,5 +1282,5 @@ class WrapTextBeforeColonInStrongTests(TestCase):
 
         wrap_text_before_colon_in_strong(paragraph, soup)
 
-        expected_html = "<p><strong><strong>Opportunity</strong> Name: </strong><span> NOFO 100</span></p>"
+        expected_html = "<p><strong>Opportunity</strong> Name: NOFO 100</p>"
         self.assertEqual(str(paragraph), expected_html)
