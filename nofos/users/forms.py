@@ -17,6 +17,11 @@ def validate_user_group_for_staff_and_admin(cleaned_data):
     return cleaned_data
 
 
+###########################################################
+####################### ADMIN FORMS #######################
+###########################################################
+
+
 class BloomUserCreationForm(UserCreationForm):
     full_name = forms.CharField(
         label="Full name",
@@ -59,6 +64,11 @@ class LoginForm(forms.Form):
         widget=forms.EmailInput(attrs={"autocapitalize": "off", "autocorrect": "off"})
     )
     password = forms.CharField(widget=forms.PasswordInput())
+
+
+###########################################################
+######################## TEAM FORMS #######################
+###########################################################
 
 
 class BloomUserTeamCreateForm(UserCreationForm):
@@ -119,6 +129,73 @@ class BloomUserTeamCreateForm(UserCreationForm):
             user.save()
 
         return user
+
+
+class BloomUserTeamNameForm(forms.ModelForm):
+    class Meta:
+        model = BloomUser
+        fields = ["full_name"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["full_name"].required = True
+        self.fields["full_name"].widget.attrs.update({"class": "usa-input"})
+
+
+class BloomUserTeamGroupForm(forms.ModelForm):
+    class Meta:
+        model = BloomUser
+        fields = ["group"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["group"].widget.attrs.update({"class": "usa-select"})
+
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if group != "bloom" and (self.instance.is_superuser or self.instance.is_staff):
+            raise ValidationError(
+                "Remove Superuser status before changing this user to a non-Bloom group."
+            )
+
+        return group
+
+
+class BloomUserTeamSuperuserForm(forms.ModelForm):
+    is_superuser = forms.BooleanField(
+        label="Is Superuser",
+        required=False,
+        help_text="Only Bloom users can be assigned Superuser status.",
+    )
+
+    class Meta:
+        model = BloomUser
+        fields = ["is_superuser"]
+
+    def clean_is_superuser(self):
+        is_superuser = self.cleaned_data["is_superuser"]
+
+        if is_superuser and self.instance.group != "bloom":
+            raise ValidationError("Only Bloom users can be assigned Superuser status.")
+
+        return is_superuser
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        # Superusers should also be staff so they can access Django admin.
+        user.is_staff = user.is_superuser
+
+        if commit:
+            user.save()
+
+        return user
+
+
+###########################################################
+####################### EXPORT FORM #######################
+###########################################################
 
 
 class ExportNofoReportForm(forms.Form):

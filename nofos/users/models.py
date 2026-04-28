@@ -21,7 +21,7 @@ class BloomUser(AbstractUser):
         max_length=16,
         choices=settings.GROUP_CHOICES,
         default="bloom",
-        help_text="The OpDiv for this user. If they are a Bloom coaches/admins, this should say 'Bloomworks'.",
+        help_text="The OpDiv for this user. If they are a Bloom coach/admin, this should say 'Bloomworks'.",
     )
     login_gov_user_id = models.CharField(
         max_length=255,

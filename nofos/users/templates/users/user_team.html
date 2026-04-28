@@ -36,7 +36,9 @@
             {% if user.email != team_user.email %}
               <tr>
                 <th scope="row" data-sort-value="{{ team_user.email }}">
-                  {{ team_user.email }}
+                  <a href="{% url 'users:user_team_detail' team_user.pk %}">
+                    {{ team_user.email }}
+                  </a>
                 </th>
                 <td>
                   {% if team_user.full_name %}
