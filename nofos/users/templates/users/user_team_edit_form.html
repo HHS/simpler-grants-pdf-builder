@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ title }} — NOFO Builder
+{% endblock %}
+
+{% block body_class %}user_team_edit{% endblock %}
+
+{% block content %}
+  {% include "includes/page_heading.html" with title=title back_text=back_text back_href=back_href only %}
+
+  <p>Change the {{ edit_object }} for <strong>{{ team_user.full_name|default:team_user.email }}</strong>.</p>
+  {% if intro2 %}<p>{{ intro2 }}</p>{% endif %}
+
+  <form id="team-edit--form" method="post">
+    {% csrf_token %}
+
+    {% include "includes/form_macro.html" %}
+
+    <button class="usa-button margin-top-3" type="submit">
+      Change {{ edit_object }}
+    </button>
+  </form>
+{% endblock %}

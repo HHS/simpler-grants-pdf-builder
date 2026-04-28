@@ -45,4 +45,29 @@ urlpatterns = [
         views.BloomUserTeamDeleteView.as_view(),
         name="user_team_delete",
     ),
+    path(
+        "team/<int:pk>",
+        views.BloomUserTeamDetailView.as_view(),
+        name="user_team_detail",
+    ),
+    path(
+        "team/<int:pk>/name",
+        views.BloomUserTeamNameEditView.as_view(),
+        name="user_team_edit_name",
+    ),
+    path(
+        "team/<int:pk>/group",
+        views.BloomUserTeamGroupEditView.as_view(),
+        name="user_team_edit_group",
+    ),
+    path(
+        "team/<int:pk>/superuser",
+        views.BloomUserTeamSuperuserEditView.as_view(),
+        name="user_team_edit_superuser",
+    ),
+    path(
+        "team/<int:pk>/password",
+        views.BloomUserTeamPasswordResetView.as_view(),
+        name="user_team_reset_password",
+    ),
 ]
