@@ -11,7 +11,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views import View
 from django.views.decorators.http import require_http_methods
 from django.views.generic import (
     CreateView,
@@ -41,6 +40,18 @@ class BloomUserTeamAdminMixin(LoginRequiredMixin, UserPassesTestMixin):
 
     def test_func(self):
         return self.request.user.is_superuser
+
+    def redirect_invalid_operation(self, message, pk=None):
+        self.request.session["error_heading"] = "Error: invalid operation"
+        messages.error(self.request, message)
+
+        if pk is None:
+            pk = self.object.pk
+
+        return redirect("users:user_team_detail", pk=pk)
+
+    def another_superuser_exists(self, user):
+        return BloomUser.objects.filter(is_superuser=True).exclude(pk=user.pk).exists()
 
 
 class BloomUserDetailView(DetailView):
@@ -84,26 +95,18 @@ class BloomPasswordChangeView(PasswordChangeView):
         return context
 
 
-class BloomUserNameView(View):
+class BloomUserNameView(LoginRequiredMixin, UpdateView):
     model = BloomUser
     form_class = BloomUserNameForm
     template_name = "users/user_edit_name.html"
+    success_url = reverse_lazy("users:user_view")
 
-    def get(self, request):
-        form = self.form_class(instance=request.user)
-        return render(request, self.template_name, {"form": form})
+    def get_object(self):
+        return self.request.user
 
-    def post(self, request):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            full_name = request.POST["full_name"]
-            request.user.full_name = full_name
-            request.user.save()
-
-            messages.success(self.request, "You changed your name.")
-            return redirect("users:user_view")
-
-        return render(request, self.template_name, {"form": form})
+    def form_valid(self, form):
+        messages.success(self.request, "You changed your name.")
+        return super().form_valid(form)
 
 
 ###########################################################
@@ -111,14 +114,10 @@ class BloomUserNameView(View):
 ###########################################################
 
 
-class BloomUserTeamView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class BloomUserTeamView(BloomUserTeamAdminMixin, ListView):
     model = BloomUser
     template_name = "users/user_team.html"
     context_object_name = "team_users"
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         return BloomUser.objects.all().order_by("email")
@@ -144,15 +143,11 @@ class BloomUserTeamDetailView(BloomUserTeamAdminMixin, DetailView):
         return context
 
 
-class BloomUserTeamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class BloomUserTeamCreateView(BloomUserTeamAdminMixin, CreateView):
     model = BloomUser
     form_class = BloomUserTeamCreateForm
     template_name = "users/user_team_create.html"
     success_url = reverse_lazy("users:user_team")
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -162,25 +157,21 @@ class BloomUserTeamCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
         return response
 
 
-class BloomUserTeamDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class BloomUserTeamDeleteView(BloomUserTeamAdminMixin, DeleteView):
     model = BloomUser
     template_name = "users/user_team_confirm_delete.html"
     context_object_name = "team_user"
     success_url = reverse_lazy("users:user_team")
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
         if self.object.pk == request.user.pk:
-            messages.error(request, "You cannot delete your own user account.")
+            messages.error(request, "You can’t delete your own user account.")
             return redirect(self.success_url)
 
-        if self.object.is_superuser and not self._another_superuser_exists():
-            messages.error(request, "You cannot delete the last superuser.")
+        if self.object.is_superuser and not self.another_superuser_exists(self.object):
+            messages.error(request, "You can’t delete the last Superuser.")
             return redirect(self.success_url)
 
         return super().get(request, *args, **kwargs)
@@ -190,11 +181,13 @@ class BloomUserTeamDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
         email = user_to_delete.email
 
         if user_to_delete.pk == self.request.user.pk:
-            messages.error(self.request, "You cannot delete your own user account.")
+            messages.error(self.request, "You can’t delete your own user account.")
             return redirect(self.success_url)
 
-        if user_to_delete.is_superuser and not self._another_superuser_exists():
-            messages.error(self.request, "You cannot delete the last superuser.")
+        if user_to_delete.is_superuser and not self.another_superuser_exists(
+            user_to_delete
+        ):
+            messages.error(self.request, "You can’t delete the last Superuser.")
             return redirect(self.success_url)
 
         try:
@@ -210,32 +203,44 @@ class BloomUserTeamDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
         messages.error(self.request, "You deleted user: {}.".format(email))
         return redirect(self.success_url)
 
-    def _another_superuser_exists(self):
-        return (
-            BloomUser.objects.filter(is_superuser=True)
-            .exclude(pk=self.object.pk)
-            .exists()
-        )
 
-
-class BloomUserTeamNameEditView(BloomUserTeamAdminMixin, UpdateView):
+class BaseBloomUserTeamEditView(BloomUserTeamAdminMixin, UpdateView):
     model = BloomUser
-    form_class = BloomUserTeamNameForm
     template_name = "users/user_team_edit_form.html"
     context_object_name = "team_user"
+
+    title = ""
+    edit_object = ""
+    intro2 = ""
 
     def get_success_url(self):
         return reverse_lazy("users:user_team_detail", args=[self.object.pk])
 
+    def get_back_href(self):
+        return reverse_lazy("users:user_team_detail", args=[self.object.pk])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Change user name"
+        context["title"] = self.title
         context["back_text"] = self.object.email
-        context["back_href"] = reverse_lazy(
-            "users:user_team_detail", args=[self.object.pk]
-        )
-        context["edit_object"] = "name"
+        context["back_href"] = self.get_back_href()
+
+        if self.edit_object:
+            context["edit_object"] = self.edit_object
+
+        if self.intro2:
+            context["intro2"] = self.intro2
+
         return context
+
+    def get_user_display_name(self):
+        return self.object.full_name or self.object.email
+
+
+class BloomUserTeamNameEditView(BaseBloomUserTeamEditView):
+    form_class = BloomUserTeamNameForm
+    title = "Change user name"
+    edit_object = "name"
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -246,92 +251,59 @@ class BloomUserTeamNameEditView(BloomUserTeamAdminMixin, UpdateView):
         return response
 
 
-class BloomUserTeamGroupEditView(BloomUserTeamAdminMixin, UpdateView):
-    model = BloomUser
+class BloomUserTeamGroupEditView(BaseBloomUserTeamEditView):
     form_class = BloomUserTeamGroupForm
-    template_name = "users/user_team_edit_form.html"
-    context_object_name = "team_user"
-
-    def get_success_url(self):
-        return reverse_lazy("users:user_team_detail", args=[self.object.pk])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Change user group"
-        context["back_text"] = self.object.email
-        context["back_href"] = reverse_lazy(
-            "users:user_team_detail", args=[self.object.pk]
-        )
-
-        context["edit_object"] = "group"
-        context["intro2"] = "A user’s group controls which NOFOs they have access to."
-        return context
+    title = "Change user group"
+    edit_object = "group"
+    intro2 = "A user’s group controls which NOFOs they have access to."
 
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(
             self.request,
             "You changed {}’s group to “{}”.".format(
-                self.object.full_name or self.object.email, self.object.group
+                self.get_user_display_name(),
+                self.object.group,
             ),
         )
         return response
 
 
-class BloomUserTeamSuperuserEditView(BloomUserTeamAdminMixin, UpdateView):
-    model = BloomUser
+class BloomUserTeamSuperuserEditView(BaseBloomUserTeamEditView):
     form_class = BloomUserTeamSuperuserForm
     template_name = "users/user_team_edit_superuser.html"
-    context_object_name = "team_user"
+    title = "Change Superuser status"
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
 
         if self.object.group != "bloom":
-            request.session["error_heading"] = "Error: invalid operation"
-            messages.error(
-                request,
-                "Only Bloom users can be assigned Superuser status.",
+            return self.redirect_invalid_operation(
+                "Only Bloom users can be assigned Superuser status."
             )
-            return redirect("users:user_team_detail", pk=self.object.pk)
 
         return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse_lazy("users:user_team_detail", args=[self.object.pk])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Change Superuser status"
-        context["back_text"] = self.object.email
-        context["back_href"] = reverse_lazy(
-            "users:user_team_detail", args=[self.object.pk]
-        )
-        return context
 
     def form_valid(self, form):
         new_is_superuser = form.cleaned_data["is_superuser"]
 
         if self.object.pk == self.request.user.pk and not new_is_superuser:
-            self.request.session["error_heading"] = "Error: invalid operation"
-            messages.error(
-                self.request,
-                "You cannot remove Superuser status from your own account.",
+            return self.redirect_invalid_operation(
+                "You can’t remove Superuser status from your own account."
             )
-            return redirect("users:user_team_detail", pk=self.object.pk)
 
         if (
             self.object.is_superuser
             and not new_is_superuser
-            and not self._another_superuser_exists()
+            and not self.another_superuser_exists(self.object)
         ):
-            self.request.session["error_heading"] = "Error: invalid operation"
-            messages.error(self.request, "You cannot remove the last Superuser.")
-            return redirect("users:user_team_detail", pk=self.object.pk)
+            return self.redirect_invalid_operation(
+                "You can’t remove the last Superuser."
+            )
 
         response = super().form_valid(form)
 
-        user_name = self.object.full_name or self.object.email
+        user_name = self.get_user_display_name()
         superuser_message = (
             "You made {} a Superuser.".format(user_name)
             if self.object.is_superuser
@@ -340,19 +312,15 @@ class BloomUserTeamSuperuserEditView(BloomUserTeamAdminMixin, UpdateView):
         messages.success(self.request, superuser_message)
         return response
 
-    def _another_superuser_exists(self):
-        return (
-            BloomUser.objects.filter(is_superuser=True)
-            .exclude(pk=self.object.pk)
-            .exists()
-        )
-
 
 class BloomUserTeamPasswordResetView(BloomUserTeamAdminMixin, FormView):
     form_class = SetPasswordForm
     template_name = "users/user_team_edit_password.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return self.handle_no_permission()
+
         self.team_user = get_object_or_404(BloomUser, pk=kwargs["pk"])
 
         if self.team_user.pk == request.user.pk:
