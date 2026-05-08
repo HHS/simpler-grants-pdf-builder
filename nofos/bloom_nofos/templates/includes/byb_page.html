@@ -41,7 +41,7 @@
 
     {% if nofo.before_you_begin == 'era' %}
       <!-- eRA.NIH.gov registration section moved above Apply by the application due date -->
-      <p class="section--before-you-begin--psuedo-header">{% if nofo.number == 'PAR-26-032' %}eRA Commons registration{% else %}eRA.NIH.giv registration{% endif %}</p>
+      <p class="section--before-you-begin--psuedo-header">{% if nofo.number == 'PAR-26-032' %}eRA Commons registration{% else %}eRA.NIH.gov registration{% endif %}</p>
       <p>Once an organization has established its unique organization identifier, organizations can <a href="https://grants.nih.gov/grants/guide/url_redirect.htm?id=11123" target="_blank">register with eRA Commons</a> in tandem with completing Grants.gov registration. You must have all registrations in place at the time of submission. eRA Commons requires organizations to identify at least one Signing Official (SO) and at least one Program Director/Principal Investigator (PD/PI) account in order to submit an application.</p>
       {% if step_2_section %}
         <a href="#{{ step_2_section.html_id }}">See Step 2: Get Ready to Apply</a>
