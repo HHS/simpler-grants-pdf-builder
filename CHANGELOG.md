@@ -11,6 +11,8 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- The ByB page eRA variant now always says "eRA Commons Registration"
+
 ### Fixed
 
 ## [3.31.0] - 2026-04-28
