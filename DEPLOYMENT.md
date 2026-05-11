@@ -83,6 +83,21 @@ The deployment pipeline:
 | `grantee1` | [nofos.grantee1.simpler.grants.gov](https://nofos.grantee1.simpler.grants.gov) | External stakeholder pilot | Dedicated environment for a specific grantee group |
 | `prod` | [nofos.simpler.grants.gov](https://nofos.simpler.grants.gov) | Production | Clean domain, no environment subdomain |
 
+### Monitoring
+
+Each environment exposes a public health check endpoint that requires no authentication:
+
+```GET /health```
+
+This endpoint returns `{"status": "ok"}` with a `200` status code, and supports both `GET` and `HEAD` requests. It is used by UptimeRobot to monitor uptime across environments.
+
+| Environment | Health check URL |
+|-------------|-----------------|
+| `prod` | `https://nofos.simpler.grants.gov/health` |
+| `dev` | `https://nofos.dev.simpler.grants.gov/health` |
+| `training` | `https://nofos.training.simpler.grants.gov/health` |
+| `grantee1` | `https://nofos.grantee1.simpler.grants.gov/health` |
+
 To trigger a deploy, a team member navigates to the **Actions** tab in the `simpler-grants-gov` repo, selects **Deploy NOFOs**, and clicks **Run workflow**, specifying the target environment and git ref (branch, tag, or commit SHA).
 
 **Access requirements:** Triggering a production deploy requires admin access to the `simpler-grants-gov` repository. Admin access requires annual completion of HHS' Rules of Behavior (ROB) and Cybersecurity training modules, with certificates of completion on file.
