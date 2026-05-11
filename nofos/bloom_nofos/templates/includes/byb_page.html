@@ -59,7 +59,7 @@
       {% endfor %}
       </ul>
     {% else %}
-      <p>Applications are due by {% if nofo.number == 'PAR-26-032' %}5:00 p.m. local time{% else %}11:59 p.m. Eastern Time{% endif %} on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+      <p>Applications are due by {% if nofo.number == 'PAR-26-032' %}5:00 p.m. local time{% else %}5:00 p.m. local time{% endif %} on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
     {% endif %}
 
     <div class="callout-box callout-box--icon callout-box--keyboard">
