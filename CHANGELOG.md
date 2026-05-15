@@ -11,6 +11,11 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+- Remove "required" validation for these NOFO attributes:
+  - Agency
+  - Subagency
+  - Subagency 2
+  - Tagline
 - The ByB page eRA variant now always says "eRA Commons Registration"
 
 ### Fixed
