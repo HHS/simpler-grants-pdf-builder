@@ -23,6 +23,10 @@ class BloomUser(AbstractUser):
         default="bloom",
         help_text="The OpDiv for this user. If they are a Bloom coach/admin, this should say 'Bloomworks'.",
     )
+    is_opdiv_admin = models.BooleanField(
+        default=False,
+        help_text="Allow this user to manage other OpDiv users in their group.",
+    )
     login_gov_user_id = models.CharField(
         max_length=255,
         unique=True,
@@ -42,6 +46,25 @@ class BloomUser(AbstractUser):
 
         return "{} ({})".format(self.email, self.full_name)
 
+    @property
+    def can_manage_users(self):
+        return self.is_superuser or self.is_opdiv_admin
+
+    def can_manage_user(self, other_user):
+        if self.is_superuser:
+            return True
+
+        if not self.is_opdiv_admin:
+            return False
+
+        if self.pk == other_user.pk:
+            return False
+
+        if other_user.is_superuser:
+            return False
+
+        return self.group == other_user.group
+
     def save(self, *args, **kwargs):
         # Ensure the email is stored in lowercase
         if self.email:
@@ -51,8 +74,14 @@ class BloomUser(AbstractUser):
         if not self.login_gov_user_id:
             self.login_gov_user_id = None
 
-        if (self.is_superuser or self.is_staff) and self.group != "bloom":
-            raise ValidationError(
-                "Only users in the 'bloom' group can be staff or superusers."
-            )
+        if self.is_superuser and self.group != "bloom":
+            raise ValidationError("Only users in the 'bloom' group can be superusers.")
+
+        # Keep Django admin access derived from Superuser status.
+        self.is_staff = self.is_superuser
+
+        # Superusers already have broader privileges, so keep this role separate.
+        if self.is_superuser:
+            self.is_opdiv_admin = False
+
         super().save(*args, **kwargs)
