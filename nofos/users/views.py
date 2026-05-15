@@ -35,11 +35,11 @@ from .forms import (
 from .models import BloomUser
 
 
-class BloomUserTeamAdminMixin(LoginRequiredMixin, UserPassesTestMixin):
+class BloomUserTeamAccessMixin(LoginRequiredMixin, UserPassesTestMixin):
     raise_exception = True
 
     def test_func(self):
-        return self.request.user.is_superuser
+        return self.request.user.can_manage_users
 
     def redirect_invalid_operation(self, message, pk=None):
         self.request.session["error_heading"] = "Error: invalid operation"
@@ -52,6 +52,25 @@ class BloomUserTeamAdminMixin(LoginRequiredMixin, UserPassesTestMixin):
 
     def another_superuser_exists(self, user):
         return BloomUser.objects.filter(is_superuser=True).exclude(pk=user.pk).exists()
+
+    def get_manageable_users_queryset(self):
+        queryset = BloomUser.objects.all().order_by("email")
+
+        # Users should manage themselves through "Your account", not the team UI.
+        queryset = queryset.exclude(pk=self.request.user.pk)
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            group=self.request.user.group,
+            is_superuser=False,
+        )
+
+
+class BloomUserTeamObjectAccessMixin(BloomUserTeamAccessMixin):
+    def get_queryset(self):
+        return self.get_manageable_users_queryset()
 
 
 class BloomUserDetailView(DetailView):
@@ -114,7 +133,7 @@ class BloomUserNameView(LoginRequiredMixin, UpdateView):
 ###########################################################
 
 
-class BloomUserTeamView(BloomUserTeamAdminMixin, ListView):
+class BloomUserTeamView(BloomUserTeamAccessMixin, ListView):
     model = BloomUser
     template_name = "users/user_team.html"
     context_object_name = "team_users"
@@ -129,7 +148,7 @@ class BloomUserTeamView(BloomUserTeamAdminMixin, ListView):
         return context
 
 
-class BloomUserTeamDetailView(BloomUserTeamAdminMixin, DetailView):
+class BloomUserTeamDetailView(BloomUserTeamObjectAccessMixin, DetailView):
     model = BloomUser
     template_name = "users/user_team_detail.html"
     context_object_name = "team_user"
@@ -143,7 +162,7 @@ class BloomUserTeamDetailView(BloomUserTeamAdminMixin, DetailView):
         return context
 
 
-class BloomUserTeamCreateView(BloomUserTeamAdminMixin, CreateView):
+class BloomUserTeamCreateView(BloomUserTeamObjectAccessMixin, CreateView):
     model = BloomUser
     form_class = BloomUserTeamCreateForm
     template_name = "users/user_team_create.html"
@@ -157,7 +176,7 @@ class BloomUserTeamCreateView(BloomUserTeamAdminMixin, CreateView):
         return response
 
 
-class BloomUserTeamDeleteView(BloomUserTeamAdminMixin, DeleteView):
+class BloomUserTeamDeleteView(BloomUserTeamObjectAccessMixin, DeleteView):
     model = BloomUser
     template_name = "users/user_team_confirm_delete.html"
     context_object_name = "team_user"
@@ -204,7 +223,7 @@ class BloomUserTeamDeleteView(BloomUserTeamAdminMixin, DeleteView):
         return redirect(self.success_url)
 
 
-class BaseBloomUserTeamEditView(BloomUserTeamAdminMixin, UpdateView):
+class BaseBloomUserTeamEditView(BloomUserTeamObjectAccessMixin, UpdateView):
     model = BloomUser
     template_name = "users/user_team_edit_form.html"
     context_object_name = "team_user"
@@ -257,13 +276,18 @@ class BloomUserTeamGroupEditView(BaseBloomUserTeamEditView):
     edit_object = "group"
     intro2 = "A user’s group controls which NOFOs they have access to."
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return self.handle_no_permission()
+
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(
             self.request,
             "You changed {}’s group to “{}”.".format(
-                self.get_user_display_name(),
-                self.object.group,
+                self.get_user_display_name(), self.object.group
             ),
         )
         return response
@@ -313,15 +337,18 @@ class BloomUserTeamSuperuserEditView(BaseBloomUserTeamEditView):
         return response
 
 
-class BloomUserTeamPasswordResetView(BloomUserTeamAdminMixin, FormView):
+class BloomUserTeamPasswordResetView(BloomUserTeamAccessMixin, FormView):
     form_class = SetPasswordForm
     template_name = "users/user_team_edit_password.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
+        if not request.user.can_manage_users:
             return self.handle_no_permission()
 
         self.team_user = get_object_or_404(BloomUser, pk=kwargs["pk"])
+
+        if not request.user.can_manage_user(self.team_user):
+            return self.handle_no_permission()
 
         if self.team_user.pk == request.user.pk:
             request.session["error_heading"] = "Error: invalid operation"

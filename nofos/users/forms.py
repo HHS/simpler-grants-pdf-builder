@@ -5,15 +5,13 @@ from django.core.exceptions import ValidationError
 from .models import BloomUser
 
 
-def validate_user_group_for_staff_and_admin(cleaned_data):
+def validate_user_group_for_superuser(cleaned_data):
     group = cleaned_data.get("group")
     is_superuser = cleaned_data.get("is_superuser")
-    is_staff = cleaned_data.get("is_staff")
 
-    if group != "bloom" and (is_superuser or is_staff):
-        raise ValidationError(
-            "Only users in the 'bloom' group can be staff or superusers."
-        )
+    if group != "bloom" and is_superuser:
+        raise ValidationError("Only users in the 'bloom' group can be superusers.")
+
     return cleaned_data
 
 
@@ -33,7 +31,7 @@ class BloomUserCreationForm(UserCreationForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        return validate_user_group_for_staff_and_admin(cleaned_data)
+        return validate_user_group_for_superuser(cleaned_data)
 
 
 class BloomUserChangeForm(UserChangeForm):
@@ -46,7 +44,7 @@ class BloomUserChangeForm(UserChangeForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        return validate_user_group_for_staff_and_admin(cleaned_data)
+        return validate_user_group_for_superuser(cleaned_data)
 
 
 class BloomUserNameForm(forms.ModelForm):
@@ -112,7 +110,7 @@ class BloomUserTeamCreateForm(UserCreationForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        return validate_user_group_for_staff_and_admin(cleaned_data)
+        return validate_user_group_for_superuser(cleaned_data)
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -184,8 +182,12 @@ class BloomUserTeamSuperuserForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Superusers should also be staff so they can access Django admin.
+        # Staff is derived from Superuser status.
         user.is_staff = user.is_superuser
+
+        # Superusers do not need OpDiv Admin status.
+        if user.is_superuser:
+            user.is_opdiv_admin = False
 
         if commit:
             user.save()
