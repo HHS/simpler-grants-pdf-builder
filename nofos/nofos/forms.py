@@ -45,7 +45,7 @@ NofoImportTitleForm = create_nofo_form_class(
 )
 NofoTitleForm = create_nofo_form_class(["title"])
 NofoShortNameForm = create_nofo_form_class(["short_name"])
-NofoAgencyForm = create_nofo_form_class(["agency"])
+NofoAgencyForm = create_nofo_form_class(["agency"], not_required_labels=["Agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoNumberForm = create_nofo_form_class(["number"])
 NofoGroupForm = create_nofo_form_class(["group"])
@@ -56,7 +56,9 @@ NofoSubagencyForm = create_nofo_form_class(
 NofoSubagency2Form = create_nofo_form_class(
     ["subagency2"], not_required_labels=["Subagency 2"]
 )
-NofoTaglineForm = create_nofo_form_class(["tagline"])
+NofoTaglineForm = create_nofo_form_class(
+    ["tagline"], not_required_labels=["NOFO tagline"]
+)
 NofoBeforeYouBeginForm = create_nofo_form_class(["before_you_begin"])
 
 
