@@ -66,6 +66,11 @@ urlpatterns = [
         name="user_team_edit_superuser",
     ),
     path(
+        "team/<int:pk>/opdiv-admin",
+        views.BloomUserTeamOpdivAdminEditView.as_view(),
+        name="user_team_edit_opdiv_admin",
+    ),
+    path(
         "team/<int:pk>/password",
         views.BloomUserTeamPasswordResetView.as_view(),
         name="user_team_reset_password",

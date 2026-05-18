@@ -124,6 +124,33 @@
 
       <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Permissions</h2>
 
+      {% if form.is_opdiv_admin %}
+        <div class="form-group margin-top-4 width-mobile">
+          <div class="usa-checkbox">
+            <input
+              class="usa-checkbox__input usa-checkbox__input--tile"
+              id="{{ form.is_opdiv_admin.id_for_label }}"
+              type="checkbox"
+              name="{{ form.is_opdiv_admin.html_name }}"
+              {% if form.is_opdiv_admin.value %}checked{% endif %}
+            >
+            <label class="usa-checkbox__label" for="{{ form.is_opdiv_admin.id_for_label }}">
+              {{ form.is_opdiv_admin.label }}
+              <span class="usa-checkbox__label-description">
+                {{ form.is_opdiv_admin.help_text }}
+              </span>
+            </label>
+          </div>
+
+          {% if form.is_opdiv_admin.errors %}
+            <div class="usa-error-message" id="{{ form.is_opdiv_admin.id_for_label }}--error">
+              {{ form.is_opdiv_admin.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if form.is_superuser %}
       <div class="form-group margin-top-4 width-mobile">
         <div class="usa-checkbox">
           <input
@@ -147,6 +174,7 @@
           </div>
         {% endif %}
       </div>
+    {% endif %}
     </fieldset>
 
     <div class="form-group">

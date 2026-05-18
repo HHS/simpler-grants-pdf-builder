@@ -27,6 +27,7 @@
             <th data-sortable scope="col" role="columnheader">Group</th>
             <th data-sortable scope="col" role="columnheader">Last login</th>
             <th scope="col">Superuser</th>
+            <th scope="col">OpDiv Admin</th>
             <th scope="col" class="w-05">Delete</th>
           </tr>
         </thead>
@@ -67,6 +68,13 @@
                 </td>
                 <td>
                   {% if team_user.is_superuser %}
+                    Yes
+                  {% else %}
+                    No
+                  {% endif %}
+                </td>
+                <td>
+                  {% if team_user.is_opdiv_admin %}
                     Yes
                   {% else %}
                     No

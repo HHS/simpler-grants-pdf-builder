@@ -91,6 +91,24 @@
           </td>
         </tr>
       {% endif %}
+
+      {% if not team_user.is_superuser %}
+        <tr>
+          <th scope="row">Is OpDiv Admin</th>
+          <td>
+            {% if team_user.is_opdiv_admin %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'users:user_team_edit_opdiv_admin' team_user.pk %}">
+              Change OpDiv Admin status
+            </a>
+          </td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 {% endblock %}
