@@ -74,6 +74,12 @@ class BloomUserTeamCreateForm(UserCreationForm):
         label="Full name",
     )
 
+    is_opdiv_admin = forms.BooleanField(
+        label="Is OpDiv Admin",
+        required=False,
+        help_text="OpDiv Admins can manage other users for their OpDiv.",
+    )
+
     is_superuser = forms.BooleanField(
         label="Is Superuser",
         required=False,
@@ -82,9 +88,10 @@ class BloomUserTeamCreateForm(UserCreationForm):
 
     class Meta:
         model = BloomUser
-        fields = ("email", "full_name", "group", "is_superuser")
+        fields = ("email", "full_name", "group", "is_opdiv_admin", "is_superuser")
 
     def __init__(self, *args, **kwargs):
+        self.manager = kwargs.pop("manager", None)
         super().__init__(*args, **kwargs)
 
         self.order_fields(
@@ -92,6 +99,7 @@ class BloomUserTeamCreateForm(UserCreationForm):
                 "email",
                 "full_name",
                 "group",
+                "is_opdiv_admin",
                 "password1",
                 "password2",
                 "is_superuser",
@@ -108,8 +116,18 @@ class BloomUserTeamCreateForm(UserCreationForm):
         self.fields["password1"].widget.attrs.update({"class": "usa-input"})
         self.fields["password2"].widget.attrs.update({"class": "usa-input"})
 
+        # OpDiv Admins create users only in their own group and cannot create Superusers.
+        if self.manager and not self.manager.is_superuser:
+            self.fields.pop("group", None)
+            self.fields.pop("is_superuser", None)
+
     def clean(self):
         cleaned_data = super().clean()
+
+        if self.manager and not self.manager.is_superuser:
+            cleaned_data["group"] = self.manager.group
+            cleaned_data["is_superuser"] = False
+
         return validate_user_group_for_superuser(cleaned_data)
 
     def save(self, commit=True):
@@ -120,8 +138,18 @@ class BloomUserTeamCreateForm(UserCreationForm):
         user.login_gov_user_id = None
         user.is_active = True
 
-        # Superusers should also be staff so they can access Django admin.
+        if self.manager and not self.manager.is_superuser:
+            user.group = self.manager.group
+            user.is_superuser = False
+
+        # Staff is derived from Superuser status.
         user.is_staff = user.is_superuser
+
+        # Superusers do not need OpDiv Admin status.
+        if user.is_superuser:
+            user.is_opdiv_admin = False
+        else:
+            user.is_opdiv_admin = self.cleaned_data.get("is_opdiv_admin", False)
 
         if commit:
             user.save()
@@ -193,6 +221,26 @@ class BloomUserTeamSuperuserForm(forms.ModelForm):
             user.save()
 
         return user
+
+
+class BloomUserTeamOpdivAdminForm(forms.ModelForm):
+    is_opdiv_admin = forms.BooleanField(
+        label="Is OpDiv Admin",
+        required=False,
+        help_text="OpDiv Admins can manage other users for their OpDiv.",
+    )
+
+    class Meta:
+        model = BloomUser
+        fields = ["is_opdiv_admin"]
+
+    def clean_is_opdiv_admin(self):
+        is_opdiv_admin = self.cleaned_data["is_opdiv_admin"]
+
+        if is_opdiv_admin and self.instance.is_superuser:
+            raise ValidationError("Superusers do not need OpDiv Admin status.")
+
+        return is_opdiv_admin
 
 
 ###########################################################

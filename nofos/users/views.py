@@ -28,6 +28,7 @@ from .forms import (
     BloomUserTeamCreateForm,
     BloomUserTeamGroupForm,
     BloomUserTeamNameForm,
+    BloomUserTeamOpdivAdminForm,
     BloomUserTeamSuperuserForm,
     ExportNofoReportForm,
     LoginForm,
@@ -139,7 +140,7 @@ class BloomUserTeamView(BloomUserTeamAccessMixin, ListView):
     context_object_name = "team_users"
 
     def get_queryset(self):
-        return BloomUser.objects.all().order_by("email")
+        return self.get_manageable_users_queryset()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -162,11 +163,16 @@ class BloomUserTeamDetailView(BloomUserTeamObjectAccessMixin, DetailView):
         return context
 
 
-class BloomUserTeamCreateView(BloomUserTeamObjectAccessMixin, CreateView):
+class BloomUserTeamCreateView(BloomUserTeamAccessMixin, CreateView):
     model = BloomUser
     form_class = BloomUserTeamCreateForm
     template_name = "users/user_team_create.html"
     success_url = reverse_lazy("users:user_team")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["manager"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -334,6 +340,41 @@ class BloomUserTeamSuperuserEditView(BaseBloomUserTeamEditView):
             else "You removed Superuser privileges from {}.".format(user_name)
         )
         messages.success(self.request, superuser_message)
+        return response
+
+
+class BloomUserTeamOpdivAdminEditView(BaseBloomUserTeamEditView):
+    form_class = BloomUserTeamOpdivAdminForm
+    template_name = "users/user_team_edit_opdiv_admin.html"
+    title = "Change OpDiv Admin status"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.object.is_superuser:
+            return self.redirect_invalid_operation(
+                "Superusers do not need OpDiv Admin status."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        new_is_opdiv_admin = form.cleaned_data["is_opdiv_admin"]
+
+        if self.object.pk == self.request.user.pk:
+            return self.redirect_invalid_operation(
+                "You can’t change OpDiv Admin status for your own account."
+            )
+
+        response = super().form_valid(form)
+
+        user_name = self.get_user_display_name()
+        opdiv_admin_message = (
+            "You made {} an OpDiv Admin.".format(user_name)
+            if new_is_opdiv_admin
+            else "You removed OpDiv Admin privileges from {}.".format(user_name)
+        )
+        messages.success(self.request, opdiv_admin_message)
         return response
 
 
