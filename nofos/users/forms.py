@@ -69,7 +69,7 @@ class LoginForm(forms.Form):
 ###########################################################
 
 
-class BloomUserTeamCreateForm(UserCreationForm):
+class BaseBloomUserTeamCreateForm(UserCreationForm):
     full_name = forms.CharField(
         label="Full name",
     )
@@ -80,31 +80,13 @@ class BloomUserTeamCreateForm(UserCreationForm):
         help_text="OpDiv Admins can manage other users for their OpDiv.",
     )
 
-    is_superuser = forms.BooleanField(
-        label="Is Superuser",
-        required=False,
-        help_text="Only Bloom users can be assigned Superuser status.",
-    )
-
     class Meta:
         model = BloomUser
-        fields = ("email", "full_name", "group", "is_opdiv_admin", "is_superuser")
+        fields = ("email", "full_name", "is_opdiv_admin")
 
     def __init__(self, *args, **kwargs):
         self.manager = kwargs.pop("manager", None)
         super().__init__(*args, **kwargs)
-
-        self.order_fields(
-            [
-                "email",
-                "full_name",
-                "group",
-                "is_opdiv_admin",
-                "password1",
-                "password2",
-                "is_superuser",
-            ]
-        )
 
         self.fields["password1"].help_text = (
             "The password must contain at least 8 characters."
@@ -112,14 +94,38 @@ class BloomUserTeamCreateForm(UserCreationForm):
 
         self.fields["email"].widget.attrs.update({"class": "usa-input"})
         self.fields["full_name"].widget.attrs.update({"class": "usa-input"})
-        self.fields["group"].widget.attrs.update({"class": "usa-select"})
         self.fields["password1"].widget.attrs.update({"class": "usa-input"})
         self.fields["password2"].widget.attrs.update({"class": "usa-input"})
 
-        # OpDiv Admins create users only in their own group and cannot create Superusers.
+        if "group" in self.fields:
+            self.fields["group"].widget.attrs.update({"class": "usa-select"})
+
+        self.show_group_field = "group" in self.fields
+        self.show_superuser_field = "is_superuser" in self.fields
+        self.show_opdiv_admin_field = "is_opdiv_admin" in self.fields
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        user.force_password_reset = True
+        user.login_gov_user_id = None
+        user.is_active = True
+
         if self.manager and not self.manager.is_superuser:
-            self.fields.pop("group", None)
-            self.fields.pop("is_superuser", None)
+            user.group = self.manager.group
+            user.is_superuser = False
+
+        user.is_staff = user.is_superuser
+
+        if user.is_superuser:
+            user.is_opdiv_admin = False
+        else:
+            user.is_opdiv_admin = self.cleaned_data.get("is_opdiv_admin", False)
+
+        if commit:
+            user.save()
+
+        return user
 
     def clean(self):
         cleaned_data = super().clean()
@@ -155,6 +161,56 @@ class BloomUserTeamCreateForm(UserCreationForm):
             user.save()
 
         return user
+
+
+class BloomUserTeamCreateForm(BaseBloomUserTeamCreateForm):
+    is_superuser = forms.BooleanField(
+        label="Is Superuser",
+        required=False,
+        help_text="Only Bloom users can be assigned Superuser status.",
+    )
+
+    class Meta:
+        model = BloomUser
+        fields = ("email", "full_name", "group", "is_opdiv_admin", "is_superuser")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.order_fields(
+            [
+                "email",
+                "full_name",
+                "group",
+                "is_opdiv_admin",
+                "password1",
+                "password2",
+                "is_superuser",
+            ]
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return validate_user_group_for_superuser(cleaned_data)
+
+
+class BloomUserTeamOpdivAdminCreateForm(BaseBloomUserTeamCreateForm):
+    class Meta:
+        model = BloomUser
+        fields = ("email", "full_name", "is_opdiv_admin")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.order_fields(
+            [
+                "email",
+                "full_name",
+                "is_opdiv_admin",
+                "password1",
+                "password2",
+            ]
+        )
 
 
 class BloomUserTeamNameForm(forms.ModelForm):
