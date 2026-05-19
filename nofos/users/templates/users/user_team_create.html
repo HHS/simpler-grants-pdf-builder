@@ -71,22 +71,24 @@
         {{ form.full_name }}
       </div>
 
-      <div class="form-group">
-        <label class="usa-label" for="{{ form.group.id_for_label }}">
-          {{ form.group.label }}
-        </label>
-        {% if form.group.help_text %}
-          <div class="usa-hint" id="{{ form.group.id_for_label }}--hint">
-            {{ form.group.help_text }}
-          </div>
-        {% endif %}
-        {% if form.group.errors %}
-          <div class="usa-error-message" id="{{ form.group.id_for_label }}--error">
-            {{ form.group.errors.0 }}
-          </div>
-        {% endif %}
-        {{ form.group }}
-      </div>
+      {% if form.show_group_field %}
+        <div class="form-group">
+          <label class="usa-label" for="{{ form.group.id_for_label }}">
+            {{ form.group.label }}
+          </label>
+          {% if form.group.help_text %}
+            <div class="usa-hint" id="{{ form.group.id_for_label }}--hint">
+              {{ form.group.help_text }}
+            </div>
+          {% endif %}
+          {% if form.group.errors %}
+            <div class="usa-error-message" id="{{ form.group.id_for_label }}--error">
+              {{ form.group.errors.0 }}
+            </div>
+          {% endif %}
+          {{ form.group }}
+        </div>
+      {% endif %}
 
       <div class="form-group">
         <label class="usa-label" for="{{ form.password1.id_for_label }}">
@@ -124,7 +126,7 @@
 
       <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Permissions</h2>
 
-      {% if form.is_opdiv_admin %}
+      {% if form.show_opdiv_admin_field %}
         <div class="form-group margin-top-4 width-mobile">
           <div class="usa-checkbox">
             <input
@@ -150,31 +152,31 @@
         </div>
       {% endif %}
 
-      {% if form.is_superuser %}
-      <div class="form-group margin-top-4 width-mobile">
-        <div class="usa-checkbox">
-          <input
-            class="usa-checkbox__input usa-checkbox__input--tile"
-            id="{{ form.is_superuser.id_for_label }}"
-            type="checkbox"
-            name="{{ form.is_superuser.html_name }}"
-            {% if form.is_superuser.value %}checked{% endif %}
-          >
-          <label class="usa-checkbox__label" for="{{ form.is_superuser.id_for_label }}">
-            {{ form.is_superuser.label }}
-            <span class="usa-checkbox__label-description">
-              {{ form.is_superuser.help_text }}
-            </span>
-          </label>
-        </div>
-
-        {% if form.is_superuser.errors %}
-          <div class="usa-error-message" id="{{ form.is_superuser.id_for_label }}--error">
-            {{ form.is_superuser.errors.0 }}
+      {% if form.show_superuser_field %}
+        <div class="form-group margin-top-4 width-mobile">
+          <div class="usa-checkbox">
+            <input
+              class="usa-checkbox__input usa-checkbox__input--tile"
+              id="{{ form.is_superuser.id_for_label }}"
+              type="checkbox"
+              name="{{ form.is_superuser.html_name }}"
+              {% if form.is_superuser.value %}checked{% endif %}
+            >
+            <label class="usa-checkbox__label" for="{{ form.is_superuser.id_for_label }}">
+              {{ form.is_superuser.label }}
+              <span class="usa-checkbox__label-description">
+                {{ form.is_superuser.help_text }}
+              </span>
+            </label>
           </div>
-        {% endif %}
-      </div>
-    {% endif %}
+
+          {% if form.is_superuser.errors %}
+            <div class="usa-error-message" id="{{ form.is_superuser.id_for_label }}--error">
+              {{ form.is_superuser.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
     </fieldset>
 
     <div class="form-group">

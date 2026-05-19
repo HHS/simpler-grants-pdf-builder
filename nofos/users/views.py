@@ -28,6 +28,7 @@ from .forms import (
     BloomUserTeamCreateForm,
     BloomUserTeamGroupForm,
     BloomUserTeamNameForm,
+    BloomUserTeamOpdivAdminCreateForm,
     BloomUserTeamOpdivAdminForm,
     BloomUserTeamSuperuserForm,
     ExportNofoReportForm,
@@ -165,9 +166,14 @@ class BloomUserTeamDetailView(BloomUserTeamObjectAccessMixin, DetailView):
 
 class BloomUserTeamCreateView(BloomUserTeamAccessMixin, CreateView):
     model = BloomUser
-    form_class = BloomUserTeamCreateForm
     template_name = "users/user_team_create.html"
     success_url = reverse_lazy("users:user_team")
+
+    def get_form_class(self):
+        if self.request.user.is_superuser:
+            return BloomUserTeamCreateForm
+
+        return BloomUserTeamOpdivAdminCreateForm
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -305,6 +311,9 @@ class BloomUserTeamSuperuserEditView(BaseBloomUserTeamEditView):
     title = "Change Superuser status"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return self.handle_no_permission()
+
         self.object = self.get_object()
 
         if self.object.group != "bloom":

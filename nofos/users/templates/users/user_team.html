@@ -24,9 +24,13 @@
           <tr>
             <th data-sortable scope="col" role="columnheader">Email address</th>
             <th scope="col">Name</th>
-            <th data-sortable scope="col" role="columnheader">Group</th>
+            {% if request.user.is_superuser %}
+              <th data-sortable scope="col" role="columnheader">Group</th>
+            {% endif %}
             <th data-sortable scope="col" role="columnheader">Last login</th>
-            <th scope="col">Superuser</th>
+            {% if request.user.is_superuser %}
+              <th scope="col">Superuser</th>
+            {% endif %}
             <th scope="col">OpDiv Admin</th>
             <th scope="col" class="w-05">Delete</th>
           </tr>
@@ -49,11 +53,13 @@
                     <span aria-hidden="true">—</span>
                   {% endif %}
                 </td>
-                <td data-sort-value="{{ team_user.get_group_display }}">
-                  <span class="usa-tag bg-group bg-group--{{ team_user.group }}">
-                    {{ team_user.group }}
-                  </span>
-                </td>
+                {% if request.user.is_superuser %}
+                  <td data-sort-value="{{ team_user.get_group_display }}">
+                    <span class="usa-tag bg-group bg-group--{{ team_user.group }}">
+                      {{ team_user.group }}
+                    </span>
+                  </td>
+                {% endif %}
                 <td data-sort-value="{% if team_user.last_login %}{{ team_user.last_login|date:"YmdHi" }}{% else %}0{% endif %}">
                   {% if team_user.last_login %}
                     {% if team_user.last_login|date:"Y" == current_year %}
@@ -66,13 +72,15 @@
                     <span aria-hidden="true">—</span>
                   {% endif %}
                 </td>
-                <td>
-                  {% if team_user.is_superuser %}
-                    Yes
-                  {% else %}
-                    No
-                  {% endif %}
-                </td>
+                {% if request.user.is_superuser %}
+                  <td>
+                    {% if team_user.is_superuser %}
+                      Yes
+                    {% else %}
+                      No
+                    {% endif %}
+                  </td>
+                {% endif %}
                 <td>
                   {% if team_user.is_opdiv_admin %}
                     Yes

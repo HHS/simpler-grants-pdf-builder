@@ -60,6 +60,32 @@
         </td>
         <td><a href="{% url 'users:password_change' %}">Change password</a></td>
       </tr>
+      {% if user.is_opdiv_admin %}
+        <tr>
+          <th scope="row">Is OpDiv Admin</th>
+          <td>
+            {% if user.is_opdiv_admin %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </td>
+          <td></td>
+        </tr>
+      {% endif %}
+      {% if user.is_superuser %}
+        <tr>
+          <th scope="row">Is Superuser</th>
+          <td>
+            {% if user.is_superuser %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </td>
+          <td></td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 
@@ -68,6 +94,12 @@
 
     <p>
       <a href="{% url 'users:user_team' %}">See all users in the NOFO Builder</a>
+    </p>
+  {% elif user.is_opdiv_admin %}
+    <h2 class="margin-top-6">Your team</h2>
+
+    <p>
+      <a href="{% url 'users:user_team' %}">See all {{ user.group|upper }} users</a>
     </p>
   {% endif %}
 

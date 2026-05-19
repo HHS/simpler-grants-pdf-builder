@@ -30,15 +30,17 @@
         <td></td>
       </tr>
 
-      <tr>
-        <th scope="row">Group</th>
-        <td>{{ team_user.get_group_display }}</td>
-        <td>
-          <a href="{% url 'users:user_team_edit_group' team_user.pk %}">
-            Change group
-          </a>
-        </td>
-      </tr>
+      {% if request.user.is_superuser %}
+        <tr>
+          <th scope="row">Group</th>
+          <td>{{ team_user.get_group_display }}</td>
+          <td>
+            <a href="{% url 'users:user_team_edit_group' team_user.pk %}">
+              Change group
+            </a>
+          </td>
+        </tr>
+      {% endif %}
 
       <tr>
         <th scope="row">Name</th>
