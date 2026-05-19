@@ -1,11 +1,13 @@
 # CHANGED: add an alias so we can copy from this stage later
-FROM python:3.14-slim AS builder
+FROM python:3.14.5-slim-trixie AS builder
 
 # set work directory
 WORKDIR /app
 
-# Install system dependencies (Debian-based)
-RUN apt-get update && \
+# Update installed Debian packages first, then install build dependencies.
+RUN set -eux; \
+  apt-get update; \
+  apt-get upgrade -y; \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
@@ -13,7 +15,9 @@ RUN apt-get update && \
   libffi-dev \
   libpq-dev \
   libsqlite3-0 \
-  && rm -rf /var/lib/apt/lists/*
+  ; \
+  apt-get clean; \
+  rm -rf /var/lib/apt/lists/*
 
 # Install Poetry and create user
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
