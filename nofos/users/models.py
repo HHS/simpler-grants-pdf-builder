@@ -23,6 +23,10 @@ class BloomUser(AbstractUser):
         default="bloom",
         help_text="The OpDiv for this user. If they are a Bloom coach/admin, this should say 'Bloomworks'.",
     )
+    is_composer_admin = models.BooleanField(
+        default=False,
+        help_text="Allow this user to create, edit, publish, unpublish, and archive Composer content guides.",
+    )
     is_opdiv_admin = models.BooleanField(
         default=False,
         help_text="Allow this user to manage other OpDiv users in their group.",
@@ -45,6 +49,10 @@ class BloomUser(AbstractUser):
             return self.email
 
         return "{} ({})".format(self.email, self.full_name)
+
+    @property
+    def can_manage_composer(self):
+        return self.is_superuser or self.is_composer_admin
 
     @property
     def can_manage_users(self):

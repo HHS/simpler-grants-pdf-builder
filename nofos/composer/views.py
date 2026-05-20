@@ -6,10 +6,9 @@ from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import generate_docx_download_response
 from composer.utils import do_replace_variable_keys_with_values
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -23,7 +22,6 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.views.generic import (
     CreateView,
@@ -78,6 +76,35 @@ from .utils import (
     get_yes_no_label,
     render_curly_variable_list_html_string,
 )
+
+###########################################################
+######################## MIXINS ###########################
+###########################################################
+
+
+def composer_admin_required(view_func=None):
+    decorator = user_passes_test(
+        lambda user: (
+            user.is_authenticated and user.is_active and user.can_manage_composer
+        ),
+        login_url=reverse_lazy("admin:login"),
+        redirect_field_name=REDIRECT_FIELD_NAME,
+    )
+
+    if view_func is None:
+        return decorator
+
+    return decorator(view_func)
+
+
+class ComposerAdminRequiredMixin(UserPassesTestMixin):
+    login_url = reverse_lazy("admin:login")
+    redirect_field_name = "next"
+
+    def test_func(self):
+        user = self.request.user
+        return user.is_authenticated and user.is_active and user.can_manage_composer
+
 
 ###########################################################
 ##################### VIEWS UTILS #######################
@@ -362,8 +389,7 @@ class BaseComposerPreviewView(LoginRequiredMixin, DetailView):
 ###########################################################
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class ComposerListView(LoginRequiredMixin, ListView):
+class ComposerListView(ComposerAdminRequiredMixin, ListView):
     model = ContentGuide
     template_name = "composer/composer_index.html"
     context_object_name = "documents"
@@ -395,8 +421,7 @@ class ComposerListView(LoginRequiredMixin, ListView):
         return context
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
+class ComposerImportView(ComposerAdminRequiredMixin, BaseNofoImportView):
     """
     Handles importing a NEW ContentGuide from an uploaded file.
     """
@@ -459,8 +484,9 @@ class ComposerImportView(LoginRequiredMixin, BaseNofoImportView):
             return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
+class ComposerImportTitleView(
+    ComposerAdminRequiredMixin, GroupAccessContentGuideMixin, UpdateView
+):
     model = ContentGuide
     form_class = CompareTitleForm
     template_name = "composer/composer_edit_title.html"
@@ -481,9 +507,11 @@ class ComposerImportTitleView(GroupAccessContentGuideMixin, UpdateView):
         return redirect("composer:composer_index")
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerEditTitleView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    UpdateView,
 ):
     model = ContentGuide
     form_class = CompareTitleForm
@@ -504,8 +532,8 @@ class ComposerEditTitleView(
         return redirect("composer:composer_index")
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerArchiveView(
+    ComposerAdminRequiredMixin,
     PreventIfContentGuideArchivedMixin,
     GroupAccessContentGuideMixin,
     BaseComposerArchiveView,
@@ -515,11 +543,10 @@ class ComposerArchiveView(
     success_url = reverse_lazy("composer:composer_index")
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerUnpublishView(
+    ComposerAdminRequiredMixin,
     PreventIfContentGuideArchivedMixin,
     GroupAccessContentGuideMixin,
-    LoginRequiredMixin,
     UpdateView,
 ):
     model = ContentGuide
@@ -557,8 +584,9 @@ class ComposerUnpublishView(
         return redirect(reverse_lazy("composer:composer_preview", args=[document.pk]))
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
+class ComposerHistoryView(
+    ComposerAdminRequiredMixin, GroupAccessContentGuideMixin, BaseNofoHistoryView
+):
     model = ContentGuide
     template_name = "composer/composer_history.html"
     context_object_name = "document"
@@ -579,7 +607,7 @@ class ComposerHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
         return "contentguidesubsection"
 
 
-@staff_member_required
+@composer_admin_required
 def composer_section_redirect(request, pk):
     document = ContentGuide.objects.prefetch_related("sections").filter(pk=pk).first()
     if not document:
@@ -630,8 +658,8 @@ class ComposerSectionView(
     def dispatch(self, request, *args, **kwargs):
         document = self._get_document()
         if isinstance(document, ContentGuide):
-            # Only staff can view ContentGuide section pages
-            if not request.user.is_staff:
+            # Only composer admins can view ContentGuide section pages
+            if not getattr(request.user, "can_manage_composer", False):
                 return redirect_to_login(
                     request.get_full_path(),
                     reverse_lazy("admin:login"),
@@ -824,14 +852,14 @@ class ComposerPreviewView(BaseComposerPreviewView):
     """
     Read-only preview of an entire Composer document.
 
-    If draft + user is staff:
+    If draft + user is composer admin:
         Left pane: sections + a 'Preview' item (current page).
         Right pane: full document printed section-by-section.
 
-    If draft + user is not staff:
-        Redirect to login (only staff can preview drafts).
+    If draft + user is not composer admin:
+        Redirect to login (only admins can preview drafts).
 
-    If published, user is staff or not staff:
+    If published, user is admin or not:
         Full-width: full document printed section-by-section.
     """
 
@@ -842,9 +870,11 @@ class ComposerPreviewView(BaseComposerPreviewView):
         # Get the object to check if it's archived
         document = self.get_object()
 
-        # Require staff status if the content guide is not published
-        if document.status != "published" and not request.user.is_staff:
-            # Redirect to admin login (mimicking staff_member_required behavior)
+        # Require composer admin status if the content guide is not published
+        if document.status != "published" and not getattr(
+            request.user, "can_manage_composer", False
+        ):
+            # Redirect to admin login (mimicking composer_admin_required behavior)
             return redirect_to_login(
                 request.get_full_path(),
                 reverse_lazy("admin:login"),
@@ -922,8 +952,8 @@ class ComposerPreviewView(BaseComposerPreviewView):
         return HttpResponseBadRequest("Unknown action.")
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerExportView(
+    ComposerAdminRequiredMixin,
     PreventIfContentGuideArchivedMixin,
     GroupAccessContentGuideMixin,
     DetailView,
@@ -959,9 +989,11 @@ class ComposerExportView(
         )
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSectionEditView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DetailView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    DetailView,
 ):
     """
     Edit a single ContentGuideSection's subsections.
@@ -992,9 +1024,11 @@ class ComposerSectionEditView(
         return context
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionCreateView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, CreateView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    CreateView,
 ):
     """
     Create a new ContentGuideSubsection within a given section.
@@ -1082,9 +1116,11 @@ class ComposerSubsectionCreateView(
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionEditView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    UpdateView,
 ):
     """
     Edit a single ContentGuideSubsection's edit_mode + body.
@@ -1148,9 +1184,11 @@ class ComposerSubsectionEditView(
         return "{}?anchor={}#{}".format(url, anchor, anchor) if anchor else url
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionDeleteView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, DeleteView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    DeleteView,
 ):
     model = ContentGuideSubsection
     pk_url_kwarg = "subsection_pk"
@@ -1203,9 +1241,11 @@ class ComposerSubsectionDeleteView(
         return super().form_valid(form)
 
 
-@method_decorator(staff_member_required, name="dispatch")
 class ComposerSubsectionInstructionsEditView(
-    PreventIfContentGuideArchivedMixin, GroupAccessContentGuideMixin, UpdateView
+    ComposerAdminRequiredMixin,
+    PreventIfContentGuideArchivedMixin,
+    GroupAccessContentGuideMixin,
+    UpdateView,
 ):
     """
     Edit a single ContentGuideSubsection's instructions.
@@ -1819,8 +1859,9 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
         return HttpResponseBadRequest("Unknown action.")
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class WriterInstanceHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryView):
+class WriterInstanceHistoryView(
+    ComposerAdminRequiredMixin, GroupAccessContentGuideMixin, BaseNofoHistoryView
+):
     model = ContentGuideInstance
     template_name = "composer/writer/writer_history.html"
     context_object_name = "document"
@@ -1841,8 +1882,9 @@ class WriterInstanceHistoryView(GroupAccessContentGuideMixin, BaseNofoHistoryVie
         return "contentguidesubsection"
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class WriterInstanceHistoryCompareView(GroupAccessContentGuideMixin, View):
+class WriterInstanceHistoryCompareView(
+    ComposerAdminRequiredMixin, GroupAccessContentGuideMixin, View
+):
     """
     View to compare two historical versions of a ContentGuideSubsection.
     URL: /composer/writer/<pk>/history/compare/<event_id>

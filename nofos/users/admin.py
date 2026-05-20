@@ -48,6 +48,7 @@ class BloomUserAdmin(UserAdmin):
             {
                 "fields": (
                     "is_superuser",
+                    "is_composer_admin",
                     "is_opdiv_admin",
                     "is_active",
                 )
@@ -76,6 +77,7 @@ class BloomUserAdmin(UserAdmin):
             {
                 "fields": (
                     "is_superuser",
+                    "is_composer_admin",
                     "is_opdiv_admin",
                     "is_active",
                 ),
