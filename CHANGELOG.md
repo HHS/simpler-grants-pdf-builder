@@ -11,6 +11,24 @@ Versioning since version 1.0.0.
 
 ### Changed
 
+### Fixed
+
+## [3.32.0] - 2026-05-20
+
+### Added
+
+- Added a new user role called "OpDiv Admin"
+- Opdiv Admins can manage users for their group, including:
+  - See all users in their group
+  - Add a new user to their group
+  - Delete a user from their group
+  - Edit users (including reset passwords) for users in their group
+  - Note that OpDiv admins can add/delete other OpDiv admins
+- We are reusing a lot of the team management UI for this, which is why we built it
+
+### Changed
+
+- Change the Microsoft feedback form to a new one
 - Remove "required" validation for these NOFO attributes:
   - Agency
   - Subagency
@@ -18,7 +36,9 @@ Versioning since version 1.0.0.
   - Tagline
 - The ByB page eRA variant now always says "eRA Commons Registration"
 
-### Fixed
+### Migrations
+
+- Add migration for "is_opdiv_admin" on the user model
 
 ## [3.31.0] - 2026-04-28
 
