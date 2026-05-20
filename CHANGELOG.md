@@ -24,6 +24,9 @@ Versioning since version 1.0.0.
   - Delete a user from their group
   - Edit users (including reset passwords) for users in their group
   - Note that OpDiv admins can add/delete other OpDiv admins
+- Added a new user role called "Composer Admin"
+  - This replaces the previous role which was the inbuilt "is_staff"
+  - There are no new permissions or behaviours for a Composer Admin user
 - We are reusing a lot of the team management UI for this, which is why we built it
 
 ### Changed
@@ -39,6 +42,7 @@ Versioning since version 1.0.0.
 ### Migrations
 
 - Add migration for "is_opdiv_admin" on the user model
+- Add migration for "is_composer_admin" on the user model
 
 ## [3.31.0] - 2026-04-28
 
