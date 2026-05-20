@@ -16,22 +16,54 @@ from django.utils import timezone
 
 User = get_user_model()
 
+PASSWORD = "testpass123"
+
+
+def create_composer_admin_user(
+    email="composer-admin@example.com",
+    group="bloom",
+    **kwargs,
+):
+    return User.objects.create_user(
+        email=email,
+        password=PASSWORD,
+        group=group,
+        force_password_reset=False,
+        is_composer_admin=True,
+        **kwargs,
+    )
+
+
+def create_regular_user(
+    email="regular@example.com",
+    group="bloom",
+    **kwargs,
+):
+    return User.objects.create_user(
+        email=email,
+        password=PASSWORD,
+        group=group,
+        force_password_reset=False,
+        is_composer_admin=False,
+        **kwargs,
+    )
+
 
 class ComposerListViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = create_composer_admin_user(email="composer@example.com")
+
+    def login_composer_admin(self):
+        logged_in = self.client.login(
             email="composer@example.com",
             password="testpass123",
-            group="bloom",  # or whatever default group is fine
-            is_staff=True,
-            force_password_reset=False,
         )
-
-        self.client.login(email="bloom@example.com", password="testpass123")
+        self.assertTrue(logged_in)
 
     def test_logged_in_user_sees_welcome_message(self):
-        """Logged-in users should see the Composer welcome page with the correct H1 text."""
-        self.client.login(email="composer@example.com", password="testpass123")
+        """Composer admins should see the Composer welcome page."""
+        self.login_composer_admin()
+
         url = reverse("composer:composer_index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -45,51 +77,60 @@ class ComposerListViewTests(TestCase):
         self.assertIn(reverse("admin:login"), response.url)
 
     def test_no_content_guides(self):
-        """When no draft or published content guides exist, the user should see the empty state"""
-        self.client.login(email="composer@example.com", password="testpass123")
+        """When no draft or published content guides exist, the user should see the empty state."""
+        self.login_composer_admin()
         url = reverse("composer:composer_index")
         response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No content guides available")
-        # Create new always visible
         self.assertContains(response, "Create a new content guide")
 
     def test_draft_only(self):
-        """When only draft content guides exist, only the draft table is visible"""
+        """When only draft content guides exist, only the draft table is visible."""
         ContentGuide.objects.create(
-            title="Original Title.docx", opdiv="CDC", group="bloom", status="draft"
+            title="Original Title.docx",
+            opdiv="CDC",
+            group="bloom",
+            status="draft",
         )
-        self.client.login(email="composer@example.com", password="testpass123")
+        self.login_composer_admin()
+
         url = reverse("composer:composer_index")
         response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Edit draft content guides")
         self.assertNotContains(response, "Review published content guides")
-        # Create new always visible
         self.assertContains(response, "Create a new content guide")
 
     def test_published_only(self):
-        """When only published content guides exist, only the published table is visible"""
+        """When only published content guides exist, only the published table is visible."""
         ContentGuide.objects.create(
-            title="Original Title.docx", opdiv="CDC", group="bloom", status="published"
+            title="Original Title.docx",
+            opdiv="CDC",
+            group="bloom",
+            status="published",
         )
-        self.client.login(email="composer@example.com", password="testpass123")
+        self.login_composer_admin()
+
         url = reverse("composer:composer_index")
         response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Edit draft content guides")
         self.assertContains(response, "Review published content guides")
-        # Create new always visible
         self.assertContains(response, "Create a new content guide")
 
 
 class ComposerImportViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = create_composer_admin_user(email="importer@example.com")
+        logged_in = self.client.login(
             email="importer@example.com",
             password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
         )
-        self.client.login(email="importer@example.com", password="testpass123")
+        self.assertTrue(logged_in)
+
         self.url = reverse("composer:composer_import")
 
     def test_view_renders_import_form(self):
@@ -124,13 +165,7 @@ class ComposerImportViewTests(TestCase):
 
 class ComposerImportTitleViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         self.document = ContentGuide.objects.create(
@@ -168,13 +203,7 @@ class ComposerImportTitleViewTests(TestCase):
 
 class ComposerEditTitleViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         self.document = ContentGuide.objects.create(
@@ -212,13 +241,7 @@ class ComposerEditTitleViewTests(TestCase):
 
 class ComposerArchiveViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            force_password_reset=False,
-            is_staff=True,
-            group="bloom",
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         self.document = ContentGuide.objects.create(
@@ -261,13 +284,7 @@ class ComposerArchiveViewTests(TestCase):
 
 class ComposerDocumentRedirectTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            force_password_reset=False,
-            is_staff=True,
-            group="bloom",
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
         # Base URL for the redirect route
         self.redirect_url_name = "composer:composer_document_redirect"
@@ -489,13 +506,7 @@ class GroupSubsectionsTests(TestCase):
 class ComposerSectionViewTests(TestCase):
     def setUp(self):
         # Auth user
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # Guide + sections
@@ -810,13 +821,7 @@ class ComposerSectionViewTests(TestCase):
 
 class ComposerSectionEditViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         self.guide = ContentGuide.objects.create(
@@ -898,13 +903,7 @@ class ComposerSectionEditViewTests(TestCase):
 class ComposerSubsectionEditViewTests(TestCase):
     def setUp(self):
         # user + login
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # guide/sections/subsections
@@ -1013,13 +1012,7 @@ class ComposerSubsectionEditViewTests(TestCase):
 class ComposerSubsectionCreateViewTests(TestCase):
     def setUp(self):
         # user + login
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # guide/sections/subsections
@@ -1128,13 +1121,7 @@ class ComposerSubsectionCreateViewTests(TestCase):
 class ComposerSubsectionDeleteViewTests(TestCase):
     def setUp(self):
         # user + login
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # guide/sections/subsections
@@ -1249,13 +1236,7 @@ class ComposerSubsectionDeleteViewTests(TestCase):
 class ComposerSubsectionInstructionsEditViewTests(TestCase):
     def setUp(self):
         # user + login
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # Document hierarchy: guide -> section -> subsection
@@ -1386,13 +1367,7 @@ class ComposerSubsectionInstructionsEditViewTests(TestCase):
 
 class ComposerPreviewViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         self.guide = ContentGuide.objects.create(
@@ -1522,13 +1497,7 @@ class ComposerPreviewViewTests(TestCase):
 
 class ComposerUnpublishViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            group="bloom",
-            is_staff=True,
-            force_password_reset=False,
-        )
+        self.user = create_composer_admin_user(email="test@example.com")
         self.client.login(email="test@example.com", password="testpass123")
 
         # Create a published guide with sections and subsections
@@ -1684,27 +1653,15 @@ class ComposerUnpublishViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-class StaffMemberRequiredTests(TestCase):
+class ComposerAdminRequiredTests(TestCase):
     """Tests to verify that staff_member_required is properly enforced on composer views."""
 
     def setUp(self):
         # Create a non-staff user
-        self.non_staff_user = User.objects.create_user(
-            email="nonstaff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=False,
-        )
+        self.non_staff_user = create_regular_user(email="regular@example.com")
 
         # Create a staff user
-        self.staff_user = User.objects.create_user(
-            email="staff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=True,
-        )
+        self.staff_user = create_composer_admin_user(email="composer@example.com")
 
         # Create a content guide with sections and subsections for testing
         self.guide = ContentGuide.objects.create(
@@ -1721,122 +1678,127 @@ class StaffMemberRequiredTests(TestCase):
             tag="h4",
         )
 
-    def test_composer_list_view_requires_staff(self):
-        """ComposerListView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_list_view_requires_composer_admin(self):
+        """ComposerListView should return 403 for non-admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_index")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_list_view_allows_staff(self):
-        """ComposerListView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_list_view_allows_composer_admin(self):
+        """ComposerListView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_import_view_requires_staff(self):
-        """ComposerImportView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_import_view_requires_composer_admin(self):
+        """ComposerImportView should return 403 for non-admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_import")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_import_view_allows_staff(self):
-        """ComposerImportView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_import_view_allows_composer_admin(self):
+        """ComposerImportView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_import")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_import_title_view_requires_staff(self):
-        """ComposerImportTitleView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_import_title_view_requires_composer_admin(self):
+        """ComposerImportTitleView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_import_title", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_import_title_view_allows_staff(self):
-        """ComposerImportTitleView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_import_title_view_allows_composer_admin(self):
+        """ComposerImportTitleView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_import_title", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_edit_title_view_requires_staff(self):
-        """ComposerEditTitleView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_edit_title_view_requires_composer_admin(self):
+        """ComposerEditTitleView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_edit_title", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_edit_title_view_allows_staff(self):
-        """ComposerEditTitleView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_edit_title_view_allows_composer_admin(self):
+        """ComposerEditTitleView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_edit_title", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_archive_view_requires_staff(self):
-        """ComposerArchiveView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_archive_view_redirects_anonymous_user_to_login(self):
+        """ComposerArchiveView should redirect anonymous users to login."""
+        self.client.logout()
+
         url = reverse("composer:composer_archive", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
+
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response.url)
 
-    def test_composer_archive_view_allows_staff(self):
-        """ComposerArchiveView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_archive_view_requires_composer_admin(self):
+        """ComposerArchiveView should return 403 for logged-in non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
+
+        url = reverse("composer:composer_archive", kwargs={"pk": self.guide.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_composer_archive_view_allows_composer_admin(self):
+        """ComposerArchiveView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_archive", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_unpublish_view_requires_staff(self):
-        """ComposerUnpublishView should redirect non-staff users to admin login."""
+    def test_composer_unpublish_view_requires_composer_admin(self):
+        """ComposerUnpublishView should return 403 for non-composer admin users."""
         # Set guide to published so we can unpublish it
         self.guide.status = "published"
         self.guide.save()
 
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_unpublish", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_unpublish_view_allows_staff(self):
-        """ComposerUnpublishView should allow staff users."""
+    def test_composer_unpublish_view_allows_composer_admin(self):
+        """ComposerUnpublishView should allow composer admin users."""
         # Set guide to published so we can unpublish it
         self.guide.status = "published"
         self.guide.save()
 
-        self.client.login(email="staff@example.com", password="testpass123")
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_unpublish", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_history_view_requires_staff(self):
-        """ComposerHistoryView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_history_view_requires_composer_admin(self):
+        """ComposerHistoryView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_history", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_history_view_allows_staff(self):
-        """ComposerHistoryView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_history_view_allows_composer_admin(self):
+        """ComposerHistoryView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_history", kwargs={"pk": self.guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_document_redirect_requires_staff(self):
-        """composer_document_redirect should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_document_redirect_requires_composer_admin(self):
+        """composer_document_redirect should redirect non-composer admin users to admin login."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:composer_document_redirect", kwargs={"pk": self.guide.pk}
         )
@@ -1844,9 +1806,9 @@ class StaffMemberRequiredTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response.url)
 
-    def test_composer_document_redirect_allows_staff(self):
-        """composer_document_redirect should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_document_redirect_allows_composer_admin(self):
+        """composer_document_redirect should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:composer_document_redirect", kwargs={"pk": self.guide.pk}
         )
@@ -1855,20 +1817,19 @@ class StaffMemberRequiredTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("/admin/login/", response.url)
 
-    def test_composer_section_edit_view_requires_staff(self):
-        """ComposerSectionEditView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_section_edit_view_requires_composer_admin(self):
+        """ComposerSectionEditView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:section_edit",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_section_edit_view_allows_staff(self):
-        """ComposerSectionEditView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_section_edit_view_allows_composer_admin(self):
+        """ComposerSectionEditView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:section_edit",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
@@ -1876,21 +1837,20 @@ class StaffMemberRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_subsection_create_view_requires_staff(self):
-        """ComposerSubsectionCreateView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_subsection_create_view_requires_composer_admin(self):
+        """ComposerSubsectionCreateView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_create",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
         )
         url += f"?prev_subsection={self.subsection.pk}"
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_subsection_create_view_allows_staff(self):
-        """ComposerSubsectionCreateView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_subsection_create_view_allows_composer_admin(self):
+        """ComposerSubsectionCreateView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_create",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
@@ -1899,9 +1859,9 @@ class StaffMemberRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_subsection_edit_view_requires_staff(self):
-        """ComposerSubsectionEditView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_subsection_edit_view_requires_composer_admin(self):
+        """ComposerSubsectionEditView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_edit",
             kwargs={
@@ -1911,12 +1871,11 @@ class StaffMemberRequiredTests(TestCase):
             },
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_subsection_edit_view_allows_staff(self):
-        """ComposerSubsectionEditView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_subsection_edit_view_allows_composer_admin(self):
+        """ComposerSubsectionEditView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_edit",
             kwargs={
@@ -1928,9 +1887,9 @@ class StaffMemberRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_subsection_delete_view_requires_staff(self):
-        """ComposerSubsectionDeleteView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_subsection_delete_view_requires_composer_admin(self):
+        """ComposerSubsectionDeleteView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_confirm_delete",
             kwargs={
@@ -1940,12 +1899,11 @@ class StaffMemberRequiredTests(TestCase):
             },
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_subsection_delete_view_allows_staff(self):
-        """ComposerSubsectionDeleteView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_subsection_delete_view_allows_composer_admin(self):
+        """ComposerSubsectionDeleteView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:subsection_confirm_delete",
             kwargs={
@@ -1957,9 +1915,9 @@ class StaffMemberRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_composer_subsection_instructions_edit_view_requires_staff(self):
-        """ComposerSubsectionInstructionsEditView should redirect non-staff users to admin login."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_composer_subsection_instructions_edit_view_requires_composer_admin(self):
+        """ComposerSubsectionInstructionsEditView should return 403 for non-composer admin users."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:instructions_edit",
             kwargs={
@@ -1969,12 +1927,11 @@ class StaffMemberRequiredTests(TestCase):
             },
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response.url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_composer_subsection_instructions_edit_view_allows_staff(self):
-        """ComposerSubsectionInstructionsEditView should allow staff users."""
-        self.client.login(email="staff@example.com", password="testpass123")
+    def test_composer_subsection_instructions_edit_view_allows_composer_admin(self):
+        """ComposerSubsectionInstructionsEditView should allow composer admin users."""
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:instructions_edit",
             kwargs={
@@ -1992,22 +1949,10 @@ class ComposerPreviewViewStaffRequiredTests(TestCase):
 
     def setUp(self):
         # Create a non-staff user
-        self.non_staff_user = User.objects.create_user(
-            email="nonstaff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=False,
-        )
+        self.non_staff_user = create_regular_user(email="regular@example.com")
 
         # Create a staff user
-        self.staff_user = User.objects.create_user(
-            email="staff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=True,
-        )
+        self.staff_user = create_composer_admin_user(email="composer@example.com")
 
         # Create a published content guide
         self.published_guide = ContentGuide.objects.create(
@@ -2027,33 +1972,33 @@ class ComposerPreviewViewStaffRequiredTests(TestCase):
             archived=None,
         )
 
-    def test_draft_guide_requires_staff(self):
+    def test_draft_guide_requires_composer_admin(self):
         """Non-staff users should be redirected when accessing draft content guides."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse("composer:composer_preview", kwargs={"pk": self.draft_guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response.url)
 
-    def test_draft_guide_allows_staff(self):
+    def test_draft_guide_allows_composer_admin(self):
         """Staff users should be able to access non-archived content guides."""
-        self.client.login(email="staff@example.com", password="testpass123")
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse("composer:composer_preview", kwargs={"pk": self.draft_guide.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_published_guide_allows_non_staff(self):
-        """Non-staff users should be able to access published content guides."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+    def test_published_guide_allows_non_composer_admin(self):
+        """Non-composer_admin users should be able to access published content guides."""
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:composer_preview", kwargs={"pk": self.published_guide.pk}
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_published_guide_allows_staff(self):
+    def test_published_guide_allows_composer_admin(self):
         """Staff users should be able to access published content guides."""
-        self.client.login(email="staff@example.com", password="testpass123")
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:composer_preview", kwargs={"pk": self.published_guide.pk}
         )
@@ -2075,22 +2020,10 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
 
     def setUp(self):
         # Create a non-staff user
-        self.non_staff_user = User.objects.create_user(
-            email="nonstaff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=False,
-        )
+        self.non_staff_user = create_regular_user(email="regular@example.com")
 
         # Create a staff user
-        self.staff_user = User.objects.create_user(
-            email="staff@example.com",
-            password="testpass123",
-            group="bloom",
-            force_password_reset=False,
-            is_staff=True,
-        )
+        self.staff_user = create_composer_admin_user(email="composer@example.com")
 
         # Create a content guide with a section
         self.guide = ContentGuide.objects.create(
@@ -2115,9 +2048,9 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
             order=1,
         )
 
-    def test_section_view_requires_staff__if_ContentGuide(self):
+    def test_section_view_requires_composer_admin__if_ContentGuide(self):
         """Non-staff users should be redirected when accessing sections of content guides."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:section_view",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
@@ -2134,9 +2067,9 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("admin:login"), response.url)
 
-    def test_section_view_allows_staff__if_ContentGuide(self):
+    def test_section_view_allows_composer_admin__if_ContentGuide(self):
         """Staff users should be able to access sections of content guides."""
-        self.client.login(email="staff@example.com", password="testpass123")
+        self.client.login(email="composer@example.com", password="testpass123")
         url = reverse(
             "composer:section_view",
             kwargs={"pk": self.guide.pk, "section_pk": self.section.pk},
@@ -2149,9 +2082,9 @@ class ComposerSectionViewStaffRequiredTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_section_view_allows_non_staff__if_ContentGuideInstance(self):
+    def test_section_view_allows_non_composer_admin__if_ContentGuideInstance(self):
         """Non-staff users should be able to access sections of content guide instances."""
-        self.client.login(email="nonstaff@example.com", password="testpass123")
+        self.client.login(email="regular@example.com", password="testpass123")
         url = reverse(
             "composer:writer_section_view",
             kwargs={"pk": self.instance.pk, "section_pk": self.instance_section.pk},
@@ -2179,14 +2112,8 @@ class PreventIfContentGuideArchivedMixinTests(TestCase):
 
     def setUp(self):
         # Create a staff user for testing
-        self.user = User.objects.create_user(
-            email="staff@example.com",
-            password="testpass123",
-            force_password_reset=False,
-            is_staff=True,
-            group="bloom",
-        )
-        self.client.login(email="staff@example.com", password="testpass123")
+        self.user = create_composer_admin_user(email="composer@example.com")
+        self.client.login(email="composer@example.com", password="testpass123")
 
         # Create a non-archived content guide
         self.content_guide = ContentGuide.objects.create(
