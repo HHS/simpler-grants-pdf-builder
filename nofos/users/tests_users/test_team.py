@@ -184,7 +184,7 @@ class BloomUserTeamCreateViewTests(BloomUserTeamBaseTests):
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            "Only users in the &#x27;bloom&#x27; group can be staff or superusers.",
+            "Only users in the &#x27;bloom&#x27; group can be superusers.",
         )
         self.assertFalse(
             BloomUser.objects.filter(email="bad-admin@example.com").exists()
@@ -221,17 +221,16 @@ class BloomUserTeamDeleteViewTests(BloomUserTeamBaseTests):
         self.assertRedirects(response, reverse("users:user_team"))
         self.assertFalse(BloomUser.objects.filter(email="user@example.com").exists())
 
-    def test_superuser_cannot_delete_self(self):
+    def test_superuser_cannot_access_delete_self_team_page(self):
         self.client.force_login(self.superuser)
 
         response = self.client.post(
             reverse("users:user_team_delete", args=[self.superuser.pk])
         )
 
-        self.assertRedirects(response, reverse("users:user_team"))
-        self.assertTrue(BloomUser.objects.filter(email="admin@example.com").exists())
+        self.assertEqual(response.status_code, 404)
 
-    def test_superuser_cannot_delete_last_superuser(self):
+    def test_superuser_cannot_access_delete_page_for_last_superuser(self):
         self.other_superuser.delete()
         self.client.force_login(self.superuser)
 
@@ -239,8 +238,7 @@ class BloomUserTeamDeleteViewTests(BloomUserTeamBaseTests):
             reverse("users:user_team_delete", args=[self.superuser.pk])
         )
 
-        self.assertRedirects(response, reverse("users:user_team"))
-        self.assertTrue(BloomUser.objects.filter(email="admin@example.com").exists())
+        self.assertEqual(response.status_code, 404)
 
 
 class BloomUserTeamDetailViewTests(BloomUserTeamBaseTests):
@@ -437,7 +435,7 @@ class BloomUserTeamSuperuserEditViewTests(BloomUserTeamBaseTests):
         self.assertFalse(self.other_superuser.is_superuser)
         self.assertFalse(self.other_superuser.is_staff)
 
-    def test_superuser_cannot_remove_superuser_status_from_self(self):
+    def test_superuser_cannot_access_own_superuser_status_team_page(self):
         self.client.force_login(self.superuser)
 
         response = self.client.post(
@@ -445,10 +443,7 @@ class BloomUserTeamSuperuserEditViewTests(BloomUserTeamBaseTests):
             {},
         )
 
-        self.assertRedirects(
-            response,
-            reverse("users:user_team_detail", args=[self.superuser.pk]),
-        )
+        self.assertEqual(response.status_code, 404)
 
         self.superuser.refresh_from_db()
         self.assertTrue(self.superuser.is_superuser)
@@ -492,14 +487,16 @@ class BloomUserTeamPasswordResetViewTests(BloomUserTeamBaseTests):
         self.assertTrue(self.regular_user.check_password("a-very-good-password-12345"))
         self.assertTrue(self.regular_user.force_password_reset)
 
-    def test_superuser_cannot_reset_own_password_from_team_page(self):
+    def test_superuser_cannot_access_own_password_reset_team_page(self):
         self.client.force_login(self.superuser)
 
         response = self.client.get(
-            reverse("users:user_team_reset_password", args=[self.superuser.pk])
+            reverse("users:user_team_reset_password", args=[self.superuser.pk]),
+            follow=True,
         )
 
-        self.assertRedirects(
-            response,
-            reverse("users:user_team_detail", args=[self.superuser.pk]),
+        self.assertEqual(
+            response.redirect_chain,
+            [(reverse("users:user_team_detail", args=[self.superuser.pk]), 302)],
         )
+        self.assertEqual(response.status_code, 404)

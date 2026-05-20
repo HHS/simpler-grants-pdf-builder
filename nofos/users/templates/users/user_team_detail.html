@@ -94,7 +94,7 @@
         </tr>
       {% endif %}
 
-      {% if not team_user.is_superuser %}
+      {% if team_user.group != "bloom" %}
         <tr>
           <th scope="row">Is OpDiv Admin</th>
           <td>
