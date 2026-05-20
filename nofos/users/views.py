@@ -392,6 +392,9 @@ class BloomUserTeamPasswordResetView(BloomUserTeamAccessMixin, FormView):
     template_name = "users/user_team_edit_password.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
         if not request.user.can_manage_users:
             return self.handle_no_permission()
 
