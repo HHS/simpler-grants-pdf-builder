@@ -10,9 +10,7 @@ RUN apt-get update && \
   build-essential \
   curl \
   wget \
-  libffi-dev \
   libpq-dev \
-  libsqlite3-0 \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry and create user
