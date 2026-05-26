@@ -25,6 +25,7 @@
   --color--hrsa-blue: #006699;
   --color--ihs-blue: #012f52;
   --color--nih-blue: var(--color--acl-blue);
+  --color--nih-grey: #65666a;
   --color--samhsa-blue: #1e384b;
   --color--staging-coral: #f08080;
 }
@@ -169,6 +170,10 @@
 
 .bg-group--ihs {
   background-color: var(--color--ihs-blue);
+}
+
+.bg-group--nih {
+  background-color: var(--color--nih-grey);
 }
 
 .bg-group--staging {

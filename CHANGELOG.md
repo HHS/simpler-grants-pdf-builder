@@ -13,6 +13,26 @@ Versioning since version 1.0.0.
 
 ### Fixed
 
+## [3.33.0] - 2026-05-26
+
+### Added
+
+- Added a new "group": NIH: National Institutes of Health
+  - NOFOs can now be assigned to this group, as well as users
+
+### Fixed
+
+- Fixed the Group display in the title on the index page
+  - It used to say "Nih in progress NOFOs", now it says "NIH in progress NOFOs"
+
+### Migrations
+
+- Add "NIH" group to NOFOs
+- Add "NIH" group to CompareDocuments
+- Add "NIH" group to ContentGuide
+- Add "NIH" group to ContentGuideInstance
+- Add "NIH" group to BloomUser
+
 ## [3.32.0] - 2026-05-20
 
 ### Added
