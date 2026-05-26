@@ -2,7 +2,7 @@
 {% load static tz nofo_name %}
 
 {% block title %}
-	{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
+	{% if nofo_group == 'bloom' or nofo_group == 'all' %}{{ nofo_group|title }}{% else %}{{ nofo_group|upper }}{% endif %}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
 {% endblock %}
 
 {% block js %}
@@ -15,7 +15,9 @@
 	{% include "includes/alerts.html" with messages=messages success_heading="NOFO imported successfully" error_heading="NOFO deleted" only %}
 
 	<div class="nofo_index--header">
-		<h1 class="font-heading-xl margin-y-0">{{ nofo_group|title }}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs</h1>
+		<h1 class="font-heading-xl margin-y-0">
+			{% if nofo_group == 'bloom' or nofo_group == 'all' %}{{ nofo_group|title }}{% else %}{{ nofo_group|upper }}{% endif %}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
+		</h1>
 		{% if user.is_superuser %}
 			<div class="nofo_index--header--view font-sans-md">
 				<a href="{% url 'nofos:nofo_search' %}">Search NOFOs</a>
