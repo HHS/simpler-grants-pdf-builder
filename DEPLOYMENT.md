@@ -98,6 +98,8 @@ This endpoint returns `{"status": "ok"}` with a `200` status code, and supports 
 | `training` | `https://nofos.training.simpler.grants.gov/health` |
 | `grantee1` | `https://nofos.grantee1.simpler.grants.gov/health` |
 
+Live uptime and incident history are tracked on the [UptimeRobot status page](https://stats.uptimerobot.com/fSUIHr8Hva).
+
 To trigger a deploy, a team member navigates to the **Actions** tab in the `simpler-grants-gov` repo, selects **Deploy NOFOs**, and clicks **Run workflow**, specifying the target environment and git ref (branch, tag, or commit SHA).
 
 **Access requirements:** Triggering a production deploy requires admin access to the `simpler-grants-gov` repository. Admin access requires annual completion of HHS' Rules of Behavior (ROB) and Cybersecurity training modules, with certificates of completion on file.

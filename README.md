@@ -389,3 +389,7 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
    --add-cloudsql-instances {SERVICE}:{REGION}:{PROJECT} \
    --allow-unauthenticated
 ```
+
+## Related resources
+
+- [DEPLOYMENT.md](DEPLOYMENT.md) — Deployment & contribution workflow.
