@@ -400,8 +400,9 @@ class NofosArchiveView(
 
         messages.error(
             request,
-            "You deleted NOFO: '{}'.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:SimplerNOFOs@agile6.com'>SimplerNOFOs@agile6.com</a>.".format(
-                nofo.short_name or nofo.title
+            format_html(
+                "You deleted NOFO: ‘{}’.<br/>If this was a mistake, get in touch with the NOFO Builder team at <a href='mailto:SimplerNOFOs@agile6.com'>SimplerNOFOs@agile6.com</a>.",
+                nofo.short_name or nofo.title,
             ),
         )
         return redirect(self.success_url)
