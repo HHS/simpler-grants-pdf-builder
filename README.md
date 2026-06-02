@@ -99,29 +99,7 @@ poetry install --sync
 Updating dependencies
 </summary>
 
-#### Updating poetry dependencies
-
-Note: this is also not required for initial installation + booting up the app.
-
-```bash
-# check for outdated deps
-poetry show --outdated
-
-# update 1 package
-poetry update django
-
-# reinstall deps from lockfile
-poetry install --no-root
-
-# update everything
-poetry update
-
-# update only nested dependencies
-poetry update --lock
-
-# inspect dependency tree for 1 dependency
-poetry show --tree martor
-```
+For full instructions on updating Python dependencies, including routine updates, major version upgrades, and a pre-merge checklist, see [Updating Python dependencies](documentation/UPDATING_PYTHON_DEPENDENCIES.md).
 
 </details>
 
