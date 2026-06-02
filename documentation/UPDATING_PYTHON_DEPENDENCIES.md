@@ -39,7 +39,7 @@ This resolves and updates all locked dependency versions in poetry.lock, includi
 
 ### 4. Run the test suite
 
-From the /nofos directory, run the full Django test suite:
+From the `./nofos` directory, run the full Django test suite:
 
 ```bash
 poetry run python manage.py test
