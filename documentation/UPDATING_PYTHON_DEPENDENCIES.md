@@ -12,8 +12,7 @@ Python dependencies should be updated **once a week**. The vulnerability scanner
 
 - Poetry installed and configured
 - The application running locally
-- Access to the /nofos directory within the project
-
+- Access to the `./nofos` directory within the project
 ---
 
 ## Routine updates (minor and patch versions)
