@@ -96,4 +96,4 @@ If any of these checks fail, either resolve the issue before merging or revert t
 
 ## Contributing
 
-Once your dependency updates are ready and the checklist above is complete, open a pull request targeting main. For details on the contribution workflow, CI requirements, and how changes get deployed to production, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+Once your dependency updates are ready and the checklist above is complete, open a pull request targeting main. For details on the contribution workflow, CI requirements, and how changes get deployed to production, see [DEPLOYMENT.md](documentation/DEPLOYMENT.md).
