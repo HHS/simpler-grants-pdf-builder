@@ -223,6 +223,12 @@ h4 {
   color: var(--color--black);
 }
 
+.callout-box .callout-box--contents h4,
+.callout-box .callout-box--contents h5,
+.callout-box .callout-box--contents h6 {
+  color: var(--color--black);
+}
+
 .callout-box a {
   color: var(--color--ncipc-blue);
 }

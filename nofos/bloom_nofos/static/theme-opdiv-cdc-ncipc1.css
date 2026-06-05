@@ -222,6 +222,12 @@ h4 {
   color: var(--color--white);
 }
 
+.callout-box .callout-box--contents h4,
+.callout-box .callout-box--contents h5,
+.callout-box .callout-box--contents h6 {
+  color: var(--color--white);
+}
+
 .callout-box--icon {
   background-color: var(--color--ncipc-blue);
   color: var(--color--white);

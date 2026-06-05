@@ -193,6 +193,12 @@ section.nofo--cover-page.nofo--cover-page--hero {
   color: var(--color--samhsa-blue);
 }
 
+.callout-box .callout-box--contents h4,
+.callout-box .callout-box--contents h5,
+.callout-box .callout-box--contents h6 {
+  color: var(--color--samhsa-blue);
+}
+
 .section--content--right-col .callout-box--contents p {
   color: var(--color--samhsa-blue);
 }
