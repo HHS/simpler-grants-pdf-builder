@@ -18,11 +18,9 @@
 		<h1 class="font-heading-xl margin-y-0">
 			{% if nofo_group == 'bloom' or nofo_group == 'all' %}{{ nofo_group|title }}{% else %}{{ nofo_group|upper }}{% endif %}{% if nofo_status and nofo_status != 'all' %} {{ nofo_status }}{% endif %} NOFOs
 		</h1>
-		{% if user.is_superuser %}
-			<div class="nofo_index--header--view font-sans-md">
-				<a href="{% url 'nofos:nofo_search' %}">Search NOFOs</a>
-			</div>
-		{% endif %}
+		<div class="nofo_index--header--view font-sans-md">
+			<a class="search-nofos-link" href="{% url 'nofos:nofo_search' %}">Search NOFOs</a>
+		</div>
 	</div>
 
 
