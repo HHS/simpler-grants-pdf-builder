@@ -77,6 +77,11 @@
       <p>Learn more about <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">HTTP response status codes</a>.</p>
     </div>
   </details>
+    <p>
+      <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' object.id %}?with_status=True">
+        Refresh link statuses
+      </a>
+    </p>
   {% else %}
     <p>
       <a class="usa-button usa-button--accent-warm" href="{% url 'nofos:nofo_check_links' object.id %}?with_status=True">
