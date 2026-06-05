@@ -122,6 +122,12 @@ h4 {
   color: var(--color--black);
 }
 
+.callout-box .callout-box--contents h4,
+.callout-box .callout-box--contents h5,
+.callout-box .callout-box--contents h6 {
+  color: var(--color--black);
+}
+
 .callout-box--icon .callout-box--contents svg {
   fill: var(--color--white);
 }
