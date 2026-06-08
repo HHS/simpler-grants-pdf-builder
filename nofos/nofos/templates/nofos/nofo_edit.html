@@ -507,7 +507,7 @@ Edit “{{ nofo|nofo_name }}”
     </tr>
     <tr>
       <th scope="row">Designer name</th>
-      <td>{{ nofo.get_designer_display|get_value_or_none:"designer" }}</td>
+      <td>{{ nofo.designer|get_value_or_none:"designer" }}</td>
     </tr>
   </tbody>
 </table>
