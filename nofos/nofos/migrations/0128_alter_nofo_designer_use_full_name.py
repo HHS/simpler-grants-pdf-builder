@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("nofos", "0126_alter_nofo_designer"),
+        ("nofos", "0127_alter_nofo_group"),
     ]
 
     operations = [
