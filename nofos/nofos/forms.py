@@ -115,11 +115,17 @@ class NofoCoachDesignerForm(forms.ModelForm):
         # If the current instance has a stored value that isn't already in the list
         # (e.g. a legacy slug, an inactive user, or a renamed user), include it so
         # the existing value renders as selected and a save doesn't silently clear it.
-        current = (self.instance.designer or "").strip() if self.instance else ""
+        # raw_current is the exact stored value (no strip) so that Django's form
+        # rendering can match it against self.instance.designer and show it selected —
+        # even if the value contains leading/trailing whitespace from a prior admin edit.
+        # Stripping is applied only when looking up the human-readable display label.
+        raw_current = (self.instance.designer or "") if self.instance else ""
         known_values = {v for v, _ in user_choices}
-        if current and current not in known_values:
-            display = LEGACY_DESIGNER_CODES.get(current, current)
-            user_choices.append((current, display))
+        if raw_current and raw_current not in known_values:
+            display = LEGACY_DESIGNER_CODES.get(
+                raw_current.strip(), raw_current.strip()
+            )
+            user_choices.append((raw_current, display))
 
         # Always sort A–Z by display label so the list is ordered consistently
         # regardless of whether a legacy/inactive value was appended above.
