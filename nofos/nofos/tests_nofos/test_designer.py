@@ -1,10 +1,11 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
-from django.urls import reverse
+from unittest.mock import MagicMock, patch
+
+from django.test import RequestFactory, TestCase
 from users.models import BloomUser
 
 from nofos.forms import NofoCoachDesignerForm
 from nofos.models import Nofo
+from nofos.views import NofosImportNewView
 
 
 class NofoDesignerAutoAssignTest(TestCase):
@@ -19,48 +20,52 @@ class NofoDesignerAutoAssignTest(TestCase):
             force_password_reset=False,
         )
 
-    def _get_minimal_html(self, title="Test NOFO"):
-        return (
-            f"<html><body>"
-            f"<h1>{title}</h1>"
-            f"<h2>Step 1: Review the Opportunity</h2>"
-            f"<h3>Basic Information</h3>"
-            f"<p>Some content.</p>"
-            f"</body></html>"
-        )
+    def _call_handle_nofo_create(self, user):
+        """Call handle_nofo_create directly, mocking the import pipeline.
 
-    def _post_import(self, user, html_content=None):
-        if html_content is None:
-            html_content = self._get_minimal_html()
-        self.client.force_login(user)
-        uploaded = SimpleUploadedFile(
-            "test.html",
-            html_content.encode("utf-8"),
-            content_type="text/html",
-        )
-        return self.client.post(
-            reverse("nofos:nofo_import"),
-            {"file": uploaded},
-        )
+        This bypasses the HTTP layer and the HTML-parsing pipeline entirely so
+        that the test focuses solely on the designer auto-assignment logic.
+        """
+        # Pre-create the Nofo that the mocked create_nofo will return.
+        nofo = Nofo.objects.create(title="Test NOFO", opdiv="HHS")
+
+        request = RequestFactory().post("/")
+        request.user = user
+
+        view = NofosImportNewView()
+
+        with patch("nofos.views.create_nofo", return_value=nofo), patch(
+            "nofos.views.suggest_nofo_title", return_value="Test NOFO"
+        ), patch("nofos.views.suggest_nofo_opdiv", return_value="HHS"), patch(
+            "nofos.views.add_headings_to_document"
+        ), patch(
+            "nofos.views.add_page_breaks_to_headings"
+        ), patch(
+            "nofos.views.suggest_all_nofo_fields"
+        ), patch(
+            "nofos.views.create_nofo_audit_event"
+        ):
+            view.handle_nofo_create(request, MagicMock(), [], "test.html")
+
+        nofo.refresh_from_db()
+        return nofo
 
     def test_nofo_creation_assigns_designer_from_user_full_name(self):
-        """Importing a NOFO sets designer to the logged-in user's full_name."""
+        """handle_nofo_create sets designer to the logged-in user's full_name."""
         user = self._make_user("jana@example.com", "Jana Smith", group="bloom")
-        response = self._post_import(user)
-
-        self.assertIn(response.status_code, [302, 200])
-        nofo = Nofo.objects.order_by("-created").first()
-        self.assertIsNotNone(nofo)
+        nofo = self._call_handle_nofo_create(user)
         self.assertEqual(nofo.designer, "Jana Smith")
 
     def test_nofo_creation_with_blank_full_name_leaves_designer_blank(self):
-        """Importing a NOFO when user has no full_name leaves designer blank."""
+        """handle_nofo_create leaves designer blank when user has no full_name."""
         user = self._make_user("noname@example.com", "", group="hrsa")
-        response = self._post_import(user)
+        nofo = self._call_handle_nofo_create(user)
+        self.assertEqual(nofo.designer, "")
 
-        self.assertIn(response.status_code, [302, 200])
-        nofo = Nofo.objects.order_by("-created").first()
-        self.assertIsNotNone(nofo)
+    def test_nofo_creation_strips_whitespace_only_full_name(self):
+        """handle_nofo_create stores '' when user full_name is whitespace only."""
+        user = self._make_user("spaces@example.com", "   ", group="bloom")
+        nofo = self._call_handle_nofo_create(user)
         self.assertEqual(nofo.designer, "")
 
 
@@ -167,3 +172,25 @@ class NofoCoachDesignerFormTest(TestCase):
         self.assertIn("Bloom Designer", choices)
         self.assertNotIn("HRSA Designer", choices)
         self.assertNotIn("CDC Designer", choices)
+
+    def test_designer_dropdown_preserves_legacy_slug_for_existing_nofo(self):
+        """An existing NOFO with a legacy slug value keeps it selectable."""
+        Nofo.objects.filter(pk=self.nofo.pk).update(designer="bloom-adam")
+        self.nofo.refresh_from_db()
+
+        user = self._make_user("bloom@example.com", "Active Bloom", group="bloom")
+        form = NofoCoachDesignerForm(instance=self.nofo, user=user)
+        choice_values = [v for v, _ in form.fields["designer"].choices]
+
+        self.assertIn("bloom-adam", choice_values)
+
+    def test_designer_dropdown_legacy_slug_displays_human_label(self):
+        """A legacy slug in the choices list is labelled with its human-readable name."""
+        Nofo.objects.filter(pk=self.nofo.pk).update(designer="bloom-adam")
+        self.nofo.refresh_from_db()
+
+        user = self._make_user("bloom@example.com", "Active Bloom", group="bloom")
+        form = NofoCoachDesignerForm(instance=self.nofo, user=user)
+        choices = dict(form.fields["designer"].choices)
+
+        self.assertEqual(choices.get("bloom-adam"), "Adam")
