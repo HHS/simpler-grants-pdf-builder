@@ -371,4 +371,4 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
 ## Related resources
 
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Deployment & contribution workflow.
-- [Groups](documentation/GROUPS.md) — how user and NOFO groups work, and how to add a new group
+- [Groups](documentation/GROUPS.md) — how user and NOFO groups work, and how to add a new group.
