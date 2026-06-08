@@ -39,7 +39,7 @@ class NofoDesignerAutoAssignTest(TestCase):
             content_type="text/html",
         )
         return self.client.post(
-            reverse("nofos:nofo_import_new"),
+            reverse("nofos:nofo_import"),
             {"file": uploaded},
         )
 
