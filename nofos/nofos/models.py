@@ -66,6 +66,7 @@ LEGACY_DESIGNER_CODES = {
     "hrsa-lynda": "Lynda",
     "hrsa-marco": "Marco",
     "hrsa-randy": "Randy",
+    "hrsa-shonda": "Shonda",
     "hrsa-stephanie": "Stephanie V",
 }
 
