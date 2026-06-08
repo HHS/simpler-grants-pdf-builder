@@ -1,8 +1,8 @@
 from django import forms
 from martor.fields import MartorFormField
+from users.models import BloomUser
 
 from .models import (
-    DESIGNER_CHOICES,
     STATUS_CHOICES,
     THEME_CHOICES,
     Nofo,
@@ -98,30 +98,23 @@ class NofoCoachDesignerForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super(NofoCoachDesignerForm, self).__init__(*args, **kwargs)
 
-        # Initialize choices with an empty option
         initial_choices = [("", "---------")]
 
-        # Adjust designer choices based on user group
-        if user and user.group != "bloom":
-            # Filter designers by user's group prefix
-            self.fields["designer"].choices = initial_choices + [
-                (choice, label)
-                for choice, label in DESIGNER_CHOICES
-                if choice.startswith(user.group)
+        if user:
+            designer_users = BloomUser.objects.filter(
+                group=user.group, is_active=True
+            ).order_by("full_name")
+            user_choices = [
+                (u.full_name, u.full_name) for u in designer_users if u.full_name
             ]
         else:
-            # If user is from 'bloom' or no user is provided, show all designers
-            self.fields["designer"].choices = initial_choices + [
-                (
-                    code,
-                    (
-                        name
-                        if "bloom" in code
-                        else "{} ({})".format(name, code.split("-")[0].upper())
-                    ),
-                )
-                for code, name in DESIGNER_CHOICES
-            ]
+            user_choices = []
+
+        self.fields["designer"] = forms.ChoiceField(
+            choices=initial_choices + user_choices,
+            required=False,
+            label="Designer",
+        )
 
 
 class NofoThemeOptionsForm(forms.ModelForm):

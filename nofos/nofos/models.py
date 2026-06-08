@@ -31,25 +31,6 @@ COACH_CHOICES = [
     ("sara_t", "Sara T"),
 ]
 
-DESIGNER_CHOICES = [
-    ("bloom-adam", "Adam"),
-    ("bloom-andrea-c", "Andrea C"),
-    ("bloom-ben-b", "Ben B"),
-    ("bloom-jana", "Jana"),
-    ("bloom-yasmine", "Yasmine"),
-    ("hrsa-betty", "Betty"),
-    ("hrsa-dvora", "Dvora"),
-    ("hrsa-ericka", "Ericka"),
-    ("hrsa-jene", "Jene"),
-    ("hrsa-jennifer", "Jennifer"),
-    ("hrsa-kerry", "Kerry"),
-    ("hrsa-kieumy", "KieuMy"),
-    ("hrsa-lynda", "Lynda"),
-    ("hrsa-marco", "Marco"),
-    ("hrsa-randy", "Randy"),
-    ("hrsa-stephanie", "Stephanie V"),
-]
-
 
 STATUS_CHOICES = [
     ("draft", "Draft"),
@@ -411,9 +392,8 @@ class Nofo(BaseNofo):
     )
 
     designer = models.CharField(
-        max_length=16,
-        validators=[MaxLengthValidator(16)],
-        choices=DESIGNER_CHOICES,
+        max_length=200,
+        validators=[MaxLengthValidator(200)],
         blank=True,
         help_text="The designer is responsible for the layout of this NOFO.",
     )
