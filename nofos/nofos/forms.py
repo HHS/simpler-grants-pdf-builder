@@ -103,9 +103,7 @@ class NofoCoachDesignerForm(forms.ModelForm):
         initial_choices = [("", "---------")]
 
         if user:
-            designer_users = BloomUser.objects.filter(
-                group=user.group, is_active=True
-            ).order_by("full_name")
+            designer_users = BloomUser.objects.filter(group=user.group, is_active=True)
             user_choices = [
                 (u.full_name.strip(), u.full_name.strip())
                 for u in designer_users
