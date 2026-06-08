@@ -121,12 +121,17 @@ class NofoCoachDesignerForm(forms.ModelForm):
         known_values = {v for v, _ in user_choices}
         if current and current not in known_values:
             display = LEGACY_DESIGNER_CODES.get(current, current)
-            user_choices = [(current, display)] + user_choices
+            user_choices.append((current, display))
+
+        # Always sort A–Z by display label so the list is ordered consistently
+        # regardless of whether a legacy/inactive value was appended above.
+        user_choices.sort(key=lambda pair: pair[1].lower())
 
         self.fields["designer"] = forms.ChoiceField(
             choices=initial_choices + user_choices,
             required=False,
             label="Designer",
+            help_text="The designer is responsible for the layout of this NOFO.",
         )
 
 
