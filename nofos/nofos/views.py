@@ -555,7 +555,7 @@ class NofosImportNewView(BaseNofoImportView):
             suggest_all_nofo_fields(nofo, soup)
             nofo.filename = filename
             nofo.group = request.user.group
-            nofo.designer = request.user.full_name or ""
+            nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
 
             create_nofo_audit_event(
