@@ -32,6 +32,44 @@ COACH_CHOICES = [
 ]
 
 
+# Maps every slug value that was ever stored in the designer field (under the old
+# DESIGNER_CHOICES scheme) to a human-readable label.  New records store the user's
+# full_name directly, so any value NOT present here is returned as-is.
+LEGACY_DESIGNER_CODES = {
+    # pre-slug era (migrated to bloom-* in 0069)
+    "adam": "Adam",
+    "emily": "Emily",
+    "kevin": "Kevin",
+    "yasmine": "Yasmine",
+    # bloom slugs
+    "bloom-abbey": "Abbey",
+    "bloom-adam": "Adam",
+    "bloom-andrea-c": "Andrea C",
+    "bloom-ben-b": "Ben B",
+    "bloom-emily": "Emily",
+    "bloom-emily-b": "Emily B",
+    "bloom-emily-i": "Emily I",
+    "bloom-jackie": "Jackie",
+    "bloom-jana": "Jana",
+    "bloom-kevin": "Kevin",
+    "bloom-yasmine": "Yasmine",
+    # hrsa slugs
+    "hrsa-betty": "Betty",
+    "hrsa-doretha": "Doretha",
+    "hrsa-dvora": "Dvora",
+    "hrsa-ericka": "Ericka",
+    "hrsa-gwen": "Gwen",
+    "hrsa-jene": "Jene",
+    "hrsa-jennifer": "Jennifer",
+    "hrsa-kerry": "Kerry",
+    "hrsa-kieumy": "KieuMy",
+    "hrsa-lynda": "Lynda",
+    "hrsa-marco": "Marco",
+    "hrsa-randy": "Randy",
+    "hrsa-stephanie": "Stephanie V",
+}
+
+
 STATUS_CHOICES = [
     ("draft", "Draft"),
     ("active", "Active"),
@@ -421,6 +459,16 @@ class Nofo(BaseNofo):
             "Controls how the 'Before you begin' page is presented. Choices are 'Full', 'BYB page with eRA', 'Sole Source' (for 1 applicant), and 'None'."
         ),
     )
+
+    @property
+    def designer_display(self):
+        """Human-readable designer label.
+
+        Returns the label from LEGACY_DESIGNER_CODES for values stored under the old
+        slug scheme (e.g. 'bloom-adam', 'hrsa-betty').  For new records that store a
+        full name directly the stored value is returned unchanged.
+        """
+        return LEGACY_DESIGNER_CODES.get(self.designer, self.designer)
 
     def __str__(self):
         return "({}) {}".format(self.id, self.title or self.short_name)

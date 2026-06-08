@@ -85,7 +85,7 @@
 							{% endif %}
 							<td>{{ nofo.get_status_display }}</td>
 							<td>{% if nofo.coach %}{{ nofo.get_coach_display }}{% else %}<span class="usa-sr-only">No coach assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
-							<td>{% if nofo.designer %}{{ nofo.designer }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
+							<td>{% if nofo.designer %}{{ nofo.designer_display }}{% else %}<span class="usa-sr-only">No designer assigned</span><span aria-hidden="true">—</span>{% endif %}</td>
 							{% timezone "America/New_York" %}
 								<td data-sort-value="{{ nofo.updated|date:"YmdHM" }}">
 									<a href="{% url 'nofos:nofo_history' nofo.id %}" title="View audit history">

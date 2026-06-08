@@ -98,6 +98,8 @@ class NofoCoachDesignerForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super(NofoCoachDesignerForm, self).__init__(*args, **kwargs)
 
+        from .models import LEGACY_DESIGNER_CODES
+
         initial_choices = [("", "---------")]
 
         if user:
@@ -105,10 +107,21 @@ class NofoCoachDesignerForm(forms.ModelForm):
                 group=user.group, is_active=True
             ).order_by("full_name")
             user_choices = [
-                (u.full_name, u.full_name) for u in designer_users if u.full_name
+                (u.full_name.strip(), u.full_name.strip())
+                for u in designer_users
+                if u.full_name and u.full_name.strip()
             ]
         else:
             user_choices = []
+
+        # If the current instance has a stored value that isn't already in the list
+        # (e.g. a legacy slug, an inactive user, or a renamed user), include it so
+        # the existing value renders as selected and a save doesn't silently clear it.
+        current = (self.instance.designer or "").strip() if self.instance else ""
+        known_values = {v for v, _ in user_choices}
+        if current and current not in known_values:
+            display = LEGACY_DESIGNER_CODES.get(current, current)
+            user_choices = [(current, display)] + user_choices
 
         self.fields["designer"] = forms.ChoiceField(
             choices=initial_choices + user_choices,
