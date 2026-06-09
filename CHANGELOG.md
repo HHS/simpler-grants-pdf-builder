@@ -5,14 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
-## Unversioned
-
-### Added
-
-### Changed
-
-### Fixed
-
 ## [3.33.0] - 2026-05-26
 
 ### Added
