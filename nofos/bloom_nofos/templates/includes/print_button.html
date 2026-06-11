@@ -16,7 +16,7 @@
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment&is_test_pdf=false">
       {% csrf_token %}
       <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if 'localhost' in request.get_host %}disabled{% endif %}>
-        Download<span class="hide-on-tablet"> PDF (live)</span>
+        Download PDF
       </button>
     </form>
   </li>
