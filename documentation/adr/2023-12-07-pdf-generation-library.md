@@ -2,7 +2,7 @@
 
 - **Status:** Active
 - **Last Modified:** 2023-12-07 <!-- REQUIRED -->
-- **Deciders:** Paul Craig<!-- REQUIRED -->
+- **Deciders:** Paul Craig <!-- REQUIRED -->
 
 ## Context and Problem Statement
 
@@ -30,7 +30,7 @@ The goal of this ADR is to select a PDF generation library to move forward with 
 Chosen option: DocRaptor, which is a SaaS service that uses Prince to generate and return PDFs from HTML documents.
 
 - It produces designs that are very close to the original HTML and is the most robust PDF renderer I came across.
-- Its automatic tagging capabilites are generally excellent.
+- Its automatic tagging capabilities are generally excellent.
 - It is language agnostic because it's an API service that can be called from any application.
 - We preferred DocRaptor over downloading and installing a licensed version of Prince because it simplifies our technical stack, [it has enterprise-grade security](https://docraptor.com/security-and-privacy), it's easy to get started with, and the upfront cost is significantly lower.
 
@@ -51,7 +51,7 @@ We prefer going through DocRaptor in part because it is easier to get started wi
 
 ### [Weasyprint](https://weasyprint.org)
 
-Weasyprint is a free, open-source Python library that turns HTML documents into PDFs. It's pretty easy to set up and start using, and it produces pretty good visual designs, but doesn't perserve HTML tags very well.
+Weasyprint is a free, open-source Python library that turns HTML documents into PDFs. It's pretty easy to set up and start using, and it produces pretty good visual designs, but doesn't preserve HTML tags very well.
 
 - **Pros**
   - High quality layouts
@@ -90,7 +90,7 @@ fpdf2 is a library for simple & fast PDF document generation in Python. It is a 
 - **Cons**
   - Nearly everything requires absolutely positioning elements
   - Configuration as Python code (this is bad, docs aren't portable at all)
-  - Can't create 2-column page layouts (unless both columns are full of text
+  - Can't create 2-column page layouts (unless both columns are full of text)
 
 ### [pdfmake](https://pdfme.readthedocs.io/en/latest/)
 
@@ -125,7 +125,7 @@ Didn't actually get this one to work. I'm developing on an M2 MacBook Air, and i
 
 ## Links
 
-Some links that were helpful in locating options for PDF generating libaries.
+Some links that were helpful in locating options for PDF generating libraries.
 
 - [A full comparison of 6 JS libraries for generating PDFs](https://dev.to/handdot/generate-a-pdf-in-js-summary-and-comparison-of-libraries-3k0p) —  Mar 21, 2022
 - [The Python PDF Ecosystem in 2023](https://martinthoma.medium.com/the-python-pdf-ecosystem-in-2023-819141977442) — Mar 23, 2023
