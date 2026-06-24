@@ -364,7 +364,7 @@ class Nofo(BaseNofo):
         validators=[MaxLengthValidator(32)],
         choices=THEME_CHOICES,
         blank=False,
-        default="portrait-hrsa-blue",
+        default="portrait-nih-white",
         help_text="The theme sets the orientation and colour pallete for this NOFO.",
     )
 
