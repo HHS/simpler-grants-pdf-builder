@@ -70,7 +70,8 @@ def create_nofo(request, payload: NofoSchema):
     except ValidationError as e:
         return 400, {"message": "Model validation error", "details": e.message_dict}
     except Exception as e:
-        return 400, {"message": str(e)}
+        message = str(e) if settings.DEBUG else "An unexpected error occurred."
+        return 400, {"message": message}
 
 
 @api.get("/nofos/{nofo_id}", response={200: dict, 404: ErrorSchema})
