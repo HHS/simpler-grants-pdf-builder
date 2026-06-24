@@ -1541,7 +1541,9 @@ def suggest_nofo_application_deadline(soup):
 
 
 def suggest_nofo_cover(nofo_theme):
-    if any(prefix in nofo_theme.lower() for prefix in ["acf-", "acl-", "hrsa-"]):
+    if any(
+        prefix in nofo_theme.lower() for prefix in ["acf-", "acl-", "hrsa-", "nih-"]
+    ):
         return "nofo--cover-page--text"
 
     return "nofo--cover-page--medium"
@@ -1566,6 +1568,9 @@ def suggest_nofo_theme(nofo_number):
     # NOFO numbers with "RFA" are also CDC, but do this check last
     if "rfa-" in nofo_number.lower():
         return "portrait-cdc-blue"
+
+    if "hrsa-" in nofo_number.lower():
+        return "portrait-hrsa-blue"
 
     return "portrait-nih-white"
 
