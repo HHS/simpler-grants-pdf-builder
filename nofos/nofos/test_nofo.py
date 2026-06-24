@@ -979,7 +979,7 @@ class CreateNOFOTests(TestCase):
         nofo = create_nofo("Test Nofo", self.sections, opdiv="Test OpDiv")
         self.assertEqual(nofo.title, "Test Nofo")
         self.assertEqual(nofo.number, "NOFO #999")
-        self.assertEqual(nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(nofo.theme, "portrait-nih-white")
         self.assertEqual(len(nofo.sections.all()), 1)
         self.assertEqual(nofo.sections.first().html_class, "")
         self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
