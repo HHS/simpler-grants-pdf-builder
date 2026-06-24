@@ -44,6 +44,7 @@ from .audits import (
     safe_get_changed_fields,
 )
 from .forms import (
+    NIH_ALLOWED_CHOICES,
     NIH_THEME_DEFAULTS,
     CheckNOFOLinkSingleForm,
     InsertOrderSpaceForm,
@@ -1145,8 +1146,8 @@ class NofoEditThemeOptionsView(BaseNofoEditView):
         if user_is_nih_group(request.user):
             fields_to_update = [
                 field
-                for field, default in NIH_THEME_DEFAULTS.items()
-                if getattr(self.object, field) != default
+                for field in NIH_THEME_DEFAULTS
+                if getattr(self.object, field) not in NIH_ALLOWED_CHOICES[field]
             ]
             if fields_to_update:
                 for field in fields_to_update:

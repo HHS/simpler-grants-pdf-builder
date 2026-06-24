@@ -120,6 +120,19 @@ class NIHUserThemeOptionsViewTests(TestCase):
         self.assertEqual(self.nofo.cover, NIH_THEME_DEFAULTS["cover"])
         self.assertEqual(self.nofo.icon_style, NIH_THEME_DEFAULTS["icon_style"])
 
+    def test_get_preserves_allowed_non_default_cover(self):
+        # nofo--cover-page--medium is allowed for NIH but is not the default;
+        # it must not be reset back to nofo--cover-page--text on page load.
+        self.nofo.theme = NIH_THEME_DEFAULTS["theme"]
+        self.nofo.cover = "nofo--cover-page--medium"
+        self.nofo.icon_style = NIH_THEME_DEFAULTS["icon_style"]
+        self.nofo.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+
     def test_get_does_not_resave_when_already_correct(self):
         self.nofo.theme = NIH_THEME_DEFAULTS["theme"]
         self.nofo.cover = NIH_THEME_DEFAULTS["cover"]
