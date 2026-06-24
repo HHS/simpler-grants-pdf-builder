@@ -1152,7 +1152,7 @@ class NofoEditThemeOptionsView(BaseNofoEditView):
             if fields_to_update:
                 for field in fields_to_update:
                     setattr(self.object, field, NIH_THEME_DEFAULTS[field])
-                self.object.save(update_fields=fields_to_update)
+                self.object.save()
         form = self.get_form()
         return self.render_to_response(self.get_context_data(form=form))
 
