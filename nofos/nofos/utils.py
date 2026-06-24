@@ -14,6 +14,11 @@ def clean_string(string):
     return re.sub(r"\s+", " ", string.strip())
 
 
+def user_is_nih_group(user):
+    """Return True if the user belongs to the NIH group."""
+    return bool(user and hasattr(user, "group") and user.group == "nih")
+
+
 def create_nofo_audit_event(event_type, document, user, is_test_pdf=True):
     # Define allowed event types
     allowed_event_types = ["nofo_import", "nofo_print", "nofo_reimport"]
