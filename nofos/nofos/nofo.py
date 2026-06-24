@@ -1567,7 +1567,7 @@ def suggest_nofo_theme(nofo_number):
     if "rfa-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
-    return "portrait-hrsa-blue"
+    return "portrait-nih-white"
 
 
 def suggest_nofo_title(soup):
