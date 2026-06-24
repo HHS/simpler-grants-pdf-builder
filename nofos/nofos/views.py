@@ -44,6 +44,7 @@ from .audits import (
     safe_get_changed_fields,
 )
 from .forms import (
+    NIH_THEME_DEFAULTS,
     CheckNOFOLinkSingleForm,
     InsertOrderSpaceForm,
     NofoAgencyForm,
@@ -114,7 +115,7 @@ from .nofo import (
     suggest_nofo_title,
     upload_cover_image_to_s3,
 )
-from .utils import create_nofo_audit_event, create_subsection_html_id
+from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
 
@@ -1138,6 +1139,21 @@ class NofoEditThemeOptionsView(BaseNofoEditView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user  # pass user to form
         return kwargs
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if user_is_nih_group(request.user):
+            fields_to_update = [
+                field
+                for field, default in NIH_THEME_DEFAULTS.items()
+                if getattr(self.object, field) != default
+            ]
+            if fields_to_update:
+                for field in fields_to_update:
+                    setattr(self.object, field, NIH_THEME_DEFAULTS[field])
+                self.object.save(update_fields=fields_to_update)
+        form = self.get_form()
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class NofoEditCoverImageView(BaseNofoEditView):

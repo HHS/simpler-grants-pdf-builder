@@ -9,7 +9,7 @@ from .models import (
     Section,
     Subsection,
 )
-from .utils import get_icon_path_choices
+from .utils import get_icon_path_choices, user_is_nih_group
 
 
 def create_object_model_form(model_class):
@@ -139,6 +139,19 @@ class NofoCoachDesignerForm(forms.ModelForm):
         )
 
 
+NIH_THEME_DEFAULTS = {
+    "theme": "portrait-nih-white",
+    "cover": "nofo--cover-page--text",
+    "icon_style": "nofo--icons--solid",
+}
+
+NIH_ALLOWED_CHOICES = {
+    "theme": frozenset(["portrait-nih-white"]),
+    "cover": frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"]),
+    "icon_style": frozenset(["nofo--icons--solid"]),
+}
+
+
 class NofoThemeOptionsForm(forms.ModelForm):
     class Meta:
         model = Nofo
@@ -147,30 +160,73 @@ class NofoThemeOptionsForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super(NofoThemeOptionsForm, self).__init__(*args, **kwargs)
 
-        # -------- Filter theme choices into optgroups by OpDiv
-        theme_categories_dict = {}
-        for value, label in THEME_CHOICES:
-            opdiv = label.split(" ")[0]
-            theme_categories_dict.setdefault(opdiv, []).append((value, label))
+        self.user = user
 
-        group_key = user.group.upper() if user and hasattr(user, "group") else None
-
-        if group_key and group_key != "BLOOM" and group_key in theme_categories_dict:
-            theme_categories = {group_key: theme_categories_dict[group_key]}
+        if user_is_nih_group(user):
+            # NIH users see a restricted set of choices for all three fields.
+            self.fields["theme"].choices = [
+                (
+                    "NIH",
+                    [
+                        (v, l)
+                        for v, l in THEME_CHOICES
+                        if v in NIH_ALLOWED_CHOICES["theme"]
+                    ],
+                )
+            ]
+            self.fields["cover"].choices = [
+                (v, l)
+                for v, l in Nofo.COVER_CHOICES
+                if v in NIH_ALLOWED_CHOICES["cover"]
+            ]
+            self.fields["icon_style"].choices = [
+                (v, l)
+                for v, l in Nofo.ICON_STYLE_CHOICES
+                if v in NIH_ALLOWED_CHOICES["icon_style"]
+            ]
         else:
-            theme_categories = theme_categories_dict
+            # -------- Filter theme choices into optgroups by OpDiv
+            theme_categories_dict = {}
+            for value, label in THEME_CHOICES:
+                opdiv = label.split(" ")[0]
+                theme_categories_dict.setdefault(opdiv, []).append((value, label))
 
-        # Convert optgroup dict into Django-style optgroup choices
-        optgroup_choices = [
-            (opdiv, options) for opdiv, options in theme_categories.items()
-        ]
-        self.fields["theme"].choices = optgroup_choices
+            group_key = user.group.upper() if user and hasattr(user, "group") else None
 
-        # -------- Filter icon_style choices based on selected theme
-        if self.instance and self.instance.theme:
-            self.fields["icon_style"].choices = get_icon_path_choices(
-                self.instance.theme
-            )
+            if (
+                group_key
+                and group_key != "BLOOM"
+                and group_key in theme_categories_dict
+            ):
+                theme_categories = {group_key: theme_categories_dict[group_key]}
+            else:
+                theme_categories = theme_categories_dict
+
+            # Convert optgroup dict into Django-style optgroup choices
+            optgroup_choices = [
+                (opdiv, options) for opdiv, options in theme_categories.items()
+            ]
+            self.fields["theme"].choices = optgroup_choices
+
+            # -------- Filter icon_style choices based on selected theme
+            if self.instance and self.instance.theme:
+                self.fields["icon_style"].choices = get_icon_path_choices(
+                    self.instance.theme
+                )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if user_is_nih_group(self.user):
+            for field, allowed in NIH_ALLOWED_CHOICES.items():
+                value = cleaned_data.get(field)
+                if value and value not in allowed:
+                    self.add_error(
+                        field,
+                        forms.ValidationError(
+                            "This choice is not permitted for NIH group users."
+                        ),
+                    )
+        return cleaned_data
 
 
 class NofoCoverImageForm(forms.ModelForm):
