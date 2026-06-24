@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from django.conf import settings
@@ -5,6 +6,8 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from ninja import NinjaAPI
 from ninja.security import HttpBearer
+
+logger = logging.getLogger(__name__)
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import _build_document
@@ -70,6 +73,7 @@ def create_nofo(request, payload: NofoSchema):
     except ValidationError as e:
         return 400, {"message": "Model validation error", "details": e.message_dict}
     except Exception as e:
+        logger.exception("Unexpected error in create_nofo")
         message = str(e) if settings.DEBUG else "An unexpected error occurred."
         return 400, {"message": message}
 
