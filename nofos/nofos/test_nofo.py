@@ -3644,8 +3644,13 @@ class HTMLSuggestDeadlineTests(TestCase):
 
 
 class HTMLSuggestThemeTests(TestCase):
-    def test_suggest_nofo_number_hrsa_returns_nih_theme(self):
+    def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
+        nofo_theme = "portrait-hrsa-blue"
+        self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_nih_returns_nih_theme(self):
+        nofo_number = "NIH-25-001"
         nofo_theme = "portrait-nih-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
@@ -3719,6 +3724,10 @@ class HTMLSuggestCoverTests(TestCase):
     def test_suggest_nofo_cover_acl_returns_text(self):
         nofo_cover = "nofo--cover-page--text"
         self.assertEqual(suggest_nofo_cover("portrait-acl-white"), nofo_cover)
+
+    def test_suggest_nofo_cover_nih_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
+        self.assertEqual(suggest_nofo_cover("portrait-nih-white"), nofo_cover)
 
     def test_suggest_nofo_cover_empty_string_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
@@ -3997,8 +4006,8 @@ class SuggestNofoFieldsTests(TestCase):
             self.nofo.keywords,
             "cowpolk, wild west, economic development, training, cattle ranching",
         )
-        self.assertEqual(self.nofo.theme, "portrait-nih-white")
-        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
         # HTML content with some missing fields
@@ -4027,8 +4036,8 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.keywords, "")
 
         # still get set
-        self.assertEqual(self.nofo.theme, "portrait-nih-white")
-        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
         suggest_all_nofo_fields(self.nofo, self.soup)
