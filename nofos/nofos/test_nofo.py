@@ -3718,11 +3718,11 @@ class HTMLSuggestThemeTests(TestCase):
         )
 
     def test_suggest_opdiv_nih_takes_precedence_over_number(self):
-        # PAR-27-032 has no matching prefix and would fall through to NIH anyway,
-        # but this confirms OpDiv drives the result when present
+        # CDC-prefixed number would normally return portrait-cdc-blue,
+        # but the NIH OpDiv check runs first and wins
         self.assertEqual(
             suggest_nofo_theme(
-                "PAR-27-032", opdiv="National Institutes of Health (NIH)"
+                "CDC-RFA-DP-25-001", opdiv="National Institutes of Health (NIH)"
             ),
             "portrait-nih-white",
         )
