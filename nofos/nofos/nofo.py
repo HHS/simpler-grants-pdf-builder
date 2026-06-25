@@ -1549,7 +1549,11 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_theme(nofo_number):
+def suggest_nofo_theme(nofo_number, opdiv=""):
+    opdiv_lower = opdiv.lower()
+    if any(v in opdiv_lower for v in ["national institutes of health", "nih"]):
+        return "portrait-nih-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
@@ -1665,7 +1669,9 @@ def suggest_all_nofo_fields(nofo, soup):
 
     # do not reset these during import
     if first_time_import:
-        nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
+        nofo.theme = suggest_nofo_theme(
+            nofo.number, opdiv=nofo.opdiv
+        )  # guess the NOFO theme
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
 

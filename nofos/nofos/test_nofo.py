@@ -3699,6 +3699,48 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_theme = "portrait-nih-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
+    def test_suggest_opdiv_nih_full_name_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="National Institutes of Health (NIH)"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_abbreviation_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="NIH"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_without_abbreviation_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="National Institutes of Health"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_takes_precedence_over_number(self):
+        # PAR-27-032 has no matching prefix and would fall through to NIH anyway,
+        # but this confirms OpDiv drives the result when present
+        self.assertEqual(
+            suggest_nofo_theme(
+                "PAR-27-032", opdiv="National Institutes of Health (NIH)"
+            ),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_no_opdiv_par_number_falls_to_nih_theme(self):
+        # No known prefix → catch-all NIH fallback
+        self.assertEqual(
+            suggest_nofo_theme("PAR-27-032", opdiv=""),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_no_opdiv_cdc_number_returns_cdc_theme(self):
+        # Existing CDC behaviour unaffected when no OpDiv is supplied
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv=""),
+            "portrait-cdc-blue",
+        )
+
 
 class HTMLSuggestCoverTests(TestCase):
     def test_suggest_nofo_cover_cdc_returns_medium(self):
