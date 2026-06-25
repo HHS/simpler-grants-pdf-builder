@@ -1551,7 +1551,9 @@ def suggest_nofo_cover(nofo_theme):
 
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
-    if any(v in opdiv_lower for v in ["national institutes of health", "nih"]):
+    if "national institutes of health" in opdiv_lower or re.search(
+        r"\bnih\b", opdiv_lower
+    ):
         return "portrait-nih-white"
 
     if "cdc-" in nofo_number.lower():

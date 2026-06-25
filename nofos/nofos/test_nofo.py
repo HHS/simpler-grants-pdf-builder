@@ -3734,6 +3734,13 @@ class HTMLSuggestThemeTests(TestCase):
             "portrait-nih-white",
         )
 
+    def test_suggest_opdiv_containing_nih_substring_does_not_match(self):
+        # "nih" inside a word (e.g. "zenith") must not trigger NIH detection
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv="Zenith Health Institute"),
+            "portrait-cdc-blue",
+        )
+
     def test_suggest_no_opdiv_cdc_number_returns_cdc_theme(self):
         # Existing CDC behaviour unaffected when no OpDiv is supplied
         self.assertEqual(
