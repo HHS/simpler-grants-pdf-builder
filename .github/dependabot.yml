@@ -10,7 +10,12 @@ updates:
       default-days: 14
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      # cssutils: any update breaks the build, so pin it manually and
+      # exclude it from all Dependabot updates (no update-types = ignore all)
+      - dependency-name: "cssutils"
     groups:
       python-minor-and-patch:
         update-types:
