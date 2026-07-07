@@ -1044,7 +1044,7 @@ class TestAddClassesToBrokenLinks(TestCase):
         soup = BeautifulSoup(str(modified_html), "html.parser")
         self.assertIsNone(soup.find("a"))
 
-    # --- Coverage for the `href=False` branch (add_classes_to_links.py:40-55) ---
+    # --- Coverage for the `href=False` branch in add_classes_to_broken_links ---
     #
     # These tests were added after an investigation into a false-positive report:
     # a manually-authored anchor target like `<a id="alignment-with-acf-vision"></a>`
