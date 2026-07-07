@@ -1099,10 +1099,9 @@ class TestAddClassesToBrokenLinks(TestCase):
         intentional markup -- the anchor is a target, not a link, and its id
         is genuinely in use.
 
-        Now that the `href=False` branch is gated on visible text, this
-        anchor (no text) is no longer flagged, regardless of whether its id
-        is referenced elsewhere -- the text check alone is what distinguishes
-        it from a stripped, genuinely broken link (category 1).
+        Now that the `href=False` branch is gated on visible text (and, per
+        category 2b below, on having no `id`/`name`), this anchor is no
+        longer flagged, regardless of whether its id is referenced elsewhere.
         """
         html = (
             "<div>"
@@ -1114,6 +1113,34 @@ class TestAddClassesToBrokenLinks(TestCase):
         modified_html = add_classes_to_broken_links(html, broken_links)
         soup = BeautifulSoup(str(modified_html), "html.parser")
         target_anchor = soup.find("a", id="some-anchor")
+        self.assertNotIn("nofo_edit--broken-link", target_anchor.get("class", []))
+
+    def test_non_empty_bookmark_target_with_id_is_not_flagged(self):
+        """
+        Category 2b: bookmark target that carries over its original visible
+        text (e.g. from a Google Docs import) -- FIXED.
+
+        Some bookmark targets aren't empty: `preserve_bookmark_links`
+        (nofo.py) only merges/removes *empty* `<a id="...">` targets into the
+        following paragraph (see `test_NONempty_anchor_with_matching_link_followed_by_paragraph`
+        in test_nofo.py) and deliberately leaves non-empty ones untouched.
+        That means an `<a id="...">` with visible text -- and no href -- can
+        legitimately reach the editor as a valid, referenced target, not a
+        broken link. Gating solely on "has text" (as the category-1 fix
+        originally did) would have incorrectly flagged this. Skipping any
+        href-less anchor that declares an `id` or `name` avoids that.
+        """
+        html = (
+            "<div>"
+            '<p><a href="#bookmark=id.2xcytpi">Bookmark link</a>.</p>'
+            '<a id="bookmark=id.2xcytpi">Bookmark</a>'
+            "<p>Table 1: FFE state funding allocations</p>"
+            "</div>"
+        )
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        target_anchor = soup.find("a", id="bookmark=id.2xcytpi")
         self.assertNotIn("nofo_edit--broken-link", target_anchor.get("class", []))
 
     def test_orphaned_underscore_prefixed_bookmark_is_not_flagged(self):
@@ -1170,15 +1197,14 @@ class TestAddClassesToBrokenLinks(TestCase):
 
     def test_empty_id_edge_case(self):
         """
-        Category 5: empty id attribute -- resolved as a side effect of the
-        text-based fix, without needing special-case handling.
+        Category 5: empty id attribute -- resolved without needing
+        special-case handling.
 
-        An <a id=""></a> tag with no href and no text. Note that the fix
-        for category 2 does not use "has a valid id" as its criterion (which
-        would have needed to specifically guard against a meaningless empty
-        id like this one) -- it uses "has visible text" instead, so this tag
-        is skipped the same way any other empty href-less anchor is, with no
-        need to reason about the id's value at all.
+        An <a id=""></a> tag with no href and no text (the visible "Some
+        text." in the fixture below sits outside the <a> tag). This is
+        skipped by the "no text" check alone, before the "id/name" check
+        (added for category 2b) is ever consulted -- so a meaningless empty
+        id never needs to be reasoned about as "valid" or "invalid" here.
         """
         html = '<div><a id=""></a> Some text.</div>'
         broken_links = []
