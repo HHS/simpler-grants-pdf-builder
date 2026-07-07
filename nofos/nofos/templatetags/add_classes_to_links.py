@@ -19,9 +19,9 @@ def add_classes_to_broken_links(html_string, broken_links):
 
     Example:
         html = '<p><a href="http://example.com">Visit</a></p>'
-        broken_links = [{'href': 'http://example.com'}]
+        broken_links = [{'link_href': 'http://example.com'}]
         result = add_classes_to_broken_links(html, broken_links)
-        # Output: '<p><a href="http://example.com" class="nofo_edit--broken-link usa-tooltip" data-position="top" title="Broken link">Visit</a></p>'
+        # Output: '<p><a href="http://example.com" class="nofo_edit--broken-link usa-tooltip" data-position="bottom" title="Broken link">Visit</a></p>'
     """
     soup = BeautifulSoup(html_string, "html.parser")
     link_hrefs = [link["link_href"] for link in broken_links]
