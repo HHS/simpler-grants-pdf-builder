@@ -1044,6 +1044,149 @@ class TestAddClassesToBrokenLinks(TestCase):
         soup = BeautifulSoup(str(modified_html), "html.parser")
         self.assertIsNone(soup.find("a"))
 
+    # --- Coverage for the `href=False` branch (add_classes_to_links.py:40-55) ---
+    #
+    # These tests were added after an investigation into a false-positive report:
+    # a manually-authored anchor target like `<a id="alignment-with-acf-vision"></a>`
+    # embedded in a heading was correctly resolving as a link target in the HTML/PDF
+    # render, but was still getting a "Broken bookmark link" tooltip in the editor.
+    #
+    # Root cause: the `href=False` branch used to flag ANY <a> tag lacking an
+    # href, with no check for whether it had visible text or a valid `id` that
+    # was actually referenced elsewhere. It was originally added (see commit
+    # a7858a4f, "Add styling for broken bookmark links") to catch a narrower
+    # case: martor's bleach sanitizer strips hrefs with disallowed URL schemes
+    # (e.g. `bookmark://...`), leaving behind an <a> tag with visible text but
+    # no href -- a genuinely dangling link.
+    #
+    # Fix: the branch is now gated on visible text content. A stripped link
+    # still has its text (category 1) and is flagged; a bookmark target like
+    # `<a id="...">` has no text and is no longer flagged (categories 2-5).
+
+    def test_stripped_scheme_link_with_text_is_flagged(self):
+        """
+        Category 1: stripped-scheme link (the original intended case).
+
+        Simulates what martor's bleach sanitizer leaves behind after stripping
+        the href from a disallowed-scheme link like
+        `<a href="bookmark://_Collaborations">Collaborations</a>`
+        (bookmark:// is not in ALLOWED_URL_SCHEMES). Confirmed via
+        `martor.utils.markdownify()` that the real output is
+        `<a>Collaborations</a>` -- no attributes at all, just text.
+
+        This is a genuinely broken/dangling link a user thought would work.
+        Expected AND current behavior: flagged. This test protects the
+        original intended behavior from regressing when the false positive
+        (below) is fixed.
+        """
+        html = "<p>This is a <a>Collaborations</a> bookmark link.</p>"
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        link = soup.find("a")
+        self.assertIn("nofo_edit--broken-link", link.get("class", []))
+        self.assertEqual(link.get("title"), "Broken bookmark link")
+
+    def test_valid_bookmark_target_referenced_elsewhere_is_not_flagged(self):
+        """
+        Category 2: manually authored anchor target, referenced elsewhere
+        (the ACF false-positive case) -- FIXED.
+
+        Simulates the real-world report: a heading contains an inline anchor
+        target (`<a id="some-anchor"></a>`, no text, no href) that IS the
+        destination of a working link elsewhere in the same document
+        (`<a href="#some-anchor">Jump to section</a>`). This is valid,
+        intentional markup -- the anchor is a target, not a link, and its id
+        is genuinely in use.
+
+        Now that the `href=False` branch is gated on visible text, this
+        anchor (no text) is no longer flagged, regardless of whether its id
+        is referenced elsewhere -- the text check alone is what distinguishes
+        it from a stripped, genuinely broken link (category 1).
+        """
+        html = (
+            "<div>"
+            '<p><a href="#some-anchor">Jump to section</a></p>'
+            '<h6><a id="some-anchor"></a>6. Some Heading Text</h6>'
+            "</div>"
+        )
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        target_anchor = soup.find("a", id="some-anchor")
+        self.assertNotIn("nofo_edit--broken-link", target_anchor.get("class", []))
+
+    def test_orphaned_underscore_prefixed_bookmark_is_not_flagged(self):
+        """
+        Category 3: orphaned anchor with underscore-prefixed id, unreferenced
+        (raw import junk) -- now intentionally out of scope for this check.
+
+        Simulates a raw Word/Google Docs bookmark artifact that survived
+        import-time cleanup: `preserve_bookmark_targets` (nofo.py, ~line 2295)
+        explicitly skips ids starting with "_", so an id like "_Toc12345" is
+        left untouched as a bare, empty <a> tag. Nothing in this document
+        references it.
+
+        This is no longer flagged, since it has no visible text. This isn't a
+        loss of signal: the page-level warning banner (`find_broken_links`)
+        never covered href-less anchors either -- it only inspects `href`
+        values -- so this category was never surfaced there, and the tooltip
+        check is now scoped the same way: broken *links* (visible text, no
+        href), not bookmark *targets* (no text, no href), regardless of
+        whether the target's id looks like leftover import cruft.
+        """
+        html = '<div><p>Some paragraph text.</p><a id="_Toc12345"></a></div>'
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        anchor = soup.find("a", id="_Toc12345")
+        self.assertNotIn("nofo_edit--broken-link", anchor.get("class", []))
+
+    def test_orphaned_custom_anchor_unreferenced_is_not_flagged(self):
+        """
+        Category 4: orphaned custom anchor, unreferenced -- scope decision
+        resolved.
+
+        An anchor target with a custom (non-underscore-prefixed) id that
+        nothing in the document links to. This differs from the ACF case
+        (category 2) only in that the id is never referenced anywhere -- it's
+        genuinely dead, either because the intended link was never added, or
+        because it existed and was later deleted/renamed.
+
+        Decision: this tooltip check is scoped to flagging broken *links*
+        (visible text, no href -- category 1), not to auditing unreferenced
+        bookmark *targets*. Detecting genuinely dead, unreferenced anchors
+        would require checking reference counts against the rest of the
+        document (like `find_broken_links`/`_get_all_id_attrs_for_nofo` do
+        for the banner), which is out of scope for this fix. An anchor with
+        no text is never flagged here regardless of whether it's referenced.
+        """
+        html = '<div><a id="unused-anchor"></a> Some heading text.</div>'
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        anchor = soup.find("a", id="unused-anchor")
+        self.assertNotIn("nofo_edit--broken-link", anchor.get("class", []))
+
+    def test_empty_id_edge_case(self):
+        """
+        Category 5: empty id attribute -- resolved as a side effect of the
+        text-based fix, without needing special-case handling.
+
+        An <a id=""></a> tag with no href and no text. Note that the fix
+        for category 2 does not use "has a valid id" as its criterion (which
+        would have needed to specifically guard against a meaningless empty
+        id like this one) -- it uses "has visible text" instead, so this tag
+        is skipped the same way any other empty href-less anchor is, with no
+        need to reason about the id's value at all.
+        """
+        html = '<div><a id=""></a> Some text.</div>'
+        broken_links = []
+        modified_html = add_classes_to_broken_links(html, broken_links)
+        soup = BeautifulSoup(str(modified_html), "html.parser")
+        anchor = soup.find_all("a")[0]
+        self.assertNotIn("nofo_edit--broken-link", anchor.get("class", []))
+
 
 class MatchNumberedSublistTest(TestCase):
 
