@@ -20,10 +20,10 @@ def add_classes_to_broken_links(html_string, broken_links):
         broken_links (list of dict): A list of broken links dicts returned from "find_broken_links" function nofo.py.
 
     Example:
-        html = '<p><a href="http://example.com">Visit</a></p>'
-        broken_links = [{'link_href': 'http://example.com'}]
+        html = '<p><a href="#_Purpose">Visit</a></p>'
+        broken_links = [{'link_href': '#_Purpose'}]
         result = add_classes_to_broken_links(html, broken_links)
-        # Output: '<p><a href="http://example.com" class="nofo_edit--broken-link usa-tooltip" data-position="bottom" title="Broken link">Visit</a></p>'
+        # Output: '<p><a href="#_Purpose" class="nofo_edit--broken-link usa-tooltip" data-position="bottom" title="Broken link">Visit</a></p>'
     """
     soup = BeautifulSoup(html_string, "html.parser")
     link_hrefs = [link["link_href"] for link in broken_links]
