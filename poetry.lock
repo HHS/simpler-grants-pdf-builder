@@ -121,18 +121,18 @@ css = ["tinycss2 (>=1.1.0)"]
 
 [[package]]
 name = "boto3"
-version = "1.43.31"
+version = "1.43.36"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "boto3-1.43.31-py3-none-any.whl", hash = "sha256:69c5521ad864f33d4d53b0e18a3927697f4558210693b1cb4dd97da959d1f7b9"},
-    {file = "boto3-1.43.31.tar.gz", hash = "sha256:8165b79c02955affbe4b4e9aa7c560684d0d4d86b4b9de66a37b45eb79fc4b69"},
+    {file = "boto3-1.43.36-py3-none-any.whl", hash = "sha256:42942dde254673abcbc9e6e60017c88341a4f49d99d24e1f2e290fb38138c26f"},
+    {file = "boto3-1.43.36.tar.gz", hash = "sha256:587d7ee92a12e440ad12b0e7f11f3358f0c4d65b19f64726efc94aaf194aff28"},
 ]
 
 [package.dependencies]
-botocore = ">=1.43.31,<1.44.0"
+botocore = ">=1.43.36,<1.44.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.19.0,<0.20.0"
 
@@ -831,13 +831,13 @@ grpc = ["grpcio (>=1.44.0,<2.0.0)"]
 
 [[package]]
 name = "grabzit"
-version = "3.5.8"
+version = "3.5.9"
 description = "GrabzIt enables allows you to programmatically convert web pages and HTML into images, DOCX, videos, rendered HTML, PDFs, CSVs and spreadsheets. Additionally GrabzIt allows you to convert online videos into animated GIFs"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "grabzit-3.5.8.tar.gz", hash = "sha256:6f407651f411b4b898c1aa5a94031e6ce6228909ef880a00af1702e5a4f16e15"},
+    {file = "grabzit-3.5.9.tar.gz", hash = "sha256:cd92040184721d7037b76c099ccc8403217dd02e9d8145be6e5aad65be5d09ae"},
 ]
 
 [[package]]
@@ -1070,14 +1070,14 @@ six = ">=1.15,<2"
 
 [[package]]
 name = "martor"
-version = "1.8.1"
+version = "1.8.2"
 description = "Django Markdown Editor"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "martor-1.8.1-py3-none-any.whl", hash = "sha256:5e0ca8c9de388eef1f4a9866d7003c1651958cb50987506d09f24d61e709843f"},
-    {file = "martor-1.8.1.tar.gz", hash = "sha256:0444ba6ceeccd3bbeeba9212a0758d573e06f5d07f57ff3dab0297c0c06fd95c"},
+    {file = "martor-1.8.2-py3-none-any.whl", hash = "sha256:62ca67288a4c40c3b980a7ecc6870abe0af334b6d9a1c541f359fee89d6e81da"},
+    {file = "martor-1.8.2.tar.gz", hash = "sha256:4e6ac65e8a3c36ecd6d6f797e69b8394f40b320fe8b208cf2e9a6122d522fb8d"},
 ]
 
 [package.dependencies]
