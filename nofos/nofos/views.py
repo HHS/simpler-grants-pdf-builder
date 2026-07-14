@@ -356,14 +356,27 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # latest audit event (to show latest editor/user)
         context["updated_by"] = self.object.updated_by
 
+        metadata_fields = (
+            ("author", "Author"),
+            ("subject", "Subject"),
+            ("keywords", "Keywords"),
+        )
+        context["missing_metadata_fields"] = [
+            label
+            for field_name, label in metadata_fields
+            if not (getattr(self.object, field_name, "") or "").strip()
+        ]
+
         # booleans to show/hide our various warning messages
+        context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
         context["has_external_links"] = len(
             context["external_links"]
         ) and self.object.status in ("draft", "active", "ready-for-qa", "paused")
         context["has_warnings"] = (
-            context["has_broken_links"]
+            context["has_missing_metadata"]
+            or context["has_broken_links"]
             or context["has_heading_errors"]
             or context["has_external_links"]
         )
