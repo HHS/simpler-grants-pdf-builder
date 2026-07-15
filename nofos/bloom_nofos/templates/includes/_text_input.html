@@ -16,7 +16,6 @@
     name="{{ id }}"
     aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
     {% if disabled == "disabled" %}disabled{% endif %}
-    {% if required %}required{% endif %}
   >{{ value|default_if_none:'' }}</textarea>
 {% else %}
   <input
@@ -26,7 +25,6 @@
     type="{% if input_type == 'PasswordInput' %}password{% else %}text{% endif %}"
     aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
     {% if disabled == "disabled" %}disabled{% endif %}
-    {% if required %}required{% endif %}
     value="{{ value|default_if_none:'' }}"
     />
 {% endif %}
