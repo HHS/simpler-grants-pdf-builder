@@ -130,9 +130,13 @@ class NofoMetadataWarningTests(TestCase):
             all(field.required for field in response.context["form"].fields.values())
         )
         self.assertEqual(
-            [field.get("name") for field in soup.select("[required]")],
-            ["author", "subject", "keywords"],
+            [
+                asterisk.get("aria-label")
+                for asterisk in soup.select(".label--required")
+            ],
+            ["(required)", "(required)", "(required)"],
         )
+        self.assertFalse(soup.select("[required]"))
 
     def test_incomplete_metadata_cannot_be_saved(self):
         response = self.client.post(
@@ -141,6 +145,39 @@ class NofoMetadataWarningTests(TestCase):
                 "author": "HHS",
                 "subject": "",
                 "keywords": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+            response.context["form"], "subject", "This field is required."
+        )
+        self.assertFormError(
+            response.context["form"], "keywords", "This field is required."
+        )
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        for field_name in ("subject", "keywords"):
+            error = soup.find(id=f"{field_name}--error")
+            field = soup.find(attrs={"name": field_name})
+            self.assertEqual(
+                error.get_text(" ", strip=True), "Error: This field is required."
+            )
+            self.assertIn("border-secondary-dark", field.get("class", []))
+            self.assertIn(
+                f"{field_name}--error", field.get("aria-describedby", "").split()
+            )
+
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.author, "")
+
+    def test_whitespace_only_metadata_cannot_be_saved(self):
+        response = self.client.post(
+            self.metadata_url,
+            {
+                "author": "HHS",
+                "subject": "   ",
+                "keywords": "\n\t",
             },
         )
 
