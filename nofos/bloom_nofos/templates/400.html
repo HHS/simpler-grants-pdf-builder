@@ -15,14 +15,9 @@
 			<li>Open the Word document.</li>
 			<li>Add a value after ‘Opdiv:’ — this is the agency’s operating division (for example, ‘Administration for Children and Families’ or ‘CDC’).</li>
 			<li>Save the document.</li>
-			<li>Import it again.</li>
+			<li><a href="{% url 'index' %}">Import it again.</a></li>
 		</ol>
 		<p><strong>Still need help?</strong> Request assistance with your NOFO’s template from your agency’s grants policy office or submit a request using the <a href="https://forms.office.com/pages/responsepage.aspx?id=MQ4fl9YAQk644EezQrxEVYC_OcE8wOtCti0qyoocsCpUOVFCQkpaR043SVo4TkpGOFNEVkNOR0o1SyQlQCN0PWcu&route=shorturl">NOFO Builder Feedback Form</a>.</p>
-		<p>What’s next: fix the file and try importing it again. Or, if you’d rather stop here:</p>
-		<ul class="usa-list">
-			<li><a href="{% url 'index' %}">homepage</a></li>
-			<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
-		</ul>
 	{% else %}
 		<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} Error</h1>
 		{% if error_message %}

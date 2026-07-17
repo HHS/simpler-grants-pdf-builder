@@ -192,18 +192,16 @@ class TestNofoImportBlankOpdivError(TestCase):
         self.assertIn("Open the Word document.", content)
         self.assertIn("Add a value after ‘Opdiv:’", content)
         self.assertIn("Save the document.", content)
-        self.assertIn("Import it again.", content)
+        # Step 4 links "Import it again." back to the homepage
+        self.assertIn(f'<a href="{reverse("index")}">Import it again.</a>', content)
 
         # Escalation paragraph
         self.assertIn("Still need help?", content)
         self.assertIn("NOFO Builder Feedback Form", content)
         self.assertIn("https://forms.office.com/pages/responsepage.aspx", content)
 
-        # "What's next" replaces "Maybe go back to:"
-        self.assertIn("What’s next", content)
+        # No "Maybe go back to:" links/text (that's the generic 400 page's copy)
         self.assertNotIn("Maybe go back to:", content)
-        self.assertIn(f'href="{reverse("index")}"', content)
-        self.assertIn(f'href="{reverse("nofos:nofo_index")}"', content)
 
         # The raw validation error dict must not leak through
         self.assertNotIn("This field cannot be blank", content)
