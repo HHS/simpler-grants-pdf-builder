@@ -588,9 +588,8 @@ class NofosImportNewView(BaseNofoImportView):
             )
 
             # Blank "Opdiv:" field gets a dedicated, actionable error page
-            if hasattr(e, "message_dict") and e.message_dict.get("opdiv") == [
-                "This field cannot be blank."
-            ]:
+            opdiv_errors = getattr(e, "error_dict", {}).get("opdiv", [])
+            if any(error.code == "blank" for error in opdiv_errors):
                 return render(
                     request,
                     "400.html",

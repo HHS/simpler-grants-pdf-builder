@@ -202,8 +202,8 @@ class TestNofoImportBlankOpdivError(TestCase):
         # "What's next" replaces "Maybe go back to:"
         self.assertIn("What’s next", content)
         self.assertNotIn("Maybe go back to:", content)
-        self.assertIn(reverse("index"), content)
-        self.assertIn(reverse("nofos:nofo_index"), content)
+        self.assertIn(f'href="{reverse("index")}"', content)
+        self.assertIn(f'href="{reverse("nofos:nofo_index")}"', content)
 
         # The raw validation error dict must not leak through
         self.assertNotIn("This field cannot be blank", content)
