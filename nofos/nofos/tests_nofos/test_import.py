@@ -195,10 +195,12 @@ class TestNofoImportBlankOpdivError(TestCase):
         # Step 4 links "Import it again." back to the homepage
         self.assertIn(f'<a href="{reverse("index")}">Import it again.</a>', content)
 
-        # Escalation paragraph
+        # Escalation paragraph — feedback form link opens in a new tab
         self.assertIn("Still need help?", content)
         self.assertIn("NOFO Builder Feedback Form", content)
         self.assertIn("https://forms.office.com/pages/responsepage.aspx", content)
+        self.assertIn('target="_blank"', content)
+        self.assertIn('rel="noopener noreferrer"', content)
 
         # No "Maybe go back to:" links/text (that's the generic 400 page's copy)
         self.assertNotIn("Maybe go back to:", content)
