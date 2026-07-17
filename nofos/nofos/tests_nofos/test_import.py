@@ -141,6 +141,14 @@ class TestNofoImportBlankOpdivError(TestCase):
         self.client = Client()
         self.client.login(email="test@example.com", password="testpass123")
 
+        self.docx_blank_opdiv_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "lists--blank-opdiv.docx",
+        )
+
     def _build_html_file_missing_opdiv(self):
         html_content = """
         <html>
@@ -158,18 +166,21 @@ class TestNofoImportBlankOpdivError(TestCase):
             "test.html", html_content.encode("utf-8"), content_type="text/html"
         )
 
-    def test_import_with_blank_opdiv_shows_actionable_error_page(self):
-        response = self.client.post(
-            reverse("nofos:nofo_import"),
-            {
-                "nofo-import": self._build_html_file_missing_opdiv(),
-                "csrfmiddlewaretoken": "dummy",
-            },
+    def _build_docx_file_blank_opdiv(self):
+        # Real .docx fixture (converted via Mammoth) where the "OpDiv:" label
+        # is present on the page but has no value after it, matching the
+        # originally reported bug (as opposed to the label being absent
+        # entirely, which is what the synthetic HTML fixture above tests).
+        with open(self.docx_blank_opdiv_fixture_path, "rb") as f:
+            docx_data = f.read()
+
+        return SimpleUploadedFile(
+            "lists--blank-opdiv.docx",
+            docx_data,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
 
-        self.assertEqual(response.status_code, 400)
-        content = response.content.decode("utf-8")
-
+    def _assert_actionable_opdiv_error_page(self, content):
         # New heading and body copy
         self.assertIn("We couldn’t import this NOFO", content)
         self.assertIn(
@@ -197,3 +208,35 @@ class TestNofoImportBlankOpdivError(TestCase):
         # The raw validation error dict must not leak through
         self.assertNotIn("This field cannot be blank", content)
         self.assertNotIn("'opdiv':", content)
+
+    def test_import_with_blank_opdiv_shows_actionable_error_page(self):
+        """
+        HTML upload where the "Opdiv:" label is missing entirely.
+        """
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_html_file_missing_opdiv(),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self._assert_actionable_opdiv_error_page(response.content.decode("utf-8"))
+
+    def test_import_docx_with_blank_opdiv_field_shows_actionable_error_page(self):
+        """
+        Real .docx upload (via Mammoth conversion) where the "OpDiv:" label is
+        present on the page but has no value after it — the real-world scenario
+        from the original bug report.
+        """
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_docx_file_blank_opdiv(),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self._assert_actionable_opdiv_error_page(response.content.decode("utf-8"))
