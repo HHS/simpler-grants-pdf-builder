@@ -580,19 +580,30 @@ class NofosImportNewView(BaseNofoImportView):
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
         except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="NofosImportNewView:ValidationError",
+                status=400,
+            )
+
+            # Blank "Opdiv:" field gets a dedicated, actionable error page
+            if hasattr(e, "message_dict") and e.message_dict.get("opdiv") == [
+                "This field cannot be blank."
+            ]:
+                return render(
+                    request,
+                    "400.html",
+                    status=400,
+                    context={"opdiv_blank_error": True, "status": 400},
+                )
+
             message = (
                 e.message
                 if hasattr(e, "message")
                 else (
                     str(e.message_dict) if hasattr(e, "message_dict") else e.messages[0]
                 )
-            )
-
-            log_exception(
-                request,
-                e,
-                context="NofosImportNewView:ValidationError",
-                status=400,
             )
             return HttpResponseBadRequest(
                 f"<p><strong>Error creating NOFO:</strong></p> {message}"
