@@ -4,7 +4,9 @@ from constance.test import override_config
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.urls import reverse
+from users.models import BloomUser
 
 from nofos.nofo import parse_uploaded_file_as_html_string
 
@@ -121,3 +123,77 @@ class TestParseNofoFile(TestCase):
                 "[\"<p>Mammoth warnings found. These styles are not recognized by our style map:</p><ul><li>Unrecognised paragraph style: Paul's undocumented style (Style ID: Paulsundocumentedstyle)</li><li>Unrecognised paragraph style: Paul's undocumented style 2 (Style ID: Paulsundocumentedstyle2)</li></ul>\"]",
                 str(context.exception),
             )
+
+
+class TestNofoImportBlankOpdivError(TestCase):
+    """
+    Importing a NOFO whose Word doc has a blank "Opdiv:" field should show a
+    dedicated, actionable error page instead of a raw Django validation dict.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client = Client()
+        self.client.login(email="test@example.com", password="testpass123")
+
+    def _build_html_file_missing_opdiv(self):
+        html_content = """
+        <html>
+        <head><title>Test NOFO</title></head>
+        <body>
+            <p>Opportunity name: Test NOFO</p>
+            <p>Opportunity number: NOFO-ACF-001</p>
+            <h1>Test Section 1</h1>
+            <h2 data-order="10">Eligibility Information</h2>
+            <p>Some eligibility content</p>
+        </body>
+        </html>
+        """
+        return SimpleUploadedFile(
+            "test.html", html_content.encode("utf-8"), content_type="text/html"
+        )
+
+    def test_import_with_blank_opdiv_shows_actionable_error_page(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_html_file_missing_opdiv(),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        content = response.content.decode("utf-8")
+
+        # New heading and body copy
+        self.assertIn("We couldn’t import this NOFO", content)
+        self.assertIn(
+            "is blank. NOFO Builder needs this field filled in before it can import the document.",
+            content,
+        )
+
+        # Steps to fix
+        self.assertIn("Open the Word document.", content)
+        self.assertIn("Add a value after ‘Opdiv:’", content)
+        self.assertIn("Save the document.", content)
+        self.assertIn("Import it again.", content)
+
+        # Escalation paragraph
+        self.assertIn("Still need help?", content)
+        self.assertIn("NOFO Builder Feedback Form", content)
+        self.assertIn("https://forms.office.com/pages/responsepage.aspx", content)
+
+        # "What's next" replaces "Maybe go back to:"
+        self.assertIn("What’s next", content)
+        self.assertNotIn("Maybe go back to:", content)
+        self.assertIn(reverse("index"), content)
+        self.assertIn(reverse("nofos:nofo_index"), content)
+
+        # The raw validation error dict must not leak through
+        self.assertNotIn("This field cannot be blank", content)
+        self.assertNotIn("'opdiv':", content)
