@@ -22,6 +22,17 @@ ICONS = [
     ("◻", uswds_check_box_outline_blank_icon),  # (◻) U+25FB WHITE MEDIUM SQUARE
 ]
 
+BLOCK_LEVEL_TAG_NAMES = {
+    "blockquote",
+    "div",
+    "dl",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul",
+}
+
 
 def has_link_in_above_rows(td):
     # Find the parent row of the cell
@@ -166,6 +177,44 @@ def wrap_td_contents_in_div(td):
     td.append(new_div)
 
 
+def add_multi_block_checkbox_classes(td):
+    """Keep the checkbox line separate from later block content in a table cell."""
+    direct_tag_children = [child for child in td.children if isinstance(child, Tag)]
+    content_container = (
+        direct_tag_children[0]
+        if len(direct_tag_children) == 1 and direct_tag_children[0].name == "div"
+        else td
+    )
+    block_children = [
+        child
+        for child in content_container.children
+        if isinstance(child, Tag) and child.name in BLOCK_LEVEL_TAG_NAMES
+    ]
+
+    if len(block_children) <= 1:
+        return
+
+    checkbox_lines = [
+        child
+        for child in block_children
+        if child.find("img", alt="Checkbox") is not None
+    ]
+    if not checkbox_lines:
+        return
+
+    _add_class_if_not_exists_to_tag(
+        element=td,
+        classname="usa-icon__td--multi-block",
+        tag_name="td",
+    )
+    for checkbox_line in checkbox_lines:
+        _add_class_if_not_exists_to_tag(
+            element=checkbox_line,
+            classname="usa-icon__line",
+            tag_name=checkbox_line.name,
+        )
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -250,6 +299,7 @@ def replace_unicode_with_icon(html_string):
                             tag_name="td",
                         )
 
+                    add_multi_block_checkbox_classes(parent_td)
                     wrap_text_in_span(parent_td)
                     wrap_td_contents_in_div(parent_td)
 

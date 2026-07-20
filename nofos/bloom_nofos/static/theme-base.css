@@ -337,6 +337,19 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   display: flex;
 }
 
+.section--content table tr td.usa-icon__td--multi-block > div {
+  display: block;
+}
+
+.section--content
+  table
+  tr
+  td.usa-icon__td--multi-block
+  > div
+  > .usa-icon__line {
+  display: flex;
+}
+
 .section--content table tr td.usa-icon__td {
   vertical-align: top;
 }

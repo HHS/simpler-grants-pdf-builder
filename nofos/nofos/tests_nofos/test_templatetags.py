@@ -1,11 +1,12 @@
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from django.test import TestCase
 from django.utils.safestring import SafeString
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
+from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
 from nofos.templatetags.safe_br import safe_br
 from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tag,
@@ -34,6 +35,103 @@ from nofos.templatetags.utils import (
 class MockSection:
     def __init__(self, name):
         self.name = name
+
+
+class ReplaceUnicodeWithIconTests(TestCase):
+    def render_cell(self, cell_html):
+        result = replace_unicode_with_icon(
+            f"<table><tbody><tr><td>{cell_html}</td></tr></tbody></table>"
+        )
+        return BeautifulSoup(result, "html.parser").find("td")
+
+    def direct_tag_names(self, element):
+        return [child.name for child in element.children if isinstance(child, Tag)]
+
+    def test_simple_checkbox_cell_keeps_existing_flex_structure(self):
+        td = self.render_cell("◻ Plain text")
+
+        self.assertIn("usa-icon__td", td.get("class", []))
+        self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertIsNotNone(td.find("img", alt="Checkbox"))
+        self.assertEqual(self.direct_tag_names(td.div), ["img", "span"])
+        self.assertIsNone(td.find(class_="usa-icon__line"))
+
+    def test_linked_checkbox_cell_keeps_existing_flex_structure(self):
+        td = self.render_cell('◻ <a href="https://example.com">Linked label</a>')
+
+        self.assertIn("usa-icon__td--link", td.get("class", []))
+        self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div), ["img", "a"])
+        self.assertIsNone(td.find(class_="usa-icon__line"))
+
+    def test_two_paragraph_checkbox_cell_marks_first_paragraph_as_icon_line(self):
+        td = self.render_cell("<p>◻ Checkbox label</p><p>More detail</p>")
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div), ["p", "p"])
+        self.assertIn("usa-icon__line", td.div.find_all(recursive=False)[0]["class"])
+        self.assertIsNotNone(td.div.find_all(recursive=False)[0].find("img"))
+
+    def test_checkbox_paragraph_and_list_are_separate_blocks(self):
+        td = self.render_cell(
+            "<p>◻ Training plan</p><ul><li>Include milestones</li></ul>"
+        )
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div), ["p", "ul"])
+        self.assertIn("usa-icon__line", td.div.p.get("class", []))
+        self.assertNotIn("usa-icon__line", td.div.ul.get("class", []))
+
+    def test_non_checkbox_multi_block_cell_is_unchanged(self):
+        td = self.render_cell(
+            "<p>Plain label</p><p>More detail</p><ul><li>Item</li></ul>"
+        )
+
+        self.assertEqual(td.get("class", []), [])
+        self.assertIsNone(td.find("div", recursive=False))
+        self.assertEqual(
+            self.direct_tag_names(td),
+            ["p", "p", "ul"],
+        )
+
+    def test_nested_inline_checkbox_marks_direct_paragraph_as_icon_line(self):
+        td = self.render_cell(
+            "<p><strong><span>◻</span> Nested label</strong></p><p>More detail</p>"
+        )
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        checkbox_line = td.div.find_all(recursive=False)[0]
+        self.assertEqual(checkbox_line.name, "p")
+        self.assertIn("usa-icon__line", checkbox_line.get("class", []))
+        self.assertIsNotNone(checkbox_line.find("strong").find("img", alt="Checkbox"))
+
+    def test_arrow_wrapped_cell_still_marks_checkbox_line(self):
+        td = self.render_cell("<p>↑ Trend</p><p>◻ Confirm result</p><p>More detail</p>")
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div), ["p", "p", "p"])
+        checkbox_line = td.find("img", alt="Checkbox").find_parent("p")
+        self.assertIn("usa-icon__line", checkbox_line.get("class", []))
+        self.assertIsNotNone(td.find("img", alt="Report upward trend"))
+
+    def test_each_checkbox_paragraph_is_marked_as_an_icon_line(self):
+        td = self.render_cell("<p>◻ First choice</p><p>◻ Second choice</p>")
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        checkbox_lines = td.find_all("p", class_="usa-icon__line")
+        self.assertEqual(len(checkbox_lines), 2)
+        self.assertTrue(
+            all(line.find("img", alt="Checkbox") for line in checkbox_lines)
+        )
+
+    def test_existing_div_with_sibling_block_is_not_treated_as_generated_wrapper(self):
+        td = self.render_cell("<div><p>◻ Checkbox label</p></div><p>More detail</p>")
+
+        self.assertIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertEqual(self.direct_tag_names(td), ["div", "p"])
+        blocks = td.find_all(recursive=False)
+        self.assertIn("usa-icon__line", blocks[0].get("class", []))
+        self.assertNotIn("usa-icon__line", blocks[1].get("class", []))
 
 
 class TestAddClassIfNotExists(TestCase):
