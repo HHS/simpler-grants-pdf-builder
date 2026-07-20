@@ -605,6 +605,14 @@ class NofoMarkdownConverterATest(TestCase):
         expected = 'Before<a id="_internal"></a>after'
         self.assertEqual(md(html).strip(), expected)
 
+    def test_preservation_marker_does_not_replace_nonempty_link(self):
+        html = (
+            '<p>Before <a data-nofo-preserve-bookmark-target="" '
+            'href="https://example.com">important text</a> after.</p>'
+        )
+        expected = "Before [important text](https://example.com) after."
+        self.assertEqual(md(html).strip(), expected)
+
 
 class NofoMarkdownConverterPTest(TestCase):
     maxDiff = None

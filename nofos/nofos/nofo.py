@@ -2309,7 +2309,7 @@ def preserve_bookmark_targets(soup):
     referenced_ids = {
         link["href"][1:]
         for link in soup.find_all("a", href=True)
-        if link["href"].startswith("#")
+        if link["href"].startswith("#") and link["href"][1:]
     }
 
     empty_links = [
@@ -2317,6 +2317,9 @@ def preserve_bookmark_targets(soup):
     ]
     for link in empty_links:
         original_id = link.get("id", "")
+
+        if not original_id:
+            continue
 
         if original_id in referenced_ids:
             # Mark only targets that are actually referenced. The Markdown

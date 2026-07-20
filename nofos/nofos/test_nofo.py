@@ -5315,6 +5315,12 @@ class PreserveBookmarkTargetsTest(TestCase):
         preserve_bookmark_targets(soup)
         self.assertEqual(str(soup), html)
 
+    def test_blank_fragment_does_not_preserve_blank_id(self):
+        html = '<p><a href="#">Empty fragment</a><a id=""></a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        self.assertEqual(str(soup), html)
+
     def test_parent_already_has_id(self):
         html = '<p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
         soup = BeautifulSoup(html, "html.parser")

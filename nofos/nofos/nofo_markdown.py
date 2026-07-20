@@ -67,9 +67,14 @@ class NofoMarkdownConverter(MarkdownConverter):
         # Referenced, empty bookmark targets need to remain raw HTML so their
         # IDs survive the HTML -> Markdown -> HTML round trip at the exact
         # location where they appeared in the source document.
-        if el.has_attr(PRESERVE_BOOKMARK_TARGET_ATTR):
+        if (
+            el.has_attr(PRESERVE_BOOKMARK_TARGET_ATTR)
+            and el.get("id")
+            and not el.get("href")
+            and not text.strip()
+        ):
             bookmark_target = BeautifulSoup("", "html.parser").new_tag("a")
-            bookmark_target["id"] = el.get("id", "")
+            bookmark_target["id"] = el["id"]
             return str(bookmark_target)
 
         # keep the in-text footnote links as HTML so that the ids aren't lost
