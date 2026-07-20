@@ -27,7 +27,7 @@ from django.utils.html import escape
 from slugify import slugify
 
 from .models import Nofo, Section, Subsection
-from .nofo_markdown import md
+from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -1843,10 +1843,22 @@ def combine_consecutive_links(soup):
             if next_sibling.next_sibling and next_sibling.next_sibling.name == "a":
                 next_sibling = next_sibling.next_sibling
 
+        link_href = link.get("href")
+        next_sibling_is_link = next_sibling and next_sibling.name == "a"
+        next_link_href = next_sibling.get("href") if next_sibling_is_link else None
+        same_nonempty_href = link_href and link_href == next_link_href
+        same_id_only_target = (
+            not link_href
+            and not next_link_href
+            and link.get("id")
+            and next_sibling_is_link
+            and link.get("id") == next_sibling.get("id")
+        )
+
         if (
             next_sibling
             and next_sibling.name == "a"
-            and link.get("href") == next_sibling.get("href")
+            and (same_nonempty_href or same_id_only_target)
         ):
             # If there's whitespace, add a space before merging texts
             separator = " " if whitespace_between else ""
@@ -2284,24 +2296,36 @@ def preserve_bookmark_targets(soup):
     """
     This function mutates the soup!
 
-    Adjusts empty bookmark links in an HTML document to preserve their target IDs while cleaning up the document structure.
+    Preserves referenced empty bookmark targets at their exact source locations and normalizes
+    unreferenced non-Word bookmark targets onto their parent elements.
 
-    This function processes all empty <a> tags in the provided BeautifulSoup object that meet the following criteria:
-    - Have an 'id' attribute (which does not start with an underscore)
-    - Do not contain an 'href' or any text content
+    Referenced empty anchors are marked so the Markdown converter retains them as minimal raw HTML
+    anchors. Unreferenced anchors without an underscore prefix continue through the existing
+    ``nb_bookmark_`` parent-transfer behavior. Unreferenced Word bookmarks whose IDs begin with an
+    underscore are left alone and may be discarded by Markdown conversion.
 
-    For each matching <a> tag:
-    1. The function prepends "nb_bookmark_" to the <a> tag's 'id'.
-    2. It searches for any other <a> tags in the document with an 'href' attribute pointing to the original 'id' and updates their 'href' to the new prefixed 'id'.
-    3. If the parent of the empty <a> tag does not have an 'id', the new prefixed 'id' is copied to the parent element.
-    4. The original empty <a> tag is then removed from the document.
+    Only anchors with an ``id``, no ``href``, and no text are considered.
     """
+    referenced_ids = {
+        link["href"][1:]
+        for link in soup.find_all("a", href=True)
+        if link["href"].startswith("#")
+    }
+
     empty_links = [
         a for a in soup.find_all("a", id=True, href=False) if not a.text.strip()
     ]
     for link in empty_links:
+        original_id = link.get("id", "")
+
+        if original_id in referenced_ids:
+            # Mark only targets that are actually referenced. The Markdown
+            # converter retains these empty anchors as raw HTML and removes
+            # this implementation-only attribute.
+            link[PRESERVE_BOOKMARK_TARGET_ATTR] = ""
+            continue
+
         if not link.get("id", "").startswith("_"):
-            original_id = link.get("id", "")
             new_id = "nb_bookmark_{}".format(original_id)
 
             link["id"] = new_id  # Update the id of the empty <a> tag

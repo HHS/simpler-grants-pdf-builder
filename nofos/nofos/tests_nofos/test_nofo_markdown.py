@@ -596,6 +596,15 @@ class NofoMarkdownConverterATest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_html)
 
+    def test_referenced_bookmark_target_remains_raw_html(self):
+        html = (
+            '<p>Before<a class="source-class" '
+            'data-nofo-preserve-bookmark-target="" id="_internal" '
+            'onclick="alert(1)"></a>after</p>'
+        )
+        expected = 'Before<a id="_internal"></a>after'
+        self.assertEqual(md(html).strip(), expected)
+
 
 class NofoMarkdownConverterPTest(TestCase):
     maxDiff = None
