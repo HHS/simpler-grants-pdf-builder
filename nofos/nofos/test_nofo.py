@@ -58,6 +58,7 @@ from .nofo import (
     preserve_bookmark_targets,
     preserve_heading_links,
     preserve_table_heading_links,
+    process_nofo_html,
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
     replace_chars,
@@ -983,6 +984,38 @@ class CreateNOFOTests(TestCase):
         self.assertEqual(len(nofo.sections.all()), 1)
         self.assertEqual(nofo.sections.first().html_class, "")
         self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
+
+    def test_import_preserves_referenced_bookmark_targets(self):
+        html = """
+            <h2>Step 1: Review the Opportunity</h2>
+            <h3>Program description</h3>
+            <p>
+              Adjacent targets:
+              <a id="_unreferenced_adjacent"></a><a id="_referenced_adjacent"></a>
+            </p>
+            <p>
+              Standalone target: <a id="_referenced_standalone"></a> remains here.
+            </p>
+            <p>
+              See <a href="#_referenced_adjacent">adjacent</a> and
+              <a href="#_referenced_standalone">standalone</a>.
+            </p>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        soup, _ = process_nofo_html(soup, top_heading_level="h2")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"),
+            top_heading_level="h2",
+        )
+
+        nofo = create_nofo("Bookmark targets", sections, opdiv="Test OpDiv")
+        add_headings_to_document(nofo)
+
+        self.assertEqual(find_broken_links(nofo), [])
+        body = nofo.sections.first().subsections.first().body
+        self.assertIn('<a id="_referenced_adjacent"></a>', body)
+        self.assertIn('<a id="_referenced_standalone"></a>', body)
+        self.assertNotIn("data-nofo-preserve-bookmark-target", body)
 
     def test_create_nofo_success_duplicate_nofos(self):
         """
@@ -4379,11 +4412,11 @@ class CombineLinksTestCase(TestCase):
         combine_consecutive_links(soup)
         self.assertEqual(str(soup), '<p>See <a id="t.123">First link</a></p>')
 
-    def test_second_unmatched_link_is_dropped(self):
+    def test_distinct_id_only_links_are_not_merged(self):
         html = '<p>See <a id="t.111"></a><a id="t.999"></a></p>'
         soup = BeautifulSoup(html, "html.parser")
         combine_consecutive_links(soup)
-        self.assertEqual(str(soup), '<p>See <a id="t.111"></a></p>')
+        self.assertEqual(str(soup), html)
 
     def test_consecutive_links_wrapped_in_spans_merged(self):
         html = '<p>See <span><a href="#h.ggohvukufhrn">30% cost-sharing</a></span><a href="#h.ggohvukufhrn"> </a><span><a class="c6" href="#h.ggohvukufhrn">requirement</a></span></p>'
@@ -5251,7 +5284,7 @@ class PreserveBookmarkTargetsTest(TestCase):
         html = '<p>Some text and a <a id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_targets(soup)
-        expected = '<p id="nb_bookmark_bookmark1">Some text and a  link.</p><a href="#nb_bookmark_bookmark1">Reference link</a>'
+        expected = '<p>Some text and a <a data-nofo-preserve-bookmark-target="" id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
         self.assertEqual(str(soup), expected)
 
     def test_ignore_anchor_with_underscore_prefix(self):
@@ -5261,6 +5294,26 @@ class PreserveBookmarkTargetsTest(TestCase):
         # No changes expected since the id starts with an underscore
         expected = '<p>Paragraph with <a id="_internal"></a> internal bookmark.</p>'
         self.assertEqual(str(soup), expected)
+
+    def test_referenced_underscore_anchor_is_marked_for_markdown_preservation(self):
+        html = (
+            '<p>Target <a id="_internal"></a> here.</p>'
+            '<p>See <a href="#_internal">the target</a>.</p>'
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = (
+            '<p>Target <a data-nofo-preserve-bookmark-target="" '
+            'id="_internal"></a> here.</p>'
+            '<p>See <a href="#_internal">the target</a>.</p>'
+        )
+        self.assertEqual(str(soup), expected)
+
+    def test_unreferenced_underscore_anchor_is_not_marked(self):
+        html = '<p>Target <a id="_internal"></a> here.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        self.assertEqual(str(soup), html)
 
     def test_parent_already_has_id(self):
         html = '<p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
@@ -5274,8 +5327,8 @@ class PreserveBookmarkTargetsTest(TestCase):
         html = '<p>Text with a <a href="#bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_targets(soup)
-        # Expect that the href changes as does the original id, but the id of the parent p element does not change
-        expected = '<p>Text with a <a href="#nb_bookmark_bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="nb_bookmark_bookmark2"></a> an empty link.</p>'
+        # Referenced targets remain at their exact source location.
+        expected = '<p>Text with a <a href="#bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a data-nofo-preserve-bookmark-target="" id="bookmark2"></a> an empty link.</p>'
         self.assertEqual(str(soup), expected)
 
     def test_multiple_empty_anchors(self):

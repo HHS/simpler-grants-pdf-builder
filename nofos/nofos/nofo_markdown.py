@@ -7,6 +7,8 @@ from markdownify import MarkdownConverter
 # https://github.com/matthewwithanm/python-markdownify/blob/2d654a6b7e822e1547199da855c9d304d162cb27/markdownify/__init__.py#L9
 re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
 
+PRESERVE_BOOKMARK_TARGET_ATTR = "data-nofo-preserve-bookmark-target"
+
 
 def get_width_class(th):
     def _get_num_columns_th(th):
@@ -62,6 +64,14 @@ class NofoMarkdownConverter(MarkdownConverter):
                 del el["class"]
 
     def convert_a(self, el, text, parent_tags):
+        # Referenced, empty bookmark targets need to remain raw HTML so their
+        # IDs survive the HTML -> Markdown -> HTML round trip at the exact
+        # location where they appeared in the source document.
+        if el.has_attr(PRESERVE_BOOKMARK_TARGET_ATTR):
+            bookmark_target = BeautifulSoup("", "html.parser").new_tag("a")
+            bookmark_target["id"] = el.get("id", "")
+            return str(bookmark_target)
+
         # keep the in-text footnote links as HTML so that the ids aren't lost
         if el and el.attrs.get("id", "").startswith(("footnote", "endnote")):
             self._remove_classes_recursive(el)
