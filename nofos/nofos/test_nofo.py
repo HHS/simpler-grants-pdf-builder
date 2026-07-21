@@ -3679,8 +3679,26 @@ class HTMLSuggestDeadlineTests(TestCase):
 class HTMLSuggestThemeTests(TestCase):
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
-        nofo_theme = "portrait-hrsa-blue"
+        nofo_theme = "portrait-hrsa-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_embedded_hrsa_returns_hrsa_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("HHS-2027-HRSA-ABC-001"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_nofo_number_hrsa_takes_precedence_over_rfa(self):
+        self.assertEqual(
+            suggest_nofo_theme("HRSA-RFA-24-019"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_nofo_number_hrsa_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("NOTHRSA-24-019"),
+            "portrait-nih-white",
+        )
 
     def test_suggest_nofo_number_nih_returns_nih_theme(self):
         nofo_number = "NIH-25-001"
@@ -3758,6 +3776,36 @@ class HTMLSuggestThemeTests(TestCase):
                 "CDC-RFA-DP-25-001", opdiv="National Institutes of Health (NIH)"
             ),
             "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_hrsa_full_name_returns_hrsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "UNKNOWN-001",
+                opdiv="Health Resources and Services Administration",
+            ),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_opdiv_hrsa_abbreviation_returns_hrsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("UNKNOWN-001", opdiv="HRSA"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_opdiv_nih_takes_precedence_over_hrsa(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "HRSA-24-019",
+                opdiv="National Institutes of Health (NIH), not HRSA",
+            ),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_containing_hrsa_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv="CHRSAlliance"),
+            "portrait-cdc-blue",
         )
 
     def test_suggest_no_opdiv_par_number_falls_to_nih_theme(self):
@@ -4088,7 +4136,7 @@ class SuggestNofoFieldsTests(TestCase):
             self.nofo.keywords,
             "cowpolk, wild west, economic development, training, cattle ranching",
         )
-        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
@@ -4118,7 +4166,7 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.keywords, "")
 
         # still get set
-        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):

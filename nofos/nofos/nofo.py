@@ -1556,6 +1556,11 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-nih-white"
 
+    if "health resources and services administration" in opdiv_lower or re.search(
+        r"\bhrsa\b", opdiv_lower
+    ):
+        return "portrait-hrsa-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
@@ -1571,12 +1576,12 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     if "ihs-" in nofo_number.lower():
         return "portrait-ihs-white"
 
+    if re.search(r"(?:^|-)hrsa-", nofo_number.lower()):
+        return "portrait-hrsa-white"
+
     # NOFO numbers with "RFA" are also CDC, but do this check last
     if "rfa-" in nofo_number.lower():
         return "portrait-cdc-blue"
-
-    if "hrsa-" in nofo_number.lower():
-        return "portrait-hrsa-blue"
 
     return "portrait-nih-white"
 
