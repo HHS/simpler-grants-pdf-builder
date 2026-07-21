@@ -177,8 +177,8 @@ def wrap_td_contents_in_div(td):
     td.append(new_div)
 
 
-def add_multi_block_checkbox_classes(td):
-    """Keep the checkbox line separate from later block content in a table cell."""
+def add_checkbox_layout_classes(td):
+    """Align checkbox lines while preserving later block content in a table cell."""
     direct_tag_children = [child for child in td.children if isinstance(child, Tag)]
     content_container = (
         direct_tag_children[0]
@@ -191,9 +191,6 @@ def add_multi_block_checkbox_classes(td):
         if isinstance(child, Tag) and child.name in BLOCK_LEVEL_TAG_NAMES
     ]
 
-    if len(block_children) <= 1:
-        return
-
     checkbox_lines = [
         child
         for child in block_children
@@ -202,12 +199,17 @@ def add_multi_block_checkbox_classes(td):
     if not checkbox_lines:
         return
 
-    _add_class_if_not_exists_to_tag(
-        element=td,
-        classname="usa-icon__td--multi-block",
-        tag_name="td",
-    )
+    is_multi_block = len(block_children) > 1
+    if is_multi_block:
+        _add_class_if_not_exists_to_tag(
+            element=td,
+            classname="usa-icon__td--multi-block",
+            tag_name="td",
+        )
+
     for checkbox_line in checkbox_lines:
+        if not is_multi_block and checkbox_line.name != "p":
+            continue
         _add_class_if_not_exists_to_tag(
             element=checkbox_line,
             classname="usa-icon__line",
@@ -299,7 +301,7 @@ def replace_unicode_with_icon(html_string):
                             tag_name="td",
                         )
 
-                    add_multi_block_checkbox_classes(parent_td)
+                    add_checkbox_layout_classes(parent_td)
                     wrap_text_in_span(parent_td)
                     wrap_td_contents_in_div(parent_td)
 

@@ -344,7 +344,7 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
 .section--content
   table
   tr
-  td.usa-icon__td--multi-block
+  td.usa-icon__td
   > div
   > .usa-icon__line {
   display: flex;
