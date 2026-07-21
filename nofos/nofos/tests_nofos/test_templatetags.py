@@ -64,6 +64,26 @@ class ReplaceUnicodeWithIconTests(TestCase):
         self.assertEqual(self.direct_tag_names(td.div), ["img", "a"])
         self.assertIsNone(td.find(class_="usa-icon__line"))
 
+    def test_linked_checkbox_paragraph_gets_hanging_alignment(self):
+        td = self.render_cell(
+            '<p>◻ <a href="https://example.com">Long linked label</a></p>'
+        )
+
+        self.assertIn("usa-icon__td", td.get("class", []))
+        self.assertIn("usa-icon__td--link", td.get("class", []))
+        self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertIn("usa-icon__line", td.div.p.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div.p), ["img", "a"])
+        self.assertEqual(td.div.p.a["href"], "https://example.com")
+
+    def test_single_checkbox_list_keeps_normal_list_layout(self):
+        td = self.render_cell("<ul><li>◻ Item one</li><li>Item two</li></ul>")
+
+        self.assertIn("usa-icon__td", td.get("class", []))
+        self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
+        self.assertNotIn("usa-icon__line", td.div.ul.get("class", []))
+        self.assertEqual(self.direct_tag_names(td.div.ul), ["li", "li"])
+
     def test_two_paragraph_checkbox_cell_marks_first_paragraph_as_icon_line(self):
         td = self.render_cell("<p>◻ Checkbox label</p><p>More detail</p>")
 
