@@ -7,35 +7,22 @@
 
 
 {% block content %}
-	{% if opdiv_blank_error %}
-		<h1 class="font-heading-xl margin-y-0">We couldn’t import this NOFO</h1>
-		<p>The <strong>‘Opdiv:’</strong> field on page 1 of the Word document is blank. NOFO Builder needs this field filled in before it can import the document.</p>
-		<p>Steps to fix:</p>
-		<ol class="usa-list">
-			<li>Open the Word document.</li>
-			<li>Add a value after ‘Opdiv:’ — this is the agency’s operating division (for example, ‘Administration for Children and Families’ or ‘CDC’).</li>
-			<li>Save the document.</li>
-			<li><a href="{% url 'index' %}">Import it again.</a></li>
-		</ol>
-		<p><strong>Still need help?</strong> Request assistance with your NOFO’s template from your agency’s grants policy office or submit a request using the <a href="https://forms.office.com/pages/responsepage.aspx?id=MQ4fl9YAQk644EezQrxEVYC_OcE8wOtCti0qyoocsCpUOVFCQkpaR043SVo4TkpGOFNEVkNOR0o1SyQlQCN0PWcu&route=shorturl" target="_blank" rel="noopener noreferrer">NOFO Builder Feedback Form</a>.</p>
-	{% else %}
-		<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} Error</h1>
-		{% if error_message %}
-			{% if '<p>' in error_message %}
-				{{ error_message | safe_markdown }}
-			{% else %}
-				<p><strong>{{ error_message }}</strong></p>
-			{% endif %}
-		{% elif error_message_html %}
-			{{ error_message_html | safe_markdown }}
+	<h1 class="font-heading-xl margin-y-0">{% if status %}{{ status }}{% else %}400{% endif %} Error</h1>
+	{% if error_message %}
+		{% if '<p>' in error_message %}
+			{{ error_message | safe_markdown }}
 		{% else %}
-			<p><strong>{% if status %}{{ status }}{% else %}400{% endif %} error.</strong></p>
+			<p><strong>{{ error_message }}</strong></p>
 		{% endif %}
-	  <p>If you don’t know what this means, let Paul (<a href="mailto:p.craig@bloomworks.digital">p.craig@bloomworks.digital</a>) know what happened and he will get to the bottom of it.</p>
-		<p>Maybe go back to:</p>
-		<ul class="usa-list">
-			<li><a href="{% url 'index' %}">homepage</a></li>
-			<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
-		</ul>
+	{% elif error_message_html %}
+		{{ error_message_html | safe_markdown }}
+	{% else %}
+		<p><strong>{% if status %}{{ status }}{% else %}400{% endif %} error.</strong></p>
 	{% endif %}
+	{% include 'includes/error_support.html' %}
+	<p>Maybe go back to:</p>
+	<ul class="usa-list">
+		<li><a href="{% url 'index' %}">homepage</a></li>
+		<li><a href="{% url 'nofos:nofo_index' %}">all nofos</a></li>
+	</ul>
 {% endblock %}
