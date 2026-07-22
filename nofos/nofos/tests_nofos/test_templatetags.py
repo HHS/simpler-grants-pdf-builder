@@ -368,13 +368,22 @@ class AddClassToNofoTitleTest(TestCase):
         result = add_class_to_nofo_title(title)
         self.assertEqual(result, "nofo--cover-page--title--h1--very-very-smol")
 
-    def test_edge_case_exact_120(self):
-        title = "x" * 120
+    def test_edge_case_exact_110(self):
+        title = "x" * 110
         result = add_class_to_nofo_title(title)
         self.assertEqual(result, "nofo--cover-page--title--h1--normal")
 
-    def test_edge_case_just_over_120(self):
-        title = "x" * 121
+    def test_edge_case_just_over_110(self):
+        title = "x" * 111
+        result = add_class_to_nofo_title(title)
+        self.assertEqual(result, "nofo--cover-page--title--h1--smaller")
+
+    def test_long_acf_title_gets_smaller_size(self):
+        title = (
+            "Family Violence Prevention and Services Culturally Specific Domestic "
+            "Violence and Sexual Assault Discretionary Grants"
+        )
+        self.assertEqual(len(title), 117)
         result = add_class_to_nofo_title(title)
         self.assertEqual(result, "nofo--cover-page--title--h1--smaller")
 
