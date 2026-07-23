@@ -302,6 +302,15 @@ section.before-you-begin--era {
   font-size: 8.5pt;
 }
 
+.section--content--right-col.section--content--right-col--dense
+  .callout-box--questions
+  .callout-box--contents
+  p,
+.section--content--right-col.section--content--right-col--dense
+  .callout-box--contents {
+  font-size: 8pt;
+}
+
 .section--content--right-col .callout-box--contents p {
   padding-right: 5px;
 }

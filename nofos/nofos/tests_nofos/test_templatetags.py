@@ -6,6 +6,9 @@ from django.utils.safestring import SafeString
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
+from nofos.templatetags.get_floating_callout_boxes_from_section import (
+    get_floating_callout_size_classes,
+)
 from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
 from nofos.templatetags.safe_br import safe_br
 from nofos.templatetags.utils import (
@@ -35,6 +38,56 @@ from nofos.templatetags.utils import (
 class MockSection:
     def __init__(self, name):
         self.name = name
+
+
+class GetFloatingCalloutSizeClassesTests(TestCase):
+    @staticmethod
+    def callouts_with_word_count(word_count):
+        return [Subsection(body="word " * word_count)]
+
+    @staticmethod
+    def callouts_with_word_counts(*word_counts):
+        return [Subsection(body="word " * count) for count in word_counts]
+
+    def test_default_size_through_79_words(self):
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(79)),
+            "",
+        )
+
+    def test_smaller_size_from_80_through_99_words(self):
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(80)),
+            "section--content--right-col--smaller",
+        )
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(99)),
+            "section--content--right-col--smaller",
+        )
+
+    def test_tiny_size_from_100_through_149_words(self):
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(100)),
+            "section--content--right-col--tiny",
+        )
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(149)),
+            "section--content--right-col--tiny",
+        )
+
+    def test_dense_size_at_150_words(self):
+        self.assertEqual(
+            get_floating_callout_size_classes(self.callouts_with_word_count(150)),
+            "section--content--right-col--tiny section--content--right-col--dense",
+        )
+
+    def test_dense_size_combines_all_floating_callouts(self):
+        self.assertEqual(
+            get_floating_callout_size_classes(
+                self.callouts_with_word_counts(6, 23, 124)
+            ),
+            "section--content--right-col--tiny section--content--right-col--dense",
+        )
 
 
 class ReplaceUnicodeWithIconTests(TestCase):
