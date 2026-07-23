@@ -1,5 +1,10 @@
 from django.shortcuts import render
 
+DOCUMENT_STRUCTURE_RECOVERY_STEPS = (
+    "Review the document’s required metadata and heading structure.",
+    "Save the document, then select it again.",
+)
+
 
 def render_blocking_import_error(
     request,

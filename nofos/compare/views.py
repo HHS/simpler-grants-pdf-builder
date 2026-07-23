@@ -3,6 +3,7 @@ import json
 import uuid
 
 from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     render_blocking_import_error,
     render_import_server_error,
 )
@@ -189,10 +190,7 @@ class CompareImportView(LoginRequiredMixin, BaseNofoImportView):
                     "NOFO Builder could not create a valid comparison document from the uploaded document."
                 ),
                 error_code="COMPARE-IMPORT-INVALID",
-                recovery_steps=[
-                    "Review the document’s required metadata and heading structure.",
-                    "Save the document, then select it again.",
-                ],
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
                 retry_url=reverse("compare:compare_import"),
             )
         except Exception as e:
@@ -491,10 +489,7 @@ class CompareImportToDocView(
                     "NOFO Builder could not create a valid comparison from the uploaded document."
                 ),
                 error_code="COMPARE-TO-DOC-INVALID",
-                recovery_steps=[
-                    "Review the document’s required metadata and heading structure.",
-                    "Save the document, then select it again.",
-                ],
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
                 retry_url=self.get_retry_url(),
             )
         except Exception as e:
