@@ -3,6 +3,8 @@ import re
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
+from .import_transforms import APPLICATION_CHECKLIST_CHILD_CLASS
+
 # this is copied from __init__.py in markdownify
 # https://github.com/matthewwithanm/python-markdownify/blob/2d654a6b7e822e1547199da855c9d304d162cb27/markdownify/__init__.py#L9
 re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
@@ -175,6 +177,13 @@ class NofoMarkdownConverter(MarkdownConverter):
         return "%s\n" % text
 
     def convert_p(self, el, text, parent_tags):
+        if (
+            el.parent
+            and el.parent.name in ("td", "th")
+            and APPLICATION_CHECKLIST_CHILD_CLASS in el.get("class", [])
+        ):
+            return str(el).replace("*", "&ast;")
+
         # if we are in a table cell, and that table cell contains multiple children, return the string
         if el.parent.name == "td" or el.parent.name == "th":
             if len(list(el.parent.children)) > 1:

@@ -1,5 +1,7 @@
 import os
 
+import markdown
+from bs4 import BeautifulSoup
 from constance.test import override_config
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -8,7 +10,9 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.nofo import parse_uploaded_file_as_html_string
+from nofos.nofo import parse_uploaded_file_as_html_string, replace_chars
+from nofos.nofo_markdown import md
+from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
 
 
 class TestParseNofoFile(TestCase):
@@ -27,6 +31,14 @@ class TestParseNofoFile(TestCase):
             "fixtures",
             "docx",
             "lists--mammoth-warning.docx",
+        )
+
+        self.application_checklist_indent_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "application-checklist-indent.docx",
         )
 
     def test_no_file_raises_validation_error(self):
@@ -79,6 +91,37 @@ class TestParseNofoFile(TestCase):
         result = parse_uploaded_file_as_html_string(docx_file)
         self.assertIsInstance(result, str)
         self.assertIn("<h2>Step 1: Review the Opportunity</h2>", result)
+
+    def test_indented_application_checklist_rows_survive_render_pipeline(self):
+        with open(self.application_checklist_indent_fixture_path, "rb") as f:
+            docx_data = f.read()
+
+        docx_file = SimpleUploadedFile(
+            "application-checklist-indent.docx",
+            docx_data,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        with override_config(WORD_IMPORT_STRICT_MODE=True):
+            imported_html = replace_chars(parse_uploaded_file_as_html_string(docx_file))
+        imported_soup = BeautifulSoup(imported_html, "html.parser")
+        imported_children = imported_soup.select("td p.application-list--left-indent")
+
+        self.assertEqual(
+            [paragraph.get_text(strip=True) for paragraph in imported_children],
+            ["◻ Report on overlap", "◻ Indirect cost agreement"],
+        )
+
+        markdown_body = md(imported_html)
+        rendered_html = markdown.markdown(markdown_body, extensions=["extra"])
+        rendered_with_icons = replace_unicode_with_icon(rendered_html)
+        rendered_soup = BeautifulSoup(rendered_with_icons, "html.parser")
+        rendered_children = rendered_soup.select("td p.application-list--left-indent")
+
+        self.assertEqual(len(rendered_children), 2)
+        for paragraph in rendered_children:
+            self.assertIn("usa-icon__line", paragraph.get("class", []))
+            self.assertIsNotNone(paragraph.find("img", alt="Checkbox"))
 
     def test_docx_file_with_strict_mode_and_no_warnings(self):
         """
