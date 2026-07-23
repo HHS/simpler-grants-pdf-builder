@@ -2,6 +2,7 @@ import json
 from typing import Dict
 
 from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     render_blocking_import_error,
     render_import_server_error,
 )
@@ -482,10 +483,7 @@ class ComposerImportView(ComposerAdminRequiredMixin, BaseNofoImportView):
                     "NOFO Builder could not create a valid content guide from the uploaded document."
                 ),
                 error_code="COMPOSER-IMPORT-INVALID",
-                recovery_steps=[
-                    "Review the document’s required metadata and heading structure.",
-                    "Save the document, then select it again.",
-                ],
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
                 retry_url=reverse("composer:composer_import"),
             )
         except Exception as e:

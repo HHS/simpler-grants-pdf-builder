@@ -5,6 +5,7 @@ from datetime import datetime
 
 import docraptor
 from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     render_blocking_import_error,
     render_import_server_error,
 )
@@ -527,8 +528,7 @@ class BaseNofoImportView(View):
                     retry_url=self.get_retry_url(),
                 )
 
-            # Retain the message check for older callers that do not set a code.
-            if "strict_formatting" in error_codes or "Mammoth" in error_message:
+            if "strict_formatting" in error_codes:
                 log_exception(
                     request,
                     e,
@@ -671,10 +671,7 @@ class NofosImportNewView(BaseNofoImportView):
                     "NOFO Builder could not create a valid NOFO from the uploaded document."
                 ),
                 error_code="IMPORT-CREATE-INVALID",
-                recovery_steps=[
-                    "Review the document’s required metadata and heading structure.",
-                    "Save the document, then select it again.",
-                ],
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
                 retry_url=self.get_retry_url(),
             )
         except Exception as e:
@@ -797,10 +794,7 @@ class NofosImportOverwriteView(
                     "NOFO Builder could not replace this NOFO with the uploaded document."
                 ),
                 error_code="REIMPORT-DOCUMENT-INVALID",
-                recovery_steps=[
-                    "Review the document’s required metadata and heading structure.",
-                    "Save the document, then select it again.",
-                ],
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
                 retry_url=reverse(
                     "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
                 ),
