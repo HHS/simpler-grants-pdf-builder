@@ -653,6 +653,29 @@ class NofoMarkdownConverterPTest(TestCase):
         md_body = md(html)
         self.assertEqual(md_body.strip(), expected_markdown.strip())
 
+    def test_application_checklist_child_class_is_preserved_in_td(self):
+        html = (
+            "<table><tr><th><p>Form</p></th></tr><tr><td>"
+            '<p class="application-list--left-indent">◻ Child form</p>'
+            "</td></tr></table>"
+        )
+        expected_markdown = (
+            "| Form |\n| --- |\n"
+            '| <p class="application-list--left-indent">◻ Child form</p> |'
+        )
+
+        self.assertEqual(md(html).strip(), expected_markdown)
+
+    def test_other_paragraph_classes_are_not_preserved_in_td(self):
+        html = (
+            "<table><tr><th><p>Form</p></th></tr><tr><td>"
+            '<p class="source-only">◻ Child form</p>'
+            "</td></tr></table>"
+        )
+        expected_markdown = "| Form |\n| --- |\n| ◻ Child form |"
+
+        self.assertEqual(md(html).strip(), expected_markdown)
+
     def test_two_ps_in_th(self):
         html = "<table><tr><th><p>Header 1</p><p>Header 2</p></th></tr><tr><td><p>Content</p></td></tr></table>"
         expected_markdown = "| <p>Header 1</p><p>Header 2</p> |\n| --- |\n| Content |"
