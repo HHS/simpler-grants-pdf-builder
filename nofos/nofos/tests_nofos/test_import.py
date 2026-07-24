@@ -404,7 +404,10 @@ class TestNofoImportMixedHeadingHierarchy(TestCase):
         self.client.login(email="heading-test@example.com", password="testpass123")
         self.import_url = reverse("nofos:nofo_import")
 
-    def test_import_blocks_h2_sections_before_late_h1_appendix_on_shared_page(self):
+    @patch("nofos.views.log_exception")
+    def test_import_blocks_h2_sections_before_late_h1_appendix_on_shared_page(
+        self, log_error
+    ):
         html_content = """
         <p>OpDiv: Centers for Medicare &amp; Medicaid Services (CMS)</p>
         <p>Opportunity name: Mixed heading fixture</p>
@@ -437,6 +440,13 @@ class TestNofoImportMixedHeadingHierarchy(TestCase):
         self.assertIn(f'href="{self.import_url}"', content)
         self.assertIn("simplerNOFOs@agile6.com", content)
         self.assertEqual(Nofo.objects.count(), 0)
+        log_error.assert_called_once()
+        self.assertEqual(log_error.call_args.kwargs["level"], "warning")
+        self.assertEqual(
+            log_error.call_args.kwargs["context"],
+            "BaseNofoImportView:ValidationError:IMPORT-AMBIGUOUS-HEADINGS",
+        )
+        self.assertEqual(log_error.call_args.kwargs["status"], 422)
 
     def test_table_h1_does_not_hide_h2_sections(self):
         html_content = """

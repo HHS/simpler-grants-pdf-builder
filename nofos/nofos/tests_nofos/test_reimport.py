@@ -469,3 +469,53 @@ class NofosImportOverwriteViewTests(TestCase):
             p_after_h1.text.strip(),
             "The document you uploaded has a different opportunity number than the current NOFO.",
         )
+
+    def test_confirm_reimport_ignores_h1_inside_table_when_h2_defines_sections(self):
+        html_content = """
+        <p>Opportunity name: Table heading fixture</p>
+        <p>Opdiv: ACF</p>
+        <p>Opportunity number: NOFO-ACF-002</p>
+        <h2>Step 1: Review the Opportunity</h2>
+        <p>First section content.</p>
+        <table>
+          <tr><td><h1>Table label</h1></td></tr>
+        </table>
+        <h2>Step 2: Get Ready to Apply</h2>
+        <p>Second section content.</p>
+        """
+        test_file = SimpleUploadedFile(
+            "table-heading.html",
+            html_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(
+            self.import_url,
+            {
+                "nofo-import": test_file,
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": self.nofo.pk}),
+            fetch_redirect_response=False,
+        )
+
+        response = self.client.post(
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk}),
+            fetch_redirect_response=False,
+        )
+        self.nofo.refresh_from_db()
+        self.assertEqual(
+            list(self.nofo.sections.values_list("name", flat=True)),
+            [
+                "Step 1: Review the Opportunity",
+                "Step 2: Get Ready to Apply",
+            ],
+        )

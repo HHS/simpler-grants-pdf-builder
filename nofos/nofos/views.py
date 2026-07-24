@@ -554,6 +554,13 @@ class BaseNofoImportView(View):
                 )
 
             if "ambiguous_heading_hierarchy" in error_codes:
+                log_exception(
+                    request,
+                    e,
+                    level="warning",
+                    context="BaseNofoImportView:ValidationError:IMPORT-AMBIGUOUS-HEADINGS",
+                    status=422,
+                )
                 return render_blocking_import_error(
                     request,
                     title="We couldn’t safely determine the document structure",
@@ -861,7 +868,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
 
         soup = BeautifulSoup(reimport_data["soup"], "html.parser")
-        top_heading_level = "h1" if soup.find("h1") else "h2"
+        top_heading_level = resolve_section_heading_level(soup)
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
             soup, top_heading_level
