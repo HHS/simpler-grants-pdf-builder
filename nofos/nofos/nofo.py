@@ -1629,7 +1629,19 @@ def sanitize_imported_text(value: str) -> str:
     return value
 
 
-def _suggest_by_startswith_string(soup, startswith_string):
+METADATA_LABEL_PATTERN = re.compile(r"^\s*[^:\n]{1,80}:\s*\S*", re.IGNORECASE)
+INVALID_OPDIV_ACRONYMS = {"N/A", "NA", "NONE", "TBD", "UNKNOWN"}
+
+
+def _looks_like_metadata_label(value):
+    return bool(METADATA_LABEL_PATTERN.match(sanitize_imported_text(value)))
+
+
+def _is_invalid_opdiv_placeholder(value):
+    return sanitize_imported_text(value).upper() in INVALID_OPDIV_ACRONYMS
+
+
+def _suggest_by_startswith_string(soup, startswith_string, use_next_paragraph=False):
     suggestion = ""
     regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
     element = soup.find(string=regex)
@@ -1643,6 +1655,31 @@ def _suggest_by_startswith_string(soup, startswith_string):
 
     if element:
         suggestion = regex.sub("", element.text)
+
+    if (
+        use_next_paragraph
+        and not sanitize_imported_text(suggestion)
+        and getattr(element, "name", None) == "p"
+    ):
+        next_element = element.find_next_sibling()
+        if next_element and next_element.name == "p":
+            candidate = sanitize_imported_text(next_element.get_text(" "))
+            following_element = next_element.find_next_sibling()
+            following_text = (
+                sanitize_imported_text(following_element.get_text(" "))
+                if following_element and following_element.name == "p"
+                else ""
+            )
+            # Metadata surrounding the value establishes its role. A value at a
+            # heading or document boundary is ambiguous, so leave it for the
+            # actionable recovery flow rather than silently guessing.
+            if (
+                candidate
+                and not _is_invalid_opdiv_placeholder(candidate)
+                and not _looks_like_metadata_label(candidate)
+                and _looks_like_metadata_label(following_text)
+            ):
+                suggestion = candidate
 
     return sanitize_imported_text(suggestion)
 
@@ -1716,7 +1753,7 @@ def suggest_nofo_title(soup):
 
 
 def suggest_nofo_opdiv(soup):
-    suggestion = _suggest_by_startswith_string(soup, "Opdiv:")
+    suggestion = _suggest_by_startswith_string(soup, "Opdiv:", use_next_paragraph=True)
     return suggestion or ""
 
 

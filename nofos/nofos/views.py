@@ -674,14 +674,18 @@ class NofosImportNewView(BaseNofoImportView):
                     request,
                     title="We couldn’t import this NOFO",
                     summary=(
-                        "The ‘Opdiv:’ field on page 1 of the Word document is blank. "
-                        "NOFO Builder needs this field filled in before it can import the document."
+                        "NOFO Builder couldn’t reliably read a value from the "
+                        "‘Opdiv:’ field on page 1 of the Word document. The value "
+                        "may be missing or separated from the label in a way "
+                        "Builder can’t recognize."
                     ),
                     error_code="IMPORT-OPDIV-BLANK",
                     status=400,
                     recovery_steps=[
                         "Open the Word document.",
-                        "Add the agency’s operating division after ‘Opdiv:’ (for example, ‘Administration for Children and Families’ or ‘CDC’).",
+                        "Put the agency’s operating division on the same line as "
+                        "‘Opdiv:’ (for example, ‘Opdiv: Administration for "
+                        "Children and Families’ or ‘Opdiv: CDC’).",
                         "Save the document, then select it again.",
                     ],
                     retry_url=self.get_retry_url(),
