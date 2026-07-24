@@ -390,3 +390,84 @@ class TestBlockingImportErrorPages(TestCase):
             f'href="{reverse("nofos:nofo_edit", kwargs={"pk": nofo.id})}"',
             content,
         )
+
+
+class TestNofoImportMixedHeadingHierarchy(TestCase):
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="heading-test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client = Client()
+        self.client.login(email="heading-test@example.com", password="testpass123")
+        self.import_url = reverse("nofos:nofo_import")
+
+    def test_import_blocks_h2_sections_before_late_h1_appendix_on_shared_page(self):
+        html_content = """
+        <p>OpDiv: Centers for Medicare &amp; Medicaid Services (CMS)</p>
+        <p>Opportunity name: Mixed heading fixture</p>
+        <p>Opportunity number: CMS-TEST-745</p>
+        <h2>Step 1: Review the Opportunity</h2>
+        <p>Important content that must not be silently dropped.</p>
+        <h2>Step 2: Get Ready to Apply</h2>
+        <h1>Appendix A: Award data</h1>
+        <p>Appendix content.</p>
+        """
+        uploaded_file = SimpleUploadedFile(
+            "mixed-headings.html",
+            html_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(
+            self.import_url,
+            {"nofo-import": uploaded_file},
+        )
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("We couldn’t safely determine the document structure", content)
+        self.assertIn("IMPORT-AMBIGUOUS-HEADINGS", content)
+        self.assertIn("Heading 2 before its first Heading 1", content)
+        self.assertIn("Step 1: Review the Opportunity", content)
+        self.assertIn("Appendix A: Award data", content)
+        self.assertIn("Apply one consistent heading level", content)
+        self.assertIn(f'href="{self.import_url}"', content)
+        self.assertIn("simplerNOFOs@agile6.com", content)
+        self.assertEqual(Nofo.objects.count(), 0)
+
+    def test_table_h1_does_not_hide_h2_sections(self):
+        html_content = """
+        <p>OpDiv: Centers for Medicare &amp; Medicaid Services (CMS)</p>
+        <p>Opportunity name: Table heading fixture</p>
+        <p>Opportunity number: CMS-TEST-TABLE-H1</p>
+        <h2>Step 1: Review the Opportunity</h2>
+        <p>First section content.</p>
+        <table>
+          <tr><td><h1>Table label</h1></td></tr>
+        </table>
+        <h2>Step 2: Get Ready to Apply</h2>
+        <p>Second section content.</p>
+        """
+        uploaded_file = SimpleUploadedFile(
+            "table-heading.html",
+            html_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(
+            self.import_url,
+            {"nofo-import": uploaded_file},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        self.assertEqual(
+            list(nofo.sections.values_list("name", flat=True)),
+            [
+                "Step 1: Review the Opportunity",
+                "Step 2: Get Ready to Apply",
+            ],
+        )
