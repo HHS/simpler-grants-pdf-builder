@@ -4,6 +4,11 @@ import uuid
 from datetime import datetime
 
 import docraptor
+from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    render_blocking_import_error,
+    render_import_server_error,
+)
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
@@ -18,7 +23,7 @@ from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -452,6 +457,11 @@ class BaseNofoImportView(View):
         """
         return {}
 
+    def get_retry_url(self):
+        return reverse(
+            self.get_redirect_url_name(), kwargs=self.get_redirect_url_kwargs()
+        )
+
     def get(self, request, *args, **kwargs):
         """
         Default get method: just render a template.
@@ -490,14 +500,56 @@ class BaseNofoImportView(View):
             )
 
         except ValidationError as e:
-            # Render a distinct error page for mammoth style map warnings
+            error_codes = {
+                error.code for error in getattr(e, "error_list", []) if error.code
+            }
             error_message = ",".join(e.messages)
-            if "Mammoth" in error_message:
-                return render(
+
+            if "docx_conversion" in error_codes:
+                log_exception(
                     request,
-                    "400.html",
+                    e,
+                    context="BaseNofoImportView:ValidationError:IMPORT-DOCX-CONVERSION",
                     status=422,
-                    context={"error_message_html": error_message, "status": 422},
+                )
+                return render_blocking_import_error(
+                    request,
+                    title="We couldn’t import this Word document",
+                    summary=(
+                        "NOFO Builder could not read the selected Word document. "
+                        "The document was not imported."
+                    ),
+                    error_code="IMPORT-DOCX-CONVERSION",
+                    status=422,
+                    recovery_steps=[
+                        "Open the document in Word and confirm that it opens normally.",
+                        "Save it as a new .docx file, then select the new file.",
+                    ],
+                    retry_url=self.get_retry_url(),
+                )
+
+            if "strict_formatting" in error_codes:
+                log_exception(
+                    request,
+                    e,
+                    context="BaseNofoImportView:ValidationError:IMPORT-STRICT-FORMATTING",
+                    status=422,
+                )
+                return render_blocking_import_error(
+                    request,
+                    title="We couldn’t import this document",
+                    summary=(
+                        "The Word document contains formatting that NOFO Builder "
+                        "cannot safely process while strict import checks are enabled."
+                    ),
+                    error_code="IMPORT-STRICT-FORMATTING",
+                    status=422,
+                    recovery_steps=[
+                        "Open the document in Word.",
+                        "Ask a NOFO designer or administrator to review its custom formatting and styles.",
+                        "Save the document, then select it again.",
+                    ],
+                    retry_url=self.get_retry_url(),
                 )
 
             # These errors show up as inline validation errors
@@ -510,10 +562,10 @@ class BaseNofoImportView(View):
             log_exception(
                 request,
                 e,
-                context="BaseNofoImportView:Exception",
+                context="BaseNofoImportView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
-            return HttpResponseBadRequest(f"500 error: {str(e)}")
+            return render_import_server_error(request, retry_url=self.get_retry_url())
 
         filename = uploaded_file.name.strip()
 
@@ -580,41 +632,56 @@ class NofosImportNewView(BaseNofoImportView):
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
         except ValidationError as e:
+            opdiv_errors = getattr(e, "error_dict", {}).get("opdiv", [])
+            is_blank_opdiv = any(error.code == "blank" for error in opdiv_errors)
             log_exception(
                 request,
                 e,
-                context="NofosImportNewView:ValidationError",
+                context=(
+                    "NofosImportNewView:ValidationError:IMPORT-OPDIV-BLANK"
+                    if is_blank_opdiv
+                    else "NofosImportNewView:ValidationError:IMPORT-CREATE-INVALID"
+                ),
                 status=400,
             )
 
             # Blank "Opdiv:" field gets a dedicated, actionable error page
-            opdiv_errors = getattr(e, "error_dict", {}).get("opdiv", [])
-            if any(error.code == "blank" for error in opdiv_errors):
-                return render(
+            if is_blank_opdiv:
+                return render_blocking_import_error(
                     request,
-                    "400.html",
+                    title="We couldn’t import this NOFO",
+                    summary=(
+                        "The ‘Opdiv:’ field on page 1 of the Word document is blank. "
+                        "NOFO Builder needs this field filled in before it can import the document."
+                    ),
+                    error_code="IMPORT-OPDIV-BLANK",
                     status=400,
-                    context={"opdiv_blank_error": True, "status": 400},
+                    recovery_steps=[
+                        "Open the Word document.",
+                        "Add the agency’s operating division after ‘Opdiv:’ (for example, ‘Administration for Children and Families’ or ‘CDC’).",
+                        "Save the document, then select it again.",
+                    ],
+                    retry_url=self.get_retry_url(),
                 )
 
-            message = (
-                e.message
-                if hasattr(e, "message")
-                else (
-                    str(e.message_dict) if hasattr(e, "message_dict") else e.messages[0]
-                )
-            )
-            return HttpResponseBadRequest(
-                f"<p><strong>Error creating NOFO:</strong></p> {message}"
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t create this NOFO",
+                summary=(
+                    "NOFO Builder could not create a valid NOFO from the uploaded document."
+                ),
+                error_code="IMPORT-CREATE-INVALID",
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                retry_url=self.get_retry_url(),
             )
         except Exception as e:
             log_exception(
                 request,
                 e,
-                context="NofosImportNewView:Exception",
+                context="NofosImportNewView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
-            return HttpResponseBadRequest(f"Error creating NOFO: {str(e)}")
+            return render_import_server_error(request, retry_url=self.get_retry_url())
 
 
 class NofosImportOverwriteView(
@@ -651,8 +718,15 @@ class NofosImportOverwriteView(
         """
         nofo = self.nofo
         if nofo.status in ["published", "review", "doge", "paused"]:
-            return HttpResponseBadRequest(
-                "{} NOFOs can’t be re-imported.".format(nofo.get_status_display())
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t re-import this NOFO",
+                summary="{} NOFOs can’t be re-imported.".format(
+                    nofo.get_status_display()
+                ),
+                error_code="REIMPORT-STATUS-BLOCKED",
+                retry_url=reverse("nofos:nofo_edit", kwargs={"pk": nofo.id}),
+                retry_label="Return to the NOFO",
             )
 
         if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
@@ -710,20 +784,34 @@ class NofosImportOverwriteView(
             log_exception(
                 request,
                 e,
-                context="NofosImportOverwriteView:ValidationError",
+                context="NofosImportOverwriteView:ValidationError:REIMPORT-DOCUMENT-INVALID",
                 status=400,
             )
-            return HttpResponseBadRequest(
-                f"<p><strong>Error re-importing NOFO:</strong></p> {e.message}"
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t re-import this NOFO",
+                summary=(
+                    "NOFO Builder could not replace this NOFO with the uploaded document."
+                ),
+                error_code="REIMPORT-DOCUMENT-INVALID",
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                retry_url=reverse(
+                    "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
+                ),
             )
         except Exception as e:
             log_exception(
                 request,
                 e,
-                context="NofosImportOverwriteView:Exception",
+                context="NofosImportOverwriteView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
-            return HttpResponseBadRequest(f"Error re-importing NOFO: {str(e)}")
+            return render_import_server_error(
+                request,
+                retry_url=reverse(
+                    "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
+                ),
+            )
 
 
 class NofosConfirmReimportView(GroupAccessObjectMixin, View):

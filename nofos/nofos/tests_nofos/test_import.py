@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import markdown
 from bs4 import BeautifulSoup
@@ -10,6 +11,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
+from nofos.models import Nofo
 from nofos.nofo import parse_uploaded_file_as_html_string, replace_chars
 from nofos.nofo_markdown import md
 from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
@@ -167,6 +169,22 @@ class TestParseNofoFile(TestCase):
                 str(context.exception),
             )
 
+    @patch("nofos.nofo.mammoth.convert_to_html")
+    def test_docx_conversion_error_is_sanitized(self, convert_to_html):
+        convert_to_html.side_effect = RuntimeError("private converter detail")
+        docx_file = SimpleUploadedFile(
+            "broken.docx",
+            b"not important",
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            parse_uploaded_file_as_html_string(docx_file)
+
+        self.assertEqual(context.exception.error_list[0].code, "docx_conversion")
+        self.assertIn("could not read this Word document", str(context.exception))
+        self.assertNotIn("private converter detail", str(context.exception))
+
 
 class TestNofoImportBlankOpdivError(TestCase):
     """
@@ -233,17 +251,20 @@ class TestNofoImportBlankOpdivError(TestCase):
 
         # Steps to fix
         self.assertIn("Open the Word document.", content)
-        self.assertIn("Add a value after ‘Opdiv:’", content)
-        self.assertIn("Save the document.", content)
-        # Step 4 links "Import it again." back to the homepage
-        self.assertIn(f'<a href="{reverse("index")}">Import it again.</a>', content)
+        self.assertIn("Add the agency’s operating division after ‘Opdiv:’", content)
+        self.assertIn("Save the document, then select it again.", content)
+        # The retry action returns directly to the import form.
+        self.assertIn(f'href="{reverse("nofos:nofo_import")}"', content)
+        self.assertIn("Try the import again", content)
 
-        # Escalation paragraph — feedback form link opens in a new tab
-        self.assertIn("Still need help?", content)
+        # Escalation paragraph uses the shared support channels.
+        self.assertIn("Need help resolving this error?", content)
         self.assertIn("NOFO Builder Feedback Form", content)
         self.assertIn("https://forms.office.com/pages/responsepage.aspx", content)
+        self.assertIn("simplerNOFOs@agile6.com", content)
         self.assertIn('target="_blank"', content)
         self.assertIn('rel="noopener noreferrer"', content)
+        self.assertIn("IMPORT-OPDIV-BLANK", content)
 
         # No "Maybe go back to:" links/text (that's the generic 400 page's copy)
         self.assertNotIn("Maybe go back to:", content)
@@ -271,7 +292,7 @@ class TestNofoImportBlankOpdivError(TestCase):
         """
         Real .docx upload (via Mammoth conversion) where the "OpDiv:" label is
         present on the page but has no value after it — the real-world scenario
-        from the original bug report.
+        from the originally reported bug.
         """
         response = self.client.post(
             reverse("nofos:nofo_import"),
@@ -283,3 +304,132 @@ class TestNofoImportBlankOpdivError(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self._assert_actionable_opdiv_error_page(response.content.decode("utf-8"))
+
+
+class TestBlockingImportErrorPages(TestCase):
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="errors@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="errors@example.com", password="testpass123")
+        self.import_url = reverse("nofos:nofo_import")
+        self.docx_warning_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "lists--mammoth-warning.docx",
+        )
+
+    def test_strict_mode_warning_is_actionable_and_hides_converter_details(self):
+        with open(self.docx_warning_fixture_path, "rb") as f:
+            docx_file = SimpleUploadedFile(
+                "lists--mammoth-warning.docx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+        with override_config(WORD_IMPORT_STRICT_MODE=True):
+            response = self.client.post(self.import_url, {"nofo-import": docx_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("We couldn’t import this document", content)
+        self.assertIn("IMPORT-STRICT-FORMATTING", content)
+        self.assertIn(f'href="{self.import_url}"', content)
+        self.assertIn("simplerNOFOs@agile6.com", content)
+        self.assertNotIn("Mammoth", content)
+        self.assertNotIn("Style ID", content)
+        self.assertNotIn("Paulsundocumentedstyle", content)
+
+    @patch("nofos.views.log_exception")
+    @patch("nofos.nofo.mammoth.convert_to_html")
+    def test_docx_conversion_failure_uses_logged_safe_page(
+        self, convert_to_html, log_error
+    ):
+        convert_to_html.side_effect = RuntimeError("private converter detail")
+        docx_file = SimpleUploadedFile(
+            "broken.docx",
+            b"not important",
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": docx_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-DOCX-CONVERSION", content)
+        self.assertIn(f'href="{self.import_url}"', content)
+        self.assertNotIn("private converter detail", content)
+        log_error.assert_called_once()
+        self.assertEqual(
+            log_error.call_args.kwargs["context"],
+            "BaseNofoImportView:ValidationError:IMPORT-DOCX-CONVERSION",
+        )
+
+    @patch("nofos.views.log_exception")
+    def test_strict_formatting_code_is_logged(self, log_error):
+        with open(self.docx_warning_fixture_path, "rb") as f:
+            docx_file = SimpleUploadedFile(
+                "lists--mammoth-warning.docx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+        with override_config(WORD_IMPORT_STRICT_MODE=True):
+            response = self.client.post(self.import_url, {"nofo-import": docx_file})
+
+        self.assertEqual(response.status_code, 422)
+        log_error.assert_called_once()
+        self.assertEqual(
+            log_error.call_args.kwargs["context"],
+            "BaseNofoImportView:ValidationError:IMPORT-STRICT-FORMATTING",
+        )
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_unexpected_import_error_returns_sanitized_500(self, parse_file):
+        parse_file.side_effect = RuntimeError("private implementation detail")
+        uploaded_file = SimpleUploadedFile(
+            "test.html", b"<h1>Test</h1>", content_type="text/html"
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("We couldn’t finish importing this document", content)
+        self.assertIn("IMPORT-UNEXPECTED", content)
+        self.assertIn(f'href="{self.import_url}"', content)
+        self.assertIn("simplerNOFOs@agile6.com", content)
+        self.assertNotIn("private implementation detail", content)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_blocked_reimport_uses_shared_page_and_returns_to_nofo(self, parse_file):
+        parse_file.return_value = (
+            "<p>Opportunity number: TEST-001</p>"
+            "<h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        nofo = Nofo.objects.create(
+            title="Published NOFO",
+            number="TEST-001",
+            opdiv="CDC",
+            group="bloom",
+            status="published",
+        )
+        reimport_url = reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.id})
+        uploaded_file = SimpleUploadedFile(
+            "test.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(reimport_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("REIMPORT-STATUS-BLOCKED", content)
+        self.assertIn(
+            f'href="{reverse("nofos:nofo_edit", kwargs={"pk": nofo.id})}"',
+            content,
+        )

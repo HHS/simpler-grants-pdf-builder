@@ -353,6 +353,52 @@ class CompareImportViewTests(TestCase):
         self.assertEqual(follow_response.status_code, 200)
         self.assertContains(follow_response, "Error: Oops! No fos uploaded.")
 
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    @patch("compare.views.create_compare_document")
+    def test_unexpected_creation_error_uses_safe_500_page(
+        self, create_document, parse_file
+    ):
+        parse_file.return_value = (
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        create_document.side_effect = RuntimeError("private comparison detail")
+        uploaded_file = SimpleUploadedFile(
+            "comparison.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("IMPORT-UNEXPECTED", content)
+        self.assertIn(f'href="{self.url}"', content)
+        self.assertNotIn("private comparison detail", content)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    @patch("compare.views.create_nofo")
+    def test_import_to_existing_document_uses_safe_500_page(
+        self, create_document, parse_file
+    ):
+        parse_file.return_value = (
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        create_document.side_effect = RuntimeError("private compare-to-doc detail")
+        document = CompareDocument.objects.create(
+            title="Existing comparison", opdiv="CDC", group="bloom"
+        )
+        url = reverse("compare:compare_import_to_doc", kwargs={"pk": document.pk})
+        uploaded_file = SimpleUploadedFile(
+            "comparison.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("IMPORT-UNEXPECTED", content)
+        self.assertIn(f'href="{url}"', content)
+        self.assertNotIn("private compare-to-doc detail", content)
+
 
 # Edit the title right after importing
 class CompareImportTitleViewTests(TestCase):

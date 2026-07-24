@@ -6,6 +6,12 @@ from nofos.forms import NIH_ALLOWED_CHOICES, NIH_THEME_DEFAULTS, NofoThemeOption
 from nofos.models import Nofo
 
 
+def _theme_choice_values(form):
+    return [
+        value for _, options in form.fields["theme"].choices for value, _ in options
+    ]
+
+
 def _make_nofo(group, **overrides):
     defaults = dict(
         title="Test NOFO",
@@ -35,8 +41,7 @@ class NIHUserThemeOptionsFormTests(TestCase):
 
     def test_theme_choices_restricted_to_nih_only(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
-        all_values = [v for _, opts in form.fields["theme"].choices for v, _ in opts]
-        self.assertEqual(all_values, ["portrait-nih-white"])
+        self.assertEqual(_theme_choice_values(form), ["portrait-nih-white"])
 
     def test_cover_choices_exclude_hero(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
@@ -213,7 +218,7 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.user = _make_user("hrsa")
         self.nofo = _make_nofo(
             "hrsa",
-            theme="portrait-hrsa-blue",
+            theme="portrait-hrsa-white",
             cover="nofo--cover-page--hero",
             icon_style="nofo--icons--border",
         )
@@ -228,6 +233,22 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.assertIn("nofo--cover-page--medium", cover_values)
         self.assertIn("nofo--cover-page--text", cover_values)
 
+    def test_hrsa_user_only_sees_hrsa_light_theme(self):
+        form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
+        self.assertEqual(_theme_choice_values(form), ["portrait-hrsa-white"])
+
+    def test_bloom_user_does_not_see_retired_hrsa_theme(self):
+        bloom_user = _make_user("bloom")
+        form = NofoThemeOptionsForm(instance=self.nofo, user=bloom_user)
+        theme_values = _theme_choice_values(form)
+        self.assertIn("portrait-hrsa-white", theme_values)
+        self.assertNotIn("portrait-hrsa-blue", theme_values)
+
+    def test_new_nofo_cannot_select_retired_hrsa_theme(self):
+        unsaved_nofo = Nofo(group="hrsa", theme="portrait-hrsa-blue")
+        form = NofoThemeOptionsForm(instance=unsaved_nofo, user=self.user)
+        self.assertNotIn("portrait-hrsa-blue", _theme_choice_values(form))
+
     def test_non_nih_user_sees_multiple_icon_style_choices(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
         icon_values = [v for v, _ in form.fields["icon_style"].choices]
@@ -235,6 +256,9 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.assertGreater(len(icon_values), 1)
 
     def test_non_nih_user_get_does_not_change_nofo_fields(self):
+        self.nofo.theme = "portrait-hrsa-blue"
+        self.nofo.save()
+
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.nofo.refresh_from_db()
@@ -242,11 +266,60 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.assertEqual(self.nofo.cover, "nofo--cover-page--hero")
         self.assertEqual(self.nofo.icon_style, "nofo--icons--border")
 
+    def test_legacy_hrsa_theme_can_be_preserved_when_saving_other_options(self):
+        self.nofo.theme = "portrait-hrsa-blue"
+        self.nofo.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "HRSA (Default, legacy)")
+        self.assertContains(
+            response,
+            '<option value="portrait-hrsa-blue" selected>',
+        )
+
+        response = self.client.post(
+            self.url,
+            {
+                "theme": "portrait-hrsa-blue",
+                "cover": "nofo--cover-page--medium",
+                "icon_style": "nofo--icons--solid",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+        self.assertEqual(self.nofo.icon_style, "nofo--icons--solid")
+
+    def test_legacy_hrsa_theme_remains_model_valid_and_renderable(self):
+        self.nofo.theme = "portrait-hrsa-blue"
+        self.nofo.full_clean()
+        self.nofo.save()
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+
+        response = self.client.get(
+            reverse("nofos:nofo_view", kwargs={"pk": self.nofo.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "portrait-hrsa-blue")
+
     def test_non_nih_user_can_submit_any_valid_cover(self):
+        data = {
+            "theme": "portrait-hrsa-white",
+            "cover": "nofo--cover-page--hero",
+            "icon_style": "nofo--icons--border",
+        }
+        form = NofoThemeOptionsForm(data, instance=self.nofo, user=self.user)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_retired_hrsa_theme_submission_is_rejected(self):
         data = {
             "theme": "portrait-hrsa-blue",
             "cover": "nofo--cover-page--hero",
             "icon_style": "nofo--icons--border",
         }
         form = NofoThemeOptionsForm(data, instance=self.nofo, user=self.user)
-        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.is_valid())
+        self.assertIn("theme", form.errors)

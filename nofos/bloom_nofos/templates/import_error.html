@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	{{ error_title }}
+{% endblock %}
+
+{% block content %}
+	<h1 class="font-heading-xl margin-y-0">{{ error_title }}</h1>
+	<p>{{ error_summary }}</p>
+
+	{% if recovery_steps %}
+		<p>What to do next:</p>
+		<ol class="usa-list">
+			{% for step in recovery_steps %}
+				<li>{{ step }}</li>
+			{% endfor %}
+		</ol>
+	{% endif %}
+
+	{% if retry_url %}
+		<p><a class="usa-button" href="{{ retry_url }}">{{ retry_label }}</a></p>
+	{% endif %}
+
+	<p><strong>Error code:</strong> <code>{{ error_code }}</code></p>
+	{% include 'includes/error_support.html' %}
+{% endblock %}

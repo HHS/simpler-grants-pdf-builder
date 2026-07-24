@@ -98,7 +98,10 @@ def parse_uploaded_file_as_html_string(uploaded_file):
                 transform_document=transform_word_document,
             )
         except Exception as e:
-            raise ValidationError(f"Error importing .docx file: {e}")
+            raise ValidationError(
+                "NOFO Builder could not read this Word document.",
+                code="docx_conversion",
+            ) from e
 
         # If strict mode, check for warnings
         if config.WORD_IMPORT_STRICT_MODE:
@@ -114,7 +117,8 @@ def parse_uploaded_file_as_html_string(uploaded_file):
             if warnings:
                 warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
                 raise ValidationError(
-                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}"
+                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
+                    code="strict_formatting",
                 )
 
         return doc_to_html_result.value
@@ -1567,6 +1571,11 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-nih-white"
 
+    if "health resources and services administration" in opdiv_lower or re.search(
+        r"\bhrsa\b", opdiv_lower
+    ):
+        return "portrait-hrsa-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
@@ -1582,12 +1591,12 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     if "ihs-" in nofo_number.lower():
         return "portrait-ihs-white"
 
+    if re.search(r"(?:^|-)hrsa-", nofo_number.lower()):
+        return "portrait-hrsa-white"
+
     # NOFO numbers with "RFA" are also CDC, but do this check last
     if "rfa-" in nofo_number.lower():
         return "portrait-cdc-blue"
-
-    if "hrsa-" in nofo_number.lower():
-        return "portrait-hrsa-blue"
 
     return "portrait-nih-white"
 
