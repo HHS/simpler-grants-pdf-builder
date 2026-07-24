@@ -26,6 +26,10 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
+from .import_transforms import (
+    APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+    transform_word_document,
+)
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .utils import (
@@ -84,7 +88,14 @@ def parse_uploaded_file_as_html_string(uploaded_file):
         # Convert DOCX to HTML
         try:
             doc_to_html_result = mammoth.convert_to_html(
-                uploaded_file, style_map=style_map_manager.get_style_map()
+                uploaded_file,
+                style_map="\n".join(
+                    [
+                        style_map_manager.get_style_map(),
+                        APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+                    ]
+                ),
+                transform_document=transform_word_document,
             )
         except Exception as e:
             raise ValidationError(
