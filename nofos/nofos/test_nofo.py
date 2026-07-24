@@ -64,6 +64,7 @@ from .nofo import (
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
+    resolve_section_heading_level,
     sanitize_imported_text,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
@@ -130,6 +131,59 @@ class ReplaceCharsTests(TestCase):
             "<tr><th scope='row'>Table row</th><td><p>◻ Work plan 1</p></td></tr>"
         )
         self.assertEqual(replace_chars(test_string), test_string)
+
+
+class ResolveSectionHeadingLevelTests(TestCase):
+    def test_h1_only_document_is_valid(self):
+        soup = BeautifulSoup("<h1>Step 1</h1><p>Body</p><h1>Step 2</h1>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_h2_only_document_is_valid(self):
+        soup = BeautifulSoup("<h2>Step 1</h2><p>Body</p><h2>Step 2</h2>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h2")
+
+    def test_h1_sections_with_h2_subsections_are_valid(self):
+        soup = BeautifulSoup(
+            "<h1>Step 1</h1><h2>Basic information</h2><p>Body</p>",
+            "html.parser",
+        )
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_blank_h2_before_first_h1_is_ignored(self):
+        soup = BeautifulSoup("<h2> </h2><h1>Step 1</h1>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_h1_inside_table_does_not_override_h2_section_level(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1</h2>"
+            "<table><tr><td><h1>Table label</h1></td></tr></table>"
+            "<h2>Step 2</h2>",
+            "html.parser",
+        )
+
+        self.assertEqual(resolve_section_heading_level(soup), "h2")
+
+    def test_populated_h2_before_first_h1_is_blocked_with_examples(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1: Review the Opportunity</h2><p>Body</p>"
+            "<h2>Step 2: Get Ready to Apply</h2>"
+            "<h1>Appendix A: Award data</h1>",
+            "html.parser",
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            resolve_section_heading_level(soup)
+
+        self.assertEqual(context.exception.code, "ambiguous_heading_hierarchy")
+        message = context.exception.messages[0]
+        self.assertIn("Heading 2 before its first Heading 1", message)
+        self.assertIn('Heading 2 "Step 1: Review the Opportunity"', message)
+        self.assertIn('Heading 1 "Appendix A: Award data"', message)
+        self.assertIn("apply the same heading level to all main sections", message)
 
 
 class TestsCleanTableCells(TestCase):

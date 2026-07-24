@@ -114,6 +114,7 @@ from .nofo import (
     replace_chars,
     replace_links,
     replace_value_in_subsections,
+    resolve_section_heading_level,
     restore_subsection_metadata,
     suggest_all_nofo_fields,
     suggest_nofo_opdiv,
@@ -486,7 +487,7 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
-            top_heading_level = "h1" if soup.find("h1") else "h2"
+            top_heading_level = resolve_section_heading_level(soup)
             soup, instructions_tables = process_nofo_html(soup, top_heading_level)
 
             # 4. Build sections and subsections as python dicts
@@ -547,6 +548,21 @@ class BaseNofoImportView(View):
                     recovery_steps=[
                         "Open the document in Word.",
                         "Ask a NOFO designer or administrator to review its custom formatting and styles.",
+                        "Save the document, then select it again.",
+                    ],
+                    retry_url=self.get_retry_url(),
+                )
+
+            if "ambiguous_heading_hierarchy" in error_codes:
+                return render_blocking_import_error(
+                    request,
+                    title="We couldn’t safely determine the document structure",
+                    summary=error_message,
+                    error_code="IMPORT-AMBIGUOUS-HEADINGS",
+                    status=422,
+                    recovery_steps=[
+                        "Open the document in Word and review the Heading 1 and Heading 2 styles named above.",
+                        "Apply one consistent heading level to all main sections.",
                         "Save the document, then select it again.",
                     ],
                     retry_url=self.get_retry_url(),

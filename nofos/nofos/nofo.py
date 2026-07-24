@@ -116,6 +116,51 @@ def parse_uploaded_file_as_html_string(uploaded_file):
         raise ValidationError("Please import a .docx or HTML file.")
 
 
+def resolve_section_heading_level(soup):
+    """Choose the section heading level without silently discarding earlier content."""
+    section_heading_candidates = [
+        heading
+        for heading in soup.find_all(["h1", "h2"])
+        if clean_string(heading.get_text(" ", strip=True))
+        and heading.find_parent("table") is None
+    ]
+
+    first_h1_index = next(
+        (
+            index
+            for index, heading in enumerate(section_heading_candidates)
+            if heading.name == "h1"
+        ),
+        None,
+    )
+    if first_h1_index is None:
+        return "h2"
+
+    h2_before_first_h1 = next(
+        (
+            heading
+            for heading in section_heading_candidates[:first_h1_index]
+            if heading.name == "h2"
+        ),
+        None,
+    )
+    if h2_before_first_h1 is None:
+        return "h1"
+
+    h2_text = clean_string(h2_before_first_h1.get_text(" ", strip=True))
+    h1_text = clean_string(
+        section_heading_candidates[first_h1_index].get_text(" ", strip=True)
+    )
+    raise ValidationError(
+        "The document uses Heading 2 before its first Heading 1. "
+        f'NOFO Builder would skip content beginning with Heading 2 "{h2_text}" '
+        f'and start at Heading 1 "{h1_text}". '
+        "In Word, apply the same heading level to all main sections, save the "
+        "document, and import it again.",
+        code="ambiguous_heading_hierarchy",
+    )
+
+
 def process_nofo_html(soup, top_heading_level):
     """
     Takes a soup object, cleans it up and mutates it, and returns a modified soup object.
