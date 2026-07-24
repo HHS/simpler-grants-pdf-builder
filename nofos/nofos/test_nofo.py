@@ -4105,6 +4105,188 @@ class SuggestNofoOpDivTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
 
+    def test_opdiv_present_in_following_paragraph(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Center for Awesome NOFOs</p>"
+            "<p>Agency: Agency for Weird Tables</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_does_not_capture_following_metadata_field(self):
+        html = "<div><p>Opdiv:</p><p>Agency: Agency for Weird Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_unlisted_metadata_field(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Assistance Listing: 93.123</p>"
+            "<p>Application Deadline: August 1, 2026</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_announcement_type(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Announcement Type: New</p>"
+            "<p>Application Deadline: August 1, 2026</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_following_heading(self):
+        html = "<div><p>Opdiv:</p><h1>Step 1: Review the Opportunity</h1></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_following_table(self):
+        html = "<div><p>Opdiv:</p><table><tr><td>ACF</td></tr></table></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_skip_over_other_elements(self):
+        html = (
+            "<div><p>Opdiv:</p><div>Unrelated content</div>"
+            "<p>Center for Awesome NOFOs</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_unrelated_following_paragraph(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Introductory body content</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_plain_opdiv_before_heading_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Administration for Children and Families</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_plain_opdiv_at_end_of_document_is_ambiguous(self):
+        html = "<div><p>Opdiv:</p><p>ACF</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_unconfigured_opdiv_name_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Food and Drug Administration</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Food and Drug Administration")
+
+    def test_unconfigured_opdiv_acronym_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>SAMHSA</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "SAMHSA")
+
+    def test_arbitrary_organization_name_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Department of Wild Western Affairs (DWWA)</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_opdiv(soup),
+            "Department of Wild Western Affairs (DWWA)",
+        )
+
+    def test_colon_form_opdiv_before_heading_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>ACF: Administration for Children and Families</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_colon_form_opdiv_before_metadata_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>ACF: Administration for Children and Families</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_uppercase_metadata_labels(self):
+        for value in (
+            "AGENCY: Administration for Children and Families",
+            "POC: Office of Grants Management",
+            "OPDIV: Administration for Children and Families",
+        ):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<p>Agency: Office of Excellent Examples</p></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_program_office_sentence(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Contact the program office for more information.</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_services_sentence(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Services are available Monday through Friday.</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_parenthetical_reference(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Please see Appendix A (ABC)</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_placeholder_values_before_metadata(self):
+        for value in ("TBD", "N/A", "NONE", "UNKNOWN"):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<p>Agency: Office of Excellent Examples</p></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_title_like_unrelated_blocks(self):
+        for value in ("Office Hours", "Agency Contact Information"):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<h1>Step 1: Review the Opportunity</h1></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_before_canonical_subagency_2_label_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Center for Awesome NOFOs</p>"
+            "<p>Subagency 2: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
 
 class SuggestNofoAgencyTests(TestCase):
     def test_agency_present_in_paragraph(self):

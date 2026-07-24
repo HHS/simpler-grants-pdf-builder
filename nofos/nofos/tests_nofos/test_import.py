@@ -285,10 +285,10 @@ class TestKeyCalloutDocxImport(TestCase):
         self.assert_key_callout_heading(key_dates, "Key dates", is_callout_box=True)
 
 
-class TestNofoImportBlankOpdivError(TestCase):
+class TestNofoImportOpdiv(TestCase):
     """
-    Importing a NOFO whose Word doc has a blank "Opdiv:" field should show a
-    dedicated, actionable error page instead of a raw Django validation dict.
+    Import OpDiv metadata from supported Word layouts and show an actionable
+    error when the value is genuinely missing.
     """
 
     def setUp(self):
@@ -308,6 +308,20 @@ class TestNofoImportBlankOpdivError(TestCase):
             "docx",
             "lists--blank-opdiv.docx",
         )
+        self.docx_opdiv_soft_break_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "opdiv--soft-line-break.docx",
+        )
+        self.docx_opdiv_paragraph_break_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "opdiv--paragraph-break.docx",
+        )
 
     def _build_html_file_missing_opdiv(self):
         html_content = """
@@ -326,16 +340,33 @@ class TestNofoImportBlankOpdivError(TestCase):
             "test.html", html_content.encode("utf-8"), content_type="text/html"
         )
 
-    def _build_docx_file_blank_opdiv(self):
-        # Real .docx fixture (converted via Mammoth) where the "OpDiv:" label
-        # is present on the page but has no value after it, matching the
-        # originally reported bug (as opposed to the label being absent
-        # entirely, which is what the synthetic HTML fixture above tests).
-        with open(self.docx_blank_opdiv_fixture_path, "rb") as f:
+    def _build_html_file_with_ambiguous_opdiv(self):
+        html_content = """
+        <html>
+        <head><title>Test NOFO</title></head>
+        <body>
+            <p>Opportunity name: Test NOFO</p>
+            <p>Opportunity number: NOFO-ACF-001</p>
+            <p>Opdiv:</p>
+            <p>Administration for Children and Families</p>
+            <h1>Test Section 1</h1>
+            <h2 data-order="10">Eligibility Information</h2>
+            <p>Some eligibility content</p>
+        </body>
+        </html>
+        """
+        return SimpleUploadedFile(
+            "ambiguous-opdiv.html",
+            html_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+    def _build_docx_file(self, fixture_path):
+        with open(fixture_path, "rb") as f:
             docx_data = f.read()
 
         return SimpleUploadedFile(
-            "lists--blank-opdiv.docx",
+            os.path.basename(fixture_path),
             docx_data,
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
@@ -344,13 +375,17 @@ class TestNofoImportBlankOpdivError(TestCase):
         # New heading and body copy
         self.assertIn("We couldn’t import this NOFO", content)
         self.assertIn(
-            "is blank. NOFO Builder needs this field filled in before it can import the document.",
+            "couldn’t reliably read a value from the",
             content,
         )
+        self.assertIn("may be missing or separated from the label", content)
 
         # Steps to fix
         self.assertIn("Open the Word document.", content)
-        self.assertIn("Add the agency’s operating division after ‘Opdiv:’", content)
+        self.assertIn(
+            "Put the agency’s operating division on the same line as", content
+        )
+        self.assertNotIn("field on page 1 of the Word document is blank", content)
         self.assertIn("Save the document, then select it again.", content)
         # The retry action returns directly to the import form.
         self.assertIn(f'href="{reverse("nofos:nofo_import")}"', content)
@@ -396,13 +431,61 @@ class TestNofoImportBlankOpdivError(TestCase):
         response = self.client.post(
             reverse("nofos:nofo_import"),
             {
-                "nofo-import": self._build_docx_file_blank_opdiv(),
+                "nofo-import": self._build_docx_file(
+                    self.docx_blank_opdiv_fixture_path
+                ),
                 "csrfmiddlewaretoken": "dummy",
             },
         )
 
         self.assertEqual(response.status_code, 400)
         self._assert_actionable_opdiv_error_page(response.content.decode("utf-8"))
+
+    def test_import_with_ambiguous_opdiv_shows_actionable_error_page(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_html_file_with_ambiguous_opdiv(),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self._assert_actionable_opdiv_error_page(response.content.decode("utf-8"))
+
+    def test_import_docx_with_opdiv_after_soft_line_break_succeeds(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_docx_file(
+                    self.docx_opdiv_soft_break_fixture_path
+                ),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            Nofo.objects.latest("created").opdiv,
+            "Administration for Children and Families",
+        )
+
+    def test_import_docx_with_opdiv_in_following_paragraph_succeeds(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": self._build_docx_file(
+                    self.docx_opdiv_paragraph_break_fixture_path
+                ),
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            Nofo.objects.latest("created").opdiv,
+            "Administration for Children and Families",
+        )
 
 
 class TestBlockingImportErrorPages(TestCase):
