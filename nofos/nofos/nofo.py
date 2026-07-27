@@ -796,6 +796,10 @@ def is_callout_box_table(table):
 def get_subsections_from_sections(sections, top_heading_level="h1"):
     if_demote_headings = top_heading_level == "h1"
     heading_tags = ["h3", "h4", "h5", "h6"]
+    key_callout_titles = {
+        "key facts": "Key facts",
+        "key dates": "Key dates",
+    }
 
     # if top_heading_level is h1, then include h2s in the list
     if if_demote_headings:
@@ -821,18 +825,45 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
                 return header_element.extract()
         return False
 
-    def get_subsection_dict(heading_tag, order, is_callout_box, body=None):
+    def get_key_callout_title(tag):
+        if not tag:
+            return None
+
+        return key_callout_titles.get(
+            clean_string(tag.get_text(" ", strip=True)).casefold()
+        )
+
+    def is_key_callout_title_paragraph(tag):
+        return tag.name == "p" and get_key_callout_title(tag) is not None
+
+    def is_empty_spacer_paragraph(tag):
+        return (
+            tag.name == "p"
+            and not clean_string(tag.get_text(" ", strip=True))
+            and tag.find("img") is None
+        )
+
+    def get_subsection_dict(
+        heading_tag,
+        order,
+        is_callout_box,
+        body=None,
+        key_callout_title=None,
+    ):
         if heading_tag:
-            tag_name = (
-                _demote_tag(heading_tag.name)
-                if if_demote_headings
-                else heading_tag.name
-            )
-            if tag_name == "div" and is_h7(heading_tag):
-                tag_name = "h7"
+            if key_callout_title:
+                tag_name = "h4"
+            else:
+                tag_name = (
+                    _demote_tag(heading_tag.name)
+                    if if_demote_headings
+                    else heading_tag.name
+                )
+                if tag_name == "div" and is_h7(heading_tag):
+                    tag_name = "h7"
 
             return {
-                "name": clean_string(heading_tag.text),
+                "name": key_callout_title or clean_string(heading_tag.text),
                 "order": order,
                 "tag": tag_name,
                 "html_id": heading_tag.get("id", ""),
@@ -861,7 +892,21 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
             tag for tag in body if tag.parent.name in ["body", "[document]"]
         ]
 
-        for tag in body_descendents:
+        for index, tag in enumerate(body_descendents):
+            next_tag = next(
+                (
+                    candidate
+                    for candidate in body_descendents[index + 1 :]
+                    if not is_empty_spacer_paragraph(candidate)
+                ),
+                None,
+            )
+            is_followed_by_callout = (
+                next_tag is not None
+                and next_tag.name == "table"
+                and is_callout_box_table(next_tag)
+            )
+
             # handle callout boxes
             if tag.name == "table" and is_callout_box_table(tag):
                 # Grab the first td or th
@@ -871,22 +916,37 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
                 # make the td a div so that it can live on its own
                 cell.name = "div"
+                heading_tag = extract_first_header(cell)
                 callout_box_subsection = get_subsection_dict(
-                    heading_tag=extract_first_header(cell),
+                    heading_tag=heading_tag,
                     order=len(section["subsections"]) + 1,
                     is_callout_box=True,
                     body=cell,
+                    key_callout_title=get_key_callout_title(heading_tag),
                 )
                 section["subsections"].append(callout_box_subsection)
 
             elif tag.name in heading_tags or is_h7(tag):
                 # create new subsection
+                key_callout_title = (
+                    get_key_callout_title(tag) if is_followed_by_callout else None
+                )
                 heading_subsection = get_subsection_dict(
                     heading_tag=tag,
                     order=len(section["subsections"]) + 1,
                     is_callout_box=False,
+                    key_callout_title=key_callout_title,
                 )
 
+                section["subsections"].append(heading_subsection)
+
+            elif is_key_callout_title_paragraph(tag) and is_followed_by_callout:
+                heading_subsection = get_subsection_dict(
+                    heading_tag=tag,
+                    order=len(section["subsections"]) + 1,
+                    is_callout_box=False,
+                    key_callout_title=get_key_callout_title(tag),
+                )
                 section["subsections"].append(heading_subsection)
 
             # if not a heading or callout_box table add to existing subsection

@@ -12,7 +12,15 @@ from django.urls import reverse
 from users.models import BloomUser
 
 from nofos.models import Nofo
-from nofos.nofo import parse_uploaded_file_as_html_string, replace_chars
+from nofos.nofo import (
+    get_sections_from_soup,
+    get_subsections_from_sections,
+    parse_uploaded_file_as_html_string,
+    process_nofo_html,
+    replace_chars,
+    replace_links,
+    resolve_section_heading_level,
+)
 from nofos.nofo_markdown import md
 from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
 
@@ -184,6 +192,97 @@ class TestParseNofoFile(TestCase):
         self.assertEqual(context.exception.error_list[0].code, "docx_conversion")
         self.assertIn("could not read this Word document", str(context.exception))
         self.assertNotIn("private converter detail", str(context.exception))
+
+
+class TestKeyCalloutDocxImport(TestCase):
+    def parse_fixture(self, fixture_name):
+        fixture_path = os.path.join(
+            settings.BASE_DIR, "nofos", "fixtures", "docx", fixture_name
+        )
+        with open(fixture_path, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                fixture_name,
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        file_content = parse_uploaded_file_as_html_string(uploaded_file)
+        cleaned_content = replace_links(replace_chars(file_content))
+        soup = BeautifulSoup(cleaned_content, "html.parser")
+        top_heading_level = resolve_section_heading_level(soup)
+        soup, _ = process_nofo_html(soup, top_heading_level)
+        sections = get_sections_from_soup(soup, top_heading_level)
+        sections = get_subsections_from_sections(sections, top_heading_level)
+        return [
+            subsection for section in sections for subsection in section["subsections"]
+        ]
+
+    def assert_key_callout_heading(self, subsection, name, is_callout_box=False):
+        self.assertEqual(subsection["name"], name)
+        self.assertEqual(subsection["tag"], "h4")
+        self.assertEqual(subsection["is_callout_box"], is_callout_box)
+
+    def test_h1_h3_outside_key_facts_is_normalized(self):
+        subsections = self.parse_fixture("key-callout--h1-h3-outside.docx")
+        key_facts = next(
+            subsection
+            for subsection in subsections
+            if subsection["name"] == "Key facts"
+        )
+
+        self.assert_key_callout_heading(key_facts, "Key facts")
+        key_facts_index = subsections.index(key_facts)
+        self.assertTrue(subsections[key_facts_index + 1]["is_callout_box"])
+        self.assertIn(
+            "Application deadline",
+            str(subsections[key_facts_index + 1]["body"]),
+        )
+
+    def test_h1_bold_paragraph_key_facts_is_promoted(self):
+        subsections = self.parse_fixture("key-callout--h1-bold-outside.docx")
+        key_facts = next(
+            subsection
+            for subsection in subsections
+            if subsection["name"] == "Key facts"
+        )
+
+        self.assert_key_callout_heading(key_facts, "Key facts")
+        self.assertTrue(subsections[subsections.index(key_facts) + 1]["is_callout_box"])
+
+    def test_h1_plain_paragraph_key_facts_is_promoted(self):
+        subsections = self.parse_fixture("key-callout--h1-plain-outside.docx")
+        key_facts = next(
+            subsection
+            for subsection in subsections
+            if subsection["name"] == "Key facts"
+        )
+
+        self.assert_key_callout_heading(key_facts, "Key facts")
+        self.assertTrue(subsections[subsections.index(key_facts) + 1]["is_callout_box"])
+
+    def test_h1_h4_inside_key_dates_is_normalized(self):
+        subsections = self.parse_fixture("key-callout--h1-h4-inside.docx")
+        key_dates = next(
+            subsection
+            for subsection in subsections
+            if subsection["name"] == "Key dates"
+        )
+
+        self.assert_key_callout_heading(key_dates, "Key dates", is_callout_box=True)
+        self.assertIn("Application deadline", str(key_dates["body"]))
+
+    def test_h2_h4_inside_key_dates_remains_correct(self):
+        subsections = self.parse_fixture("key-callout--h2-h4-inside.docx")
+        key_dates = next(
+            subsection
+            for subsection in subsections
+            if subsection["name"] == "Key dates"
+        )
+
+        self.assert_key_callout_heading(key_dates, "Key dates", is_callout_box=True)
 
 
 class TestNofoImportBlankOpdivError(TestCase):

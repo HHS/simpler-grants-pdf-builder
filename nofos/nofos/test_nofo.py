@@ -813,6 +813,157 @@ class HTMLSubsectionTestsH1(TestCase):
         self.assertEqual(subsection.get("name"), "Subsection 1")
 
 
+class KeyCalloutHeadingImportTests(TestCase):
+    def get_subsections(self, html, top_heading_level="h1"):
+        soup = BeautifulSoup(html, "html.parser")
+        sections = get_sections_from_soup(soup, top_heading_level=top_heading_level)
+        return get_subsections_from_sections(
+            sections, top_heading_level=top_heading_level
+        )[0]["subsections"]
+
+    def assert_key_callout_heading(self, subsection, name, is_callout_box=False):
+        self.assertEqual(subsection["name"], name)
+        self.assertEqual(subsection["tag"], "h4")
+        self.assertEqual(subsection["is_callout_box"], is_callout_box)
+
+    def test_h1_import_normalizes_adjacent_h3_key_facts(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>Key Facts</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 2)
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+        self.assertEqual(subsections[1]["name"], "")
+        self.assertTrue(subsections[1]["is_callout_box"])
+        self.assertIn("Fact content", str(subsections[1]["body"]))
+
+    def test_h2_import_normalizes_adjacent_h3_key_facts(self):
+        subsections = self.get_subsections(
+            """
+            <h2>Basic information</h2>
+            <h3>Key Facts</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """,
+            top_heading_level="h2",
+        )
+
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+
+    def test_h1_import_normalizes_adjacent_h4_key_dates(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <table><tr><td><p>Date content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key dates")
+
+    def test_import_promotes_adjacent_bold_key_facts_paragraph(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <p>Introductory content</p>
+            <p><strong>Key Facts</strong></p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 3)
+        self.assertEqual(str(subsections[0]["body"][0]), "<p>Introductory content</p>")
+        self.assert_key_callout_heading(subsections[1], "Key facts")
+        self.assertNotIn("Key Facts", str(subsections[0]["body"]))
+        self.assertTrue(subsections[2]["is_callout_box"])
+
+    def test_import_promotes_adjacent_plain_key_facts_paragraph(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <p>Introductory content</p>
+            <p>Key Facts</p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 3)
+        self.assert_key_callout_heading(subsections[1], "Key facts")
+        self.assertNotIn("Key Facts", str(subsections[0]["body"]))
+        self.assertTrue(subsections[2]["is_callout_box"])
+
+    def test_import_ignores_empty_paragraph_before_callout(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <p><br></p>
+            <table><tr><td><p>Date content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key dates")
+        self.assertTrue(subsections[1]["is_callout_box"])
+
+    def test_import_normalizes_key_dates_heading_inside_callout(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Date content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 1)
+        self.assert_key_callout_heading(
+            subsections[0], "Key dates", is_callout_box=True
+        )
+        self.assertIn("Date content", str(subsections[0]["body"]))
+
+    def test_correct_h2_h4_key_dates_callout_remains_h4(self):
+        subsections = self.get_subsections(
+            """
+            <h2>Basic information</h2>
+            <table><tr><td><h4>Key dates</h4><p>Date content</p></td></tr></table>
+            """,
+            top_heading_level="h2",
+        )
+
+        self.assert_key_callout_heading(
+            subsections[0], "Key dates", is_callout_box=True
+        )
+
+    def test_import_canonicalizes_uppercase_exact_label(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>KEY FACTS</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+
+    def test_import_does_not_normalize_longer_heading(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>Key facts about eligibility</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key facts about eligibility")
+        self.assertEqual(subsections[0]["tag"], "h4")
+
+    def test_import_does_not_normalize_nonadjacent_heading(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Facts</h4>
+            <p>Intervening content</p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key Facts")
+        self.assertEqual(subsections[0]["tag"], "h5")
+
+    def test_import_does_not_normalize_heading_before_multicell_table(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Facts</h4>
+            <table><tr><td>First cell</td><td>Second cell</td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key Facts")
+        self.assertEqual(subsections[0]["tag"], "h5")
+
+
 class HTMLSubsectionTestsH2(TestCase):
     def test_get_subsections_from_soup_h2(self):
         soup = BeautifulSoup(
