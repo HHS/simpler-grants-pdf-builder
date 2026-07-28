@@ -156,21 +156,29 @@ class SubsectionCalloutEditingTests(TestCase):
         )
 
         regular_response = self.client.get(self.edit_url(regular))
-        self.assertContains(regular_response, "Use callout box styling")
+        self.assertContains(regular_response, "Is callout box?")
         self.assertContains(
             regular_response,
-            "Re-importing this NOFO replaces this setting",
+            "Callout boxes",
         )
         self.assertContains(
+            regular_response,
+            "use an accent color to call attention to important content.",
+        )
+        self.assertNotContains(
             regular_response,
             "Best for short, high-priority content",
         )
+        self.assertNotContains(
+            regular_response,
+            "Re-importing this NOFO replaces this setting",
+        )
         content = regular_response.content.decode()
         self.assertLess(
-            content.index("Heading level"), content.index("Use callout box styling")
+            content.index("Heading level"), content.index("Is callout box?")
         )
         self.assertLess(
-            content.index("Use callout box styling"), content.index("Add a page break")
+            content.index("Is callout box?"), content.index("Add a page break")
         )
         self.assertNotContains(
             regular_response,
