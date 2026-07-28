@@ -4,8 +4,10 @@ import uuid
 
 from bloom_nofos.error_helpers import (
     DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    MistaggedHeadingError,
     render_blocking_import_error,
     render_import_server_error,
+    render_mistagged_heading_error,
 )
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
@@ -176,6 +178,21 @@ class CompareImportView(LoginRequiredMixin, BaseNofoImportView):
             )
             return redirect("compare:compare_import_title", pk=compare_doc.pk)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "CompareImportView:MistaggedHeadingError:" "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=reverse("compare:compare_import"),
+            )
         except ValidationError as e:
             log_exception(
                 request,
@@ -475,6 +492,22 @@ class CompareImportToDocView(
                 new_nofo_id=new_nofo.pk,
             )
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "CompareImportToDocView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=self.get_retry_url(),
+            )
         except ValidationError as e:
             log_exception(
                 request,

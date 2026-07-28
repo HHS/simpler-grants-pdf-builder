@@ -11,7 +11,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import Nofo
+from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -505,6 +505,13 @@ class TestBlockingImportErrorPages(TestCase):
             "docx",
             "lists--mammoth-warning.docx",
         )
+        self.docx_mistagged_heading_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "mistagged-paragraph-heading.docx",
+        )
 
     def test_strict_mode_warning_is_actionable_and_hides_converter_details(self):
         with open(self.docx_warning_fixture_path, "rb") as f:
@@ -526,6 +533,138 @@ class TestBlockingImportErrorPages(TestCase):
         self.assertNotIn("Mammoth", content)
         self.assertNotIn("Style ID", content)
         self.assertNotIn("Paulsundocumentedstyle", content)
+
+    def test_long_section_heading_identifies_mistagged_text(self):
+        affected_text = "A" * 251
+        uploaded_file = SimpleUploadedFile(
+            "long-section.html",
+            (
+                "<p>Opportunity name: Test NOFO</p>"
+                "<p>Opdiv: CDC</p>"
+                f"<h1>{affected_text}</h1>"
+                "<h2>Valid subsection</h2><p>Body</p>"
+            ).encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn("Section heading 1", content)
+        self.assertIn("Heading character limit", content)
+        self.assertIn("251", content)
+        self.assertIn(affected_text, content)
+        self.assertNotIn("IMPORT-CREATE-INVALID", content)
+
+    def test_long_subsection_heading_is_safely_escaped(self):
+        affected_text = ("B" * 401) + "<script>alert('unsafe')</script>"
+        uploaded_file = SimpleUploadedFile(
+            "long-subsection.html",
+            (
+                "<p>Opportunity name: Test NOFO</p>"
+                "<p>Opdiv: CDC</p>"
+                "<h1>Valid section</h1>"
+                f"<h2>{affected_text.replace('<', '&lt;').replace('>', '&gt;')}</h2>"
+                "<p>Body</p>"
+            ).encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn("Subsection heading 1", content)
+        self.assertIn("400", content)
+        self.assertIn("&lt;script&gt;", content)
+        self.assertNotIn("<script>", content)
+        self.assertNotIn("IMPORT-CREATE-INVALID", content)
+
+    def test_word_import_identifies_mistagged_paragraph_heading(self):
+        with open(self.docx_mistagged_heading_fixture_path, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn("Subsection heading 1", content)
+        self.assertIn("448", content)
+        self.assertIn(
+            "This entire paragraph was accidentally assigned a heading style in Word.",
+            content,
+        )
+        self.assertNotIn("IMPORT-CREATE-INVALID", content)
+        self.assertEqual(Nofo.objects.count(), 0)
+
+    def test_reimport_long_heading_preserves_current_nofo(self):
+        affected_text = (
+            "This entire paragraph was accidentally assigned a heading style in Word."
+        )
+        nofo = Nofo.objects.create(
+            title="Existing NOFO",
+            number="TEST-776",
+            opdiv="CDC",
+            group="bloom",
+        )
+        section = Section.objects.create(
+            nofo=nofo,
+            name="Existing section",
+            html_id="existing-section",
+            order=1,
+        )
+        subsection = Subsection.objects.create(
+            section=section,
+            name="Existing subsection",
+            html_id="existing-subsection",
+            order=1,
+            tag="h3",
+            body="Existing content must survive a rejected re-import.",
+        )
+        reimport_url = reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.id})
+        with open(self.docx_mistagged_heading_fixture_path, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(reimport_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn(affected_text, content)
+        self.assertIn(f'href="{reimport_url}"', content)
+        self.assertNotIn("REIMPORT-DOCUMENT-INVALID", content)
+
+        nofo.refresh_from_db()
+        self.assertEqual(Nofo.objects.count(), 1)
+        self.assertEqual(nofo.sections.count(), 1)
+        preserved_section = nofo.sections.get()
+        self.assertEqual(preserved_section.id, section.id)
+        self.assertEqual(preserved_section.name, "Existing section")
+        self.assertEqual(preserved_section.subsections.count(), 1)
+        preserved_subsection = preserved_section.subsections.get()
+        self.assertEqual(preserved_subsection.id, subsection.id)
+        self.assertEqual(
+            preserved_subsection.body,
+            "Existing content must survive a rejected re-import.",
+        )
 
     @patch("nofos.views.log_exception")
     @patch("nofos.nofo.mammoth.convert_to_html")

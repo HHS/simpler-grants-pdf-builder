@@ -1,3 +1,4 @@
+import os
 import uuid
 from unittest.mock import patch
 
@@ -8,6 +9,7 @@ from composer.models import (
     ContentGuideSubsection,
 )
 from composer.views import ComposerSectionView
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core.exceptions import ValidationError
@@ -19,6 +21,14 @@ from django.utils import timezone
 User = get_user_model()
 
 PASSWORD = "testpass123"
+
+MISTAGGED_HEADING_FIXTURE_PATH = os.path.join(
+    settings.BASE_DIR,
+    "nofos",
+    "fixtures",
+    "docx",
+    "mistagged-paragraph-heading.docx",
+)
 
 
 def create_composer_admin_user(
@@ -186,6 +196,29 @@ class ComposerImportViewTests(TestCase):
         self.assertIn("COMPOSER-IMPORT-INVALID", content)
         self.assertIn(f'href="{self.url}"', content)
         self.assertNotIn("private validation detail", content)
+
+    def test_word_import_identifies_mistagged_paragraph_heading(self):
+        with open(MISTAGGED_HEADING_FIXTURE_PATH, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn(
+            "This entire paragraph was accidentally assigned a heading style in Word.",
+            content,
+        )
+        self.assertNotIn("COMPOSER-IMPORT-INVALID", content)
+        self.assertEqual(ContentGuide.objects.count(), 0)
 
 
 class ComposerImportTitleViewTests(TestCase):
