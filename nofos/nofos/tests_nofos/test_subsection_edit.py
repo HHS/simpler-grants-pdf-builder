@@ -161,6 +161,17 @@ class SubsectionCalloutEditingTests(TestCase):
             regular_response,
             "Re-importing this NOFO replaces this setting",
         )
+        self.assertContains(
+            regular_response,
+            "Best for short, high-priority content",
+        )
+        content = regular_response.content.decode()
+        self.assertLess(
+            content.index("Heading level"), content.index("Use callout box styling")
+        )
+        self.assertLess(
+            content.index("Use callout box styling"), content.index("Add a page break")
+        )
         self.assertNotContains(
             regular_response,
             'name="callout_box" checked',
