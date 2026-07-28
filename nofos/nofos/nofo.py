@@ -12,6 +12,7 @@ import cssutils
 import mammoth
 import markdown
 import requests
+from bloom_nofos.error_helpers import MistaggedHeadingError
 from bloom_nofos.s3.utils import (
     get_image_url_from_s3,
     remove_file_from_s3,
@@ -385,32 +386,17 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         # NOFO Section has "nofo", Compare docs have "document"
         return "nofo" if hasattr(SectionModel, "nofo") else "document"
 
-    def _get_validation_message(validation_error, obj):
-        obj_type = obj._meta.verbose_name.title()
-        name_max_length = obj._meta.get_field("name").max_length
+    def _raise_document_validation_error(validation_error, obj, heading_kind):
+        name_errors = validation_error.error_dict.get("name", [])
+        if any(error.code == "max_length" for error in name_errors):
+            raise MistaggedHeadingError(
+                heading_kind=heading_kind,
+                heading_order=obj.order,
+                heading_text=obj.name,
+                max_length=obj._meta.get_field("name").max_length,
+            ) from validation_error
 
-        if validation_error.message_dict.get("name", []):
-            intro_message = (
-                f"<strong>Found a {obj_type} name exceeding {name_max_length} characters in length.</strong> "
-                "This often means a paragraph was incorrectly styled as a heading.\n\n"
-            )
-            error_message = f"- **Error message**: {validation_error.messages}\n"
-            object_type_message = f"- **Type**: {obj_type}\n"
-            object_order_message = f"- **{obj_type} order**: {obj.order}\n"
-            object_name_message = f"- **{obj_type} name**: {obj.name}\n\n"
-            outro_message = f"Note that there may also be other mistagged headings further down in this document."
-
-            return (
-                f"{intro_message}"
-                f"{error_message}"
-                f"{object_type_message}"
-                f"{object_order_message}"
-                f"{object_name_message}"
-                f"{outro_message}"
-            )
-
-        # Generic fallback if it's not a name-related length error
-        return str(validation_error)
+        raise ValidationError(str(validation_error)) from validation_error
 
     sections_to_create = []
     subsections_to_create = []
@@ -433,7 +419,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         try:
             section_obj.full_clean()
         except ValidationError as e:
-            raise ValidationError(_get_validation_message(e, section_obj)) from e
+            _raise_document_validation_error(e, section_obj, "section")
 
         sections_to_create.append(section_obj)
 
@@ -512,7 +498,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             try:
                 subsection_obj.full_clean()
             except ValidationError as e:
-                raise ValidationError(_get_validation_message(e, subsection_obj)) from e
+                _raise_document_validation_error(e, subsection_obj, "subsection")
 
             subsections_to_create.append(subsection_obj)
 

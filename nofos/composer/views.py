@@ -3,8 +3,10 @@ from typing import Dict
 
 from bloom_nofos.error_helpers import (
     DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    MistaggedHeadingError,
     render_blocking_import_error,
     render_import_server_error,
+    render_mistagged_heading_error,
 )
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
@@ -469,6 +471,22 @@ class ComposerImportView(ComposerAdminRequiredMixin, BaseNofoImportView):
 
             return redirect("composer:composer_import_title", pk=document.pk)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "ComposerImportView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=reverse("composer:composer_import"),
+            )
         except ValidationError as e:
             log_exception(
                 request,

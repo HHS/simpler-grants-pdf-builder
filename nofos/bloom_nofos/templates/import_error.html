@@ -8,6 +8,15 @@
 	<h1 class="font-heading-xl margin-y-0">{{ error_title }}</h1>
 	<p>{{ error_summary }}</p>
 
+	{% if error_details %}
+		<dl>
+			{% for detail in error_details %}
+				<dt class="text-bold">{{ detail.label }}</dt>
+				<dd class="margin-left-0 margin-bottom-2">{{ detail.value }}</dd>
+			{% endfor %}
+		</dl>
+	{% endif %}
+
 	{% if recovery_steps %}
 		<p>What to do next:</p>
 		<ol class="usa-list">

@@ -6,8 +6,10 @@ from datetime import datetime
 import docraptor
 from bloom_nofos.error_helpers import (
     DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    MistaggedHeadingError,
     render_blocking_import_error,
     render_import_server_error,
+    render_mistagged_heading_error,
 )
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
@@ -650,6 +652,22 @@ class NofosImportNewView(BaseNofoImportView):
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "NofosImportNewView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=self.get_retry_url(),
+            )
         except ValidationError as e:
             opdiv_errors = getattr(e, "error_dict", {}).get("opdiv", [])
             is_blank_opdiv = any(error.code == "blank" for error in opdiv_errors)
@@ -777,32 +795,51 @@ class NofosImportOverwriteView(
         Handles the actual reimport logic, allowing external calls without requiring an instance.
         """
         try:
-            page_breaks = {}
-            if if_preserve_page_breaks:
-                page_breaks = preserve_subsection_metadata(nofo, sections)
+            with transaction.atomic():
+                page_breaks = {}
+                if if_preserve_page_breaks:
+                    page_breaks = preserve_subsection_metadata(nofo, sections)
 
-            # cloning a nofo creates a past revision and then archives it immediately
-            duplicate_nofo(nofo, is_successor=True)
+                # cloning a nofo creates a past revision and then archives it immediately
+                duplicate_nofo(nofo, is_successor=True)
 
-            nofo = overwrite_nofo(nofo, sections)
+                nofo = overwrite_nofo(nofo, sections)
 
-            # restore page breaks
-            if if_preserve_page_breaks and page_breaks:
-                nofo = restore_subsection_metadata(nofo, page_breaks)
+                # restore page breaks
+                if if_preserve_page_breaks and page_breaks:
+                    nofo = restore_subsection_metadata(nofo, page_breaks)
 
-            add_headings_to_document(nofo)
-            add_page_breaks_to_headings(nofo)
-            suggest_all_nofo_fields(nofo, soup)
-            nofo.filename = filename
-            nofo.save()
+                add_headings_to_document(nofo)
+                add_page_breaks_to_headings(nofo)
+                suggest_all_nofo_fields(nofo, soup)
+                nofo.filename = filename
+                nofo.save()
 
-            create_nofo_audit_event(
-                event_type="nofo_reimport", document=nofo, user=request.user
-            )
+                create_nofo_audit_event(
+                    event_type="nofo_reimport", document=nofo, user=request.user
+                )
 
             messages.success(request, f"Re-imported NOFO from file: {nofo.filename}")
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "NofosImportOverwriteView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=reverse(
+                    "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
+                ),
+            )
         except ValidationError as e:
             log_exception(
                 request,
