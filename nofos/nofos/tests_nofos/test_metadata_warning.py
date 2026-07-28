@@ -95,6 +95,20 @@ class NofoMetadataWarningTests(TestCase):
             ["Author", "Keywords"],
         )
 
+    def test_placeholder_metadata_is_treated_as_missing(self):
+        self.nofo.author = "{Leave blank. Coach will insert.}"
+        self.nofo.subject = "Accessible funding opportunity"
+        self.nofo.keywords = " {Add search terms here} "
+        self.nofo.save()
+
+        response = self.client.get(self.edit_url)
+
+        panel = self._get_metadata_panel(response)
+        self.assertEqual(
+            [item.get_text(strip=True) for item in panel.select("li")],
+            ["Author", "Keywords"],
+        )
+
     def test_warning_is_hidden_when_all_metadata_is_present(self):
         self.nofo.author = "HHS"
         self.nofo.subject = "Accessible funding opportunity"

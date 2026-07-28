@@ -32,6 +32,7 @@ from .import_transforms import (
 )
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .pdf_metadata import normalize_pdf_metadata_value
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -1779,17 +1780,17 @@ def suggest_nofo_tagline(soup):
 
 def suggest_nofo_author(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Author:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_subject(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Subject:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_keywords(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Keywords:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_cover_image(nofo):
