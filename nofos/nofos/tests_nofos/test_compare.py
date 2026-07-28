@@ -1092,3 +1092,71 @@ class TestCompareNofosMetadata(TestCase):
         self.assertEqual(application_deadline_add.old_value, "")
         self.assertEqual(application_deadline_add.new_value, "February 2, 2026")
         self.assertIn("<ins>February 2, 2026</ins>", application_deadline_add.diff)
+
+
+class HeadingPresenceComparisonTests(TestCase):
+    def setUp(self):
+        self.old_nofo = Nofo.objects.create(title="Old NOFO", opdiv="Test OpDiv")
+        self.new_nofo = Nofo.objects.create(title="New NOFO", opdiv="Test OpDiv")
+        self.old_section = Section.objects.create(
+            name="Step 1",
+            nofo=self.old_nofo,
+            order=1,
+            html_id="step-1",
+        )
+        self.new_section = Section.objects.create(
+            name="Step 1",
+            nofo=self.new_nofo,
+            order=1,
+            html_id="step-1",
+        )
+
+    def test_removed_heading_is_reported_as_update(self):
+        Subsection.objects.create(
+            section=self.old_section,
+            name="Application process",
+            tag="h3",
+            order=1,
+            body="Same body",
+        )
+        Subsection.objects.create(
+            section=self.new_section,
+            name="",
+            tag="",
+            order=1,
+            body="Same body",
+        )
+
+        result = compare_nofos(self.old_nofo, self.new_nofo)
+        subsection = result[0]["subsections"][0]
+
+        self.assertEqual(subsection.status, "UPDATE")
+        self.assertEqual(subsection.old_name, "Application process")
+        self.assertEqual(subsection.new_name, "(#1)")
+        self.assertIn("<del>Application process</del>", subsection.name)
+        self.assertIn("<ins>(#1)</ins>", subsection.name)
+
+    def test_added_heading_is_reported_as_update(self):
+        Subsection.objects.create(
+            section=self.old_section,
+            name="",
+            tag="",
+            order=1,
+            body="Same body",
+        )
+        Subsection.objects.create(
+            section=self.new_section,
+            name="Application process",
+            tag="h3",
+            order=1,
+            body="Same body",
+        )
+
+        result = compare_nofos(self.old_nofo, self.new_nofo)
+        subsection = result[0]["subsections"][0]
+
+        self.assertEqual(subsection.status, "UPDATE")
+        self.assertEqual(subsection.old_name, "(#1)")
+        self.assertEqual(subsection.new_name, "Application process")
+        self.assertIn("<del>(#1)</del>", subsection.name)
+        self.assertIn("<ins>Application process</ins>", subsection.name)

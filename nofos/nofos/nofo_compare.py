@@ -78,11 +78,13 @@ def result_match(original_subsection):
 
 
 def result_update(original_subsection, new_subsection):
+    old_name = get_subsection_name_or_order(original_subsection)
+    new_name = get_subsection_name_or_order(new_subsection)
     result = SubsectionDiff(
-        name=get_subsection_name_or_order(original_subsection),
+        name=html_diff(old_name, new_name) or new_name,
         section=original_subsection.section,
-        old_name=get_subsection_name_or_order(original_subsection),
-        new_name=get_subsection_name_or_order(new_subsection),
+        old_name=old_name,
+        new_name=new_name,
         status="UPDATE",
         old_value=original_subsection.body,
         new_value=new_subsection.body,
@@ -199,7 +201,7 @@ def compare_sections(old_section, new_section):
 
             # Now handle the matched pair
             matched_subsections.update([new_sub.id, matched_old.id])
-            if has_diff(
+            if matched_old.name != new_sub.name or has_diff(
                 html_diff(
                     markdownify(matched_old.body.strip()),
                     markdownify(new_sub.body.strip()),

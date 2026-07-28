@@ -65,10 +65,32 @@
         </legend>
       {% endif %}
 
-      <!-- name -->
-      <div class="form-group">
-        {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
-          {% if subsection.tag %}
+      {{ form.heading_control_present }}
+
+      <!-- heading -->
+      <div class="form-group margin-top-4 width-mobile">
+        <div class="usa-checkbox">
+          <input
+            class="usa-checkbox__input usa-checkbox__input--tile"
+            id="has_heading"
+            type="checkbox"
+            name="has_heading"
+            aria-controls="subsection-heading-fields"
+            {% if form.has_heading.value %}checked{% endif %}
+          >
+          <label class="usa-checkbox__label" for="has_heading">
+            Include a subsection heading
+            <span class="usa-checkbox__label-description">
+              Display a heading above this subsection’s content.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div id="subsection-heading-fields">
+        <!-- name -->
+        <div class="form-group">
+          {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
             {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type safe_hint=True only %}
             {% if subsection.html_id %}
               <div class="usa-hint margin-top-05 hint--subsection-id" id="{{ id }}--hint-2">
@@ -78,20 +100,10 @@
                 </button>
               </div>
             {% endif %}
-          {% else %}
-            {% include "includes/_text_input.html" with id=id label=label value=value error=error input_type=input_type disabled="disabled" only %}
-          {% endif %}
-        {% endwith %}
-      </div>
+          {% endwith %}
+        </div>
 
-      <!-- tag -->
-      {% if not form.tag.value %}
-
-        {# if there is no tag, make this a hidden field #}
-        <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
-
-      {% else %}
-
+        <!-- tag -->
         <div class="form-group width-mobile">
           <label
             {% whitespaceless %}
@@ -123,7 +135,7 @@
             <option value="h7" {% if form.tag.value == 'h7' %}selected{% endif %}>Heading 7</option>
           </select>
         </div>
-      {% endif %}
+      </div>
 
       <!-- callout_box -->
       <div class="form-group margin-top-4 width-mobile">
