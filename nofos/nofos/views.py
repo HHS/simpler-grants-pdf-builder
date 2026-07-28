@@ -122,6 +122,7 @@ from .nofo import (
     suggest_nofo_title,
     upload_cover_image_to_s3,
 )
+from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -362,15 +363,10 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # latest audit event (to show latest editor/user)
         context["updated_by"] = self.object.updated_by
 
-        metadata_fields = (
-            ("author", "Author"),
-            ("subject", "Subject"),
-            ("keywords", "Keywords"),
-        )
         context["missing_metadata_fields"] = [
             label
-            for field_name, label in metadata_fields
-            if not (getattr(self.object, field_name, "") or "").strip()
+            for field_name, label in PDF_METADATA_FIELDS
+            if is_missing_pdf_metadata_value(getattr(self.object, field_name, ""))
         ]
 
         # booleans to show/hide our various warning messages

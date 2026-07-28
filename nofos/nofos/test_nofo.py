@@ -4415,6 +4415,11 @@ class SuggestNofoAuthorTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_author(soup), "Paul Craig")
 
+    def test_author_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Author: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_author(soup), "")
+
 
 class SuggestNofoSubjectTests(TestCase):
     def test_subject_present_in_paragraph(self):
@@ -4435,6 +4440,11 @@ class SuggestNofoSubjectTests(TestCase):
         self.assertEqual(
             suggest_nofo_subject(soup), "This NOFO is about helping people"
         )
+
+    def test_subject_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Subject: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subject(soup), "")
 
 
 class SuggestNofoKeywordsTests(TestCase):
@@ -4463,6 +4473,11 @@ class SuggestNofoKeywordsTests(TestCase):
         self.assertEqual(
             suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
         )
+
+    def test_keywords_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Keywords: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_keywords(soup), "")
 
 
 class SuggestNofoFieldsTests(TestCase):
