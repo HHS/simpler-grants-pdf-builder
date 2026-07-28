@@ -93,3 +93,271 @@ class SubsectionEditTemplateTest(TestCase):
         )
 
         self.assertNotContains(response, "Modifications date")
+
+
+class SubsectionCalloutEditingTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="callouts@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(email="callouts@example.com", password="testpass123")
+
+        self.nofo = Nofo.objects.create(
+            title="Callout editing NOFO",
+            short_name="callout-editing",
+            number="TEST-CALLOUT-001",
+            group="bloom",
+            opdiv="HRSA",
+            theme="portrait-hrsa-white",
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo,
+            name="Step 2: Review",
+            html_id="step-2-review",
+            order=2,
+        )
+
+    def edit_url(self, subsection):
+        return reverse(
+            "nofos:subsection_edit",
+            args=[self.nofo.id, self.section.id, subsection.id],
+        )
+
+    def post_subsection(self, subsection, *, callout_box, **overrides):
+        data = {
+            "name": subsection.name,
+            "tag": subsection.tag,
+            "body": subsection.body,
+            "html_class": subsection.html_class,
+        }
+        data.update(overrides)
+        if callout_box:
+            data["callout_box"] = "on"
+        return self.client.post(self.edit_url(subsection), data)
+
+    def test_edit_page_exposes_current_callout_state(self):
+        regular = Subsection.objects.create(
+            section=self.section,
+            name="Regular subsection",
+            tag="h3",
+            order=1,
+            body="Regular content",
+        )
+        callout = Subsection.objects.create(
+            section=self.section,
+            name="Existing callout",
+            tag="h3",
+            order=2,
+            body="Callout content",
+            callout_box=True,
+        )
+
+        regular_response = self.client.get(self.edit_url(regular))
+        self.assertContains(regular_response, "Use callout box styling")
+        self.assertContains(
+            regular_response,
+            "Re-importing this NOFO replaces this setting",
+        )
+        self.assertNotContains(
+            regular_response,
+            'name="callout_box" checked',
+        )
+
+        callout_response = self.client.get(self.edit_url(callout))
+        self.assertContains(
+            callout_response,
+            'name="callout_box" checked',
+        )
+
+    def test_regular_subsection_can_be_changed_to_callout_without_other_changes(self):
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="Program details",
+            tag="h3",
+            order=3,
+            body="Program details body",
+            html_class="page-break-before",
+        )
+        original_html_id = subsection.html_id
+
+        response = self.post_subsection(subsection, callout_box=True)
+
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertTrue(subsection.callout_box)
+        self.assertEqual(subsection.name, "Program details")
+        self.assertEqual(subsection.tag, "h3")
+        self.assertEqual(subsection.body, "Program details body")
+        self.assertEqual(subsection.order, 3)
+        self.assertEqual(subsection.html_id, original_html_id)
+        self.assertEqual(subsection.html_class, "page-break-before")
+
+    def test_callout_can_be_changed_to_regular_subsection(self):
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="Program details",
+            tag="h3",
+            order=1,
+            body="Program details body",
+            callout_box=True,
+        )
+
+        response = self.post_subsection(subsection, callout_box=False)
+
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertFalse(subsection.callout_box)
+
+    def test_unnamed_subsection_supports_both_callout_transitions(self):
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="",
+            tag="",
+            order=1,
+            body="Unnamed subsection body",
+        )
+
+        response = self.post_subsection(subsection, callout_box=True)
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertTrue(subsection.callout_box)
+
+        response = self.post_subsection(subsection, callout_box=False)
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertFalse(subsection.callout_box)
+
+    def test_editing_other_fields_preserves_checked_callout_state(self):
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="Existing callout",
+            tag="h3",
+            order=1,
+            body="Original body",
+            callout_box=True,
+        )
+
+        response = self.post_subsection(
+            subsection,
+            callout_box=True,
+            body="Updated body",
+        )
+
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertTrue(subsection.callout_box)
+        self.assertEqual(subsection.body, "Updated body")
+
+
+class SubsectionCalloutRenderingTests(TestCase):
+    marker = "UNIQUE-CALLOUT-RENDER-MARKER"
+
+    def setUp(self):
+        User.objects.create_user(
+            email="callout-rendering@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.login(
+            email="callout-rendering@example.com",
+            password="testpass123",
+        )
+        self.nofo = Nofo.objects.create(
+            title="Callout rendering NOFO",
+            short_name="callout-rendering",
+            number="TEST-CALLOUT-002",
+            group="bloom",
+            opdiv="HRSA",
+            agency="Test agency",
+            theme="portrait-hrsa-white",
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo,
+            name="Step 1: Review the Opportunity",
+            html_id="step-1-review-the-opportunity",
+            order=1,
+        )
+        Subsection.objects.create(
+            section=self.section,
+            name="Basic information",
+            tag="h2",
+            order=1,
+            body="Basic information body",
+        )
+        self.subsection = Subsection.objects.create(
+            section=self.section,
+            name="Key facts",
+            tag="h3",
+            order=2,
+            body=self.marker,
+            html_class="page-break-before",
+            callout_box=True,
+        )
+
+    def rendered_nofo(self):
+        return self.client.get(reverse("nofos:nofo_view", args=[self.nofo.id]))
+
+    def test_recognized_step_one_callout_renders_once_in_portrait_right_column(self):
+        response = self.rendered_nofo()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode().count(self.marker), 1)
+        self.assertContains(response, "section--content--right-col")
+        self.assertContains(
+            response,
+            f'href="#{self.subsection.html_id}"',
+        )
+        self.assertContains(
+            response,
+            f'id="{self.subsection.html_id}"',
+        )
+        self.assertContains(response, "callout-box page-break-before")
+
+    def test_recognized_step_one_callout_renders_once_inline_in_landscape(self):
+        self.nofo.theme = "landscape-cdc-blue"
+        self.nofo.save()
+
+        response = self.rendered_nofo()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode().count(self.marker), 1)
+        self.assertNotContains(response, "section--content--right-col")
+        self.assertContains(response, "callout-box page-break-before")
+
+    def test_regular_subsection_renders_once_inline_with_same_toc_anchor(self):
+        self.subsection.callout_box = False
+        self.subsection.save()
+
+        response = self.rendered_nofo()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode().count(self.marker), 1)
+        self.assertNotContains(response, "section--content--right-col")
+        self.assertContains(
+            response,
+            f'href="#{self.subsection.html_id}"',
+        )
+        self.assertContains(
+            response,
+            f'id="{self.subsection.html_id}"',
+        )
+
+    def test_word_export_reflects_selected_callout_state(self):
+        export_url = reverse("nofos:nofo_export", args=[self.nofo.id])
+
+        callout_response = self.client.get(export_url)
+        self.assertEqual(callout_response.status_code, 200)
+        self.assertContains(callout_response, '<table class="callout-box">')
+        self.assertEqual(callout_response.content.decode().count(self.marker), 1)
+
+        self.subsection.callout_box = False
+        self.subsection.save()
+
+        regular_response = self.client.get(export_url)
+        self.assertEqual(regular_response.status_code, 200)
+        self.assertNotContains(regular_response, '<table class="callout-box">')
+        self.assertEqual(regular_response.content.decode().count(self.marker), 1)
