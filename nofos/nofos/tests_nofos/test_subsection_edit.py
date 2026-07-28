@@ -705,6 +705,10 @@ class SubsectionHeadingRenderingTests(TestCase):
         self.assertEqual(content.count(">Records retention</h3>"), 1)
         self.assertEqual(content.count("FIRST-SUBSECTION-BODY"), 1)
         self.assertEqual(content.count("page-break--hr--container"), 1)
+        self.assertLess(
+            content.index("page-break--hr--container"),
+            content.index(">Records retention</h3>"),
+        )
 
     def test_headingless_appendix_table_remains_direct_content_child(self):
         first_section = Section.objects.create(

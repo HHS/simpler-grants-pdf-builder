@@ -307,6 +307,13 @@
         {% if not section.has_section_page %}
           {% include "includes/heading.html" with tag="h2" content=section.name id=section.html_id only %}
         {% endif %}
+        {% if section.order == 1 and not first_subsection.callout_box %}
+          {% spaceless %}
+          {% if 'page-break-before' in first_subsection.html_class %}
+            {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
+          {% endif %}
+          {% endspaceless %}
+        {% endif %}
         <!-- for the very first subsection, add the nofo agency, subagency, and tagline -->
         {% if section.order == 1 %}
           <div class="section--content--basic-information">
@@ -355,11 +362,6 @@
           {% else %}
             {% if section.order == 1 and subsection.id == first_subsection.id %}
               {% if subsection.name|lower != 'basic information' %}
-                {% spaceless %}
-                {% if 'page-break-before' in subsection.html_class %}
-                  {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
-                {% endif %}
-                {% endspaceless %}
                 {% if not subsection.name and subsection.html_id %}<span id="{{ subsection.html_id }}" aria-hidden="true"></span>{% endif %}
                 {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
               {% endif %}
