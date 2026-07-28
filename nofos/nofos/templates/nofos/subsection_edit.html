@@ -65,19 +65,6 @@
         </legend>
       {% endif %}
 
-      <!-- callout_box -->
-      <div class="form-group margin-top-4 width-mobile">
-        <div class="usa-checkbox">
-          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %}>
-          <label class="usa-checkbox__label" for="callout_box">Use callout box styling
-            <span class="usa-checkbox__label-description">
-              Callout boxes use an accent color to call attention to important content. In Step 1 of portrait documents, recognized Key facts, Key dates, and question callouts appear in the right margin.
-            </span>
-          </label>
-        </div>
-        <p class="usa-hint margin-top-1">Re-importing this NOFO replaces this setting with the styling from the source document.</p>
-      </div>
-
       <!-- name -->
       <div class="form-group">
         {% with id="name" label=form.name.label value=form.name.value hint=form.name.help_text error=form.name.errors.0 input_type=form.name|input_type %}
@@ -137,6 +124,20 @@
           </select>
         </div>
       {% endif %}
+
+      <!-- callout_box -->
+      <div class="form-group margin-top-4 width-mobile">
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %}>
+          <label class="usa-checkbox__label" for="callout_box">Use callout box styling
+            <span class="usa-checkbox__label-description">
+              Best for short, high-priority content that applicants need to notice quickly. Avoid using callout boxes for long narrative content or detailed policy explanations.
+            </span>
+          </label>
+        </div>
+        <p class="usa-hint margin-top-1">In Step 1 of portrait documents, recognized Key facts, Key dates, and question callouts appear in the right margin.</p>
+        <p class="usa-hint margin-top-1">Re-importing this NOFO replaces this setting with the styling from the source document.</p>
+      </div>
 
       <!-- html_class -->
       <div class="form-group margin-top-4">
