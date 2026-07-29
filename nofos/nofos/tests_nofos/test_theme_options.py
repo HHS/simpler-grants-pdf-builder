@@ -323,3 +323,84 @@ class NonNIHUserThemeOptionsTests(TestCase):
         form = NofoThemeOptionsForm(data, instance=self.nofo, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn("theme", form.errors)
+
+
+class RetiredCdcLandscapeThemeTests(TestCase):
+    """
+    The "CDC Landscape (Default)" and "CDC Landscape (Light)" themes
+    (landscape-cdc-blue / landscape-cdc-white) were removed from the
+    Builder's theme selection dropdown (issue #479) because they were
+    unused. They must not be offered as a choice on any NOFO, but a NOFO
+    that already has one of these themes assigned must still show/preserve
+    that value instead of silently switching to something else.
+    """
+
+    def setUp(self):
+        self.user = _make_user("cdc")
+
+    def test_retired_themes_excluded_for_nofo_with_current_theme(self):
+        nofo = _make_nofo("cdc", theme="portrait-cdc-blue")
+        form = NofoThemeOptionsForm(instance=nofo, user=self.user)
+        theme_values = _theme_choice_values(form)
+        self.assertNotIn("landscape-cdc-blue", theme_values)
+        self.assertNotIn("landscape-cdc-white", theme_values)
+
+    def test_retired_theme_preserved_when_already_assigned(self):
+        nofo = _make_nofo("cdc", theme="landscape-cdc-blue")
+        form = NofoThemeOptionsForm(instance=nofo, user=self.user)
+        theme_values = _theme_choice_values(form)
+        # The NOFO's own (retired) theme is preserved as a choice...
+        self.assertIn("landscape-cdc-blue", theme_values)
+        # ...but the *other* retired theme is still not offered.
+        self.assertNotIn("landscape-cdc-white", theme_values)
+
+    def test_retired_theme_not_reintroduced_for_other_nofos(self):
+        # Assigning the retired theme to one NOFO must not leak it back
+        # into the choices offered for a different NOFO.
+        _make_nofo("cdc", theme="landscape-cdc-blue")
+        other_nofo = _make_nofo("cdc", theme="portrait-cdc-white")
+        form = NofoThemeOptionsForm(instance=other_nofo, user=self.user)
+        self.assertNotIn("landscape-cdc-blue", _theme_choice_values(form))
+
+    def test_get_edit_view_preserves_retired_theme(self):
+        nofo = _make_nofo(
+            "cdc",
+            theme="landscape-cdc-white",
+            cover="nofo--cover-page--hero",
+            icon_style="nofo--icons--border",
+        )
+        client = Client()
+        client.login(email="cdc@example.com", password="testpass123")
+        url = reverse("nofos:nofo_edit_theme_options", kwargs={"pk": nofo.id})
+
+        response = client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        nofo.refresh_from_db()
+        self.assertEqual(nofo.theme, "landscape-cdc-white")
+        self.assertContains(response, "CDC Landscape (Light, legacy)")
+        self.assertContains(response, 'value="landscape-cdc-white" selected')
+
+    def test_valid_submission_can_keep_existing_retired_theme(self):
+        # A user shouldn't be forced off a retired theme just because
+        # it's no longer offered for *new* selections.
+        nofo = _make_nofo("cdc", theme="landscape-cdc-blue")
+        data = {
+            "theme": "landscape-cdc-blue",
+            "cover": "nofo--cover-page--text",
+            "icon_style": "nofo--icons--solid",
+        }
+        form = NofoThemeOptionsForm(data, instance=nofo, user=self.user)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_retired_theme_submission_is_rejected_for_other_nofo(self):
+        # Switching *into* a retired theme from a non-retired one must fail.
+        nofo = _make_nofo("cdc", theme="portrait-cdc-blue")
+        data = {
+            "theme": "landscape-cdc-blue",
+            "cover": "nofo--cover-page--text",
+            "icon_style": "nofo--icons--solid",
+        }
+        form = NofoThemeOptionsForm(data, instance=nofo, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn("theme", form.errors)
