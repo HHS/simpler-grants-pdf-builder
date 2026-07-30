@@ -1880,6 +1880,12 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
+    # Printing is POST-only. Without this, a GET (eg. a browser extension or PDF
+    # viewer re-requesting the print URL after the initial POST) falls through to
+    # DetailView.get(), which tries to render a "nofos/nofo_detail.html" template
+    # that doesn't exist, and 500s. Unsupported methods now get a 405 instead.
+    http_method_names = ["post"]
+
     # NOTE: Uncomment to test the "print" audit event locally
     # def get(self, request, pk):
     #     nofo = self.get_object()
@@ -1959,6 +1965,16 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 request,
                 e,
                 context="PrintNofoAsPDFView:docraptor.rest.ApiException",
+                status=400,
+            )
+            return HttpResponseBadRequest(
+                "Server error printing NOFO. Check logs for error messages."
+            )
+        except Exception as e:
+            log_exception(
+                request,
+                e,
+                context="PrintNofoAsPDFView:{}".format(e.__class__.__name__),
                 status=400,
             )
             return HttpResponseBadRequest(
