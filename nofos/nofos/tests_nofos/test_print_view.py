@@ -131,14 +131,26 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertEqual(self._print_event_count(), 0)
 
     @patch("nofos.views.docraptor.DocApi")
-    def test_post_handles_unexpected_exception(self, mock_doc_api):
-        """Non-ApiException failures used to escape as a raw 500."""
+    def test_post_lets_unexpected_exceptions_return_500(self, mock_doc_api):
+        """
+        Only DocRaptor API errors are treated as 400s. Anything else (a bug, a
+        database failure, a broken audit event) is a server fault and must keep
+        the normal 500 path, which JSONRequestLoggingMiddleware.process_exception
+        logs at ERROR level before handler500 renders the sanitized 500 page.
+        Reporting these as 400s would hide server faults from status-based alerting.
+        """
         mock_doc_api.return_value.create_doc.side_effect = ValueError("boom")
 
-        with self.assertLogs("django.request", level="ERROR"):
-            response = self.client.post(self.url)
+        # raise_request_exception is a Client constructor argument: without it the
+        # test client re-raises instead of returning the 500 we want to assert on.
+        client = Client(raise_request_exception=False)
+        client.login(email="test@example.com", password="testpass123")
 
-        self.assertEqual(response.status_code, 400)
+        with self.assertLogs("django.request", level="ERROR") as logs:
+            response = client.post(self.url)
+
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("Unhandled Exception", "".join(logs.output))
         self.assertEqual(self._print_event_count(), 0)
 
     ###################################################

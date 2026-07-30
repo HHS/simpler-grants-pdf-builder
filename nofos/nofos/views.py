@@ -1970,16 +1970,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
             )
-        except Exception as e:
-            log_exception(
-                request,
-                e,
-                context="PrintNofoAsPDFView:{}".format(e.__class__.__name__),
-                status=400,
-            )
-            return HttpResponseBadRequest(
-                "Server error printing NOFO. Check logs for error messages."
-            )
 
 
 ###########################################################
