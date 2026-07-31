@@ -295,6 +295,32 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertIn("Unhandled Exception", "".join(logs.output))
         self.assertEqual(self._print_event_count(), 0)
 
+    @patch("nofos.views.create_nofo_audit_event")
+    @patch("nofos.views.docraptor.DocApi")
+    def test_failed_audit_event_leaves_no_cache_entry_to_replay(
+        self, mock_doc_api, mock_create_audit_event
+    ):
+        """
+        The PDF is cached only after the audit event is written. If the
+        audit event fails (db issue, validation, etc.) after DocRaptor
+        already generated the document, the POST 500s -- but there must be
+        no cache entry left behind for a follow-up GET to replay, since that
+        would serve a PDF with no audit trail at all.
+        """
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+        mock_create_audit_event.side_effect = ValueError("boom")
+
+        client = Client(raise_request_exception=False)
+        client.login(email="test@example.com", password="testpass123")
+
+        with self.assertLogs("django.request", level="ERROR"):
+            post_response = client.post("{}?mode=inline".format(self.url))
+        get_response = client.get("{}?mode=inline".format(self.url))
+
+        self.assertEqual(post_response.status_code, 500)
+        self.assertEqual(get_response.status_code, 404)
+        self.assertEqual(self._print_event_count(), 0)
+
     ###################################################
     # Access control still applies
     ###################################################

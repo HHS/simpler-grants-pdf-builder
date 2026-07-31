@@ -302,19 +302,22 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "django_cache",
         "OPTIONS": {
-            # The only current user of this cache (PrintNofoAsPDFView) stores
-            # whole generated PDFs -- potentially several MB each -- not
-            # small values, and traffic is a modest number of internal NOFO
-            # editors, realistically never more than a handful of concurrent
-            # Preview PDF actions within the 30s TTL. Django's default
-            # MAX_ENTRIES (300) would let up to ~300 multi-MB rows pile up
-            # before culling ever triggers (culling only runs opportunistically
-            # on writes, once the table exceeds MAX_ENTRIES -- there's no
-            # scheduled cleanup). Capping this well below the default bounds
-            # worst-case table bloat while staying well above realistic
-            # concurrent volume; CULL_FREQUENCY=2 means a triggered cull
-            # removes all expired rows *and* half of what's left, so large
-            # stale rows don't linger once it fires.
+            # This cache has two consumers: uploads.views.ImageListView caches
+            # a small S3 image listing for 15 minutes, and
+            # nofos.views.PrintNofoAsPDFView caches whole generated PDFs --
+            # potentially several MB each -- for 30 seconds. The PDFs are the
+            # large-value case that matters for sizing: traffic on both is a
+            # modest number of internal NOFO editors, realistically never
+            # more than a handful of concurrent Preview PDF actions within
+            # that 30s window, plus the single image-list entry. Django's
+            # default MAX_ENTRIES (300) would let up to ~300 multi-MB rows
+            # pile up before culling ever triggers (culling only runs
+            # opportunistically on writes, once the table exceeds
+            # MAX_ENTRIES -- there's no scheduled cleanup). Capping this well
+            # below the default bounds worst-case table bloat while staying
+            # well above realistic combined volume; CULL_FREQUENCY=2 means a
+            # triggered cull removes all expired rows *and* half of what's
+            # left, so large stale rows don't linger once it fires.
             "MAX_ENTRIES": 50,
             "CULL_FREQUENCY": 2,
         },

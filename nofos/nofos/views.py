@@ -1,4 +1,3 @@
-import io
 import json
 import uuid
 from datetime import datetime
@@ -1911,7 +1910,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     def _get_mode(self, request):
         mode = request.GET.get(
             "mode", "attachment"
-        )  # Default to inline if not specified
+        )  # Default to attachment if not specified
         return mode if mode in ["attachment", "inline"] else "attachment"
 
     def _get_is_test_pdf(self, request):
@@ -1932,7 +1931,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         nofo_filename = "{}.pdf".format(
             nofo.number or nofo.short_name or nofo.title
         ).lower()
-        response = HttpResponse(io.BytesIO(pdf_bytes), content_type="application/pdf")
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = '{}; filename="{}"'.format(
             mode, nofo_filename
         )
@@ -1996,12 +1995,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 },
             )
 
-            cache.set(
-                self._print_pdf_cache_key(request, nofo, mode, is_test_pdf),
-                pdf_bytes,
-                timeout=self.PRINT_PDF_CACHE_TTL_SECONDS,
-            )
-
             response = self._build_pdf_response(pdf_bytes, nofo, mode)
 
             # Create audit event for printing a nofo
@@ -2010,6 +2003,16 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 document=nofo,
                 user=request.user,
                 is_test_pdf=is_test_pdf,
+            )
+
+            # Cache only after the audit event succeeds -- otherwise a
+            # failure here (db issue, validation, etc.) would 500 the POST
+            # while still leaving a cache entry a follow-up GET could
+            # replay with no audit trail at all.
+            cache.set(
+                self._print_pdf_cache_key(request, nofo, mode, is_test_pdf),
+                pdf_bytes,
+                timeout=self.PRINT_PDF_CACHE_TTL_SECONDS,
             )
 
             return response
