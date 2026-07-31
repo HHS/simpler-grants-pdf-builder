@@ -1,12 +1,15 @@
+from datetime import timedelta
 from unittest.mock import patch
 
 import docraptor
 from django.test import Client, TestCase
 from django.urls import reverse
 from easyaudit.models import CRUDEvent
+from freezegun import freeze_time
 from users.models import BloomUser
 
 from nofos.models import Nofo
+from nofos.views import PrintNofoAsPDFView
 
 
 class PrintNofoAsPDFViewTest(TestCase):
@@ -208,6 +211,48 @@ class PrintNofoAsPDFViewTest(TestCase):
         other_get_response = other_client.get("{}?mode=inline".format(self.url))
 
         self.assertEqual(other_get_response.status_code, 404)
+        mock_doc_api.return_value.create_doc.assert_called_once()
+        self.assertEqual(self._print_event_count(), 1)
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_get_still_hits_cache_shortly_before_ttl_expiry(self, mock_doc_api):
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        with freeze_time("2026-01-01 12:00:00") as frozen_time:
+            self.client.post("{}?mode=inline".format(self.url))
+            frozen_time.tick(
+                delta=timedelta(
+                    seconds=PrintNofoAsPDFView.PRINT_PDF_CACHE_TTL_SECONDS - 5
+                )
+            )
+            response = self.client.get("{}?mode=inline".format(self.url))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"%PDF-1.4 fake pdf")
+        mock_doc_api.return_value.create_doc.assert_called_once()
+        self.assertEqual(self._print_event_count(), 1)
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_get_after_ttl_expiry_returns_404_and_does_not_print(self, mock_doc_api):
+        """
+        A follow-up GET that arrives after the cache window has closed (eg. a
+        slow extension, or a user who doesn't interact for a while) must not
+        silently regenerate the document -- it has the same "nothing safe to
+        replay" outcome as a bare GET with no prior POST at all.
+        """
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        with freeze_time("2026-01-01 12:00:00") as frozen_time:
+            self.client.post("{}?mode=inline".format(self.url))
+            frozen_time.tick(
+                delta=timedelta(
+                    seconds=PrintNofoAsPDFView.PRINT_PDF_CACHE_TTL_SECONDS + 5
+                )
+            )
+            response = self.client.get("{}?mode=inline".format(self.url))
+
+        self.assertEqual(response.status_code, 404)
+        # still only the one DocRaptor call, from the original POST
         mock_doc_api.return_value.create_doc.assert_called_once()
         self.assertEqual(self._print_event_count(), 1)
 

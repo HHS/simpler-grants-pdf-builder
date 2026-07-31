@@ -301,6 +301,23 @@ CACHES = {
         # See nofos.0130_create_print_pdf_cache_table for the backing table.
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "django_cache",
+        "OPTIONS": {
+            # The only current user of this cache (PrintNofoAsPDFView) stores
+            # whole generated PDFs -- potentially several MB each -- not
+            # small values, and traffic is a modest number of internal NOFO
+            # editors, realistically never more than a handful of concurrent
+            # Preview PDF actions within the 30s TTL. Django's default
+            # MAX_ENTRIES (300) would let up to ~300 multi-MB rows pile up
+            # before culling ever triggers (culling only runs opportunistically
+            # on writes, once the table exceeds MAX_ENTRIES -- there's no
+            # scheduled cleanup). Capping this well below the default bounds
+            # worst-case table bloat while staying well above realistic
+            # concurrent volume; CULL_FREQUENCY=2 means a triggered cull
+            # removes all expired rows *and* half of what's left, so large
+            # stale rows don't linger once it fires.
+            "MAX_ENTRIES": 50,
+            "CULL_FREQUENCY": 2,
+        },
     }
 }
 
