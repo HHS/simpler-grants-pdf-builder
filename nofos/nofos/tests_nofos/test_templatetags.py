@@ -6,7 +6,16 @@ from django.utils.safestring import SafeString
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
-from nofos.templatetags.replace_unicode_with_icon import replace_unicode_with_icon
+from nofos.templatetags.replace_unicode_with_icon import (
+    has_checkbox,
+    is_before_sublist,
+    is_list_heading,
+    is_numbered_sublist,
+    is_sublist,
+    replace_unicode_with_icon,
+    wrap_td_contents_in_div,
+    wrap_text_in_span,
+)
 from nofos.templatetags.safe_br import safe_br
 from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tag,
@@ -152,6 +161,272 @@ class ReplaceUnicodeWithIconTests(TestCase):
         blocks = td.find_all(recursive=False)
         self.assertIn("usa-icon__line", blocks[0].get("class", []))
         self.assertNotIn("usa-icon__line", blocks[1].get("class", []))
+
+
+class HasCheckboxTests(TestCase):
+    """
+    Characterization tests for has_checkbox(). It currently detects a
+    checkbox two ways: the raw source character (before SVG replacement)
+    and the alt="Checkbox" attribute on the already-rendered icon <img>
+    (after SVG replacement). That second branch is exactly what issue #783
+    flags as conflating an accessibility attribute with a programmatic
+    selector, and is expected to move to a class-based check. These tests
+    lock in today's alt-text-keyed behavior so that change is visible.
+    """
+
+    def _td(self, inner_html):
+        soup = BeautifulSoup(
+            f"<table><tr><td>{inner_html}</td></tr></table>", "html.parser"
+        )
+        return soup.find("td")
+
+    def test_detects_raw_white_medium_square_character(self):
+        td = self._td("◻ Some label")
+        self.assertTrue(has_checkbox(td))
+
+    def test_detects_raw_ballot_box_character(self):
+        td = self._td("☐ Some label")
+        self.assertTrue(has_checkbox(td))
+
+    def test_detects_rendered_checkbox_icon_by_alt_text(self):
+        td = self._td(
+            '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Checkbox"> Label'
+        )
+        self.assertTrue(has_checkbox(td))
+
+    def test_does_not_detect_same_icon_class_with_different_alt_text(self):
+        # Proves detection today is keyed on alt text, not on the icon's class.
+        td = self._td(
+            '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Something else"> Label'
+        )
+        self.assertFalse(has_checkbox(td))
+
+    def test_plain_cell_has_no_checkbox(self):
+        td = self._td("Just text")
+        self.assertFalse(has_checkbox(td))
+
+
+class IsListHeadingTests(TestCase):
+    def _td(self, inner_html):
+        soup = BeautifulSoup(
+            f"<table><tr><td>{inner_html}</td></tr></table>", "html.parser"
+        )
+        return soup.find("td")
+
+    def test_link_without_checkbox_is_a_heading(self):
+        td = self._td('<a href="https://example.com">Some link</a>')
+        self.assertTrue(is_list_heading(td))
+
+    def test_link_with_checkbox_is_not_a_heading(self):
+        td = self._td('◻ <a href="https://example.com">Some link</a>')
+        self.assertFalse(is_list_heading(td))
+
+    def test_strong_with_colon_is_a_heading_even_with_a_checkbox(self):
+        # The strong+colon branch doesn't check has_checkbox() at all --
+        # unlike the link branch above. Characterizing this asymmetry so a
+        # future refactor of has_checkbox() can't silently change it.
+        td = self._td("◻ <strong>Required forms:</strong>")
+        self.assertTrue(is_list_heading(td))
+
+    def test_strong_without_colon_is_not_a_heading(self):
+        td = self._td("<strong>Required forms</strong>")
+        self.assertFalse(is_list_heading(td))
+
+    def test_attachments_keyword_is_a_heading(self):
+        td = self._td("Attachments")
+        self.assertTrue(is_list_heading(td))
+
+    def test_narratives_keyword_is_a_heading(self):
+        td = self._td("Narratives")
+        self.assertTrue(is_list_heading(td))
+
+    def test_other_required_forms_prefix_is_a_heading(self):
+        td = self._td("Other required forms and documents")
+        self.assertTrue(is_list_heading(td))
+
+    def test_plain_checklist_item_is_not_a_heading(self):
+        td = self._td("◻ Some checklist item")
+        self.assertFalse(is_list_heading(td))
+
+
+class IsNumberedSublistTests(TestCase):
+    def _td(self, inner_html):
+        soup = BeautifulSoup(
+            f"<table><tr><td>{inner_html}</td></tr></table>", "html.parser"
+        )
+        return soup.find("td")
+
+    def test_matches_simple_numbered_item(self):
+        td = self._td("1. Work plan")
+        self.assertTrue(is_numbered_sublist(td))
+
+    def test_matches_numbered_item_with_leading_raw_checkbox_character(self):
+        # Characterizes an ordering dependency: the "◻" character is
+        # stripped from td.text before matching, so this only works
+        # correctly while the raw character is still present as text --
+        # i.e. before replace_unicode_with_svg has swapped it for an <img>.
+        td = self._td("◻ 1. Work plan")
+        self.assertTrue(is_numbered_sublist(td))
+
+    def test_still_matches_once_checkbox_is_rendered_as_an_icon(self):
+        # Once rendered, the icon's alt text isn't part of td.text, so the
+        # leading "1." is unaffected either way.
+        td = self._td(
+            '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Checkbox"> 1. Work plan'
+        )
+        self.assertTrue(is_numbered_sublist(td))
+
+    def test_does_not_match_plain_text(self):
+        td = self._td("Work plan")
+        self.assertFalse(is_numbered_sublist(td))
+
+    def test_does_not_match_number_without_a_period(self):
+        td = self._td("1 Work plan")
+        self.assertFalse(is_numbered_sublist(td))
+
+
+class IsSublistTests(TestCase):
+    def _table_with_rows(self, row_htmls):
+        table_html = (
+            "<table>"
+            + "".join(f"<tr><td>{row}</td></tr>" for row in row_htmls)
+            + "</table>"
+        )
+        soup = BeautifulSoup(table_html, "html.parser")
+        return soup.find_all("td")
+
+    def test_row_after_link_heading_without_checkbox_is_a_sublist(self):
+        _heading_td, item_td = self._table_with_rows(
+            ['<a href="https://example.com">Instructions</a>', "◻ Report on overlap"]
+        )
+        self.assertTrue(is_sublist(item_td))
+
+    def test_row_after_link_heading_with_checkbox_is_not_a_sublist(self):
+        _heading_td, item_td = self._table_with_rows(
+            [
+                '◻ <a href="https://example.com">Instructions</a>',
+                "◻ Report on overlap",
+            ]
+        )
+        self.assertFalse(is_sublist(item_td))
+
+    def test_row_after_plain_row_is_not_a_sublist(self):
+        _first_td, second_td = self._table_with_rows(["◻ First item", "◻ Second item"])
+        self.assertFalse(is_sublist(second_td))
+
+    def test_row_after_row_already_marked_sublist_is_also_a_sublist(self):
+        # Simulates mid-pipeline state: the previous row's <td> already has
+        # the "usa-icon__td--sublist" class from an earlier pass through the
+        # main replace_unicode_with_icon loop.
+        first_td, second_td = self._table_with_rows(["◻ First item", "◻ Second item"])
+        first_td["class"] = ["usa-icon__td--sublist"]
+        self.assertTrue(is_sublist(second_td))
+
+    def test_row_after_numbered_sublist_row_is_not_chained_as_a_plain_sublist(self):
+        first_td, second_td = self._table_with_rows(["◻ First item", "◻ Second item"])
+        first_td["class"] = [
+            "usa-icon__td--sublist",
+            "usa-icon__td--sublist--numbered",
+        ]
+        self.assertFalse(is_sublist(second_td))
+
+
+class IsBeforeSublistTests(TestCase):
+    def _table_with_rows(self, row_htmls):
+        table_html = (
+            "<table>"
+            + "".join(f"<tr><td>{row}</td></tr>" for row in row_htmls)
+            + "</table>"
+        )
+        soup = BeautifulSoup(table_html, "html.parser")
+        return soup.find_all("td")
+
+    def test_row_before_list_heading_without_checkbox_is_before_a_sublist(self):
+        first_td, _heading_td = self._table_with_rows(
+            ["◻ Some item", "<strong>Required forms:</strong>"]
+        )
+        self.assertTrue(is_before_sublist(first_td))
+
+    def test_row_before_list_heading_with_checkbox_is_not_before_a_sublist(self):
+        first_td, _heading_td = self._table_with_rows(
+            ["◻ Some item", "◻ <strong>Required forms:</strong>"]
+        )
+        self.assertFalse(is_before_sublist(first_td))
+
+    def test_numbered_row_before_non_numbered_row_is_before_a_sublist(self):
+        numbered_td, _plain_td = self._table_with_rows(
+            ["1. Work plan", "Just a plain row"]
+        )
+        self.assertTrue(is_before_sublist(numbered_td))
+
+    def test_numbered_row_before_another_numbered_row_is_not_before_a_sublist(self):
+        first_td, _second_td = self._table_with_rows(["1. Work plan", "2. Timeline"])
+        self.assertFalse(is_before_sublist(first_td))
+
+    def test_checks_next_rows_raw_checkbox_character_even_though_current_rows_icon_was_already_rendered(
+        self,
+    ):
+        # Characterizes the icon-processing loop's ordering: within a single
+        # icon pass, earlier <td>s in document order get their "◻" replaced
+        # with an <img> before later <td>s do. is_before_sublist looks at
+        # the *next* row, which -- at the moment this row is processed --
+        # may still hold the raw, unreplaced "◻" character rather than a
+        # rendered icon. has_checkbox()'s text-based branch is what makes
+        # that still resolve correctly today.
+        current_td, _next_td = self._table_with_rows(
+            [
+                '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Checkbox"> Current item',
+                "◻ <strong>Required forms:</strong>",
+            ]
+        )
+        self.assertFalse(is_before_sublist(current_td))
+
+
+class WrapTextInSpanTests(TestCase):
+    def test_wraps_text_immediately_after_the_image(self):
+        soup = BeautifulSoup(
+            '<td><img src="x.svg" alt="Checkbox"> Label text</td>', "html.parser"
+        )
+        td = soup.td
+        wrap_text_in_span(td)
+        span = td.find("span")
+        self.assertIsNotNone(span)
+        self.assertEqual(span.get_text(), "Label text")
+
+    def test_does_nothing_without_an_image(self):
+        soup = BeautifulSoup("<td>Just text</td>", "html.parser")
+        td = soup.td
+        wrap_text_in_span(td)
+        self.assertIsNone(td.find("span"))
+
+    def test_does_nothing_when_text_after_image_is_blank(self):
+        soup = BeautifulSoup(
+            '<td><img src="x.svg" alt="Checkbox">   </td>', "html.parser"
+        )
+        td = soup.td
+        wrap_text_in_span(td)
+        self.assertIsNone(td.find("span"))
+
+
+class WrapTdContentsInDivTests(TestCase):
+    def test_wraps_loose_contents_in_a_div(self):
+        soup = BeautifulSoup(
+            '<td><img src="x.svg" alt="Checkbox"> Label</td>', "html.parser"
+        )
+        td = soup.td
+        wrap_td_contents_in_div(td)
+        self.assertEqual(len(td.contents), 1)
+        self.assertEqual(td.contents[0].name, "div")
+        self.assertIsNotNone(td.div.find("img"))
+
+    def test_does_nothing_if_first_child_is_already_a_div(self):
+        soup = BeautifulSoup(
+            '<td><div><img src="x.svg" alt="Checkbox"></div></td>', "html.parser"
+        )
+        td = soup.td
+        original_div = td.div
+        wrap_td_contents_in_div(td)
+        self.assertIs(td.div, original_div)
 
 
 class TestAddClassIfNotExists(TestCase):
