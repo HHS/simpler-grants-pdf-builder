@@ -295,8 +295,12 @@ if not is_prod and DATABASES["default"]["HOST"].startswith("/cloudsql"):
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-uploads-cache",
+        # DatabaseCache instead of LocMemCache because the app runs behind
+        # multiple gunicorn workers (and potentially multiple instances) --
+        # LocMemCache is per-process and wouldn't be visible across them.
+        # See nofos.0130_create_print_pdf_cache_table for the backing table.
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
     }
 }
 
