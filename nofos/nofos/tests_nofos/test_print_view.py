@@ -18,6 +18,14 @@ class PrintNofoAsPDFViewTest(TestCase):
     an inline PDF) used to fall through to DetailView.get() and raise
     TemplateDoesNotExist for the non-existent "nofos/nofo_detail.html", which
     surfaced as a 500.
+
+    GET is now supported, but only as a replay of a just-generated PDF: POST
+    caches the bytes it generates (keyed by NOFO + user + mode + is_test_pdf,
+    see PrintNofoAsPDFView.PRINT_PDF_CACHE_TTL_SECONDS), and a follow-up GET
+    with matching params serves the cached bytes instead of calling DocRaptor
+    or writing a second audit event. A GET with no matching cache entry --
+    eg. visiting the print URL directly with no prior POST -- has nothing
+    safe to replay and 404s rather than silently generating a fresh document.
     """
 
     def setUp(self):
@@ -46,23 +54,29 @@ class PrintNofoAsPDFViewTest(TestCase):
         ).count()
 
     ###################################################
-    # Unsupported methods return 405, never a 500
+    # GET with no cache entry: 404, never a 500, never a duplicate
     ###################################################
 
     @patch("nofos.views.docraptor.DocApi")
-    def test_get_returns_405_and_does_not_print(self, mock_doc_api):
-        """A follow-up GET (what the Acrobat extension issues) must not 500."""
+    def test_get_with_no_cache_entry_returns_404_and_does_not_print(self, mock_doc_api):
+        """
+        A follow-up GET with nothing cached (eg. visiting the print URL
+        directly, or arriving after the cache window expired) must not 500,
+        and must not silently generate a fresh document either.
+        """
         response = self.client.get("{}?mode=inline".format(self.url))
 
-        self.assertEqual(response.status_code, 405)
-        self.assertIn("POST", response["Allow"])
-        # no PDF was generated and no audit event was recorded
+        self.assertEqual(response.status_code, 404)
         mock_doc_api.assert_not_called()
         self.assertEqual(self._print_event_count(), 0)
 
     @patch("nofos.views.docraptor.DocApi")
     def test_head_returns_405_and_does_not_print(self, mock_doc_api):
-        """DetailView also accepts HEAD, so it needs the same guard as GET."""
+        """
+        HEAD is deliberately excluded from http_method_names -- it's the
+        same generation trigger as GET would be if Django auto-routed it to
+        get(), and we don't want a third path into PDF generation.
+        """
         response = self.client.head(self.url)
 
         self.assertEqual(response.status_code, 405)
@@ -70,11 +84,13 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertEqual(self._print_event_count(), 0)
 
     @patch("nofos.views.docraptor.DocApi")
-    def test_range_request_returns_405_and_does_not_print(self, mock_doc_api):
+    def test_range_request_with_no_cache_entry_returns_404_and_does_not_print(
+        self, mock_doc_api
+    ):
         """Byte-range re-requests against an inline PDF must not 500 either."""
         response = self.client.get(self.url, headers={"range": "bytes=0-1023"})
 
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 404)
         mock_doc_api.assert_not_called()
         self.assertEqual(self._print_event_count(), 0)
 
@@ -112,6 +128,87 @@ class PrintNofoAsPDFViewTest(TestCase):
 
         self.client.post("{}?mode=inline".format(self.url))
 
+        self.assertEqual(self._print_event_count(), 1)
+
+    ###################################################
+    # GET after POST: replay from cache, no duplicate generation
+    ###################################################
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_get_after_post_replays_cached_bytes_without_a_second_docraptor_call(
+        self, mock_doc_api
+    ):
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        post_response = self.client.post("{}?mode=inline".format(self.url))
+        get_response = self.client.get("{}?mode=inline".format(self.url))
+
+        self.assertEqual(post_response.status_code, 200)
+        self.assertEqual(get_response.status_code, 200)
+        self.assertEqual(get_response.content, post_response.content)
+        self.assertEqual(
+            get_response["Content-Disposition"], post_response["Content-Disposition"]
+        )
+
+        # exactly one DocRaptor call total, for the POST -- the GET was
+        # served from cache
+        mock_doc_api.return_value.create_doc.assert_called_once()
+        self.assertEqual(self._print_event_count(), 1)
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_range_request_after_post_is_also_served_from_cache(self, mock_doc_api):
+        """
+        The Acrobat extension's follow-up re-fetch is sometimes a byte-range
+        GET -- this must hit the same cache entry as a plain GET would.
+        """
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        self.client.post("{}?mode=inline".format(self.url))
+        range_response = self.client.get(
+            "{}?mode=inline".format(self.url), headers={"range": "bytes=0-1023"}
+        )
+
+        self.assertEqual(range_response.status_code, 200)
+        self.assertEqual(range_response.content, b"%PDF-1.4 fake pdf")
+        mock_doc_api.return_value.create_doc.assert_called_once()
+        self.assertEqual(self._print_event_count(), 1)
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_get_with_different_mode_than_the_post_is_a_cache_miss(self, mock_doc_api):
+        """The cache key includes `mode`, so it doesn't cross mode/params."""
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        self.client.post("{}?mode=inline".format(self.url))
+        # no ?mode= at all -- defaults to "attachment", a different cache key
+        mismatched_get_response = self.client.get(self.url)
+
+        self.assertEqual(mismatched_get_response.status_code, 404)
+        mock_doc_api.return_value.create_doc.assert_called_once()
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_get_does_not_see_a_different_users_cached_pdf(self, mock_doc_api):
+        """
+        The cache key includes the requesting user, so this is strictly a
+        replay of *this user's own* just-generated PDF -- a different user's
+        follow-up GET must still 404, and if they go on to POST, that's an
+        independent print action with its own DocRaptor call and audit event.
+        """
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        BloomUser.objects.create_user(
+            email="other-bloom-user@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        other_client = Client()
+        other_client.login(email="other-bloom-user@example.com", password="testpass123")
+
+        self.client.post("{}?mode=inline".format(self.url))
+        other_get_response = other_client.get("{}?mode=inline".format(self.url))
+
+        self.assertEqual(other_get_response.status_code, 404)
+        mock_doc_api.return_value.create_doc.assert_called_once()
         self.assertEqual(self._print_event_count(), 1)
 
     ###################################################
