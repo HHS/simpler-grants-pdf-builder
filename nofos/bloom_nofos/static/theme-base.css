@@ -1156,6 +1156,12 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     -prince-pdf-tag-type: Artifact;
   }
 
+  /* Application checklist checkboxes are decorative -- see issue #783 */
+  img.usa-icon--check_box_outline_blank {
+    -prince-pdf-tag-type: Artifact;
+    -prince-alt-text: None;
+  }
+
   div[role="heading"] {
     -prince-pdf-tag-type: "H7";
     -prince-bookmark-level: 7;
