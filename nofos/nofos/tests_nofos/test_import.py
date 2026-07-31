@@ -131,7 +131,9 @@ class TestParseNofoFile(TestCase):
         self.assertEqual(len(rendered_children), 2)
         for paragraph in rendered_children:
             self.assertIn("usa-icon__line", paragraph.get("class", []))
-            self.assertIsNotNone(paragraph.find("img", alt="Checkbox"))
+            self.assertIsNotNone(
+                paragraph.find("img", class_="usa-icon--check_box_outline_blank")
+            )
 
     def test_docx_file_with_strict_mode_and_no_warnings(self):
         """

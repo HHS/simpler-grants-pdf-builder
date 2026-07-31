@@ -1,6 +1,7 @@
 import re
 
 from bs4 import BeautifulSoup, Tag
+from django.contrib.staticfiles import finders
 from django.test import TestCase
 from django.utils.safestring import SafeString
 
@@ -61,7 +62,7 @@ class ReplaceUnicodeWithIconTests(TestCase):
 
         self.assertIn("usa-icon__td", td.get("class", []))
         self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
-        self.assertIsNotNone(td.find("img", alt="Checkbox"))
+        self.assertIsNotNone(td.find("img", class_="usa-icon--check_box_outline_blank"))
         self.assertEqual(self.direct_tag_names(td.div), ["img", "span"])
         self.assertIsNone(td.find(class_="usa-icon__line"))
 
@@ -132,14 +133,20 @@ class ReplaceUnicodeWithIconTests(TestCase):
         checkbox_line = td.div.find_all(recursive=False)[0]
         self.assertEqual(checkbox_line.name, "p")
         self.assertIn("usa-icon__line", checkbox_line.get("class", []))
-        self.assertIsNotNone(checkbox_line.find("strong").find("img", alt="Checkbox"))
+        self.assertIsNotNone(
+            checkbox_line.find("strong").find(
+                "img", class_="usa-icon--check_box_outline_blank"
+            )
+        )
 
     def test_arrow_wrapped_cell_still_marks_checkbox_line(self):
         td = self.render_cell("<p>↑ Trend</p><p>◻ Confirm result</p><p>More detail</p>")
 
         self.assertIn("usa-icon__td--multi-block", td.get("class", []))
         self.assertEqual(self.direct_tag_names(td.div), ["p", "p", "p"])
-        checkbox_line = td.find("img", alt="Checkbox").find_parent("p")
+        checkbox_line = td.find(
+            "img", class_="usa-icon--check_box_outline_blank"
+        ).find_parent("p")
         self.assertIn("usa-icon__line", checkbox_line.get("class", []))
         self.assertIsNotNone(td.find("img", alt="Report upward trend"))
 
@@ -150,7 +157,10 @@ class ReplaceUnicodeWithIconTests(TestCase):
         checkbox_lines = td.find_all("p", class_="usa-icon__line")
         self.assertEqual(len(checkbox_lines), 2)
         self.assertTrue(
-            all(line.find("img", alt="Checkbox") for line in checkbox_lines)
+            all(
+                line.find("img", class_="usa-icon--check_box_outline_blank")
+                for line in checkbox_lines
+            )
         )
 
     def test_existing_div_with_sibling_block_is_not_treated_as_generated_wrapper(self):
@@ -163,15 +173,58 @@ class ReplaceUnicodeWithIconTests(TestCase):
         self.assertNotIn("usa-icon__line", blocks[1].get("class", []))
 
 
+class ChecklistCheckboxIsDecorativeTests(TestCase):
+    """
+    Accessibility fix for issue #783: the checklist checkbox icon is
+    decorative, so it must have empty alt text in HTML and be explicitly
+    tagged as a PDF Artifact for print, rather than surfacing as a
+    generic "Checkbox" Figure in tagged PDF output.
+    """
+
+    def test_checkbox_icon_has_empty_alt_text_in_rendered_html(self):
+        result = replace_unicode_with_icon(
+            "<table><tbody><tr><td>◻ Some label</td></tr></tbody></table>"
+        )
+        td = BeautifulSoup(result, "html.parser").find("td")
+        img = td.find("img", class_="usa-icon--check_box_outline_blank")
+        self.assertIsNotNone(img)
+        self.assertEqual(img.get("alt"), "")
+
+    def test_checkbox_icon_is_tagged_as_a_pdf_artifact_for_print(self):
+        css_path = finders.find("theme-base.css")
+        self.assertIsNotNone(
+            css_path, "theme-base.css not found by staticfiles finders"
+        )
+        with open(css_path, encoding="utf-8") as f:
+            css = f.read()
+
+        # The icon's class is also used elsewhere in this file for visual
+        # positioning -- scope the search to the print/Prince block so we
+        # match the PDF-tagging rule specifically, not a layout rule that
+        # happens to share the same selector.
+        print_block = css.split("@media print", 1)[1]
+        rule_match = re.search(
+            r"img\.usa-icon--check_box_outline_blank\s*\{([^}]*)\}", print_block
+        )
+        self.assertIsNotNone(
+            rule_match, "No Prince PDF tag rule found for the checkbox icon"
+        )
+        rule_body = rule_match.group(1)
+        self.assertIn("-prince-pdf-tag-type: Artifact", rule_body)
+        self.assertIn("-prince-alt-text: None", rule_body)
+
+
 class HasCheckboxTests(TestCase):
     """
-    Characterization tests for has_checkbox(). It currently detects a
-    checkbox two ways: the raw source character (before SVG replacement)
-    and the alt="Checkbox" attribute on the already-rendered icon <img>
-    (after SVG replacement). That second branch is exactly what issue #783
-    flags as conflating an accessibility attribute with a programmatic
-    selector, and is expected to move to a class-based check. These tests
-    lock in today's alt-text-keyed behavior so that change is visible.
+    Tests for has_checkbox(). It detects a checkbox two ways: the raw
+    source character (before SVG replacement) and the rendered icon's
+    usa-icon--check_box_outline_blank class (after SVG replacement).
+
+    Detection used to key off alt="Checkbox" instead of the class -- see
+    issue #783, which flagged that as conflating an accessibility
+    attribute with a programmatic selector. The icon's alt text is now
+    decorative (empty), so these tests prove detection no longer depends
+    on it.
     """
 
     def _td(self, inner_html):
@@ -188,16 +241,24 @@ class HasCheckboxTests(TestCase):
         td = self._td("☐ Some label")
         self.assertTrue(has_checkbox(td))
 
-    def test_detects_rendered_checkbox_icon_by_alt_text(self):
+    def test_detects_rendered_checkbox_icon_with_decorative_alt_text(self):
         td = self._td(
-            '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Checkbox"> Label'
+            '<img class="usa-icon usa-icon--check_box_outline_blank" alt=""> Label'
         )
         self.assertTrue(has_checkbox(td))
 
-    def test_does_not_detect_same_icon_class_with_different_alt_text(self):
-        # Proves detection today is keyed on alt text, not on the icon's class.
+    def test_detects_checkbox_icon_regardless_of_alt_text(self):
+        # Detection is keyed on the icon's class, not its alt text.
         td = self._td(
             '<img class="usa-icon usa-icon--check_box_outline_blank" alt="Something else"> Label'
+        )
+        self.assertTrue(has_checkbox(td))
+
+    def test_does_not_detect_a_different_icon_even_with_checkbox_alt_text(self):
+        # A differently-classed icon must not be mistaken for a checkbox,
+        # even if something set its alt text to "Checkbox".
+        td = self._td(
+            '<img class="usa-icon usa-icon--arrow_upward" alt="Checkbox"> Label'
         )
         self.assertFalse(has_checkbox(td))
 
