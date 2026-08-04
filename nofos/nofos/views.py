@@ -1,3 +1,4 @@
+import io
 import json
 import uuid
 from datetime import datetime
@@ -18,17 +19,11 @@ from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseNotFound,
-    JsonResponse,
-)
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
@@ -1885,80 +1880,17 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
 class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
     model = Nofo
 
-    # How long a just-generated PDF stays available to a same-user,
-    # same-params follow-up GET (see get()). Comfortably longer than the
-    # near-immediate re-fetch window observed with browser extensions
-    # (eg. Adobe Acrobat re-requesting the print URL within a second or
-    # two of the original POST response), while keeping staleness risk
-    # (a NOFO edited moments after being printed) and cache-table growth
-    # low.
-    PRINT_PDF_CACHE_TTL_SECONDS = 30
+    # Printing is POST-only. Without this, a GET (eg. a browser extension or PDF
+    # viewer re-requesting the print URL after the initial POST) falls through to
+    # DetailView.get(), which tries to render a "nofos/nofo_detail.html" template
+    # that doesn't exist, and 500s. Unsupported methods now get a 405 instead.
+    http_method_names = ["post"]
 
-    # Printing generates a DocRaptor document and writes an audit event, so
-    # the "real" action is POST-only by design. GET is also allowed, but
-    # only to replay a just-generated PDF back to a follow-up request within
-    # PRINT_PDF_CACHE_TTL_SECONDS -- eg. the Adobe Acrobat Chrome extension,
-    # which intercepts an inline POST response and re-requests the same URL
-    # (including as a byte-range GET). Without this, that follow-up GET/HEAD
-    # falls through to DetailView.get(), which tries to render a
-    # "nofos/nofo_detail.html" template that doesn't exist, and 500s.
-    # HEAD is deliberately left out of this list -- it's the same
-    # generation trigger as GET would be if Django auto-routed it, and we
-    # don't want a third path into PDF generation.
-    http_method_names = ["get", "post"]
-
-    def _get_mode(self, request):
-        mode = request.GET.get(
-            "mode", "attachment"
-        )  # Default to attachment if not specified
-        return mode if mode in ["attachment", "inline"] else "attachment"
-
-    def _get_is_test_pdf(self, request):
-        # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
-        is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
-        return cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
-
-    def _print_pdf_cache_key(self, request, nofo, mode, is_test_pdf):
-        # Scoped to the requesting user (not just the NOFO+params) so that
-        # this is strictly a replay of *this user's* own just-generated PDF
-        # -- a different user's independent print action still generates
-        # its own document and its own audit event.
-        return "print_pdf:{}:{}:{}:{}".format(
-            nofo.pk, request.user.pk, mode, is_test_pdf
-        )
-
-    def _build_pdf_response(self, pdf_bytes, nofo, mode):
-        nofo_filename = "{}.pdf".format(
-            nofo.number or nofo.short_name or nofo.title
-        ).lower()
-        response = HttpResponse(pdf_bytes, content_type="application/pdf")
-        response["Content-Disposition"] = '{}; filename="{}"'.format(
-            mode, nofo_filename
-        )
-        return response
-
-    def get(self, request, pk):
-        """
-        Serves a just-generated PDF back to a follow-up GET (eg. a browser
-        extension re-requesting the print URL after the original POST).
-        Never calls DocRaptor and never writes an audit event: if there's no
-        matching cache entry, there's nothing safe to replay, since actually
-        generating one here would reopen the "GET silently produces a
-        document" hole this endpoint is POST-only to avoid.
-        """
-        nofo = self.get_object()
-        mode = self._get_mode(request)
-        is_test_pdf = self._get_is_test_pdf(request)
-
-        cache_key = self._print_pdf_cache_key(request, nofo, mode, is_test_pdf)
-        cached_pdf_bytes = cache.get(cache_key)
-        if cached_pdf_bytes is None:
-            return HttpResponseNotFound(
-                "No recently generated PDF found for this NOFO. Use the "
-                "Preview PDF button to generate one."
-            )
-
-        return self._build_pdf_response(cached_pdf_bytes, nofo, mode)
+    # NOTE: Uncomment to test the "print" audit event locally
+    # def get(self, request, pk):
+    #     nofo = self.get_object()
+    #     create_nofo_audit_event(event_type="nofo_print", nofo=nofo, user=request.user)
+    #     return HttpResponse("hello, {}".format(nofo.id))
 
     def post(self, request, pk):
         nofo = self.get_object()
@@ -1968,12 +1900,28 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             "/edit", ""
         )
 
-        mode = self._get_mode(request)
-        is_test_pdf = self._get_is_test_pdf(request)
+        nofo_filename = "{}.pdf".format(
+            nofo.number or nofo.short_name or nofo.title
+        ).lower()
+
+        mode = request.GET.get(
+            "mode", "attachment"
+        )  # Default to inline if not specified
+        if mode not in ["attachment", "inline"]:
+            mode = "attachment"
 
         doc_api = docraptor.DocApi()
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
         doc_api.api_client.configuration.debug = True
+
+        # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
+        is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
+        is_test_pdf = cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
+
+        # NOTE: uncomment this to see current values in local development
+        # return HttpResponse(
+        #     f"mode={mode}, is_test_pdf={is_test_pdf}, url={nofo_url}, filename={nofo_filename}"
+        # )
 
         if "localhost" in nofo_url:
             return HttpResponseBadRequest(
@@ -1981,7 +1929,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             )
 
         try:
-            pdf_bytes = doc_api.create_doc(
+            response = doc_api.create_doc(
                 {
                     "test": is_test_pdf,  # test documents are free but watermarked
                     "document_url": nofo_url,
@@ -1995,7 +1943,13 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 },
             )
 
-            response = self._build_pdf_response(pdf_bytes, nofo, mode)
+            pdf_file = io.BytesIO(response)
+
+            # Build response
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = '{}; filename="{}"'.format(
+                mode, nofo_filename
+            )
 
             # Create audit event for printing a nofo
             create_nofo_audit_event(
@@ -2003,16 +1957,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 document=nofo,
                 user=request.user,
                 is_test_pdf=is_test_pdf,
-            )
-
-            # Cache only after the audit event succeeds -- otherwise a
-            # failure here (db issue, validation, etc.) would 500 the POST
-            # while still leaving a cache entry a follow-up GET could
-            # replay with no audit trail at all.
-            cache.set(
-                self._print_pdf_cache_key(request, nofo, mode, is_test_pdf),
-                pdf_bytes,
-                timeout=self.PRINT_PDF_CACHE_TTL_SECONDS,
             )
 
             return response
