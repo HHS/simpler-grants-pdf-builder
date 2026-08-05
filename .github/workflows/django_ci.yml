@@ -1,11 +1,9 @@
 name: Django CI
 
 on:
-  pull_request: # Run on every PR
-    branches:
-      - main
-      - "**"
-
+  # Triggered only by the orchestrator workflow (main.yml), which already runs on
+  # every PR and on push to main. A pull_request trigger here as well would run
+  # this workflow twice per PR.
   workflow_call: # Allow this workflow to be called by other workflows
     inputs:
       branch:
@@ -15,7 +13,8 @@ on:
         type: "string"
 
 jobs:
-  ci:
+  unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
