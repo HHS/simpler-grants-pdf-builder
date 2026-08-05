@@ -14,7 +14,7 @@ register = template.Library()
 
 uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--arrow_upward" src="/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend">'
 uswds_arrow_downward_icon = '<img class="usa-icon usa-icon--arrow_downward" src="/static/img/usa-icons/arrow_downward.svg" alt="Report downward trend">'
-uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="/static/img/usa-icons/check_box_outline_blank.svg" alt="Checkbox">'
+uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="/static/img/usa-icons/check_box_outline_blank.svg" alt="">'
 
 ICONS = [
     ("↑", uswds_arrow_upward_icon),
@@ -51,7 +51,7 @@ def has_checkbox(td):
     if any(x in td.get_text() for x in ["◻", "☐"]):
         return True
 
-    if td.find("img", alt="Checkbox"):
+    if td.find("img", class_="usa-icon--check_box_outline_blank"):
         return True
 
     return False
@@ -194,7 +194,7 @@ def add_checkbox_layout_classes(td):
     checkbox_lines = [
         child
         for child in block_children
-        if child.find("img", alt="Checkbox") is not None
+        if child.find("img", class_="usa-icon--check_box_outline_blank") is not None
     ]
     if not checkbox_lines:
         return
