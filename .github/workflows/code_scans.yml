@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.4.0
 
       - name: Build Docker container PROD
         run: make build IS_PROD_ARG=1
@@ -57,7 +57,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.4.0
 
       - name: Clear ignore files
         if: inputs.bypass_ignore == true
@@ -143,7 +143,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.4.0
 
       - name: Clear ignore files
         # Drop the per-CVE safelist entries but keep the fix-state rules
@@ -194,7 +194,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.4.0
 
       - name: Restore cached Docker image
         uses: actions/cache/restore@v4
