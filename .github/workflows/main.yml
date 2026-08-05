@@ -16,3 +16,8 @@ jobs:
     with:
       branch: ${{ github.ref_name }}
     secrets: inherit
+
+  code-scans:
+    uses: ./.github/workflows/code_scans.yml # Call the code scans workflow (Anchore/grype scan)
+    with:
+      branch: ${{ github.ref_name }}

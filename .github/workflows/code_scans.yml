@@ -1,0 +1,73 @@
+# code_scans.yml
+# Security code scans that mirror the rules enforced by the deployment pipeline in
+# HHS/simpler-grants-gov (.github/workflows/vulnerability-scans-nofos.yml), so that
+# vulnerabilities are caught on the PR instead of at deploy time.
+
+name: Code Scans
+
+on:
+  workflow_call: # Called by the orchestrator workflow (main.yml)
+    inputs:
+      branch:
+        description: "Branch to run code scans on"
+        required: false
+        default: "main"
+        type: "string"
+      bypass_ignore:
+        description: "controls if we want to not honor the scan ignore files during this run"
+        required: false
+        default: false
+        type: boolean
+
+  workflow_dispatch:
+    inputs:
+      bypass_ignore:
+        description: "controls if we want to not honor the scan ignore files during this run"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  anchore-scan:
+    name: Anchore Scan
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4.3.1
+
+      - name: Clear ignore files
+        # Drop the per-CVE safelist entries but keep the fix-state rules
+        if: inputs.bypass_ignore == true
+        run: |
+          grep -v "\- vulnerability:" .grype.yml > new.grype.yml
+          rm .grype.yml
+          mv new.grype.yml .grype.yml
+
+      - name: Build Docker container PROD
+        id: build
+        run: make build IS_PROD_ARG=1
+
+      - name: Run Anchore vulnerability scan (json)
+        # Runs even if an earlier scan failed, but only if we have an image to scan
+        if: always() && steps.build.outcome == 'success'
+        uses: anchore/scan-action@v6
+        id: anchore-scan-json
+        with:
+          image: nofos:latest
+          output-format: json
+          fail-build: true
+          severity-cutoff: medium
+
+      - name: Run Anchore vulnerability scan (table)
+        if: always() && steps.build.outcome == 'success'
+        uses: anchore/scan-action@v6
+        with:
+          image: nofos:latest
+          output-format: table
+          fail-build: true
+          severity-cutoff: medium
+
+      - name: Print output to workflow summary
+        if: always() && steps.anchore-scan-json.outputs.json != ''
+        run: |
+          jq '.matches | map(.artifact | { name, version, location: .locations[0].path })' ${{ steps.anchore-scan-json.outputs.json }}
