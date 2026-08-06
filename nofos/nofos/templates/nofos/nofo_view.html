@@ -303,16 +303,25 @@
 
       <!-- SECTION CONTENT -->
       <div class="section--content">
+        {% with first_subsection=nofo.get_first_subsection %}
         {% if not section.has_section_page %}
           {% include "includes/heading.html" with tag="h2" content=section.name id=section.html_id only %}
+        {% endif %}
+        {% if section.order == 1 and not first_subsection.callout_box %}
+          {% spaceless %}
+          {% if 'page-break-before' in first_subsection.html_class %}
+            {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
+          {% endif %}
+          {% endspaceless %}
         {% endif %}
         <!-- for the very first subsection, add the nofo agency, subagency, and tagline -->
         {% if section.order == 1 %}
           <div class="section--content--basic-information">
-            {% with first_subsection=nofo.get_first_subsection %}
+            {% if not first_subsection.callout_box %}
               {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
                 {% include "includes/heading.html" with tag=tag content=content id=id only %}
               {% endwith %}
+            {% endif %}
                 <div class="section--content--intro">
                   <p><strong>{{ nofo.opdiv }}</strong></p>
                   <p>{{ nofo.agency }}</p>
@@ -320,7 +329,6 @@
                   {% if nofo.subagency2 %}<p>{{ nofo.subagency2 }}</p>{% endif %}
                   {% if nofo.tagline %}<div class="nofo--tagline">{{ nofo.tagline|safe_markdown }}</div>{% endif %}
                 </div>
-            {% endwith %}
           </div>
         {% endif %}
 
@@ -352,7 +360,12 @@
               {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
             {% endif %}
           {% else %}
-            {% if subsection.name|lower != 'basic information' %}
+            {% if section.order == 1 and subsection.id == first_subsection.id %}
+              {% if subsection.name|lower != 'basic information' %}
+                {% if not subsection.name and subsection.html_id %}<span id="{{ subsection.html_id }}" aria-hidden="true"></span>{% endif %}
+                {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+              {% endif %}
+            {% elif subsection.name|lower != 'basic information' %}
               {% spaceless %}
               {% if 'page-break-before' in subsection.html_class %}
                 {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
@@ -361,10 +374,12 @@
               {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
                 {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
               {% endwith %}
-                {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-              {% endif %}
+              {% if not subsection.name and subsection.html_id %}<span id="{{ subsection.html_id }}" aria-hidden="true"></span>{% endif %}
+              {{ subsection.body|safe_markdown|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+            {% endif %}
           {% endif %}
         {% endfor %}
+        {% endwith %}
       </div>
     </section>
   {% endfor %}

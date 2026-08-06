@@ -295,6 +295,40 @@ class NofoReimportTests(TransactionTestCase):
         ).subsections.get(name="Eligibility Information")
         self.assertTrue(archived_subsection.callout_box)
 
+    def test_reimport_uses_source_heading_and_archives_manual_heading_state(self):
+        """Reimport remains source-authoritative for subsection headings."""
+        original_html_id = self.subsections[0].html_id
+        self.subsections[0].name = ""
+        self.subsections[0].tag = ""
+        self.subsections[0].save()
+
+        response = self.client.post(
+            reverse("nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.id}),
+            {
+                "nofo-import": create_test_html_file(),
+                "preserve_page_breaks": "on",
+                "csrfmiddlewaretoken": "dummy",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        reimported_subsection = (
+            Nofo.objects.get(id=self.nofo.id)
+            .sections.get(name="Test Section 1")
+            .subsections.get(name="Eligibility Information")
+        )
+        self.assertEqual(reimported_subsection.tag, "h3")
+
+        archived_nofo = Nofo.objects.filter(successor_id=self.nofo.id).get()
+        archived_subsection = archived_nofo.sections.get(
+            name="Test Section 1"
+        ).subsections.get(order=10)
+        self.assertEqual(archived_subsection.name, "")
+        self.assertEqual(archived_subsection.tag, "")
+        self.assertEqual(archived_subsection.html_id, original_html_id)
+
     def test_reimport_success_behavior(self):
         """Test success message and redirect behavior for reimport."""
         test_file = create_test_html_file()

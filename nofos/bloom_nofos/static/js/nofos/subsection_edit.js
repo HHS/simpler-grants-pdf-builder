@@ -1,4 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const headingToggle = document.getElementById("has_heading");
+  const headingFields = document.getElementById("subsection-heading-fields");
+
+  if (headingToggle && headingFields) {
+    const headingInputs = headingFields.querySelectorAll("input, select");
+    const syncHeadingFields = () => {
+      const hasHeading = headingToggle.checked;
+      headingFields.hidden = !hasHeading;
+      headingInputs.forEach((input) => {
+        input.disabled = !hasHeading;
+      });
+    };
+
+    headingToggle.addEventListener("change", syncHeadingFields);
+    syncHeadingFields();
+  }
+
   const textEl = document.getElementById("subsection-html_id");
   const button = document.getElementById("subsection-html_id--button");
   if (!textEl || !button) return; // nothing to do
