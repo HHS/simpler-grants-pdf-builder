@@ -566,6 +566,12 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
 
+# Provisional, source-native readability metrics integration. Keep disabled until
+# hhs-nofo-metrics is installed from a durable tagged release in the runtime.
+HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
+    env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
+)
+
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 

@@ -125,6 +125,11 @@ from .nofo import (
     upload_cover_image_to_s3,
 )
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .readability import (
+    ReadabilityMetricsAnalysisError,
+    ReadabilityMetricsUnavailable,
+    analyze_nofo_readability,
+)
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -331,6 +336,39 @@ class NOFOsExportView(DetailView):
             filename_base=(nofo.short_name or nofo.title),
             tmp_name=str(nofo.pk),
         )
+
+
+class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
+    """Calculate source-native metrics for the current Builder revision."""
+
+    def get(self, request, *args, **kwargs):
+        if not settings.HHS_NOFO_METRICS_ENABLED:
+            return JsonResponse(
+                {
+                    "code": "readability_metrics_disabled",
+                    "message": "Readability metrics are not enabled in this environment.",
+                },
+                status=503,
+            )
+
+        nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
+
+        try:
+            payload = analyze_nofo_readability(nofo)
+        except ReadabilityMetricsUnavailable as error:
+            return JsonResponse(
+                {
+                    "code": "readability_metrics_unavailable",
+                    "message": str(error),
+                },
+                status=503,
+            )
+        except ReadabilityMetricsAnalysisError as error:
+            return JsonResponse(error.payload, status=422)
+
+        response = JsonResponse(payload)
+        response["Cache-Control"] = "no-store"
+        return response
 
 
 class NofosEditView(GroupAccessObjectMixin, DetailView):
