@@ -137,6 +137,7 @@ def process_nofo_html(soup, top_heading_level):
     preserve_heading_links(soup)
     preserve_table_heading_links(soup)
     clean_heading_tags(soup)
+    decompose_before_you_begin_section(soup)
     clean_table_cells(soup)
     unwrap_empty_elements(soup)
     decompose_empty_tags(soup)
@@ -2511,6 +2512,71 @@ def decompose_instructions_tables(soup):
                 instructions_tables.append(table.extract())
 
     return instructions_tables
+
+
+BEFORE_YOU_BEGIN_HEADING_TEXT = "before you begin"
+
+
+def _is_before_you_begin_heading(tag):
+    """
+    Returns True if "tag" is a heading (h1-h6) whose text, once normalized for
+    casing, punctuation, and whitespace, reads exactly "before you begin".
+    """
+    if tag.name not in ("h1", "h2", "h3", "h4", "h5", "h6"):
+        return False
+
+    heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
+    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT
+
+
+def decompose_before_you_begin_section(soup):
+    """
+    This function mutates the soup!
+
+    NOFOs exported from the GrantSolutions Announcement Module (GS AM) include a
+    "Before You Begin" heading and section that duplicates the "Before you begin"
+    page NOFO Builder already generates for every NOFO from its own
+    `before_you_begin` field. Because that content is always redundant, it is
+    removed silently on import; documents that don't include this heading are
+    unaffected.
+
+    Finds any heading (h1-h6) whose text reads "before you begin" and removes it,
+    along with all of the content that follows it, up until the next heading of
+    the same or a higher level (ie, the section it introduces).
+
+    Returns the list of extracted tags (the heading plus its section content).
+    """
+    removed = []
+
+    headings = [
+        tag
+        for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
+        if tag.parent and tag.parent.name in ["body", "[document]"]
+    ]
+
+    for heading in headings:
+        if not heading.parent:
+            # Already removed as part of a previously matched heading's section.
+            continue
+
+        if not _is_before_you_begin_heading(heading):
+            continue
+
+        level = int(heading.name[1])
+        tags_to_remove = [heading]
+
+        for sibling in heading.find_next_siblings():
+            if (
+                sibling.name in ("h1", "h2", "h3", "h4", "h5", "h6")
+                and int(sibling.name[1]) <= level
+            ):
+                break
+            tags_to_remove.append(sibling)
+
+        for tag in tags_to_remove:
+            removed.append(tag.extract())
+
+    return removed
 
 
 def add_instructions_to_subsections(sections, instructions_tables):
