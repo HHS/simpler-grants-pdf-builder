@@ -7175,6 +7175,62 @@ class DecomposeBeforeYouBeginSectionTests(TestCase):
         self.assertEqual(removed[0].get_text(), "Before You Begin")
         self.assertEqual(removed[1].get_text(), "Remove this.")
 
+    def test_preserves_metadata_block_immediately_following_heading(self):
+        """
+        Real GS AM exports place NOFO front-matter (opportunity number, agency,
+        tagline, etc.) directly after the "Before You Begin" heading, with no
+        heading of its own. That metadata must survive, since it's read
+        elsewhere (eg, suggest_nofo_opdiv, suggest_nofo_agency).
+        """
+        html_content = """
+        <html>
+            <body>
+                <h2>Before You Begin</h2>
+                <p>Opdiv: Health Resources and Services Administration</p>
+                <p>Agency: HIV/AIDS Bureau</p>
+                <p>Opportunity Number: HRSA-26-617</p>
+                <p>Tagline: This is my program specific language</p>
+                <h1>Step 1: Review the Opportunity</h1>
+                <p>Keep this.</p>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        removed = decompose_before_you_begin_section(soup)
+
+        self.assertEqual(len(removed), 1)
+        self.assertEqual(removed[0].get_text(), "Before You Begin")
+
+        self.assertIn("Opdiv: Health Resources and Services Administration", soup.get_text())
+        self.assertIn("Agency: HIV/AIDS Bureau", soup.get_text())
+        self.assertIn("Opportunity Number: HRSA-26-617", soup.get_text())
+        self.assertIn("Tagline: This is my program specific language", soup.get_text())
+        self.assertIn("Keep this.", soup.get_text())
+
+    def test_still_removes_real_content_before_a_metadata_block(self):
+        """
+        If there's genuine duplicate prose between the heading and a metadata
+        block, that prose is removed, but the metadata boundary still holds.
+        """
+        html_content = """
+        <html>
+            <body>
+                <h2>Before You Begin</h2>
+                <p>This is redundant boilerplate that should be removed.</p>
+                <p>Opdiv: Health Resources and Services Administration</p>
+                <h1>Step 1: Review the Opportunity</h1>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        removed = decompose_before_you_begin_section(soup)
+
+        self.assertEqual(len(removed), 2)
+        self.assertNotIn("redundant boilerplate", soup.get_text())
+        self.assertIn(
+            "Opdiv: Health Resources and Services Administration", soup.get_text()
+        )
+
 
 class AddInstructionsToSubsectionsTests(TestCase):
     def test_add_instructions_to_subsections(self):

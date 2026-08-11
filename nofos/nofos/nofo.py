@@ -2516,6 +2516,13 @@ def decompose_instructions_tables(soup):
 
 BEFORE_YOU_BEGIN_HEADING_TEXT = "before you begin"
 
+# GS AM exports often place a block of "Label: value" front-matter lines (eg,
+# "Opportunity Number:", "Tagline:") right after the "Before You Begin" heading.
+# These lines are unrelated NOFO metadata, read elsewhere by the suggest_nofo_*
+# functions (see _suggest_by_startswith_string), so they must never be swept up
+# as if they were part of the "Before You Begin" section's content.
+_METADATA_LINE_PATTERN = re.compile(r"^\s*[A-Za-z][A-Za-z0-9 /()&'-]{1,60}:\s")
+
 
 def _is_before_you_begin_heading(tag):
     """
@@ -2527,6 +2534,17 @@ def _is_before_you_begin_heading(tag):
 
     heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
     return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT
+
+
+def _looks_like_metadata_line(tag):
+    """
+    Returns True if "tag" is a paragraph that looks like a "Label: value"
+    metadata line (eg, "Opportunity Number: HRSA-26-617"), rather than prose.
+    """
+    if tag.name != "p":
+        return False
+
+    return bool(_METADATA_LINE_PATTERN.match(tag.get_text()))
 
 
 def decompose_before_you_begin_section(soup):
@@ -2541,8 +2559,13 @@ def decompose_before_you_begin_section(soup):
     unaffected.
 
     Finds any heading (h1-h6) whose text reads "before you begin" and removes it,
-    along with all of the content that follows it, up until the next heading of
-    the same or a higher level (ie, the section it introduces).
+    along with all of the content that follows it, up until whichever comes
+    first:
+    - the next heading of the same or a higher level (ie, the section it
+      introduces), or
+    - a "Label: value" metadata line, since GS AM exports place NOFO front
+      matter (opportunity number, agency, tagline, etc.) directly after this
+      heading, and that content must be preserved.
 
     Returns the list of extracted tags (the heading plus its section content).
     """
@@ -2570,6 +2593,8 @@ def decompose_before_you_begin_section(soup):
                 sibling.name in ("h1", "h2", "h3", "h4", "h5", "h6")
                 and int(sibling.name[1]) <= level
             ):
+                break
+            if _looks_like_metadata_line(sibling):
                 break
             tags_to_remove.append(sibling)
 
