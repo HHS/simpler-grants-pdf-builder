@@ -78,7 +78,12 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
-        self.assertContains(response, "Results are not saved")
+        self.assertContains(response, "not saved and do not determine")
+        panel = BeautifulSoup(response.content, "html.parser").select_one(
+            "#readability-metrics-panel"
+        )
+        self.assertEqual(panel.name, "details")
+        self.assertNotIn("open", panel.attrs)
 
     @override_settings(HHS_NOFO_METRICS_ENABLED=False)
     def test_edit_page_omits_metrics_panel_when_disabled(self):

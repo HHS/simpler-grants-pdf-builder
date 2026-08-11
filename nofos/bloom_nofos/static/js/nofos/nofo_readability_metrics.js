@@ -2,12 +2,21 @@
   const panel = document.getElementById("readability-metrics-panel");
   if (!panel) return;
 
+  const summary = panel.querySelector(":scope > summary");
   const button = document.getElementById("calculate-readability-metrics");
   const status = document.getElementById("readability-metrics-status");
   const results = document.getElementById("readability-metrics-results");
   const profile = panel.querySelector("[data-metrics-profile]");
+  const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
+  const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
+
+  const syncExpandedState = () => {
+    summary.setAttribute("aria-expanded", String(panel.open));
+  };
+  panel.addEventListener("toggle", syncExpandedState);
+  syncExpandedState();
 
   const formatValue = (metricId, metric) => {
     if (metric.value === null || metric.value === undefined) return "—";
@@ -30,6 +39,7 @@
     );
     const metricStatus = container.querySelector("[data-metric-status]");
     metricStatus.textContent = metric.reason || metric.status || "Unavailable";
+    metricStatus.classList.toggle("usa-sr-only", metric.status === "calculated");
   };
 
   const showWarnings = (items = []) => {
@@ -39,6 +49,7 @@
       listItem.textContent = item.message;
       warningsList.append(listItem);
     });
+    warningCount.textContent = items.length;
     warnings.hidden = items.length === 0;
   };
 
@@ -72,9 +83,11 @@
       showWarnings(payload.warnings);
       results.hidden = false;
       status.textContent = "Metrics calculated for the current NOFO revision.";
+      summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate metrics";
     } catch (error) {
       status.textContent = `Metrics could not be calculated. ${error.message}`;
+      summaryStatus.textContent = "Unable to calculate";
     } finally {
       button.disabled = false;
     }

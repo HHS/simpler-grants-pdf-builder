@@ -1,81 +1,85 @@
-<section
+<details
   id="readability-metrics-panel"
-  class="usa-summary-box margin-bottom-2"
-  role="region"
-  aria-labelledby="readability-metrics-heading"
+  class="usa-accordion usa-accordion--bordered margin-bottom-2"
   data-metrics-endpoint="{% url 'nofos:nofo_readability_metrics' nofo.id %}"
 >
-  <div class="usa-summary-box__body">
-    <h2
-      id="readability-metrics-heading"
-      class="usa-summary-box__heading font-heading-md"
-    >
+  <summary class="usa-accordion__button">
+    <h2 class="usa-accordion--heading margin-top-0">
       Readability metrics
+      <span
+        class="font-sans-2xs text-normal text-base margin-left-1"
+        data-metrics-summary-status
+      >
+        Not calculated
+      </span>
     </h2>
-    <div class="usa-summary-box__text">
-      <p>
-        Calculate a current draft estimate from this NOFO’s Builder content.
-        Results are not saved and do not determine whether the NOFO passes review.
-      </p>
-      <button
-        id="calculate-readability-metrics"
-        class="usa-button"
-        type="button"
-      >
-        Calculate metrics
-      </button>
-      <p
-        id="readability-metrics-status"
-        class="margin-top-2"
-        aria-live="polite"
-      >
-        Metrics have not been calculated for this page view.
-      </p>
+  </summary>
 
-      <div id="readability-metrics-results" hidden>
-        <dl class="grid-row grid-gap margin-top-3 margin-bottom-1">
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="word_count">
-            <dt class="text-bold">Word count</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="words_per_sentence">
-            <dt class="text-bold">Words per sentence</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="characters_per_word">
-            <dt class="text-bold">Characters per word</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_reading_ease">
-            <dt class="text-bold">Flesch Reading Ease</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_kincaid_grade_level">
-            <dt class="text-bold">Flesch-Kincaid Grade Level</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-          <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="passive_sentence_percentage">
-            <dt class="text-bold">Passive sentences</dt>
-            <dd class="font-heading-lg margin-left-0" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
-          </div>
-        </dl>
+  <div class="usa-accordion__content usa-prose">
+    <p class="margin-top-0">
+      Calculate a draft estimate from the current Builder content. Results are
+      not saved and do not determine whether the NOFO passes review.
+    </p>
+    <button
+      id="calculate-readability-metrics"
+      class="usa-button"
+      type="button"
+    >
+      Calculate metrics
+    </button>
+    <p
+      id="readability-metrics-status"
+      class="margin-top-2 margin-bottom-0"
+      aria-live="polite"
+    >
+      Metrics have not been calculated for this page view.
+    </p>
 
-        <p class="font-sans-2xs text-base margin-y-1">
-          Draft structured estimate using
-          <span class="text-bold" data-metrics-profile>the configured profile</span>.
-          Calculated from the current server-side revision of this NOFO.
-        </p>
-        <div data-metrics-warnings hidden>
-          <p class="text-bold margin-bottom-0">Calculation notes</p>
-          <ul class="usa-list margin-top-1" data-metrics-warnings-list></ul>
+    <div id="readability-metrics-results" hidden>
+      <dl class="grid-row grid-gap margin-top-3 margin-bottom-1">
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="word_count">
+          <dt class="font-sans-xs text-bold">Word count</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
         </div>
-      </div>
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="words_per_sentence">
+          <dt class="font-sans-xs text-bold">Words per sentence</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        </div>
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="characters_per_word">
+          <dt class="font-sans-xs text-bold">Characters per word</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        </div>
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_reading_ease">
+          <dt class="font-sans-xs text-bold">Flesch Reading Ease</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        </div>
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_kincaid_grade_level">
+          <dt class="font-sans-xs text-bold">Flesch-Kincaid Grade Level</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        </div>
+        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="passive_sentence_percentage">
+          <dt class="font-sans-xs text-bold">Passive sentences</dt>
+          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
+          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        </div>
+      </dl>
+
+      <p class="font-sans-2xs text-base margin-y-1">
+        Draft structured estimate using
+        <span class="text-bold" data-metrics-profile>the configured profile</span>.
+        Calculated from the current server-side revision of this NOFO.
+      </p>
+      <details class="margin-top-2" data-metrics-warnings hidden>
+        <summary class="text-bold">
+          Calculation notes (<span data-metrics-warning-count>0</span>)
+        </summary>
+        <ul class="usa-list margin-top-1" data-metrics-warnings-list></ul>
+      </details>
     </div>
   </div>
-</section>
+</details>

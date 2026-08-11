@@ -47,11 +47,13 @@ Normal Builder group permissions apply.
 
 ## Edit-screen panel
 
-When the feature flag is enabled, the normal NOFO edit screen shows an
-on-demand **Calculate metrics** panel. It displays the six configured metric
-values, each metric's package status, the active profile and profile status,
-and any package warnings. The browser reads only the endpoint response; metric
-calculation and source rendering remain server-side.
+When the feature flag is enabled, the normal NOFO edit screen shows a compact,
+collapsed readability accordion after the primary NOFO status. Expanding it
+reveals the on-demand **Calculate metrics** action. The result displays the six
+configured metric values, any metric-specific unavailable status, the active
+profile and profile status, and collapsed package notes. The browser reads
+only the endpoint response; metric calculation and source rendering remain
+server-side.
 
 The panel does not assign pass/fail bands. It labels the result as a draft
 structured estimate and makes clear that the calculation is not persisted.
