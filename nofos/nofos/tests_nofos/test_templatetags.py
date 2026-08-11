@@ -202,7 +202,11 @@ class ChecklistCheckboxIsDecorativeTests(TestCase):
         # positioning -- scope the search to the print/Prince block so we
         # match the PDF-tagging rule specifically, not a layout rule that
         # happens to share the same selector.
-        print_block = css.split("@media print", 1)[1]
+        css_parts = css.split("@media print", 1)
+        self.assertEqual(
+            len(css_parts), 2, "No @media print block found in theme-base.css"
+        )
+        print_block = css_parts[1]
         rule_match = re.search(
             r"img\.usa-icon--check_box_outline_blank\s*\{([^}]*)\}", print_block
         )
