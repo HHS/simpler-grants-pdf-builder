@@ -11,8 +11,15 @@ on:
       - main
 
 jobs:
-  ci:
-    uses: ./.github/workflows/django_ci.yml # Call the CI workflow
+  run-tests:
+    name: Run Tests
+    uses: ./.github/workflows/django_ci.yml # Call the unit test workflow
     with:
       branch: ${{ github.ref_name }}
     secrets: inherit
+
+  code-scans:
+    name: Code Scans
+    uses: ./.github/workflows/code_scans.yml # Call the code scans workflow (Trivy/Anchore/Dockle)
+    with:
+      branch: ${{ github.ref_name }}
