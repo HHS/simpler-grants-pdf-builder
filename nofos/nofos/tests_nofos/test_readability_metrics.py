@@ -69,6 +69,26 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
 
+    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    def test_edit_page_offers_on_demand_metrics_when_enabled(self):
+        response = self.client.get(
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="readability-metrics-panel"')
+        self.assertContains(response, self.metrics_url)
+        self.assertContains(response, "Results are not saved")
+
+    @override_settings(HHS_NOFO_METRICS_ENABLED=False)
+    def test_edit_page_omits_metrics_panel_when_disabled(self):
+        response = self.client.get(
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'id="readability-metrics-panel"')
+
     @patch("nofos.readability.import_module")
     def test_package_call_uses_the_versioned_html_contract(self, import_module):
         captured = {}

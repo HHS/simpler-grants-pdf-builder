@@ -7,6 +7,7 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js %}
   <script src="{% static 'js/nofos/nofo_edit.js' %}" defer></script>
+  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}" defer></script>
 {% endblock %}
 
 {% block html_class %}html--nofo_edit{% endblock %}
@@ -95,6 +96,10 @@ Edit “{{ nofo|nofo_name }}”
     </span>
   {% endtimezone %}
 </div>
+
+{% if readability_metrics_enabled %}
+  {% include "nofos/includes/readability_metrics_panel.html" %}
+{% endif %}
 
 <!-- Consolidated NOFO Status and Actions Summary Box -->
 <div class="usa-summary-box margin-bottom-2" role="region" aria-labelledby="summary-box-key-information">

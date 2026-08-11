@@ -5,7 +5,7 @@ from importlib import import_module
 from django.template.loader import render_to_string
 
 METRICS_MODULE = "hhs_nofo_metrics"
-PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.1.0"
+PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
 
