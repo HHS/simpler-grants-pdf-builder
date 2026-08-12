@@ -21,63 +21,74 @@
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">
-      Calculate readability metrics for the current NOFO. Results are calculated
-      on demand and aren’t saved.
+      Check readability for the current NOFO. Results aren’t saved.
     </p>
-    <button
-      id="calculate-readability-metrics"
-      class="usa-button"
-      type="button"
-    >
-      Calculate metrics
-    </button>
-    <p
-      id="readability-metrics-status"
-      class="margin-top-2 margin-bottom-0"
-      aria-live="polite"
-    >
-      Metrics have not been calculated for this page view.
-    </p>
+    <div class="display-flex flex-align-center flex-wrap margin-top-2">
+      <button
+        id="calculate-readability-metrics"
+        class="usa-button margin-right-2"
+        type="button"
+      >
+        Calculate metrics
+      </button>
+      <p
+        id="readability-metrics-status"
+        class="font-sans-xs text-base margin-y-1"
+        aria-live="polite"
+      >
+        Not calculated yet.
+      </p>
+    </div>
 
     <div id="readability-metrics-results" hidden>
-      <dl class="grid-row grid-gap margin-top-3 margin-bottom-1">
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="word_count">
-          <dt class="font-sans-xs text-bold">Word count</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+      <dl class="grid-row grid-gap-2 margin-top-3 margin-bottom-1">
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="word_count">
+            <dt class="font-sans-2xs text-bold text-base-dark">Word count</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="words_per_sentence">
-          <dt class="font-sans-xs text-bold">Words per sentence</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="words_per_sentence">
+            <dt class="font-sans-2xs text-bold text-base-dark">Words per sentence</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="characters_per_word">
-          <dt class="font-sans-xs text-bold">Characters per word</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="characters_per_word">
+            <dt class="font-sans-2xs text-bold text-base-dark">Characters per word</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_reading_ease">
-          <dt class="font-sans-xs text-bold">Flesch Reading Ease</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="flesch_reading_ease">
+            <dt class="font-sans-2xs text-bold text-base-dark">Flesch Reading Ease</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="flesch_kincaid_grade_level">
-          <dt class="font-sans-xs text-bold">Flesch-Kincaid Grade Level</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="flesch_kincaid_grade_level">
+            <dt class="font-sans-2xs text-bold text-base-dark">Flesch-Kincaid Grade Level</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
-        <div class="tablet:grid-col-4 margin-bottom-2" data-metric-id="passive_sentence_percentage">
-          <dt class="font-sans-xs text-bold">Passive sentences</dt>
-          <dd class="font-heading-md margin-left-0" data-metric-value>—</dd>
-          <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="passive_sentence_percentage">
+            <dt class="font-sans-2xs text-bold text-base-dark">Passive sentences</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base" data-metric-status>Not calculated</dd>
+          </div>
         </div>
       </dl>
 
-      <p
-        class="font-sans-2xs text-base margin-y-1"
-        data-metrics-scope-summary
-        hidden
-      ></p>
+      <div class="bg-base-lightest border-left-05 border-primary-lighter padding-2 margin-bottom-2" data-metrics-scope-container hidden>
+        <p class="font-sans-2xs text-base margin-y-0" data-metrics-scope-summary></p>
+      </div>
       <details class="margin-top-2" data-metrics-warnings hidden>
         <summary class="text-bold">
           Calculation notes (<span data-metrics-warning-count>0</span>)

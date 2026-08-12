@@ -8,6 +8,7 @@
   const status = document.getElementById("readability-metrics-status");
   const results = document.getElementById("readability-metrics-results");
   const goalPolicyElement = document.getElementById("readability-metric-goals");
+  const scopeContainer = panel.querySelector("[data-metrics-scope-container]");
   const scopeSummary = panel.querySelector("[data-metrics-scope-summary]");
   const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
@@ -71,7 +72,7 @@
 
     const goalText = existingGoal || document.createElement("dd");
     if (!existingGoal) {
-      goalText.className = "font-sans-2xs text-base margin-left-0 margin-top-1";
+      goalText.className = "font-sans-3xs text-base margin-left-0 margin-top-1";
       goalText.dataset.metricGoal = "";
       container.append(goalText);
     }
@@ -81,7 +82,7 @@
 
     const assessment = existingAssessment || document.createElement("dd");
     if (!existingAssessment) {
-      assessment.className = "font-sans-2xs text-bold margin-left-0";
+      assessment.className = "margin-left-0 margin-top-1";
       assessment.dataset.metricGoalAssessment = "";
       container.append(assessment);
     }
@@ -89,9 +90,10 @@
       goal.operator === "at_most"
         ? metric.value <= goal.value
         : metric.value >= goal.value;
-    assessment.textContent = withinGoal
-      ? "Within configured goal"
-      : "Review against configured goal";
+    assessment.className =
+      "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
+      (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
+    assessment.textContent = withinGoal ? "Within goal" : "Review goal";
     assessment.hidden = false;
   };
 
@@ -120,16 +122,16 @@
       sentenceCount === null ||
       sentenceCount === undefined
     ) {
-      scopeSummary.hidden = true;
+      scopeContainer.hidden = true;
       return;
     }
 
     const format = new Intl.NumberFormat();
     scopeSummary.textContent =
-      `Sentence-based metrics use ${format.format(sentenceWords)} words in ` +
-      `${format.format(sentenceCount)} complete sentences. Total word count ` +
-      `uses the broader document scope: ${format.format(documentWords)} words.`;
-    scopeSummary.hidden = false;
+      `Readability scores use ${format.format(sentenceWords)} words across ` +
+      `${format.format(sentenceCount)} complete sentences. Word count uses the ` +
+      `broader document scope (${format.format(documentWords)} words).`;
+    scopeContainer.hidden = false;
   };
 
   button.addEventListener("click", async () => {
@@ -165,12 +167,13 @@
       showScopeSummary(payload.metrics);
       showWarnings(payload.warnings);
       results.hidden = false;
-      status.textContent = "Metrics calculated for the current NOFO revision.";
+      status.textContent = "Calculated for the current revision.";
       summaryStatus.textContent = "Calculated";
-      button.textContent = "Recalculate metrics";
+      button.textContent = "Recalculate";
+      button.classList.add("usa-button--outline");
     } catch (error) {
       results.hidden = true;
-      scopeSummary.hidden = true;
+      scopeContainer.hidden = true;
       showWarnings([]);
       const message =
         error.name === "AbortError"

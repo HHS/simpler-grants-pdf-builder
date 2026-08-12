@@ -85,8 +85,8 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
-        self.assertContains(response, "Results are calculated")
-        self.assertContains(response, "on demand and aren’t saved")
+        self.assertContains(response, "Check readability for the current NOFO")
+        self.assertContains(response, "Results aren’t saved")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
         self.assertNotContains(response, 'id="readability-metric-goals"')
@@ -95,6 +95,13 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
+        self.assertEqual(len(panel.select("[data-metric-id]")), 6)
+        self.assertTrue(
+            all(
+                "bg-base-lightest" in metric.get("class", [])
+                for metric in panel.select("[data-metric-id]")
+            )
+        )
 
     @override_settings(
         HHS_NOFO_METRICS_ENABLED=True,
