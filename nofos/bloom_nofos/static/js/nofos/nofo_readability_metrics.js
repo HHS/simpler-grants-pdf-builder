@@ -7,7 +7,6 @@
   const button = document.getElementById("calculate-readability-metrics");
   const status = document.getElementById("readability-metrics-status");
   const results = document.getElementById("readability-metrics-results");
-  const profile = panel.querySelector("[data-metrics-profile]");
   const scopeSummary = panel.querySelector("[data-metrics-scope-summary]");
   const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
@@ -111,9 +110,6 @@
         showMetric(metricId, payload.metrics?.[metricId]);
       });
 
-      if (payload.profile) {
-        profile.textContent = `${payload.profile.id}@${payload.profile.version} (${payload.profile.status})`;
-      }
       showScopeSummary(payload.metrics);
       showWarnings(payload.warnings);
       results.hidden = false;

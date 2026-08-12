@@ -78,7 +78,9 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
-        self.assertContains(response, "not saved and do not determine")
+        self.assertContains(response, "Results are calculated")
+        self.assertContains(response, "on demand and aren’t saved")
+        self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
         panel = BeautifulSoup(response.content, "html.parser").select_one(
             "#readability-metrics-panel"
