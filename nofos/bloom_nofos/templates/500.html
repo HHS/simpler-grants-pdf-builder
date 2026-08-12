@@ -8,7 +8,7 @@
 {% block content %}
 	<h1 class="font-heading-xl margin-y-0">500 Error - Server Error</h1>
 	<p>Sorry, something went wrong on our end. Our team has been notified of this issue.</p>
-	<p>If you'd like to report this error, please <a href="https://airtable.com/appdaa5AqUwI8jdOo/pagpyAKIEOyLofFCw/form" target="_blank">submit a support ticket</a> and we'll investigate the issue.</p>
+	{% include 'includes/error_support.html' %}
 	<p>You may want to visit:</p>
 	<ul class="usa-list">
 		<li><a href="{% url 'index' %}">homepage</a></li>

@@ -105,6 +105,18 @@ section.nofo--cover-page.nofo--cover-page--text {
   font-size: 32pt;
 }
 
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--very-smol {
+  font-size: 28pt;
+}
+
+.nofo--cover-page--text
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--very-very-smol {
+  font-size: 27pt;
+}
+
 .nofo--cover-page--medium
   .nofo--cover-page--title
   h1.nofo--cover-page--title--h1--smaller {
@@ -215,6 +227,27 @@ section.nofo--cover-page.nofo--cover-page--hero {
   h1 {
   font-weight: 600;
   margin-bottom: 20px;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--block
+  h1.nofo--cover-page--title--h1--smaller {
+  font-size: 22pt;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--block
+  h1.nofo--cover-page--title--h1--very-smol {
+  font-size: 20pt;
+}
+
+.nofo--cover-page--hero
+  .nofo--cover-page--title
+  .nofo--cover-page--title--block
+  h1.nofo--cover-page--title--h1--very-very-smol {
+  font-size: 19pt;
 }
 
 .nofo--cover-page--hero

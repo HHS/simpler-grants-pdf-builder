@@ -1,0 +1,56 @@
+fail-on-severity: "medium"
+
+# List of vulnerabilities to ignore for the anchore scan
+# https://github.com/anchore/grype#specifying-matches-to-ignore
+#
+# This file mirrors the .grype.yml used by the deployment pipeline in
+# HHS/simpler-grants-gov so that the scan run on PRs here enforces the same rules.
+# Keep the two files in sync when adding or removing an entry.
+
+# Please add safelists in the following format to make it easier when checking
+# Package/module name: URL to vulnerability for checking updates
+#  Versions:     URL to the version history
+#  Dependencies: Name of any other packages or modules that are dependent on this version
+#                 Link to the dependencies for ease of checking for updates
+#  Issue:         Why there is a finding and why this is here or not been removed
+#  Last checked:  Date last checked in scans
+# - vulnerability: The-CVE-or-vuln-id # Remove comment at start of line
+
+ignore:
+  # These settings ignore any findings that fall into these categories
+  - fix-state: not-fixed
+  - fix-state: wont-fix
+  - fix-state: unknown
+
+  # Not fixed in GA Python yet
+  # https://github.com/HHS/simpler-grants-gov/issues/8109
+  # Last checked: 05/13/26
+  - vulnerability: CVE-2025-15366
+
+  # Not fixed in GA Python yet
+  # https://github.com/HHS/simpler-grants-gov/issues/8109
+  # Last checked: 05/13/2026
+  - vulnerability: CVE-2025-15367
+
+  # Fix only in pre-release Python 3.15 (3.15.0b3); no fix in any GA 3.14.x yet.
+  # https://github.com/HHS/simpler-grants-gov/issues/8109
+  # Last checked: 07/01/2026
+  - vulnerability: CVE-2026-12003
+
+  # html.parser.HTMLParser
+  # Fix only in pre-release Python 3.15 (3.15.0b3); no fix in any GA 3.14.x yet.
+  # https://github.com/HHS/simpler-grants-gov/issues/8109
+  # Last checked: 07/13/2026
+  - vulnerability: CVE-2026-15308
+
+  # Fix only in pre-release Python 3.15 (3.15.0b4); no fix in any GA 3.14.x yet.
+  # Last checked: 07/30/2026
+  - vulnerability: CVE-2026-11940
+
+  # Fix only in pre-release Python 3.15 (3.15.0b4); no fix in any GA 3.14.x yet.
+  # Last checked: 07/30/2026
+  - vulnerability: CVE-2026-11972
+
+  # Fix only in pre-release Python 3.15 (3.15.0b4); no fix in any GA 3.14.x yet.
+  # Last checked: 07/30/2026
+  - vulnerability: CVE-2026-0864

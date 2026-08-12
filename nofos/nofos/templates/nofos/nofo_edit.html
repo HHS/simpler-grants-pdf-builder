@@ -255,6 +255,19 @@ Edit “{{ nofo|nofo_name }}”
           </span>
         </button>
       {% endif %}
+      {% if has_missing_metadata %}
+        <button id="tab-3"
+                type="button"
+                role="tab"
+                class="secondary-darker"
+                aria-selected="false"
+                aria-controls="tabpanel-3"
+                tabindex="-1">
+          <span class="focus">
+            Check PDF metadata ({{ missing_metadata_fields|length }})
+          </span>
+        </button>
+      {% endif %}
     </div>
     {% if has_broken_links %}
       <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
@@ -306,6 +319,38 @@ Edit “{{ nofo|nofo_name }}”
                     <li><a href="#{{ heading_error.subsection.html_id }}">{{ heading_error.subsection|subsection_name_or_order }} ({{ heading_error.subsection.tag }})</a>: {{ heading_error.error }}</li>
                     {% endfor %}
                   </ol>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if has_missing_metadata %}
+      <div id="tabpanel-3" role="tabpanel" class="secondary-darker is-hidden" tabindex="0" aria-labelledby="tab-3">
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: PDF metadata is incomplete</h3>
+            <div>
+              <details>
+                <summary>
+                  {% if missing_metadata_fields|length == 1 %}
+                    <span>There is 1 missing metadata field</span>
+                  {% else %}
+                    <span>There are {{ missing_metadata_fields|length }} missing metadata fields</span>
+                  {% endif %}
+                </summary>
+                <div>
+                  <ol class="usa-list usa-list--no-max-width">
+                    {% for field_label in missing_metadata_fields %}
+                      <li>{{ field_label }}</li>
+                    {% endfor %}
+                  </ol>
+                  <p>
+                    <a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit NOFO metadata</a>
+                    before publishing this PDF to Grants.gov. You can still preview or download the PDF while this warning is present.
+                  </p>
                 </div>
               </details>
             </div>

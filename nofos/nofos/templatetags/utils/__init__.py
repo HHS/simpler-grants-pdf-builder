@@ -79,7 +79,7 @@ def add_class_to_nofo_title(nofo_title):
     if len(nofo_title) > 165:
         return "nofo--cover-page--title--h1--very-smol"
 
-    if len(nofo_title) > 120:
+    if len(nofo_title) > 110:
         return "nofo--cover-page--title--h1--smaller"
 
     return "nofo--cover-page--title--h1--normal"

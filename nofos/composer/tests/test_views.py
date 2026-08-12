@@ -1,4 +1,6 @@
+import os
 import uuid
+from unittest.mock import patch
 
 from composer.models import (
     ContentGuide,
@@ -7,8 +9,10 @@ from composer.models import (
     ContentGuideSubsection,
 )
 from composer.views import ComposerSectionView
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -17,6 +21,14 @@ from django.utils import timezone
 User = get_user_model()
 
 PASSWORD = "testpass123"
+
+MISTAGGED_HEADING_FIXTURE_PATH = os.path.join(
+    settings.BASE_DIR,
+    "nofos",
+    "fixtures",
+    "docx",
+    "mistagged-paragraph-heading.docx",
+)
 
 
 def create_composer_admin_user(
@@ -161,6 +173,52 @@ class ComposerImportViewTests(TestCase):
         follow_response = self.client.get(response["Location"])
         self.assertEqual(follow_response.status_code, 200)
         self.assertContains(follow_response, "Error: Oops! No fos uploaded.")
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    @patch("composer.views.create_content_guide_document")
+    def test_creation_validation_error_uses_safe_blocking_page(
+        self, create_document, parse_file
+    ):
+        parse_file.return_value = (
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        create_document.side_effect = ValidationError(
+            {"internal_field": ["private validation detail"]}
+        )
+        uploaded_file = SimpleUploadedFile(
+            "guide.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("COMPOSER-IMPORT-INVALID", content)
+        self.assertIn(f'href="{self.url}"', content)
+        self.assertNotIn("private validation detail", content)
+
+    def test_word_import_identifies_mistagged_paragraph_heading(self):
+        with open(MISTAGGED_HEADING_FIXTURE_PATH, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn(
+            "This entire paragraph was accidentally assigned a heading style in Word.",
+            content,
+        )
+        self.assertNotIn("COMPOSER-IMPORT-INVALID", content)
+        self.assertEqual(ContentGuide.objects.count(), 0)
 
 
 class ComposerImportTitleViewTests(TestCase):

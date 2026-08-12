@@ -59,11 +59,13 @@ from .nofo import (
     preserve_bookmark_targets,
     preserve_heading_links,
     preserve_table_heading_links,
+    process_nofo_html,
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
+    resolve_section_heading_level,
     sanitize_imported_text,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
@@ -130,6 +132,59 @@ class ReplaceCharsTests(TestCase):
             "<tr><th scope='row'>Table row</th><td><p>◻ Work plan 1</p></td></tr>"
         )
         self.assertEqual(replace_chars(test_string), test_string)
+
+
+class ResolveSectionHeadingLevelTests(TestCase):
+    def test_h1_only_document_is_valid(self):
+        soup = BeautifulSoup("<h1>Step 1</h1><p>Body</p><h1>Step 2</h1>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_h2_only_document_is_valid(self):
+        soup = BeautifulSoup("<h2>Step 1</h2><p>Body</p><h2>Step 2</h2>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h2")
+
+    def test_h1_sections_with_h2_subsections_are_valid(self):
+        soup = BeautifulSoup(
+            "<h1>Step 1</h1><h2>Basic information</h2><p>Body</p>",
+            "html.parser",
+        )
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_blank_h2_before_first_h1_is_ignored(self):
+        soup = BeautifulSoup("<h2> </h2><h1>Step 1</h1>", "html.parser")
+
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
+    def test_h1_inside_table_does_not_override_h2_section_level(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1</h2>"
+            "<table><tr><td><h1>Table label</h1></td></tr></table>"
+            "<h2>Step 2</h2>",
+            "html.parser",
+        )
+
+        self.assertEqual(resolve_section_heading_level(soup), "h2")
+
+    def test_populated_h2_before_first_h1_is_blocked_with_examples(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1: Review the Opportunity</h2><p>Body</p>"
+            "<h2>Step 2: Get Ready to Apply</h2>"
+            "<h1>Appendix A: Award data</h1>",
+            "html.parser",
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            resolve_section_heading_level(soup)
+
+        self.assertEqual(context.exception.code, "ambiguous_heading_hierarchy")
+        message = context.exception.messages[0]
+        self.assertIn("Heading 2 before its first Heading 1", message)
+        self.assertIn('Heading 2 "Step 1: Review the Opportunity"', message)
+        self.assertIn('Heading 1 "Appendix A: Award data"', message)
+        self.assertIn("apply the same heading level to all main sections", message)
 
 
 class TestsCleanTableCells(TestCase):
@@ -759,6 +814,157 @@ class HTMLSubsectionTestsH1(TestCase):
         self.assertEqual(subsection.get("name"), "Subsection 1")
 
 
+class KeyCalloutHeadingImportTests(TestCase):
+    def get_subsections(self, html, top_heading_level="h1"):
+        soup = BeautifulSoup(html, "html.parser")
+        sections = get_sections_from_soup(soup, top_heading_level=top_heading_level)
+        return get_subsections_from_sections(
+            sections, top_heading_level=top_heading_level
+        )[0]["subsections"]
+
+    def assert_key_callout_heading(self, subsection, name, is_callout_box=False):
+        self.assertEqual(subsection["name"], name)
+        self.assertEqual(subsection["tag"], "h4")
+        self.assertEqual(subsection["is_callout_box"], is_callout_box)
+
+    def test_h1_import_normalizes_adjacent_h3_key_facts(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>Key Facts</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 2)
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+        self.assertEqual(subsections[1]["name"], "")
+        self.assertTrue(subsections[1]["is_callout_box"])
+        self.assertIn("Fact content", str(subsections[1]["body"]))
+
+    def test_h2_import_normalizes_adjacent_h3_key_facts(self):
+        subsections = self.get_subsections(
+            """
+            <h2>Basic information</h2>
+            <h3>Key Facts</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """,
+            top_heading_level="h2",
+        )
+
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+
+    def test_h1_import_normalizes_adjacent_h4_key_dates(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <table><tr><td><p>Date content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key dates")
+
+    def test_import_promotes_adjacent_bold_key_facts_paragraph(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <p>Introductory content</p>
+            <p><strong>Key Facts</strong></p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 3)
+        self.assertEqual(str(subsections[0]["body"][0]), "<p>Introductory content</p>")
+        self.assert_key_callout_heading(subsections[1], "Key facts")
+        self.assertNotIn("Key Facts", str(subsections[0]["body"]))
+        self.assertTrue(subsections[2]["is_callout_box"])
+
+    def test_import_promotes_adjacent_plain_key_facts_paragraph(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <p>Introductory content</p>
+            <p>Key Facts</p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 3)
+        self.assert_key_callout_heading(subsections[1], "Key facts")
+        self.assertNotIn("Key Facts", str(subsections[0]["body"]))
+        self.assertTrue(subsections[2]["is_callout_box"])
+
+    def test_import_ignores_empty_paragraph_before_callout(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <p><br></p>
+            <table><tr><td><p>Date content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key dates")
+        self.assertTrue(subsections[1]["is_callout_box"])
+
+    def test_import_normalizes_key_dates_heading_inside_callout(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Date content</p></td></tr></table>
+            """)
+
+        self.assertEqual(len(subsections), 1)
+        self.assert_key_callout_heading(
+            subsections[0], "Key dates", is_callout_box=True
+        )
+        self.assertIn("Date content", str(subsections[0]["body"]))
+
+    def test_correct_h2_h4_key_dates_callout_remains_h4(self):
+        subsections = self.get_subsections(
+            """
+            <h2>Basic information</h2>
+            <table><tr><td><h4>Key dates</h4><p>Date content</p></td></tr></table>
+            """,
+            top_heading_level="h2",
+        )
+
+        self.assert_key_callout_heading(
+            subsections[0], "Key dates", is_callout_box=True
+        )
+
+    def test_import_canonicalizes_uppercase_exact_label(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>KEY FACTS</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assert_key_callout_heading(subsections[0], "Key facts")
+
+    def test_import_does_not_normalize_longer_heading(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h3>Key facts about eligibility</h3>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key facts about eligibility")
+        self.assertEqual(subsections[0]["tag"], "h4")
+
+    def test_import_does_not_normalize_nonadjacent_heading(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Facts</h4>
+            <p>Intervening content</p>
+            <table><tr><td><p>Fact content</p></td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key Facts")
+        self.assertEqual(subsections[0]["tag"], "h5")
+
+    def test_import_does_not_normalize_heading_before_multicell_table(self):
+        subsections = self.get_subsections("""
+            <h1>Basic information</h1>
+            <h4>Key Facts</h4>
+            <table><tr><td>First cell</td><td>Second cell</td></tr></table>
+            """)
+
+        self.assertEqual(subsections[0]["name"], "Key Facts")
+        self.assertEqual(subsections[0]["tag"], "h5")
+
+
 class HTMLSubsectionTestsH2(TestCase):
     def test_get_subsections_from_soup_h2(self):
         soup = BeautifulSoup(
@@ -984,6 +1190,38 @@ class CreateNOFOTests(TestCase):
         self.assertEqual(len(nofo.sections.all()), 1)
         self.assertEqual(nofo.sections.first().html_class, "")
         self.assertEqual(len(nofo.sections.first().subsections.all()), 2)
+
+    def test_import_preserves_referenced_bookmark_targets(self):
+        html = """
+            <h2>Step 1: Review the Opportunity</h2>
+            <h3>Program description</h3>
+            <p>
+              Adjacent targets:
+              <a id="_unreferenced_adjacent"></a><a id="_referenced_adjacent"></a>
+            </p>
+            <p>
+              Standalone target: <a id="_referenced_standalone"></a> remains here.
+            </p>
+            <p>
+              See <a href="#_referenced_adjacent">adjacent</a> and
+              <a href="#_referenced_standalone">standalone</a>.
+            </p>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        soup, _ = process_nofo_html(soup, top_heading_level="h2")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"),
+            top_heading_level="h2",
+        )
+
+        nofo = create_nofo("Bookmark targets", sections, opdiv="Test OpDiv")
+        add_headings_to_document(nofo)
+
+        self.assertEqual(find_broken_links(nofo), [])
+        body = nofo.sections.first().subsections.first().body
+        self.assertIn('<a id="_referenced_adjacent"></a>', body)
+        self.assertIn('<a id="_referenced_standalone"></a>', body)
+        self.assertNotIn("data-nofo-preserve-bookmark-target", body)
 
     def test_create_nofo_success_duplicate_nofos(self):
         """
@@ -3647,8 +3885,26 @@ class HTMLSuggestDeadlineTests(TestCase):
 class HTMLSuggestThemeTests(TestCase):
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
-        nofo_theme = "portrait-hrsa-blue"
+        nofo_theme = "portrait-hrsa-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_number_embedded_hrsa_returns_hrsa_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("HHS-2027-HRSA-ABC-001"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_nofo_number_hrsa_takes_precedence_over_rfa(self):
+        self.assertEqual(
+            suggest_nofo_theme("HRSA-RFA-24-019"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_nofo_number_hrsa_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("NOTHRSA-24-019"),
+            "portrait-nih-white",
+        )
 
     def test_suggest_nofo_number_nih_returns_nih_theme(self):
         nofo_number = "NIH-25-001"
@@ -3699,6 +3955,85 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_number = ""
         nofo_theme = "portrait-nih-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_opdiv_nih_full_name_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="National Institutes of Health (NIH)"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_abbreviation_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="NIH"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_without_abbreviation_returns_nih_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("", opdiv="National Institutes of Health"),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_nih_takes_precedence_over_number(self):
+        # CDC-prefixed number would normally return portrait-cdc-blue,
+        # but the NIH OpDiv check runs first and wins
+        self.assertEqual(
+            suggest_nofo_theme(
+                "CDC-RFA-DP-25-001", opdiv="National Institutes of Health (NIH)"
+            ),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_hrsa_full_name_returns_hrsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "UNKNOWN-001",
+                opdiv="Health Resources and Services Administration",
+            ),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_opdiv_hrsa_abbreviation_returns_hrsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("UNKNOWN-001", opdiv="HRSA"),
+            "portrait-hrsa-white",
+        )
+
+    def test_suggest_opdiv_nih_takes_precedence_over_hrsa(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "HRSA-24-019",
+                opdiv="National Institutes of Health (NIH), not HRSA",
+            ),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_containing_hrsa_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv="CHRSAlliance"),
+            "portrait-cdc-blue",
+        )
+
+    def test_suggest_no_opdiv_par_number_falls_to_nih_theme(self):
+        # No known prefix → catch-all NIH fallback
+        self.assertEqual(
+            suggest_nofo_theme("PAR-27-032", opdiv=""),
+            "portrait-nih-white",
+        )
+
+    def test_suggest_opdiv_containing_nih_substring_does_not_match(self):
+        # "nih" inside a word (e.g. "zenith") must not trigger NIH detection
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv="Zenith Health Institute"),
+            "portrait-cdc-blue",
+        )
+
+    def test_suggest_no_opdiv_cdc_number_returns_cdc_theme(self):
+        # Existing CDC behaviour unaffected when no OpDiv is supplied
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv=""),
+            "portrait-cdc-blue",
+        )
 
 
 class HTMLSuggestCoverTests(TestCase):
@@ -3768,6 +4103,188 @@ class SuggestNofoOpDivTests(TestCase):
 
     def test_opdiv_present_broken_up_by_spans(self):
         html = "<div><p><span>Opdiv: </span><span>Center for </span><span>Awesome NOFOs</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_present_in_following_paragraph(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Center for Awesome NOFOs</p>"
+            "<p>Agency: Agency for Weird Tables</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
+
+    def test_opdiv_does_not_capture_following_metadata_field(self):
+        html = "<div><p>Opdiv:</p><p>Agency: Agency for Weird Tables</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_unlisted_metadata_field(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Assistance Listing: 93.123</p>"
+            "<p>Application Deadline: August 1, 2026</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_announcement_type(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Announcement Type: New</p>"
+            "<p>Application Deadline: August 1, 2026</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_following_heading(self):
+        html = "<div><p>Opdiv:</p><h1>Step 1: Review the Opportunity</h1></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_following_table(self):
+        html = "<div><p>Opdiv:</p><table><tr><td>ACF</td></tr></table></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_skip_over_other_elements(self):
+        html = (
+            "<div><p>Opdiv:</p><div>Unrelated content</div>"
+            "<p>Center for Awesome NOFOs</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_unrelated_following_paragraph(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Introductory body content</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_plain_opdiv_before_heading_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Administration for Children and Families</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_plain_opdiv_at_end_of_document_is_ambiguous(self):
+        html = "<div><p>Opdiv:</p><p>ACF</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_unconfigured_opdiv_name_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Food and Drug Administration</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "Food and Drug Administration")
+
+    def test_unconfigured_opdiv_acronym_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>SAMHSA</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "SAMHSA")
+
+    def test_arbitrary_organization_name_before_metadata_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Department of Wild Western Affairs (DWWA)</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(
+            suggest_nofo_opdiv(soup),
+            "Department of Wild Western Affairs (DWWA)",
+        )
+
+    def test_colon_form_opdiv_before_heading_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>ACF: Administration for Children and Families</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_colon_form_opdiv_before_metadata_is_ambiguous(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>ACF: Administration for Children and Families</p>"
+            "<p>Agency: Office of Excellent Examples</p></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_uppercase_metadata_labels(self):
+        for value in (
+            "AGENCY: Administration for Children and Families",
+            "POC: Office of Grants Management",
+            "OPDIV: Administration for Children and Families",
+        ):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<p>Agency: Office of Excellent Examples</p></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_program_office_sentence(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Contact the program office for more information.</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_services_sentence(self):
+        html = (
+            "<div><p>Opdiv:</p>"
+            "<p>Services are available Monday through Friday.</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_parenthetical_reference(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Please see Appendix A (ABC)</p>"
+            "<h1>Step 1: Review the Opportunity</h1></div>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_placeholder_values_before_metadata(self):
+        for value in ("TBD", "N/A", "NONE", "UNKNOWN"):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<p>Agency: Office of Excellent Examples</p></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_does_not_capture_title_like_unrelated_blocks(self):
+        for value in ("Office Hours", "Agency Contact Information"):
+            with self.subTest(value=value):
+                html = (
+                    f"<div><p>Opdiv:</p><p>{value}</p>"
+                    "<h1>Step 1: Review the Opportunity</h1></div>"
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                self.assertEqual(suggest_nofo_opdiv(soup), "")
+
+    def test_opdiv_before_canonical_subagency_2_label_is_accepted(self):
+        html = (
+            "<div><p>Opdiv:</p><p>Center for Awesome NOFOs</p>"
+            "<p>Subagency 2: Office of Excellent Examples</p></div>"
+        )
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_opdiv(soup), "Center for Awesome NOFOs")
 
@@ -3899,6 +4416,11 @@ class SuggestNofoAuthorTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_author(soup), "Paul Craig")
 
+    def test_author_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Author: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_author(soup), "")
+
 
 class SuggestNofoSubjectTests(TestCase):
     def test_subject_present_in_paragraph(self):
@@ -3919,6 +4441,11 @@ class SuggestNofoSubjectTests(TestCase):
         self.assertEqual(
             suggest_nofo_subject(soup), "This NOFO is about helping people"
         )
+
+    def test_subject_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Subject: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_subject(soup), "")
 
 
 class SuggestNofoKeywordsTests(TestCase):
@@ -3947,6 +4474,11 @@ class SuggestNofoKeywordsTests(TestCase):
         self.assertEqual(
             suggest_nofo_keywords(soup), "Medicine, CDC, Awesome, Notice, Opportunity"
         )
+
+    def test_keywords_placeholder_is_treated_as_empty(self):
+        html = "<div><p>Metadata Keywords: {Leave blank. Coach will insert.}</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_keywords(soup), "")
 
 
 class SuggestNofoFieldsTests(TestCase):
@@ -4007,7 +4539,7 @@ class SuggestNofoFieldsTests(TestCase):
             self.nofo.keywords,
             "cowpolk, wild west, economic development, training, cattle ranching",
         )
-        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
@@ -4037,7 +4569,7 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(self.nofo.keywords, "")
 
         # still get set
-        self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
+        self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
@@ -4331,11 +4863,11 @@ class CombineLinksTestCase(TestCase):
         combine_consecutive_links(soup)
         self.assertEqual(str(soup), '<p>See <a id="t.123">First link</a></p>')
 
-    def test_second_unmatched_link_is_dropped(self):
+    def test_distinct_id_only_links_are_not_merged(self):
         html = '<p>See <a id="t.111"></a><a id="t.999"></a></p>'
         soup = BeautifulSoup(html, "html.parser")
         combine_consecutive_links(soup)
-        self.assertEqual(str(soup), '<p>See <a id="t.111"></a></p>')
+        self.assertEqual(str(soup), html)
 
     def test_consecutive_links_wrapped_in_spans_merged(self):
         html = '<p>See <span><a href="#h.ggohvukufhrn">30% cost-sharing</a></span><a href="#h.ggohvukufhrn"> </a><span><a class="c6" href="#h.ggohvukufhrn">requirement</a></span></p>'
@@ -5203,7 +5735,7 @@ class PreserveBookmarkTargetsTest(TestCase):
         html = '<p>Some text and a <a id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_targets(soup)
-        expected = '<p id="nb_bookmark_bookmark1">Some text and a  link.</p><a href="#nb_bookmark_bookmark1">Reference link</a>'
+        expected = '<p>Some text and a <a data-nofo-preserve-bookmark-target="" id="bookmark1"></a> link.</p><a href="#bookmark1">Reference link</a>'
         self.assertEqual(str(soup), expected)
 
     def test_ignore_anchor_with_underscore_prefix(self):
@@ -5213,6 +5745,32 @@ class PreserveBookmarkTargetsTest(TestCase):
         # No changes expected since the id starts with an underscore
         expected = '<p>Paragraph with <a id="_internal"></a> internal bookmark.</p>'
         self.assertEqual(str(soup), expected)
+
+    def test_referenced_underscore_anchor_is_marked_for_markdown_preservation(self):
+        html = (
+            '<p>Target <a id="_internal"></a> here.</p>'
+            '<p>See <a href="#_internal">the target</a>.</p>'
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        expected = (
+            '<p>Target <a data-nofo-preserve-bookmark-target="" '
+            'id="_internal"></a> here.</p>'
+            '<p>See <a href="#_internal">the target</a>.</p>'
+        )
+        self.assertEqual(str(soup), expected)
+
+    def test_unreferenced_underscore_anchor_is_not_marked(self):
+        html = '<p>Target <a id="_internal"></a> here.</p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        self.assertEqual(str(soup), html)
+
+    def test_blank_fragment_does_not_preserve_blank_id(self):
+        html = '<p><a href="#">Empty fragment</a><a id=""></a></p>'
+        soup = BeautifulSoup(html, "html.parser")
+        preserve_bookmark_targets(soup)
+        self.assertEqual(str(soup), html)
 
     def test_parent_already_has_id(self):
         html = '<p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
@@ -5226,8 +5784,8 @@ class PreserveBookmarkTargetsTest(TestCase):
         html = '<p>Text with a <a href="#bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="bookmark2"></a> an empty link.</p>'
         soup = BeautifulSoup(html, "html.parser")
         preserve_bookmark_targets(soup)
-        # Expect that the href changes as does the original id, but the id of the parent p element does not change
-        expected = '<p>Text with a <a href="#nb_bookmark_bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a id="nb_bookmark_bookmark2"></a> an empty link.</p>'
+        # Referenced targets remain at their exact source location.
+        expected = '<p>Text with a <a href="#bookmark2">reference link</a>.</p><p id="existing-id">Paragraph with <a data-nofo-preserve-bookmark-target="" id="bookmark2"></a> an empty link.</p>'
         self.assertEqual(str(soup), expected)
 
     def test_multiple_empty_anchors(self):

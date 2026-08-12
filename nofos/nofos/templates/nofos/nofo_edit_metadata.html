@@ -19,7 +19,7 @@
   <form id="nofo-metadata--form" method="post">
     {% csrf_token %}
 
-    {% include "includes/form_macro.html" %}
+    {% include "includes/form_macro.html" with show_required_asterisk=True %}
 
     <button class="usa-button margin-top-3" type="submit">Save metadata</button>
   </form>

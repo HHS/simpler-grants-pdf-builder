@@ -12,6 +12,7 @@ import cssutils
 import mammoth
 import markdown
 import requests
+from bloom_nofos.error_helpers import MistaggedHeadingError
 from bloom_nofos.s3.utils import (
     get_image_url_from_s3,
     remove_file_from_s3,
@@ -26,8 +27,13 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
+from .import_transforms import (
+    APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+    transform_word_document,
+)
 from .models import Nofo, Section, Subsection
-from .nofo_markdown import md
+from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .pdf_metadata import normalize_pdf_metadata_value
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -84,10 +90,20 @@ def parse_uploaded_file_as_html_string(uploaded_file):
         # Convert DOCX to HTML
         try:
             doc_to_html_result = mammoth.convert_to_html(
-                uploaded_file, style_map=style_map_manager.get_style_map()
+                uploaded_file,
+                style_map="\n".join(
+                    [
+                        style_map_manager.get_style_map(),
+                        APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+                    ]
+                ),
+                transform_document=transform_word_document,
             )
         except Exception as e:
-            raise ValidationError(f"Error importing .docx file: {e}")
+            raise ValidationError(
+                "NOFO Builder could not read this Word document.",
+                code="docx_conversion",
+            ) from e
 
         # If strict mode, check for warnings
         if config.WORD_IMPORT_STRICT_MODE:
@@ -103,13 +119,59 @@ def parse_uploaded_file_as_html_string(uploaded_file):
             if warnings:
                 warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
                 raise ValidationError(
-                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}"
+                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
+                    code="strict_formatting",
                 )
 
         return doc_to_html_result.value
 
     else:
         raise ValidationError("Please import a .docx or HTML file.")
+
+
+def resolve_section_heading_level(soup):
+    """Choose the section heading level without silently discarding earlier content."""
+    section_heading_candidates = [
+        heading
+        for heading in soup.find_all(["h1", "h2"])
+        if clean_string(heading.get_text(" ", strip=True))
+        and heading.find_parent("table") is None
+    ]
+
+    first_h1_index = next(
+        (
+            index
+            for index, heading in enumerate(section_heading_candidates)
+            if heading.name == "h1"
+        ),
+        None,
+    )
+    if first_h1_index is None:
+        return "h2"
+
+    h2_before_first_h1 = next(
+        (
+            heading
+            for heading in section_heading_candidates[:first_h1_index]
+            if heading.name == "h2"
+        ),
+        None,
+    )
+    if h2_before_first_h1 is None:
+        return "h1"
+
+    h2_text = clean_string(h2_before_first_h1.get_text(" ", strip=True))
+    h1_text = clean_string(
+        section_heading_candidates[first_h1_index].get_text(" ", strip=True)
+    )
+    raise ValidationError(
+        "The document uses Heading 2 before its first Heading 1. "
+        f'NOFO Builder would skip content beginning with Heading 2 "{h2_text}" '
+        f'and start at Heading 1 "{h1_text}". '
+        "In Word, apply the same heading level to all main sections, save the "
+        "document, and import it again.",
+        code="ambiguous_heading_hierarchy",
+    )
 
 
 def process_nofo_html(soup, top_heading_level):
@@ -325,32 +387,17 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         # NOFO Section has "nofo", Compare docs have "document"
         return "nofo" if hasattr(SectionModel, "nofo") else "document"
 
-    def _get_validation_message(validation_error, obj):
-        obj_type = obj._meta.verbose_name.title()
-        name_max_length = obj._meta.get_field("name").max_length
+    def _raise_document_validation_error(validation_error, obj, heading_kind):
+        name_errors = validation_error.error_dict.get("name", [])
+        if any(error.code == "max_length" for error in name_errors):
+            raise MistaggedHeadingError(
+                heading_kind=heading_kind,
+                heading_order=obj.order,
+                heading_text=obj.name,
+                max_length=obj._meta.get_field("name").max_length,
+            ) from validation_error
 
-        if validation_error.message_dict.get("name", []):
-            intro_message = (
-                f"<strong>Found a {obj_type} name exceeding {name_max_length} characters in length.</strong> "
-                "This often means a paragraph was incorrectly styled as a heading.\n\n"
-            )
-            error_message = f"- **Error message**: {validation_error.messages}\n"
-            object_type_message = f"- **Type**: {obj_type}\n"
-            object_order_message = f"- **{obj_type} order**: {obj.order}\n"
-            object_name_message = f"- **{obj_type} name**: {obj.name}\n\n"
-            outro_message = f"Note that there may also be other mistagged headings further down in this document."
-
-            return (
-                f"{intro_message}"
-                f"{error_message}"
-                f"{object_type_message}"
-                f"{object_order_message}"
-                f"{object_name_message}"
-                f"{outro_message}"
-            )
-
-        # Generic fallback if it's not a name-related length error
-        return str(validation_error)
+        raise ValidationError(str(validation_error)) from validation_error
 
     sections_to_create = []
     subsections_to_create = []
@@ -373,7 +420,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
         try:
             section_obj.full_clean()
         except ValidationError as e:
-            raise ValidationError(_get_validation_message(e, section_obj)) from e
+            _raise_document_validation_error(e, section_obj, "section")
 
         sections_to_create.append(section_obj)
 
@@ -452,7 +499,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             try:
                 subsection_obj.full_clean()
             except ValidationError as e:
-                raise ValidationError(_get_validation_message(e, subsection_obj)) from e
+                _raise_document_validation_error(e, subsection_obj, "subsection")
 
             subsections_to_create.append(subsection_obj)
 
@@ -737,6 +784,10 @@ def is_callout_box_table(table):
 def get_subsections_from_sections(sections, top_heading_level="h1"):
     if_demote_headings = top_heading_level == "h1"
     heading_tags = ["h3", "h4", "h5", "h6"]
+    key_callout_titles = {
+        "key facts": "Key facts",
+        "key dates": "Key dates",
+    }
 
     # if top_heading_level is h1, then include h2s in the list
     if if_demote_headings:
@@ -762,18 +813,45 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
                 return header_element.extract()
         return False
 
-    def get_subsection_dict(heading_tag, order, is_callout_box, body=None):
+    def get_key_callout_title(tag):
+        if not tag:
+            return None
+
+        return key_callout_titles.get(
+            clean_string(tag.get_text(" ", strip=True)).casefold()
+        )
+
+    def is_key_callout_title_paragraph(tag):
+        return tag.name == "p" and get_key_callout_title(tag) is not None
+
+    def is_empty_spacer_paragraph(tag):
+        return (
+            tag.name == "p"
+            and not clean_string(tag.get_text(" ", strip=True))
+            and tag.find("img") is None
+        )
+
+    def get_subsection_dict(
+        heading_tag,
+        order,
+        is_callout_box,
+        body=None,
+        key_callout_title=None,
+    ):
         if heading_tag:
-            tag_name = (
-                _demote_tag(heading_tag.name)
-                if if_demote_headings
-                else heading_tag.name
-            )
-            if tag_name == "div" and is_h7(heading_tag):
-                tag_name = "h7"
+            if key_callout_title:
+                tag_name = "h4"
+            else:
+                tag_name = (
+                    _demote_tag(heading_tag.name)
+                    if if_demote_headings
+                    else heading_tag.name
+                )
+                if tag_name == "div" and is_h7(heading_tag):
+                    tag_name = "h7"
 
             return {
-                "name": clean_string(heading_tag.text),
+                "name": key_callout_title or clean_string(heading_tag.text),
                 "order": order,
                 "tag": tag_name,
                 "html_id": heading_tag.get("id", ""),
@@ -802,7 +880,21 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
             tag for tag in body if tag.parent.name in ["body", "[document]"]
         ]
 
-        for tag in body_descendents:
+        for index, tag in enumerate(body_descendents):
+            next_tag = next(
+                (
+                    candidate
+                    for candidate in body_descendents[index + 1 :]
+                    if not is_empty_spacer_paragraph(candidate)
+                ),
+                None,
+            )
+            is_followed_by_callout = (
+                next_tag is not None
+                and next_tag.name == "table"
+                and is_callout_box_table(next_tag)
+            )
+
             # handle callout boxes
             if tag.name == "table" and is_callout_box_table(tag):
                 # Grab the first td or th
@@ -812,22 +904,37 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
                 # make the td a div so that it can live on its own
                 cell.name = "div"
+                heading_tag = extract_first_header(cell)
                 callout_box_subsection = get_subsection_dict(
-                    heading_tag=extract_first_header(cell),
+                    heading_tag=heading_tag,
                     order=len(section["subsections"]) + 1,
                     is_callout_box=True,
                     body=cell,
+                    key_callout_title=get_key_callout_title(heading_tag),
                 )
                 section["subsections"].append(callout_box_subsection)
 
             elif tag.name in heading_tags or is_h7(tag):
                 # create new subsection
+                key_callout_title = (
+                    get_key_callout_title(tag) if is_followed_by_callout else None
+                )
                 heading_subsection = get_subsection_dict(
                     heading_tag=tag,
                     order=len(section["subsections"]) + 1,
                     is_callout_box=False,
+                    key_callout_title=key_callout_title,
                 )
 
+                section["subsections"].append(heading_subsection)
+
+            elif is_key_callout_title_paragraph(tag) and is_followed_by_callout:
+                heading_subsection = get_subsection_dict(
+                    heading_tag=tag,
+                    order=len(section["subsections"]) + 1,
+                    is_callout_box=False,
+                    key_callout_title=get_key_callout_title(tag),
+                )
                 section["subsections"].append(heading_subsection)
 
             # if not a heading or callout_box table add to existing subsection
@@ -1510,7 +1617,19 @@ def sanitize_imported_text(value: str) -> str:
     return value
 
 
-def _suggest_by_startswith_string(soup, startswith_string):
+METADATA_LABEL_PATTERN = re.compile(r"^\s*[^:\n]{1,80}:\s*\S*", re.IGNORECASE)
+INVALID_OPDIV_ACRONYMS = {"N/A", "NA", "NONE", "TBD", "UNKNOWN"}
+
+
+def _looks_like_metadata_label(value):
+    return bool(METADATA_LABEL_PATTERN.match(sanitize_imported_text(value)))
+
+
+def _is_invalid_opdiv_placeholder(value):
+    return sanitize_imported_text(value).upper() in INVALID_OPDIV_ACRONYMS
+
+
+def _suggest_by_startswith_string(soup, startswith_string, use_next_paragraph=False):
     suggestion = ""
     regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
     element = soup.find(string=regex)
@@ -1524,6 +1643,31 @@ def _suggest_by_startswith_string(soup, startswith_string):
 
     if element:
         suggestion = regex.sub("", element.text)
+
+    if (
+        use_next_paragraph
+        and not sanitize_imported_text(suggestion)
+        and getattr(element, "name", None) == "p"
+    ):
+        next_element = element.find_next_sibling()
+        if next_element and next_element.name == "p":
+            candidate = sanitize_imported_text(next_element.get_text(" "))
+            following_element = next_element.find_next_sibling()
+            following_text = (
+                sanitize_imported_text(following_element.get_text(" "))
+                if following_element and following_element.name == "p"
+                else ""
+            )
+            # Metadata surrounding the value establishes its role. A value at a
+            # heading or document boundary is ambiguous, so leave it for the
+            # actionable recovery flow rather than silently guessing.
+            if (
+                candidate
+                and not _is_invalid_opdiv_placeholder(candidate)
+                and not _looks_like_metadata_label(candidate)
+                and _looks_like_metadata_label(following_text)
+            ):
+                suggestion = candidate
 
     return sanitize_imported_text(suggestion)
 
@@ -1550,7 +1694,18 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_theme(nofo_number):
+def suggest_nofo_theme(nofo_number, opdiv=""):
+    opdiv_lower = (opdiv or "").lower()
+    if "national institutes of health" in opdiv_lower or re.search(
+        r"\bnih\b", opdiv_lower
+    ):
+        return "portrait-nih-white"
+
+    if "health resources and services administration" in opdiv_lower or re.search(
+        r"\bhrsa\b", opdiv_lower
+    ):
+        return "portrait-hrsa-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
@@ -1566,12 +1721,12 @@ def suggest_nofo_theme(nofo_number):
     if "ihs-" in nofo_number.lower():
         return "portrait-ihs-white"
 
+    if re.search(r"(?:^|-)hrsa-", nofo_number.lower()):
+        return "portrait-hrsa-white"
+
     # NOFO numbers with "RFA" are also CDC, but do this check last
     if "rfa-" in nofo_number.lower():
         return "portrait-cdc-blue"
-
-    if "hrsa-" in nofo_number.lower():
-        return "portrait-hrsa-blue"
 
     return "portrait-nih-white"
 
@@ -1586,7 +1741,7 @@ def suggest_nofo_title(soup):
 
 
 def suggest_nofo_opdiv(soup):
-    suggestion = _suggest_by_startswith_string(soup, "Opdiv:")
+    suggestion = _suggest_by_startswith_string(soup, "Opdiv:", use_next_paragraph=True)
     return suggestion or ""
 
 
@@ -1612,17 +1767,17 @@ def suggest_nofo_tagline(soup):
 
 def suggest_nofo_author(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Author:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_subject(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Subject:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_keywords(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Keywords:")
-    return suggestion or ""
+    return normalize_pdf_metadata_value(suggestion)
 
 
 def suggest_nofo_cover_image(nofo):
@@ -1666,7 +1821,9 @@ def suggest_all_nofo_fields(nofo, soup):
 
     # do not reset these during import
     if first_time_import:
-        nofo.theme = suggest_nofo_theme(nofo.number)  # guess the NOFO theme
+        nofo.theme = suggest_nofo_theme(
+            nofo.number, opdiv=nofo.opdiv
+        )  # guess the NOFO theme
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
 
@@ -1836,10 +1993,22 @@ def combine_consecutive_links(soup):
             if next_sibling.next_sibling and next_sibling.next_sibling.name == "a":
                 next_sibling = next_sibling.next_sibling
 
+        link_href = link.get("href")
+        next_sibling_is_link = next_sibling and next_sibling.name == "a"
+        next_link_href = next_sibling.get("href") if next_sibling_is_link else None
+        same_nonempty_href = link_href and link_href == next_link_href
+        same_id_only_target = (
+            not link_href
+            and not next_link_href
+            and link.get("id")
+            and next_sibling_is_link
+            and link.get("id") == next_sibling.get("id")
+        )
+
         if (
             next_sibling
             and next_sibling.name == "a"
-            and link.get("href") == next_sibling.get("href")
+            and (same_nonempty_href or same_id_only_target)
         ):
             # If there's whitespace, add a space before merging texts
             separator = " " if whitespace_between else ""
@@ -2277,24 +2446,39 @@ def preserve_bookmark_targets(soup):
     """
     This function mutates the soup!
 
-    Adjusts empty bookmark links in an HTML document to preserve their target IDs while cleaning up the document structure.
+    Preserves referenced empty bookmark targets at their exact source locations and normalizes
+    unreferenced non-Word bookmark targets onto their parent elements.
 
-    This function processes all empty <a> tags in the provided BeautifulSoup object that meet the following criteria:
-    - Have an 'id' attribute (which does not start with an underscore)
-    - Do not contain an 'href' or any text content
+    Referenced empty anchors are marked so the Markdown converter retains them as minimal raw HTML
+    anchors. Unreferenced anchors without an underscore prefix continue through the existing
+    ``nb_bookmark_`` parent-transfer behavior. Unreferenced Word bookmarks whose IDs begin with an
+    underscore are left alone and may be discarded by Markdown conversion.
 
-    For each matching <a> tag:
-    1. The function prepends "nb_bookmark_" to the <a> tag's 'id'.
-    2. It searches for any other <a> tags in the document with an 'href' attribute pointing to the original 'id' and updates their 'href' to the new prefixed 'id'.
-    3. If the parent of the empty <a> tag does not have an 'id', the new prefixed 'id' is copied to the parent element.
-    4. The original empty <a> tag is then removed from the document.
+    Only anchors with an ``id``, no ``href``, and no text are considered.
     """
+    referenced_ids = {
+        link["href"][1:]
+        for link in soup.find_all("a", href=True)
+        if link["href"].startswith("#") and link["href"][1:]
+    }
+
     empty_links = [
         a for a in soup.find_all("a", id=True, href=False) if not a.text.strip()
     ]
     for link in empty_links:
+        original_id = link.get("id", "")
+
+        if not original_id:
+            continue
+
+        if original_id in referenced_ids:
+            # Mark only targets that are actually referenced. The Markdown
+            # converter retains these empty anchors as raw HTML and removes
+            # this implementation-only attribute.
+            link[PRESERVE_BOOKMARK_TARGET_ATTR] = ""
+            continue
+
         if not link.get("id", "").startswith("_"):
-            original_id = link.get("id", "")
             new_id = "nb_bookmark_{}".format(original_id)
 
             link["id"] = new_id  # Update the id of the empty <a> tag

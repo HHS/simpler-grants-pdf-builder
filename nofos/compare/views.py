@@ -2,6 +2,13 @@ import csv
 import json
 import uuid
 
+from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    MistaggedHeadingError,
+    render_blocking_import_error,
+    render_import_server_error,
+    render_mistagged_heading_error,
+)
 from bloom_nofos.logs import log_exception
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,7 +17,7 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView, View
 
@@ -171,24 +178,48 @@ class CompareImportView(LoginRequiredMixin, BaseNofoImportView):
             )
             return redirect("compare:compare_import_title", pk=compare_doc.pk)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "CompareImportView:MistaggedHeadingError:" "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=reverse("compare:compare_import"),
+            )
         except ValidationError as e:
             log_exception(
                 request,
                 e,
-                context="CompareImportView:ValidationError",
+                context="CompareImportView:ValidationError:COMPARE-IMPORT-INVALID",
                 status=400,
             )
-            return HttpResponseBadRequest(
-                f"<p><strong>Error creating Document:</strong></p> {e.message}"
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t import this comparison document",
+                summary=(
+                    "NOFO Builder could not create a valid comparison document from the uploaded document."
+                ),
+                error_code="COMPARE-IMPORT-INVALID",
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                retry_url=reverse("compare:compare_import"),
             )
         except Exception as e:
             log_exception(
                 request,
                 e,
-                context="CompareImportView:Exception",
+                context="CompareImportView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
-            return HttpResponseBadRequest(f"Error creating Document: {str(e)}")
+            return render_import_server_error(
+                request, retry_url=reverse("compare:compare_import")
+            )
 
 
 class CompareImportTitleView(GroupAccessObjectMixin, UpdateView):
@@ -461,8 +492,47 @@ class CompareImportToDocView(
                 new_nofo_id=new_nofo.pk,
             )
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "CompareImportToDocView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=self.get_retry_url(),
+            )
+        except ValidationError as e:
+            log_exception(
+                request,
+                e,
+                context="CompareImportToDocView:ValidationError:COMPARE-TO-DOC-INVALID",
+                status=400,
+            )
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t compare this document",
+                summary=(
+                    "NOFO Builder could not create a valid comparison from the uploaded document."
+                ),
+                error_code="COMPARE-TO-DOC-INVALID",
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                retry_url=self.get_retry_url(),
+            )
         except Exception as e:
-            return HttpResponseBadRequest(f"Error comparing document: {str(e)}")
+            log_exception(
+                request,
+                e,
+                context="CompareImportToDocView:Exception:IMPORT-UNEXPECTED",
+                status=500,
+            )
+            return render_import_server_error(request, retry_url=self.get_retry_url())
 
 
 class CompareDocumentView(GroupAccessObjectMixin, LoginRequiredMixin, View):

@@ -151,6 +151,13 @@ NIH_ALLOWED_CHOICES = {
     "icon_style": frozenset(["nofo--icons--solid"]),
 }
 
+# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
+RETIRED_THEME_CHOICES = {
+    "portrait-hrsa-blue": "HRSA (Default, legacy)",
+    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
+    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
+}
+
 
 class NofoThemeOptionsForm(forms.ModelForm):
     class Meta:
@@ -161,6 +168,23 @@ class NofoThemeOptionsForm(forms.ModelForm):
         super(NofoThemeOptionsForm, self).__init__(*args, **kwargs)
 
         self.user = user
+        existing_legacy_theme = None
+        if self.instance and not self.instance._state.adding:
+            if self.instance.theme in RETIRED_THEME_CHOICES:
+                existing_legacy_theme = self.instance.theme
+
+        selectable_theme_choices = [
+            (
+                value,
+                (
+                    RETIRED_THEME_CHOICES[value]
+                    if value == existing_legacy_theme
+                    else label
+                ),
+            )
+            for value, label in THEME_CHOICES
+            if value not in RETIRED_THEME_CHOICES or value == existing_legacy_theme
+        ]
 
         if user_is_nih_group(user):
             # NIH users see a restricted set of choices for all three fields.
@@ -169,7 +193,7 @@ class NofoThemeOptionsForm(forms.ModelForm):
                     "NIH",
                     [
                         (v, l)
-                        for v, l in THEME_CHOICES
+                        for v, l in selectable_theme_choices
                         if v in NIH_ALLOWED_CHOICES["theme"]
                     ],
                 )
@@ -187,7 +211,7 @@ class NofoThemeOptionsForm(forms.ModelForm):
         else:
             # -------- Filter theme choices into optgroups by OpDiv
             theme_categories_dict = {}
-            for value, label in THEME_CHOICES:
+            for value, label in selectable_theme_choices:
                 opdiv = label.split(" ")[0]
                 theme_categories_dict.setdefault(opdiv, []).append((value, label))
 
@@ -237,6 +261,11 @@ class NofoCoverImageForm(forms.ModelForm):
 
 # this one needs a custom field and a custom widget so don't use the factory function
 class NofoMetadataForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.required = True
+
     class Meta:
         model = Nofo
         fields = ["author", "subject", "keywords"]
