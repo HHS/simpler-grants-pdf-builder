@@ -78,6 +78,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
+        self.assertContains(response, ">Beta</span>", html=False)
         self.assertContains(response, "Results are calculated")
         self.assertContains(response, "on demand and aren’t saved")
         self.assertNotContains(response, "data-metrics-profile")
