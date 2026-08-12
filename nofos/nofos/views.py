@@ -92,6 +92,7 @@ from .nofo import (
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
+    decompose_before_you_begin_section,
     extract_page_break_context,
     find_broken_links,
     find_external_link,
@@ -485,6 +486,9 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
+            # Remove this known redundant section before it can affect which
+            # heading level Builder treats as the document's main sections.
+            decompose_before_you_begin_section(soup)
             top_heading_level = resolve_section_heading_level(soup)
             soup, instructions_tables = process_nofo_html(soup, top_heading_level)
 
