@@ -7759,11 +7759,39 @@ class DecomposeBeforeYouBeginSectionTests(TestCase):
         self.assertEqual(len(removed), 1)
         self.assertEqual(removed[0].get_text(), "Before You Begin")
 
-        self.assertIn("Opdiv: Health Resources and Services Administration", soup.get_text())
+        self.assertIn(
+            "Opdiv: Health Resources and Services Administration", soup.get_text()
+        )
         self.assertIn("Agency: HIV/AIDS Bureau", soup.get_text())
         self.assertIn("Opportunity Number: HRSA-26-617", soup.get_text())
         self.assertIn("Tagline: This is my program specific language", soup.get_text())
         self.assertIn("Keep this.", soup.get_text())
+
+    def test_preserves_metadata_value_in_following_paragraph(self):
+        """A standalone metadata label and its following value both survive."""
+        html_content = """
+        <html>
+            <body>
+                <h2>Before You Begin</h2>
+                <p>This is redundant boilerplate that should be removed.</p>
+                <p>Opdiv:</p>
+                <p>Health Resources and Services Administration</p>
+                <p>Agency: HIV/AIDS Bureau</p>
+                <h1>Step 1: Review the Opportunity</h1>
+            </body>
+        </html>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        removed = decompose_before_you_begin_section(soup)
+
+        self.assertEqual(len(removed), 2)
+        self.assertNotIn("redundant boilerplate", soup.get_text())
+        self.assertIn("Opdiv:", soup.get_text())
+        self.assertIn("Health Resources and Services Administration", soup.get_text())
+        self.assertEqual(
+            suggest_nofo_opdiv(soup),
+            "Health Resources and Services Administration",
+        )
 
     def test_still_removes_real_content_before_a_metadata_block(self):
         """

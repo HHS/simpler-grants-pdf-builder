@@ -2700,13 +2700,6 @@ def decompose_instructions_tables(soup):
 
 BEFORE_YOU_BEGIN_HEADING_TEXT = "before you begin"
 
-# GS AM exports often place a block of "Label: value" front-matter lines (eg,
-# "Opportunity Number:", "Tagline:") right after the "Before You Begin" heading.
-# These lines are unrelated NOFO metadata, read elsewhere by the suggest_nofo_*
-# functions (see _suggest_by_startswith_string), so they must never be swept up
-# as if they were part of the "Before You Begin" section's content.
-_METADATA_LINE_PATTERN = re.compile(r"^\s*[A-Za-z][A-Za-z0-9 /()&'-]{1,60}:\s")
-
 
 def _is_before_you_begin_heading(tag):
     """
@@ -2722,13 +2715,13 @@ def _is_before_you_begin_heading(tag):
 
 def _looks_like_metadata_line(tag):
     """
-    Returns True if "tag" is a paragraph that looks like a "Label: value"
-    metadata line (eg, "Opportunity Number: HRSA-26-617"), rather than prose.
+    Returns True if "tag" is a paragraph that looks like a metadata label,
+    whether the value is on the same line or in the following paragraph.
     """
     if tag.name != "p":
         return False
 
-    return bool(_METADATA_LINE_PATTERN.match(tag.get_text()))
+    return _looks_like_metadata_label(tag.get_text())
 
 
 def decompose_before_you_begin_section(soup):
@@ -2747,9 +2740,10 @@ def decompose_before_you_begin_section(soup):
     first:
     - the next heading of the same or a higher level (ie, the section it
       introduces), or
-    - a "Label: value" metadata line, since GS AM exports place NOFO front
-      matter (opportunity number, agency, tagline, etc.) directly after this
-      heading, and that content must be preserved.
+    - a metadata label, since GS AM exports place NOFO front matter
+      (opportunity number, agency, tagline, etc.) directly after this heading,
+      sometimes with the value in the following paragraph. That content must
+      be preserved.
 
     Returns the list of extracted tags (the heading plus its section content).
     """
