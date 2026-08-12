@@ -86,6 +86,8 @@
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate metrics";
     } catch (error) {
+      results.hidden = true;
+      showWarnings([]);
       status.textContent = `Metrics could not be calculated. ${error.message}`;
       summaryStatus.textContent = "Unable to calculate";
     } finally {
