@@ -1,4 +1,5 @@
 (() => {
+  const REQUEST_TIMEOUT_MS = 15000;
   const panel = document.getElementById("readability-metrics-panel");
   if (!panel) return;
 
@@ -7,6 +8,7 @@
   const status = document.getElementById("readability-metrics-status");
   const results = document.getElementById("readability-metrics-results");
   const profile = panel.querySelector("[data-metrics-profile]");
+  const scopeSummary = panel.querySelector("[data-metrics-scope-summary]");
   const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
@@ -53,13 +55,45 @@
     warnings.hidden = items.length === 0;
   };
 
+  const showScopeSummary = (metrics = {}) => {
+    const documentWords = metrics.word_count?.value;
+    const sentenceComponents = metrics.words_per_sentence?.components;
+    const sentenceWords = sentenceComponents?.word_count;
+    const sentenceCount = sentenceComponents?.sentence_count;
+
+    if (
+      documentWords === null ||
+      documentWords === undefined ||
+      sentenceWords === null ||
+      sentenceWords === undefined ||
+      sentenceCount === null ||
+      sentenceCount === undefined
+    ) {
+      scopeSummary.hidden = true;
+      return;
+    }
+
+    const format = new Intl.NumberFormat();
+    scopeSummary.textContent =
+      `Sentence-based metrics use ${format.format(sentenceWords)} words in ` +
+      `${format.format(sentenceCount)} complete sentences. Total word count ` +
+      `uses the broader document scope: ${format.format(documentWords)} words.`;
+    scopeSummary.hidden = false;
+  };
+
   button.addEventListener("click", async () => {
     button.disabled = true;
     status.textContent = "Calculating metrics…";
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(
+      () => controller.abort(),
+      REQUEST_TIMEOUT_MS,
+    );
 
     try {
       const response = await fetch(panel.dataset.metricsEndpoint, {
         headers: { Accept: "application/json" },
+        signal: controller.signal,
       });
       let payload = {};
       try {
@@ -80,6 +114,7 @@
       if (payload.profile) {
         profile.textContent = `${payload.profile.id}@${payload.profile.version} (${payload.profile.status})`;
       }
+      showScopeSummary(payload.metrics);
       showWarnings(payload.warnings);
       results.hidden = false;
       status.textContent = "Metrics calculated for the current NOFO revision.";
@@ -87,10 +122,16 @@
       button.textContent = "Recalculate metrics";
     } catch (error) {
       results.hidden = true;
+      scopeSummary.hidden = true;
       showWarnings([]);
-      status.textContent = `Metrics could not be calculated. ${error.message}`;
+      const message =
+        error.name === "AbortError"
+          ? "The calculation took too long. Try again."
+          : error.message;
+      status.textContent = `Metrics could not be calculated. ${message}`;
       summaryStatus.textContent = "Unable to calculate";
     } finally {
+      window.clearTimeout(timeoutId);
       button.disabled = false;
     }
   });
