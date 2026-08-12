@@ -48,15 +48,17 @@ Normal Builder group permissions apply.
 ## Edit-screen panel
 
 When the feature flag is enabled, the normal NOFO edit screen shows a compact,
-collapsed readability accordion after the primary NOFO status. Expanding it
-reveals the on-demand **Calculate metrics** action. The result displays the six
-configured metric values, any metric-specific unavailable status, the active
-profile and profile status, and collapsed package notes. The browser reads
-only the endpoint response; metric calculation and source rendering remain
-server-side.
+collapsed readability accordion after the primary NOFO status. A **Beta** tag
+identifies the feature as experimental. Expanding the accordion reveals the
+on-demand **Calculate metrics** action. The result displays the six configured
+metric values, any metric-specific unavailable status, a scope explanation for
+metrics that use different denominators, and collapsed package notes. The
+browser reads only the endpoint response; metric calculation and source
+rendering remain server-side. The package profile and version remain available
+in the API response for diagnostics but are not shown to editors.
 
-The panel does not assign pass/fail bands. It labels the result as a draft
-structured estimate and makes clear that the calculation is not persisted.
+The panel does not assign pass/fail bands. It makes clear that calculations run
+on demand and are not persisted.
 
 ## Local validation
 
