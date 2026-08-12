@@ -1,9 +1,11 @@
+import json
 from importlib.util import find_spec
 from types import SimpleNamespace
 from unittest import skipUnless
 from unittest.mock import Mock, patch
 
 from bs4 import BeautifulSoup
+from django.core.exceptions import ImproperlyConfigured
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from users.models import BloomUser
@@ -14,6 +16,7 @@ from nofos.readability import (
     ReadabilityMetricsAnalysisError,
     ReadabilityMetricsUnavailable,
     analyze_nofo_readability,
+    normalize_readability_metric_goals,
     render_nofo_export_document,
 )
 
@@ -69,7 +72,10 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_settings(
+        HHS_NOFO_METRICS_ENABLED=True,
+        HHS_NOFO_METRIC_GOALS={},
+    )
     def test_edit_page_offers_on_demand_metrics_when_enabled(self):
         response = self.client.get(
             reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
@@ -83,11 +89,79 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, "on demand and aren’t saved")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
+        self.assertNotContains(response, 'id="readability-metric-goals"')
         panel = BeautifulSoup(response.content, "html.parser").select_one(
             "#readability-metrics-panel"
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
+
+    @override_settings(
+        HHS_NOFO_METRICS_ENABLED=True,
+        HHS_NOFO_METRIC_GOALS={
+            "word_count": {
+                "label": "Example goal",
+                "operator": "at_most",
+                "value": 100,
+            },
+            "flesch_reading_ease": {
+                "label": "Example goal",
+                "operator": "at_least",
+                "value": 50,
+            },
+        },
+    )
+    def test_edit_page_embeds_only_configured_presentation_goals(self):
+        response = self.client.get(
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, "html.parser")
+        policy_element = soup.select_one("#readability-metric-goals")
+        self.assertIsNotNone(policy_element)
+        self.assertEqual(
+            json.loads(policy_element.string),
+            {
+                "word_count": {
+                    "label": "Example goal",
+                    "operator": "at_most",
+                    "value": 100,
+                },
+                "flesch_reading_ease": {
+                    "label": "Example goal",
+                    "operator": "at_least",
+                    "value": 50,
+                },
+            },
+        )
+
+    def test_goal_configuration_fails_closed_when_invalid(self):
+        invalid_configurations = (
+            [],
+            {
+                "unsupported_metric": {
+                    "label": "Example",
+                    "operator": "at_most",
+                    "value": 1,
+                }
+            },
+            {"word_count": {"label": "Example", "operator": "equals", "value": 1}},
+            {"word_count": {"label": "Example", "operator": "at_most", "value": True}},
+            {
+                "word_count": {
+                    "label": "Example",
+                    "operator": "at_most",
+                    "value": 1,
+                    "private_note": "not supported",
+                }
+            },
+        )
+
+        for configuration in invalid_configurations:
+            with self.subTest(configuration=configuration):
+                with self.assertRaises(ImproperlyConfigured):
+                    normalize_readability_metric_goals(configuration)
 
     @override_settings(HHS_NOFO_METRICS_ENABLED=False)
     def test_edit_page_omits_metrics_panel_when_disabled(self):

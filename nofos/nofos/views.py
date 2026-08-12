@@ -129,6 +129,7 @@ from .readability import (
     ReadabilityMetricsAnalysisError,
     ReadabilityMetricsUnavailable,
     analyze_nofo_readability,
+    normalize_readability_metric_goals,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
@@ -378,6 +379,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["readability_metrics_enabled"] = settings.HHS_NOFO_METRICS_ENABLED
+        context["readability_metric_goals"] = normalize_readability_metric_goals(
+            settings.HHS_NOFO_METRIC_GOALS
+        )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(

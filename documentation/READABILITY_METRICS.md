@@ -60,6 +60,31 @@ in the API response for diagnostics but are not shown to editors.
 The panel does not assign pass/fail bands. It makes clear that calculations run
 on demand and are not persisted.
 
+## Optional goal comparisons
+
+Builder can add presentation-only comparisons without changing the metrics
+package or its result contract. Set `HHS_NOFO_METRIC_GOALS` to a JSON object
+keyed by metric ID. When the setting is empty, the UI does not render any goal
+or assessment language.
+
+This synthetic example demonstrates the configuration shape; its value is not
+an HHS target:
+
+```bash
+HHS_NOFO_METRIC_GOALS='{"word_count":{"label":"Example goal","operator":"at_most","value":100}}'
+```
+
+Each configured goal requires a display `label`, an `operator` of `at_most` or
+`at_least`, and a finite numeric `value`. Builder compares the unrounded metric
+value and displays neutral **Within configured goal** or **Review against
+configured goal** language. It does not call either outcome pass or fail.
+
+Do not commit unpublished or unapproved policy values. Configure them only in
+the environment where they are authorized for display. In particular, do not
+configure a grade-level goal until Builder has explicit document-category
+context for choosing the applicable goal; the application must not infer that
+category from title or prose.
+
 ## Local validation
 
 Enable the feature in a local environment and start Builder normally:

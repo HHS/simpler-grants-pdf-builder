@@ -15,6 +15,9 @@
       </span>
     </h2>
   </summary>
+  {% if readability_metric_goals %}
+    {{ readability_metric_goals|json_script:"readability-metric-goals" }}
+  {% endif %}
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">

@@ -1,13 +1,27 @@
 """NOFO Builder integration boundary for HHS readability metrics."""
 
+import math
+from collections.abc import Mapping
 from importlib import import_module
 
+from django.core.exceptions import ImproperlyConfigured
 from django.template.loader import render_to_string
 
 METRICS_MODULE = "hhs_nofo_metrics"
 PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
+GOAL_OPERATORS = frozenset({"at_least", "at_most"})
+GOAL_METRIC_IDS = frozenset(
+    {
+        "word_count",
+        "words_per_sentence",
+        "characters_per_word",
+        "flesch_reading_ease",
+        "flesch_kincaid_grade_level",
+        "passive_sentence_percentage",
+    }
+)
 
 
 class ReadabilityMetricsUnavailable(RuntimeError):
@@ -20,6 +34,64 @@ class ReadabilityMetricsAnalysisError(RuntimeError):
     def __init__(self, payload):
         super().__init__(payload["message"])
         self.payload = payload
+
+
+def normalize_readability_metric_goals(configuration):
+    """Validate optional, Builder-owned metric presentation goals."""
+
+    if not isinstance(configuration, Mapping):
+        raise ImproperlyConfigured(
+            "HHS_NOFO_METRIC_GOALS must be a JSON object keyed by metric ID."
+        )
+    if not configuration:
+        return {}
+
+    normalized = {}
+    for metric_id, goal in configuration.items():
+        if metric_id not in GOAL_METRIC_IDS:
+            raise ImproperlyConfigured(
+                f"HHS_NOFO_METRIC_GOALS contains unsupported metric {metric_id!r}."
+            )
+        if not isinstance(goal, Mapping):
+            raise ImproperlyConfigured(
+                f"Goal configuration for {metric_id!r} must be a JSON object."
+            )
+
+        unsupported_fields = set(goal) - {"label", "operator", "value"}
+        if unsupported_fields:
+            raise ImproperlyConfigured(
+                f"Goal configuration for {metric_id!r} has unsupported fields: "
+                f"{sorted(unsupported_fields)}."
+            )
+
+        label = goal.get("label")
+        operator = goal.get("operator")
+        value = goal.get("value")
+        if not isinstance(label, str) or not label.strip():
+            raise ImproperlyConfigured(
+                f"Goal configuration for {metric_id!r} requires a label."
+            )
+        if operator not in GOAL_OPERATORS:
+            raise ImproperlyConfigured(
+                f"Goal configuration for {metric_id!r} requires operator "
+                f"'at_least' or 'at_most'."
+            )
+        if (
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+        ):
+            raise ImproperlyConfigured(
+                f"Goal configuration for {metric_id!r} requires a finite number."
+            )
+
+        normalized[metric_id] = {
+            "label": label.strip(),
+            "operator": operator,
+            "value": value,
+        }
+
+    return normalized
 
 
 def render_nofo_export_document(nofo):
