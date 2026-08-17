@@ -110,6 +110,40 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertFalse(panel.select(".text-base"))
         self.assertTrue(panel.select(".text-base-dark"))
 
+    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    def test_edit_page_embeds_default_presentation_targets(self):
+        response = self.client.get(
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        policy_element = BeautifulSoup(response.content, "html.parser").select_one(
+            "#readability-metric-goals"
+        )
+        self.assertIsNotNone(policy_element)
+        goals = json.loads(policy_element.string)
+        self.assertEqual(goals["word_count"][0]["value"], 13_500)
+        self.assertEqual(goals["words_per_sentence"][0]["value"], 15)
+        self.assertEqual(goals["sentences_per_paragraph"][0]["value"], 3)
+        self.assertEqual(goals["passive_sentence_percentage"][0]["value"], 8)
+        self.assertEqual(
+            goals["flesch_kincaid_grade_level"],
+            [
+                {
+                    "label": "General NOFO target",
+                    "operator": "at_most",
+                    "value": 11.5,
+                },
+                {
+                    "label": "Scientific/research NOFO target",
+                    "operator": "at_most",
+                    "value": 12.5,
+                },
+            ],
+        )
+        self.assertNotIn("characters_per_word", goals)
+        self.assertNotIn("flesch_reading_ease", goals)
+
     @override_settings(
         HHS_NOFO_METRICS_ENABLED=True,
         HHS_NOFO_METRIC_GOALS={

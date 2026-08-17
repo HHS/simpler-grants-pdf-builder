@@ -60,15 +60,27 @@ in the API response for diagnostics but are not shown to editors.
 The panel does not assign pass/fail bands. It makes clear that calculations run
 on demand and are not persisted.
 
-## Optional goal comparisons
+## Target comparisons
 
-Builder can add presentation-only comparisons without changing the metrics
-package or its result contract. Set `HHS_NOFO_METRIC_GOALS` to a JSON object
-keyed by metric ID. When the setting is empty, the UI does not render any goal
-or assessment language.
+Builder adds presentation-only comparisons without changing the metrics package
+or its result contract. The default targets are:
 
-This synthetic example demonstrates the configuration shape; its value is not
-an HHS target:
+- word count: 13,500 or fewer;
+- words per sentence: 15 or fewer;
+- sentences per paragraph: 3 or fewer;
+- passive sentences: 8% or fewer; and
+- Flesch-Kincaid grade level: 11.5 or lower for general NOFOs and 12.5 or
+  lower for scientific/research NOFOs.
+
+Flesch Reading Ease and characters per word remain informational; Builder does
+not assign targets to them. Builder displays both grade-level comparisons and
+does not infer a NOFO category.
+
+Set `HHS_NOFO_METRIC_GOALS` to a JSON object keyed by metric ID to override the
+defaults for an environment. Set it to `{}` to hide all target and assessment
+language.
+
+This synthetic example demonstrates the override shape:
 
 ```bash
 HHS_NOFO_METRIC_GOALS='{"word_count":{"label":"Example goal","operator":"at_most","value":100}}'
@@ -87,10 +99,8 @@ separate card. Older package versions leave that optional card hidden. The
 denominator remains the package's source-native, sentence-bearing semantic
 blocks.
 
-Do not commit unpublished or unapproved policy values. Configure them only in
-the environment where they are authorized for display. When more than one
-category may apply, configure and display each labeled goal; the application
-must not infer a category from the NOFO title or prose.
+When more than one category may apply, configure and display each labeled goal;
+the application must not infer a category from the NOFO title or prose.
 
 ## Local validation
 

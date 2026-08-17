@@ -572,9 +572,45 @@ GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default
 HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
+DEFAULT_HHS_NOFO_METRIC_GOALS = {
+    "word_count": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 13_500,
+    },
+    "words_per_sentence": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 15,
+    },
+    "sentences_per_paragraph": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 3,
+    },
+    "flesch_kincaid_grade_level": [
+        {
+            "label": "General NOFO target",
+            "operator": "at_most",
+            "value": 11.5,
+        },
+        {
+            "label": "Scientific/research NOFO target",
+            "operator": "at_most",
+            "value": 12.5,
+        },
+    ],
+    "passive_sentence_percentage": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 8,
+    },
+}
 _readability_metric_goals = env.get_value("HHS_NOFO_METRIC_GOALS", default="")
 HHS_NOFO_METRIC_GOALS = (
-    json.loads(_readability_metric_goals) if _readability_metric_goals else {}
+    json.loads(_readability_metric_goals)
+    if _readability_metric_goals
+    else DEFAULT_HHS_NOFO_METRIC_GOALS
 )
 
 # Add a field for constance
