@@ -14,6 +14,7 @@
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
+  let hasRequestedMetrics = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
     try {
@@ -72,7 +73,8 @@
 
     const goalText = existingGoal || document.createElement("dd");
     if (!existingGoal) {
-      goalText.className = "font-sans-3xs text-base margin-left-0 margin-top-1";
+      goalText.className =
+        "font-sans-3xs text-base-dark margin-left-0 margin-top-1";
       goalText.dataset.metricGoal = "";
       container.append(goalText);
     }
@@ -93,7 +95,7 @@
     assessment.className =
       "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
       (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
-    assessment.textContent = withinGoal ? "Within goal" : "Review goal";
+    assessment.textContent = withinGoal ? "Within target" : "Review target";
     assessment.hidden = false;
   };
 
@@ -127,14 +129,25 @@
     }
 
     const format = new Intl.NumberFormat();
-    scopeSummary.textContent =
-      `Readability scores use ${format.format(sentenceWords)} words across ` +
-      `${format.format(sentenceCount)} complete sentences. Word count uses the ` +
-      `broader document scope (${format.format(documentWords)} words).`;
+    let summary =
+      `Word count includes all NOFO text: ${format.format(documentWords)} words. ` +
+      `Readability scores use ${format.format(sentenceWords)} words in ` +
+      `${format.format(sentenceCount)} complete sentences.`;
+    if (documentWords >= sentenceWords && documentWords > 0) {
+      const excludedWords = documentWords - sentenceWords;
+      const excludedPercentage = new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 1,
+      }).format((100 * excludedWords) / documentWords);
+      summary +=
+        ` The remaining ${format.format(excludedWords)} words ` +
+        `(${excludedPercentage}%) fall outside complete sentences.`;
+    }
+    scopeSummary.textContent = summary;
     scopeContainer.hidden = false;
   };
 
-  button.addEventListener("click", async () => {
+  const calculateMetrics = async () => {
+    hasRequestedMetrics = true;
     button.disabled = true;
     status.textContent = "Calculating metrics…";
     const controller = new AbortController();
@@ -184,6 +197,13 @@
     } finally {
       window.clearTimeout(timeoutId);
       button.disabled = false;
+    }
+  };
+
+  button.addEventListener("click", calculateMetrics);
+  panel.addEventListener("toggle", () => {
+    if (panel.open && !hasRequestedMetrics) {
+      void calculateMetrics();
     }
   });
 })();

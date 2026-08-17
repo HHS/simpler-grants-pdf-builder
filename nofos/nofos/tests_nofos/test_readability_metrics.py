@@ -76,7 +76,7 @@ class NofoReadabilityMetricsTests(TestCase):
         HHS_NOFO_METRICS_ENABLED=True,
         HHS_NOFO_METRIC_GOALS={},
     )
-    def test_edit_page_offers_on_demand_metrics_when_enabled(self):
+    def test_edit_page_offers_revision_scoped_metrics_when_enabled(self):
         response = self.client.get(
             reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
         )
@@ -85,8 +85,8 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
-        self.assertContains(response, "Check readability for the current NOFO")
-        self.assertContains(response, "Results aren’t saved")
+        self.assertContains(response, "Metrics reflect the current revision only")
+        self.assertContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
         self.assertNotContains(response, 'id="readability-metric-goals"')
@@ -102,6 +102,8 @@ class NofoReadabilityMetricsTests(TestCase):
                 for metric in panel.select("[data-metric-id]")
             )
         )
+        self.assertFalse(panel.select(".text-base"))
+        self.assertTrue(panel.select(".text-base-dark"))
 
     @override_settings(
         HHS_NOFO_METRICS_ENABLED=True,
