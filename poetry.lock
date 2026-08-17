@@ -968,8 +968,9 @@ description = "Versioned, reproducible readability metrics for HHS NOFO document
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "hhs_nofo_metrics-0.5.0-py3-none-any.whl", hash = "sha256:2e2a9675f06f12c186261e82e15ea950eb385912cf46257a53103542be60f116"},
+]
 
 [package.dependencies]
 pdfplumber = ">=0.11,<1"
@@ -979,10 +980,8 @@ pypdf = ">=5,<7"
 dev = ["build (>=1.2,<2)", "jsonschema (>=4.23,<5)", "pre-commit (>=4.6,<5)", "pytest (>=8,<9)", "pytest-cov (>=7.1,<8)", "ruff (>=0.16,<0.17)"]
 
 [package.source]
-type = "git"
-url = "https://github.com/mikec-ai/hhs-nofo-metrics.git"
-reference = "v0.5.0"
-resolved_reference = "c987d892349ad62a0a34a2f73aa019d2c4488664"
+type = "url"
+url = "https://github.com/mikec-ai/hhs-nofo-metrics/releases/download/v0.5.0/hhs_nofo_metrics-0.5.0-py3-none-any.whl"
 
 [[package]]
 name = "identify"
@@ -2146,4 +2145,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "568cecfeec5f6b7004c0c65fda40b011a1a82a3f3ea51b892670de22f737dd9c"
+content-hash = "669bc45745375da9db1f6f76b7bf644b3bd7f20702c93c58f989297124682759"
