@@ -5,7 +5,10 @@ FROM python:3.14-slim AS builder
 WORKDIR /app
 
 # Install system dependencies (Debian-based)
+# apt-get upgrade patches base-image OS packages (e.g. util-linux) that carry
+# fixed CVEs Debian has since released but the base image was built before.
 RUN apt-get update && \
+  apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
