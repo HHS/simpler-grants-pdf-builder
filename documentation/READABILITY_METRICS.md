@@ -75,15 +75,22 @@ HHS_NOFO_METRIC_GOALS='{"word_count":{"label":"Example goal","operator":"at_most
 ```
 
 Each configured goal requires a display `label`, an `operator` of `at_most` or
-`at_least`, and a finite numeric `value`. Builder compares the unrounded metric
-value and displays neutral **Within configured goal** or **Review against
-configured goal** language. It does not call either outcome pass or fail.
+`at_least`, and a finite numeric `value`. A metric may instead use a non-empty
+array of goal objects when multiple categories apply. Builder displays every
+configured comparison without inferring which category applies. It compares
+the unrounded metric value and uses neutral **Within target** or **Review
+target** language rather than pass or fail.
+
+When the package publishes `paragraph_count` and `sentences_per_paragraph` as
+components of its sentence-scope results, Builder displays the latter as a
+separate card. Older package versions leave that optional card hidden. The
+denominator remains the package's source-native, sentence-bearing semantic
+blocks.
 
 Do not commit unpublished or unapproved policy values. Configure them only in
-the environment where they are authorized for display. In particular, do not
-configure a grade-level goal until Builder has explicit document-category
-context for choosing the applicable goal; the application must not infer that
-category from title or prose.
+the environment where they are authorized for display. When more than one
+category may apply, configure and display each labeled goal; the application
+must not infer a category from the NOFO title or prose.
 
 ## Local validation
 

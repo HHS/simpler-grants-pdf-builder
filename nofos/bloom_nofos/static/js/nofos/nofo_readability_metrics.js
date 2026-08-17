@@ -44,6 +44,13 @@
   const showMetric = (metricId, metric = {}) => {
     const container = panel.querySelector(`[data-metric-id="${metricId}"]`);
     if (!container) return;
+    const optionalCard = container.closest("[data-optional-metric-card]");
+    if (optionalCard) {
+      const available =
+        metric.status === "calculated" && typeof metric.value === "number";
+      optionalCard.hidden = !available;
+      if (!available) return;
+    }
 
     container.querySelector("[data-metric-value]").textContent = formatValue(
       metricId,
@@ -56,47 +63,56 @@
   };
 
   const showGoal = (container, metricId, metric) => {
-    const existingGoal = container.querySelector("[data-metric-goal]");
-    const existingAssessment = container.querySelector(
-      "[data-metric-goal-assessment]",
-    );
-    const goal = goalPolicy[metricId];
+    container
+      .querySelectorAll("[data-metric-goal-item]")
+      .forEach((item) => item.remove());
+    const configuredGoals = goalPolicy[metricId];
+    const goals = Array.isArray(configuredGoals)
+      ? configuredGoals
+      : configuredGoals
+        ? [configuredGoals]
+        : [];
     if (
-      !goal ||
+      goals.length === 0 ||
       metric.status !== "calculated" ||
       typeof metric.value !== "number"
     ) {
-      if (existingGoal) existingGoal.hidden = true;
-      if (existingAssessment) existingAssessment.hidden = true;
       return;
     }
 
-    const goalText = existingGoal || document.createElement("dd");
-    if (!existingGoal) {
+    goals.forEach((goal) => {
+      const goalText = document.createElement("dd");
       goalText.className =
         "font-sans-3xs text-base-dark margin-left-0 margin-top-1";
-      goalText.dataset.metricGoal = "";
+      goalText.dataset.metricGoalItem = "";
       container.append(goalText);
-    }
-    const direction = goal.operator === "at_most" ? "or lower" : "or higher";
-    goalText.textContent = `${goal.label}: ${formatValue(metricId, goal)} ${direction}`;
-    goalText.hidden = false;
+      const direction = goal.operator === "at_most" ? "or lower" : "or higher";
+      goalText.textContent = `${goal.label}: ${formatValue(metricId, goal)} ${direction}`;
 
-    const assessment = existingAssessment || document.createElement("dd");
-    if (!existingAssessment) {
+      const assessment = document.createElement("dd");
       assessment.className = "margin-left-0 margin-top-1";
-      assessment.dataset.metricGoalAssessment = "";
+      assessment.dataset.metricGoalItem = "";
       container.append(assessment);
+      const withinGoal =
+        goal.operator === "at_most"
+          ? metric.value <= goal.value
+          : metric.value >= goal.value;
+      assessment.className =
+        "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
+        (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
+      assessment.textContent = withinGoal ? "Within target" : "Review target";
+    });
+  };
+
+  const metricForDisplay = (metricId, metrics = {}) => {
+    if (metricId !== "sentences_per_paragraph") {
+      return metrics[metricId];
     }
-    const withinGoal =
-      goal.operator === "at_most"
-        ? metric.value <= goal.value
-        : metric.value >= goal.value;
-    assessment.className =
-      "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
-      (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
-    assessment.textContent = withinGoal ? "Within target" : "Review target";
-    assessment.hidden = false;
+    const sentenceMetric = metrics.words_per_sentence || {};
+    return {
+      ...sentenceMetric,
+      value: sentenceMetric.components?.sentences_per_paragraph,
+    };
   };
 
   const showWarnings = (items = []) => {
@@ -174,7 +190,7 @@
 
       panel.querySelectorAll("[data-metric-id]").forEach((container) => {
         const metricId = container.dataset.metricId;
-        showMetric(metricId, payload.metrics?.[metricId]);
+        showMetric(metricId, metricForDisplay(metricId, payload.metrics));
       });
 
       showScopeSummary(payload.metrics);

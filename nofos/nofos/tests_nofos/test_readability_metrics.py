@@ -95,7 +95,12 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
-        self.assertEqual(len(panel.select("[data-metric-id]")), 6)
+        self.assertEqual(len(panel.select("[data-metric-id]")), 7)
+        paragraph_card = panel.select_one(
+            '[data-metric-id="sentences_per_paragraph"]'
+        ).parent
+        self.assertIn("hidden", paragraph_card.attrs)
+        self.assertIn("data-optional-metric-card", paragraph_card.attrs)
         self.assertTrue(
             all(
                 "bg-base-lightest" in metric.get("class", [])
@@ -118,6 +123,18 @@ class NofoReadabilityMetricsTests(TestCase):
                 "operator": "at_least",
                 "value": 50,
             },
+            "flesch_kincaid_grade_level": [
+                {
+                    "label": "Example standard category",
+                    "operator": "at_most",
+                    "value": 10,
+                },
+                {
+                    "label": "Example alternate category",
+                    "operator": "at_most",
+                    "value": 12,
+                },
+            ],
         },
     )
     def test_edit_page_embeds_only_configured_presentation_goals(self):
@@ -132,22 +149,39 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(
             json.loads(policy_element.string),
             {
-                "word_count": {
-                    "label": "Example goal",
-                    "operator": "at_most",
-                    "value": 100,
-                },
-                "flesch_reading_ease": {
-                    "label": "Example goal",
-                    "operator": "at_least",
-                    "value": 50,
-                },
+                "word_count": [
+                    {
+                        "label": "Example goal",
+                        "operator": "at_most",
+                        "value": 100,
+                    }
+                ],
+                "flesch_reading_ease": [
+                    {
+                        "label": "Example goal",
+                        "operator": "at_least",
+                        "value": 50,
+                    }
+                ],
+                "flesch_kincaid_grade_level": [
+                    {
+                        "label": "Example standard category",
+                        "operator": "at_most",
+                        "value": 10,
+                    },
+                    {
+                        "label": "Example alternate category",
+                        "operator": "at_most",
+                        "value": 12,
+                    },
+                ],
             },
         )
 
     def test_goal_configuration_fails_closed_when_invalid(self):
         invalid_configurations = (
             [],
+            {"word_count": []},
             {
                 "unsupported_metric": {
                     "label": "Example",
