@@ -963,13 +963,13 @@ tornado = ["tornado (>=6.5.0)"]
 
 [[package]]
 name = "hhs-nofo-metrics"
-version = "0.5.0"
+version = "0.5.1"
 description = "Versioned, reproducible readability metrics for HHS NOFO documents"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "hhs_nofo_metrics-0.5.0-py3-none-any.whl", hash = "sha256:2e2a9675f06f12c186261e82e15ea950eb385912cf46257a53103542be60f116"},
+    {file = "hhs_nofo_metrics-0.5.1-py3-none-any.whl", hash = "sha256:4044bc8cba1c76a463e51362a4659b59541e729f93d14016c6c42f3f07b8e434"},
 ]
 
 [package.dependencies]
@@ -981,7 +981,7 @@ dev = ["build (>=1.2,<2)", "jsonschema (>=4.23,<5)", "pre-commit (>=4.6,<5)", "p
 
 [package.source]
 type = "url"
-url = "https://github.com/mikec-ai/hhs-nofo-metrics/releases/download/v0.5.0/hhs_nofo_metrics-0.5.0-py3-none-any.whl"
+url = "https://github.com/mikec-ai/hhs-nofo-metrics/releases/download/v0.5.1/hhs_nofo_metrics-0.5.1-py3-none-any.whl"
 
 [[package]]
 name = "identify"
@@ -2145,4 +2145,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "669bc45745375da9db1f6f76b7bf644b3bd7f20702c93c58f989297124682759"
+content-hash = "812a58a02f785a8df8894f03ee012a279d5140a2a6f114eae84b61c194f5212f"

@@ -35,7 +35,7 @@ diff-match-patch = "^20241021"
 pre-commit = "^4.6.0"
 grabzit = "^3.5.8"
 cssutils = ">=2.11.1,<2.13.0"
-hhs-nofo-metrics = { url = "https://github.com/mikec-ai/hhs-nofo-metrics/releases/download/v0.5.0/hhs_nofo_metrics-0.5.0-py3-none-any.whl" }
+hhs-nofo-metrics = { url = "https://github.com/mikec-ai/hhs-nofo-metrics/releases/download/v0.5.1/hhs_nofo_metrics-0.5.1-py3-none-any.whl" }
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.5.1"
