@@ -1694,6 +1694,13 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
+def suggest_nofo_before_you_begin(nofo_group):
+    if nofo_group == "nih":
+        return "era"
+
+    return "full"
+
+
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
     if "national institutes of health" in opdiv_lower or re.search(
@@ -1826,6 +1833,10 @@ def suggest_all_nofo_fields(nofo, soup):
         )  # guess the NOFO theme
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
+    if first_time_import:
+        nofo.before_you_begin = suggest_nofo_before_you_begin(
+            nofo.group
+        )  # guess the NOFO "Before you begin" page
 
 
 ###########################################################
