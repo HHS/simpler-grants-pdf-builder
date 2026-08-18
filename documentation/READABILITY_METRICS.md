@@ -1,7 +1,7 @@
 # Source-native readability metrics
 
 NOFO Builder has a contained integration boundary for the standalone
-`hhs-nofo-metrics` package. The package is pinned to the durable `v0.5.0`
+`hhs-nofo-metrics` package. The package is pinned to the durable `v0.5.1`
 release. The feature remains disabled by default so environments can opt into
 the provisional metrics UI independently.
 
