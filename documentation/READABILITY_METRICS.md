@@ -68,13 +68,15 @@ or its result contract. The default targets are:
 - word count: 13,500 or fewer;
 - words per sentence: 15 or fewer;
 - sentences per paragraph: 3 or fewer;
-- passive sentences: 8% or fewer; and
-- Flesch-Kincaid grade level: 11.5 or lower for general NOFOs and 12.5 or
-  lower for scientific/research NOFOs.
+- characters per word: 5–6;
+- Flesch Reading Ease: 39 or higher;
+- Flesch-Kincaid grade level: a displayed range of 11.5–12.5, depending on
+  NOFO type; and
+- passive sentences: 8% or fewer.
 
-Flesch Reading Ease and characters per word remain informational; Builder does
-not assign targets to them. Builder displays both grade-level comparisons and
-does not infer a NOFO category.
+The grade-level range is display-only because Builder does not infer a NOFO
+category. Reading Ease and characters-per-word comparisons are Builder
+presentation targets rather than package enforcement rules.
 
 Set `HHS_NOFO_METRIC_GOALS` to a JSON object keyed by metric ID to override the
 defaults for an environment. Set it to `{}` to hide all target and assessment
@@ -86,12 +88,13 @@ This synthetic example demonstrates the override shape:
 HHS_NOFO_METRIC_GOALS='{"word_count":{"label":"Example goal","operator":"at_most","value":100}}'
 ```
 
-Each configured goal requires a display `label`, an `operator` of `at_most` or
-`at_least`, and a finite numeric `value`. A metric may instead use a non-empty
-array of goal objects when multiple categories apply. Builder displays every
-configured comparison without inferring which category applies. It compares
-the unrounded metric value and uses neutral **Within target** or **Review
-target** language rather than pass or fail.
+Each configured goal requires a display `label` and an `operator`. Use
+`at_most` or `at_least` with a finite numeric `value`, or use `between` with
+finite numeric `minimum` and `maximum` values. Set `assess` to `false` to show
+a comparison without an assessment badge. A metric may instead use a non-empty
+array of goal objects when multiple comparisons apply. Builder compares the
+unrounded metric value and uses **Within target** or **Needs improvement**
+language rather than pass or fail.
 
 When the package publishes `paragraph_count` and `sentences_per_paragraph` as
 components of its sentence-scope results, Builder displays the latter as a
@@ -99,8 +102,9 @@ separate card. Older package versions leave that optional card hidden. The
 denominator remains the package's source-native, sentence-bearing semantic
 blocks.
 
-When more than one category may apply, configure and display each labeled goal;
-the application must not infer a category from the NOFO title or prose.
+When a range depends on a category Builder cannot determine, configure it with
+`assess: false`; the application must not infer a category from the NOFO title
+or prose.
 
 ## Local validation
 

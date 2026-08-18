@@ -86,21 +86,37 @@
         "font-sans-3xs text-base-dark margin-left-0 margin-top-1";
       goalText.dataset.metricGoalItem = "";
       container.append(goalText);
-      const direction = goal.operator === "at_most" ? "or lower" : "or higher";
-      goalText.textContent = `${goal.label}: ${formatValue(metricId, goal)} ${direction}`;
+      if (goal.operator === "between") {
+        const minimum = formatValue(metricId, { value: goal.minimum });
+        const maximum = formatValue(metricId, { value: goal.maximum });
+        goalText.textContent = `${goal.label}: ${minimum}–${maximum}`;
+      } else {
+        const direction = goal.operator === "at_most" ? "or lower" : "or higher";
+        goalText.textContent = `${goal.label}: ${formatValue(metricId, goal)} ${direction}`;
+      }
+
+      if (goal.assess === false) return;
 
       const assessment = document.createElement("dd");
       assessment.className = "margin-left-0 margin-top-1";
       assessment.dataset.metricGoalItem = "";
       container.append(assessment);
-      const withinGoal =
-        goal.operator === "at_most"
-          ? metric.value <= goal.value
-          : metric.value >= goal.value;
+      let withinGoal;
+      if (goal.operator === "between") {
+        withinGoal =
+          metric.value >= goal.minimum && metric.value <= goal.maximum;
+      } else {
+        withinGoal =
+          goal.operator === "at_most"
+            ? metric.value <= goal.value
+            : metric.value >= goal.value;
+      }
       assessment.className =
         "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
         (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
-      assessment.textContent = withinGoal ? "Within target" : "Review target";
+      assessment.textContent = withinGoal
+        ? "Within target"
+        : "Needs improvement";
     });
   };
 
@@ -147,7 +163,7 @@
     const format = new Intl.NumberFormat();
     let summary =
       `Word count includes all NOFO text: ${format.format(documentWords)} words. ` +
-      `Readability scores use ${format.format(sentenceWords)} words in ` +
+      `Sentence-based formulas use ${format.format(sentenceWords)} words in ` +
       `${format.format(sentenceCount)} complete sentences.`;
     if (documentWords >= sentenceWords && documentWords > 0) {
       const excludedWords = documentWords - sentenceWords;
@@ -156,7 +172,9 @@
       }).format((100 * excludedWords) / documentWords);
       summary +=
         ` The remaining ${format.format(excludedWords)} words ` +
-        `(${excludedPercentage}%) fall outside complete sentences.`;
+        `(${excludedPercentage}%) are in text that does not form complete ` +
+        `sentences, such as some headings, labels, list items, table cells, ` +
+        `and other fragments, so sentence-based scores exclude them.`;
     }
     scopeSummary.textContent = summary;
     scopeContainer.hidden = false;

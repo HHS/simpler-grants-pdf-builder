@@ -11,7 +11,7 @@ METRICS_MODULE = "hhs_nofo_metrics"
 PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
-GOAL_OPERATORS = frozenset({"at_least", "at_most"})
+GOAL_OPERATORS = frozenset({"at_least", "at_most", "between"})
 GOAL_METRIC_IDS = frozenset(
     {
         "word_count",
@@ -70,7 +70,14 @@ def normalize_readability_metric_goals(configuration):
 
         normalized_goals = []
         for goal in goals:
-            unsupported_fields = set(goal) - {"label", "operator", "value"}
+            unsupported_fields = set(goal) - {
+                "assess",
+                "label",
+                "maximum",
+                "minimum",
+                "operator",
+                "value",
+            }
             if unsupported_fields:
                 raise ImproperlyConfigured(
                     f"Goal configuration for {metric_id!r} has unsupported fields: "
@@ -79,7 +86,7 @@ def normalize_readability_metric_goals(configuration):
 
             label = goal.get("label")
             operator = goal.get("operator")
-            value = goal.get("value")
+            assess = goal.get("assess", True)
             if not isinstance(label, str) or not label.strip():
                 raise ImproperlyConfigured(
                     f"Goal configuration for {metric_id!r} requires a label."
@@ -87,24 +94,61 @@ def normalize_readability_metric_goals(configuration):
             if operator not in GOAL_OPERATORS:
                 raise ImproperlyConfigured(
                     f"Goal configuration for {metric_id!r} requires operator "
-                    f"'at_least' or 'at_most'."
+                    f"'at_least', 'at_most', or 'between'."
                 )
-            if (
-                not isinstance(value, (int, float))
-                or isinstance(value, bool)
-                or not math.isfinite(value)
-            ):
+            if not isinstance(assess, bool):
                 raise ImproperlyConfigured(
-                    f"Goal configuration for {metric_id!r} requires a finite number."
+                    f"Goal configuration for {metric_id!r} requires assess to be "
+                    "true or false."
                 )
 
-            normalized_goals.append(
-                {
-                    "label": label.strip(),
-                    "operator": operator,
-                    "value": value,
-                }
-            )
+            normalized_goal = {
+                "label": label.strip(),
+                "operator": operator,
+            }
+            if operator == "between":
+                if "value" in goal:
+                    raise ImproperlyConfigured(
+                        f"Range goal configuration for {metric_id!r} cannot use value."
+                    )
+                minimum = goal.get("minimum")
+                maximum = goal.get("maximum")
+                if not all(
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and math.isfinite(value)
+                    for value in (minimum, maximum)
+                ):
+                    raise ImproperlyConfigured(
+                        f"Range goal configuration for {metric_id!r} requires finite "
+                        "minimum and maximum numbers."
+                    )
+                if minimum >= maximum:
+                    raise ImproperlyConfigured(
+                        f"Range goal configuration for {metric_id!r} requires minimum "
+                        "to be less than maximum."
+                    )
+                normalized_goal.update({"minimum": minimum, "maximum": maximum})
+            else:
+                if "minimum" in goal or "maximum" in goal:
+                    raise ImproperlyConfigured(
+                        f"Goal configuration for {metric_id!r} cannot use minimum or "
+                        "maximum unless operator is 'between'."
+                    )
+                value = goal.get("value")
+                if (
+                    not isinstance(value, (int, float))
+                    or isinstance(value, bool)
+                    or not math.isfinite(value)
+                ):
+                    raise ImproperlyConfigured(
+                        f"Goal configuration for {metric_id!r} requires a finite number."
+                    )
+                normalized_goal["value"] = value
+
+            if not assess:
+                normalized_goal["assess"] = False
+            normalized_goals.append(normalized_goal)
 
         normalized[metric_id] = normalized_goals
 

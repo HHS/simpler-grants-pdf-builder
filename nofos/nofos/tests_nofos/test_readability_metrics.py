@@ -130,19 +130,26 @@ class NofoReadabilityMetricsTests(TestCase):
             goals["flesch_kincaid_grade_level"],
             [
                 {
-                    "label": "General NOFO target",
-                    "operator": "at_most",
-                    "value": 11.5,
-                },
-                {
-                    "label": "Scientific/research NOFO target",
-                    "operator": "at_most",
-                    "value": 12.5,
-                },
+                    "label": "Target range, depending on NOFO type",
+                    "operator": "between",
+                    "minimum": 11.5,
+                    "maximum": 12.5,
+                    "assess": False,
+                }
             ],
         )
-        self.assertNotIn("characters_per_word", goals)
-        self.assertNotIn("flesch_reading_ease", goals)
+        self.assertEqual(
+            goals["characters_per_word"],
+            [
+                {
+                    "label": "Target range",
+                    "operator": "between",
+                    "minimum": 5,
+                    "maximum": 6,
+                }
+            ],
+        )
+        self.assertEqual(goals["flesch_reading_ease"][0]["value"], 39)
 
     @override_settings(
         HHS_NOFO_METRICS_ENABLED=True,
@@ -159,14 +166,11 @@ class NofoReadabilityMetricsTests(TestCase):
             },
             "flesch_kincaid_grade_level": [
                 {
-                    "label": "Example standard category",
-                    "operator": "at_most",
-                    "value": 10,
-                },
-                {
-                    "label": "Example alternate category",
-                    "operator": "at_most",
-                    "value": 12,
+                    "label": "Example display range",
+                    "operator": "between",
+                    "minimum": 10,
+                    "maximum": 12,
+                    "assess": False,
                 },
             ],
         },
@@ -199,14 +203,11 @@ class NofoReadabilityMetricsTests(TestCase):
                 ],
                 "flesch_kincaid_grade_level": [
                     {
-                        "label": "Example standard category",
-                        "operator": "at_most",
-                        "value": 10,
-                    },
-                    {
-                        "label": "Example alternate category",
-                        "operator": "at_most",
-                        "value": 12,
+                        "label": "Example display range",
+                        "operator": "between",
+                        "minimum": 10,
+                        "maximum": 12,
+                        "assess": False,
                     },
                 ],
             },
@@ -225,6 +226,29 @@ class NofoReadabilityMetricsTests(TestCase):
             },
             {"word_count": {"label": "Example", "operator": "equals", "value": 1}},
             {"word_count": {"label": "Example", "operator": "at_most", "value": True}},
+            {
+                "word_count": {
+                    "label": "Example",
+                    "operator": "between",
+                    "minimum": 1,
+                }
+            },
+            {
+                "word_count": {
+                    "label": "Example",
+                    "operator": "between",
+                    "minimum": 2,
+                    "maximum": 1,
+                }
+            },
+            {
+                "word_count": {
+                    "label": "Example",
+                    "operator": "at_most",
+                    "value": 1,
+                    "assess": "no",
+                }
+            },
             {
                 "word_count": {
                     "label": "Example",
