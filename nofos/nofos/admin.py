@@ -133,6 +133,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "cover_image",
                     "cover_image_alt_text",
                     "before_you_begin",
+                    "template_version",
                     "modifications",
                     "archived",
                     "successor",

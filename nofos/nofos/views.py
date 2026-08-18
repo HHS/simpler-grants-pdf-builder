@@ -71,6 +71,7 @@ from .forms import (
     NofoSubagency2Form,
     NofoSubagencyForm,
     NofoTaglineForm,
+    NofoTemplateVersionForm,
     NofoThemeOptionsForm,
     NofoTitleForm,
     SubsectionCreateForm,
@@ -126,6 +127,7 @@ from .nofo import (
     upload_cover_image_to_s3,
 )
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .template_versions import detect_template_version
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -438,6 +440,12 @@ class BaseNofoImportView(View):
 
     template_name = "nofos/nofo_import.html"
     redirect_url_name = "nofos:nofo_import"
+    detect_template_version_on_import = False
+
+    def get_imported_template_version(self, soup):
+        if not self.detect_template_version_on_import:
+            return "unknown"
+        return detect_template_version(soup)
 
     def get_template_name(self):
         """
@@ -486,6 +494,7 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
+            template_version = self.get_imported_template_version(soup)
             # Remove this known redundant section before it can affect which
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)
@@ -598,7 +607,13 @@ class BaseNofoImportView(View):
 
         # 6. Hand off to child for nofo creation
         return self.handle_nofo_create(
-            request, soup, sections, filename, *args, **kwargs
+            request,
+            soup,
+            sections,
+            filename,
+            template_version,
+            *args,
+            **kwargs,
         )
 
     @staticmethod
@@ -619,7 +634,16 @@ class BaseNofoImportView(View):
         """
         return
 
-    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+    def handle_nofo_create(
+        self,
+        request,
+        soup,
+        sections,
+        filename,
+        template_version="unknown",
+        *args,
+        **kwargs,
+    ):
         """
         Child classes must override this method to create a new NOFO or overwrite an existing one.
         """
@@ -633,7 +657,18 @@ class NofosImportNewView(BaseNofoImportView):
     Handles importing a NEW NOFO from an uploaded file.
     """
 
-    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+    detect_template_version_on_import = True
+
+    def handle_nofo_create(
+        self,
+        request,
+        soup,
+        sections,
+        filename,
+        template_version="unknown",
+        *args,
+        **kwargs,
+    ):
         """
         Create a new NOFO with the parsed data.
         """
@@ -642,6 +677,7 @@ class NofosImportNewView(BaseNofoImportView):
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv)
+            nofo.template_version = template_version
             add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
             suggest_all_nofo_fields(nofo, soup)
@@ -739,6 +775,7 @@ class NofosImportOverwriteView(
     template_name = "nofos/nofo_import_overwrite.html"
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
+    detect_template_version_on_import = True
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -757,7 +794,16 @@ class NofosImportOverwriteView(
         }
         return render(request, self.get_template_name(), context)
 
-    def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
+    def handle_nofo_create(
+        self,
+        request,
+        soup,
+        sections,
+        filename,
+        template_version="unknown",
+        *args,
+        **kwargs,
+    ):
         """
         Overwrite an existing NOFO with the new sections.
         """
@@ -785,16 +831,31 @@ class NofosImportOverwriteView(
                 "filename": filename,
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
+                "template_version": template_version,
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
         # Step 3: Proceed with reimport
         return self.reimport_nofo(
-            request, nofo, soup, sections, filename, if_preserve_page_breaks
+            request,
+            nofo,
+            soup,
+            sections,
+            filename,
+            if_preserve_page_breaks,
+            template_version,
         )
 
     @staticmethod
-    def reimport_nofo(request, nofo, soup, sections, filename, if_preserve_page_breaks):
+    def reimport_nofo(
+        request,
+        nofo,
+        soup,
+        sections,
+        filename,
+        if_preserve_page_breaks,
+        template_version=None,
+    ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
         """
@@ -808,6 +869,9 @@ class NofosImportOverwriteView(
                 duplicate_nofo(nofo, is_successor=True)
 
                 nofo = overwrite_nofo(nofo, sections)
+                nofo.template_version = template_version or detect_template_version(
+                    soup
+                )
 
                 # restore page breaks
                 if if_preserve_page_breaks and page_breaks:
@@ -917,9 +981,16 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
 
         filename = reimport_data["filename"]
         if_preserve_page_breaks = reimport_data["if_preserve_page_breaks"]
+        template_version = reimport_data.get("template_version")
 
         return NofosImportOverwriteView.reimport_nofo(
-            request, nofo, soup, sections, filename, if_preserve_page_breaks
+            request,
+            nofo,
+            soup,
+            sections,
+            filename,
+            if_preserve_page_breaks,
+            template_version,
         )
 
 
@@ -1305,6 +1376,11 @@ class NofoEditSubagency2View(BaseNofoEditView):
 class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
     form_class = NofoBeforeYouBeginForm
     template_name = "nofos/nofo_edit_byb.html"
+
+
+class NofoEditTemplateVersionView(BaseNofoEditView):
+    form_class = NofoTemplateVersionForm
+    template_name = "nofos/nofo_edit_template_version.html"
 
 
 class NofoEditThemeOptionsView(BaseNofoEditView):
