@@ -86,7 +86,7 @@
         "font-sans-3xs text-base-dark margin-left-0 margin-top-1";
       goalText.dataset.metricGoalItem = "";
       container.append(goalText);
-      if (goal.operator === "between") {
+      if (goal.operator === "at_most_by_category") {
         const minimum = formatValue(metricId, { value: goal.minimum });
         const maximum = formatValue(metricId, { value: goal.maximum });
         goalText.textContent = `${goal.label}: ${minimum}–${maximum}`;
@@ -95,28 +95,37 @@
         goalText.textContent = `${goal.label}: ${formatValue(metricId, goal)} ${direction}`;
       }
 
-      if (goal.assess === false) return;
-
       const assessment = document.createElement("dd");
       assessment.className = "margin-left-0 margin-top-1";
       assessment.dataset.metricGoalItem = "";
       container.append(assessment);
-      let withinGoal;
-      if (goal.operator === "between") {
-        withinGoal =
-          metric.value >= goal.minimum && metric.value <= goal.maximum;
+      let assessmentText;
+      let assessmentClass;
+      if (goal.operator === "at_most_by_category") {
+        if (metric.value <= goal.minimum) {
+          assessmentText = "Within target";
+          assessmentClass = "bg-success-lighter";
+        } else if (metric.value > goal.maximum) {
+          assessmentText = "Needs improvement";
+          assessmentClass = "bg-warning-lighter";
+        } else {
+          assessmentText = "Check NOFO type";
+          assessmentClass = "bg-accent-cool-lighter";
+        }
       } else {
-        withinGoal =
+        const withinGoal =
           goal.operator === "at_most"
             ? metric.value <= goal.value
             : metric.value >= goal.value;
+        assessmentText = withinGoal ? "Within target" : "Needs improvement";
+        assessmentClass = withinGoal
+          ? "bg-success-lighter"
+          : "bg-warning-lighter";
       }
       assessment.className =
         "usa-tag display-inline-block width-auto text-base-dark margin-left-0 " +
-        (withinGoal ? "bg-success-lighter" : "bg-warning-lighter");
-      assessment.textContent = withinGoal
-        ? "Within target"
-        : "Needs improvement";
+        assessmentClass;
+      assessment.textContent = assessmentText;
     });
   };
 

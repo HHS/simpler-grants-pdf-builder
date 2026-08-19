@@ -95,7 +95,8 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
-        self.assertEqual(len(panel.select("[data-metric-id]")), 7)
+        self.assertEqual(len(panel.select("[data-metric-id]")), 6)
+        self.assertIsNone(panel.select_one('[data-metric-id="characters_per_word"]'))
         paragraph_card = panel.select_one(
             '[data-metric-id="sentences_per_paragraph"]'
         ).parent
@@ -131,24 +132,13 @@ class NofoReadabilityMetricsTests(TestCase):
             [
                 {
                     "label": "Target range, depending on NOFO type",
-                    "operator": "between",
+                    "operator": "at_most_by_category",
                     "minimum": 11.5,
                     "maximum": 12.5,
-                    "assess": False,
                 }
             ],
         )
-        self.assertEqual(
-            goals["characters_per_word"],
-            [
-                {
-                    "label": "Target range",
-                    "operator": "between",
-                    "minimum": 5,
-                    "maximum": 6,
-                }
-            ],
-        )
+        self.assertNotIn("characters_per_word", goals)
         self.assertEqual(goals["flesch_reading_ease"][0]["value"], 39)
 
     @override_settings(
@@ -166,11 +156,10 @@ class NofoReadabilityMetricsTests(TestCase):
             },
             "flesch_kincaid_grade_level": [
                 {
-                    "label": "Example display range",
-                    "operator": "between",
+                    "label": "Example category-dependent target",
+                    "operator": "at_most_by_category",
                     "minimum": 10,
                     "maximum": 12,
-                    "assess": False,
                 },
             ],
         },
@@ -203,11 +192,10 @@ class NofoReadabilityMetricsTests(TestCase):
                 ],
                 "flesch_kincaid_grade_level": [
                     {
-                        "label": "Example display range",
-                        "operator": "between",
+                        "label": "Example category-dependent target",
+                        "operator": "at_most_by_category",
                         "minimum": 10,
                         "maximum": 12,
-                        "assess": False,
                     },
                 ],
             },
@@ -229,24 +217,16 @@ class NofoReadabilityMetricsTests(TestCase):
             {
                 "word_count": {
                     "label": "Example",
-                    "operator": "between",
+                    "operator": "at_most_by_category",
                     "minimum": 1,
                 }
             },
             {
                 "word_count": {
                     "label": "Example",
-                    "operator": "between",
+                    "operator": "at_most_by_category",
                     "minimum": 2,
                     "maximum": 1,
-                }
-            },
-            {
-                "word_count": {
-                    "label": "Example",
-                    "operator": "at_most",
-                    "value": 1,
-                    "assess": "no",
                 }
             },
             {

@@ -68,15 +68,16 @@ or its result contract. The default targets are:
 - word count: 13,500 or fewer;
 - words per sentence: 15 or fewer;
 - sentences per paragraph: 3 or fewer;
-- characters per word: 5–6;
 - Flesch Reading Ease: 39 or higher;
 - Flesch-Kincaid grade level: a displayed range of 11.5–12.5, depending on
   NOFO type; and
 - passive sentences: 8% or fewer.
 
-The grade-level range is display-only because Builder does not infer a NOFO
-category. Reading Ease and characters-per-word comparisons are Builder
-presentation targets rather than package enforcement rules.
+Builder does not infer a NOFO category. Grade-level values at or below 11.5
+are within either category's target, values above 12.5 need improvement, and
+values between the two thresholds prompt the editor to check the applicable
+NOFO type. The Reading Ease comparison is a Builder presentation target rather
+than a package enforcement rule.
 
 Set `HHS_NOFO_METRIC_GOALS` to a JSON object keyed by metric ID to override the
 defaults for an environment. Set it to `{}` to hide all target and assessment
@@ -89,12 +90,13 @@ HHS_NOFO_METRIC_GOALS='{"word_count":{"label":"Example goal","operator":"at_most
 ```
 
 Each configured goal requires a display `label` and an `operator`. Use
-`at_most` or `at_least` with a finite numeric `value`, or use `between` with
-finite numeric `minimum` and `maximum` values. Set `assess` to `false` to show
-a comparison without an assessment badge. A metric may instead use a non-empty
-array of goal objects when multiple comparisons apply. Builder compares the
-unrounded metric value and uses **Within target** or **Needs improvement**
-language rather than pass or fail.
+`at_most` or `at_least` with a finite numeric `value`. Use
+`at_most_by_category` with finite numeric `minimum` and `maximum` thresholds
+when the applicable upper limit depends on a category Builder cannot infer. A
+metric may instead use a non-empty array of goal objects when multiple
+comparisons apply. Builder compares the unrounded metric value and uses
+**Within target**, **Check NOFO type**, or **Needs improvement** language rather
+than pass or fail.
 
 When the package publishes `paragraph_count` and `sentences_per_paragraph` as
 components of its sentence-scope results, Builder displays the latter as a
@@ -102,9 +104,7 @@ separate card. Older package versions leave that optional card hidden. The
 denominator remains the package's source-native, sentence-bearing semantic
 blocks.
 
-When a range depends on a category Builder cannot determine, configure it with
-`assess: false`; the application must not infer a category from the NOFO title
-or prose.
+The application must not infer a category from the NOFO title or prose.
 
 ## Local validation
 

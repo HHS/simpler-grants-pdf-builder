@@ -588,12 +588,6 @@ DEFAULT_HHS_NOFO_METRIC_GOALS = {
         "operator": "at_most",
         "value": 3,
     },
-    "characters_per_word": {
-        "label": "Target range",
-        "operator": "between",
-        "minimum": 5,
-        "maximum": 6,
-    },
     "flesch_reading_ease": {
         "label": "Target",
         "operator": "at_least",
@@ -601,10 +595,9 @@ DEFAULT_HHS_NOFO_METRIC_GOALS = {
     },
     "flesch_kincaid_grade_level": {
         "label": "Target range, depending on NOFO type",
-        "operator": "between",
+        "operator": "at_most_by_category",
         "minimum": 11.5,
         "maximum": 12.5,
-        "assess": False,
     },
     "passive_sentence_percentage": {
         "label": "Target",

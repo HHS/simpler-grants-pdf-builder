@@ -11,13 +11,12 @@ METRICS_MODULE = "hhs_nofo_metrics"
 PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
-GOAL_OPERATORS = frozenset({"at_least", "at_most", "between"})
+GOAL_OPERATORS = frozenset({"at_least", "at_most", "at_most_by_category"})
 GOAL_METRIC_IDS = frozenset(
     {
         "word_count",
         "words_per_sentence",
         "sentences_per_paragraph",
-        "characters_per_word",
         "flesch_reading_ease",
         "flesch_kincaid_grade_level",
         "passive_sentence_percentage",
@@ -71,7 +70,6 @@ def normalize_readability_metric_goals(configuration):
         normalized_goals = []
         for goal in goals:
             unsupported_fields = set(goal) - {
-                "assess",
                 "label",
                 "maximum",
                 "minimum",
@@ -86,7 +84,6 @@ def normalize_readability_metric_goals(configuration):
 
             label = goal.get("label")
             operator = goal.get("operator")
-            assess = goal.get("assess", True)
             if not isinstance(label, str) or not label.strip():
                 raise ImproperlyConfigured(
                     f"Goal configuration for {metric_id!r} requires a label."
@@ -94,22 +91,18 @@ def normalize_readability_metric_goals(configuration):
             if operator not in GOAL_OPERATORS:
                 raise ImproperlyConfigured(
                     f"Goal configuration for {metric_id!r} requires operator "
-                    f"'at_least', 'at_most', or 'between'."
-                )
-            if not isinstance(assess, bool):
-                raise ImproperlyConfigured(
-                    f"Goal configuration for {metric_id!r} requires assess to be "
-                    "true or false."
+                    f"'at_least', 'at_most', or 'at_most_by_category'."
                 )
 
             normalized_goal = {
                 "label": label.strip(),
                 "operator": operator,
             }
-            if operator == "between":
+            if operator == "at_most_by_category":
                 if "value" in goal:
                     raise ImproperlyConfigured(
-                        f"Range goal configuration for {metric_id!r} cannot use value."
+                        f"Category-dependent goal configuration for {metric_id!r} "
+                        "cannot use value."
                     )
                 minimum = goal.get("minimum")
                 maximum = goal.get("maximum")
@@ -120,20 +113,20 @@ def normalize_readability_metric_goals(configuration):
                     for value in (minimum, maximum)
                 ):
                     raise ImproperlyConfigured(
-                        f"Range goal configuration for {metric_id!r} requires finite "
-                        "minimum and maximum numbers."
+                        f"Category-dependent goal configuration for {metric_id!r} "
+                        "requires finite minimum and maximum numbers."
                     )
                 if minimum >= maximum:
                     raise ImproperlyConfigured(
-                        f"Range goal configuration for {metric_id!r} requires minimum "
-                        "to be less than maximum."
+                        f"Category-dependent goal configuration for {metric_id!r} "
+                        "requires minimum to be less than maximum."
                     )
                 normalized_goal.update({"minimum": minimum, "maximum": maximum})
             else:
                 if "minimum" in goal or "maximum" in goal:
                     raise ImproperlyConfigured(
                         f"Goal configuration for {metric_id!r} cannot use minimum or "
-                        "maximum unless operator is 'between'."
+                        "maximum unless operator is 'at_most_by_category'."
                     )
                 value = goal.get("value")
                 if (
@@ -146,8 +139,6 @@ def normalize_readability_metric_goals(configuration):
                     )
                 normalized_goal["value"] = value
 
-            if not assess:
-                normalized_goal["assess"] = False
             normalized_goals.append(normalized_goal)
 
         normalized[metric_id] = normalized_goals
