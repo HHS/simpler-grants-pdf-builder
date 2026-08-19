@@ -277,7 +277,18 @@ class NofoMetadataForm(forms.ModelForm):
 
 # body needs a custom field and a custom widget so don't use the factory function
 class SubsectionEditForm(forms.ModelForm):
+    has_heading = forms.BooleanField(required=False)
+    heading_control_present = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.HiddenInput,
+    )
     body = MartorFormField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["has_heading"].initial = bool(self.instance.tag)
 
     class Meta:
         model = Subsection
@@ -288,11 +299,26 @@ class SubsectionEditForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        has_heading = cleaned_data.get("has_heading")
         name = cleaned_data.get("name")
         tag = cleaned_data.get("tag")
 
-        if tag and not name:
+        if not cleaned_data.get("heading_control_present"):
+            has_heading = bool(self.instance.tag)
+            cleaned_data["has_heading"] = has_heading
+            if has_heading:
+                if "name" not in self.data:
+                    name = cleaned_data["name"] = self.instance.name
+                if "tag" not in self.data:
+                    tag = cleaned_data["tag"] = self.instance.tag
+
+        if not has_heading:
+            cleaned_data["name"] = ""
+            cleaned_data["tag"] = ""
+        elif not name:
             self.add_error("name", "Subsection name can’t be empty.")
+        elif not tag:
+            self.add_error("tag", "Select a heading level.")
 
         return cleaned_data
 
