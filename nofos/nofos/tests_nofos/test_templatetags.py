@@ -17,6 +17,9 @@ from nofos.templatetags.replace_unicode_with_icon import (
     wrap_td_contents_in_div,
     wrap_text_in_span,
 )
+from nofos.templatetags.nofo_section_name_separator import (
+    nofo_section_name_separator,
+)
 from nofos.templatetags.safe_br import safe_br
 from nofos.templatetags.utils import (
     _add_class_if_not_exists_to_tag,
@@ -1920,3 +1923,48 @@ class WrapTextBeforeColonInStrongTests(TestCase):
 
         expected_html = "<p><strong>Opportunity</strong> Name: NOFO 100</p>"
         self.assertEqual(str(paragraph), expected_html)
+
+
+class NofoSectionNameSeparatorTests(TestCase):
+    def test_step_with_number(self):
+        self.assertEqual(
+            nofo_section_name_separator("Step 1: Review the Opportunity"),
+            {"name": " Review the Opportunity", "number": "1"},
+        )
+
+    def test_step_with_extra_words_takes_first_token(self):
+        self.assertEqual(
+            nofo_section_name_separator("Step 1 of 3: Review"),
+            {"name": " Review", "number": "1"},
+        )
+
+    def test_plural_step_without_a_number(self):
+        # "Steps" starts with "step" and contains a colon, so it reaches the
+        # split, but there is no space and so no number to take.
+        self.assertEqual(
+            nofo_section_name_separator("Steps: Review the Opportunity"),
+            {"name": " Review the Opportunity", "number": None},
+        )
+
+    def test_step_without_a_number(self):
+        self.assertEqual(
+            nofo_section_name_separator("Step: Apply"),
+            {"name": " Apply", "number": None},
+        )
+
+    def test_not_a_step(self):
+        self.assertEqual(
+            nofo_section_name_separator("Other: Contacts"),
+            {"name": "Other: Contacts", "number": None},
+        )
+
+    def test_no_colon(self):
+        self.assertEqual(
+            nofo_section_name_separator("Step 1 Review"),
+            {"name": "Step 1 Review", "number": None},
+        )
+
+    def test_empty_name(self):
+        self.assertEqual(
+            nofo_section_name_separator(""), {"name": "", "number": None}
+        )
