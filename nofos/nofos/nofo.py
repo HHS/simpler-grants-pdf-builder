@@ -200,6 +200,7 @@ def process_nofo_html(soup, top_heading_level):
     preserve_table_heading_links(soup)
     clean_heading_tags(soup)
     decompose_before_you_begin_section(soup)
+    add_table_header_scopes(soup)
     clean_table_cells(soup)
     unwrap_empty_elements(soup)
     decompose_empty_tags(soup)
@@ -706,6 +707,79 @@ def convert_table_with_all_ths_to_a_regular_table(table):
             for th in row.find_all("th"):
                 th.name = "td"
             new_tbody.append(row.extract())
+
+
+def add_table_header_scopes(soup):
+    """Add explicit scope relationships to unambiguous two-row table headers.
+
+    A supported header has exactly two rows: one or more spanning ``th`` cells
+    in the first row and one single-column ``th`` per column in the second.
+    Irregular or more deeply nested headers are left unchanged so the importer
+    never guesses at an ambiguous relationship.
+    """
+    updated_tables = 0
+
+    for table in soup.find_all("table"):
+        thead = table.find("thead", recursive=False)
+        if not thead:
+            continue
+
+        rows = thead.find_all("tr", recursive=False)
+        if len(rows) != 2:
+            continue
+
+        first_row_cells = rows[0].find_all(["th", "td"], recursive=False)
+        second_row_cells = rows[1].find_all(["th", "td"], recursive=False)
+
+        if (
+            not first_row_cells
+            or not second_row_cells
+            or any(cell.name != "th" for cell in first_row_cells + second_row_cells)
+        ):
+            continue
+
+        try:
+            group_widths = [int(cell.get("colspan", "1")) for cell in first_row_cells]
+            column_widths = [int(cell.get("colspan", "1")) for cell in second_row_cells]
+            rowspans = [
+                int(cell.get("rowspan", "1"))
+                for cell in first_row_cells + second_row_cells
+            ]
+        except (TypeError, ValueError):
+            continue
+
+        if (
+            any(width <= 1 for width in group_widths)
+            or any(width != 1 for width in column_widths)
+            or any(rowspan != 1 for rowspan in rowspans)
+            or sum(group_widths) != len(second_row_cells)
+        ):
+            continue
+
+        for cell in first_row_cells:
+            cell["scope"] = "colgroup"
+        for cell in second_row_cells:
+            cell["scope"] = "col"
+
+        updated_tables += 1
+
+    return updated_tables
+
+
+def add_table_header_scopes_to_html(value):
+    """Return subsection content with supported HTML table scopes added."""
+    if not value or "<table" not in value.lower():
+        return value
+
+    table_pattern = re.compile(r"<table\b[\s\S]*?</table>", re.IGNORECASE)
+
+    def add_scopes(match):
+        table_soup = BeautifulSoup(match.group(0), "html.parser")
+        if add_table_header_scopes(table_soup):
+            return str(table_soup.table)
+        return match.group(0)
+
+    return table_pattern.sub(add_scopes, value)
 
 
 def get_sections_from_soup(soup, top_heading_level="h1"):
