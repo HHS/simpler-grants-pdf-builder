@@ -31,7 +31,9 @@ class NofoBeforeYouBeginAutoAssignTest(TestCase):
         nofo = Nofo.objects.create(title="Test NOFO", opdiv="HHS")
         # suggest_all_nofo_fields() re-derives opdiv from the soup, so it must
         # be present here too, or the NOFO fails full_clean() (opdiv is required).
-        soup = BeautifulSoup("<html><body><p>OpDiv: HHS</p></body></html>", "html.parser")
+        soup = BeautifulSoup(
+            "<html><body><p>OpDiv: HHS</p></body></html>", "html.parser"
+        )
 
         request = RequestFactory().post("/")
         request.user = user
