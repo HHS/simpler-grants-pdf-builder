@@ -253,13 +253,14 @@ class TestFundingDetailsParagraphNormalization(TestCase):
             <h3>Funding details</h3>
             <p>Application Types: New</p>
             <p>Funding range per award:</p><p> </p>
+            <p>First unresolved label:</p><p>Second unresolved label:</p>
             """,
             "html.parser",
         )
 
         merge_funding_details_label_value_paragraphs(soup)
 
-        self.assertEqual(len(soup.find_all("p")), 3)
+        self.assertEqual(len(soup.find_all("p")), 5)
         self.assertEqual(soup.find_all("p")[0].get_text(), "Application Types: New")
 
     def test_normalizes_real_docx_fixture_in_import_pipeline(self):
