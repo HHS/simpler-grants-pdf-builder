@@ -461,6 +461,34 @@ class Nofo(BaseNofo):
         ),
     )
 
+    TEMPLATE_VERSION_CHOICES = [
+        ("unknown", "Unknown"),
+        ("pre_fy27", "Pre-FY27"),
+        ("fy27", "FY27"),
+    ]
+
+    template_version = models.CharField(
+        "Template version",
+        max_length=16,
+        choices=TEMPLATE_VERSION_CHOICES,
+        default="unknown",
+        help_text=(
+            "The HHS NOFO template generation used by this document. Builder "
+            "detects this during import, and you can correct it when needed."
+        ),
+    )
+
+    template_version_detection = models.JSONField(
+        "Template version detection",
+        default=dict,
+        blank=True,
+        editable=False,
+        help_text=(
+            "Diagnostic evidence from automatic template-version detection, "
+            "including any later manual override."
+        ),
+    )
+
     @property
     def designer_display(self):
         """Human-readable designer label.
