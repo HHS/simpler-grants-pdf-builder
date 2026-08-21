@@ -42,6 +42,9 @@ Once a NOFO is reviewed and approved, our workflow is:
 6. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
 7. Done!
 
+The provisional source-native readability integration is documented in
+[Source-native readability metrics](documentation/READABILITY_METRICS.md).
+
 ## Getting started
 
 ### [Install `python`](https://www.python.org)

@@ -7,6 +7,7 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js %}
   <script src="{% static 'js/nofos/nofo_edit.js' %}" defer></script>
+  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=0.5.6" defer></script>
 {% endblock %}
 
 {% block html_class %}html--nofo_edit{% endblock %}
@@ -213,6 +214,10 @@ Edit “{{ nofo|nofo_name }}”
     </div>
   </div>
 </div>
+
+{% if readability_metrics_enabled %}
+  {% include "nofos/includes/readability_metrics_panel.html" %}
+{% endif %}
 
 <!-- tabs for broken links etc. -->
 {% if has_warnings %}
