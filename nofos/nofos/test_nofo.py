@@ -87,7 +87,7 @@ from .nofo import (
     unwrap_nested_lists,
     upload_cover_image_to_s3,
 )
-from .nofo_markdown import md
+from .nofo_markdown import MISSING_ALT_TEXT_ATTR, md
 
 #########################################################
 ################### FUNCTION TESTS ######################
@@ -8035,34 +8035,40 @@ class NormalizeWhitespaceImgAltTextTests(TestCase):
 
 class AddMissingAltTextToImgsTests(TestCase):
     def test_adds_empty_alt_to_img_missing_alt(self):
-        """Ensure an img with no alt attribute gets alt="" added."""
+        """Ensure an img with no alt attribute gets alt="" and the missing-alt marker added."""
         html = '<img src="turtle.jpg">'
         soup = BeautifulSoup(html, "html.parser")
 
         add_missing_alt_text_to_imgs(soup)
 
-        self.assertEqual(soup.find("img")["alt"], "")
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertTrue(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
     def test_does_not_overwrite_existing_alt_text(self):
-        """Ensure an img with existing, non-empty alt text is left unchanged."""
+        """Ensure an img with existing, non-empty alt text is left unchanged, unmarked."""
         html = '<img src="turtle.jpg" alt="A turtle in a tank">'
         soup = BeautifulSoup(html, "html.parser")
 
         add_missing_alt_text_to_imgs(soup)
 
-        self.assertEqual(soup.find("img")["alt"], "A turtle in a tank")
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "A turtle in a tank")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
     def test_does_not_overwrite_intentionally_empty_alt_text(self):
-        """Ensure an img with an existing alt="" (eg. decorative image) is left unchanged."""
+        """Ensure an img with an existing alt="" (eg. decorative image) is left unchanged, unmarked."""
         html = '<img src="divider.jpg" alt="">'
         soup = BeautifulSoup(html, "html.parser")
 
         add_missing_alt_text_to_imgs(soup)
 
-        self.assertEqual(soup.find("img")["alt"], "")
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
     def test_handles_multiple_images_with_mixed_alt_state(self):
-        """Ensure function only fills in alt for images missing the attribute."""
+        """Ensure function only fills in alt (and marks) images missing the attribute."""
         html = """
         <img src="img1.jpg">
         <img src="img2.jpg" alt="Second image">
@@ -8074,17 +8080,22 @@ class AddMissingAltTextToImgsTests(TestCase):
 
         img_tags = soup.find_all("img")
         self.assertEqual(img_tags[0]["alt"], "")
+        self.assertTrue(img_tags[0].has_attr(MISSING_ALT_TEXT_ATTR))
         self.assertEqual(img_tags[1]["alt"], "Second image")
+        self.assertFalse(img_tags[1].has_attr(MISSING_ALT_TEXT_ATTR))
         self.assertEqual(img_tags[2]["alt"], "")
+        self.assertFalse(img_tags[2].has_attr(MISSING_ALT_TEXT_ATTR))
 
     def test_handles_base64_image_src(self):
-        """Ensure base64-embedded images without alt text are also backfilled."""
+        """Ensure base64-embedded images without alt text are also backfilled and marked."""
         html = '<img src="data:image/png;base64,iVBORw0KGgo=">'
         soup = BeautifulSoup(html, "html.parser")
 
         add_missing_alt_text_to_imgs(soup)
 
-        self.assertEqual(soup.find("img")["alt"], "")
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertTrue(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
     def test_no_images_in_html(self):
         """Ensure function does not raise errors when there are no img tags."""
@@ -8112,8 +8123,10 @@ class AddMissingAltTextToImgsTests(TestCase):
 
         add_missing_alt_text_to_imgs(soup)
 
-        self.assertEqual(soup.find("img")["alt"], "")
-        self.assertEqual(soup.find("img")["src"], "img/cover.jpg")
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertEqual(img["src"], "img/cover.jpg")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
 
 class UpdateAnnouncementTextTests(TestCase):

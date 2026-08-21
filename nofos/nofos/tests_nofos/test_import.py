@@ -490,6 +490,61 @@ class TestNofoImportOpdiv(TestCase):
         )
 
 
+class TestNofoImportMissingAltText(TestCase):
+    """
+    End-to-end: an imported <img> with no alt attribute should end up in the
+    saved subsection body as raw HTML with alt="" (greppable/visible), not as
+    markdown's ![]() syntax, which can't distinguish "alt was never set" from
+    "alt is intentionally empty". See #814.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="alt-text@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client = Client()
+        self.client.login(email="alt-text@example.com", password="testpass123")
+
+    def _build_html_file(self):
+        html_content = """
+        <html>
+        <body>
+            <p>Opportunity name: Alt Text Test NOFO</p>
+            <p>Opportunity number: NOFO-ALT-001</p>
+            <p>Opdiv: CDC</p>
+            <h1>Test Section 1</h1>
+            <h2 data-order="10">Eligibility Information</h2>
+            <p>Some eligibility content, followed by a diagram:</p>
+            <p><img src="diagram.png"></p>
+            <p>End of subsection.</p>
+        </body>
+        </html>
+        """
+        return SimpleUploadedFile(
+            "test.html", html_content.encode("utf-8"), content_type="text/html"
+        )
+
+    def test_missing_alt_img_saved_as_raw_html_not_markdown_syntax(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {"nofo-import": self._build_html_file(), "csrfmiddlewaretoken": "dummy"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        subsection = Subsection.objects.get(
+            section__nofo=Nofo.objects.latest("created"),
+            name="Eligibility Information",
+        )
+
+        self.assertIn('<img alt="" src="diagram.png"/>', subsection.body)
+        self.assertNotIn("![](diagram.png)", subsection.body)
+        self.assertNotIn("data-nofo-missing-alt-text", subsection.body)
+
+
 class TestBlockingImportErrorPages(TestCase):
     def setUp(self):
         self.user = BloomUser.objects.create_user(
