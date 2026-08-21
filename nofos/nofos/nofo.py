@@ -32,7 +32,7 @@ from .import_transforms import (
     transform_word_document,
 )
 from .models import Nofo, Section, Subsection
-from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .utils import (
     add_html_id_to_subsection,
@@ -2953,6 +2953,12 @@ def add_missing_alt_text_to_imgs(soup):
     attribute at all, so that missing alt text is visible and greppable
     in the markdown/HTML source, rather than silently absent.
 
+    Also tags the img with MISSING_ALT_TEXT_ATTR, a marker that tells
+    NofoMarkdownConverter.convert_img (in nofo_markdown.py) to keep this
+    image as raw HTML instead of converting it to markdown's ![]() syntax,
+    which can't distinguish a backfilled alt="" from one that was always
+    missing.
+
     Images that already have an alt attribute (including alt="") are
     left untouched.
 
@@ -2961,6 +2967,7 @@ def add_missing_alt_text_to_imgs(soup):
     for img in soup.find_all("img"):
         if not img.has_attr("alt"):
             img["alt"] = ""
+            img[MISSING_ALT_TEXT_ATTR] = ""
 
 
 def extract_page_break_context(body, html_class=None):
