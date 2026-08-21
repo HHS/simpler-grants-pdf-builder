@@ -238,7 +238,8 @@ def merge_funding_details_label_value_paragraphs(soup):
                 and clean_string(current.get_text(" ", strip=True)).endswith(":")
                 and next_sibling is not None
                 and next_sibling.name == "p"
-                and clean_string(next_sibling.get_text(" ", strip=True))
+                and (next_text := clean_string(next_sibling.get_text(" ", strip=True)))
+                and not next_text.endswith(":")
             ):
                 last_text = current.find_all(string=True)[-1]
                 last_text.replace_with(str(last_text).rstrip())
