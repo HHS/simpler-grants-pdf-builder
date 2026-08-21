@@ -214,6 +214,29 @@ class SubsectionCalloutEditingTests(TestCase):
         self.assertEqual(subsection.html_id, original_html_id)
         self.assertEqual(subsection.html_class, "page-break-before")
 
+    def test_edit_adds_scopes_to_unambiguous_multirow_table_header(self):
+        subsection = Subsection.objects.create(
+            section=self.section,
+            name="Important dates",
+            tag="h3",
+            order=4,
+        )
+        body = (
+            '<table><thead><tr><th colspan="2">Due dates</th></tr>'
+            "<tr><th>New</th><th>Renewal</th></tr></thead></table>"
+        )
+
+        response = self.post_subsection(
+            subsection,
+            callout_box=False,
+            body=body,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertIn('scope="colgroup"', subsection.body)
+        self.assertEqual(subsection.body.count('scope="col"'), 2)
+
     def test_callout_can_be_changed_to_regular_subsection(self):
         subsection = Subsection.objects.create(
             section=self.section,
