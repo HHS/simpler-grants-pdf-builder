@@ -15,6 +15,7 @@ from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
+    merge_funding_details_label_value_paragraphs,
     parse_uploaded_file_as_html_string,
     process_nofo_html,
     replace_chars,
@@ -194,6 +195,116 @@ class TestParseNofoFile(TestCase):
         self.assertEqual(context.exception.error_list[0].code, "docx_conversion")
         self.assertIn("could not read this Word document", str(context.exception))
         self.assertNotIn("private converter detail", str(context.exception))
+
+
+class TestFundingDetailsParagraphNormalization(TestCase):
+    def test_merges_split_funding_detail_fields(self):
+        soup = BeautifulSoup(
+            """
+            <h3>Funding details</h3>
+            <p><strong>Application Types:</strong></p><p>New</p>
+            <p>Expected total available funding in FY 2026:</p><p>$3,240,000</p>
+            <p>Expected number and type of awards:</p>
+            <p>1 CA (Cooperative Agreement)</p>
+            <p>Funding range per award:</p><p>$0 - $3,240,000</p>
+            <h3>Program description</h3>
+            <p>Example label:</p><p>Keep this separate</p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        self.assertEqual(
+            [paragraph.get_text(" ", strip=True) for paragraph in soup.find_all("p")],
+            [
+                "Application Types: New",
+                "Expected total available funding in FY 2026: $3,240,000",
+                "Expected number and type of awards: 1 CA (Cooperative Agreement)",
+                "Funding range per award: $0 - $3,240,000",
+                "Example label:",
+                "Keep this separate",
+            ],
+        )
+        self.assertEqual(soup.find("strong").get_text(strip=True), "Application Types:")
+
+    def test_supports_h4_heading_and_stops_at_next_higher_heading(self):
+        soup = BeautifulSoup(
+            """
+            <h4> Funding Details </h4>
+            <p>Funding range per award: </p><p> $10 - $20 </p>
+            <h3>Next subsection</h3>
+            <p>Outside label:</p><p>Outside value</p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        paragraphs = [paragraph.get_text() for paragraph in soup.find_all("p")]
+        self.assertEqual(
+            paragraphs,
+            ["Funding range per award: $10 - $20 ", "Outside label:", "Outside value"],
+        )
+
+    def test_leaves_inline_and_empty_values_unchanged(self):
+        soup = BeautifulSoup(
+            """
+            <h3>Funding details</h3>
+            <p>Application Types: New</p>
+            <p>Funding range per award:</p><p> </p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        self.assertEqual(len(soup.find_all("p")), 3)
+        self.assertEqual(soup.find_all("p")[0].get_text(), "Application Types: New")
+
+    def test_normalizes_real_docx_fixture_in_import_pipeline(self):
+        fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "funding-details--split-label-values.docx",
+        )
+        with open(fixture_path, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "funding-details--split-label-values.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        imported_html = parse_uploaded_file_as_html_string(uploaded_file)
+        soup = BeautifulSoup(imported_html, "html.parser")
+        top_heading_level = resolve_section_heading_level(soup)
+        soup, _ = process_nofo_html(soup, top_heading_level)
+
+        funding_heading = soup.find(
+            lambda tag: tag.name in {"h3", "h4"}
+            and tag.get_text(strip=True) == "Funding details"
+        )
+        paragraphs = []
+        current = funding_heading.find_next_sibling()
+        while current is not None and current.name not in {"h1", "h2", "h3", "h4"}:
+            if current.name == "p":
+                paragraphs.append(current.get_text(" ", strip=True))
+            current = current.find_next_sibling()
+
+        self.assertEqual(
+            paragraphs,
+            [
+                "Application Types: New",
+                "Expected total available funding in FY 2026: $3,240,000",
+                "Expected number and type of awards: 1 CA (Cooperative Agreement)",
+                "Funding range per award: $0 - $3,240,000",
+            ],
+        )
 
 
 class TestKeyCalloutDocxImport(TestCase):

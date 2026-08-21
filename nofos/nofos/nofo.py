@@ -192,6 +192,7 @@ def process_nofo_html(soup, top_heading_level):
             file.write(str(soup))
 
     instructions_tables = decompose_instructions_tables(soup)
+    merge_funding_details_label_value_paragraphs(soup)
     normalize_whitespace_img_alt_text(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
@@ -212,6 +213,53 @@ def process_nofo_html(soup, top_heading_level):
     soup = add_em_to_de_minimis(soup)
 
     return soup, instructions_tables
+
+
+def merge_funding_details_label_value_paragraphs(soup):
+    """Join split label/value paragraphs within Funding details subsections."""
+    funding_details_headings = soup.find_all(
+        lambda tag: tag.name in {"h3", "h4"}
+        and clean_string(tag.get_text(" ", strip=True)).casefold() == "funding details"
+    )
+
+    for heading in funding_details_headings:
+        heading_level = int(heading.name[1])
+        current = heading.find_next_sibling()
+
+        while current is not None:
+            if re.fullmatch(r"h[1-6]", current.name or ""):
+                current_level = int(current.name[1])
+                if current_level <= heading_level:
+                    break
+
+            next_sibling = current.find_next_sibling()
+            if (
+                current.name == "p"
+                and clean_string(current.get_text(" ", strip=True)).endswith(":")
+                and next_sibling is not None
+                and next_sibling.name == "p"
+                and clean_string(next_sibling.get_text(" ", strip=True))
+            ):
+                last_text = current.find_all(string=True)[-1]
+                last_text.replace_with(str(last_text).rstrip())
+
+                first_value_text = next(
+                    text
+                    for text in next_sibling.find_all(string=True)
+                    if str(text).strip()
+                )
+                first_value_text.replace_with(str(first_value_text).lstrip())
+
+                current.append(" ")
+                for child in list(next_sibling.contents):
+                    current.append(child.extract())
+
+                next_after_value = next_sibling.find_next_sibling()
+                next_sibling.decompose()
+                current = next_after_value
+                continue
+
+            current = next_sibling
 
 
 ###########################################################
