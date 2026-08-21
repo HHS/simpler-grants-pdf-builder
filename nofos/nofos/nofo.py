@@ -193,6 +193,7 @@ def process_nofo_html(soup, top_heading_level):
 
     instructions_tables = decompose_instructions_tables(soup)
     normalize_whitespace_img_alt_text(soup)
+    add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
     preserve_bookmark_links(soup)
@@ -2942,6 +2943,24 @@ def normalize_whitespace_img_alt_text(soup):
     for img in soup.find_all("img"):
         if img.has_attr("alt"):
             img["alt"] = img["alt"].replace("\n\n", "\n")
+
+
+def add_missing_alt_text_to_imgs(soup):
+    """
+    This function mutates the soup!
+
+    Adds an empty alt="" attribute to any img tag that has no alt
+    attribute at all, so that missing alt text is visible and greppable
+    in the markdown/HTML source, rather than silently absent.
+
+    Images that already have an alt attribute (including alt="") are
+    left untouched.
+
+    :param soup: BeautifulSoup object to modify in place.
+    """
+    for img in soup.find_all("img"):
+        if not img.has_attr("alt"):
+            img["alt"] = ""
 
 
 def extract_page_break_context(body, html_class=None):
