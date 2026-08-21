@@ -127,6 +127,12 @@ from .nofo import (
     upload_cover_image_to_s3,
 )
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .readability import (
+    ReadabilityMetricsAnalysisError,
+    ReadabilityMetricsUnavailable,
+    analyze_nofo_readability,
+    normalize_readability_metric_goals,
+)
 from .template_versions import detect_template_version
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
@@ -336,12 +342,49 @@ class NOFOsExportView(DetailView):
         )
 
 
+class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
+    """Calculate source-native metrics for the current Builder revision."""
+
+    def get(self, request, *args, **kwargs):
+        if not settings.HHS_NOFO_METRICS_ENABLED:
+            return JsonResponse(
+                {
+                    "code": "readability_metrics_disabled",
+                    "message": "Readability metrics are not enabled in this environment.",
+                },
+                status=503,
+            )
+
+        nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
+
+        try:
+            payload = analyze_nofo_readability(nofo)
+        except ReadabilityMetricsUnavailable as error:
+            return JsonResponse(
+                {
+                    "code": "readability_metrics_unavailable",
+                    "message": str(error),
+                },
+                status=503,
+            )
+        except ReadabilityMetricsAnalysisError as error:
+            return JsonResponse(error.payload, status=422)
+
+        response = JsonResponse(payload)
+        response["Cache-Control"] = "no-store"
+        return response
+
+
 class NofosEditView(GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["readability_metrics_enabled"] = settings.HHS_NOFO_METRICS_ENABLED
+        context["readability_metric_goals"] = normalize_readability_metric_goals(
+            settings.HHS_NOFO_METRIC_GOALS
+        )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
@@ -680,9 +723,11 @@ class NofosImportNewView(BaseNofoImportView):
             nofo.template_version = template_version
             add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
+            # group must be set before suggest_all_nofo_fields() so it can key
+            # group-specific defaults (e.g. the NIH "before you begin" page) off it
+            nofo.group = request.user.group
             suggest_all_nofo_fields(nofo, soup)
             nofo.filename = filename
-            nofo.group = request.user.group
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
 

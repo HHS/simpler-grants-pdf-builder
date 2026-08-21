@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import json
 import logging
 import os
 import sys
@@ -565,6 +566,51 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 # Grabzit API keys for DOCX conversion
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
+
+# Provisional, source-native readability metrics integration. The package is
+# pinned, but each environment opts into the feature explicitly.
+HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
+    env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
+)
+DEFAULT_HHS_NOFO_METRIC_GOALS = {
+    "word_count": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 13_500,
+    },
+    "words_per_sentence": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 15,
+    },
+    "sentences_per_paragraph": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 3,
+    },
+    "flesch_reading_ease": {
+        "label": "Target",
+        "operator": "at_least",
+        "value": 39,
+    },
+    "flesch_kincaid_grade_level": {
+        "label": "Target range, depending on NOFO type",
+        "operator": "at_most_by_category",
+        "minimum": 11.5,
+        "maximum": 12.5,
+    },
+    "passive_sentence_percentage": {
+        "label": "Target",
+        "operator": "at_most",
+        "value": 8,
+    },
+}
+_readability_metric_goals = env.get_value("HHS_NOFO_METRIC_GOALS", default="")
+HHS_NOFO_METRIC_GOALS = (
+    json.loads(_readability_metric_goals)
+    if _readability_metric_goals
+    else DEFAULT_HHS_NOFO_METRIC_GOALS
+)
 
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

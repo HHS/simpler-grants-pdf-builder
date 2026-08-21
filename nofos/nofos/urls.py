@@ -55,6 +55,11 @@ urlpatterns = [
     ),
     path("<uuid:pk>", views.NofosDetailView.as_view(), name="nofo_view"),
     path("<uuid:pk>/export", views.NOFOsExportView.as_view(), name="nofo_export"),
+    path(
+        "<uuid:pk>/readability-metrics",
+        views.NofoReadabilityMetricsView.as_view(),
+        name="nofo_readability_metrics",
+    ),
     path("<uuid:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
     path(
         "<uuid:pk>/edit/coach-designer",

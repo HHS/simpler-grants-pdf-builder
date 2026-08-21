@@ -71,6 +71,7 @@ from .nofo import (
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
     suggest_nofo_author,
+    suggest_nofo_before_you_begin,
     suggest_nofo_cover,
     suggest_nofo_keywords,
     suggest_nofo_opdiv,
@@ -4070,6 +4071,20 @@ class HTMLSuggestCoverTests(TestCase):
         self.assertEqual(suggest_nofo_cover(""), nofo_cover)
 
 
+class HTMLSuggestBeforeYouBeginTests(TestCase):
+    def test_suggest_nofo_before_you_begin_nih_returns_era(self):
+        self.assertEqual(suggest_nofo_before_you_begin("nih"), "era")
+
+    def test_suggest_nofo_before_you_begin_bloom_returns_full(self):
+        self.assertEqual(suggest_nofo_before_you_begin("bloom"), "full")
+
+    def test_suggest_nofo_before_you_begin_other_group_returns_full(self):
+        self.assertEqual(suggest_nofo_before_you_begin("hrsa"), "full")
+
+    def test_suggest_nofo_before_you_begin_empty_string_returns_full(self):
+        self.assertEqual(suggest_nofo_before_you_begin(""), "full")
+
+
 class SuggestNofoOpDivTests(TestCase):
     def test_opdiv_present_in_paragraph(self):
         html = "<div><p>Opdiv: Center for Awesome NOFOs</p></div>"
@@ -4541,6 +4556,7 @@ class SuggestNofoFieldsTests(TestCase):
         )
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
+        self.assertEqual(self.nofo.before_you_begin, "full")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
         # HTML content with some missing fields
@@ -4571,6 +4587,15 @@ class SuggestNofoFieldsTests(TestCase):
         # still get set
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
+        self.assertEqual(self.nofo.before_you_begin, "full")
+
+    def test_suggest_all_nofo_fields_nih_group_sets_before_you_begin_era(self):
+        """A NOFO belonging to the NIH group defaults its BYB page to the eRA variant."""
+        self.nofo.group = "nih"
+        suggest_all_nofo_fields(self.nofo, self.soup)
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.before_you_begin, "era")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
         suggest_all_nofo_fields(self.nofo, self.soup)
