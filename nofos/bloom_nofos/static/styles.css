@@ -751,7 +751,20 @@ label.usa-label {
 }
 
 .nofo_index--header--view {
-  top: 10px;
+  top: 4px;
+  align-items: center;
+}
+
+@media all and (max-width: 39.99em) {
+  .nofo_index--header h1 {
+    width: 100%;
+  }
+
+  .nofo_index--header--view {
+    position: static;
+    justify-content: flex-start;
+    margin-top: 0.75rem;
+  }
 }
 
 .nofo_edit--audit-widget {
