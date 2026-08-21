@@ -1,6 +1,13 @@
 import json
 from typing import Dict
 
+from bloom_nofos.error_helpers import (
+    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+    MistaggedHeadingError,
+    render_blocking_import_error,
+    render_import_server_error,
+    render_mistagged_heading_error,
+)
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import generate_docx_download_response
@@ -464,24 +471,49 @@ class ComposerImportView(ComposerAdminRequiredMixin, BaseNofoImportView):
 
             return redirect("composer:composer_import_title", pk=document.pk)
 
+        except MistaggedHeadingError as e:
+            log_exception(
+                request,
+                e,
+                level="warning",
+                context=(
+                    "ComposerImportView:MistaggedHeadingError:"
+                    "IMPORT-HEADING-TOO-LONG"
+                ),
+                status=422,
+            )
+            return render_mistagged_heading_error(
+                request,
+                e,
+                retry_url=reverse("composer:composer_import"),
+            )
         except ValidationError as e:
             log_exception(
                 request,
                 e,
-                context="ComposerImportView:ValidationError",
+                context="ComposerImportView:ValidationError:COMPOSER-IMPORT-INVALID",
                 status=400,
             )
-            return HttpResponseBadRequest(
-                f"<p><strong>Error creating Content Guide:</strong></p> {e.message}"
+            return render_blocking_import_error(
+                request,
+                title="We couldn’t import this content guide",
+                summary=(
+                    "NOFO Builder could not create a valid content guide from the uploaded document."
+                ),
+                error_code="COMPOSER-IMPORT-INVALID",
+                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                retry_url=reverse("composer:composer_import"),
             )
         except Exception as e:
             log_exception(
                 request,
                 e,
-                context="ComposerImportView:Exception",
+                context="ComposerImportView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
-            return HttpResponseBadRequest(f"Error creating Content Guide: {str(e)}")
+            return render_import_server_error(
+                request, retry_url=reverse("composer:composer_import")
+            )
 
 
 class ComposerImportTitleView(

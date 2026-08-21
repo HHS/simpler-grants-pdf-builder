@@ -14,13 +14,24 @@ register = template.Library()
 
 uswds_arrow_upward_icon = '<img class="usa-icon usa-icon--arrow_upward" src="/static/img/usa-icons/arrow_upward.svg" alt="Report upward trend">'
 uswds_arrow_downward_icon = '<img class="usa-icon usa-icon--arrow_downward" src="/static/img/usa-icons/arrow_downward.svg" alt="Report downward trend">'
-uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="/static/img/usa-icons/check_box_outline_blank.svg" alt="Checkbox">'
+uswds_check_box_outline_blank_icon = '<img class="usa-icon usa-icon--check_box_outline_blank" src="/static/img/usa-icons/check_box_outline_blank.svg" alt="">'
 
 ICONS = [
     ("↑", uswds_arrow_upward_icon),
     ("↓", uswds_arrow_downward_icon),
     ("◻", uswds_check_box_outline_blank_icon),  # (◻) U+25FB WHITE MEDIUM SQUARE
 ]
+
+BLOCK_LEVEL_TAG_NAMES = {
+    "blockquote",
+    "div",
+    "dl",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul",
+}
 
 
 def has_link_in_above_rows(td):
@@ -40,7 +51,7 @@ def has_checkbox(td):
     if any(x in td.get_text() for x in ["◻", "☐"]):
         return True
 
-    if td.find("img", alt="Checkbox"):
+    if td.find("img", class_="usa-icon--check_box_outline_blank"):
         return True
 
     return False
@@ -166,6 +177,46 @@ def wrap_td_contents_in_div(td):
     td.append(new_div)
 
 
+def add_checkbox_layout_classes(td):
+    """Align checkbox lines while preserving later block content in a table cell."""
+    direct_tag_children = [child for child in td.children if isinstance(child, Tag)]
+    content_container = (
+        direct_tag_children[0]
+        if len(direct_tag_children) == 1 and direct_tag_children[0].name == "div"
+        else td
+    )
+    block_children = [
+        child
+        for child in content_container.children
+        if isinstance(child, Tag) and child.name in BLOCK_LEVEL_TAG_NAMES
+    ]
+
+    checkbox_lines = [
+        child
+        for child in block_children
+        if child.find("img", class_="usa-icon--check_box_outline_blank") is not None
+    ]
+    if not checkbox_lines:
+        return
+
+    is_multi_block = len(block_children) > 1
+    if is_multi_block:
+        _add_class_if_not_exists_to_tag(
+            element=td,
+            classname="usa-icon__td--multi-block",
+            tag_name="td",
+        )
+
+    for checkbox_line in checkbox_lines:
+        if not is_multi_block and checkbox_line.name != "p":
+            continue
+        _add_class_if_not_exists_to_tag(
+            element=checkbox_line,
+            classname="usa-icon__line",
+            tag_name=checkbox_line.name,
+        )
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -250,6 +301,7 @@ def replace_unicode_with_icon(html_string):
                             tag_name="td",
                         )
 
+                    add_checkbox_layout_classes(parent_td)
                     wrap_text_in_span(parent_td)
                     wrap_td_contents_in_div(parent_td)
 

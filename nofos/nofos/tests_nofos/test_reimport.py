@@ -265,6 +265,36 @@ class NofoReimportTests(TransactionTestCase):
         self.assertFalse("page-break-before" in updated_subsections[0].html_class)
         self.assertFalse("page-break-before" in updated_subsections[1].html_class)
 
+    def test_reimport_uses_callout_state_from_source_and_archives_manual_state(self):
+        """Reimport remains source-authoritative for callout styling."""
+        self.subsections[0].callout_box = True
+        self.subsections[0].save()
+
+        response = self.client.post(
+            reverse("nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.id}),
+            {
+                "nofo-import": create_test_html_file(),
+                "preserve_page_breaks": "on",
+                "csrfmiddlewaretoken": "dummy",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        reimported_subsection = (
+            Nofo.objects.get(id=self.nofo.id)
+            .sections.get(name="Test Section 1")
+            .subsections.get(name="Eligibility Information")
+        )
+        self.assertFalse(reimported_subsection.callout_box)
+
+        archived_nofo = Nofo.objects.filter(successor_id=self.nofo.id).get()
+        archived_subsection = archived_nofo.sections.get(
+            name="Test Section 1"
+        ).subsections.get(name="Eligibility Information")
+        self.assertTrue(archived_subsection.callout_box)
+
     def test_reimport_success_behavior(self):
         """Test success message and redirect behavior for reimport."""
         test_file = create_test_html_file()
@@ -468,4 +498,54 @@ class NofosImportOverwriteViewTests(TestCase):
         self.assertEqual(
             p_after_h1.text.strip(),
             "The document you uploaded has a different opportunity number than the current NOFO.",
+        )
+
+    def test_confirm_reimport_ignores_h1_inside_table_when_h2_defines_sections(self):
+        html_content = """
+        <p>Opportunity name: Table heading fixture</p>
+        <p>Opdiv: ACF</p>
+        <p>Opportunity number: NOFO-ACF-002</p>
+        <h2>Step 1: Review the Opportunity</h2>
+        <p>First section content.</p>
+        <table>
+          <tr><td><h1>Table label</h1></td></tr>
+        </table>
+        <h2>Step 2: Get Ready to Apply</h2>
+        <p>Second section content.</p>
+        """
+        test_file = SimpleUploadedFile(
+            "table-heading.html",
+            html_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(
+            self.import_url,
+            {
+                "nofo-import": test_file,
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": self.nofo.pk}),
+            fetch_redirect_response=False,
+        )
+
+        response = self.client.post(
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": self.nofo.pk})
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk}),
+            fetch_redirect_response=False,
+        )
+        self.nofo.refresh_from_db()
+        self.assertEqual(
+            list(self.nofo.sections.values_list("name", flat=True)),
+            [
+                "Step 1: Review the Opportunity",
+                "Step 2: Get Ready to Apply",
+            ],
         )

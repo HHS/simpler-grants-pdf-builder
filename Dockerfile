@@ -5,7 +5,16 @@ FROM python:3.14-slim AS builder
 WORKDIR /app
 
 # Install system dependencies (Debian-based)
+# The --only-upgrade line patches CVE-2026-13595 and CVE-2026-27456, both Medium,
+# both in the util-linux source package family: bsdutils, libblkid1, liblastlog2-2,
+# libmount1, libsmartcols1, libuuid1, login, mount, util-linux.
+# python:3.14-slim ships 2.41-5. Debian published the fix as 2.41.5-0+deb13u1
+# before the base image was rebuilt, so Anchore/Grype fails on any freshly built
+# image. Upgrading is preferred over a .grype.yml entry because the fix exists.
+# Remove this line once the base image ships util-linux >= 2.41.5-0+deb13u1.
+# Last checked: 08/17/2026
 RUN apt-get update && \
+  apt-get install -y --only-upgrade --no-install-recommends util-linux && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \

@@ -9,18 +9,21 @@ register = template.Library()
 def add_classes_to_broken_links(html_string, broken_links):
     """
     Adds "nofo_edit--broken-link" class to links with href matching my broken links array, and a tooltip for broken links.
-    Also adds "nofo_edit--broken-link" class to links with NO href, as these are broken bookmark links.
-    Broken bookmark links get a more specific pop-up message.
+    Also adds "nofo_edit--broken-link" class to links with NO href but WITH visible text and no `id`/`name`, as these
+    are broken bookmark links (e.g. martor stripped the href of a disallowed URL scheme). Anchors with no href that
+    have an `id`/`name` (e.g. <a id="...">), or no text at all, are bookmark targets, not links, and are not flagged
+    -- even if they have visible text (some bookmark targets carry over their original visible label; see
+    preserve_bookmark_links in nofo.py). Broken bookmark links get a more specific pop-up message.
 
     Args:
         html_string (str): The HTML content of a subsection as a string.
         broken_links (list of dict): A list of broken links dicts returned from "find_broken_links" function nofo.py.
 
     Example:
-        html = '<p><a href="http://example.com">Visit</a></p>'
-        broken_links = [{'href': 'http://example.com'}]
+        html = '<p><a href="#_Purpose">Visit</a></p>'
+        broken_links = [{'link_href': '#_Purpose'}]
         result = add_classes_to_broken_links(html, broken_links)
-        # Output: '<p><a href="http://example.com" class="nofo_edit--broken-link usa-tooltip" data-position="top" title="Broken link">Visit</a></p>'
+        # Output: '<p><a href="#_Purpose" class="nofo_edit--broken-link usa-tooltip" data-position="bottom" title="Broken link">Visit</a></p>'
     """
     soup = BeautifulSoup(html_string, "html.parser")
     link_hrefs = [link["link_href"] for link in broken_links]
@@ -37,7 +40,21 @@ def add_classes_to_broken_links(html_string, broken_links):
 
     # bookmark links show up with no href because of martor
     # add the same classes, but a different popup message
+    #
+    # only flag <a> tags with visible text AND no id/name: that's the
+    # signature of a martor-stripped link (e.g. a disallowed "bookmark://"
+    # scheme gets its href stripped by bleach, leaving the link text behind
+    # with no href). An <a> tag with an id or name is a bookmark *target*
+    # (e.g. <a id="...">), not a link -- some targets carry over their
+    # original visible text (see preserve_bookmark_links in nofo.py, which
+    # only merges/removes *empty* bookmark targets and leaves non-empty ones
+    # like this alone) -- so text alone isn't enough to call it broken.
     for link2 in soup.find_all("a", href=False):
+        if not link2.get_text(strip=True):
+            continue
+        if link2.get("id") or link2.get("name"):
+            continue
+
         link2["class"] = link2.get("class", []) + [
             "nofo_edit--broken-link",
             "usa-tooltip",

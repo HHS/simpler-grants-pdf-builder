@@ -1,9 +1,11 @@
 import csv
 import io
 import json
+import os
 import uuid
 from unittest.mock import MagicMock, patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -16,6 +18,14 @@ from .models import CompareDocument, CompareSection, CompareSubsection
 from .views import duplicate_compare_doc
 
 User = get_user_model()
+
+MISTAGGED_HEADING_FIXTURE_PATH = os.path.join(
+    settings.BASE_DIR,
+    "nofos",
+    "fixtures",
+    "docx",
+    "mistagged-paragraph-heading.docx",
+)
 
 
 class DuplicateCompareTests(TestCase):
@@ -352,6 +362,102 @@ class CompareImportViewTests(TestCase):
         follow_response = self.client.get(response["Location"])
         self.assertEqual(follow_response.status_code, 200)
         self.assertContains(follow_response, "Error: Oops! No fos uploaded.")
+
+    def test_word_import_identifies_mistagged_paragraph_heading(self):
+        with open(MISTAGGED_HEADING_FIXTURE_PATH, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn(
+            "This entire paragraph was accidentally assigned a heading style in Word.",
+            content,
+        )
+        self.assertNotIn("COMPARE-IMPORT-INVALID", content)
+        self.assertEqual(CompareDocument.objects.count(), 0)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    @patch("compare.views.create_compare_document")
+    def test_unexpected_creation_error_uses_safe_500_page(
+        self, create_document, parse_file
+    ):
+        parse_file.return_value = (
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        create_document.side_effect = RuntimeError("private comparison detail")
+        uploaded_file = SimpleUploadedFile(
+            "comparison.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(self.url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("IMPORT-UNEXPECTED", content)
+        self.assertIn(f'href="{self.url}"', content)
+        self.assertNotIn("private comparison detail", content)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    @patch("compare.views.create_nofo")
+    def test_import_to_existing_document_uses_safe_500_page(
+        self, create_document, parse_file
+    ):
+        parse_file.return_value = (
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+        )
+        create_document.side_effect = RuntimeError("private compare-to-doc detail")
+        document = CompareDocument.objects.create(
+            title="Existing comparison", opdiv="CDC", group="bloom"
+        )
+        url = reverse("compare:compare_import_to_doc", kwargs={"pk": document.pk})
+        uploaded_file = SimpleUploadedFile(
+            "comparison.html", b"placeholder", content_type="text/html"
+        )
+
+        response = self.client.post(url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("IMPORT-UNEXPECTED", content)
+        self.assertIn(f'href="{url}"', content)
+        self.assertNotIn("private compare-to-doc detail", content)
+
+    def test_word_import_to_existing_document_identifies_mistagged_heading(self):
+        document = CompareDocument.objects.create(
+            title="Existing comparison", opdiv="CDC", group="bloom"
+        )
+        url = reverse("compare:compare_import_to_doc", kwargs={"pk": document.pk})
+        with open(MISTAGGED_HEADING_FIXTURE_PATH, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "mistagged-paragraph-heading.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        response = self.client.post(url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-HEADING-TOO-LONG", content)
+        self.assertIn(
+            "This entire paragraph was accidentally assigned a heading style in Word.",
+            content,
+        )
+        self.assertNotIn("COMPARE-TO-DOC-INVALID", content)
+        self.assertEqual(Nofo.objects.count(), 0)
 
 
 # Edit the title right after importing

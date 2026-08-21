@@ -1,0 +1,14 @@
+# List of vulnerabilities to ignore for the trivy scan
+#
+# This file mirrors the .trivyignore used by the deployment pipeline in
+# HHS/simpler-grants-gov so that the scan run on PRs here enforces the same rules.
+# Keep the two files in sync when adding or removing an entry.
+#
+# Please add safelists in the following format to make it easier when checking
+# Package/module name: URL to vulnerability for checking updates
+#  Versions:     URL to the version history
+#  Dependencies: Name of any other packages or modules that are dependent on this version
+#                 Link to the dependencies for ease of checking for updates
+#  Issue:         Why there is a finding and why this is here or not been removed
+#  Last checked:  Date last checked in scans
+#The-CVE-or-vuln-id # Remove comment at start of line
