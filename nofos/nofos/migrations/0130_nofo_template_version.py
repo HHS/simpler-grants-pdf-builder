@@ -25,4 +25,18 @@ class Migration(migrations.Migration):
                 verbose_name="Template version",
             ),
         ),
+        migrations.AddField(
+            model_name="nofo",
+            name="template_version_detection",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                editable=False,
+                help_text=(
+                    "Diagnostic evidence from automatic template-version detection, "
+                    "including any later manual override."
+                ),
+                verbose_name="Template version detection",
+            ),
+        ),
     ]

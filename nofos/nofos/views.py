@@ -133,7 +133,10 @@ from .readability import (
     analyze_nofo_readability,
     normalize_readability_metric_goals,
 )
-from .template_versions import detect_template_version
+from .template_versions import (
+    TemplateVersionDetection,
+    detect_template_version_with_evidence,
+)
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -485,10 +488,13 @@ class BaseNofoImportView(View):
     redirect_url_name = "nofos:nofo_import"
     detect_template_version_on_import = False
 
-    def get_imported_template_version(self, soup):
+    def get_imported_template_detection(self, soup):
         if not self.detect_template_version_on_import:
-            return "unknown"
-        return detect_template_version(soup)
+            return TemplateVersionDetection(version="unknown", diagnostics={})
+        return detect_template_version_with_evidence(soup)
+
+    def get_imported_template_version(self, soup):
+        return self.get_imported_template_detection(soup).version
 
     def get_template_name(self):
         """
@@ -537,7 +543,7 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
-            template_version = self.get_imported_template_version(soup)
+            template_detection = self.get_imported_template_detection(soup)
             # Remove this known redundant section before it can affect which
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)
@@ -654,7 +660,7 @@ class BaseNofoImportView(View):
             soup,
             sections,
             filename,
-            template_version,
+            template_detection,
             *args,
             **kwargs,
         )
@@ -683,7 +689,7 @@ class BaseNofoImportView(View):
         soup,
         sections,
         filename,
-        template_version="unknown",
+        template_detection=None,
         *args,
         **kwargs,
     ):
@@ -708,19 +714,23 @@ class NofosImportNewView(BaseNofoImportView):
         soup,
         sections,
         filename,
-        template_version="unknown",
+        template_detection=None,
         *args,
         **kwargs,
     ):
         """
         Create a new NOFO with the parsed data.
         """
+        template_detection = template_detection or TemplateVersionDetection(
+            version="unknown", diagnostics={}
+        )
         try:
             nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv)
-            nofo.template_version = template_version
+            nofo.template_version = template_detection.version
+            nofo.template_version_detection = template_detection.diagnostics
             add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
             # group must be set before suggest_all_nofo_fields() so it can key
@@ -845,13 +855,16 @@ class NofosImportOverwriteView(
         soup,
         sections,
         filename,
-        template_version="unknown",
+        template_detection=None,
         *args,
         **kwargs,
     ):
         """
         Overwrite an existing NOFO with the new sections.
         """
+        template_detection = template_detection or TemplateVersionDetection(
+            version="unknown", diagnostics={}
+        )
         nofo = self.nofo
         if nofo.status in ["published", "review", "doge", "paused"]:
             return render_blocking_import_error(
@@ -876,7 +889,8 @@ class NofosImportOverwriteView(
                 "filename": filename,
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
-                "template_version": template_version,
+                "template_version": template_detection.version,
+                "template_version_detection": template_detection.diagnostics,
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
@@ -888,7 +902,7 @@ class NofosImportOverwriteView(
             sections,
             filename,
             if_preserve_page_breaks,
-            template_version,
+            template_detection,
         )
 
     @staticmethod
@@ -899,7 +913,7 @@ class NofosImportOverwriteView(
         sections,
         filename,
         if_preserve_page_breaks,
-        template_version=None,
+        template_detection=None,
     ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
@@ -914,9 +928,11 @@ class NofosImportOverwriteView(
                 duplicate_nofo(nofo, is_successor=True)
 
                 nofo = overwrite_nofo(nofo, sections)
-                nofo.template_version = template_version or detect_template_version(
-                    soup
+                template_detection = (
+                    template_detection or detect_template_version_with_evidence(soup)
                 )
+                nofo.template_version = template_detection.version
+                nofo.template_version_detection = template_detection.diagnostics
 
                 # restore page breaks
                 if if_preserve_page_breaks and page_breaks:
@@ -1026,7 +1042,10 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
 
         filename = reimport_data["filename"]
         if_preserve_page_breaks = reimport_data["if_preserve_page_breaks"]
-        template_version = reimport_data.get("template_version")
+        template_detection = TemplateVersionDetection(
+            version=reimport_data.get("template_version", "unknown"),
+            diagnostics=reimport_data.get("template_version_detection", {}),
+        )
 
         return NofosImportOverwriteView.reimport_nofo(
             request,
@@ -1035,7 +1054,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             sections,
             filename,
             if_preserve_page_breaks,
-            template_version,
+            template_detection,
         )
 
 
@@ -1426,6 +1445,28 @@ class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
 class NofoEditTemplateVersionView(BaseNofoEditView):
     form_class = NofoTemplateVersionForm
     template_name = "nofos/nofo_edit_template_version.html"
+
+    def form_valid(self, form):
+        diagnostics = dict(self.object.template_version_detection or {})
+        detected_version = diagnostics.get("detected_version")
+        if detected_version is None and diagnostics.get("source") == "detected":
+            matched_rule = diagnostics.get("matched_rule")
+            detected_version = next(
+                (
+                    rule.get("version")
+                    for rule in diagnostics.get("evaluated_rules", [])
+                    if rule.get("id") == matched_rule
+                ),
+                None,
+            )
+        diagnostics.update(
+            {
+                "source": "manual_override",
+                "detected_version": detected_version,
+            }
+        )
+        form.instance.template_version_detection = diagnostics
+        return super().form_valid(form)
 
 
 class NofoEditThemeOptionsView(BaseNofoEditView):

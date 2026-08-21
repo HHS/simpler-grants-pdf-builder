@@ -478,6 +478,17 @@ class Nofo(BaseNofo):
         ),
     )
 
+    template_version_detection = models.JSONField(
+        "Template version detection",
+        default=dict,
+        blank=True,
+        editable=False,
+        help_text=(
+            "Diagnostic evidence from automatic template-version detection, "
+            "including any later manual override."
+        ),
+    )
+
     @property
     def designer_display(self):
         """Human-readable designer label.

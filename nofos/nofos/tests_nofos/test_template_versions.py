@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -11,7 +12,11 @@ from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import parse_uploaded_file_as_html_string
-from nofos.template_versions import detect_template_version
+from nofos.template_versions import (
+    TemplateVersionDetection,
+    detect_template_version,
+    detect_template_version_with_evidence,
+)
 from nofos.views import BaseNofoImportView, NofosImportNewView
 
 
@@ -63,13 +68,43 @@ class TemplateVersionDetectionTest(TestCase):
 
         self.assertEqual(detect_template_version(soup), "unknown")
 
+    def test_detects_modified_template_without_expected_heading(self):
+        soup = BeautifulSoup(
+            """
+            <h1>Start here</h1>
+            <p>Application submission deadline: January 1, 2027</p>
+            <p>See other key dates in the executive summary.</p>
+            """,
+            "html.parser",
+        )
+
+        self.assertEqual(detect_template_version(soup), "fy27")
+
+    def test_returns_stable_diagnostic_evidence(self):
+        soup = self.fixture_soup("template-version--fy27-master-structure.html")
+
+        detection = detect_template_version_with_evidence(soup)
+
+        self.assertEqual(detection.version, "fy27")
+        self.assertEqual(detection.diagnostics["source"], "detected")
+        self.assertEqual(detection.diagnostics["matched_rule"], "fy27-structure-v1")
+        evaluated_rule = detection.diagnostics["evaluated_rules"][0]
+        self.assertGreaterEqual(len(evaluated_rule["matched_signals"]), 2)
+        self.assertEqual(evaluated_rule["minimum_matches"], 2)
+
     @override_settings(
         NOFO_TEMPLATE_VERSION_RULES=[
             {
+                "id": "custom-rule",
                 "version": "fy27",
-                "required": [{"type": "heading", "text": "Configurable marker"}],
-                "supporting": [],
-                "minimum_supporting_matches": 0,
+                "signals": [
+                    {
+                        "id": "custom-heading",
+                        "type": "heading",
+                        "text": "Configurable marker",
+                    }
+                ],
+                "minimum_matches": 1,
             }
         ]
     )
@@ -78,7 +113,21 @@ class TemplateVersionDetectionTest(TestCase):
 
         self.assertEqual(detect_template_version(soup), "fy27")
 
-    @patch("nofos.views.detect_template_version")
+    def test_invalid_rule_configuration_fails_clearly(self):
+        soup = BeautifulSoup("<h2>Any document</h2>", "html.parser")
+        rules = [
+            {
+                "id": "invalid-rule",
+                "version": "fy27",
+                "signals": [],
+                "minimum_matches": 1,
+            }
+        ]
+
+        with self.assertRaisesMessage(ImproperlyConfigured, "non-empty signals"):
+            detect_template_version(soup, rules=rules)
+
+    @patch("nofos.views.detect_template_version_with_evidence")
     def test_shared_base_importer_does_not_run_nofo_detection(self, detector):
         soup = BeautifulSoup("<h1>Any document</h1>", "html.parser")
 
@@ -87,7 +136,10 @@ class TemplateVersionDetectionTest(TestCase):
         self.assertEqual(version, "unknown")
         detector.assert_not_called()
 
-    @patch("nofos.views.detect_template_version", return_value="fy27")
+    @patch(
+        "nofos.views.detect_template_version_with_evidence",
+        return_value=TemplateVersionDetection("fy27", {"source": "detected"}),
+    )
     def test_nofo_importer_runs_detection(self, detector):
         soup = BeautifulSoup("<h1>Any document</h1>", "html.parser")
 
@@ -118,6 +170,7 @@ class TemplateVersionLifecycleTest(TestCase):
         nofo = Nofo.objects.create(title="Manual NOFO", opdiv="HHS")
 
         self.assertEqual(nofo.template_version, "unknown")
+        self.assertEqual(nofo.template_version_detection, {})
 
     def test_import_persists_detected_version(self):
         response = self.client.post(
@@ -130,7 +183,12 @@ class TemplateVersionLifecycleTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Nofo.objects.latest("created").template_version, "fy27")
+        nofo = Nofo.objects.latest("created")
+        self.assertEqual(nofo.template_version, "fy27")
+        self.assertEqual(nofo.template_version_detection["source"], "detected")
+        self.assertEqual(
+            nofo.template_version_detection["matched_rule"], "fy27-structure-v1"
+        )
 
     def test_reimport_updates_version_and_preserves_historical_version(self):
         nofo = Nofo.objects.create(
@@ -139,6 +197,7 @@ class TemplateVersionLifecycleTest(TestCase):
             opdiv="HHS",
             group="bloom",
             template_version="pre_fy27",
+            template_version_detection={"source": "manual_override"},
         )
         section = Section.objects.create(
             nofo=nofo, name="Existing section", html_id="existing-section", order=1
@@ -166,6 +225,10 @@ class TemplateVersionLifecycleTest(TestCase):
         self.assertEqual(nofo.template_version, "fy27")
         historical = Nofo.objects.exclude(pk=nofo.pk).get(successor=nofo)
         self.assertEqual(historical.template_version, "pre_fy27")
+        self.assertEqual(
+            historical.template_version_detection, {"source": "manual_override"}
+        )
+        self.assertEqual(nofo.template_version_detection["source"], "detected")
 
     def test_user_can_correct_detected_version(self):
         nofo = Nofo.objects.create(
@@ -173,6 +236,11 @@ class TemplateVersionLifecycleTest(TestCase):
             opdiv="HHS",
             group="bloom",
             template_version="fy27",
+            template_version_detection={
+                "source": "detected",
+                "matched_rule": "fy27-structure-v1",
+                "evaluated_rules": [{"id": "fy27-structure-v1", "version": "fy27"}],
+            },
         )
 
         response = self.client.post(
@@ -185,3 +253,12 @@ class TemplateVersionLifecycleTest(TestCase):
         )
         nofo.refresh_from_db()
         self.assertEqual(nofo.template_version, "pre_fy27")
+        self.assertEqual(
+            nofo.template_version_detection,
+            {
+                "source": "manual_override",
+                "matched_rule": "fy27-structure-v1",
+                "evaluated_rules": [{"id": "fy27-structure-v1", "version": "fy27"}],
+                "detected_version": "fy27",
+            },
+        )

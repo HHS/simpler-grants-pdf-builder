@@ -638,18 +638,28 @@ CONSTANCE_CONFIG = {
 # source control so changes are reviewed and tested against representative fixtures.
 NOFO_TEMPLATE_VERSION_RULES = [
     {
+        "id": "fy27-structure-v1",
         "version": "fy27",
-        "required": [
-            {"type": "heading", "text": "Before You Get Started"},
-        ],
-        "supporting": [
+        "signals": [
             {
+                "id": "before-you-get-started-heading",
+                "type": "heading",
+                "text": "Before You Get Started",
+            },
+            {
+                "id": "application-submission-deadline",
                 "type": "text_prefix",
                 "text": "Application submission deadline:",
             },
-            {"type": "text_contains", "text": "See other key dates"},
+            {
+                "id": "other-key-dates-reference",
+                "type": "text_contains",
+                "text": "See other key dates",
+            },
         ],
-        "minimum_supporting_matches": 1,
+        # Two signals provide conservative classification without making any
+        # single heading or phrase mandatory in modified/AM-generated documents.
+        "minimum_matches": 2,
     },
 ]
 
