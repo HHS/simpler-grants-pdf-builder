@@ -572,6 +572,14 @@ GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default
 HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
+
+# Prototype: export a Word copy with intact HHS Department Governance
+# language stripped (and anything ambiguous/altered flagged) to speed up
+# OMB/Departmental clearance review. Off by default; does not affect the
+# existing Word/PDF export paths in any environment where it's disabled.
+HHS_NOFO_POLICY_EXPORT_ENABLED = cast_to_boolean(
+    env.get_value("HHS_NOFO_POLICY_EXPORT_ENABLED", default=False)
+)
 DEFAULT_HHS_NOFO_METRIC_GOALS = {
     "word_count": {
         "label": "Target",

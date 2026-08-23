@@ -33,6 +33,7 @@ from .import_transforms import (
 )
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .policy_language import detect_policy_language_status, get_candidate_slots
 from .pdf_metadata import normalize_pdf_metadata_value
 from .utils import (
     add_html_id_to_subsection,
@@ -478,6 +479,20 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
     created_sections = SectionModel.objects.bulk_create(sections_to_create)
     # Map created sections to their names for subsection linking
     section_mapping = {section.name: section for section in created_sections}
+
+    # Fetched once per document, not once per subsection. Only the live Nofo's
+    # Subsection model carries this field - ContentGuideSubsection and
+    # CompareSubsection don't, so this never runs for Composer or Compare.
+    # Also gated on the feature flag itself: with it off, this prototype
+    # should add zero extra work/behavior to a normal import, not just hide
+    # the export UI.
+    policy_language_slots = (
+        get_candidate_slots()
+        if hasattr(SubsectionModel, "policy_language_status")
+        and settings.HHS_NOFO_POLICY_EXPORT_ENABLED
+        else None
+    )
+
     for section in sections:
         model_section = section_mapping.get(section.get("name", "Section X"))
         if not model_section:
@@ -514,6 +529,15 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                         "section is only required if" in instructions_md_body.lower()
                     )
                     subsection_fields["optional"] = is_optional
+
+            if policy_language_slots is not None:
+                status, matched_slot = detect_policy_language_status(
+                    subsection_fields["name"],
+                    subsection_fields["body"],
+                    candidate_slots=policy_language_slots,
+                )
+                subsection_fields["policy_language_status"] = status
+                subsection_fields["policy_language_slot"] = matched_slot
 
             subsection_obj = SubsectionModel(**subsection_fields)
 

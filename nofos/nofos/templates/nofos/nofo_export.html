@@ -36,7 +36,10 @@
           </li>
         </ul>
         {% url 'nofos:nofo_export' nofo.id as action_url %}
-        {% include "includes/download_docx_button.html" with action_url=action_url %}
+        {% include "includes/download_docx_button.html" with action_url=action_url primary=True %}
+        {% if policy_export_enabled %}
+          {% include "includes/docx_download_button_form.html" with action_url=action_url export_action="download_stripped" id_suffix="-stripped" button_label="Download for Clearance" aria_label="Download a Word document for OMB and Departmental clearance review, with standard HHS Department Governance language stripped or flagged" modal_heading="Generating clearance-ready Word document…" modal_notice="Pre-decisional — for OMB/Departmental review only. Not the official submission copy." %}
+        {% endif %}
       </nav>
     </div>
   </header>

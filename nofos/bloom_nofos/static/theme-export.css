@@ -210,3 +210,71 @@ span.page-break {
 .nofo_view .styled-subsection-body--variables .md-curly-variable {
   background-color: yellow;
 }
+
+/* Policy-language export (prototype) */
+
+.nofo_view .policy-export-watermark {
+  border: 2px solid #b50909;
+  background-color: #fdf2f2;
+  color: #5c1414;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.nofo_view .policy-export-watermark strong {
+  color: #b50909;
+}
+
+.nofo_view .policy-language-stripped-note {
+  color: #71767a;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.nofo_view .policy-language-flag-note {
+  border-left: 4px solid #ffbe2e;
+  background-color: #faf3d1;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nofo_view .policy-language-flag-note--priority {
+  border-left-color: #b50909;
+  background-color: #fdf2f2;
+  color: #5c1414;
+}
+
+.nofo_view .clearance-summary {
+  border: 1px solid #a9aeb1;
+  background-color: #f0f0f0;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.nofo_view .clearance-summary h2,
+.nofo_view .clearance-summary h3 {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 16pt;
+}
+
+.nofo_view .clearance-summary h2 {
+  margin-top: 0;
+}
+
+.nofo_view .clearance-summary-table {
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.nofo_view .clearance-summary-table th,
+.nofo_view .clearance-summary-table td {
+  border: 1px solid #a9aeb1;
+  padding: 4px 10px;
+  text-align: left;
+  font-size: 12px;
+}

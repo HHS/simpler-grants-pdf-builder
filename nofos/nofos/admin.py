@@ -5,7 +5,7 @@ from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
-from .models import Nofo, Section, Subsection
+from .models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
 from .views import duplicate_nofo, insert_order_space_view
 
 # Remove Groups from admin
@@ -73,6 +73,26 @@ class SubsectionLinkInline(admin.StackedInline):
 class SubsectionAdmin(admin.ModelAdmin):
     model = Subsection
     list_display = ["id", "name", "callout_box", "section"]
+
+
+class PolicyLanguageVariantInline(admin.TabularInline):
+    model = PolicyLanguageVariant
+    extra = 1
+
+
+class PolicyLanguageSlotAdmin(admin.ModelAdmin):
+    model = PolicyLanguageSlot
+    inlines = [PolicyLanguageVariantInline]
+    list_display = [
+        "slot_key",
+        "name",
+        "slot_type",
+        "required",
+        "flag_prominently",
+        "is_current",
+        "template_version",
+    ]
+    list_filter = ["slot_type", "required", "flag_prominently", "is_current"]
 
 
 class SectionAdmin(admin.ModelAdmin):
@@ -164,3 +184,4 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
 admin.site.register(Subsection, SubsectionAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Nofo, NofoAdmin)
+admin.site.register(PolicyLanguageSlot, PolicyLanguageSlotAdmin)
