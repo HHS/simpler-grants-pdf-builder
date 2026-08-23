@@ -1,0 +1,69 @@
+{% load truncate_anchor_links_for_docx %}
+<div class="clearance-summary">
+  <h2>Clearance Review Summary (Generated)</h2>
+  <p class="text-italic">
+    Generated from NOFO Builder's current revision, last updated
+    {{ nofo.updated|date:"N j, Y, g:i a" }}. This is a NOFO Builder-generated aid
+    for this review pass, not a substitute for the official NOFO Summary
+    Template still required as part of the Departmental/OMB clearance
+    submission.
+  </p>
+
+  {% if clearance_metrics %}
+    <h3>Readability metrics</h3>
+    <table class="clearance-summary-table">
+      <tr>
+        <th>Metric</th>
+        <th>Result</th>
+      </tr>
+      <tr>
+        <td>Total Words</td>
+        <td>{{ clearance_metrics.metrics.word_count.value|default_if_none:"—" }}</td>
+      </tr>
+      <tr>
+        <td>Flesch Reading Ease</td>
+        <td>{{ clearance_metrics.metrics.flesch_reading_ease.value|default_if_none:"—" }}</td>
+      </tr>
+      <tr>
+        <td>Flesch-Kincaid Grade Level</td>
+        <td>{{ clearance_metrics.metrics.flesch_kincaid_grade_level.value|default_if_none:"—" }}</td>
+      </tr>
+      <tr>
+        <td>Passive Sentences (%)</td>
+        <td>{{ clearance_metrics.metrics.passive_sentence_percentage.value|default_if_none:"—" }}</td>
+      </tr>
+    </table>
+  {% endif %}
+
+  <h3>Department Governance language handling</h3>
+  <ul>
+    <li>
+      {{ clearance_summary.stripped_count }} section{{ clearance_summary.stripped_count|pluralize }}
+      matched current HHS Department Governance language and
+      {{ clearance_summary.stripped_count|pluralize:"was,were" }} stripped from this copy.
+    </li>
+    {% if clearance_summary.flagged %}
+      <li>
+        {{ clearance_summary.flagged|length }} section{{ clearance_summary.flagged|length|pluralize }}
+        flagged below for review:
+        <ul>
+          {% for subsection in clearance_summary.flagged %}
+            <li>
+              <a href="#{{ subsection.html_id|truncate_heading_ids_for_docx }}">{{ subsection.name }}</a>
+              — {{ subsection.get_policy_language_status_display }}
+              {% if subsection.policy_language_slot.flag_prominently %}(priority review){% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% else %}
+      <li>No sections were flagged for review.</li>
+    {% endif %}
+    {% if clearance_summary.missing_slots %}
+      <li class="policy-language-flag-note">
+        Missing expected Department Governance language:
+        {% for slot in clearance_summary.missing_slots %}{{ slot.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </li>
+    {% endif %}
+  </ul>
+</div>

@@ -847,3 +847,166 @@ class Subsection(BaseSubsection):
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
+
+    POLICY_LANGUAGE_STATUS_CHOICES = [
+        ("none", "Not policy language"),
+        ("intact", "Matches current canonical text"),
+        ("matches_prior_version", "Matches a prior canonical version"),
+        ("may_be_altered", "May be altered"),
+    ]
+
+    policy_language_status = models.CharField(
+        "Policy language status",
+        max_length=32,
+        choices=POLICY_LANGUAGE_STATUS_CHOICES,
+        default="none",
+        blank=True,
+        help_text=(
+            "Set at import time by diffing this subsection against the canonical "
+            "HHS policy-language store. Deliberately excludes a 'missing' state: "
+            "a required PolicyLanguageSlot with no matching subsection anywhere in "
+            "the NOFO is a fact about the NOFO as a whole, not about any single "
+            "subsection, and is checked separately rather than stored here."
+        ),
+    )
+
+    policy_language_slot = models.ForeignKey(
+        "PolicyLanguageSlot",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="matched_subsections",
+        help_text="The canonical slot this subsection was aligned to, if any.",
+    )
+
+
+POLICY_LANGUAGE_SLOT_TYPE_CHOICES = [
+    ("fixed", "Fixed"),
+    ("fixed_with_placeholders", "Fixed with placeholders"),
+    ("one_of_n_options", "One of N options"),
+    ("parameterized_family", "Parameterized family"),
+]
+
+POLICY_LANGUAGE_MATCH_SCOPE_CHOICES = [
+    ("whole_subsection", "Whole subsection"),
+    ("span_within_subsection", "Span within subsection"),
+]
+
+
+class PolicyLanguageSlot(models.Model):
+    """
+    A canonical HHS Department Governance content slot, sourced from the HHS
+    NOFO Master Template. Subsections are checked against these at import time
+    to determine whether they match, don't apply, or need review.
+    """
+
+    class Meta:
+        ordering = ["slot_key"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["slot_key"],
+                condition=models.Q(is_current=True),
+                name="unique_current_policy_language_slot_key",
+            ),
+        ]
+
+    slot_key = models.CharField(
+        "Slot key",
+        max_length=32,
+        help_text=(
+            "Human-readable reference id, e.g. 'DG-017'. Not unique across all "
+            "rows on purpose: superseded (is_current=False) revisions keep the "
+            "same slot_key as the current one, per the versioning design. Only "
+            "one row per slot_key may be is_current=True at a time (enforced "
+            "below)."
+        ),
+    )
+
+    name = models.CharField("Slot name", max_length=255)
+
+    slot_type = models.CharField(
+        max_length=32,
+        choices=POLICY_LANGUAGE_SLOT_TYPE_CHOICES,
+    )
+
+    match_scope = models.CharField(
+        max_length=32,
+        choices=POLICY_LANGUAGE_MATCH_SCOPE_CHOICES,
+        default="whole_subsection",
+    )
+
+    required = models.BooleanField(
+        default=True,
+        help_text="If true, this slot's total absence from a NOFO is itself flagged (checked at the Nofo level, not stored per-subsection).",
+    )
+
+    flag_prominently = models.BooleanField(
+        "Flag prominently",
+        default=False,
+        help_text=(
+            "If true, a non-intact status for this slot gets elevated wording at "
+            "export instead of the routine flag. Reserved for a small, deliberately "
+            "curated set of slots — set explicitly here, never inferred."
+        ),
+    )
+
+    template_version = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Which canonical source version this slot came from, e.g. 'FY27-draft-2026-08-11'.",
+    )
+
+    is_current = models.BooleanField(
+        default=True,
+        help_text="False once superseded by a newer canonical revision.",
+    )
+
+    superseded_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="supersedes",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.slot_key} — {self.name}"
+
+
+class PolicyLanguageVariant(models.Model):
+    """
+    One canonical text variant for a PolicyLanguageSlot. Most slots have
+    exactly one variant; 'one_of_n_options' and 'parameterized_family' slots
+    have several.
+    """
+
+    class Meta:
+        ordering = ["slot", "id"]
+
+    slot = models.ForeignKey(
+        PolicyLanguageSlot, on_delete=models.CASCADE, related_name="variants"
+    )
+
+    label = models.CharField(
+        "Variant label",
+        max_length=255,
+        blank=True,
+        help_text="e.g. 'Option 1: Grants.gov', or '15%' for a parameterized family.",
+    )
+
+    parameter_value = models.CharField(
+        "Parameter value",
+        max_length=64,
+        blank=True,
+        help_text="For 'parameterized_family' slots: the extracted parameter this variant corresponds to, e.g. '15'.",
+    )
+
+    canonical_text = models.TextField(
+        "Canonical text",
+        help_text="Verbatim canonical text. Placeholder spans use the source template's own {Insert...} bracket convention.",
+    )
+
+    def __str__(self):
+        return f"{self.slot.slot_key} :: {self.label or 'default'}"

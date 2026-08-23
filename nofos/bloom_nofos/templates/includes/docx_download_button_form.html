@@ -1,0 +1,86 @@
+{% load static %}
+
+<form
+  method="post"
+  action="{{ action_url }}"
+  class="docx-download-form"
+>
+  {% csrf_token %}
+  <input type="hidden" name="export_action" value="{{ export_action|default:"download" }}" />
+  <button
+    type="submit"
+    class="usa-button{% if not primary %} usa-button--outline{% endif %} font-sans-2xs text-normal inline-block"
+    aria-controls="docx-modal{{ id_suffix }}"
+    {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+    data-open-modal
+    {% if 'localhost' in request.get_host %}disabled{% endif %}
+  >
+    {{ button_label|default:"Download<span class='hide-on-tablet'> Word</span>"|safe }}
+  </button>
+</form>
+<!-- No close “X” button when using data-force-action -->
+<div
+  class="usa-modal"
+  id="docx-modal{{ id_suffix }}"
+  aria-labelledby="docx-modal-heading{{ id_suffix }}"
+  aria-describedby="docx-modal-body{{ id_suffix }}"
+  data-force-action
+>
+  <div class="usa-modal__content">
+    <div class="usa-modal__main">
+      <h2 class="usa-modal__heading" id="docx-modal-heading{{ id_suffix }}">
+        {{ modal_heading|default:"Generating Word document…" }}
+      </h2>
+      {% if modal_notice %}
+        <p class="usa-prose text-italic margin-top-0">{{ modal_notice }}</p>
+      {% endif %}
+
+      <div class="usa-prose" id="docx-modal-body{{ id_suffix }}">
+        <!-- Loading state -->
+        <div data-docx-state="loading">
+          <p>It takes about 20 seconds to prepare your document.</p>
+
+          <div class="margin-top-2">
+            <div class="docx-horse-track" data-docx-horse-track aria-hidden="true">
+              <img
+                src="/static/img/loading-horse.gif"
+                alt=""
+                class="docx-loading-horse"
+              />
+            </div>
+
+            <span class="usa-sr-only" aria-live="polite" data-docx-status>
+              Generating your document.
+            </span>
+            <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
+          </div>
+
+        </div>
+
+        <!-- Success state -->
+        <div data-docx-state="success" hidden>
+          <p>Your document is ready.</p>
+        </div>
+
+        <!-- Error state -->
+        <div data-docx-state="error" hidden>
+          <p class="text-red" data-docx-error-text>
+            Something went wrong generating the document.
+          </p>
+        </div>
+      </div><!-- end of docx-modal-body -->
+
+      <div class="usa-modal__footer text-center">
+        <button
+          type="button"
+          class="usa-button"
+          data-docx-done-btn
+          data-close-modal
+          hidden
+        >
+          OK
+        </button>
+      </div><!-- end of usa-modal__footer -->
+    </div><!-- end of usa-modal__main -->
+  </div>
+</div>
