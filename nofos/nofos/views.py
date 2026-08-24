@@ -335,9 +335,9 @@ class NOFOsExportView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["policy_export_enabled"] = settings.HHS_NOFO_POLICY_EXPORT_ENABLED
+        context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
         context["strip_policy_language"] = (
-            settings.HHS_NOFO_POLICY_EXPORT_ENABLED
+            config.HHS_NOFO_POLICY_EXPORT_ENABLED
             and self.request.GET.get("policy_stripped") == "1"
         )
 
@@ -372,7 +372,7 @@ class NOFOsExportView(DetailView):
                 reverse_lazy("nofos:nofo_export", args=[nofo.pk])
             )
             filename_base = nofo.short_name or nofo.title
-        elif action == "download_stripped" and settings.HHS_NOFO_POLICY_EXPORT_ENABLED:
+        elif action == "download_stripped" and config.HHS_NOFO_POLICY_EXPORT_ENABLED:
             export_url = request.build_absolute_uri(
                 "{}?policy_stripped=1".format(
                     reverse_lazy("nofos:nofo_export", args=[nofo.pk])
