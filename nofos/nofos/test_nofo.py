@@ -404,6 +404,44 @@ class ConvertTableTest(TestCase):
         result = """<table><thead><tr><th><p>Navigator activity</p></th><th><p>Description of project goal</p></th><th><p>Target number</p></th></tr></thead><tbody><tr><td><p>Training and certification</p></td><td><p><a id="_heading=h.1v1yuxt"></a>Navigator staff to be federally trained and certified or re-certified for PY 2025 by October 1, 2024, broken out as follows:</p><ul><li>Total number of federally trained and certified or re-certified Navigators.</li><li>Portion of Navigators that will be paid full-time (100%) from Navigator funding.</li><li>Portion of Navigators that will be paid part-time from Navigator funding, including what percentage of their time will be paid from Navigator funding.</li><li>Portion of Navigators that will be volunteers or otherwise not paid from Navigator funding.</li></ul></td><td><p>Sample response:</p><ul><li>15 Navigators</li><li>8 Navigators</li><li>3 Navigators (2 at 50% and 1 at 25%)</li><li>4 Navigators</li></ul></td></tr><tr><td><p>Education, enrollment, and post-enrollment assistance</p></td><td><p>Number of 1:1 interactions between Navigators and consumers (including both general and specific inquiries). </p></td><td></td></tr><tr><td><p>Enrollment assistance</p></td><td><p>Number of consumers assisted with enrollment or re-enrollment in a QHP.</p></td><td></td></tr><tr><td><p>Enrollment assistance</p></td><td><p>Number of consumers assisted with Medicaid/CHIP applications or referrals.</p></td><td></td></tr><tr><td><p>Health literacy and education </p></td><td><p>Number of consumers assisted with understanding the basic concepts and rights related to <a href="https://www.cms.gov/marketplace/technical-assistance-resources/coverage-to-care-presentation.pdf">health coverage and how to use it.</a></p></td><td></td></tr><tr><td><p>Post-enrollment assistance: Resolving enrollment issues and referrals</p></td><td><p>Number of consumers assisted with complex cases, other Exchange (Marketplace) enrollment issues, or referrals.</p></td><td></td></tr><tr><td><p>Post-enrollment assistance: Tax forms and appeals</p></td><td><p>Number of consumers assisted with Marketplace forms, exemptions, and appeals. </p></td><td></td></tr></tbody></table>"""
         self.assertEqual(str(table), result)
 
+    def test_preserves_grouped_headers_in_mammoth_shaped_table(self):
+        html_content = """
+        <table>
+          <thead>
+            <tr><th colspan="2">Due dates</th><th colspan="2">Review cycle</th></tr>
+            <tr><th>New</th><th>Renewal</th><th>Review</th><th>Award</th></tr>
+            <tr><th>June 1</th><th>June 15</th><th>July 1</th><th>Aug 1</th></tr>
+            <tr><th>Dec 1</th><th>Dec 15</th><th>Jan 1</th><th>Feb 1</th></tr>
+          </thead>
+        </table>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        table = soup.find("table")
+
+        # The early scope pass intentionally skips raw Mammoth tables because
+        # their data rows are still inside thead. The converter must finish it.
+        self.assertEqual(add_table_header_scopes(soup), 0)
+        convert_table_with_all_ths_to_a_regular_table(table)
+
+        header_rows = table.select("thead > tr")
+        self.assertEqual(len(header_rows), 2)
+        self.assertEqual(
+            [cell.get("scope") for cell in header_rows[0].find_all("th")],
+            ["colgroup", "colgroup"],
+        )
+        self.assertEqual(
+            [cell.get("scope") for cell in header_rows[1].find_all("th")],
+            ["col", "col", "col", "col"],
+        )
+
+        data_rows = table.select("tbody > tr")
+        self.assertEqual(len(data_rows), 2)
+        self.assertEqual(len(data_rows[0].find_all("th")), 0)
+        self.assertEqual(
+            [cell.get_text() for cell in data_rows[0].find_all("td")],
+            ["June 1", "June 15", "July 1", "Aug 1"],
+        )
+
 
 class AddTableHeaderScopesTests(TestCase):
     def test_adds_scopes_to_unambiguous_two_row_header(self):
