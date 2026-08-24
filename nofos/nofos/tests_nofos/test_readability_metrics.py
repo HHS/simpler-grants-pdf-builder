@@ -5,6 +5,7 @@ from unittest import skipUnless
 from unittest.mock import Mock, patch
 
 from bs4 import BeautifulSoup
+from constance.test import override_config
 from django.core.exceptions import ImproperlyConfigured
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -72,10 +73,8 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
 
-    @override_settings(
-        HHS_NOFO_METRICS_ENABLED=True,
-        HHS_NOFO_METRIC_GOALS={},
-    )
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
+    @override_settings(HHS_NOFO_METRIC_GOALS={})
     def test_edit_page_offers_revision_scoped_metrics_when_enabled(self):
         response = self.client.get(
             reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
@@ -111,7 +110,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertFalse(panel.select(".text-base"))
         self.assertTrue(panel.select(".text-base-dark"))
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     def test_edit_page_embeds_default_presentation_targets(self):
         response = self.client.get(
             reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
@@ -141,8 +140,8 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertNotIn("characters_per_word", goals)
         self.assertEqual(goals["flesch_reading_ease"][0]["value"], 39)
 
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @override_settings(
-        HHS_NOFO_METRICS_ENABLED=True,
         HHS_NOFO_METRIC_GOALS={
             "word_count": {
                 "label": "Example goal",
@@ -244,7 +243,7 @@ class NofoReadabilityMetricsTests(TestCase):
                 with self.assertRaises(ImproperlyConfigured):
                     normalize_readability_metric_goals(configuration)
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=False)
+    @override_config(HHS_NOFO_METRICS_ENABLED=False)
     def test_edit_page_omits_metrics_panel_when_disabled(self):
         response = self.client.get(
             reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
@@ -314,7 +313,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(result["metrics"]["word_count"]["status"], "calculated")
         self.assertGreater(result["metrics"]["word_count"]["value"], 0)
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=False)
+    @override_config(HHS_NOFO_METRICS_ENABLED=False)
     @patch("nofos.views.analyze_nofo_readability")
     def test_disabled_endpoint_fails_closed(self, analyze):
         response = self.client.get(self.metrics_url)
@@ -323,7 +322,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.json()["code"], "readability_metrics_disabled")
         analyze.assert_not_called()
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @patch("nofos.views.analyze_nofo_readability")
     def test_endpoint_returns_complete_package_result_without_caching(self, analyze):
         analyze.return_value = {
@@ -339,7 +338,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.headers["Cache-Control"], "no-store")
         analyze.assert_called_once_with(self.nofo)
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @patch("nofos.views.analyze_nofo_readability")
     def test_missing_package_is_reported_as_unavailable(self, analyze):
         analyze.side_effect = ReadabilityMetricsUnavailable("Package is missing.")
@@ -349,7 +348,7 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["code"], "readability_metrics_unavailable")
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @patch("nofos.views.analyze_nofo_readability")
     def test_expected_analysis_error_preserves_package_error_code(self, analyze):
         analyze.side_effect = ReadabilityMetricsAnalysisError(
@@ -364,7 +363,7 @@ class NofoReadabilityMetricsTests(TestCase):
             {"code": "analysis_error", "message": "Could not classify source."},
         )
 
-    @override_settings(HHS_NOFO_METRICS_ENABLED=True)
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @patch("nofos.views.analyze_nofo_readability", new=Mock())
     def test_group_permissions_apply_to_metrics_endpoint(self):
         other_user = BloomUser.objects.create_user(

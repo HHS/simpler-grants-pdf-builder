@@ -107,6 +107,17 @@ blocks.
 
 The application must not infer a category from the NOFO title or prose.
 
+## Feature flag
+
+`HHS_NOFO_METRICS_ENABLED` is a constance setting, so a superuser can turn the
+feature on or off from the admin at `/admin/constance/config/` without a
+redeploy. The change takes effect on the next request.
+
+The `HHS_NOFO_METRICS_ENABLED` environment variable still supplies the value the
+constance setting starts at, which keeps existing environment configuration
+working. Once the setting has been saved in the admin, the saved value wins and
+the environment variable no longer changes the flag for that environment.
+
 ## Local validation
 
 Enable the feature in a local environment and start Builder normally:
@@ -115,6 +126,9 @@ Enable the feature in a local environment and start Builder normally:
 HHS_NOFO_METRICS_ENABLED=true poetry run python nofos/manage.py runserver
 ```
 
+Or start Builder normally and toggle `HHS_NOFO_METRICS_ENABLED` in the constance
+admin.
+
 ## Release activation
 
 Before enabling the feature outside local development:
@@ -122,7 +136,8 @@ Before enabling the feature outside local development:
 1. Run the real-package integration test and the Builder test suite.
 2. Confirm that the pinned package tag and profile reference are still the
    intended versions.
-3. Set `HHS_NOFO_METRICS_ENABLED=true` only in the intended environment.
+3. Turn on `HHS_NOFO_METRICS_ENABLED` in the constance admin only in the
+   intended environment.
 
 The edit-screen panel calculates on demand and does not add a database table,
 background job, or cache. It displays the current response only; reloading or
