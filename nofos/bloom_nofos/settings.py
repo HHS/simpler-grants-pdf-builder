@@ -575,6 +575,15 @@ HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
 
+# Prototype: export a Word copy with intact HHS Department Governance
+# language stripped (and anything ambiguous/altered flagged) to speed up
+# OMB/Departmental clearance review. This env var is only the starting
+# value for the HHS_NOFO_POLICY_EXPORT_ENABLED constance setting, which
+# superadmins can toggle at runtime.
+HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_POLICY_EXPORT_ENABLED", default=False)
+)
+
 DEFAULT_HHS_NOFO_METRIC_GOALS = {
     "word_count": {
         "label": "Target",
@@ -640,7 +649,7 @@ CONSTANCE_CONFIG = {
         bool,
     ),
     "HHS_NOFO_POLICY_EXPORT_ENABLED": (
-        False,
+        HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT,
         "Prototype: adds a second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review. Off by default; does not affect the existing Word/PDF export paths while disabled.",
         bool,
     ),
