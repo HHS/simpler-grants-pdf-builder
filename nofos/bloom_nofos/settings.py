@@ -650,7 +650,7 @@ CONSTANCE_CONFIG = {
     ),
     "HHS_NOFO_POLICY_EXPORT_ENABLED": (
         HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT,
-        "Prototype: adds a second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review. Off by default; does not affect the existing Word/PDF export paths while disabled.",
+        "Whether the second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review, is available. Does not affect the existing Word/PDF export paths while disabled.",
         bool,
     ),
 }
