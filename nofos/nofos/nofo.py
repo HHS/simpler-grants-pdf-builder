@@ -489,7 +489,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
     policy_language_slots = (
         get_candidate_slots()
         if hasattr(SubsectionModel, "policy_language_status")
-        and settings.HHS_NOFO_POLICY_EXPORT_ENABLED
+        and config.HHS_NOFO_POLICY_EXPORT_ENABLED
         else None
     )
 

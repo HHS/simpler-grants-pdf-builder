@@ -1,8 +1,9 @@
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
+from constance.test import override_config
 from django.http import HttpResponse
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
@@ -37,7 +38,7 @@ class PolicyLanguageImportTaggingTests(TestCase):
             }],
         }]
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_flag_off_does_not_tag_even_on_exact_match(self):
         nofo = Nofo.objects.create(
             title="Flag off import", short_name="flag-off-import", number="TEST-TAG-001",
@@ -54,7 +55,7 @@ class PolicyLanguageImportTaggingTests(TestCase):
         self.assertEqual(subsection.policy_language_status, "none")
         self.assertIsNone(subsection.policy_language_slot)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_tags_exact_match_as_intact(self):
         nofo = Nofo.objects.create(
             title="Flag on import", short_name="flag-on-import", number="TEST-TAG-002",
@@ -71,7 +72,7 @@ class PolicyLanguageImportTaggingTests(TestCase):
         self.assertEqual(subsection.policy_language_status, "intact")
         self.assertEqual(subsection.policy_language_slot_id, self.slot.id)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_ordinary_content_stays_none(self):
         nofo = Nofo.objects.create(
             title="Ordinary import", short_name="ordinary-import", number="TEST-TAG-003",
@@ -175,7 +176,7 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
 
     # --- Flag off: completely unaffected, regardless of query param -------
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_flag_off_export_is_unaffected(self):
         resp = self.client.get(self.export_url)
         self.assertEqual(resp.status_code, 200)
@@ -184,21 +185,21 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertNotIn("Download for Clearance", body)
         self.assertIn(self.sam_slot.variants.first().canonical_text, body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_flag_off_query_param_is_ignored(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertNotIn("PRE-DECISIONAL", body)
         self.assertIn(self.sam_slot.variants.first().canonical_text, body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_flag_off_download_stripped_action_rejected(self):
         resp = self.client.post(self.export_url, {"export_action": "download_stripped"})
         self.assertEqual(resp.status_code, 400)
 
     # --- Flag on, plain export: still unaffected ---------------------------
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_plain_export_unaffected(self):
         resp = self.client.get(self.export_url)
         body = resp.content.decode()
@@ -208,33 +209,33 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
 
     # --- Flag on, stripped export: the actual feature -----------------------
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_strips_intact_sections(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertNotIn(self.sam_slot.variants.first().canonical_text, body)
         self.assertIn("policy-language-stripped-note", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_flags_altered_sections(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("This text has clearly been rewritten", body)
         self.assertIn("REVIEW: This section corresponds to", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_elevates_prominent_slot(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("PRIORITY REVIEW: This section corresponds to HHS-locked", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_leaves_ordinary_content_untouched(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("This program funds community health workers", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_includes_watermark(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
@@ -243,14 +244,14 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
 
     # --- The generated page-1 clearance summary -----------------------------
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_says_nofo_builder_not_builder(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("Clearance Review Summary", body)
         self.assertIn("NOFO Builder", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_reports_correct_stripped_and_flagged_counts(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         soup = BeautifulSoup(resp.content, "html.parser")
@@ -262,13 +263,13 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         )
         self.assertIn("2 sections flagged below for review", summary_text)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_lists_missing_required_slots(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("Missing expected Department Governance language", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_anchor_links_resolve_to_real_elements(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         soup = BeautifulSoup(resp.content, "html.parser")
@@ -280,14 +281,14 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
                 soup.find(id=target_id), f"anchor target #{target_id} not found"
             )
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_includes_readability_metrics_when_available(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertIn("Readability metrics", body)
         self.assertIn("Total Words", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_omits_metrics_gracefully_when_unavailable(self):
         with patch(
             "nofos.views.analyze_nofo_readability",
@@ -306,7 +307,7 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         buttons = soup.select("nav.usa-nav button[type=submit]")
         return {b.get_text(" ", strip=True): b for b in buttons}
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_download_word_is_primary_and_clearance_is_secondary_button(self):
         resp = self.client.get(self.export_url)
         labels = self._get_export_nav_buttons(resp)
@@ -315,20 +316,20 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertNotIn("usa-button--outline", labels["Download Word"]["class"])
         self.assertIn("usa-button--outline", labels["Download for Clearance"]["class"])
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_button_has_descriptive_aria_label(self):
         resp = self.client.get(self.export_url)
         labels = self._get_export_nav_buttons(resp)
         aria_label = labels["Download for Clearance"].get("aria-label", "")
         self.assertIn("clearance review", aria_label.lower())
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_modal_shows_pre_decisional_notice(self):
         resp = self.client.get(self.export_url)
         body = resp.content.decode()
         self.assertIn("Pre-decisional", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_clearance_button_absent_when_flag_disabled(self):
         resp = self.client.get(self.export_url)
         labels = self._get_export_nav_buttons(resp)
@@ -365,7 +366,7 @@ class NofoExportPolicyLanguagePostTests(TestCase):
 
         return fake
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_download_action_builds_plain_export_url(self):
         captured = {}
         with patch(
@@ -378,7 +379,7 @@ class NofoExportPolicyLanguagePostTests(TestCase):
         self.assertNotIn("policy_stripped", captured["export_url"])
         self.assertEqual(captured["filename_base"], self.nofo.short_name)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_download_stripped_action_builds_stripped_export_url(self):
         captured = {}
         with patch(
@@ -393,12 +394,12 @@ class NofoExportPolicyLanguagePostTests(TestCase):
             captured["filename_base"], f"{self.nofo.short_name} (Policy Language Stripped)"
         )
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_download_stripped_action_rejected_when_flag_off(self):
         resp = self.client.post(self.export_url, {"export_action": "download_stripped"})
         self.assertEqual(resp.status_code, 400)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_unknown_action_rejected(self):
         resp = self.client.post(self.export_url, {"export_action": "bogus"})
         self.assertEqual(resp.status_code, 400)
@@ -447,7 +448,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         )
         return nofo, section
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_subsection_edited_after_import_is_reflected_at_export(self):
         # Imported intact (matches canonical text exactly)...
         nofo, section = self._make_nofo("edit-staleness", "TEST-FRESH-001")
@@ -477,7 +478,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         self.assertIn("REVIEW: This section corresponds to", body)
         self.assertNotIn("policy-language-stripped-note", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_duplicated_nofo_reflects_edits_made_after_duplication(self):
         original, section = self._make_nofo("dup-original", "TEST-FRESH-002")
         Subsection.objects.create(
@@ -505,7 +506,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         self.assertIn("REVIEW: This section corresponds to", body)
         self.assertNotIn("policy-language-stripped-note", body)
 
-    @override_settings(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_canonical_slot_revision_is_reflected_without_reimporting(self):
         nofo, section = self._make_nofo("canonical-revision", "TEST-FRESH-003")
         old_canonical_text = self.sam_slot.variants.first().canonical_text
