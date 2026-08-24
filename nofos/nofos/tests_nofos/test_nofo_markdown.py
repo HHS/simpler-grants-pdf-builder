@@ -614,6 +614,45 @@ class NofoMarkdownConverterATest(TestCase):
         self.assertEqual(md(html).strip(), expected)
 
 
+class NofoMarkdownConverterIMGTest(TestCase):
+    def test_img_without_marker_converts_to_markdown_syntax(self):
+        """An ordinary img (whatever its alt) converts to normal ![]() markdown."""
+        html = '<p><img alt="A chart" src="chart.png"></p>'
+        expected = "![A chart](chart.png)"
+        self.assertEqual(md(html).strip(), expected)
+
+    def test_img_with_intentional_empty_alt_converts_to_markdown_syntax(self):
+        """An img with an author-set alt="" (eg. decorative) still converts normally."""
+        html = '<p><img alt="" src="divider.png"></p>'
+        expected = "![](divider.png)"
+        self.assertEqual(md(html).strip(), expected)
+
+    def test_marked_img_stays_as_raw_html(self):
+        """
+        An img carrying the missing-alt-text marker (set by
+        add_missing_alt_text_to_imgs in nofo.py) must stay as raw HTML,
+        since markdown's ![]() syntax can't distinguish "alt was never
+        set" from "alt is intentionally empty".
+        """
+        html = '<p><img alt="" data-nofo-missing-alt-text="" src="diagram.png"></p>'
+        expected = '<img alt="" src="diagram.png"/>'
+        self.assertEqual(md(html).strip(), expected)
+
+    def test_marker_attribute_does_not_leak_into_output(self):
+        """The marker attribute itself must never appear in the converted output."""
+        html = '<p><img alt="" data-nofo-missing-alt-text="" src="diagram.png"></p>'
+        self.assertNotIn("data-nofo-missing-alt-text", md(html))
+
+    def test_marked_img_inside_table_cell_stays_as_raw_html(self):
+        """The marker is honored for images inside table cells too."""
+        html = (
+            "<table><tr><td>"
+            '<img alt="" data-nofo-missing-alt-text="" src="diagram.png">'
+            "</td></tr></table>"
+        )
+        self.assertIn('<img alt="" src="diagram.png"/>', md(html))
+
+
 class NofoMarkdownConverterPTest(TestCase):
     maxDiff = None
 

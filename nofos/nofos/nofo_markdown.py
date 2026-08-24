@@ -10,6 +10,7 @@ from .import_transforms import APPLICATION_CHECKLIST_CHILD_CLASS
 re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
 
 PRESERVE_BOOKMARK_TARGET_ATTR = "data-nofo-preserve-bookmark-target"
+MISSING_ALT_TEXT_ATTR = "data-nofo-missing-alt-text"
 
 
 def get_width_class(th):
@@ -99,6 +100,17 @@ class NofoMarkdownConverter(MarkdownConverter):
 
         # Else, return text, which is what process_text would return
         return text
+
+    def convert_img(self, el, text, parent_tags):
+        # Images backfilled with a missing alt="" (see add_missing_alt_text_to_imgs
+        # in nofo.py) need to stay as raw HTML: markdown's ![]() syntax can't tell
+        # "alt was never set" apart from "alt is intentionally empty", so converting
+        # normally would silently erase the distinction we just made visible.
+        if el.has_attr(MISSING_ALT_TEXT_ATTR):
+            del el[MISSING_ALT_TEXT_ATTR]
+            return str(el)
+
+        return super().convert_img(el, text, parent_tags)
 
     def convert_ol(self, el, text, parent_tags):
         # return as HMTL to preserve "start" attribute if anything other than "1"

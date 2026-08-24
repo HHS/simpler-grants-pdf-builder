@@ -32,7 +32,7 @@ from .import_transforms import (
     transform_word_document,
 )
 from .models import Nofo, Section, Subsection
-from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .utils import (
     add_html_id_to_subsection,
@@ -192,7 +192,9 @@ def process_nofo_html(soup, top_heading_level):
             file.write(str(soup))
 
     instructions_tables = decompose_instructions_tables(soup)
+    merge_funding_details_label_value_paragraphs(soup)
     normalize_whitespace_img_alt_text(soup)
+    add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
     preserve_bookmark_links(soup)
@@ -213,6 +215,54 @@ def process_nofo_html(soup, top_heading_level):
     soup = add_em_to_de_minimis(soup)
 
     return soup, instructions_tables
+
+
+def merge_funding_details_label_value_paragraphs(soup):
+    """Join split label/value paragraphs within Funding details subsections."""
+    funding_details_headings = soup.find_all(
+        lambda tag: tag.name in {"h3", "h4"}
+        and clean_string(tag.get_text(" ", strip=True)).casefold() == "funding details"
+    )
+
+    for heading in funding_details_headings:
+        heading_level = int(heading.name[1])
+        current = heading.find_next_sibling()
+
+        while current is not None:
+            if re.fullmatch(r"h[1-6]", current.name or ""):
+                current_level = int(current.name[1])
+                if current_level <= heading_level:
+                    break
+
+            next_sibling = current.find_next_sibling()
+            if (
+                current.name == "p"
+                and clean_string(current.get_text(" ", strip=True)).endswith(":")
+                and next_sibling is not None
+                and next_sibling.name == "p"
+                and (next_text := clean_string(next_sibling.get_text(" ", strip=True)))
+                and not next_text.endswith(":")
+            ):
+                last_text = current.find_all(string=True)[-1]
+                last_text.replace_with(str(last_text).rstrip())
+
+                first_value_text = next(
+                    text
+                    for text in next_sibling.find_all(string=True)
+                    if str(text).strip()
+                )
+                first_value_text.replace_with(str(first_value_text).lstrip())
+
+                current.append(" ")
+                for child in list(next_sibling.contents):
+                    current.append(child.extract())
+
+                next_after_value = next_sibling.find_next_sibling()
+                next_sibling.decompose()
+                current = next_after_value
+                continue
+
+            current = next_sibling
 
 
 ###########################################################
@@ -3016,6 +3066,31 @@ def normalize_whitespace_img_alt_text(soup):
     for img in soup.find_all("img"):
         if img.has_attr("alt"):
             img["alt"] = img["alt"].replace("\n\n", "\n")
+
+
+def add_missing_alt_text_to_imgs(soup):
+    """
+    This function mutates the soup!
+
+    Adds an empty alt="" attribute to any img tag that has no alt
+    attribute at all, so that missing alt text is visible and greppable
+    in the markdown/HTML source, rather than silently absent.
+
+    Also tags the img with MISSING_ALT_TEXT_ATTR, a marker that tells
+    NofoMarkdownConverter.convert_img (in nofo_markdown.py) to keep this
+    image as raw HTML instead of converting it to markdown's ![]() syntax,
+    which can't distinguish a backfilled alt="" from one that was always
+    missing.
+
+    Images that already have an alt attribute (including alt="") are
+    left untouched.
+
+    :param soup: BeautifulSoup object to modify in place.
+    """
+    for img in soup.find_all("img"):
+        if not img.has_attr("alt"):
+            img["alt"] = ""
+            img[MISSING_ALT_TEXT_ATTR] = ""
 
 
 def extract_page_break_context(body, html_class=None):

@@ -27,6 +27,7 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_instructions_to_subsections,
+    add_missing_alt_text_to_imgs,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
     add_table_header_scopes,
@@ -88,7 +89,7 @@ from .nofo import (
     unwrap_nested_lists,
     upload_cover_image_to_s3,
 )
-from .nofo_markdown import md
+from .nofo_markdown import MISSING_ALT_TEXT_ATTR, md
 
 #########################################################
 ################### FUNCTION TESTS ######################
@@ -8142,6 +8143,102 @@ class NormalizeWhitespaceImgAltTextTests(TestCase):
         normalize_whitespace_img_alt_text(soup)
 
         self.assertEqual(str(soup), html)
+
+
+class AddMissingAltTextToImgsTests(TestCase):
+    def test_adds_empty_alt_to_img_missing_alt(self):
+        """Ensure an img with no alt attribute gets alt="" and the missing-alt marker added."""
+        html = '<img src="turtle.jpg">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertTrue(img.has_attr(MISSING_ALT_TEXT_ATTR))
+
+    def test_does_not_overwrite_existing_alt_text(self):
+        """Ensure an img with existing, non-empty alt text is left unchanged, unmarked."""
+        html = '<img src="turtle.jpg" alt="A turtle in a tank">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "A turtle in a tank")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
+
+    def test_does_not_overwrite_intentionally_empty_alt_text(self):
+        """Ensure an img with an existing alt="" (eg. decorative image) is left unchanged, unmarked."""
+        html = '<img src="divider.jpg" alt="">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
+
+    def test_handles_multiple_images_with_mixed_alt_state(self):
+        """Ensure function only fills in alt (and marks) images missing the attribute."""
+        html = """
+        <img src="img1.jpg">
+        <img src="img2.jpg" alt="Second image">
+        <img src="img3.jpg" alt="">
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img_tags = soup.find_all("img")
+        self.assertEqual(img_tags[0]["alt"], "")
+        self.assertTrue(img_tags[0].has_attr(MISSING_ALT_TEXT_ATTR))
+        self.assertEqual(img_tags[1]["alt"], "Second image")
+        self.assertFalse(img_tags[1].has_attr(MISSING_ALT_TEXT_ATTR))
+        self.assertEqual(img_tags[2]["alt"], "")
+        self.assertFalse(img_tags[2].has_attr(MISSING_ALT_TEXT_ATTR))
+
+    def test_handles_base64_image_src(self):
+        """Ensure base64-embedded images without alt text are also backfilled and marked."""
+        html = '<img src="data:image/png;base64,iVBORw0KGgo=">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertTrue(img.has_attr(MISSING_ALT_TEXT_ATTR))
+
+    def test_no_images_in_html(self):
+        """Ensure function does not raise errors when there are no img tags."""
+        html = "<p>No images here!</p>"
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        self.assertEqual(str(soup), html)
+
+    def test_does_not_affect_cover_image_markup(self):
+        """
+        Ensure this function never touches cover image markup.
+
+        The cover image is not part of the imported Word doc soup that this
+        function runs against: it is stored on separate Nofo.cover_image /
+        Nofo.cover_image_alt_text fields and rendered by its own template
+        markup, which always includes an alt attribute (even when the value
+        is an empty string). This test documents that even if a cover-image-
+        style <img> were ever present in this soup, an existing alt attribute
+        (set from cover_image_alt_text) would be preserved, not overwritten.
+        """
+        html = '<img alt="" src="img/cover.jpg" class="nofo--cover-page--hero-image">'
+        soup = BeautifulSoup(html, "html.parser")
+
+        add_missing_alt_text_to_imgs(soup)
+
+        img = soup.find("img")
+        self.assertEqual(img["alt"], "")
+        self.assertEqual(img["src"], "img/cover.jpg")
+        self.assertFalse(img.has_attr(MISSING_ALT_TEXT_ATTR))
 
 
 class UpdateAnnouncementTextTests(TestCase):

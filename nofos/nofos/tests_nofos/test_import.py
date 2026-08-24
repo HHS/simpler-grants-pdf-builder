@@ -15,6 +15,7 @@ from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
+    merge_funding_details_label_value_paragraphs,
     parse_uploaded_file_as_html_string,
     process_nofo_html,
     replace_chars,
@@ -194,6 +195,117 @@ class TestParseNofoFile(TestCase):
         self.assertEqual(context.exception.error_list[0].code, "docx_conversion")
         self.assertIn("could not read this Word document", str(context.exception))
         self.assertNotIn("private converter detail", str(context.exception))
+
+
+class TestFundingDetailsParagraphNormalization(TestCase):
+    def test_merges_split_funding_detail_fields(self):
+        soup = BeautifulSoup(
+            """
+            <h3>Funding details</h3>
+            <p><strong>Application Types:</strong></p><p>New</p>
+            <p>Expected total available funding in FY 2026:</p><p>$3,240,000</p>
+            <p>Expected number and type of awards:</p>
+            <p>1 CA (Cooperative Agreement)</p>
+            <p>Funding range per award:</p><p>$0 - $3,240,000</p>
+            <h3>Program description</h3>
+            <p>Example label:</p><p>Keep this separate</p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        self.assertEqual(
+            [paragraph.get_text(" ", strip=True) for paragraph in soup.find_all("p")],
+            [
+                "Application Types: New",
+                "Expected total available funding in FY 2026: $3,240,000",
+                "Expected number and type of awards: 1 CA (Cooperative Agreement)",
+                "Funding range per award: $0 - $3,240,000",
+                "Example label:",
+                "Keep this separate",
+            ],
+        )
+        self.assertEqual(soup.find("strong").get_text(strip=True), "Application Types:")
+
+    def test_supports_h4_heading_and_stops_at_next_higher_heading(self):
+        soup = BeautifulSoup(
+            """
+            <h4> Funding Details </h4>
+            <p>Funding range per award: </p><p> $10 - $20 </p>
+            <h3>Next subsection</h3>
+            <p>Outside label:</p><p>Outside value</p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        paragraphs = [paragraph.get_text() for paragraph in soup.find_all("p")]
+        self.assertEqual(
+            paragraphs,
+            ["Funding range per award: $10 - $20 ", "Outside label:", "Outside value"],
+        )
+
+    def test_leaves_inline_and_empty_values_unchanged(self):
+        soup = BeautifulSoup(
+            """
+            <h3>Funding details</h3>
+            <p>Application Types: New</p>
+            <p>Funding range per award:</p><p> </p>
+            <p>First unresolved label:</p><p>Second unresolved label:</p>
+            """,
+            "html.parser",
+        )
+
+        merge_funding_details_label_value_paragraphs(soup)
+
+        self.assertEqual(len(soup.find_all("p")), 5)
+        self.assertEqual(soup.find_all("p")[0].get_text(), "Application Types: New")
+
+    def test_normalizes_real_docx_fixture_in_import_pipeline(self):
+        fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "funding-details--split-label-values.docx",
+        )
+        with open(fixture_path, "rb") as fixture:
+            uploaded_file = SimpleUploadedFile(
+                "funding-details--split-label-values.docx",
+                fixture.read(),
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ),
+            )
+
+        imported_html = parse_uploaded_file_as_html_string(uploaded_file)
+        soup = BeautifulSoup(imported_html, "html.parser")
+        top_heading_level = resolve_section_heading_level(soup)
+        soup, _ = process_nofo_html(soup, top_heading_level)
+
+        funding_heading = soup.find(
+            lambda tag: tag.name in {"h3", "h4"}
+            and tag.get_text(strip=True) == "Funding details"
+        )
+        paragraphs = []
+        current = funding_heading.find_next_sibling()
+        while current is not None and current.name not in {"h1", "h2", "h3", "h4"}:
+            if current.name == "p":
+                paragraphs.append(current.get_text(" ", strip=True))
+            current = current.find_next_sibling()
+
+        self.assertEqual(
+            paragraphs,
+            [
+                "Application Types: New",
+                "Expected total available funding in FY 2026: $3,240,000",
+                "Expected number and type of awards: 1 CA (Cooperative Agreement)",
+                "Funding range per award: $0 - $3,240,000",
+            ],
+        )
 
 
 class TestKeyCalloutDocxImport(TestCase):
@@ -488,6 +600,61 @@ class TestNofoImportOpdiv(TestCase):
             Nofo.objects.latest("created").opdiv,
             "Administration for Children and Families",
         )
+
+
+class TestNofoImportMissingAltText(TestCase):
+    """
+    End-to-end: an imported <img> with no alt attribute should end up in the
+    saved subsection body as raw HTML with alt="" (greppable/visible), not as
+    markdown's ![]() syntax, which can't distinguish "alt was never set" from
+    "alt is intentionally empty". See #814.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="alt-text@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client = Client()
+        self.client.login(email="alt-text@example.com", password="testpass123")
+
+    def _build_html_file(self):
+        html_content = """
+        <html>
+        <body>
+            <p>Opportunity name: Alt Text Test NOFO</p>
+            <p>Opportunity number: NOFO-ALT-001</p>
+            <p>Opdiv: CDC</p>
+            <h1>Test Section 1</h1>
+            <h2 data-order="10">Eligibility Information</h2>
+            <p>Some eligibility content, followed by a diagram:</p>
+            <p><img src="diagram.png"></p>
+            <p>End of subsection.</p>
+        </body>
+        </html>
+        """
+        return SimpleUploadedFile(
+            "test.html", html_content.encode("utf-8"), content_type="text/html"
+        )
+
+    def test_missing_alt_img_saved_as_raw_html_not_markdown_syntax(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {"nofo-import": self._build_html_file(), "csrfmiddlewaretoken": "dummy"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        subsection = Subsection.objects.get(
+            section__nofo=Nofo.objects.latest("created"),
+            name="Eligibility Information",
+        )
+
+        self.assertIn('<img alt="" src="diagram.png"/>', subsection.body)
+        self.assertNotIn("![](diagram.png)", subsection.body)
+        self.assertNotIn("data-nofo-missing-alt-text", subsection.body)
 
 
 class TestBlockingImportErrorPages(TestCase):
