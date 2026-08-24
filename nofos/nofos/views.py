@@ -397,7 +397,7 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
     """Calculate source-native metrics for the current Builder revision."""
 
     def get(self, request, *args, **kwargs):
-        if not settings.HHS_NOFO_METRICS_ENABLED:
+        if not config.HHS_NOFO_METRICS_ENABLED:
             return JsonResponse(
                 {
                     "code": "readability_metrics_disabled",
@@ -432,7 +432,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["readability_metrics_enabled"] = settings.HHS_NOFO_METRICS_ENABLED
+        context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
         context["readability_metric_goals"] = normalize_readability_metric_goals(
             settings.HHS_NOFO_METRIC_GOALS
         )

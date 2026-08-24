@@ -568,8 +568,10 @@ GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
 
 # Provisional, source-native readability metrics integration. The package is
-# pinned, but each environment opts into the feature explicitly.
-HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
+# pinned, but each environment opts into the feature explicitly. This env var is
+# only the starting value for the HHS_NOFO_METRICS_ENABLED constance setting,
+# which superadmins can toggle at runtime.
+HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
 
@@ -625,6 +627,11 @@ CONSTANCE_CONFIG = {
     "DOCRAPTOR_LIVE_MODE": (
         False,
         "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
+        bool,
+    ),
+    "HHS_NOFO_METRICS_ENABLED": (
+        HHS_NOFO_METRICS_ENABLED_DEFAULT,
+        "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and are not saved.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (
