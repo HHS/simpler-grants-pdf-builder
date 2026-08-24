@@ -195,6 +195,7 @@ def detect_policy_language_status(subsection_name, subsection_body, candidate_sl
     if not name:
         return "none", None
 
+    name_matched_groups = []
     for slot_versions in candidate_slots.values():
         whole_versions = [
             s for s in slot_versions if s.match_scope != "span_within_subsection"
@@ -209,20 +210,31 @@ def detect_policy_language_status(subsection_name, subsection_body, candidate_sl
         # retitled to the new name (or still carrying an older name) fails
         # to align at all, falling through to "none" - silently treating
         # real canonical text as ordinary content.
-        if not any((s.name or "").strip().lower() == name for s in whole_versions):
-            continue
+        if any((s.name or "").strip().lower() == name for s in whole_versions):
+            name_matched_groups.append(whole_versions)
 
+    if not name_matched_groups:
+        return "none", None
+
+    # More than one slot_key can legitimately share one real-world heading -
+    # e.g. two mutually-exclusive versions of a "Cost sharing" section, each
+    # its own slot_key. Try every name-matching group before giving up, not
+    # just whichever is first: stopping at the first would mean content that
+    # actually verifies against the second group gets wrongly reported as
+    # "may_be_altered" against the first, purely because of dict iteration
+    # order.
+    for whole_versions in name_matched_groups:
         status = _check_slot_versions(whole_versions, candidate_text)
         if status:
             return status
 
-        # Aligned by name, but didn't cleanly verify against any known
-        # version (current or superseded). Never silently downgrade this to
-        # "none" - that would let real drift through unflagged.
-        current = next((s for s in whole_versions if s.is_current), whole_versions[0])
-        return "may_be_altered", current
-
-    return "none", None
+    # Aligned by name (against at least one group) but didn't cleanly verify
+    # against any known version of any matching group. Never silently
+    # downgrade this to "none" - that would let real drift through
+    # unflagged. Report against the first matching group, deterministically.
+    whole_versions = name_matched_groups[0]
+    current = next((s for s in whole_versions if s.is_current), whole_versions[0])
+    return "may_be_altered", current
 
 
 def _check_slot_versions(slot_versions, candidate_text):

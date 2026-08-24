@@ -266,6 +266,55 @@ class SupersessionVersioningTests(TestCase):
         self.assertEqual(slot, new)
 
 
+class MultipleSlotKeysShareNameTests(TestCase):
+    """Two distinct slot_keys can legitimately share one real-world heading
+    - e.g. two mutually-exclusive versions of a "Cost sharing" section.
+    Alignment must try every slot_key matching that name, not just whichever
+    happens to be first in dict iteration order."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.slot_a = PolicyLanguageSlot.objects.create(
+            slot_key="TEST-SHARED-A", name="Cost sharing", slot_type="fixed",
+            template_version="v1",
+        )
+        PolicyLanguageVariant.objects.create(
+            slot=cls.slot_a, canonical_text="This program has no cost sharing requirement."
+        )
+
+        cls.slot_b = PolicyLanguageSlot.objects.create(
+            slot_key="TEST-SHARED-B", name="Cost sharing", slot_type="fixed",
+            template_version="v1",
+        )
+        PolicyLanguageVariant.objects.create(
+            slot=cls.slot_b, canonical_text="This program requires you to contribute 15%."
+        )
+
+    def test_content_matching_second_slot_is_intact_not_altered(self):
+        # A naive "stop at the first name match" loop would find TEST-SHARED-A
+        # first (it doesn't match this content) and incorrectly report
+        # may_be_altered instead of trying TEST-SHARED-B, which does match.
+        status, slot = detect_policy_language_status(
+            "Cost sharing", "This program requires you to contribute 15%."
+        )
+        self.assertEqual(status, "intact")
+        self.assertEqual(slot, self.slot_b)
+
+    def test_content_matching_first_slot_is_still_intact(self):
+        status, slot = detect_policy_language_status(
+            "Cost sharing", "This program has no cost sharing requirement."
+        )
+        self.assertEqual(status, "intact")
+        self.assertEqual(slot, self.slot_a)
+
+    def test_content_matching_neither_slot_is_may_be_altered(self):
+        status, slot = detect_policy_language_status(
+            "Cost sharing", "Some entirely different, unrecognized wording."
+        )
+        self.assertEqual(status, "may_be_altered")
+        self.assertIn(slot, (self.slot_a, self.slot_b))
+
+
 class MissingRequiredSlotsTests(TestCase):
     def test_required_slot_with_no_matching_subsection_is_missing(self):
         required_slot = PolicyLanguageSlot.objects.create(
