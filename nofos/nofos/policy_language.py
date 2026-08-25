@@ -267,8 +267,8 @@ def get_policy_language_export_note(subsection):
     or takes a position on it, and never asserts a conclusion detection
     can't actually verify ("does not match," "please confirm," not "has
     been altered"). A slot's flag_prominently elevates this to a
-    "PRIORITY REVIEW" framing (HHS-locked language); otherwise it's routine
-    "REVIEW" wording. Both are generated generically from the slot's own
+    "Priority review" framing (HHS-locked language); otherwise it's routine
+    "Review" wording. Both are generated generically from the slot's own
     name - never hardcoded per slot_key - so nothing about a specific
     slot's real-world content lives in this module.
     """
@@ -282,13 +282,13 @@ def get_policy_language_export_note(subsection):
     if slot is not None and slot.flag_prominently:
         if status == "matches_prior_version":
             return (
-                f"PRIORITY REVIEW: This section matches an earlier version "
+                f"Priority review: This section matches an earlier version "
                 f"of HHS-locked Department Governance language ({name}), "
                 "not the current canonical text. Please confirm this "
                 "reflects current policy before this NOFO proceeds."
             )
         return (
-            f"PRIORITY REVIEW: This section corresponds to HHS-locked "
+            f"Priority review: This section corresponds to HHS-locked "
             f"Department Governance language ({name}) and does not match "
             "the current canonical text on file. Please confirm this "
             "section's wording before this NOFO proceeds."
@@ -296,13 +296,13 @@ def get_policy_language_export_note(subsection):
 
     if status == "matches_prior_version":
         return (
-            f"REVIEW: This section matches a prior version of {name} "
+            f"Review: This section matches a prior version of {name} "
             "language, not the current canonical text on file. Please "
             "confirm this reflects current policy before this NOFO "
             "proceeds."
         )
     return (
-        f"REVIEW: This section corresponds to {name} language and does not "
+        f"Review: This section corresponds to {name} language and does not "
         "match the current canonical text on file. Please confirm this "
         "section's wording before this NOFO proceeds."
     )

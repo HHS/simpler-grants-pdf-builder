@@ -220,16 +220,22 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_flags_altered_sections(self):
+        # The "Review:" label renders inside its own <strong>, so a raw-HTML
+        # substring check would break on the tag boundary - check the text
+        # content instead (see test_flag_on_stripped_export_flag_box_is_table_cell
+        # for the label/box-structure assertion).
         resp = self.client.get(self.export_url + "?policy_stripped=1")
-        body = resp.content.decode()
-        self.assertIn("This text has clearly been rewritten", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        text = soup.get_text(" ", strip=True)
+        self.assertIn("This text has clearly been rewritten", text)
+        self.assertIn("Review: This section corresponds to", text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_elevates_prominent_slot(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
-        body = resp.content.decode()
-        self.assertIn("PRIORITY REVIEW: This section corresponds to HHS-locked", body)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        text = soup.get_text(" ", strip=True)
+        self.assertIn("Priority review: This section corresponds to HHS-locked", text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_leaves_ordinary_content_untouched(self):
@@ -271,7 +277,20 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         soup = BeautifulSoup(resp.content, "html.parser")
         boxes = soup.select("table.policy-language-flag-box")
         self.assertTrue(boxes)
-        self.assertIn("REVIEW:", boxes[0].select_one("td").get_text())
+        self.assertIn("Review:", boxes[0].select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_only_the_label_is_bold(self):
+        # "Review:"/"Priority review:" stays bold, but the sentence after it
+        # shouldn't - only the label sits inside <strong>.
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        td = soup.select_one("table.policy-language-flag-box td")
+        strong = td.find("strong")
+        self.assertIsNotNone(strong)
+        self.assertEqual(strong.get_text(strip=True), "Review:")
+        self.assertIn("This section corresponds to", td.get_text())
+        self.assertNotIn("This section corresponds to", strong.get_text())
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_prominent_flag_box_has_priority_class(self):
@@ -279,7 +298,7 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         soup = BeautifulSoup(resp.content, "html.parser")
         priority_box = soup.select_one("table.policy-language-flag-box--priority")
         self.assertIsNotNone(priority_box)
-        self.assertIn("PRIORITY REVIEW:", priority_box.select_one("td").get_text())
+        self.assertIn("Priority review:", priority_box.select_one("td").get_text())
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_page_breaks_after_clearance_summary(self):
@@ -577,7 +596,10 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # would be silently stripped. It must instead render visible with
         # a review flag.
         self.assertIn("This paragraph has been substantively rewritten.", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
+        self.assertIn(
+            "Review: This section corresponds to",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
         self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
@@ -605,7 +627,10 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         body = resp.content.decode()
 
         self.assertIn("The duplicated content was then rewritten.", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
+        self.assertIn(
+            "Review: This section corresponds to",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
         self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
@@ -643,7 +668,10 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # a prior version (content stays visible, same as any other
         # non-intact status), not silently stripped as "intact".
         self.assertNotIn("policy-language-stripped-box", body)
-        self.assertIn("REVIEW: This section matches a prior version of", body)
+        self.assertIn(
+            "Review: This section matches a prior version of",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
         self.assertIn(old_canonical_text, body)  # visible, not stripped
 
 
@@ -667,3 +695,24 @@ class ClearanceSummaryMissingSlotsBulletStyleTests(TestCase):
             rule_match, "No .policy-language-flag-note rule found in theme-export.css"
         )
         self.assertIn("font-size: 12pt", rule_match.group(1))
+
+
+class ExportDocumentPageBreakCssTests(TestCase):
+    """Every <section> forcing break-after: page - including the last one -
+    left a trailing blank page with nothing on it, in both the plain and
+    stripped exports (a pre-existing rule, not specific to policy-language
+    content). The last section should keep break-inside: avoid but not
+    force a break after itself."""
+
+    def test_last_section_does_not_force_a_break_after(self):
+        css_path = finders.find("theme-export.css")
+        self.assertIsNotNone(
+            css_path, "theme-export.css not found by staticfiles finders"
+        )
+        with open(css_path, encoding="utf-8") as f:
+            css = f.read()
+
+        self.assertIn("section:not(:last-child)", css)
+        # The old blanket rule applying break-after: page to every <section>
+        # (with no :not(:last-child) qualifier) should be gone.
+        self.assertNotRegex(css, r"section,\s*\n\s*span\.page-break\s*\{")
