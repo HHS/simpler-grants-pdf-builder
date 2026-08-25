@@ -1,12 +1,17 @@
 <div class="clearance-summary">
-  <h2>Clearance Review Summary (Generated)</h2>
+  <h2>Clearance Review Summary</h2>
   <p class="text-italic">
     Generated from NOFO Builder's current revision, last updated
-    {{ nofo.updated|date:"N j, Y, g:i a" }}. This is a NOFO Builder-generated aid
+    {{ nofo.updated|date:"N j, Y, g:i a" }} This is a NOFO Builder-generated aid
     for this review pass, not a substitute for the official NOFO Summary
     Template still required as part of the Departmental/OMB clearance
     submission.
   </p>
+
+  <h3>{{ nofo.title }}</h3>
+  <p>Opdiv: {{ nofo.opdiv }}</p>
+  {% if nofo.agency %}<p>Agency: {{ nofo.agency }}</p>{% endif %}
+  {% if nofo.number %}<p>Opportunity number: {{ nofo.number }}</p>{% endif %}
 
   {% if clearance_metrics %}
     <h3>Readability metrics</h3>
