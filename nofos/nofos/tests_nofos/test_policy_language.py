@@ -676,10 +676,11 @@ class SeedDemoPolicyLanguageSlotsCommandTests(TestCase):
     "nofos.management.commands.seed_demo_policy_language_slots.VERSIONED_PAIR",
     SAMPLE_VERSIONED_PAIR,
 )
-class SeedDemoPolicyLanguageSlotsAdminActionTests(TestCase):
-    """Exercises the 'Seed demo policy-language slots' admin action - the
-    changelist-action route a non-engineer would actually use, not just the
-    underlying management command."""
+class SeedDemoPolicyLanguageSlotsAdminButtonTests(TestCase):
+    """Exercises the 'Seed demo policy-language slots' changelist button - a
+    dedicated view rather than a Django admin bulk action, since a bulk
+    action can't run without an existing row selected, which is exactly the
+    state this table starts in (see test_button_works_on_empty_table)."""
 
     def setUp(self):
         self.admin_user = BloomUser.objects.create_user(
@@ -691,25 +692,13 @@ class SeedDemoPolicyLanguageSlotsAdminActionTests(TestCase):
             force_password_reset=False,
         )
         self.client.force_login(self.admin_user)
-        # Admin actions require at least one selected row to enable "Go",
-        # even though this action ignores the selection.
-        self.existing_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-PRE-EXISTING",
-            name="Pre-existing slot",
-            slot_type="fixed",
-            template_version="v1",
-        )
+        self.seed_url = reverse("admin:nofos_policylanguageslot_seed_demo")
 
-    def test_action_seeds_demo_slots(self):
-        changelist_url = reverse("admin:nofos_policylanguageslot_changelist")
-        response = self.client.post(
-            changelist_url,
-            {
-                "action": "seed_demo_slots_admin",
-                "_selected_action": [str(self.existing_slot.pk)],
-            },
-            follow=True,
-        )
+    def test_button_works_on_empty_table(self):
+        self.assertEqual(PolicyLanguageSlot.objects.count(), 0)
+
+        response = self.client.post(self.seed_url, follow=True)
+
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             PolicyLanguageSlot.objects.filter(
@@ -721,3 +710,19 @@ class SeedDemoPolicyLanguageSlotsAdminActionTests(TestCase):
                 slot_key="TEST-DEMO-VERSIONED", is_current=True
             ).exists()
         )
+
+    def test_changelist_shows_button_on_empty_table(self):
+        changelist_url = reverse("admin:nofos_policylanguageslot_changelist")
+        response = self.client.get(changelist_url)
+        self.assertContains(response, self.seed_url)
+
+    def test_get_is_rejected(self):
+        response = self.client.get(self.seed_url)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(PolicyLanguageSlot.objects.count(), 0)
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        self.client.logout()
+        response = self.client.post(self.seed_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PolicyLanguageSlot.objects.count(), 0)
