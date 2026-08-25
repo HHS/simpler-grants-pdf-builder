@@ -242,6 +242,26 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertIn("PRE-DECISIONAL", body)
         self.assertIn("NOT THE OFFICIAL SUBMISSION COPY", body)
 
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_page_breaks_after_clearance_summary(self):
+        # The watermark/clearance-summary "cover page" content should end on
+        # its own page, separate from the actual NOFO content that follows -
+        # not run directly into the first real section.
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        summary = soup.select_one(".clearance-summary")
+        page_break = summary.find_next_sibling()
+        self.assertEqual(page_break.name, "span")
+        self.assertIn("page-break", page_break.get("class", []))
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_plain_export_has_no_cover_page_break(self):
+        # The page break is part of the stripped-export cover content - a
+        # plain export (no cover page at all) shouldn't have one injected.
+        resp = self.client.get(self.export_url)
+        body = resp.content.decode()
+        self.assertNotIn("page-break", body)
+
     # --- The generated page-1 clearance summary -----------------------------
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
