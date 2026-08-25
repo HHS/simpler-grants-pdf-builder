@@ -3,8 +3,10 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.db import IntegrityError
 from django.test import TestCase
+from django.urls import reverse
 
 from nofos.models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
+from users.models import BloomUser
 from nofos.policy_language import (
     detect_policy_language_status,
     get_missing_required_slots,
@@ -660,3 +662,62 @@ class SeedDemoPolicyLanguageSlotsCommandTests(TestCase):
     def test_dry_run_writes_nothing(self):
         call_command("seed_demo_policy_language_slots", "--dry-run")
         self.assertEqual(PolicyLanguageSlot.objects.count(), 0)
+
+
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.SLOTS",
+    SAMPLE_DEMO_SLOTS,
+)
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.TEMPLATE_VERSION",
+    "TEST-DEMO-V1",
+)
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.VERSIONED_PAIR",
+    SAMPLE_VERSIONED_PAIR,
+)
+class SeedDemoPolicyLanguageSlotsAdminActionTests(TestCase):
+    """Exercises the 'Seed demo policy-language slots' admin action - the
+    changelist-action route a non-engineer would actually use, not just the
+    underlying management command."""
+
+    def setUp(self):
+        self.admin_user = BloomUser.objects.create_user(
+            email="policy-admin-test@example.com",
+            password="testpass123",
+            group="bloom",
+            is_staff=True,
+            is_superuser=True,
+            force_password_reset=False,
+        )
+        self.client.force_login(self.admin_user)
+        # Admin actions require at least one selected row to enable "Go",
+        # even though this action ignores the selection.
+        self.existing_slot = PolicyLanguageSlot.objects.create(
+            slot_key="TEST-PRE-EXISTING",
+            name="Pre-existing slot",
+            slot_type="fixed",
+            template_version="v1",
+        )
+
+    def test_action_seeds_demo_slots(self):
+        changelist_url = reverse("admin:nofos_policylanguageslot_changelist")
+        response = self.client.post(
+            changelist_url,
+            {
+                "action": "seed_demo_slots_admin",
+                "_selected_action": [str(self.existing_slot.pk)],
+            },
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            PolicyLanguageSlot.objects.filter(
+                slot_key="TEST-DEMO-001", is_current=True
+            ).exists()
+        )
+        self.assertTrue(
+            PolicyLanguageSlot.objects.filter(
+                slot_key="TEST-DEMO-VERSIONED", is_current=True
+            ).exists()
+        )
