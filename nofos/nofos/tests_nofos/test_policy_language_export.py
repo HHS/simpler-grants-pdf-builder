@@ -1,7 +1,9 @@
+import re
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from constance.test import override_config
+from django.contrib.staticfiles import finders
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -316,7 +318,16 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
             " ", strip=True
         )
         self.assertNotIn("..", intro)
-        self.assertIn("m. This is a NOFO Builder-generated aid", intro)
+        self.assertIn("m. ET. This is a NOFO Builder-generated aid", intro)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_timestamp_is_labeled_eastern_time(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        intro = soup.select_one(".clearance-summary p.text-italic").get_text(
+            " ", strip=True
+        )
+        self.assertIn("ET.", intro)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_shows_nofo_title_opdiv_and_number(self):
@@ -624,3 +635,25 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         self.assertNotIn("policy-language-stripped-note", body)
         self.assertIn("REVIEW: This section matches a prior version of", body)
         self.assertIn(old_canonical_text, body)  # visible, not stripped
+
+
+class ClearanceSummaryMissingSlotsBulletStyleTests(TestCase):
+    """The 'Missing expected Department Governance language' bullet on the
+    clearance summary should match the font size of the plain bullets
+    around it (12pt), not the smaller 12px it was previously set to."""
+
+    def test_missing_slots_bullet_uses_12pt_not_12px(self):
+        css_path = finders.find("theme-export.css")
+        self.assertIsNotNone(
+            css_path, "theme-export.css not found by staticfiles finders"
+        )
+        with open(css_path, encoding="utf-8") as f:
+            css = f.read()
+
+        rule_match = re.search(
+            r"\.nofo_view \.policy-language-flag-note\s*\{([^}]*)\}", css
+        )
+        self.assertIsNotNone(
+            rule_match, "No .policy-language-flag-note rule found in theme-export.css"
+        )
+        self.assertIn("font-size: 12pt", rule_match.group(1))
