@@ -281,7 +281,7 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertIn(
             "1 section matched current HHS Department Governance language", summary_text
         )
-        self.assertIn("2 sections flagged below for review", summary_text)
+        self.assertIn("2 sections flagged for review", summary_text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_lists_missing_required_slots(self):
@@ -290,16 +290,19 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertIn("Missing expected Department Governance language", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
-    def test_clearance_summary_anchor_links_resolve_to_real_elements(self):
+    def test_clearance_summary_flagged_entries_are_plain_text_not_links(self):
+        # GrabzIt's HTML->DOCX conversion doesn't turn a same-document
+        # #anchor link into a working "jump to bookmark" link in Word - it
+        # was landing readers somewhere unrelated instead. The flag is
+        # still visible inline at the actual section (see
+        # test_flag_on_stripped_export_flags_altered_sections), so the
+        # summary just names it rather than offering a link that doesn't
+        # work in the exported document.
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         soup = BeautifulSoup(resp.content, "html.parser")
-        links = soup.select(".clearance-summary a")
-        self.assertTrue(links)
-        for link in links:
-            target_id = link["href"].lstrip("#")
-            self.assertIsNotNone(
-                soup.find(id=target_id), f"anchor target #{target_id} not found"
-            )
+        self.assertFalse(soup.select(".clearance-summary a"))
+        summary_text = soup.select_one(".clearance-summary").get_text(" ", strip=True)
+        self.assertIn(self.altered_slot.name, summary_text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_includes_readability_metrics_when_available(self):
