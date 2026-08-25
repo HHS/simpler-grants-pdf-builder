@@ -1010,3 +1010,164 @@ class PolicyLanguageVariant(models.Model):
 
     def __str__(self):
         return f"{self.slot.slot_key} :: {self.label or 'default'}"
+
+
+class NofoReadabilityScoreQuerySet(models.QuerySet):
+    def complete(self):
+        """Snapshots where every goal metric was actually calculated."""
+        return self.filter(is_complete=True)
+
+    def latest_for(self, nofo):
+        """
+        The most recent complete snapshot for this NOFO, whatever revision it
+        measured. Returns None if the NOFO has never been measured completely.
+        """
+        return self.filter(nofo=nofo).complete().first()
+
+    def current_for(self, nofo, profile_reference, package_version):
+        """
+        The snapshot for this NOFO's current revision under the given
+        measurement contract, or None. A hit can be replayed to the panel
+        without re-running the metrics package.
+        """
+        return self.filter(
+            nofo=nofo,
+            nofo_revision=nofo.updated,
+            profile_reference=profile_reference,
+            package_version=package_version,
+        ).first()
+
+
+class NofoReadabilityScore(models.Model):
+    """
+    A stored hhs-nofo-metrics result for one NOFO revision, written when a user
+    runs "Calculate metrics".
+
+    Append-only: rows are never updated, so the table doubles as the readability
+    history for a NOFO. At most one row exists per (NOFO revision, measurement
+    contract), so repeating the same calculation returns the stored snapshot
+    instead of measuring again.
+    """
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = "NOFO readability score"
+        verbose_name_plural = "NOFO readability scores"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "nofo",
+                    "nofo_revision",
+                    "profile_reference",
+                    "package_version",
+                ],
+                name="unique_readability_score_per_nofo_revision",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["nofo", "-created_at"],
+                condition=models.Q(is_complete=True),
+                name="readability_latest_ok_idx",
+            ),
+        ]
+
+    objects = NofoReadabilityScoreQuerySet.as_manager()
+
+    nofo = models.ForeignKey(
+        Nofo,
+        on_delete=models.CASCADE,
+        related_name="readability_scores",
+        help_text=(
+            "Deleting a NOFO deletes its readability history, matching the "
+            "existing behavior for succeeded NOFOs. Archiving a NOFO is a soft "
+            "delete and leaves its snapshots intact."
+        ),
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="The user who ran the calculation.",
+    )
+
+    nofo_revision = models.DateTimeField(
+        help_text=(
+            "Nofo.updated at the moment of calculation: the content revision "
+            "these metrics describe, and the same value passed to the package as "
+            "'revision'. A snapshot is current while this matches Nofo.updated."
+        ),
+    )
+
+    profile_reference = models.CharField(
+        max_length=128,
+        help_text="Metrics profile used, eg 'hhs-nofo-fy27-html@0.4.0'.",
+    )
+
+    package_version = models.CharField(
+        max_length=32,
+        help_text="Installed hhs-nofo-metrics version, eg '0.5.2'.",
+    )
+
+    schema_version = models.CharField(
+        max_length=32,
+        blank=True,
+        help_text=(
+            "result['schema_version'] from the payload, eg '1.1.0'. This is the "
+            "result contract version, which moves independently of the package "
+            "version and the profile."
+        ),
+    )
+
+    result_basis = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="result['result_basis'] from the payload, eg 'structured_estimate'.",
+    )
+
+    is_complete = models.BooleanField(
+        default=False,
+        help_text=(
+            "True when every metric the package returned had status 'calculated'. "
+            "The package reports a status per metric, so a successful analysis can "
+            "still carry unavailable measurements. Those snapshots are kept, but "
+            "never stand in for the latest successful measurement. Judged against "
+            "the metrics actually returned, not against GOAL_METRIC_IDS, which is "
+            "the separate set Builder allows goals to be configured for."
+        ),
+    )
+
+    result = models.JSONField(
+        help_text=(
+            "The package's complete AnalysisResult payload, stored unflattened: "
+            "schema_version, result_basis, source, coverage, metrics, and notes. "
+            "Metric values are not flattened into columns, so the stored snapshot "
+            "keeps the package's own contract."
+        ),
+    )
+
+    goals = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Normalized HHS_NOFO_METRIC_GOALS in effect when this was calculated, "
+            "recorded so a snapshot can be interpreted later. Live comparisons in "
+            "the panel render from current configuration, not from this copy."
+        ),
+    )
+
+    def __str__(self):
+        return "{} @ {}".format(
+            self.nofo.short_name or self.nofo.title,
+            self.nofo_revision.isoformat(),
+        )
+
+    @property
+    def is_current(self):
+        """Whether this snapshot still describes the NOFO's current content."""
+        return self.nofo_revision == self.nofo.updated

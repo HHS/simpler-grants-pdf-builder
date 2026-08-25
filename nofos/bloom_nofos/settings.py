@@ -555,6 +555,10 @@ ALLOWED_HTML_ATTRIBUTES = [
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 
+# NofoReadabilityScore is already an append-only record of when metrics were
+# calculated, so auditing it would only duplicate rows it already holds.
+DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = ["nofos.NofoReadabilityScore"]
+
 # If the header is set it must be available on the request or an Error will be thrown
 if is_prod:
     DJANGO_EASY_AUDIT_REMOTE_ADDR_HEADER = "HTTP_X_FORWARDED_FOR"
