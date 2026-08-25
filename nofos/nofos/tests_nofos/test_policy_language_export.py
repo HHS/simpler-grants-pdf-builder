@@ -243,6 +243,33 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         self.assertIn("NOT THE OFFICIAL SUBMISSION COPY", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_watermark_is_table_cell(self):
+        # A plain div/p with background-color/border doesn't survive
+        # GrabzIt's HTML->DOCX conversion - only table-cell shading does
+        # (see the CSS comment on .policy-export-watermark td).
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        watermark = soup.select_one("table.policy-export-watermark")
+        self.assertIsNotNone(watermark)
+        self.assertIn("PRE-DECISIONAL", watermark.select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_flag_box_is_table_cell(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        boxes = soup.select("table.policy-language-flag-box")
+        self.assertTrue(boxes)
+        self.assertIn("REVIEW:", boxes[0].select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_prominent_flag_box_has_priority_class(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        priority_box = soup.select_one("table.policy-language-flag-box--priority")
+        self.assertIsNotNone(priority_box)
+        self.assertIn("PRIORITY REVIEW:", priority_box.select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_page_breaks_after_clearance_summary(self):
         # The watermark/clearance-summary "cover page" content should end on
         # its own page, separate from the actual NOFO content that follows -
@@ -270,6 +297,37 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         body = resp.content.decode()
         self.assertIn("Clearance Review Summary", body)
         self.assertIn("NOFO Builder", body)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_heading_has_no_generated_suffix(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        heading = soup.select_one(".clearance-summary h2")
+        self.assertEqual(heading.get_text(strip=True), "Clearance Review Summary")
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_date_sentence_has_no_double_period(self):
+        # The date renders via Django's "a" format (e.g. "5:21 p.m."), which
+        # already ends in a period - a literal "." straight after it in the
+        # template would double up ("p.m..").
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        intro = soup.select_one(".clearance-summary p.text-italic").get_text(
+            " ", strip=True
+        )
+        self.assertNotIn("..", intro)
+        self.assertIn("m. This is a NOFO Builder-generated aid", intro)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_shows_nofo_title_opdiv_and_number(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        summary_text = soup.select_one(".clearance-summary").get_text(" ", strip=True)
+        self.assertIn(self.nofo.title, summary_text)
+        self.assertIn(f"Opdiv: {self.nofo.opdiv}", summary_text)
+        self.assertIn(f"Opportunity number: {self.nofo.number}", summary_text)
+        # This fixture NOFO has no agency set - the line shouldn't render.
+        self.assertNotIn("Agency:", summary_text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_reports_correct_stripped_and_flagged_counts(self):
