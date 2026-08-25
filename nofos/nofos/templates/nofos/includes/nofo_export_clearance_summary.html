@@ -1,4 +1,3 @@
-{% load truncate_anchor_links_for_docx %}
 <div class="clearance-summary">
   <h2>Clearance Review Summary (Generated)</h2>
   <p class="text-italic">
@@ -45,11 +44,11 @@
     {% if clearance_summary.flagged %}
       <li>
         {{ clearance_summary.flagged|length }} section{{ clearance_summary.flagged|length|pluralize }}
-        flagged below for review:
+        flagged for review (see the flag noted inline at each section below):
         <ul>
           {% for subsection in clearance_summary.flagged %}
             <li>
-              <a href="#{{ subsection.html_id|truncate_heading_ids_for_docx }}">{{ subsection.name }}</a>
+              {{ subsection.name }}
               — {{ subsection.get_policy_language_status_display }}
               {% if subsection.policy_language_slot.flag_prominently %}(priority review){% endif %}
             </li>
