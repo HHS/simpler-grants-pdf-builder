@@ -583,3 +583,80 @@ class IngestCanonicalPolicyLanguageCommandTests(TestCase):
         self.assertEqual(
             PolicyLanguageSlot.objects.filter(slot_key="TEST-SAMPLE-001").count(), 1
         )
+
+
+SAMPLE_DEMO_SLOTS = [
+    {
+        "slot_key": "TEST-DEMO-001",
+        "name": "Test Demo Slot One",
+        "slot_type": "fixed",
+        "required": False,
+        "flag_prominently": False,
+        "variants": [{"canonical_text": "Test demo canonical text one."}],
+    },
+]
+
+SAMPLE_VERSIONED_PAIR = {
+    "slot_key": "TEST-DEMO-VERSIONED",
+    "name": "Test Demo Versioned Slot",
+    "slot_type": "fixed",
+    "required": False,
+    "flag_prominently": False,
+    "old_template_version": "TEST-DEMO-V0",
+    "old_canonical_text": "Old test demo canonical text.",
+    "new_canonical_text": "New test demo canonical text.",
+}
+
+
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.SLOTS",
+    SAMPLE_DEMO_SLOTS,
+)
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.TEMPLATE_VERSION",
+    "TEST-DEMO-V1",
+)
+@patch(
+    "nofos.management.commands.seed_demo_policy_language_slots.VERSIONED_PAIR",
+    SAMPLE_VERSIONED_PAIR,
+)
+class SeedDemoPolicyLanguageSlotsCommandTests(TestCase):
+    """Exercises the demo-seed command's own mechanics (creation, the
+    versioned-pair path, idempotency, dry-run) against a small synthetic
+    sample data set, not the real fictional DEMO-* fixture content, so this
+    suite doesn't churn if the demo copy's wording changes."""
+
+    def test_first_run_creates_slots_and_versioned_pair(self):
+        call_command("seed_demo_policy_language_slots")
+
+        self.assertEqual(
+            PolicyLanguageSlot.objects.filter(
+                slot_key="TEST-DEMO-001", is_current=True
+            ).count(),
+            1,
+        )
+
+        old = PolicyLanguageSlot.objects.get(
+            slot_key="TEST-DEMO-VERSIONED", is_current=False
+        )
+        current = PolicyLanguageSlot.objects.get(
+            slot_key="TEST-DEMO-VERSIONED", is_current=True
+        )
+        self.assertEqual(old.superseded_by_id, current.id)
+        self.assertEqual(
+            old.variants.first().canonical_text, "Old test demo canonical text."
+        )
+        self.assertEqual(
+            current.variants.first().canonical_text, "New test demo canonical text."
+        )
+
+    def test_rerun_is_idempotent(self):
+        call_command("seed_demo_policy_language_slots")
+        count_after_first = PolicyLanguageSlot.objects.count()
+
+        call_command("seed_demo_policy_language_slots")
+        self.assertEqual(PolicyLanguageSlot.objects.count(), count_after_first)
+
+    def test_dry_run_writes_nothing(self):
+        call_command("seed_demo_policy_language_slots", "--dry-run")
+        self.assertEqual(PolicyLanguageSlot.objects.count(), 0)
