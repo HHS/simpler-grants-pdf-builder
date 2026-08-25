@@ -10,6 +10,7 @@
         </td>
       </tr>
     </table>
+    <p>&nbsp;</p>
     {% include "nofos/includes/nofo_export_clearance_summary.html" %}
     <span class="page-break"></span>
   {% endif %}
@@ -59,7 +60,7 @@
                       {% endwith %}
                       <div class="{% if not subsection.name and not subsection.callout_box %}margin-top-2 {% endif %}styled-subsection-body">
                         {% if strip_policy_language and subsection.policy_language_status == "intact" %}
-                          <p class="policy-language-stripped-note"><em>Standard HHS Department Governance language — omitted from this abbreviated review copy.</em></p>
+                          <p>&nbsp;</p><table class="policy-language-stripped-box"><tr><td><em>Standard HHS Department Governance language — omitted from this abbreviated review copy.</em></td></tr></table>
                         {% else %}
                           {% if strip_policy_language %}{% with note=subsection|policy_language_export_note %}{% if note %}<p>&nbsp;</p><table class="policy-language-flag-box{% if subsection|policy_language_flag_is_prominent %} policy-language-flag-box--priority{% endif %}"><tr><td>{{ note }}</td></tr></table>{% endif %}{% endwith %}{% endif %}
                           {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
@@ -75,7 +76,7 @@
                 {% if subsection.body %}
                   <div class="{% if not subsection.name %}margin-top-2 {% endif %}styled-subsection-body">
                     {% if strip_policy_language and subsection.policy_language_status == "intact" %}
-                      <p class="policy-language-stripped-note"><em>Standard HHS Department Governance language — omitted from this abbreviated review copy.</em></p>
+                      <p>&nbsp;</p><table class="policy-language-stripped-box"><tr><td><em>Standard HHS Department Governance language — omitted from this abbreviated review copy.</em></td></tr></table>
                     {% else %}
                       {% if strip_policy_language %}{% with note=subsection|policy_language_export_note %}{% if note %}<p>&nbsp;</p><table class="policy-language-flag-box{% if subsection|policy_language_flag_is_prominent %} policy-language-flag-box--priority{% endif %}"><tr><td>{{ note }}</td></tr></table>{% endif %}{% endwith %}{% endif %}
                       {{ subsection.body|safe_markdown|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
