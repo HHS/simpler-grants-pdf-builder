@@ -123,10 +123,15 @@ body {
 
 /* Section */
 
-section,
+section {
+  break-inside: avoid;
+}
+
+/* Every section starts a fresh page except the last - breaking after it too
+   would leave a trailing blank page with nothing on it. */
+section:not(:last-child),
 span.page-break {
   break-after: page;
-  break-inside: avoid;
 }
 
 /* Lists */
@@ -264,7 +269,6 @@ span.page-break {
   background-color: #faf3d1;
   padding: 8px 12px;
   font-size: 12px;
-  font-weight: 700;
 }
 
 .nofo_view .policy-language-flag-box--priority td {
@@ -281,7 +285,7 @@ span.page-break {
 }
 
 .nofo_view .clearance-summary h2 {
-  margin-top: 0;
+  margin-top: 24px;
   margin-bottom: 6px;
   font-size: 28pt;
 }

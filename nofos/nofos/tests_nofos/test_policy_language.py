@@ -391,8 +391,8 @@ class PolicyLanguageExportNoteTests(TestCase):
             policy_language_status="may_be_altered", policy_language_slot=slot,
         )
         note = get_policy_language_export_note(sub)
-        self.assertIn("REVIEW:", note)
-        self.assertNotIn("PRIORITY REVIEW", note)
+        self.assertIn("Review:", note)
+        self.assertNotIn("Priority review", note)
         self.assertIn("Routine Slot", note)
 
     def test_elevated_note_for_prominent_slot(self):
@@ -411,7 +411,7 @@ class PolicyLanguageExportNoteTests(TestCase):
             policy_language_status="may_be_altered", policy_language_slot=slot,
         )
         note = get_policy_language_export_note(sub)
-        self.assertIn("PRIORITY REVIEW", note)
+        self.assertIn("Priority review", note)
 
 
 class PolicyLanguageExportSummaryTests(TestCase):
