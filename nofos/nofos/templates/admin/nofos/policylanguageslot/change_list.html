@@ -1,0 +1,13 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <form method="post" action="{% url 'admin:nofos_policylanguageslot_seed_demo' %}">
+      {% csrf_token %}
+      <button type="submit" class="button">
+        Seed demo policy-language slots
+      </button>
+    </form>
+  </li>
+  {{ block.super }}
+{% endblock %}
