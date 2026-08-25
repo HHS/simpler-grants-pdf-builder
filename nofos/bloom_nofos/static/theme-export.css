@@ -231,8 +231,11 @@ span.page-break {
   color: #b50909;
 }
 
-.nofo_view .policy-language-stripped-note {
+.nofo_view .policy-language-stripped-box td {
+  border: 1px solid #73b3e7;
+  background-color: #d9e8f6;
   color: #71767a;
+  padding: 8px 12px;
   font-style: italic;
   font-size: 12px;
 }

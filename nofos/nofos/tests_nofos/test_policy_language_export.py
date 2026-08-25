@@ -216,7 +216,7 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertNotIn(self.sam_slot.variants.first().canonical_text, body)
-        self.assertIn("policy-language-stripped-note", body)
+        self.assertIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_flags_altered_sections(self):
@@ -254,6 +254,16 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         watermark = soup.select_one("table.policy-export-watermark")
         self.assertIsNotNone(watermark)
         self.assertIn("PRE-DECISIONAL", watermark.select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_stripped_note_is_table_cell(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        box = soup.select_one("table.policy-language-stripped-box")
+        self.assertIsNotNone(box)
+        self.assertIn(
+            "omitted from this abbreviated review copy", box.select_one("td").get_text()
+        )
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_flag_box_is_table_cell(self):
@@ -568,7 +578,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # a review flag.
         self.assertIn("This paragraph has been substantively rewritten.", body)
         self.assertIn("REVIEW: This section corresponds to", body)
-        self.assertNotIn("policy-language-stripped-note", body)
+        self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_duplicated_nofo_reflects_edits_made_after_duplication(self):
@@ -596,7 +606,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
 
         self.assertIn("The duplicated content was then rewritten.", body)
         self.assertIn("REVIEW: This section corresponds to", body)
-        self.assertNotIn("policy-language-stripped-note", body)
+        self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_canonical_slot_revision_is_reflected_without_reimporting(self):
@@ -632,7 +642,7 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # superseded rather than current - it should be flagged as matching
         # a prior version (content stays visible, same as any other
         # non-intact status), not silently stripped as "intact".
-        self.assertNotIn("policy-language-stripped-note", body)
+        self.assertNotIn("policy-language-stripped-box", body)
         self.assertIn("REVIEW: This section matches a prior version of", body)
         self.assertIn(old_canonical_text, body)  # visible, not stripped
 
