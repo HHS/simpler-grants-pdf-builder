@@ -1,6 +1,9 @@
+from io import StringIO
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.core.management import call_command
 from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
@@ -83,6 +86,7 @@ class PolicyLanguageVariantInline(admin.TabularInline):
 class PolicyLanguageSlotAdmin(admin.ModelAdmin):
     model = PolicyLanguageSlot
     inlines = [PolicyLanguageVariantInline]
+    actions = ["seed_demo_slots_admin"]
     list_display = [
         "slot_key",
         "name",
@@ -93,6 +97,16 @@ class PolicyLanguageSlotAdmin(admin.ModelAdmin):
         "template_version",
     ]
     list_filter = ["slot_type", "required", "flag_prominently", "is_current"]
+
+    @admin.action(description="Seed demo policy-language slots (fictional DEMO-* data)")
+    def seed_demo_slots_admin(self, request, queryset):
+        # Ignores queryset - Django admin actions require selecting at least
+        # one row to enable the "Go" button, but this one isn't row-scoped.
+        # Runs the management command itself (not a reimplementation of it)
+        # so this stays covered by that command's own tests.
+        output = StringIO()
+        call_command("seed_demo_policy_language_slots", stdout=output)
+        self.message_user(request, output.getvalue().replace("\n", " ").strip())
 
 
 class SectionAdmin(admin.ModelAdmin):
