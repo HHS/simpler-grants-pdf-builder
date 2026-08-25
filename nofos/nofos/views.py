@@ -20,6 +20,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.management import call_command
 from django.db import transaction
 from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
@@ -29,6 +30,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -231,6 +233,20 @@ def insert_order_space_view(request, section_id):
 
     context = {"form": form, "title": "Insert Order Space", "section": section}
     return render(request, "admin/insert_order_space.html", context)
+
+
+@staff_member_required
+@require_POST
+def seed_demo_policy_language_slots_view(request):
+    # A changelist button rather than a Django admin bulk action: bulk
+    # actions require selecting an existing row, which is exactly what's
+    # unavailable the first time this runs against an empty table. Runs the
+    # management command itself (not a reimplementation of it) so this
+    # stays covered by that command's own tests.
+    output = io.StringIO()
+    call_command("seed_demo_policy_language_slots", stdout=output)
+    messages.success(request, output.getvalue().replace("\n", " ").strip())
+    return redirect("admin:nofos_policylanguageslot_changelist")
 
 
 ###########################################################

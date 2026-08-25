@@ -1,15 +1,16 @@
-from io import StringIO
-
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.core.management import call_command
 from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
 from .models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
-from .views import duplicate_nofo, insert_order_space_view
+from .views import (
+    duplicate_nofo,
+    insert_order_space_view,
+    seed_demo_policy_language_slots_view,
+)
 
 # Remove Groups from admin
 admin.site.unregister(Group)
@@ -86,7 +87,7 @@ class PolicyLanguageVariantInline(admin.TabularInline):
 class PolicyLanguageSlotAdmin(admin.ModelAdmin):
     model = PolicyLanguageSlot
     inlines = [PolicyLanguageVariantInline]
-    actions = ["seed_demo_slots_admin"]
+    change_list_template = "admin/nofos/policylanguageslot/change_list.html"
     list_display = [
         "slot_key",
         "name",
@@ -98,15 +99,18 @@ class PolicyLanguageSlotAdmin(admin.ModelAdmin):
     ]
     list_filter = ["slot_type", "required", "flag_prominently", "is_current"]
 
-    @admin.action(description="Seed demo policy-language slots (fictional DEMO-* data)")
-    def seed_demo_slots_admin(self, request, queryset):
-        # Ignores queryset - Django admin actions require selecting at least
-        # one row to enable the "Go" button, but this one isn't row-scoped.
-        # Runs the management command itself (not a reimplementation of it)
-        # so this stays covered by that command's own tests.
-        output = StringIO()
-        call_command("seed_demo_policy_language_slots", stdout=output)
-        self.message_user(request, output.getvalue().replace("\n", " ").strip())
+    def get_urls(self):
+        from django.urls import path
+
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "seed-demo/",
+                self.admin_site.admin_view(seed_demo_policy_language_slots_view),
+                name="nofos_policylanguageslot_seed_demo",
+            ),
+        ]
+        return custom_urls + urls
 
 
 class SectionAdmin(admin.ModelAdmin):
