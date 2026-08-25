@@ -32,7 +32,11 @@
         {{ modal_heading|default:"Generating Word document…" }}
       </h2>
       {% if modal_notice %}
-        <p class="usa-prose text-italic margin-top-0">{{ modal_notice }}</p>
+        <div class="usa-summary-box margin-top-0 margin-bottom-2" role="region" aria-label="Pre-decisional notice">
+          <div class="usa-summary-box__body">
+            <p class="usa-summary-box__text margin-y-0">{{ modal_notice }}</p>
+          </div>
+        </div>
       {% endif %}
 
       <div class="usa-prose" id="docx-modal-body{{ id_suffix }}">
