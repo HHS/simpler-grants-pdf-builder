@@ -230,9 +230,14 @@ def record_readability_snapshot(nofo, user=None):
     version); an already-measured revision returns the stored snapshot without
     re-running the package.
 
-    Returns a (snapshot, created) tuple. Raises the same errors as
-    analyze_nofo_readability, in which case nothing is written and any earlier
-    snapshot is left as the latest successful measurement.
+    Returns a (payload, snapshot) tuple. `snapshot` is None when the NOFO moved
+    to a new revision while the package was running: the payload is still
+    returned to the caller, but storing it would attach a measurement to a
+    revision it does not describe.
+
+    Raises the same errors as analyze_nofo_readability, in which case nothing is
+    written and any earlier snapshot is left as the latest successful
+    measurement.
 
     Snapshot creation lives here rather than in the view so that save-time or
     background calculation can reuse it later without touching the model.
@@ -246,14 +251,21 @@ def record_readability_snapshot(nofo, user=None):
         nofo, PROFILE_REFERENCE, metrics_version
     )
     if existing:
-        return existing, False
+        return existing.result, existing
 
-    # Read the revision before analyzing: if the NOFO is edited while the
-    # package runs, the snapshot must describe the revision that was measured.
+    # Read the revision before analyzing, so the snapshot records the revision
+    # that was measured rather than whatever the NOFO becomes later.
     revision = nofo.updated
     payload = analyze_nofo_readability(nofo)
 
-    return NofoReadabilityScore.objects.get_or_create(
+    # The export document is rendered from the database while the package runs.
+    # If the NOFO advanced during that window, the measured content and
+    # `revision` no longer agree, and storing the result under either one would
+    # let a later calculation replay metrics for content that never existed.
+    if _read_revision(nofo) != revision:
+        return payload, None
+
+    snapshot, _created = NofoReadabilityScore.objects.get_or_create(
         nofo=nofo,
         nofo_revision=revision,
         profile_reference=PROFILE_REFERENCE,
@@ -266,4 +278,13 @@ def record_readability_snapshot(nofo, user=None):
             "result": payload,
             "goals": normalize_readability_metric_goals(settings.HHS_NOFO_METRIC_GOALS),
         },
+    )
+    return payload, snapshot
+
+
+def _read_revision(nofo):
+    """The NOFO's `updated` value as currently stored, bypassing the instance."""
+
+    return (
+        type(nofo).objects.filter(pk=nofo.pk).values_list("updated", flat=True).first()
     )

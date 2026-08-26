@@ -14,6 +14,7 @@ from django.utils import timezone
 from users.models import BloomUser
 
 from nofos.models import Nofo, NofoReadabilityScore, Section, Subsection
+from nofos.nofo import overwrite_nofo
 from nofos.readability import (
     GOAL_METRIC_IDS,
     PROFILE_REFERENCE,
@@ -89,6 +90,8 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
         self.assertContains(response, "Metrics reflect the current revision only")
+        # The panel POSTs to the endpoint, so it needs a CSRF token to send.
+        self.assertContains(response, "data-csrf-token=")
         self.assertContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
@@ -320,7 +323,7 @@ class NofoReadabilityMetricsTests(TestCase):
     @override_config(HHS_NOFO_METRICS_ENABLED=False)
     @patch("nofos.readability.analyze_nofo_readability")
     def test_disabled_endpoint_fails_closed(self, analyze):
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["code"], "readability_metrics_disabled")
@@ -335,7 +338,7 @@ class NofoReadabilityMetricsTests(TestCase):
             "metrics": {"word_count": {"status": "calculated", "value": 42}},
         }
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), analyze.return_value)
@@ -347,7 +350,7 @@ class NofoReadabilityMetricsTests(TestCase):
     def test_missing_package_is_reported_as_unavailable(self, analyze):
         analyze.side_effect = ReadabilityMetricsUnavailable("Package is missing.")
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["code"], "readability_metrics_unavailable")
@@ -359,7 +362,7 @@ class NofoReadabilityMetricsTests(TestCase):
             {"code": "analysis_error", "message": "Could not classify source."}
         )
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 422)
         self.assertEqual(
@@ -378,7 +381,7 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.client.force_login(other_user)
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 403)
 
@@ -472,7 +475,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     ):
         analyze.return_value = build_payload()
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 200)
         snapshot = NofoReadabilityScore.objects.get()
@@ -489,7 +492,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     ):
         analyze.return_value = build_payload()
 
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         snapshot = NofoReadabilityScore.objects.get()
         self.assertEqual(snapshot.profile_reference, PROFILE_REFERENCE)
@@ -509,8 +512,8 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     ):
         analyze.return_value = build_payload()
 
-        first = self.client.get(self.metrics_url)
-        second = self.client.get(self.metrics_url)
+        first = self.client.post(self.metrics_url)
+        second = self.client.post(self.metrics_url)
 
         self.assertEqual(first.json(), second.json())
         self.assertEqual(NofoReadabilityScore.objects.count(), 1)
@@ -522,12 +525,12 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self, analyze, _version
     ):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
         first_revision = self.nofo.updated
 
         self.edit_the_nofo_body()
         self.assertNotEqual(self.nofo.updated, first_revision)
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         self.assertEqual(NofoReadabilityScore.objects.count(), 2)
         self.assertEqual(analyze.call_count, 2)
@@ -541,11 +544,11 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self, analyze, version
     ):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         # Same content, different measurement contract: not the same measurement.
         version.return_value = "0.6.0"
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         self.assertEqual(NofoReadabilityScore.objects.count(), 2)
         self.assertEqual(
@@ -559,7 +562,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     def test_unavailable_package_writes_no_snapshot(self, analyze, _version):
         analyze.side_effect = ReadabilityMetricsUnavailable("Package is missing.")
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 503)
         self.assertFalse(NofoReadabilityScore.objects.exists())
@@ -569,14 +572,14 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self, analyze, _version
     ):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
         successful = NofoReadabilityScore.objects.get()
 
         self.edit_the_nofo_body()
         analyze.side_effect = ReadabilityMetricsAnalysisError(
             {"code": "analysis_error", "message": "Could not classify source."}
         )
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 422)
         self.assertEqual(NofoReadabilityScore.objects.count(), 1)
@@ -587,14 +590,14 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self, analyze, _version
     ):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
         complete = NofoReadabilityScore.objects.get()
 
         self.edit_the_nofo_body()
         analyze.return_value = build_payload(
             statuses={"passive_sentence_percentage": "unavailable"}
         )
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(NofoReadabilityScore.objects.count(), 2)
@@ -619,11 +622,71 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self.assertNotIn("sentences_per_paragraph", analyze.return_value["metrics"])
         self.assertIn("sentences_per_paragraph", GOAL_METRIC_IDS)
 
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         snapshot = NofoReadabilityScore.objects.get()
         self.assertTrue(snapshot.is_complete)
         self.assertEqual(NofoReadabilityScore.objects.latest_for(self.nofo), snapshot)
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_reimporting_the_nofo_does_not_replay_the_previous_snapshot(
+        self, analyze, _version
+    ):
+        """
+        Re-import rebuilds the body with bulk_create, which never reaches
+        touch_updated(). If the revision did not advance, the cache would serve
+        metrics for content the re-import replaced.
+        """
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        first_revision = self.nofo.updated
+
+        overwrite_nofo(
+            self.nofo,
+            [
+                {
+                    "name": "Step 1: Review the Opportunity",
+                    "order": 1,
+                    "html_id": "",
+                    "has_section_page": True,
+                    "subsections": [
+                        {
+                            "name": "Replaced",
+                            "order": 1,
+                            "tag": "h3",
+                            "html_id": "",
+                            "body": ["<p>An entirely different body of text.</p>"],
+                        }
+                    ],
+                }
+            ],
+        )
+        self.nofo.refresh_from_db()
+        self.assertNotEqual(self.nofo.updated, first_revision)
+
+        self.client.post(self.metrics_url)
+
+        self.assertEqual(analyze.call_count, 2)
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_an_edit_during_analysis_is_not_stored(self, analyze, _version):
+        """
+        The export document is rendered while the package runs. If the NOFO
+        advances in that window the measurement describes content that no
+        longer matches the revision, so it is returned but not stored.
+        """
+
+        def edit_while_analyzing(nofo):
+            self.edit_the_nofo_body()
+            return build_payload()
+
+        analyze.side_effect = edit_while_analyzing
+
+        response = self.client.post(self.metrics_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(NofoReadabilityScore.objects.exists())
 
     # -- retrieval and permissions -------------------------------------------
 
@@ -632,10 +695,10 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self, analyze, _version
     ):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         self.edit_the_nofo_body()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         latest = NofoReadabilityScore.objects.latest_for(self.nofo)
         self.assertEqual(latest.nofo_revision, self.nofo.updated)
@@ -644,7 +707,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     @patch("nofos.readability.analyze_nofo_readability")
     def test_current_for_misses_once_the_nofo_is_edited(self, analyze, _version):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         self.assertIsNotNone(
             NofoReadabilityScore.objects.current_for(
@@ -659,6 +722,12 @@ class NofoReadabilityScorePersistenceTests(TestCase):
             )
         )
 
+    def test_get_is_rejected_because_calculating_stores_a_snapshot(self, _version):
+        response = self.client.get(self.metrics_url)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertFalse(NofoReadabilityScore.objects.exists())
+
     @patch("nofos.readability.analyze_nofo_readability")
     def test_a_user_outside_the_group_cannot_calculate_or_store(
         self, analyze, _version
@@ -672,7 +741,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         )
         self.client.force_login(other_user)
 
-        response = self.client.get(self.metrics_url)
+        response = self.client.post(self.metrics_url)
 
         self.assertEqual(response.status_code, 403)
         self.assertFalse(NofoReadabilityScore.objects.exists())
@@ -683,7 +752,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     @patch("nofos.readability.analyze_nofo_readability")
     def test_archiving_a_nofo_keeps_its_snapshots(self, analyze, _version):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         Nofo.objects.filter(pk=self.nofo.pk).update(archived=timezone.now().date())
 
@@ -692,7 +761,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     @patch("nofos.readability.analyze_nofo_readability")
     def test_deleting_a_nofo_deletes_its_snapshots(self, analyze, _version):
         analyze.return_value = build_payload()
-        self.client.get(self.metrics_url)
+        self.client.post(self.metrics_url)
 
         self.nofo.delete()
 

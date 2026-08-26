@@ -200,8 +200,13 @@
     );
 
     try {
+      // Calculating stores a snapshot, so this is a mutating request.
       const response = await fetch(panel.dataset.metricsEndpoint, {
-        headers: { Accept: "application/json" },
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "X-CSRFToken": panel.dataset.csrfToken,
+        },
         signal: controller.signal,
       });
       let payload = {};

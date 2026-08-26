@@ -2,6 +2,7 @@
   id="readability-metrics-panel"
   class="usa-accordion usa-accordion--bordered margin-bottom-2"
   data-metrics-endpoint="{% url 'nofos:nofo_readability_metrics' nofo.id %}"
+  data-csrf-token="{{ csrf_token }}"
 >
   <summary class="usa-accordion__button">
     <h2 class="usa-accordion--heading margin-top-0">
