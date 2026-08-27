@@ -273,6 +273,19 @@ Edit “{{ nofo|nofo_name }}”
           </span>
         </button>
       {% endif %}
+      {% if has_unconverted_footnotes %}
+        <button id="tab-4"
+                type="button"
+                role="tab"
+                class="secondary-darker"
+                aria-selected="false"
+                aria-controls="tabpanel-4"
+                tabindex="-1">
+          <span class="focus">
+            Check unconverted footnotes ({{ unconverted_footnotes|length }})
+          </span>
+        </button>
+      {% endif %}
     </div>
     {% if has_broken_links %}
       <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
@@ -355,6 +368,37 @@ Edit “{{ nofo|nofo_name }}”
                   <p>
                     <a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit NOFO metadata</a>
                     before publishing this PDF to Grants.gov. You can still preview or download the PDF while this warning is present.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if has_unconverted_footnotes %}
+      <div id="tabpanel-4" role="tabpanel" class="secondary-darker is-hidden" tabindex="0" aria-labelledby="tab-4">
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: some footnotes weren't converted</h3>
+            <div>
+              <details>
+                <summary>
+                  {% if unconverted_footnotes|length == 1 %}
+                  <span>There is 1 unconverted footnote</span>
+                  {% else %}
+                  <span>There are {{ unconverted_footnotes|length }} unconverted footnotes</span>
+                  {% endif %}
+                </summary>
+                <div>
+                  <ol class="usa-list usa-list--no-max-width">
+                    {% for unconverted_footnote in unconverted_footnotes %}
+                    <li><a href="#{{ unconverted_footnote.subsection.html_id }}">{{ unconverted_footnote.footnote_text }}</a> ({{ unconverted_footnote.section.name }}, {{ unconverted_footnote.subsection|subsection_name_or_order }})</li>
+                    {% endfor %}
+                  </ol>
+                  <p>
+                    These footnotes weren't recognized or converted on import, so they won't link correctly in the final PDF. In the source Word document, recreate them with Word's built-in endnote tool (References &gt; Insert Endnote) instead of typing them manually, then reimport the document. {% include "includes/feedback_link.html" with link_text="Give us feedback" %} if you need help.
                   </p>
                 </div>
               </details>

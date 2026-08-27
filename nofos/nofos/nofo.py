@@ -35,6 +35,7 @@ from .models import Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .policy_language import detect_policy_language_status, get_candidate_slots
+from .templatetags.utils import get_footnote_type
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -1708,6 +1709,97 @@ def find_broken_links(nofo):
                     )
 
     return broken_links
+
+
+# Matches footnote/endnote reference text as this app renders it on a successful
+# import, eg "[1]", "[23]" (see `is_footnote_ref` in templatetags/utils).
+UNCONVERTED_FOOTNOTE_RE = re.compile(r"\[\d+\]")
+
+# Real Word footnotes/endnotes get auto-labeled "Endnotes" on import (see
+# `add_endnotes_header_if_exists`'s `_match_endnotes`). A subsection literally headed
+# "Footnotes" (singular or plural) means the source document's footnotes were typed
+# manually - eg, GSAM's export template - instead of inserted with Word's built-in
+# footnote/endnote tool, so they were never recognized or linked up on import.
+UNCONVERTED_FOOTNOTES_HEADING_RE = re.compile(r"^footnotes?$", re.IGNORECASE)
+FOOTNOTE_HEADING_TAGS = ("h2", "h3", "h4", "h5", "h6")
+
+
+def find_unconverted_footnotes(nofo):
+    """
+    Identifies footnotes that were typed directly into the source Word document's text
+    instead of being inserted with Word's built-in footnote/endnote tool.
+
+    NOFO Builder's import process converts real Word footnotes/endnotes (inserted via
+    Word's References > Insert Footnote/Endnote tool) into linked endnotes, wrapping the
+    in-text reference in an `<a>` tag recognized by `get_footnote_type` (eg,
+    `<a href="#footnote-1">[1]</a>`), and labelling the endnotes list "Endnotes" on import.
+    A footnote reference that was typed manually has no such link, so it survives import
+    unlinked and won't work in the final PDF. This function looks for two signs of that:
+
+    1. A subsection heading (h2-h6) literally titled "Footnotes" - the un-converted
+       counterpart of the "Endnotes" heading NOFO Builder adds on a successful import.
+    2. A "[1]"-style reference elsewhere in a subsection's body that isn't wrapped in a
+       recognized footnote/endnote link (eg, an in-text citation like "...evidence[1]").
+
+    Args:
+        nofo (Nofo): A Nofo object which contains sections and subsections. Each
+                     subsection's body is expected to be in markdown format.
+
+    Returns:
+        list of dict: A list of dictionaries, one per unconverted footnote found, each
+                      with the section and subsection it was found in, and the raw
+                      footnote text. The structure is as follows:
+                      [
+                          {
+                              "section": <Section object>,
+                              "subsection": <Subsection object>,
+                              "footnote_text": "[1]",
+                          },
+                          ...
+                      ]
+    """
+    unconverted_footnotes = []
+
+    for section in nofo.sections.all().order_by("order"):
+        for subsection in section.subsections.all().order_by("order"):
+            if (
+                subsection.tag in FOOTNOTE_HEADING_TAGS
+                and UNCONVERTED_FOOTNOTES_HEADING_RE.match(
+                    (subsection.name or "").strip()
+                )
+            ):
+                unconverted_footnotes.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "footnote_text": subsection.name,
+                    }
+                )
+                # this subsection's body is the footnotes list itself; it's already
+                # flagged by its heading, so skip the in-body scan below for it
+                continue
+
+            soup = BeautifulSoup(
+                markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
+            )
+
+            for text_node in soup.find_all(string=UNCONVERTED_FOOTNOTE_RE):
+                parent_link = text_node.find_parent("a")
+                # skip real footnote/endnote references, which are already wrapped in a
+                # recognized link on import
+                if parent_link and get_footnote_type(parent_link):
+                    continue
+
+                for match in UNCONVERTED_FOOTNOTE_RE.finditer(text_node):
+                    unconverted_footnotes.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "footnote_text": match.group(),
+                        }
+                    )
+
+    return unconverted_footnotes
 
 
 def get_side_nav_links(nofo):
