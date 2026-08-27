@@ -568,10 +568,22 @@ GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
 
 # Provisional, source-native readability metrics integration. The package is
-# pinned, but each environment opts into the feature explicitly.
-HHS_NOFO_METRICS_ENABLED = cast_to_boolean(
+# pinned, but each environment opts into the feature explicitly. This env var is
+# only the starting value for the HHS_NOFO_METRICS_ENABLED constance setting,
+# which superadmins can toggle at runtime.
+HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
+
+# Prototype: export a Word copy with intact HHS Department Governance
+# language stripped (and anything ambiguous/altered flagged) to speed up
+# OMB/Departmental clearance review. This env var is only the starting
+# value for the HHS_NOFO_POLICY_EXPORT_ENABLED constance setting, which
+# superadmins can toggle at runtime.
+HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_POLICY_EXPORT_ENABLED", default=False)
+)
+
 DEFAULT_HHS_NOFO_METRIC_GOALS = {
     "word_count": {
         "label": "Target",
@@ -626,9 +638,19 @@ CONSTANCE_CONFIG = {
         "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
         bool,
     ),
+    "HHS_NOFO_METRICS_ENABLED": (
+        HHS_NOFO_METRICS_ENABLED_DEFAULT,
+        "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and are not saved.",
+        bool,
+    ),
     "WORD_IMPORT_STRICT_MODE": (
         False,
         "In strict mode, unhandled formatting in a .docx file throws an exception and prints the failure message to the screen.",
+        bool,
+    ),
+    "HHS_NOFO_POLICY_EXPORT_ENABLED": (
+        HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT,
+        "Whether the second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review, is available. Does not affect the existing Word/PDF export paths while disabled.",
         bool,
     ),
 }

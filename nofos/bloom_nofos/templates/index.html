@@ -34,7 +34,7 @@
 
   <h1 class="font-heading-xl margin-y-0">Generate NOFOs from Word Documents</h1>
   <p class="usa-intro">
-    Simplify the process of publishing Notices of Financial Opportunity (NOFOs).
+    Simplify the process of designing and publishing Notices of Financial Opportunity (NOFOs).
   </p>
   <p class="usa-intro">
     Import your NOFOs and turn them into accessible PDF files.
@@ -43,16 +43,16 @@
     {% if user.is_authenticated %}
       All NOFOs
     {% else %}
-      Login to see NOFOs
+      Log in to access NOFOs
     {% endif %}
   </a>
 
   <p>At a glance:</p>
   <ol class="usa-list">
-    <li>Export your completed NOFO document as an HTML file</li>
-    <li>Import the HTML file into the NOFO builder</li>
-    <li>Edit the NOFO to make small changes or correct metadata (author, date, number, tagline, etc.)</li>
-    <li>Select the right theme: default or light</li>
-    <li>Print your NOFO as a PDF file</li>
+    <li>Import your approved NOFO Word document into the NOFO Builder</li>
+    <li>Check for any accessibility warnings, such as broken internal links or non-sequential headings</li>
+    <li>Edit the NOFO to make minor text edits or correct metadata (author, date, number, tagline, etc.)</li>
+    <li>Select your design theme: default or light</li>
+    <li>Preview your PDF, then download your PDF file</li>
   </ol>
 {% endblock %}

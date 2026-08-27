@@ -5,8 +5,12 @@ from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
-from .models import Nofo, Section, Subsection
-from .views import duplicate_nofo, insert_order_space_view
+from .models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
+from .views import (
+    duplicate_nofo,
+    insert_order_space_view,
+    seed_demo_policy_language_slots_view,
+)
 
 # Remove Groups from admin
 admin.site.unregister(Group)
@@ -73,6 +77,40 @@ class SubsectionLinkInline(admin.StackedInline):
 class SubsectionAdmin(admin.ModelAdmin):
     model = Subsection
     list_display = ["id", "name", "callout_box", "section"]
+
+
+class PolicyLanguageVariantInline(admin.TabularInline):
+    model = PolicyLanguageVariant
+    extra = 1
+
+
+class PolicyLanguageSlotAdmin(admin.ModelAdmin):
+    model = PolicyLanguageSlot
+    inlines = [PolicyLanguageVariantInline]
+    change_list_template = "admin/nofos/policylanguageslot/change_list.html"
+    list_display = [
+        "slot_key",
+        "name",
+        "slot_type",
+        "required",
+        "flag_prominently",
+        "is_current",
+        "template_version",
+    ]
+    list_filter = ["slot_type", "required", "flag_prominently", "is_current"]
+
+    def get_urls(self):
+        from django.urls import path
+
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "seed-demo/",
+                self.admin_site.admin_view(seed_demo_policy_language_slots_view),
+                name="nofos_policylanguageslot_seed_demo",
+            ),
+        ]
+        return custom_urls + urls
 
 
 class SectionAdmin(admin.ModelAdmin):
@@ -164,3 +202,4 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
 admin.site.register(Subsection, SubsectionAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Nofo, NofoAdmin)
+admin.site.register(PolicyLanguageSlot, PolicyLanguageSlotAdmin)

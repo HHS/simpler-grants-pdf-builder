@@ -20,8 +20,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.management import call_command
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -29,6 +30,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -126,6 +128,10 @@ from .nofo import (
     upload_cover_image_to_s3,
 )
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .policy_language import (
+    get_policy_language_export_summary,
+    refresh_policy_language_tags,
+)
 from .readability import (
     ReadabilityMetricsAnalysisError,
     ReadabilityMetricsUnavailable,
@@ -187,8 +193,16 @@ def duplicate_nofo(original_nofo, is_successor=False):
 
         new_subsections = [
             Subsection(
-                **model_to_dict(original_subsection, exclude=["id", "section"]),
+                **model_to_dict(
+                    original_subsection,
+                    exclude=["id", "section", "policy_language_slot"],
+                ),
                 section=section_map[original_subsection.section.id],
+                # model_to_dict() returns a FK field as its raw pk, which the
+                # model constructor rejects for the field's plain name (it
+                # needs an instance, or the _id form) - same reason "section"
+                # above is excluded and passed separately instead.
+                policy_language_slot_id=original_subsection.policy_language_slot_id,
             )
             for original_subsection in original_subsections
         ]
@@ -219,6 +233,20 @@ def insert_order_space_view(request, section_id):
 
     context = {"form": form, "title": "Insert Order Space", "section": section}
     return render(request, "admin/insert_order_space.html", context)
+
+
+@staff_member_required
+@require_POST
+def seed_demo_policy_language_slots_view(request):
+    # A changelist button rather than a Django admin bulk action: bulk
+    # actions require selecting an existing row, which is exactly what's
+    # unavailable the first time this runs against an empty table. Runs the
+    # management command itself (not a reimplementation of it) so this
+    # stays covered by that command's own tests.
+    output = io.StringIO()
+    call_command("seed_demo_policy_language_slots", stdout=output)
+    messages.success(request, output.getvalue().replace("\n", " ").strip())
+    return redirect("admin:nofos_policylanguageslot_changelist")
 
 
 ###########################################################
@@ -320,22 +348,63 @@ class NOFOsExportView(DetailView):
         # Continue with the normal flow for anonymous or authorized users
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
+        context["strip_policy_language"] = (
+            config.HHS_NOFO_POLICY_EXPORT_ENABLED
+            and self.request.GET.get("policy_stripped") == "1"
+        )
+
+        if context["strip_policy_language"]:
+            # Recompute fresh against current content before rendering -
+            # never trust the status stored at import time here, since a
+            # subsection edit, a "Duplicate NOFO," or a later canonical
+            # slot revision can all leave it stale. See
+            # refresh_policy_language_tags for why.
+            prefetch_related_objects([self.object], "sections__subsections")
+            refresh_policy_language_tags(self.object)
+
+            context["clearance_summary"] = get_policy_language_export_summary(
+                self.object
+            )
+            try:
+                context["clearance_metrics"] = analyze_nofo_readability(self.object)
+            except (ReadabilityMetricsUnavailable, ReadabilityMetricsAnalysisError):
+                # Not fatal to the export - the summary section just omits the
+                # metrics table when the optional package isn't installed or
+                # can't analyze this revision.
+                context["clearance_metrics"] = None
+
+        return context
+
     def post(self, request, *args, **kwargs):
         nofo = self.get_object()
         action = request.POST.get("export_action")
 
-        if action != "download":
+        if action == "download":
+            export_url = request.build_absolute_uri(
+                reverse_lazy("nofos:nofo_export", args=[nofo.pk])
+            )
+            filename_base = nofo.short_name or nofo.title
+        elif action == "download_stripped" and config.HHS_NOFO_POLICY_EXPORT_ENABLED:
+            export_url = request.build_absolute_uri(
+                "{}?policy_stripped=1".format(
+                    reverse_lazy("nofos:nofo_export", args=[nofo.pk])
+                )
+            )
+            filename_base = "{} (Policy Language Stripped)".format(
+                nofo.short_name or nofo.title
+            )
+        else:
             return HttpResponseBadRequest("Unknown action.")
-
-        export_url = request.build_absolute_uri(
-            reverse_lazy("nofos:nofo_export", args=[nofo.pk])
-        )
 
         return generate_docx_download_response(
             request=request,
             export_url=export_url,
             target_element="#download_target",
-            filename_base=(nofo.short_name or nofo.title),
+            filename_base=filename_base,
             tmp_name=str(nofo.pk),
         )
 
@@ -344,7 +413,7 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
     """Calculate source-native metrics for the current Builder revision."""
 
     def get(self, request, *args, **kwargs):
-        if not settings.HHS_NOFO_METRICS_ENABLED:
+        if not config.HHS_NOFO_METRICS_ENABLED:
             return JsonResponse(
                 {
                     "code": "readability_metrics_disabled",
@@ -379,7 +448,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["readability_metrics_enabled"] = settings.HHS_NOFO_METRICS_ENABLED
+        context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
         context["readability_metric_goals"] = normalize_readability_metric_goals(
             settings.HHS_NOFO_METRIC_GOALS
         )
