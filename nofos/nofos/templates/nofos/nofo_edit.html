@@ -241,9 +241,11 @@ Edit “{{ nofo|nofo_name }}”
                 role="tab"
                 class="accent-warm-dark"
                 aria-selected="true"
-                aria-controls="tabpanel-1">
+                aria-controls="tabpanel-1"
+                aria-label="Check broken links ({{ broken_links|length }})">
           <span class="focus">
-            Check broken links ({{ broken_links|length }})
+            <span class="nofo_edit--tab-label">Check broken links</span>
+            <span class="nofo_edit--tab-count">({{ broken_links|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -254,9 +256,11 @@ Edit “{{ nofo|nofo_name }}”
                 class="secondary-darker"
                 aria-selected="false"
                 aria-controls="tabpanel-2"
-                tabindex="-1">
+                tabindex="-1"
+                aria-label="Check heading levels ({{ heading_errors|length }})">
           <span class="focus">
-            Check heading levels ({{ heading_errors|length }})
+            <span class="nofo_edit--tab-label">Check heading levels</span>
+            <span class="nofo_edit--tab-count">({{ heading_errors|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -267,9 +271,11 @@ Edit “{{ nofo|nofo_name }}”
                 class="secondary-darker"
                 aria-selected="false"
                 aria-controls="tabpanel-3"
-                tabindex="-1">
+                tabindex="-1"
+                aria-label="Check PDF metadata ({{ missing_metadata_fields|length }})">
           <span class="focus">
-            Check PDF metadata ({{ missing_metadata_fields|length }})
+            <span class="nofo_edit--tab-label">Check PDF metadata</span>
+            <span class="nofo_edit--tab-count">({{ missing_metadata_fields|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -280,9 +286,11 @@ Edit “{{ nofo|nofo_name }}”
                 class="secondary-darker"
                 aria-selected="false"
                 aria-controls="tabpanel-4"
-                tabindex="-1">
+                tabindex="-1"
+                aria-label="Check unconverted footnotes ({{ unconverted_footnotes|length }})">
           <span class="focus">
-            Check unconverted footnotes ({{ unconverted_footnotes|length }})
+            <span class="nofo_edit--tab-label">Check unconverted footnotes</span>
+            <span class="nofo_edit--tab-count">({{ unconverted_footnotes|length }})</span>
           </span>
         </button>
       {% endif %}
