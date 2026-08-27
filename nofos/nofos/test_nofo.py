@@ -3028,7 +3028,15 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+                "delete",
+            ],
         )
 
         self._assert_link(
@@ -3052,19 +3060,25 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[3],
+            key="add_end_notes",
+            label="Add end notes",
+            url_name="nofos:section_add_end_notes",
+        )
+        self._assert_link(
+            links[4],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[4],
+            links[5],
             key="export",
             label="Export Word doc",
             url_name="nofos:nofo_export",
             external=True,
         )
         self._assert_link(
-            links[5],
+            links[6],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
@@ -3078,7 +3092,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+            ],
         )
 
     def test_ready_for_qa_has_findreplace_compare_reimport(self):
@@ -3088,7 +3109,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+            ],
         )
 
     def test_review_has_findreplace_compare(self):
@@ -3098,7 +3126,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_doge_has_findreplace_compare(self):
@@ -3108,7 +3136,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_published_has_no_actions(self):
@@ -3128,7 +3156,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_cancelled_has_no_actions(self):
@@ -3137,6 +3165,23 @@ class TestBuildNofoActionLinks(TestCase):
 
         links = get_nofo_action_links(self.nofo)
         self.assertEqual([l["key"] for l in links], ["export"])
+
+    def test_add_end_notes_absent_when_endnotes_section_already_exists(self):
+        self.nofo.status = "draft"
+        self.nofo.save()
+        Section.objects.create(
+            nofo=self.nofo,
+            name="Endnotes",
+            html_id="endnotes",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertNotIn("add_end_notes", [l["key"] for l in links])
+        self.assertEqual(
+            [l["key"] for l in links],
+            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+        )
 
 
 class TestFindExternalLinks(TestCase):

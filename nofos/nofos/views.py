@@ -56,6 +56,7 @@ from .forms import (
     NIH_ALLOWED_CHOICES,
     NIH_THEME_DEFAULTS,
     CheckNOFOLinkSingleForm,
+    EndNotesSectionCreateForm,
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
@@ -88,6 +89,9 @@ from .mixins import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
+    END_NOTES_PLACEHOLDER_BODY,
+    END_NOTES_SECTION_HTML_ID,
+    END_NOTES_SECTION_NAME,
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_page_breaks_to_headings,
@@ -110,6 +114,7 @@ from .nofo import (
     get_step_2_section,
     get_subsections_from_sections,
     modifications_update_announcement_text,
+    nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
@@ -2093,6 +2098,98 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 ##################### SECTION VIEWS #######################
 ###########################################################
+
+
+class NofoAddEndNotesSectionView(
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    GroupAccessObjectMixin,
+    CreateView,
+):
+    """
+    Creates a NOFO's "Endnotes" section along with its one initial
+    Subsection, whose body is prepopulated with placeholder endnote content
+    the user can edit before saving.
+
+    The section's name/html_id are fixed here, not accepted from the
+    request - this is intentionally the only way to create a Section from
+    the UI, and it can only ever create this one specific section.
+    """
+
+    model = Subsection
+    form_class = EndNotesSectionCreateForm
+    template_name = "nofos/section_add_end_notes.html"
+
+    published_error_message = "Endnotes can’t be added to published NOFOs."
+    archived_error_message = "Endnotes can’t be added to archived NOFOs."
+
+    def dispatch(self, request, *args, **kwargs):
+        self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+        if nofo_has_end_notes_section(self.nofo):
+            messages.warning(request, "This NOFO already has an Endnotes section.")
+            return redirect("nofos:nofo_edit", pk=self.nofo.pk)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["body"] = END_NOTES_PLACEHOLDER_BODY
+        return initial
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            # Modifications should always stay the NOFO's last section, so
+            # slot Endnotes in directly above it if it already exists.
+            modifications_section = self.nofo.sections.filter(
+                name="Modifications"
+            ).first()
+
+            if modifications_section:
+                order = modifications_section.order
+                modifications_section.order = order + 1
+                modifications_section.save()
+            else:
+                order = Section.get_next_order(self.nofo)
+
+            self.section = Section.objects.create(
+                nofo=self.nofo,
+                name=END_NOTES_SECTION_NAME,
+                html_id=END_NOTES_SECTION_HTML_ID,
+                has_section_page=False,
+                order=order,
+            )
+
+            form.instance.section = self.section
+            form.instance.name = ""
+            form.instance.tag = ""
+            form.instance.order = 1
+
+            response = super().form_valid(form)
+
+        messages.success(
+            self.request,
+            "Added new section: “<a href='#{}'>{}</a>”".format(
+                self.section.html_id, self.section.name
+            ),
+        )
+
+        return response
+
+    def get_success_url(self):
+        return "{}#{}".format(
+            reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id}),
+            self.section.html_id,
+        )
+
+    def get_cancel_url(self):
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo"] = self.nofo
+        context["cancel_url"] = self.get_cancel_url()
+        return context
 
 
 class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
