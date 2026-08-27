@@ -107,6 +107,7 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -462,6 +463,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
+        context["unconverted_footnotes"] = find_unconverted_footnotes(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
@@ -493,6 +495,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
+        context["has_unconverted_footnotes"] = len(context["unconverted_footnotes"])
         context["has_external_links"] = len(
             context["external_links"]
         ) and self.object.status in ("draft", "active", "ready-for-qa", "paused")
@@ -500,6 +503,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             context["has_missing_metadata"]
             or context["has_broken_links"]
             or context["has_heading_errors"]
+            or context["has_unconverted_footnotes"]
             or context["has_external_links"]
         )
 

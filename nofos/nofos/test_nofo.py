@@ -45,6 +45,7 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -3404,6 +3405,140 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+
+class TestFindUnconvertedFootnotes(TestCase):
+    def setUp(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo TestFindUnconvertedFootnotes", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+
+        # a footnote reference typed manually as plain text: not a link at all
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a manually typed footnote",
+            tag="h3",
+            body="This claim needs a citation[1] to back it up.",
+            order=2,
+        )
+
+        # a properly converted docx footnote reference: wrapped in a recognized link
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a converted footnote",
+            tag="h3",
+            body='This is a real footnote<sup><a href="#footnote-1" id="footnote-ref-1">[1]</a></sup> reference.',
+            order=3,
+        )
+
+        # a properly converted HTML-export (Google Docs style) footnote reference
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a converted HTML footnote",
+            tag="h3",
+            body='This is a real footnote<a href="#ftnt1">[1]</a> reference.',
+            order=4,
+        )
+
+        # a subsection with no footnote-shaped text at all
+        Subsection.objects.create(
+            section=section,
+            name="Subsection without any footnotes",
+            tag="h3",
+            body="This subsection has no footnotes.",
+            order=5,
+        )
+
+        # multiple manually typed footnotes in one subsection
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with multiple manually typed footnotes",
+            tag="h3",
+            body="First claim[1] and second claim[2] both need citations.",
+            order=6,
+        )
+
+        # a "Footnotes" heading (the GSAM-style, un-converted counterpart of the
+        # "Endnotes" heading NOFO Builder adds on a successful import), whose body is
+        # the actual footnotes list, unlinked
+        Subsection.objects.create(
+            section=section,
+            name="Footnotes",
+            tag="h2",
+            body=(
+                "[1] U.S. Department of Health and Human Services, Office of the "
+                "Assistant Secretary for Planning and Evaluation (ASPE). Access to "
+                "Preventive Services without Cost-Sharing: Evidence from the "
+                "Affordable Care Act (January 2022).\n\n"
+                "[2] [Standards for Developing Trustworthy Clinical Practice "
+                "Guidelines](https://example.com/guidelines)"
+            ),
+            order=7,
+        )
+
+        # a properly converted "Endnotes" heading should never be flagged
+        Subsection.objects.create(
+            section=section,
+            name="Endnotes",
+            tag="h2",
+            body='<ol><li id="footnote-1">A real, converted endnote.</li></ol>',
+            order=8,
+        )
+
+    def test_find_unconverted_footnotes_identifies_manually_typed_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(len(unconverted_footnotes), 4)
+        self.assertEqual(
+            [f["subsection"].name for f in unconverted_footnotes],
+            [
+                "Subsection with a manually typed footnote",
+                "Subsection with multiple manually typed footnotes",
+                "Subsection with multiple manually typed footnotes",
+                "Footnotes",
+            ],
+        )
+        self.assertEqual(
+            [f["footnote_text"] for f in unconverted_footnotes],
+            ["[1]", "[1]", "[2]", "Footnotes"],
+        )
+
+    def test_find_unconverted_footnotes_identifies_footnotes_heading(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        footnotes_heading_hits = [
+            f for f in unconverted_footnotes if f["subsection"].name == "Footnotes"
+        ]
+        # the "Footnotes" heading is reported once, and its body isn't separately
+        # scanned for "[1]"/"[2]" references (they're implied by the heading itself)
+        self.assertEqual(len(footnotes_heading_hits), 1)
+        self.assertEqual(footnotes_heading_hits[0]["footnote_text"], "Footnotes")
+
+    def test_find_unconverted_footnotes_ignores_endnotes_heading(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Endnotes", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_converted_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with a converted footnote", subsection_names)
+        self.assertNotIn("Subsection with a converted HTML footnote", subsection_names)
+
+    def test_find_unconverted_footnotes_returns_empty_list_for_no_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        subsection = Subsection.objects.get(name="Subsection without any footnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn(subsection.name, subsection_names)
 
 
 class TestFindH7Headers(TestCase):
