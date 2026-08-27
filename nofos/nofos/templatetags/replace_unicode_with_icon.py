@@ -20,6 +20,7 @@ ICONS = [
     ("↑", uswds_arrow_upward_icon),
     ("↓", uswds_arrow_downward_icon),
     ("◻", uswds_check_box_outline_blank_icon),  # (◻) U+25FB WHITE MEDIUM SQUARE
+    ("☐", uswds_check_box_outline_blank_icon),  # (☐) U+2610 BALLOT BOX
 ]
 
 BLOCK_LEVEL_TAG_NAMES = {
@@ -93,7 +94,7 @@ def is_before_sublist(td):
 
 
 def is_numbered_sublist(td):
-    td_text = td.text.replace("◻", "").strip()
+    td_text = td.text.replace("◻", "").replace("☐", "").strip()
     return match_numbered_sublist(td_text)
 
 

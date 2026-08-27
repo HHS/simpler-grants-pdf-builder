@@ -9,6 +9,7 @@ from .models import (
     Section,
     Subsection,
 )
+from .nofo import replace_chars
 from .utils import get_icon_path_choices, user_is_nih_group
 
 
@@ -286,6 +287,9 @@ class SubsectionEditForm(forms.ModelForm):
             "name": forms.TextInput(),
         }
 
+    def clean_body(self):
+        return replace_chars(self.cleaned_data.get("body") or "")
+
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
@@ -306,6 +310,9 @@ class SubsectionCreateForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(),
         }
+
+    def clean_body(self):
+        return replace_chars(self.cleaned_data.get("body") or "")
 
     def clean(self):
         cleaned_data = super().clean()
