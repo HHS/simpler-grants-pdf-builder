@@ -398,7 +398,9 @@ Edit “{{ nofo|nofo_name }}”
                     {% endfor %}
                   </ol>
                   <p>
-                    These footnotes weren't recognized or converted on import, so they won't link correctly in the final PDF. In the source Word document, recreate them with Word's built-in endnote tool (References &gt; Insert Endnote) instead of typing them manually, then reimport the document. For troubleshooting support, submit a request using the {% include "includes/feedback_link.html" with link_text="NOFO Builder Feedback Form" %}.
+                    These footnotes weren't recognized or converted on import, so they won't link correctly in the final PDF. Endnotes must be added using Word's built-in endnote tool — not typed manually.
+                    <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
+                    Fix this in the source Word document, then reimport it. For troubleshooting support, submit a request using the {% include "includes/feedback_link.html" with link_text="NOFO Builder Feedback Form" %}.
                   </p>
                 </div>
               </details>
