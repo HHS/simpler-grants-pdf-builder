@@ -821,6 +821,40 @@ label.usa-label {
   padding: 4px 6px;
 }
 
+/* On small screens, shrink tabs to fit on one row instead of wrapping, and
+   truncate the tab label (keeping the count visible) instead of hiding
+   tabs or scrolling. The full label is still exposed via aria-label. */
+@media all and (max-width: 39.99em) {
+  .nofo_edit [role="tablist"] {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .nofo_edit [role="tab"] {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .nofo_edit [role="tab"] span.focus {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .nofo_edit [role="tab"] .nofo_edit--tab-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .nofo_edit [role="tab"] .nofo_edit--tab-count {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
 .nofo_edit [role="tabpanel"] {
   padding: 5px;
   border: 2px solid hsl(219deg 1% 72%);
