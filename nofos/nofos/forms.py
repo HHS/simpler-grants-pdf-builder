@@ -327,6 +327,18 @@ class SubsectionCreateForm(forms.ModelForm):
         return cleaned_data
 
 
+# Used only by NofoAddEndNotesSectionView. The Endnotes section's name and
+# html_id are fixed (not user-editable) so the ".section--endnotes" CSS hook
+# and the "Endnotes" import-detection convention keep working; the only
+# thing a user can change is the initial subsection's content.
+class EndNotesSectionCreateForm(forms.ModelForm):
+    body = MartorFormField(required=False, label="Subsection content")
+
+    class Meta:
+        model = Subsection
+        fields = ["body"]
+
+
 # Simple form for URL input
 class CheckNOFOLinkSingleForm(forms.Form):
     url = forms.URLField(

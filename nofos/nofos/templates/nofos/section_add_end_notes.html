@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static whitespaceless %}
+
+{% block title %}
+  Add end notes
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet">
+  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet">
+{% endblock %}
+
+{% block body_class %}section_add_end_notes{% endblock %}
+
+{% block content %}
+  <div class="back-link font-body-md margin-bottom-105">
+    <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{{ cancel_url }}">Back</a>
+  </div>
+  <div class="section_edit--header">
+    <h1 class="font-heading-xl margin-y-0">Add end notes</h1>
+  </div>
+
+  <p>
+    This adds a new “Endnotes” section to the end of “{{ nofo.title }}”, with a starter list of end notes below.
+    Edit the content now, or save it as-is and edit it later.
+  </p>
+
+  <h2 class="font-serif-lg margin-top-5 margin-bottom-0">Endnotes content</h2>
+
+  <form class="form" method="post">
+    {% csrf_token %}
+
+    <fieldset class="usa-fieldset">
+
+      {% if form.non_field_errors %}
+        <legend class="legend--bootstrap">
+          <div class="usa-error-message">
+            Error: {{ form.non_field_errors.0 }}
+          </div>
+        </legend>
+      {% endif %}
+
+      <!-- body -->
+      <div class="form-group margin-top-4">
+        <label class="usa-label" for="body">Subsection content</label>
+        <div
+        {% whitespaceless %}
+          class="
+                margin-top-1
+                main-martor--container
+                {% if form.errors.body %}
+                  main-martor--container--error
+                {% endif %}
+              "
+        {% endwhitespaceless %} id="{{ form.body.name }}" tabIndex="-1" {% if form.errors.body %}aria-describedby="body--error-message"{% endif %}>
+          {{ form.body }}
+        </div>
+      </div>
+    </fieldset>
+    <div class="form-group">
+      <button class="usa-button usa-button--green margin-top-3" type="submit">Save section</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block js_footer %}
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+
+  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
+{% endblock %}

@@ -1361,6 +1361,41 @@ def _update_link_statuses(all_links):
                 print(f"Error checking link {link['url']}: {e}")
 
 
+END_NOTES_SECTION_NAME = "Endnotes"
+END_NOTES_SECTION_HTML_ID = "endnotes"
+
+# Matches the "docx-style" endnote id/href convention this app already
+# recognizes elsewhere (see get_footnote_type in templatetags/utils), so the
+# link-numbering/backlink logic that already runs on subsection bodies keeps
+# working on this content unmodified.
+END_NOTES_PLACEHOLDER_BODY = """<ol>
+ <li id="endnote-1" tabindex="-1">
+  <p>
+   Placeholder paragraph text goes here. Replace this with your citation or note.
+   <a href="#endnote-ref-1">
+    ↑
+   </a>
+  </p>
+ </li>
+ <li id="endnote-2" tabindex="-1">
+  <p>
+   Placeholder paragraph text goes here.
+   <a href="https://example.com">
+    Placeholder link text goes here
+   </a>
+   .
+   <a href="#endnote-ref-2">
+    ↑
+   </a>
+  </p>
+ </li>
+</ol>"""
+
+
+def nofo_has_end_notes_section(nofo):
+    return nofo.sections.filter(name__iexact=END_NOTES_SECTION_NAME).exists()
+
+
 def get_nofo_action_links(nofo):
     # Canonical action builders
     def _link_compare(nofo):
@@ -1408,32 +1443,62 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:nofo_find_replace", args=[nofo.pk]),
         }
 
+    def _link_add_end_notes(nofo):
+        return {
+            "key": "add_end_notes",
+            "label": "Add end notes",
+            "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
+        }
+
     # Status → allowed actions
     _STATUS_ACTIONS = {
         "draft": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "reimport",
             "export",
             "delete",
         ),
-        "active": ("find_replace", "compare", "duplicate", "reimport", "export"),
-        "ready-for-qa": ("find_replace", "compare", "duplicate", "reimport", "export"),
+        "active": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "reimport",
+            "export",
+        ),
+        "ready-for-qa": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "reimport",
+            "export",
+        ),
         "review": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "export",
         ),
         "doge": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "export",
         ),  # Deputy Secretary review
         "published": ("export",),
-        "paused": ("find_replace", "compare", "duplicate", "export"),
+        "paused": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "export",
+        ),
         "cancelled": ("export",),
     }
 
@@ -1445,6 +1510,7 @@ def get_nofo_action_links(nofo):
         "find_replace": lambda: _link_find_replace(nofo),
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
+        "add_end_notes": lambda: _link_add_end_notes(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
@@ -1452,6 +1518,10 @@ def get_nofo_action_links(nofo):
 
     links = []
     for key in actions:
+        # A NOFO can only ever have one Endnotes section.
+        if key == "add_end_notes" and nofo_has_end_notes_section(nofo):
+            continue
+
         build = link_builders.get(key)
         if build:
             links.append(build())
