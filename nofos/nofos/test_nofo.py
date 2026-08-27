@@ -3061,7 +3061,7 @@ class TestBuildNofoActionLinks(TestCase):
         self._assert_link(
             links[3],
             key="add_end_notes",
-            label="Add end notes",
+            label="Add Endnotes",
             url_name="nofos:section_add_end_notes",
         )
         self._assert_link(
