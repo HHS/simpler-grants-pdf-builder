@@ -1446,7 +1446,7 @@ def get_nofo_action_links(nofo):
     def _link_add_end_notes(nofo):
         return {
             "key": "add_end_notes",
-            "label": "Add end notes",
+            "label": "Add Endnotes",
             "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
         }
 
