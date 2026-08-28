@@ -3546,6 +3546,89 @@ def add_final_subsection_to_step_3(sections):
             break
 
 
+# Matches a short "field name" label, eg "Award date" or "Anticipated start date" -
+# not a full sentence like "Note" in "Note: applications received after this date
+# won't be reviewed" would still match (that's fine, it's field-name-shaped too), but
+# a long sentence with a stray colon in it won't.
+KEY_DATES_FIELD_NAME_WORD_RE = re.compile(r"^[A-Za-z][A-Za-z'-]*$")
+
+
+def add_line_breaks_to_key_dates_values(sections):
+    """
+    This function accepts a list of section dicts, _not_ Section objects, and mutates
+    the paragraph tags inside them in place.
+
+    The "Key dates" callout box is a narrow, right-aligned component, and its "field
+    name: value" paragraphs (eg, "Award date: 00/00/0000") can wrap in the middle of
+    the value there, breaking a date format like "00/00/0000" across two lines.
+
+    Within the "Key dates" callout box only, this inserts a line break right after the
+    colon in any such "field name:" paragraph, so the value always starts on its own
+    line. A paragraph with no field-name colon (eg, a plain descriptive sentence ending
+    in a period) is left untouched, as is every other section/subsection in the NOFO.
+
+    Args:
+        sections (list of dict): A list of section dictionaries, where each section may
+            contain a "subsections" (list of dict) key. Each subsection's "body" is
+            either a single BeautifulSoup Tag (a callout box's extracted cell) or a
+            list of BeautifulSoup Tag objects (an ordinary subsection) - see
+            `get_subsections_from_sections`.
+
+    Side Effects:
+        - Modifies the "Key dates" subsection's paragraph tags in place, splitting a
+          "field name:" text node into a "field name:" node, a new <br> tag, and the
+          remaining text.
+    """
+
+    def _looks_like_field_name(text):
+        # Real field names are short labels (eg, "Award date", "Anticipated start
+        # date"), not a full clause. 4 words comfortably covers realistic field
+        # names while still excluding longer sentence fragments.
+        words = text.strip().split()
+        return 1 <= len(words) <= 4 and all(
+            KEY_DATES_FIELD_NAME_WORD_RE.match(word) for word in words
+        )
+
+    def _get_paragraphs(body):
+        if hasattr(body, "find_all"):
+            # a callout box's body is a single extracted <div> cell
+            return body.find_all("p")
+        # an ordinary subsection's body is a list of top-level tags
+        return [tag for tag in body if getattr(tag, "name", None) == "p"]
+
+    for section in sections:
+        for subsection in section.get("subsections", []):
+            if (subsection.get("name") or "").strip().casefold() != "key dates":
+                continue
+
+            for paragraph in _get_paragraphs(subsection["body"]):
+                if paragraph.find("br"):
+                    continue
+
+                first_text_with_colon = next(
+                    (
+                        node
+                        for node in paragraph.contents
+                        if isinstance(node, NavigableString) and ":" in node
+                    ),
+                    None,
+                )
+                if first_text_with_colon is None:
+                    continue
+
+                before, _, after = str(first_text_with_colon).partition(":")
+                if not _looks_like_field_name(before):
+                    continue
+
+                label_node = NavigableString(before.strip() + ":")
+                first_text_with_colon.replace_with(label_node)
+
+                br_tag = paragraph.new_tag("br")
+                label_node.insert_after(br_tag)
+                if after.strip():
+                    br_tag.insert_after(after.strip())
+
+
 def modifications_update_announcement_text(nofo):
     """
     Update announcement text in all subsection bodies of a given NOFO.

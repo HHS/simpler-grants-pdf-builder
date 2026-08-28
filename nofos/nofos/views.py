@@ -94,6 +94,7 @@ from .nofo import (
     END_NOTES_SECTION_NAME,
     add_final_subsection_to_step_3,
     add_headings_to_document,
+    add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
@@ -716,6 +717,7 @@ class BaseNofoImportView(View):
         filename = uploaded_file.name.strip()
 
         add_final_subsection_to_step_3(sections)
+        add_line_breaks_to_key_dates_values(sections)
 
         # 6. Hand off to child for nofo creation
         return self.handle_nofo_create(
