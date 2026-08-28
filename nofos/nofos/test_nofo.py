@@ -27,6 +27,7 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_instructions_to_subsections,
+    add_line_breaks_to_key_dates_values,
     add_missing_alt_text_to_imgs,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
@@ -966,6 +967,109 @@ class KeyCalloutHeadingImportTests(TestCase):
 
         self.assertEqual(subsections[0]["name"], "Key Facts")
         self.assertEqual(subsections[0]["tag"], "h5")
+
+
+class TestAddLineBreaksToKeyDatesValues(TestCase):
+    def get_sections(self, html, top_heading_level="h1"):
+        soup = BeautifulSoup(html, "html.parser")
+        sections = get_sections_from_soup(soup, top_heading_level=top_heading_level)
+        return get_subsections_from_sections(
+            sections, top_heading_level=top_heading_level
+        )
+
+    def test_adds_break_after_colon_in_callout_box_table(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date: 00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        key_dates_subsection = sections[0]["subsections"][0]
+        self.assertEqual(key_dates_subsection["name"], "Key dates")
+        self.assertEqual(
+            str(key_dates_subsection["body"]),
+            "<div><p>Award date:<br/>00/00/0000</p></div>",
+        )
+
+    def test_adds_break_for_multi_word_field_name(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Anticipated start date: 00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Anticipated start date:<br/>00/00/0000</p>", str(body))
+
+    def test_leaves_plain_sentence_without_colon_untouched(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date: 00/00/0000</p><p>Dates are subject to change.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Dates are subject to change.</p>", str(body))
+
+    def test_adds_break_after_short_single_word_label(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Note: applications received after this date will not be reviewed.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn(
+            "<p>Note:<br/>applications received after this date will not be reviewed.</p>",
+            str(body),
+        )
+
+    def test_leaves_sentence_with_many_words_before_colon_untouched(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>For more information about this timeline: visit our website.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn(
+            "<p>For more information about this timeline: visit our website.</p>",
+            str(body),
+        )
+
+    def test_does_not_touch_key_facts_callout_box(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Facts</h4><p>Funding type: Grant</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Funding type: Grant</p>", str(body))
+
+    def test_adds_break_in_non_callout_box_key_dates_subsection(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <p>Award date: 00/00/0000</p>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        subsection = sections[0]["subsections"][0]
+        self.assertEqual(subsection["name"], "Key Dates")
+        self.assertEqual(
+            str(subsection["body"][0]), "<p>Award date:<br/>00/00/0000</p>"
+        )
+
+    def test_skips_paragraph_that_already_has_a_break(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date:<br>00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertEqual(str(body).count("<br"), 1)
 
 
 class HTMLSubsectionTestsH2(TestCase):
