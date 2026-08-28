@@ -2101,9 +2101,9 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
 
 class NofoAddEndNotesSectionView(
+    GroupAccessObjectMixin,
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
-    GroupAccessObjectMixin,
     CreateView,
 ):
     """
@@ -2123,14 +2123,33 @@ class NofoAddEndNotesSectionView(
     published_error_message = "Endnotes can’t be added to published NOFOs."
     archived_error_message = "Endnotes can’t be added to archived NOFOs."
 
-    def dispatch(self, request, *args, **kwargs):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
         self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+    def _guard_add_end_notes(self, request):
+        # Unlike normal subsection editing after a modifications date is set,
+        # this action is never available once the NOFO has been published.
+        if self.nofo.status == "published":
+            return self.render_response(self.published_error_message)
 
         if nofo_has_end_notes_section(self.nofo):
             messages.warning(request, "This NOFO already has an Endnotes section.")
             return redirect("nofos:nofo_edit", pk=self.nofo.pk)
 
-        return super().dispatch(request, *args, **kwargs)
+        return None
+
+    def get(self, request, *args, **kwargs):
+        response = self._guard_add_end_notes(request)
+        if response:
+            return response
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        response = self._guard_add_end_notes(request)
+        if response:
+            return response
+        return super().post(request, *args, **kwargs)
 
     def get_initial(self):
         initial = super().get_initial()
@@ -2139,16 +2158,25 @@ class NofoAddEndNotesSectionView(
 
     def form_valid(self, form):
         with transaction.atomic():
-            # Modifications should always stay the NOFO's last section, so
-            # slot Endnotes in directly above it if it already exists.
-            modifications_section = self.nofo.sections.filter(
-                name="Modifications"
-            ).first()
+            # Serialize this single-purpose section creation and re-check after
+            # acquiring the lock so concurrent submissions cannot create two
+            # Endnotes sections.
+            self.nofo = Nofo.objects.select_for_update().get(pk=self.nofo.pk)
+            response = self._guard_add_end_notes(self.request)
+            if response:
+                return response
+
+            # Slot Endnotes directly above Modifications when it exists.
+            sections = self.nofo.sections.select_for_update()
+            modifications_section = sections.filter(name="Modifications").first()
 
             if modifications_section:
                 order = modifications_section.order
-                modifications_section.order = order + 1
-                modifications_section.save()
+                # Shift in descending order to preserve the unique (nofo, order)
+                # constraint even when Modifications is not currently last.
+                for section in sections.filter(order__gte=order).order_by("-order"):
+                    section.order += 1
+                    section.save(update_fields=["order"])
             else:
                 order = Section.get_next_order(self.nofo)
 
