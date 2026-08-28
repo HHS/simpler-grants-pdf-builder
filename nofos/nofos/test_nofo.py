@@ -5754,17 +5754,27 @@ class TestFootnotesHeadingImportIntegration(TestCase):
     """
     End-to-end: a "Footnotes" section heading, run through the real import
     pipeline (process_nofo_html -> get_sections_from_soup ->
-    get_subsections_from_sections -> create_nofo -> add_headings_to_document),
-    should come out the other side as a recognized "Endnotes" section - no
-    #841 unconverted-footnotes warning, and no #842 "Add Endnotes" action.
+    get_subsections_from_sections -> create_nofo -> add_headings_to_document).
+
+    IMPORTANT SCOPE NOTE (see PR review on #845): this rename only fixes the
+    heading, so the NOFO gets a real, deletable "Endnotes" section and the #842
+    "Add Endnotes" action correctly hides itself - it does NOT create a working
+    link/target pair. The in-text "[1]" reference and the "[1] ..." note both
+    stay exactly as unlinked as they were before the rename: no <a href="#...">,
+    no id="...". Worse, find_unconverted_footnotes only scans for stray "[1]"
+    references at all when a literal "Footnotes" heading still exists somewhere
+    in the document (see its docstring); once this rename removes that heading,
+    the check goes blind for the *entire* NOFO, not just the renamed section -
+    even for completely unrelated broken references elsewhere. That's exactly
+    why the warning is paused behind HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED
+    (see settings.py) rather than left enabled: a heading rename must never be
+    allowed to silently read as "this NOFO's footnotes are fine now".
     """
 
     def test_footnotes_section_becomes_endnotes_on_import(self):
         html_content = (
-            "<div>"
-            "<h1>Step 1: Review the opportunity</h1><p>Review it.</p>"
-            "<h1>Footnotes</h1><p>[1] A manually typed note.</p>"
-            "</div>"
+            "<h1>Program</h1><p>See supporting evidence [1].</p>"
+            "<h1>Footnotes</h1><p>[1] Source citation.</p>"
         )
         soup = BeautifulSoup(html_content, "html.parser")
         top_heading_level = resolve_section_heading_level(soup)
@@ -5779,10 +5789,25 @@ class TestFootnotesHeadingImportIntegration(TestCase):
 
         self.assertTrue(nofo.sections.filter(name="Endnotes").exists())
         self.assertFalse(nofo.sections.filter(name="Footnotes").exists())
-        self.assertEqual(find_unconverted_footnotes(nofo), [])
         self.assertNotIn(
             "add_end_notes", [link["key"] for link in get_nofo_action_links(nofo)]
         )
+
+        # Neither the in-text reference nor the note itself gained a real link.
+        program_body = nofo.sections.get(name="Program").subsections.first().body
+        self.assertIn("[1]", program_body)
+        self.assertNotIn("<a ", program_body)
+        endnotes_body = nofo.sections.get(name="Endnotes").subsections.first().body
+        self.assertIn("[1]", endnotes_body)
+        self.assertNotIn("<a ", endnotes_body)
+        self.assertNotIn('id="', endnotes_body)
+
+        # Known gap this rename introduces: find_unconverted_footnotes requires a
+        # literal "Footnotes" heading before it will scan for stray "[N]"
+        # references at all (see its docstring). With that heading gone, it
+        # returns nothing for this NOFO even though the content above is still
+        # completely unlinked - this is precisely why the warning is paused.
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
 
 
 class TestGetFontSizeFromCssText(TestCase):
