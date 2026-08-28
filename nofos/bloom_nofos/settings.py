@@ -653,6 +653,11 @@ CONSTANCE_CONFIG = {
         "Whether the second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review, is available. Does not affect the existing Word/PDF export paths while disabled.",
         bool,
     ),
+    "HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED": (
+        False,
+        "Whether the 'unconverted footnotes' warning on the NOFO edit page is shown. Paused while we design a graceful fix (see rename_footnotes_heading_to_endnotes) instead of just warning about it; find_unconverted_footnotes and its tests are left in place to pick back up.",
+        bool,
+    ),
 }
 
 # Django codemirror

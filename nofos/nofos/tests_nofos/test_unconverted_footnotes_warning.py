@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from constance.test import override_config
 from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
@@ -39,6 +40,23 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         )
         self.edit_url = reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
 
+    def test_warning_is_hidden_by_default_while_paused(self):
+        """
+        HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED defaults to False: the warning
+        is paused (see settings.py) until unconverted footnotes can be linked up
+        correctly on import, not just have their heading renamed. This asserts the
+        current, real default: no warning, even for content that would trigger it if
+        the flag were on.
+        """
+        response = self.client.get(self.edit_url)
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        self.assertFalse(response.context["has_unconverted_footnotes"])
+        self.assertEqual(response.context["unconverted_footnotes"], [])
+        self.assertIsNone(soup.find(id="tab-4"))
+        self.assertIsNone(soup.find(id="tabpanel-4"))
+
+    @override_config(HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED=True)
     def test_section_level_warning_links_to_section_once_and_includes_required_copy(
         self,
     ):

@@ -463,7 +463,12 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
-        context["unconverted_footnotes"] = find_unconverted_footnotes(self.object)
+        # Paused: see HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED in settings.py
+        context["unconverted_footnotes"] = (
+            find_unconverted_footnotes(self.object)
+            if config.HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED
+            else []
+        )
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
