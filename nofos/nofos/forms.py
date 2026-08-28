@@ -9,8 +9,12 @@ from .models import (
     Section,
     Subsection,
 )
-from .nofo import replace_chars
 from .utils import get_icon_path_choices, user_is_nih_group
+
+
+def normalize_subsection_checkbox_glyphs(body):
+    """Normalize U+2610 to the canonical U+25FB checkbox glyph."""
+    return body.replace("☐", "◻")
 
 
 def create_object_model_form(model_class):
@@ -288,7 +292,7 @@ class SubsectionEditForm(forms.ModelForm):
         }
 
     def clean_body(self):
-        return replace_chars(self.cleaned_data.get("body") or "")
+        return normalize_subsection_checkbox_glyphs(self.cleaned_data.get("body") or "")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -312,7 +316,7 @@ class SubsectionCreateForm(forms.ModelForm):
         }
 
     def clean_body(self):
-        return replace_chars(self.cleaned_data.get("body") or "")
+        return normalize_subsection_checkbox_glyphs(self.cleaned_data.get("body") or "")
 
     def clean(self):
         cleaned_data = super().clean()
