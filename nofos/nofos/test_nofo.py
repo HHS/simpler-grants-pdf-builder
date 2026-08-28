@@ -3595,6 +3595,111 @@ class TestFindUnconvertedFootnotes(TestCase):
 
         self.assertEqual(find_unconverted_footnotes(nofo), [])
 
+    def test_find_unconverted_footnotes_accepts_section_level_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with section-level Footnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            html_id="evidence",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        footnotes_section = Section.objects.create(
+            nofo=nofo, name="Footnotes", html_id="footnotes", order=2
+        )
+        Subsection.objects.create(
+            section=footnotes_section,
+            name="",
+            tag="",
+            body="[1] First note.\n\n[2] Second note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Footnotes"]
+        )
+        section_heading_result = results[1]
+        self.assertEqual(section_heading_result["section"], footnotes_section)
+        self.assertIsNone(section_heading_result["subsection"])
+
+    def test_find_unconverted_footnotes_accepts_h7_subsection_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with h7 Footnotes", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Main content", order=1)
+        Subsection.objects.create(
+            section=section,
+            name="Footnotes",
+            tag="h7",
+            body="[1] First note.\n\n[2] Second note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["footnote_text"], "Footnotes")
+
+    def test_find_unconverted_footnotes_allows_trailing_heading_colon(self):
+        for heading_location, section_name, subsection_name, tag in (
+            ("section", "Footnote:", "", ""),
+            ("subsection", "Main content", "Footnotes :", "h3"),
+        ):
+            with self.subTest(heading_location=heading_location):
+                nofo = Nofo.objects.create(
+                    title=f"Test Nofo with colon in {heading_location}",
+                    opdiv="test opdiv",
+                )
+                section = Section.objects.create(nofo=nofo, name=section_name, order=1)
+                Subsection.objects.create(
+                    section=section,
+                    name=subsection_name,
+                    tag=tag,
+                    body="[1] First note.",
+                    order=1,
+                )
+
+                results = find_unconverted_footnotes(nofo)
+
+                self.assertEqual(len(results), 1)
+                self.assertEqual(
+                    results[0]["footnote_text"],
+                    section_name if heading_location == "section" else subsection_name,
+                )
+
+    def test_find_unconverted_footnotes_rejects_similar_non_heading_names(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with non-footnotes headings", opdiv="test opdiv"
+        )
+        endnotes_section = Section.objects.create(nofo=nofo, name="Endnotes", order=1)
+        Subsection.objects.create(
+            section=endnotes_section,
+            name="",
+            tag="",
+            body="A bracketed number [1].",
+            order=1,
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", order=2
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Footnotes guidance",
+            tag="h3",
+            body="A bracketed number [2].",
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+
     def test_find_unconverted_footnotes_returns_empty_list_for_no_footnotes(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
         subsection = Subsection.objects.get(name="Subsection without any footnotes")

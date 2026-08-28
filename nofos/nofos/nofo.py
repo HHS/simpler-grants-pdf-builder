@@ -1716,12 +1716,16 @@ def find_broken_links(nofo):
 UNCONVERTED_FOOTNOTE_RE = re.compile(r"\[\d{1,3}\]")
 
 # Real Word footnotes/endnotes get auto-labeled "Endnotes" on import (see
-# `add_endnotes_header_if_exists`'s `_match_endnotes`). A subsection literally headed
-# "Footnotes" (singular or plural) means the source document's footnotes were typed
-# manually - eg, GSAM's export template - instead of inserted with Word's built-in
-# footnote/endnote tool, so they were never recognized or linked up on import.
-UNCONVERTED_FOOTNOTES_HEADING_RE = re.compile(r"^footnotes?$", re.IGNORECASE)
-FOOTNOTE_HEADING_TAGS = ("h2", "h3", "h4", "h5", "h6")
+# `add_endnotes_header_if_exists`'s `_match_endnotes`). A section or subsection
+# literally headed "Footnote" or "Footnotes" means the source document's footnotes
+# may have been typed manually instead of inserted with Word's built-in tool. A trailing
+# colon is allowed because it does not change the heading's meaning.
+UNCONVERTED_FOOTNOTES_HEADING_RE = re.compile(r"footnotes?\s*:?\s*", re.IGNORECASE)
+FOOTNOTE_HEADING_TAGS = ("h2", "h3", "h4", "h5", "h6", "h7")
+
+
+def _is_footnotes_heading(value):
+    return bool(UNCONVERTED_FOOTNOTES_HEADING_RE.fullmatch((value or "").strip()))
 
 
 def find_unconverted_footnotes(nofo):
@@ -1738,14 +1742,16 @@ def find_unconverted_footnotes(nofo):
     numbers as footnotes, this function requires the first structural signal before it
     considers the second:
 
-    1. A subsection heading (h2-h6) literally titled "Footnotes" - the un-converted
-       counterpart of the "Endnotes" heading NOFO Builder adds on a successful import.
+    1. A section or subsection heading literally titled "Footnote" or "Footnotes" -
+       the un-converted counterpart of the "Endnotes" section NOFO Builder adds on a
+       successful import. A trailing colon is ignored.
     2. A short "[1]"-style reference elsewhere in the document that isn't inside a link
        or code element (eg, an in-text citation like "...evidence[1]").
 
-    The Footnotes subsection is included once in the result as the primary structural
-    signal, followed by any unlinked numeric reference locations. If there is no
-    Footnotes subsection, the function returns no results.
+    The Footnotes section or subsection is included once in the result as the primary
+    structural signal, along with any unlinked numeric reference locations. Its note-list
+    body is not scanned separately. If there is no Footnotes heading, the function returns
+    no results.
 
     Args:
         nofo (Nofo): A Nofo object which contains sections and subsections. Each
@@ -1758,63 +1764,77 @@ def find_unconverted_footnotes(nofo):
                       [
                           {
                               "section": <Section object>,
-                              "subsection": <Subsection object>,
+                              "subsection": <Subsection object or None>,
                               "footnote_text": "[1]",
                           },
                           ...
                       ]
     """
-    subsections = []
+    sections = [
+        (section, list(section.subsections.all().order_by("order")))
+        for section in nofo.sections.all().order_by("order")
+    ]
+    footnotes_section_ids = {
+        section.id for section, _ in sections if _is_footnotes_heading(section.name)
+    }
+    footnotes_subsection_ids = {
+        subsection.id
+        for _, subsections in sections
+        for subsection in subsections
+        if subsection.tag in FOOTNOTE_HEADING_TAGS
+        and _is_footnotes_heading(subsection.name)
+    }
 
-    for section in nofo.sections.all().order_by("order"):
-        for subsection in section.subsections.all().order_by("order"):
-            subsections.append((section, subsection))
-
-    has_footnotes_heading = any(
-        subsection.tag in FOOTNOTE_HEADING_TAGS
-        and UNCONVERTED_FOOTNOTES_HEADING_RE.match((subsection.name or "").strip())
-        for _, subsection in subsections
-    )
-    if not has_footnotes_heading:
+    if not footnotes_section_ids and not footnotes_subsection_ids:
         return []
 
     unconverted_footnotes = []
 
-    for section, subsection in subsections:
-        if (
-            subsection.tag in FOOTNOTE_HEADING_TAGS
-            and UNCONVERTED_FOOTNOTES_HEADING_RE.match((subsection.name or "").strip())
-        ):
+    for section, subsections in sections:
+        if section.id in footnotes_section_ids:
             unconverted_footnotes.append(
                 {
                     "section": section,
-                    "subsection": subsection,
-                    "footnote_text": subsection.name,
+                    "subsection": None,
+                    "footnote_text": section.name,
                 }
             )
-            # This subsection is the structural prerequisite and is already
-            # reported, so don't count its note-list entries as references too.
+            # The whole section is the structural prerequisite and note list.
+            # Report it once instead of counting each note-list marker.
             continue
 
-        soup = BeautifulSoup(
-            markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
-        )
-
-        for text_node in soup.find_all(string=UNCONVERTED_FOOTNOTE_RE):
-            # Existing links already have a working destination (or are handled by
-            # the broken-links warning), and bracketed numbers in code are content,
-            # not reference markers.
-            if text_node.find_parent(("a", "code", "pre")):
-                continue
-
-            for match in UNCONVERTED_FOOTNOTE_RE.finditer(text_node):
+        for subsection in subsections:
+            if subsection.id in footnotes_subsection_ids:
                 unconverted_footnotes.append(
                     {
                         "section": section,
                         "subsection": subsection,
-                        "footnote_text": match.group(),
+                        "footnote_text": subsection.name,
                     }
                 )
+                # This subsection is the structural prerequisite and is already
+                # reported, so don't count its note-list entries as references too.
+                continue
+
+            soup = BeautifulSoup(
+                markdown.markdown(subsection.body, extensions=["extra"]), "html.parser"
+            )
+
+            for text_node in soup.find_all(string=UNCONVERTED_FOOTNOTE_RE):
+                # Existing links already have a working destination (or are handled by
+                # the broken-links warning), and bracketed numbers in code are content,
+                # not reference markers.
+                if text_node.find_parent(("a", "code", "pre")):
+                    continue
+
+                for match in UNCONVERTED_FOOTNOTE_RE.finditer(text_node):
+                    unconverted_footnotes.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "footnote_text": match.group(),
+                        }
+                    )
 
     return unconverted_footnotes
 

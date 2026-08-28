@@ -402,11 +402,11 @@ Edit “{{ nofo|nofo_name }}”
                 <div>
                   <ol class="usa-list usa-list--no-max-width">
                     {% for unconverted_footnote in unconverted_footnotes %}
-                    <li><a href="#{{ unconverted_footnote.subsection.html_id }}">{{ unconverted_footnote.footnote_text }}</a> ({{ unconverted_footnote.section.name }}, {{ unconverted_footnote.subsection|subsection_name_or_order }})</li>
+                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.footnote_text }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
                     {% endfor %}
                   </ol>
                   <p>
-                    NOFO Builder found a Footnotes section that may contain references that didn't convert correctly. Review these locations in the PDF preview. If the references don't link to their notes, endnotes must be added using Word's built-in endnote tool — not typed manually.
+                    NOFO Builder found a Footnotes section that may contain references that didn't convert correctly. Review these locations in the PDF preview. If the references don't link to their notes, endnotes must be added using Word's built-in endnote tool — not typed manually. Make sure reference numbers are sequential with no repeats and that each reference has a corresponding entry.
                     <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
                     Fix this in the source Word document, then reimport it. For troubleshooting support, submit a request using the {% include "includes/feedback_link.html" with link_text="NOFO Builder Feedback Form" %}.
                   </p>
