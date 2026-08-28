@@ -3486,6 +3486,33 @@ class TestFindUnconvertedFootnotes(TestCase):
             order=8,
         )
 
+        # legitimate bracketed numeric content should not be treated as a footnote
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with bracketed year",
+            tag="h3",
+            body="The prior edition [2025] remains available.",
+            order=9,
+        )
+
+        # code-like tokens should also be ignored
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with code token",
+            tag="h3",
+            body="Use the token `[123]`.",
+            order=10,
+        )
+
+        # a working numeric external link is already linked and should be ignored
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with external numeric link",
+            tag="h3",
+            body='<a href="https://example.com/source">[1]</a> is the source.',
+            order=11,
+        )
+
     def test_find_unconverted_footnotes_identifies_manually_typed_footnotes(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
         unconverted_footnotes = find_unconverted_footnotes(nofo)
@@ -3531,6 +3558,42 @@ class TestFindUnconvertedFootnotes(TestCase):
         subsection_names = [f["subsection"].name for f in unconverted_footnotes]
         self.assertNotIn("Subsection with a converted footnote", subsection_names)
         self.assertNotIn("Subsection with a converted HTML footnote", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_bracketed_year(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with bracketed year", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_code_token(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with code token", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_working_external_numeric_link(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with external numeric link", subsection_names)
+
+    def test_find_unconverted_footnotes_requires_footnotes_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo without Footnotes heading", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with bracketed number",
+            tag="h3",
+            body="This is valid content [1], not a footnote signal by itself.",
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
 
     def test_find_unconverted_footnotes_returns_empty_list_for_no_footnotes(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")

@@ -287,9 +287,9 @@ Edit “{{ nofo|nofo_name }}”
                 aria-selected="false"
                 aria-controls="tabpanel-4"
                 tabindex="-1"
-                aria-label="Check unconverted footnotes ({{ unconverted_footnotes|length }})">
+                aria-label="Check possible unconverted footnotes ({{ unconverted_footnotes|length }})">
           <span class="focus">
-            <span class="nofo_edit--tab-label">Check unconverted footnotes</span>
+            <span class="nofo_edit--tab-label">Check possible unconverted footnotes</span>
             <span class="nofo_edit--tab-count">({{ unconverted_footnotes|length }})</span>
           </span>
         </button>
@@ -389,14 +389,14 @@ Edit “{{ nofo|nofo_name }}”
       <div id="tabpanel-4" role="tabpanel" class="secondary-darker is-hidden" tabindex="0" aria-labelledby="tab-4">
         <div class="usa-alert">
           <div class="usa-alert__body">
-            <h3 class="usa-alert__heading">Warning: some footnotes weren't converted</h3>
+            <h3 class="usa-alert__heading">Warning: review possible unconverted footnotes</h3>
             <div>
               <details>
                 <summary>
                   {% if unconverted_footnotes|length == 1 %}
-                  <span>There is 1 unconverted footnote</span>
+                  <span>There is 1 location to review</span>
                   {% else %}
-                  <span>There are {{ unconverted_footnotes|length }} unconverted footnotes</span>
+                  <span>There are {{ unconverted_footnotes|length }} locations to review</span>
                   {% endif %}
                 </summary>
                 <div>
@@ -406,7 +406,7 @@ Edit “{{ nofo|nofo_name }}”
                     {% endfor %}
                   </ol>
                   <p>
-                    These footnotes weren't recognized or converted on import, so they won't link correctly in the final PDF. Endnotes must be added using Word's built-in endnote tool — not typed manually.
+                    NOFO Builder found a Footnotes section that may contain references that didn't convert correctly. Review these locations in the PDF preview. If the references don't link to their notes, endnotes must be added using Word's built-in endnote tool — not typed manually.
                     <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
                     Fix this in the source Word document, then reimport it. For troubleshooting support, submit a request using the {% include "includes/feedback_link.html" with link_text="NOFO Builder Feedback Form" %}.
                   </p>
