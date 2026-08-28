@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.messages import get_messages
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -86,6 +88,24 @@ class NofoAddEndNotesSectionViewTests(TestCase):
         self.assertEqual(modifications_section.order, 3)
         self.assertLess(section.order, modifications_section.order)
 
+    def test_post_shifts_sections_after_nonfinal_modifications_without_collision(self):
+        modifications_section = Section.objects.create(
+            nofo=self.nofo, name="Modifications", html_id="modifications", order=2
+        )
+        appendix_section = Section.objects.create(
+            nofo=self.nofo, name="Appendix", html_id="appendix", order=3
+        )
+
+        response = self.client.post(self.url, {"body": "content"})
+
+        self.assertEqual(response.status_code, 302)
+        endnotes_section = self.nofo.sections.get(html_id="endnotes")
+        modifications_section.refresh_from_db()
+        appendix_section.refresh_from_db()
+        self.assertEqual(endnotes_section.order, 2)
+        self.assertEqual(modifications_section.order, 3)
+        self.assertEqual(appendix_section.order, 4)
+
     def test_get_redirects_when_endnotes_section_already_exists(self):
         Section.objects.create(
             nofo=self.nofo, name="Endnotes", html_id="endnotes", order=2
@@ -109,6 +129,20 @@ class NofoAddEndNotesSectionViewTests(TestCase):
         self.assertEqual(self.nofo.sections.filter(name="Endnotes").count(), 1)
         self.assertEqual(Subsection.objects.filter(section__nofo=self.nofo).count(), 0)
 
+    def test_post_does_not_duplicate_endnotes_html_id_under_another_name(self):
+        Section.objects.create(
+            nofo=self.nofo,
+            name="References",
+            html_id="endnotes",
+            order=2,
+        )
+
+        response = self.client.post(self.url, {"body": "content"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.nofo.sections.filter(html_id="endnotes").count(), 1)
+        self.assertEqual(Subsection.objects.filter(section__nofo=self.nofo).count(), 0)
+
     def test_prevents_add_on_published_nofo(self):
         self.nofo.status = "published"
         self.nofo.save()
@@ -121,6 +155,20 @@ class NofoAddEndNotesSectionViewTests(TestCase):
             response, "Endnotes can’t be added to published NOFOs.", status_code=400
         )
         self.assertFalse(self.nofo.sections.filter(name="Endnotes").exists())
+
+    def test_prevents_add_on_published_nofo_with_modifications(self):
+        self.nofo.status = "published"
+        self.nofo.modifications = date(2026, 8, 28)
+        self.nofo.save()
+
+        with self.assertLogs("django.request", level="WARNING"):
+            response = self.client.post(self.url, {"body": "content"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(
+            response, "Endnotes can’t be added to published NOFOs.", status_code=400
+        )
+        self.assertFalse(self.nofo.sections.filter(html_id="endnotes").exists())
 
     def test_prevents_add_on_archived_nofo(self):
         from django.utils import timezone
@@ -136,3 +184,24 @@ class NofoAddEndNotesSectionViewTests(TestCase):
             response, "Endnotes can’t be added to archived NOFOs.", status_code=400
         )
         self.assertFalse(self.nofo.sections.filter(name="Endnotes").exists())
+
+    def test_checks_group_access_before_revealing_existing_endnotes(self):
+        self.nofo.group = "acf"
+        self.nofo.save()
+        Section.objects.create(
+            nofo=self.nofo,
+            name="Endnotes",
+            html_id="endnotes",
+            order=2,
+        )
+        other_user = BloomUser.objects.create_user(
+            email="other@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="hrsa",
+        )
+        self.client.force_login(other_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 403)

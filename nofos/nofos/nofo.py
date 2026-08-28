@@ -33,8 +33,8 @@ from .import_transforms import (
 )
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
-from .policy_language import detect_policy_language_status, get_candidate_slots
 from .pdf_metadata import normalize_pdf_metadata_value
+from .policy_language import detect_policy_language_status, get_candidate_slots
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -1393,7 +1393,7 @@ END_NOTES_PLACEHOLDER_BODY = """<ol>
 
 
 def nofo_has_end_notes_section(nofo):
-    return nofo.sections.filter(name__iexact=END_NOTES_SECTION_NAME).exists()
+    return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
 
 
 def get_nofo_action_links(nofo):

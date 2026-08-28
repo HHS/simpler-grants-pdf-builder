@@ -3183,6 +3183,30 @@ class TestBuildNofoActionLinks(TestCase):
             ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
         )
 
+    def test_add_end_notes_absent_when_html_id_exists_under_another_name(self):
+        Section.objects.create(
+            nofo=self.nofo,
+            name="References",
+            html_id="endnotes",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+
+        self.assertNotIn("add_end_notes", [link["key"] for link in links])
+
+    def test_add_end_notes_present_when_only_section_name_matches(self):
+        Section.objects.create(
+            nofo=self.nofo,
+            name="Endnotes",
+            html_id="references",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+
+        self.assertIn("add_end_notes", [link["key"] for link in links])
+
 
 class TestFindExternalLinks(TestCase):
     def setUp(self):
