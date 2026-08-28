@@ -3552,6 +3552,102 @@ class TestFindUnconvertedFootnotes(TestCase):
         subsection_names = [f["subsection"].name for f in unconverted_footnotes]
         self.assertNotIn("Endnotes", subsection_names)
 
+    def test_find_unconverted_footnotes_identifies_raw_renamed_endnotes(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with renamed Endnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        endnotes_section = Section.objects.create(
+            nofo=nofo, name="Endnotes", html_id="endnotes", order=2
+        )
+        Subsection.objects.create(
+            section=endnotes_section,
+            name="",
+            tag="",
+            body="[1] First manually typed note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Endnotes"]
+        )
+        self.assertEqual(results[1]["section"], endnotes_section)
+        self.assertIsNone(results[1]["subsection"])
+
+    def test_find_unconverted_footnotes_ignores_linked_endnotes(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with linked Endnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            body=(
+                'This claim has a linked reference <a href="#footnote-1" '
+                'id="footnote-ref-1">[1]</a>.'
+            ),
+            order=1,
+        )
+        endnotes_section = Section.objects.create(
+            nofo=nofo, name="Endnotes", html_id="endnotes", order=2
+        )
+        Subsection.objects.create(
+            section=endnotes_section,
+            name="",
+            tag="",
+            body=(
+                '<ol><li id="footnote-1">A converted note. '
+                '<a href="#footnote-ref-1">↑</a></li></ol>'
+            ),
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+
+    def test_find_unconverted_footnotes_identifies_raw_endnotes_subsection(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with Endnotes subsection", opdiv="test opdiv"
+        )
+        section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=section,
+            name="Evidence",
+            tag="h3",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        endnotes_subsection = Subsection.objects.create(
+            section=section,
+            name="Endnotes",
+            tag="h3",
+            html_id="endnotes",
+            body="[1] First manually typed note.",
+            order=2,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Endnotes"]
+        )
+        self.assertEqual(results[1]["subsection"], endnotes_subsection)
+
     def test_find_unconverted_footnotes_ignores_converted_footnotes(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
         unconverted_footnotes = find_unconverted_footnotes(nofo)
@@ -3680,16 +3776,8 @@ class TestFindUnconvertedFootnotes(TestCase):
         nofo = Nofo.objects.create(
             title="Test Nofo with non-footnotes headings", opdiv="test opdiv"
         )
-        endnotes_section = Section.objects.create(nofo=nofo, name="Endnotes", order=1)
-        Subsection.objects.create(
-            section=endnotes_section,
-            name="",
-            tag="",
-            body="A bracketed number [1].",
-            order=1,
-        )
         content_section = Section.objects.create(
-            nofo=nofo, name="Main content", order=2
+            nofo=nofo, name="Main content", order=1
         )
         Subsection.objects.create(
             section=content_section,
@@ -5756,19 +5844,10 @@ class TestFootnotesHeadingImportIntegration(TestCase):
     pipeline (process_nofo_html -> get_sections_from_soup ->
     get_subsections_from_sections -> create_nofo -> add_headings_to_document).
 
-    IMPORTANT SCOPE NOTE (see PR review on #845): this rename only fixes the
-    heading, so the NOFO gets a real, deletable "Endnotes" section and the #842
-    "Add Endnotes" action correctly hides itself - it does NOT create a working
-    link/target pair. The in-text "[1]" reference and the "[1] ..." note both
-    stay exactly as unlinked as they were before the rename: no <a href="#...">,
-    no id="...". Worse, find_unconverted_footnotes only scans for stray "[1]"
-    references at all when a literal "Footnotes" heading still exists somewhere
-    in the document (see its docstring); once this rename removes that heading,
-    the check goes blind for the *entire* NOFO, not just the renamed section -
-    even for completely unrelated broken references elsewhere. That's exactly
-    why the warning is paused behind HHS_NOFO_UNCONVERTED_FOOTNOTES_WARNING_ENABLED
-    (see settings.py) rather than left enabled: a heading rename must never be
-    allowed to silently read as "this NOFO's footnotes are fine now".
+    The rename fixes the section identity and hides the duplicate "Add Endnotes"
+    action, but it does not create a working link/target pair. The unconverted-
+    footnotes detector must therefore continue to warn about the raw references
+    after the heading becomes "Endnotes".
     """
 
     def test_footnotes_section_becomes_endnotes_on_import(self):
@@ -5802,12 +5881,11 @@ class TestFootnotesHeadingImportIntegration(TestCase):
         self.assertNotIn("<a ", endnotes_body)
         self.assertNotIn('id="', endnotes_body)
 
-        # Known gap this rename introduces: find_unconverted_footnotes requires a
-        # literal "Footnotes" heading before it will scan for stray "[N]"
-        # references at all (see its docstring). With that heading gone, it
-        # returns nothing for this NOFO even though the content above is still
-        # completely unlinked - this is precisely why the warning is paused.
-        self.assertEqual(find_unconverted_footnotes(nofo), [])
+        warning_locations = find_unconverted_footnotes(nofo)
+        self.assertEqual(
+            [location["footnote_text"] for location in warning_locations],
+            ["[1]", "Endnotes"],
+        )
 
 
 class TestGetFontSizeFromCssText(TestCase):
