@@ -208,6 +208,7 @@ def process_nofo_html(soup, top_heading_level):
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
+    rename_footnotes_heading_to_endnotes(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
@@ -2445,6 +2446,34 @@ def replace_src_for_inline_images(soup):
                     img["src"] = "/static/img/inline/{}/{}".format(
                         nofo_number.lower(), img_filename
                     )
+
+
+def rename_footnotes_heading_to_endnotes(soup):
+    """
+    This function mutates the soup!
+
+    NOFO Builder only recognizes a heading literally titled "Endnotes" as a document's
+    real endnotes list (see `add_endnotes_header_if_exists`'s `_match_endnotes`), and the
+    "Add Endnotes" NOFO action refuses to run once a Section slugifies to "endnotes" (see
+    `nofo_has_end_notes_section`). A source Word document that used a manually typed
+    "Footnotes"/"Footnote" heading instead of Word's built-in endnote tool (see
+    `find_unconverted_footnotes`) would otherwise import as an ordinary heading that
+    NOFO Builder doesn't recognize as endnotes - and, if it's a top-level section,
+    one users have no way to delete.
+
+    Rename any such heading to "Endnotes" on import, so it's immediately treated as the
+    real endnotes section: no manual "Add Endnotes" step, and no unconverted-footnotes
+    warning. Skipped entirely if the document already has a heading that reads
+    "Endnotes", to avoid creating a duplicate.
+    """
+    headings = soup.find_all(re.compile(r"^h[1-6]$")) + soup.find_all(is_h7)
+
+    if any(heading.text.strip() == END_NOTES_SECTION_NAME for heading in headings):
+        return
+
+    for heading in headings:
+        if _is_footnotes_heading(heading.text):
+            heading.string = END_NOTES_SECTION_NAME
 
 
 def add_endnotes_header_if_exists(soup, top_heading_level="h1"):

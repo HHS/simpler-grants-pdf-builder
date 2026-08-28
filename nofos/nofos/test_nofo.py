@@ -64,6 +64,7 @@ from .nofo import (
     process_nofo_html,
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
+    rename_footnotes_heading_to_endnotes,
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
@@ -5691,6 +5692,96 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         self.assertEqual(
             str(soup),
             '<div><ol><li id="footnote-0">Item 1</li></ol><hr/><h2>Endnotes</h2></div>',
+        )
+
+
+class TestRenameFootnotesHeadingToEndnotes(TestCase):
+    def test_renames_h1_footnotes_heading(self):
+        html_content = "<div><h1>Footnotes</h1><p>[1] A note.</p></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            "<div><h1>Endnotes</h1><p>[1] A note.</p></div>",
+        )
+
+    def test_renames_h3_footnote_heading_singular(self):
+        html_content = "<div><h3>Footnote</h3><p>[1] A note.</p></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            "<div><h3>Endnotes</h3><p>[1] A note.</p></div>",
+        )
+
+    def test_renames_heading_with_trailing_colon_and_whitespace(self):
+        html_content = "<div><h2>  Footnotes:  </h2></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), "<div><h2>Endnotes</h2></div>")
+
+    def test_renames_h7_footnotes_heading(self):
+        html_content = '<div><div role="heading" aria-level="7">Footnotes</div></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><div aria-level="7" role="heading">Endnotes</div></div>',
+        )
+
+    def test_does_nothing_when_no_footnotes_heading(self):
+        html_content = (
+            "<div><h1>Step 1: Review the opportunity</h1><p>Review it</p></div>"
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+    def test_skips_rename_when_endnotes_heading_already_exists(self):
+        html_content = "<div><h1>Footnotes</h1><h1>Endnotes</h1></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+    def test_does_not_rename_similar_non_footnotes_heading(self):
+        html_content = "<div><h2>Footnotes guidance</h2></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+
+class TestFootnotesHeadingImportIntegration(TestCase):
+    """
+    End-to-end: a "Footnotes" section heading, run through the real import
+    pipeline (process_nofo_html -> get_sections_from_soup ->
+    get_subsections_from_sections -> create_nofo -> add_headings_to_document),
+    should come out the other side as a recognized "Endnotes" section - no
+    #841 unconverted-footnotes warning, and no #842 "Add Endnotes" action.
+    """
+
+    def test_footnotes_section_becomes_endnotes_on_import(self):
+        html_content = (
+            "<div>"
+            "<h1>Step 1: Review the opportunity</h1><p>Review it.</p>"
+            "<h1>Footnotes</h1><p>[1] A manually typed note.</p>"
+            "</div>"
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        top_heading_level = resolve_section_heading_level(soup)
+        soup, _ = process_nofo_html(soup, top_heading_level)
+        sections = get_sections_from_soup(soup, top_heading_level)
+        sections = get_subsections_from_sections(sections, top_heading_level)
+
+        nofo = create_nofo(
+            "Test Nofo with imported Footnotes heading", sections, opdiv="Test OpDiv"
+        )
+        add_headings_to_document(nofo)
+
+        self.assertTrue(nofo.sections.filter(name="Endnotes").exists())
+        self.assertFalse(nofo.sections.filter(name="Footnotes").exists())
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+        self.assertNotIn(
+            "add_end_notes", [link["key"] for link in get_nofo_action_links(nofo)]
         )
 
 
