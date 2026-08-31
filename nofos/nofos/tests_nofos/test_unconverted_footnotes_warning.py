@@ -60,8 +60,14 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
 
         panel_text = panel.get_text(" ", strip=True)
         self.assertIn("There is 1 location to review", panel_text)
-        self.assertIn("reference numbers are sequential with no repeats", panel_text)
-        self.assertIn("each reference has a corresponding entry", panel_text)
+        self.assertIn(
+            "Reference numbers must be sequential and can't repeat", panel_text
+        )
+        self.assertIn(
+            "Every reference number must have a corresponding endnote entry",
+            panel_text,
+        )
+        self.assertIn("Fix this in the source NOFO Word document", panel_text)
 
     def test_renamed_endnotes_section_still_shows_warning(self):
         footnotes_section = self.nofo.sections.get(name="Footnotes")

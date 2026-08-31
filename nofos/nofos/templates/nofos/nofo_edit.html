@@ -406,9 +406,16 @@ Edit “{{ nofo|nofo_name }}”
                     {% endfor %}
                   </ol>
                   <p>
-                    NOFO Builder found possible unconverted footnotes. Review these locations in the PDF preview. If the references don't link to their notes, endnotes must be added using Word's built-in endnote tool — not typed manually. Make sure reference numbers are sequential with no repeats and that each reference has a corresponding entry.
+                    Endnotes must be added using Microsoft Word's endnote tool or linked in Announcement Module — not typed manually.
                     <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
-                    Fix this in the source Word document, then reimport it. For troubleshooting support, submit a request using the {% include "includes/feedback_link.html" with link_text="NOFO Builder Feedback Form" %}.
+                  </p>
+                  <ul class="usa-list">
+                    <li>Every reference number must have a corresponding endnote entry</li>
+                    <li>Reference numbers must be sequential and can't repeat</li>
+                    <li>To cross-reference an earlier endnote, use the next number in the sequence and repeat that endnote's text — don't reuse a number</li>
+                  </ul>
+                  <p>
+                    Fix this in the source NOFO Word document, then reimport it.
                   </p>
                 </div>
               </details>
