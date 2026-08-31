@@ -40,6 +40,14 @@ Open a PR targeting `main`. CI will run automatically on every PR.
 
 **PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)** — start the title with a type prefix, e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`, `refactor: ...`, `test: ...`, `ci: ...`. This is enforced by `.github/workflows/pr_title_lint.yml` (not a required check, so it won't block merging) and, more importantly, is what [release-please](https://github.com/googleapis/release-please) uses to group merged PRs into CHANGELOG.md entries — see `release-please-config.json` for the type-to-section mapping. A title without a recognized prefix means the change is miscategorized or silently omitted from the changelog.
 
+**This only works reliably under squash merge.** Release-please reads the commit message(s) that actually land on `main`, not the PR title — squash merge is the one method where GitHub sets the resulting commit's message to the PR title, so those line up. Under merge commit or rebase, your individual commits land as-is, and if they aren't themselves Conventional-Commit-formatted, the PR can pass title lint and still be silently missing from the changelog. If that happens, you can fix it after the fact: edit the *merged* PR's description to add
+```
+BEGIN_COMMIT_OVERRIDE
+feat: whatever the PR actually did
+END_COMMIT_OVERRIDE
+```
+and release-please will pick it up on its next run — no re-merge needed.
+
 ### 3. CI must pass
 
 The Django CI workflow (`.github/workflows/django_ci.yml`) runs the full test suite:
