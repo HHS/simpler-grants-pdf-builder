@@ -38,6 +38,8 @@ Branch off of `main` and name your branch descriptively. There is no enforced na
 
 Open a PR targeting `main`. CI will run automatically on every PR.
 
+**PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)** — start the title with a type prefix, e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`, `refactor: ...`, `test: ...`, `ci: ...`. This is enforced by `.github/workflows/pr_title_lint.yml` (not a required check, so it won't block merging) and, more importantly, is what [release-please](https://github.com/googleapis/release-please) uses to group merged PRs into CHANGELOG.md entries — see `release-please-config.json` for the type-to-section mapping. A title without a recognized prefix means the change is miscategorized or silently omitted from the changelog.
+
 ### 3. CI must pass
 
 The Django CI workflow (`.github/workflows/django_ci.yml`) runs the full test suite:
@@ -149,7 +151,7 @@ The following are excluded from formatting: static files, migration files, SVGs,
 
 ## Hotfixes
 
-If a fix needs to bypass the normal PR flow (e.g. a critical production bug), use `[Hotfix]` in the PR title in lieu of an issue number. CI must still pass before merging.
+If a fix needs to bypass the normal PR flow (e.g. a critical production bug), prefix the PR title with `fix: [Hotfix] ...` in lieu of an issue number — keep the `fix:` type prefix so the change still categorizes correctly in CHANGELOG.md, with `[Hotfix]` flagging why it skipped the normal flow. CI must still pass before merging.
 
 ---
 
