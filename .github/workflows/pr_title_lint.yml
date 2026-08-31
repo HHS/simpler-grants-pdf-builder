@@ -1,0 +1,24 @@
+# pr_title_lint.yml
+#
+# Enforces Conventional Commit-style PR titles (feat:, fix:, chore:, etc.). This repo
+# allows merge commit, squash, and rebase merges (see DEPLOYMENT.md), so the PR title
+# is the one consistent signal release_please.yml can rely on to categorize changes,
+# regardless of how individual commits within a branch happen to be worded.
+
+name: PR Title Lint
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  lint-pr-title:
+    name: Lint PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
