@@ -12,6 +12,11 @@ from .models import (
 from .utils import get_icon_path_choices, user_is_nih_group
 
 
+def normalize_subsection_checkbox_glyphs(body):
+    """Normalize U+2610 to the canonical U+25FB checkbox glyph."""
+    return body.replace("☐", "◻")
+
+
 def create_object_model_form(model_class):
     """
     Returns a function that builds a ModelForm for `model_class` using given field names and optional required label overrides.
@@ -286,6 +291,9 @@ class SubsectionEditForm(forms.ModelForm):
             "name": forms.TextInput(),
         }
 
+    def clean_body(self):
+        return normalize_subsection_checkbox_glyphs(self.cleaned_data.get("body") or "")
+
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
@@ -307,6 +315,9 @@ class SubsectionCreateForm(forms.ModelForm):
             "name": forms.TextInput(),
         }
 
+    def clean_body(self):
+        return normalize_subsection_checkbox_glyphs(self.cleaned_data.get("body") or "")
+
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
@@ -325,6 +336,18 @@ class SubsectionCreateForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+
+# Used only by NofoAddEndNotesSectionView. The Endnotes section's name and
+# html_id are fixed (not user-editable) so the ".section--endnotes" CSS hook
+# and the "Endnotes" import-detection convention keep working; the only
+# thing a user can change is the initial subsection's content.
+class EndNotesSectionCreateForm(forms.ModelForm):
+    body = MartorFormField(required=False, label="Subsection content")
+
+    class Meta:
+        model = Subsection
+        fields = ["body"]
 
 
 # Simple form for URL input

@@ -27,6 +27,7 @@ from .nofo import (
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_instructions_to_subsections,
+    add_line_breaks_to_key_dates_values,
     add_missing_alt_text_to_imgs,
     add_page_breaks_to_headings,
     add_strongs_to_soup,
@@ -45,6 +46,7 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -63,6 +65,7 @@ from .nofo import (
     process_nofo_html,
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
+    rename_footnotes_heading_to_endnotes,
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
@@ -965,6 +968,109 @@ class KeyCalloutHeadingImportTests(TestCase):
 
         self.assertEqual(subsections[0]["name"], "Key Facts")
         self.assertEqual(subsections[0]["tag"], "h5")
+
+
+class TestAddLineBreaksToKeyDatesValues(TestCase):
+    def get_sections(self, html, top_heading_level="h1"):
+        soup = BeautifulSoup(html, "html.parser")
+        sections = get_sections_from_soup(soup, top_heading_level=top_heading_level)
+        return get_subsections_from_sections(
+            sections, top_heading_level=top_heading_level
+        )
+
+    def test_adds_break_after_colon_in_callout_box_table(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date: 00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        key_dates_subsection = sections[0]["subsections"][0]
+        self.assertEqual(key_dates_subsection["name"], "Key dates")
+        self.assertEqual(
+            str(key_dates_subsection["body"]),
+            "<div><p>Award date:<br/>00/00/0000</p></div>",
+        )
+
+    def test_adds_break_for_multi_word_field_name(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Anticipated start date: 00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Anticipated start date:<br/>00/00/0000</p>", str(body))
+
+    def test_leaves_plain_sentence_without_colon_untouched(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date: 00/00/0000</p><p>Dates are subject to change.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Dates are subject to change.</p>", str(body))
+
+    def test_adds_break_after_short_single_word_label(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Note: applications received after this date will not be reviewed.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn(
+            "<p>Note:<br/>applications received after this date will not be reviewed.</p>",
+            str(body),
+        )
+
+    def test_leaves_sentence_with_many_words_before_colon_untouched(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>For more information about this timeline: visit our website.</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn(
+            "<p>For more information about this timeline: visit our website.</p>",
+            str(body),
+        )
+
+    def test_does_not_touch_key_facts_callout_box(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Facts</h4><p>Funding type: Grant</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertIn("<p>Funding type: Grant</p>", str(body))
+
+    def test_adds_break_in_non_callout_box_key_dates_subsection(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <h4>Key Dates</h4>
+            <p>Award date: 00/00/0000</p>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        subsection = sections[0]["subsections"][0]
+        self.assertEqual(subsection["name"], "Key Dates")
+        self.assertEqual(
+            str(subsection["body"][0]), "<p>Award date:<br/>00/00/0000</p>"
+        )
+
+    def test_skips_paragraph_that_already_has_a_break(self):
+        sections = self.get_sections("""
+            <h1>Basic information</h1>
+            <table><tr><td><h4>Key Dates</h4><p>Award date:<br>00/00/0000</p></td></tr></table>
+            """)
+        add_line_breaks_to_key_dates_values(sections)
+
+        body = sections[0]["subsections"][0]["body"]
+        self.assertEqual(str(body).count("<br"), 1)
 
 
 class HTMLSubsectionTestsH2(TestCase):
@@ -3043,7 +3149,15 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+                "delete",
+            ],
         )
 
         self._assert_link(
@@ -3067,19 +3181,25 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[3],
+            key="add_end_notes",
+            label="Add Endnotes",
+            url_name="nofos:section_add_end_notes",
+        )
+        self._assert_link(
+            links[4],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[4],
+            links[5],
             key="export",
             label="Export Word doc",
             url_name="nofos:nofo_export",
             external=True,
         )
         self._assert_link(
-            links[5],
+            links[6],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
@@ -3093,7 +3213,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+            ],
         )
 
     def test_ready_for_qa_has_findreplace_compare_reimport(self):
@@ -3103,7 +3230,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "reimport",
+                "export",
+            ],
         )
 
     def test_review_has_findreplace_compare(self):
@@ -3113,7 +3247,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_doge_has_findreplace_compare(self):
@@ -3123,7 +3257,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_published_has_no_actions(self):
@@ -3143,7 +3277,7 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "export"],
+            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
         )
 
     def test_cancelled_has_no_actions(self):
@@ -3152,6 +3286,47 @@ class TestBuildNofoActionLinks(TestCase):
 
         links = get_nofo_action_links(self.nofo)
         self.assertEqual([l["key"] for l in links], ["export"])
+
+    def test_add_end_notes_absent_when_endnotes_section_already_exists(self):
+        self.nofo.status = "draft"
+        self.nofo.save()
+        Section.objects.create(
+            nofo=self.nofo,
+            name="Endnotes",
+            html_id="endnotes",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+        self.assertNotIn("add_end_notes", [l["key"] for l in links])
+        self.assertEqual(
+            [l["key"] for l in links],
+            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+        )
+
+    def test_add_end_notes_absent_when_html_id_exists_under_another_name(self):
+        Section.objects.create(
+            nofo=self.nofo,
+            name="References",
+            html_id="endnotes",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+
+        self.assertNotIn("add_end_notes", [link["key"] for link in links])
+
+    def test_add_end_notes_present_when_only_section_name_matches(self):
+        Section.objects.create(
+            nofo=self.nofo,
+            name="Endnotes",
+            html_id="references",
+            has_section_page=False,
+        )
+
+        links = get_nofo_action_links(self.nofo)
+
+        self.assertIn("add_end_notes", [link["key"] for link in links])
 
 
 class TestFindExternalLinks(TestCase):
@@ -3350,6 +3525,396 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+
+class TestFindUnconvertedFootnotes(TestCase):
+    def setUp(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo TestFindUnconvertedFootnotes", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+
+        # a footnote reference typed manually as plain text: not a link at all
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a manually typed footnote",
+            tag="h3",
+            body="This claim needs a citation[1] to back it up.",
+            order=2,
+        )
+
+        # a properly converted docx footnote reference: wrapped in a recognized link
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a converted footnote",
+            tag="h3",
+            body='This is a real footnote<sup><a href="#footnote-1" id="footnote-ref-1">[1]</a></sup> reference.',
+            order=3,
+        )
+
+        # a properly converted HTML-export (Google Docs style) footnote reference
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a converted HTML footnote",
+            tag="h3",
+            body='This is a real footnote<a href="#ftnt1">[1]</a> reference.',
+            order=4,
+        )
+
+        # a subsection with no footnote-shaped text at all
+        Subsection.objects.create(
+            section=section,
+            name="Subsection without any footnotes",
+            tag="h3",
+            body="This subsection has no footnotes.",
+            order=5,
+        )
+
+        # multiple manually typed footnotes in one subsection
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with multiple manually typed footnotes",
+            tag="h3",
+            body="First claim[1] and second claim[2] both need citations.",
+            order=6,
+        )
+
+        # a "Footnotes" heading (the GSAM-style, un-converted counterpart of the
+        # "Endnotes" heading NOFO Builder adds on a successful import), whose body is
+        # the actual footnotes list, unlinked
+        Subsection.objects.create(
+            section=section,
+            name="Footnotes",
+            tag="h2",
+            body=(
+                "[1] U.S. Department of Health and Human Services, Office of the "
+                "Assistant Secretary for Planning and Evaluation (ASPE). Access to "
+                "Preventive Services without Cost-Sharing: Evidence from the "
+                "Affordable Care Act (January 2022).\n\n"
+                "[2] [Standards for Developing Trustworthy Clinical Practice "
+                "Guidelines](https://example.com/guidelines)"
+            ),
+            order=7,
+        )
+
+        # a properly converted "Endnotes" heading should never be flagged
+        Subsection.objects.create(
+            section=section,
+            name="Endnotes",
+            tag="h2",
+            body='<ol><li id="footnote-1">A real, converted endnote.</li></ol>',
+            order=8,
+        )
+
+        # legitimate bracketed numeric content should not be treated as a footnote
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with bracketed year",
+            tag="h3",
+            body="The prior edition [2025] remains available.",
+            order=9,
+        )
+
+        # code-like tokens should also be ignored
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with code token",
+            tag="h3",
+            body="Use the token `[123]`.",
+            order=10,
+        )
+
+        # a working numeric external link is already linked and should be ignored
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with external numeric link",
+            tag="h3",
+            body='<a href="https://example.com/source">[1]</a> is the source.',
+            order=11,
+        )
+
+    def test_find_unconverted_footnotes_identifies_manually_typed_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(len(unconverted_footnotes), 4)
+        self.assertEqual(
+            [f["subsection"].name for f in unconverted_footnotes],
+            [
+                "Subsection with a manually typed footnote",
+                "Subsection with multiple manually typed footnotes",
+                "Subsection with multiple manually typed footnotes",
+                "Footnotes",
+            ],
+        )
+        self.assertEqual(
+            [f["footnote_text"] for f in unconverted_footnotes],
+            ["[1]", "[1]", "[2]", "Footnotes"],
+        )
+
+    def test_find_unconverted_footnotes_identifies_footnotes_heading(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        footnotes_heading_hits = [
+            f for f in unconverted_footnotes if f["subsection"].name == "Footnotes"
+        ]
+        # the "Footnotes" heading is reported once, and its body isn't separately
+        # scanned for "[1]"/"[2]" references (they're implied by the heading itself)
+        self.assertEqual(len(footnotes_heading_hits), 1)
+        self.assertEqual(footnotes_heading_hits[0]["footnote_text"], "Footnotes")
+
+    def test_find_unconverted_footnotes_ignores_endnotes_heading(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Endnotes", subsection_names)
+
+    def test_find_unconverted_footnotes_identifies_raw_renamed_endnotes(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with renamed Endnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        endnotes_section = Section.objects.create(
+            nofo=nofo, name="Endnotes", html_id="endnotes", order=2
+        )
+        Subsection.objects.create(
+            section=endnotes_section,
+            name="",
+            tag="",
+            body="[1] First manually typed note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Endnotes"]
+        )
+        self.assertEqual(results[1]["section"], endnotes_section)
+        self.assertIsNone(results[1]["subsection"])
+
+    def test_find_unconverted_footnotes_ignores_linked_endnotes(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with linked Endnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            body=(
+                'This claim has a linked reference <a href="#footnote-1" '
+                'id="footnote-ref-1">[1]</a>.'
+            ),
+            order=1,
+        )
+        endnotes_section = Section.objects.create(
+            nofo=nofo, name="Endnotes", html_id="endnotes", order=2
+        )
+        Subsection.objects.create(
+            section=endnotes_section,
+            name="",
+            tag="",
+            body=(
+                '<ol><li id="footnote-1">A converted note. '
+                '<a href="#footnote-ref-1">↑</a></li></ol>'
+            ),
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+
+    def test_find_unconverted_footnotes_identifies_raw_endnotes_subsection(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with Endnotes subsection", opdiv="test opdiv"
+        )
+        section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=section,
+            name="Evidence",
+            tag="h3",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        endnotes_subsection = Subsection.objects.create(
+            section=section,
+            name="Endnotes",
+            tag="h3",
+            html_id="endnotes",
+            body="[1] First manually typed note.",
+            order=2,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Endnotes"]
+        )
+        self.assertEqual(results[1]["subsection"], endnotes_subsection)
+
+    def test_find_unconverted_footnotes_ignores_converted_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with a converted footnote", subsection_names)
+        self.assertNotIn("Subsection with a converted HTML footnote", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_bracketed_year(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with bracketed year", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_code_token(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with code token", subsection_names)
+
+    def test_find_unconverted_footnotes_ignores_working_external_numeric_link(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn("Subsection with external numeric link", subsection_names)
+
+    def test_find_unconverted_footnotes_requires_footnotes_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo without Footnotes heading", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with bracketed number",
+            tag="h3",
+            body="This is valid content [1], not a footnote signal by itself.",
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+
+    def test_find_unconverted_footnotes_accepts_section_level_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with section-level Footnotes", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", html_id="main-content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Evidence",
+            tag="h3",
+            html_id="evidence",
+            body="This claim has a manually typed reference [1].",
+            order=1,
+        )
+        footnotes_section = Section.objects.create(
+            nofo=nofo, name="Footnotes", html_id="footnotes", order=2
+        )
+        Subsection.objects.create(
+            section=footnotes_section,
+            name="",
+            tag="",
+            body="[1] First note.\n\n[2] Second note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(
+            [result["footnote_text"] for result in results], ["[1]", "Footnotes"]
+        )
+        section_heading_result = results[1]
+        self.assertEqual(section_heading_result["section"], footnotes_section)
+        self.assertIsNone(section_heading_result["subsection"])
+
+    def test_find_unconverted_footnotes_accepts_h7_subsection_heading(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with h7 Footnotes", opdiv="test opdiv"
+        )
+        section = Section.objects.create(nofo=nofo, name="Main content", order=1)
+        Subsection.objects.create(
+            section=section,
+            name="Footnotes",
+            tag="h7",
+            body="[1] First note.\n\n[2] Second note.",
+            order=1,
+        )
+
+        results = find_unconverted_footnotes(nofo)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["footnote_text"], "Footnotes")
+
+    def test_find_unconverted_footnotes_allows_trailing_heading_colon(self):
+        for heading_location, section_name, subsection_name, tag in (
+            ("section", "Footnote:", "", ""),
+            ("subsection", "Main content", "Footnotes :", "h3"),
+        ):
+            with self.subTest(heading_location=heading_location):
+                nofo = Nofo.objects.create(
+                    title=f"Test Nofo with colon in {heading_location}",
+                    opdiv="test opdiv",
+                )
+                section = Section.objects.create(nofo=nofo, name=section_name, order=1)
+                Subsection.objects.create(
+                    section=section,
+                    name=subsection_name,
+                    tag=tag,
+                    body="[1] First note.",
+                    order=1,
+                )
+
+                results = find_unconverted_footnotes(nofo)
+
+                self.assertEqual(len(results), 1)
+                self.assertEqual(
+                    results[0]["footnote_text"],
+                    section_name if heading_location == "section" else subsection_name,
+                )
+
+    def test_find_unconverted_footnotes_rejects_similar_non_heading_names(self):
+        nofo = Nofo.objects.create(
+            title="Test Nofo with non-footnotes headings", opdiv="test opdiv"
+        )
+        content_section = Section.objects.create(
+            nofo=nofo, name="Main content", order=1
+        )
+        Subsection.objects.create(
+            section=content_section,
+            name="Footnotes guidance",
+            tag="h3",
+            body="A bracketed number [2].",
+            order=1,
+        )
+
+        self.assertEqual(find_unconverted_footnotes(nofo), [])
+
+    def test_find_unconverted_footnotes_returns_empty_list_for_no_footnotes(self):
+        nofo = Nofo.objects.get(title="Test Nofo TestFindUnconvertedFootnotes")
+        subsection = Subsection.objects.get(name="Subsection without any footnotes")
+        unconverted_footnotes = find_unconverted_footnotes(nofo)
+
+        subsection_names = [f["subsection"].name for f in unconverted_footnotes]
+        self.assertNotIn(subsection.name, subsection_names)
 
 
 class TestFindH7Headers(TestCase):
@@ -5334,6 +5899,111 @@ class TestAddEndnotesHeaderIfExists(TestCase):
         self.assertEqual(
             str(soup),
             '<div><ol><li id="footnote-0">Item 1</li></ol><hr/><h2>Endnotes</h2></div>',
+        )
+
+
+class TestRenameFootnotesHeadingToEndnotes(TestCase):
+    def test_renames_h1_footnotes_heading(self):
+        html_content = "<div><h1>Footnotes</h1><p>[1] A note.</p></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            "<div><h1>Endnotes</h1><p>[1] A note.</p></div>",
+        )
+
+    def test_renames_h3_footnote_heading_singular(self):
+        html_content = "<div><h3>Footnote</h3><p>[1] A note.</p></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            "<div><h3>Endnotes</h3><p>[1] A note.</p></div>",
+        )
+
+    def test_renames_heading_with_trailing_colon_and_whitespace(self):
+        html_content = "<div><h2>  Footnotes:  </h2></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), "<div><h2>Endnotes</h2></div>")
+
+    def test_renames_h7_footnotes_heading(self):
+        html_content = '<div><div role="heading" aria-level="7">Footnotes</div></div>'
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(
+            str(soup),
+            '<div><div aria-level="7" role="heading">Endnotes</div></div>',
+        )
+
+    def test_does_nothing_when_no_footnotes_heading(self):
+        html_content = (
+            "<div><h1>Step 1: Review the opportunity</h1><p>Review it</p></div>"
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+    def test_skips_rename_when_endnotes_heading_already_exists(self):
+        html_content = "<div><h1>Footnotes</h1><h1>Endnotes</h1></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+    def test_does_not_rename_similar_non_footnotes_heading(self):
+        html_content = "<div><h2>Footnotes guidance</h2></div>"
+        soup = BeautifulSoup(html_content, "html.parser")
+        rename_footnotes_heading_to_endnotes(soup)
+        self.assertEqual(str(soup), html_content)
+
+
+class TestFootnotesHeadingImportIntegration(TestCase):
+    """
+    End-to-end: a "Footnotes" section heading, run through the real import
+    pipeline (process_nofo_html -> get_sections_from_soup ->
+    get_subsections_from_sections -> create_nofo -> add_headings_to_document).
+
+    The rename fixes the section identity and hides the duplicate "Add Endnotes"
+    action, but it does not create a working link/target pair. The unconverted-
+    footnotes detector must therefore continue to warn about the raw references
+    after the heading becomes "Endnotes".
+    """
+
+    def test_footnotes_section_becomes_endnotes_on_import(self):
+        html_content = (
+            "<h1>Program</h1><p>See supporting evidence [1].</p>"
+            "<h1>Footnotes</h1><p>[1] Source citation.</p>"
+        )
+        soup = BeautifulSoup(html_content, "html.parser")
+        top_heading_level = resolve_section_heading_level(soup)
+        soup, _ = process_nofo_html(soup, top_heading_level)
+        sections = get_sections_from_soup(soup, top_heading_level)
+        sections = get_subsections_from_sections(sections, top_heading_level)
+
+        nofo = create_nofo(
+            "Test Nofo with imported Footnotes heading", sections, opdiv="Test OpDiv"
+        )
+        add_headings_to_document(nofo)
+
+        self.assertTrue(nofo.sections.filter(name="Endnotes").exists())
+        self.assertFalse(nofo.sections.filter(name="Footnotes").exists())
+        self.assertNotIn(
+            "add_end_notes", [link["key"] for link in get_nofo_action_links(nofo)]
+        )
+
+        # Neither the in-text reference nor the note itself gained a real link.
+        program_body = nofo.sections.get(name="Program").subsections.first().body
+        self.assertIn("[1]", program_body)
+        self.assertNotIn("<a ", program_body)
+        endnotes_body = nofo.sections.get(name="Endnotes").subsections.first().body
+        self.assertIn("[1]", endnotes_body)
+        self.assertNotIn("<a ", endnotes_body)
+        self.assertNotIn('id="', endnotes_body)
+
+        warning_locations = find_unconverted_footnotes(nofo)
+        self.assertEqual(
+            [location["footnote_text"] for location in warning_locations],
+            ["[1]", "Endnotes"],
         )
 
 

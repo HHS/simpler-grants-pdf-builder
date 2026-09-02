@@ -66,6 +66,18 @@ class ReplaceUnicodeWithIconTests(TestCase):
         self.assertEqual(self.direct_tag_names(td.div), ["img", "span"])
         self.assertIsNone(td.find(class_="usa-icon__line"))
 
+    def test_ballot_box_matches_white_medium_square_rendering(self):
+        white_medium_square_td = self.render_cell("◻ Plain text")
+        ballot_box_td = self.render_cell("☐ Plain text")
+
+        self.assertEqual(str(ballot_box_td), str(white_medium_square_td))
+        self.assertIn("usa-icon__td", ballot_box_td.get("class", []))
+        self.assertNotIn("usa-icon__td--multi-block", ballot_box_td.get("class", []))
+        self.assertIsNotNone(
+            ballot_box_td.find("img", class_="usa-icon--check_box_outline_blank")
+        )
+        self.assertEqual(self.direct_tag_names(ballot_box_td.div), ["img", "span"])
+
     def test_linked_checkbox_cell_keeps_existing_flex_structure(self):
         td = self.render_cell('◻ <a href="https://example.com">Linked label</a>')
 
@@ -331,6 +343,10 @@ class IsNumberedSublistTests(TestCase):
         # correctly while the raw character is still present as text --
         # i.e. before replace_unicode_with_svg has swapped it for an <img>.
         td = self._td("◻ 1. Work plan")
+        self.assertTrue(is_numbered_sublist(td))
+
+    def test_matches_numbered_item_with_leading_raw_ballot_box_character(self):
+        td = self._td("☐ 1. Work plan")
         self.assertTrue(is_numbered_sublist(td))
 
     def test_still_matches_once_checkbox_is_rendered_as_an_icon(self):

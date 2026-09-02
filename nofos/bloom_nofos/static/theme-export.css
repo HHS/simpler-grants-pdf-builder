@@ -123,10 +123,15 @@ body {
 
 /* Section */
 
-section,
+section {
+  break-inside: avoid;
+}
+
+/* Every section starts a fresh page except the last - breaking after it too
+   would leave a trailing blank page with nothing on it. */
+section:not(:last-child),
 span.page-break {
   break-after: page;
-  break-inside: avoid;
 }
 
 /* Lists */
@@ -213,12 +218,16 @@ span.page-break {
 
 /* Policy-language export (prototype) */
 
-.nofo_view .policy-export-watermark {
+/* A table+td, not a plain div/p with background/border - GrabzIt's
+   HTML->DOCX conversion drops background-color and border on block
+   elements like div/p entirely, but preserves them reliably on table
+   cells (same reason the callout-box content above uses a table). Padding
+   on the td keeps the text off the border, per design. */
+.nofo_view .policy-export-watermark td {
   border: 2px solid #b50909;
   background-color: #fdf2f2;
   color: #5c1414;
   padding: 12px 16px;
-  margin-bottom: 24px;
   font-size: 12px;
   line-height: 1.4;
 }
@@ -227,8 +236,11 @@ span.page-break {
   color: #b50909;
 }
 
-.nofo_view .policy-language-stripped-note {
+.nofo_view .policy-language-stripped-box td {
+  border: 1px solid #73b3e7;
+  background-color: #d9e8f6;
   color: #71767a;
+  padding: 8px 12px;
   font-style: italic;
   font-size: 12px;
 }
@@ -238,12 +250,29 @@ span.page-break {
   background-color: #faf3d1;
   padding: 8px 12px;
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 12pt;
   font-weight: 700;
 }
 
 .nofo_view .policy-language-flag-note--priority {
   border-left-color: #b50909;
+  background-color: #fdf2f2;
+  color: #5c1414;
+}
+
+/* The inline flag shown at the actual flagged section (as opposed to
+   .policy-language-flag-note above, which styles the summary's own
+   missing-slots bullet) - a table+td for the same GrabzIt reason as the
+   watermark above. */
+.nofo_view .policy-language-flag-box td {
+  border: 1px solid #ffbe2e;
+  background-color: #faf3d1;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.nofo_view .policy-language-flag-box--priority td {
+  border-color: #b50909;
   background-color: #fdf2f2;
   color: #5c1414;
 }
@@ -255,15 +284,16 @@ span.page-break {
   margin-bottom: 24px;
 }
 
-.nofo_view .clearance-summary h2,
+.nofo_view .clearance-summary h2 {
+  margin-top: 24px;
+  margin-bottom: 6px;
+  font-size: 28pt;
+}
+
 .nofo_view .clearance-summary h3 {
   margin-top: 12px;
   margin-bottom: 6px;
-  font-size: 16pt;
-}
-
-.nofo_view .clearance-summary h2 {
-  margin-top: 0;
+  font-size: 22pt;
 }
 
 .nofo_view .clearance-summary-table {

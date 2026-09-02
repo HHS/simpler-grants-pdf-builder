@@ -56,6 +56,7 @@ from .forms import (
     NIH_ALLOWED_CHOICES,
     NIH_THEME_DEFAULTS,
     CheckNOFOLinkSingleForm,
+    EndNotesSectionCreateForm,
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
@@ -88,8 +89,12 @@ from .mixins import (
 )
 from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
+    END_NOTES_PLACEHOLDER_BODY,
+    END_NOTES_SECTION_HTML_ID,
+    END_NOTES_SECTION_NAME,
     add_final_subsection_to_step_3,
     add_headings_to_document,
+    add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
@@ -103,6 +108,7 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -110,6 +116,7 @@ from .nofo import (
     get_step_2_section,
     get_subsections_from_sections,
     modifications_update_announcement_text,
+    nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
@@ -465,6 +472,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
+        context["unconverted_footnotes"] = find_unconverted_footnotes(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
@@ -496,6 +504,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
+        context["has_unconverted_footnotes"] = len(context["unconverted_footnotes"])
         context["has_external_links"] = len(
             context["external_links"]
         ) and self.object.status in ("draft", "active", "ready-for-qa", "paused")
@@ -503,6 +512,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             context["has_missing_metadata"]
             or context["has_broken_links"]
             or context["has_heading_errors"]
+            or context["has_unconverted_footnotes"]
             or context["has_external_links"]
         )
 
@@ -715,6 +725,7 @@ class BaseNofoImportView(View):
         filename = uploaded_file.name.strip()
 
         add_final_subsection_to_step_3(sections)
+        add_line_breaks_to_key_dates_values(sections)
 
         # 6. Hand off to child for nofo creation
         return self.handle_nofo_create(
@@ -2101,6 +2112,126 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 ##################### SECTION VIEWS #######################
 ###########################################################
+
+
+class NofoAddEndNotesSectionView(
+    GroupAccessObjectMixin,
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    CreateView,
+):
+    """
+    Creates a NOFO's "Endnotes" section along with its one initial
+    Subsection, whose body is prepopulated with placeholder endnote content
+    the user can edit before saving.
+
+    The section's name/html_id are fixed here, not accepted from the
+    request - this is intentionally the only way to create a Section from
+    the UI, and it can only ever create this one specific section.
+    """
+
+    model = Subsection
+    form_class = EndNotesSectionCreateForm
+    template_name = "nofos/section_add_end_notes.html"
+
+    published_error_message = "Endnotes can’t be added to published NOFOs."
+    archived_error_message = "Endnotes can’t be added to archived NOFOs."
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+    def _guard_add_end_notes(self, request):
+        # Unlike normal subsection editing after a modifications date is set,
+        # this action is never available once the NOFO has been published.
+        if self.nofo.status == "published":
+            return self.render_response(self.published_error_message)
+
+        if nofo_has_end_notes_section(self.nofo):
+            messages.warning(request, "This NOFO already has an Endnotes section.")
+            return redirect("nofos:nofo_edit", pk=self.nofo.pk)
+
+        return None
+
+    def get(self, request, *args, **kwargs):
+        response = self._guard_add_end_notes(request)
+        if response:
+            return response
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        response = self._guard_add_end_notes(request)
+        if response:
+            return response
+        return super().post(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["body"] = END_NOTES_PLACEHOLDER_BODY
+        return initial
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            # Serialize this single-purpose section creation and re-check after
+            # acquiring the lock so concurrent submissions cannot create two
+            # Endnotes sections.
+            self.nofo = Nofo.objects.select_for_update().get(pk=self.nofo.pk)
+            response = self._guard_add_end_notes(self.request)
+            if response:
+                return response
+
+            # Slot Endnotes directly above Modifications when it exists.
+            sections = self.nofo.sections.select_for_update()
+            modifications_section = sections.filter(name="Modifications").first()
+
+            if modifications_section:
+                order = modifications_section.order
+                # Shift in descending order to preserve the unique (nofo, order)
+                # constraint even when Modifications is not currently last.
+                for section in sections.filter(order__gte=order).order_by("-order"):
+                    section.order += 1
+                    section.save(update_fields=["order"])
+            else:
+                order = Section.get_next_order(self.nofo)
+
+            self.section = Section.objects.create(
+                nofo=self.nofo,
+                name=END_NOTES_SECTION_NAME,
+                html_id=END_NOTES_SECTION_HTML_ID,
+                has_section_page=False,
+                order=order,
+            )
+
+            form.instance.section = self.section
+            form.instance.name = ""
+            form.instance.tag = ""
+            form.instance.order = 1
+
+            response = super().form_valid(form)
+
+        messages.success(
+            self.request,
+            "Added new section: “<a href='#{}'>{}</a>”".format(
+                self.section.html_id, self.section.name
+            ),
+        )
+
+        return response
+
+    def get_success_url(self):
+        return "{}#{}".format(
+            reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id}),
+            self.section.html_id,
+        )
+
+    def get_cancel_url(self):
+        return reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nofo"] = self.nofo
+        context["cancel_url"] = self.get_cancel_url()
+        return context
 
 
 class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):

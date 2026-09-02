@@ -33,8 +33,8 @@ from .import_transforms import (
 )
 from .models import Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
-from .policy_language import detect_policy_language_status, get_candidate_slots
 from .pdf_metadata import normalize_pdf_metadata_value
+from .policy_language import detect_policy_language_status, get_candidate_slots
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -208,6 +208,7 @@ def process_nofo_html(soup, top_heading_level):
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
+    rename_footnotes_heading_to_endnotes(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
@@ -1370,6 +1371,41 @@ def _update_link_statuses(all_links):
                 print(f"Error checking link {link['url']}: {e}")
 
 
+END_NOTES_SECTION_NAME = "Endnotes"
+END_NOTES_SECTION_HTML_ID = "endnotes"
+
+# Matches the "docx-style" endnote id/href convention this app already
+# recognizes elsewhere (see get_footnote_type in templatetags/utils), so the
+# link-numbering/backlink logic that already runs on subsection bodies keeps
+# working on this content unmodified.
+END_NOTES_PLACEHOLDER_BODY = """<ol>
+ <li id="endnote-1" tabindex="-1">
+  <p>
+   Placeholder paragraph text goes here. Replace this with your citation or note.
+   <a href="#endnote-ref-1">
+    ↑
+   </a>
+  </p>
+ </li>
+ <li id="endnote-2" tabindex="-1">
+  <p>
+   Placeholder paragraph text goes here.
+   <a href="https://example.com">
+    Placeholder link text goes here
+   </a>
+   .
+   <a href="#endnote-ref-2">
+    ↑
+   </a>
+  </p>
+ </li>
+</ol>"""
+
+
+def nofo_has_end_notes_section(nofo):
+    return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
+
+
 def get_nofo_action_links(nofo):
     # Canonical action builders
     def _link_compare(nofo):
@@ -1417,32 +1453,62 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:nofo_find_replace", args=[nofo.pk]),
         }
 
+    def _link_add_end_notes(nofo):
+        return {
+            "key": "add_end_notes",
+            "label": "Add Endnotes",
+            "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
+        }
+
     # Status → allowed actions
     _STATUS_ACTIONS = {
         "draft": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "reimport",
             "export",
             "delete",
         ),
-        "active": ("find_replace", "compare", "duplicate", "reimport", "export"),
-        "ready-for-qa": ("find_replace", "compare", "duplicate", "reimport", "export"),
+        "active": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "reimport",
+            "export",
+        ),
+        "ready-for-qa": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "reimport",
+            "export",
+        ),
         "review": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "export",
         ),
         "doge": (
             "find_replace",
             "compare",
             "duplicate",
+            "add_end_notes",
             "export",
         ),  # Deputy Secretary review
         "published": ("export",),
-        "paused": ("find_replace", "compare", "duplicate", "export"),
+        "paused": (
+            "find_replace",
+            "compare",
+            "duplicate",
+            "add_end_notes",
+            "export",
+        ),
         "cancelled": ("export",),
     }
 
@@ -1454,6 +1520,7 @@ def get_nofo_action_links(nofo):
         "find_replace": lambda: _link_find_replace(nofo),
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
+        "add_end_notes": lambda: _link_add_end_notes(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
@@ -1461,6 +1528,10 @@ def get_nofo_action_links(nofo):
 
     links = []
     for key in actions:
+        # A NOFO can only ever have one Endnotes section.
+        if key == "add_end_notes" and nofo_has_end_notes_section(nofo):
+            continue
+
         build = link_builders.get(key)
         if build:
             links.append(build())
@@ -1647,6 +1718,191 @@ def find_broken_links(nofo):
                     )
 
     return broken_links
+
+
+# Matches the short numeric reference markers used by imported footnotes/endnotes,
+# eg "[1]" and "[23]". Limiting the length avoids treating bracketed years as
+# footnotes; a structural "Footnotes" or "Endnotes" heading is also required.
+UNCONVERTED_FOOTNOTE_RE = re.compile(r"\[\d{1,3}\]")
+
+# Real Word footnotes/endnotes get auto-labeled "Endnotes" on import (see
+# `add_endnotes_header_if_exists`'s `_match_endnotes`). A section or subsection
+# literally headed "Footnote" or "Footnotes" means the source document's footnotes
+# may have been typed manually instead of inserted with Word's built-in tool. A trailing
+# colon is allowed because it does not change the heading's meaning.
+UNCONVERTED_FOOTNOTES_HEADING_RE = re.compile(r"footnotes?\s*:?\s*", re.IGNORECASE)
+FOOTNOTE_HEADING_TAGS = ("h2", "h3", "h4", "h5", "h6", "h7")
+
+
+def _is_footnotes_heading(value):
+    return bool(UNCONVERTED_FOOTNOTES_HEADING_RE.fullmatch((value or "").strip()))
+
+
+def _is_endnotes_heading(value):
+    return (value or "").strip() == END_NOTES_SECTION_NAME
+
+
+def _find_unlinked_footnote_markers(body):
+    soup = BeautifulSoup(markdown.markdown(body, extensions=["extra"]), "html.parser")
+    markers = []
+
+    for text_node in soup.find_all(string=UNCONVERTED_FOOTNOTE_RE):
+        # Existing links already have a working destination (or are handled by the
+        # broken-links warning), and bracketed numbers in code are content, not
+        # reference markers.
+        if text_node.find_parent(("a", "code", "pre")):
+            continue
+
+        markers.extend(
+            match.group() for match in UNCONVERTED_FOOTNOTE_RE.finditer(text_node)
+        )
+
+    return markers
+
+
+def find_unconverted_footnotes(nofo):
+    """
+    Identifies footnotes that were typed directly into the source Word document's text
+    instead of being inserted with Word's built-in footnote/endnote tool.
+
+    NOFO Builder's import process converts real Word footnotes/endnotes (inserted via
+    Word's References > Insert Footnote/Endnote tool) into linked endnotes, wrapping the
+    in-text reference in a link (eg, `<a href="#footnote-1">[1]</a>`), and labelling
+    the endnotes list "Endnotes" on import.
+    A footnote reference that was typed manually has no such link, so it survives import
+    unlinked and won't work in the final PDF. To avoid treating unrelated bracketed
+    numbers as footnotes, this function requires the first structural signal before it
+    considers the second:
+
+    1. A section or subsection heading titled "Footnote"/"Footnotes", or an "Endnotes"
+       heading produced by the import-time Footnotes rename.
+    2. A short "[1]"-style reference elsewhere in the document that isn't inside a link
+       or code element (eg, an in-text citation like "...evidence[1]").
+
+    A Footnotes heading is itself an unconverted signal and is included once in the
+    result. An Endnotes heading is included only when its note-list body contains an
+    unlinked numeric marker; this keeps correctly converted Endnotes from being flagged.
+    Note-list bodies are reported once rather than once per marker. If neither structural
+    heading exists, the function returns no results.
+
+    Args:
+        nofo (Nofo): A Nofo object which contains sections and subsections. Each
+                     subsection's body is expected to be in markdown format.
+
+    Returns:
+        list of dict: A list of dictionaries for locations to review, each with the
+                      section and subsection it was found in, and the raw signal text.
+                      The structure is as follows:
+                      [
+                          {
+                              "section": <Section object>,
+                              "subsection": <Subsection object or None>,
+                              "footnote_text": "[1]",
+                          },
+                          ...
+                      ]
+    """
+    sections = [
+        (section, list(section.subsections.all().order_by("order")))
+        for section in nofo.sections.all().order_by("order")
+    ]
+    footnotes_section_ids = {
+        section.id for section, _ in sections if _is_footnotes_heading(section.name)
+    }
+    footnotes_subsection_ids = {
+        subsection.id
+        for _, subsections in sections
+        for subsection in subsections
+        if subsection.tag in FOOTNOTE_HEADING_TAGS
+        and _is_footnotes_heading(subsection.name)
+    }
+    endnotes_section_ids = {
+        section.id for section, _ in sections if _is_endnotes_heading(section.name)
+    }
+    endnotes_subsection_ids = {
+        subsection.id
+        for _, subsections in sections
+        for subsection in subsections
+        if subsection.tag in FOOTNOTE_HEADING_TAGS
+        and _is_endnotes_heading(subsection.name)
+    }
+
+    if not (
+        footnotes_section_ids
+        or footnotes_subsection_ids
+        or endnotes_section_ids
+        or endnotes_subsection_ids
+    ):
+        return []
+
+    unconverted_footnotes = []
+
+    for section, subsections in sections:
+        if section.id in footnotes_section_ids:
+            unconverted_footnotes.append(
+                {
+                    "section": section,
+                    "subsection": None,
+                    "footnote_text": section.name,
+                }
+            )
+            # The whole section is the structural prerequisite and note list.
+            # Report it once instead of counting each note-list marker.
+            continue
+
+        if section.id in endnotes_section_ids:
+            if any(
+                _find_unlinked_footnote_markers(subsection.body)
+                for subsection in subsections
+            ):
+                unconverted_footnotes.append(
+                    {
+                        "section": section,
+                        "subsection": None,
+                        "footnote_text": section.name,
+                    }
+                )
+            # A real Endnotes section is the note list. Report it once only when it
+            # contains raw markers, rather than counting every note-list entry.
+            continue
+
+        for subsection in subsections:
+            if subsection.id in footnotes_subsection_ids:
+                unconverted_footnotes.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "footnote_text": subsection.name,
+                    }
+                )
+                # This subsection is the structural prerequisite and is already
+                # reported, so don't count its note-list entries as references too.
+                continue
+
+            markers = _find_unlinked_footnote_markers(subsection.body)
+
+            if subsection.id in endnotes_subsection_ids:
+                if markers:
+                    unconverted_footnotes.append(
+                        {
+                            "section": section,
+                            "subsection": subsection,
+                            "footnote_text": subsection.name,
+                        }
+                    )
+                # As with a section-level Endnotes list, report the heading once.
+                continue
+
+            for marker in markers:
+                unconverted_footnotes.append(
+                    {
+                        "section": section,
+                        "subsection": subsection,
+                        "footnote_text": marker,
+                    }
+                )
+
+    return unconverted_footnotes
 
 
 def get_side_nav_links(nofo):
@@ -2255,6 +2511,35 @@ def replace_src_for_inline_images(soup):
                     img["src"] = "/static/img/inline/{}/{}".format(
                         nofo_number.lower(), img_filename
                     )
+
+
+def rename_footnotes_heading_to_endnotes(soup):
+    """
+    This function mutates the soup!
+
+    NOFO Builder only recognizes a heading literally titled "Endnotes" as a document's
+    real endnotes list (see `add_endnotes_header_if_exists`'s `_match_endnotes`), and the
+    "Add Endnotes" NOFO action refuses to run once a Section slugifies to "endnotes" (see
+    `nofo_has_end_notes_section`). A source Word document that used a manually typed
+    "Footnotes"/"Footnote" heading instead of Word's built-in endnote tool (see
+    `find_unconverted_footnotes`) would otherwise import as an ordinary heading that
+    NOFO Builder doesn't recognize as endnotes - and, if it's a top-level section,
+    one users have no way to delete.
+
+    Rename any such heading to "Endnotes" on import, so it's immediately treated as an
+    endnotes section and does not require a duplicate "Add Endnotes" step. The
+    unconverted-footnotes warning still detects raw, unlinked markers in the renamed
+    section. Skipped entirely if the document already has a heading that reads "Endnotes",
+    to avoid creating a duplicate.
+    """
+    headings = soup.find_all(re.compile(r"^h[1-6]$")) + soup.find_all(is_h7)
+
+    if any(heading.text.strip() == END_NOTES_SECTION_NAME for heading in headings):
+        return
+
+    for heading in headings:
+        if _is_footnotes_heading(heading.text):
+            heading.string = END_NOTES_SECTION_NAME
 
 
 def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
@@ -3268,6 +3553,89 @@ def add_final_subsection_to_step_3(sections):
 
             # Exit after adding new subsection
             break
+
+
+# Matches a short "field name" label, eg "Award date" or "Anticipated start date" -
+# not a full sentence like "Note" in "Note: applications received after this date
+# won't be reviewed" would still match (that's fine, it's field-name-shaped too), but
+# a long sentence with a stray colon in it won't.
+KEY_DATES_FIELD_NAME_WORD_RE = re.compile(r"^[A-Za-z][A-Za-z'-]*$")
+
+
+def add_line_breaks_to_key_dates_values(sections):
+    """
+    This function accepts a list of section dicts, _not_ Section objects, and mutates
+    the paragraph tags inside them in place.
+
+    The "Key dates" callout box is a narrow, right-aligned component, and its "field
+    name: value" paragraphs (eg, "Award date: 00/00/0000") can wrap in the middle of
+    the value there, breaking a date format like "00/00/0000" across two lines.
+
+    Within the "Key dates" callout box only, this inserts a line break right after the
+    colon in any such "field name:" paragraph, so the value always starts on its own
+    line. A paragraph with no field-name colon (eg, a plain descriptive sentence ending
+    in a period) is left untouched, as is every other section/subsection in the NOFO.
+
+    Args:
+        sections (list of dict): A list of section dictionaries, where each section may
+            contain a "subsections" (list of dict) key. Each subsection's "body" is
+            either a single BeautifulSoup Tag (a callout box's extracted cell) or a
+            list of BeautifulSoup Tag objects (an ordinary subsection) - see
+            `get_subsections_from_sections`.
+
+    Side Effects:
+        - Modifies the "Key dates" subsection's paragraph tags in place, splitting a
+          "field name:" text node into a "field name:" node, a new <br> tag, and the
+          remaining text.
+    """
+
+    def _looks_like_field_name(text):
+        # Real field names are short labels (eg, "Award date", "Anticipated start
+        # date"), not a full clause. 4 words comfortably covers realistic field
+        # names while still excluding longer sentence fragments.
+        words = text.strip().split()
+        return 1 <= len(words) <= 4 and all(
+            KEY_DATES_FIELD_NAME_WORD_RE.match(word) for word in words
+        )
+
+    def _get_paragraphs(body):
+        if hasattr(body, "find_all"):
+            # a callout box's body is a single extracted <div> cell
+            return body.find_all("p")
+        # an ordinary subsection's body is a list of top-level tags
+        return [tag for tag in body if getattr(tag, "name", None) == "p"]
+
+    for section in sections:
+        for subsection in section.get("subsections", []):
+            if (subsection.get("name") or "").strip().casefold() != "key dates":
+                continue
+
+            for paragraph in _get_paragraphs(subsection["body"]):
+                if paragraph.find("br"):
+                    continue
+
+                first_text_with_colon = next(
+                    (
+                        node
+                        for node in paragraph.contents
+                        if isinstance(node, NavigableString) and ":" in node
+                    ),
+                    None,
+                )
+                if first_text_with_colon is None:
+                    continue
+
+                before, _, after = str(first_text_with_colon).partition(":")
+                if not _looks_like_field_name(before):
+                    continue
+
+                label_node = NavigableString(before.strip() + ":")
+                first_text_with_colon.replace_with(label_node)
+
+                br_tag = paragraph.new_tag("br")
+                label_node.insert_after(br_tag)
+                if after.strip():
+                    br_tag.insert_after(after.strip())
 
 
 def modifications_update_announcement_text(nofo):

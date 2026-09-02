@@ -1,7 +1,9 @@
+import re
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from constance.test import override_config
+from django.contrib.staticfiles import finders
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -214,20 +216,26 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
         body = resp.content.decode()
         self.assertNotIn(self.sam_slot.variants.first().canonical_text, body)
-        self.assertIn("policy-language-stripped-note", body)
+        self.assertIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_flags_altered_sections(self):
+        # The "Review:" label renders inside its own <strong>, so a raw-HTML
+        # substring check would break on the tag boundary - check the text
+        # content instead (see test_flag_on_stripped_export_flag_box_is_table_cell
+        # for the label/box-structure assertion).
         resp = self.client.get(self.export_url + "?policy_stripped=1")
-        body = resp.content.decode()
-        self.assertIn("This text has clearly been rewritten", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        text = soup.get_text(" ", strip=True)
+        self.assertIn("This text has clearly been rewritten", text)
+        self.assertIn("Review: This section corresponds to", text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_elevates_prominent_slot(self):
         resp = self.client.get(self.export_url + "?policy_stripped=1")
-        body = resp.content.decode()
-        self.assertIn("PRIORITY REVIEW: This section corresponds to HHS-locked", body)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        text = soup.get_text(" ", strip=True)
+        self.assertIn("Priority review: This section corresponds to HHS-locked", text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_leaves_ordinary_content_untouched(self):
@@ -241,6 +249,56 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         body = resp.content.decode()
         self.assertIn("PRE-DECISIONAL", body)
         self.assertIn("NOT THE OFFICIAL SUBMISSION COPY", body)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_watermark_is_table_cell(self):
+        # A plain div/p with background-color/border doesn't survive
+        # GrabzIt's HTML->DOCX conversion - only table-cell shading does
+        # (see the CSS comment on .policy-export-watermark td).
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        watermark = soup.select_one("table.policy-export-watermark")
+        self.assertIsNotNone(watermark)
+        self.assertIn("PRE-DECISIONAL", watermark.select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_stripped_note_is_table_cell(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        box = soup.select_one("table.policy-language-stripped-box")
+        self.assertIsNotNone(box)
+        self.assertIn(
+            "omitted from this abbreviated review copy", box.select_one("td").get_text()
+        )
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_flag_box_is_table_cell(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        boxes = soup.select("table.policy-language-flag-box")
+        self.assertTrue(boxes)
+        self.assertIn("Review:", boxes[0].select_one("td").get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_only_the_label_is_bold(self):
+        # "Review:"/"Priority review:" stays bold, but the sentence after it
+        # shouldn't - only the label sits inside <strong>.
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        td = soup.select_one("table.policy-language-flag-box td")
+        strong = td.find("strong")
+        self.assertIsNotNone(strong)
+        self.assertEqual(strong.get_text(strip=True), "Review:")
+        self.assertIn("This section corresponds to", td.get_text())
+        self.assertNotIn("This section corresponds to", strong.get_text())
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_flag_on_stripped_export_prominent_flag_box_has_priority_class(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        priority_box = soup.select_one("table.policy-language-flag-box--priority")
+        self.assertIsNotNone(priority_box)
+        self.assertIn("Priority review:", priority_box.select_one("td").get_text())
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_stripped_export_page_breaks_after_clearance_summary(self):
@@ -270,6 +328,46 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         body = resp.content.decode()
         self.assertIn("Clearance Review Summary", body)
         self.assertIn("NOFO Builder", body)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_heading_has_no_generated_suffix(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        heading = soup.select_one(".clearance-summary h2")
+        self.assertEqual(heading.get_text(strip=True), "Clearance Review Summary")
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_date_sentence_has_no_double_period(self):
+        # The date renders via Django's "a" format (e.g. "5:21 p.m."), which
+        # already ends in a period - a literal "." straight after it in the
+        # template would double up ("p.m..").
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        intro = soup.select_one(".clearance-summary p.text-italic").get_text(
+            " ", strip=True
+        )
+        self.assertNotIn("..", intro)
+        self.assertIn("m. ET. This is a NOFO Builder-generated aid", intro)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_timestamp_is_labeled_eastern_time(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        intro = soup.select_one(".clearance-summary p.text-italic").get_text(
+            " ", strip=True
+        )
+        self.assertIn("ET.", intro)
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_summary_shows_nofo_title_opdiv_and_number(self):
+        resp = self.client.get(self.export_url + "?policy_stripped=1")
+        soup = BeautifulSoup(resp.content, "html.parser")
+        summary_text = soup.select_one(".clearance-summary").get_text(" ", strip=True)
+        self.assertIn(self.nofo.title, summary_text)
+        self.assertIn(f"Opdiv: {self.nofo.opdiv}", summary_text)
+        self.assertIn(f"Opportunity number: {self.nofo.number}", summary_text)
+        # This fixture NOFO has no agency set - the line shouldn't render.
+        self.assertNotIn("Agency:", summary_text)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_clearance_summary_reports_correct_stripped_and_flagged_counts(self):
@@ -498,8 +596,11 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # would be silently stripped. It must instead render visible with
         # a review flag.
         self.assertIn("This paragraph has been substantively rewritten.", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
-        self.assertNotIn("policy-language-stripped-note", body)
+        self.assertIn(
+            "Review: This section corresponds to",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
+        self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_duplicated_nofo_reflects_edits_made_after_duplication(self):
@@ -526,8 +627,11 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         body = resp.content.decode()
 
         self.assertIn("The duplicated content was then rewritten.", body)
-        self.assertIn("REVIEW: This section corresponds to", body)
-        self.assertNotIn("policy-language-stripped-note", body)
+        self.assertIn(
+            "Review: This section corresponds to",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
+        self.assertNotIn("policy-language-stripped-box", body)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_canonical_slot_revision_is_reflected_without_reimporting(self):
@@ -563,6 +667,52 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # superseded rather than current - it should be flagged as matching
         # a prior version (content stays visible, same as any other
         # non-intact status), not silently stripped as "intact".
-        self.assertNotIn("policy-language-stripped-note", body)
-        self.assertIn("REVIEW: This section matches a prior version of", body)
+        self.assertNotIn("policy-language-stripped-box", body)
+        self.assertIn(
+            "Review: This section matches a prior version of",
+            BeautifulSoup(resp.content, "html.parser").get_text(" ", strip=True),
+        )
         self.assertIn(old_canonical_text, body)  # visible, not stripped
+
+
+class ClearanceSummaryMissingSlotsBulletStyleTests(TestCase):
+    """The 'Missing expected Department Governance language' bullet on the
+    clearance summary should match the font size of the plain bullets
+    around it (12pt), not the smaller 12px it was previously set to."""
+
+    def test_missing_slots_bullet_uses_12pt_not_12px(self):
+        css_path = finders.find("theme-export.css")
+        self.assertIsNotNone(
+            css_path, "theme-export.css not found by staticfiles finders"
+        )
+        with open(css_path, encoding="utf-8") as f:
+            css = f.read()
+
+        rule_match = re.search(
+            r"\.nofo_view \.policy-language-flag-note\s*\{([^}]*)\}", css
+        )
+        self.assertIsNotNone(
+            rule_match, "No .policy-language-flag-note rule found in theme-export.css"
+        )
+        self.assertIn("font-size: 12pt", rule_match.group(1))
+
+
+class ExportDocumentPageBreakCssTests(TestCase):
+    """Every <section> forcing break-after: page - including the last one -
+    left a trailing blank page with nothing on it, in both the plain and
+    stripped exports (a pre-existing rule, not specific to policy-language
+    content). The last section should keep break-inside: avoid but not
+    force a break after itself."""
+
+    def test_last_section_does_not_force_a_break_after(self):
+        css_path = finders.find("theme-export.css")
+        self.assertIsNotNone(
+            css_path, "theme-export.css not found by staticfiles finders"
+        )
+        with open(css_path, encoding="utf-8") as f:
+            css = f.read()
+
+        self.assertIn("section:not(:last-child)", css)
+        # The old blanket rule applying break-after: page to every <section>
+        # (with no :not(:last-child) qualifier) should be gone.
+        self.assertNotRegex(css, r"section,\s*\n\s*span\.page-break\s*\{")

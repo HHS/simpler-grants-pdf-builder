@@ -241,9 +241,11 @@ Edit “{{ nofo|nofo_name }}”
                 role="tab"
                 class="accent-warm-dark"
                 aria-selected="true"
-                aria-controls="tabpanel-1">
+                aria-controls="tabpanel-1"
+                aria-label="Check broken links ({{ broken_links|length }})">
           <span class="focus">
-            Check broken links ({{ broken_links|length }})
+            <span class="nofo_edit--tab-label">Check broken links</span>
+            <span class="nofo_edit--tab-count">({{ broken_links|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -254,9 +256,11 @@ Edit “{{ nofo|nofo_name }}”
                 class="secondary-darker"
                 aria-selected="false"
                 aria-controls="tabpanel-2"
-                tabindex="-1">
+                tabindex="-1"
+                aria-label="Check heading levels ({{ heading_errors|length }})">
           <span class="focus">
-            Check heading levels ({{ heading_errors|length }})
+            <span class="nofo_edit--tab-label">Check heading levels</span>
+            <span class="nofo_edit--tab-count">({{ heading_errors|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -267,9 +271,26 @@ Edit “{{ nofo|nofo_name }}”
                 class="secondary-darker"
                 aria-selected="false"
                 aria-controls="tabpanel-3"
-                tabindex="-1">
+                tabindex="-1"
+                aria-label="Check PDF metadata ({{ missing_metadata_fields|length }})">
           <span class="focus">
-            Check PDF metadata ({{ missing_metadata_fields|length }})
+            <span class="nofo_edit--tab-label">Check PDF metadata</span>
+            <span class="nofo_edit--tab-count">({{ missing_metadata_fields|length }})</span>
+          </span>
+        </button>
+      {% endif %}
+      {% if has_unconverted_footnotes %}
+        <button id="tab-4"
+                type="button"
+                role="tab"
+                class="secondary-darker"
+                aria-selected="false"
+                aria-controls="tabpanel-4"
+                tabindex="-1"
+                aria-label="Check possible unconverted footnotes ({{ unconverted_footnotes|length }})">
+          <span class="focus">
+            <span class="nofo_edit--tab-label">Check possible unconverted footnotes</span>
+            <span class="nofo_edit--tab-count">({{ unconverted_footnotes|length }})</span>
           </span>
         </button>
       {% endif %}
@@ -355,6 +376,46 @@ Edit “{{ nofo|nofo_name }}”
                   <p>
                     <a href="{% url 'nofos:nofo_edit_metadata' nofo.id %}">Edit NOFO metadata</a>
                     before publishing this PDF to Grants.gov. You can still preview or download the PDF while this warning is present.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if has_unconverted_footnotes %}
+      <div id="tabpanel-4" role="tabpanel" class="secondary-darker is-hidden" tabindex="0" aria-labelledby="tab-4">
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: review possible unconverted footnotes</h3>
+            <div>
+              <details>
+                <summary>
+                  {% if unconverted_footnotes|length == 1 %}
+                  <span>There is 1 location to review</span>
+                  {% else %}
+                  <span>There are {{ unconverted_footnotes|length }} locations to review</span>
+                  {% endif %}
+                </summary>
+                <div>
+                  <ol class="usa-list usa-list--no-max-width">
+                    {% for unconverted_footnote in unconverted_footnotes %}
+                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.footnote_text }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
+                    {% endfor %}
+                  </ol>
+                  <p>
+                    Endnotes must be added using Microsoft Word's endnote tool or linked in Announcement Module — not typed manually.
+                    <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
+                  </p>
+                  <ul class="usa-list">
+                    <li>Every reference number must have a corresponding endnote entry</li>
+                    <li>Reference numbers must be sequential and can't repeat</li>
+                    <li>To cross-reference an earlier endnote, use the next number in the sequence and repeat that endnote's text — don't reuse a number</li>
+                  </ul>
+                  <p>
+                    Fix this in the source NOFO Word document, then reimport it.
                   </p>
                 </div>
               </details>

@@ -158,6 +158,11 @@ urlpatterns = [
     ),
     path("<uuid:pk>/print", views.PrintNofoAsPDFView.as_view(), name="print_pdf"),
     path(
+        "<uuid:pk>/section/add-end-notes",
+        views.NofoAddEndNotesSectionView.as_view(),
+        name="section_add_end_notes",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/create",
         views.NofoSubsectionCreateView.as_view(),
         name="subsection_create",
