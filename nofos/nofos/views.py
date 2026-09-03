@@ -2535,6 +2535,11 @@ class NofoSubsectionCreateView(
         return context
 
 
+# Key facts/dates callouts are structured fact lists, not narrative content,
+# and routinely exceed the word-count guidance by design.
+CALLOUT_WORD_WARNING_EXEMPT_NAMES = ("Key facts", "Key Facts", "Key dates", "Key Dates")
+
+
 class NofoSubsectionEditView(
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
@@ -2581,6 +2586,17 @@ class NofoSubsectionEditView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
+        form = context["form"]
+        threshold = settings.CALLOUT_WORD_WARNING_THRESHOLD
+        context["callout_word_warning_threshold"] = threshold
+        name = (form["name"].value() or "").strip()
+        # Use bound form values so a validation error preserves the guidance for
+        # the submitted text and checkbox, rather than the previous saved state.
+        context["show_callout_word_warning"] = (
+            bool(form["callout_box"].value())
+            and name not in CALLOUT_WORD_WARNING_EXEMPT_NAMES
+            and len((form["body"].value() or "").split()) > threshold
+        )
         return context
 
 
