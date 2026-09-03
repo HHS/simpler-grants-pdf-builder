@@ -8,13 +8,17 @@ const source = readFileSync(join(__dirname,
   "../../nofos/bloom_nofos/static/js/nofos/subsection_edit.js"), "utf8");
 
 function setup({ text = "word ".repeat(101), checked = true, threshold = 100,
-  aceReady = true } = {}) {
+  aceReady = true, name } = {}) {
   const ready = [], timers = [];
   const checkbox = { checked, addEventListener: (_, fn) => checkbox.change = fn };
   const body = { value: text, addEventListener: (_, fn) => body.input = fn };
   const warning = { hidden: true, dataset: { wordThreshold: String(threshold) } };
   const editor = { getValue: () => text, on: (_, fn) => editor.change = fn };
   const elements = { callout_box: checkbox, "callout-word-warning": warning };
+  // Unnamed subsections have no name field in the DOM; omit `name` to mimic that.
+  const nameEl = name === undefined ? undefined
+    : { value: name, addEventListener: (_, fn) => nameEl.input = fn };
+  if (nameEl) elements.name = nameEl;
   const window = { ace: { edit: () => editor } };
   const document = {
     addEventListener: (_, fn) => ready.push(fn),
@@ -27,9 +31,10 @@ function setup({ text = "word ".repeat(101), checked = true, threshold = 100,
   };
   runInNewContext(source, { document, window, setTimeout: (fn) => timers.push(fn) });
   ready.forEach((fn) => fn());
-  return { checkbox, body, warning, timers,
+  return { checkbox, body, warning, timers, nameEl,
     edit(value) { text = value; editor.change(); },
     attach() { aceReady = true; timers.shift()(); },
+    rename(value) { nameEl.value = value; nameEl.input(); },
   };
 }
 
@@ -89,4 +94,25 @@ test("textarea fallback works and polling stops if Ace never initializes", () =>
   assert.equal(state.warning.hidden, true);
   for (let attempt = 0; attempt < 50; attempt++) state.timers.shift()();
   assert.equal(state.timers.length, 0);
+});
+
+test("Key facts and Key dates subsections never show guidance", () => {
+  for (const name of ["Key facts", "Key Facts", "Key dates", "Key Dates"]) {
+    assert.equal(setup({ name }).warning.hidden, true);
+  }
+});
+
+test("similarly named subsections still show guidance", () => {
+  for (const name of ["key facts", "Key Fact", "Key facts and figures"]) {
+    assert.equal(setup({ name }).warning.hidden, false);
+  }
+});
+
+test("renaming into and out of an exempt name toggles guidance live", () => {
+  const state = setup({ name: "Required format" });
+  assert.equal(state.warning.hidden, false);
+  state.rename("Key facts");
+  assert.equal(state.warning.hidden, true);
+  state.rename("Required format");
+  assert.equal(state.warning.hidden, false);
 });
