@@ -2028,8 +2028,12 @@ ASSISTANCE_LISTING_NUMBER_LABELS = (
 
 # CFDA numbers are 2 digits, a period, then up to 3 more characters (eg, 93.884,
 # 12.ABC per SGG's own example). Matches just the code, not any trailing title
-# text (eg, "93.318: Protecting and Improving Health Globally...").
-ASSISTANCE_LISTING_NUMBER_PATTERN = re.compile(r"^\s*(\d{2}\.[A-Za-z0-9]{1,3})")
+# text (eg, "93.318: Protecting and Improving Health Globally...") - the
+# trailing (?!...) boundary rejects a 4th alphanumeric character rather than
+# silently truncating a malformed, overlong code (eg, "93.8840", "12.ABCD").
+ASSISTANCE_LISTING_NUMBER_PATTERN = re.compile(
+    r"^\s*(\d{2}\.[A-Za-z0-9]{1,3})(?![A-Za-z0-9])"
+)
 
 
 def suggest_nofo_assistance_listing_number(soup):
@@ -2173,9 +2177,11 @@ def suggest_all_nofo_fields(nofo, soup):
 
     nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.number = nofo_number
-    nofo.assistance_listing_number = suggest_nofo_assistance_listing_number(
-        soup
-    )  # guess the NOFO assistance listing number
+    # Only overwrite on a real suggestion: a disabled flag or an unrecognized
+    # label both return "", and re-import must not erase an existing value.
+    suggested_assistance_listing_number = suggest_nofo_assistance_listing_number(soup)
+    if suggested_assistance_listing_number:
+        nofo.assistance_listing_number = suggested_assistance_listing_number
     nofo.application_deadline = suggest_nofo_application_deadline(
         soup
     )  # guess the NOFO application deadline

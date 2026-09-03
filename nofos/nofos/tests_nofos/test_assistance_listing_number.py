@@ -180,18 +180,44 @@ class CoverPageDisplayTests(TestCase):
         )
         self.url = reverse("nofos:nofo_view", kwargs={"pk": self.nofo.id})
 
-    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=False)
-    def test_flag_off_hides_value_from_cover(self):
-        response = self.client.get(self.url)
-        self.assertNotContains(response, "93.884")
-
-    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True)
-    def test_flag_on_shows_value_on_cover(self):
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True,
+    )
+    def test_both_flags_on_shows_value_on_cover(self):
         response = self.client.get(self.url)
         self.assertContains(response, "93.884")
 
-    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True)
-    def test_flag_on_but_no_value_shows_nothing(self):
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=False,
+    )
+    def test_master_on_cover_off_hides_value(self):
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "93.884")
+
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=False,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True,
+    )
+    def test_master_off_cover_on_hides_value(self):
+        """The narrower cover flag must not bypass the master flag being off."""
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "93.884")
+
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=False,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=False,
+    )
+    def test_both_flags_off_hides_value(self):
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "93.884")
+
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True,
+    )
+    def test_both_flags_on_but_no_value_shows_nothing(self):
         self.nofo.assistance_listing_number = ""
         self.nofo.save()
 

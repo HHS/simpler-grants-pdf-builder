@@ -339,7 +339,8 @@ class NofosDetailView(DetailView):
         context["step_2_section"] = get_step_2_section(self.object)
 
         context["assistance_listing_on_cover_enabled"] = (
-            config.HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED
+            config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED
+            and config.HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED
         )
 
         return context
