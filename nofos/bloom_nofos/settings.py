@@ -644,7 +644,7 @@ CONSTANCE_CONFIG = {
     ),
     "HHS_NOFO_METRICS_ENABLED": (
         HHS_NOFO_METRICS_ENABLED_DEFAULT,
-        "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and are not saved.",
+        "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and saved as revision-scoped snapshots.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (

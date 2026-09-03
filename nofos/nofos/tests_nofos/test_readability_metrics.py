@@ -89,10 +89,13 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, 'id="readability-metrics-panel"')
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
-        self.assertContains(response, "Metrics reflect the current revision only")
+        self.assertContains(
+            response, "Metrics are saved for the revision you calculate"
+        )
         # The panel POSTs to the endpoint, so it needs a CSRF token to send.
         self.assertContains(response, "data-csrf-token=")
-        self.assertContains(response, "Editing the NOFO clears them")
+        self.assertContains(response, "snapshots are retained but are not shown")
+        self.assertNotContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
         self.assertNotContains(response, 'id="readability-metric-goals"')

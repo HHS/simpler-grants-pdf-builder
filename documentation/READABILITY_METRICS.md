@@ -30,7 +30,7 @@ The caller selects:
 An authorized user with access to the NOFO can request:
 
 ```text
-GET /nofos/<uuid>/readability-metrics
+POST /nofos/<uuid>/readability-metrics
 ```
 
 When enabled and installed, the endpoint returns the package's complete
@@ -44,22 +44,48 @@ Expected failures are machine-readable:
 - `503 readability_metrics_unavailable` when the package is absent; and
 - `422` with the package's stable error code when analysis rejects the source.
 
-Normal Builder group permissions apply.
+Normal Builder group permissions and CSRF protection apply. The browser sends
+the page's CSRF token in the `X-CSRFToken` header. GET requests return `405`.
+
+## Stored snapshots
+
+Opening the panel (which starts a calculation) or using its calculate button
+stores an append-only `NofoReadabilityScore`
+snapshot containing the result, the NOFO revision, the profile and package
+versions, the requesting user, and the configured goals. Repeating a calculation
+for the same revision, profile, and package version returns the stored result
+without running the package again or creating another row. `Cache-Control:
+no-store` prevents HTTP caching; it does not disable this database-backed reuse.
+
+Editing or reimporting the NOFO advances its revision. The next calculation
+creates a new snapshot and retains earlier snapshots. If the revision changes
+while analysis is running, that result is returned but is not stored. Failed
+calculations do not create snapshots. Results with unavailable metrics are
+retained, but are not treated as the latest complete measurement.
+
+Snapshots are not created automatically on save or in the background. Archiving
+a NOFO retains its snapshots; deleting it deletes its snapshots. Deleting a user
+retains their snapshots with a null requesting user.
 
 ## Edit-screen panel
 
 When the feature flag is enabled, the normal NOFO edit screen shows a compact,
 collapsed readability accordion after the primary NOFO status. A **Beta** tag
-identifies the feature as experimental. Expanding the accordion reveals the
-on-demand **Calculate metrics** action. The result displays the six configured
+identifies the feature as experimental. Expanding the accordion starts an
+on-demand calculation; the button allows retries or **Recalculate**. The result
+displays the six configured
 metric values, any metric-specific unavailable status, a scope explanation for
 metrics that use different denominators, and collapsed package notes. The
 browser reads only the endpoint response; metric calculation and source
 rendering remain server-side. The package profile and version remain available
 in the API response for diagnostics but are not shown to editors.
 
-The panel does not assign pass/fail bands. It makes clear that calculations run
-on demand and are not persisted.
+The panel does not assign pass/fail bands. It explains that calculations are
+saved for the measured revision and that earlier snapshots are retained but not
+shown here. Reloading the page resets the panel; reopening it retrieves the
+stored result if the revision and measurement contract are unchanged, or
+calculates a new result otherwise. Target comparisons use current configuration,
+not the goals saved with a previous snapshot.
 
 ## Target comparisons
 
@@ -139,6 +165,7 @@ Before enabling the feature outside local development:
 3. Turn on `HHS_NOFO_METRICS_ENABLED` in the constance admin only in the
    intended environment.
 
-The edit-screen panel calculates on demand and does not add a database table,
-background job, or cache. It displays the current response only; reloading or
-editing the NOFO requires another calculation.
+Apply migration `0132_noforeadabilityscore` before serving the new endpoint. The
+feature flag remains disabled by default; deploying the migration does not
+enable the panel. The panel displays the current response only. Historical
+charts, backfills, save-time triggers, and background jobs are out of scope.
