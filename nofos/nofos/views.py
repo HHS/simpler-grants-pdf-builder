@@ -24,7 +24,7 @@ from django.core.management import call_command
 from django.db import transaction
 from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
@@ -60,6 +60,7 @@ from .forms import (
     InsertOrderSpaceForm,
     NofoAgencyForm,
     NofoApplicationDeadlineForm,
+    NofoAssistanceListingNumberForm,
     NofoBeforeYouBeginForm,
     NofoCoachDesignerForm,
     NofoCoverImageForm,
@@ -337,6 +338,10 @@ class NofosDetailView(DetailView):
 
         context["step_2_section"] = get_step_2_section(self.object)
 
+        context["assistance_listing_on_cover_enabled"] = (
+            config.HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED
+        )
+
         return context
 
 
@@ -466,6 +471,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
         context["readability_metric_goals"] = normalize_readability_metric_goals(
             settings.HHS_NOFO_METRIC_GOALS
+        )
+        context["assistance_listing_enabled"] = (
+            config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED
         )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
@@ -1328,6 +1336,60 @@ class NofoEditNumberView(BaseNofoEditView):
         )
 
         success_message = "Updated opportunity number to “{}”".format(new_number)
+
+        if updated_subsections:
+            subsection_list_html = "".join(
+                "<li><a href='#{}'>{}</a></li>".format(
+                    sub.html_id, sub.name or "(#){}".format(sub.order)
+                )
+                for sub in updated_subsections
+            )
+
+            success_message += format_html(
+                ", and {} subsection{}:</p><ol class='usa-list margin-top-1 margin-bottom-0'>{}</ol>",
+                len(updated_subsections),
+                "" if len(updated_subsections) == 1 else "s",
+                mark_safe(subsection_list_html),
+            )
+
+        messages.success(self.request, success_message)
+
+        return response
+
+
+class NofoEditAssistanceListingNumberView(BaseNofoEditView):
+    form_class = NofoAssistanceListingNumberForm
+    template_name = "nofos/nofo_edit_assistance_listing_number.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED:
+            raise Http404("Assistance listing number is not enabled.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subsection_matches"] = find_subsections_with_nofo_field_value(
+            self.object, "assistance_listing_number"
+        )
+        return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        old_value = Nofo.objects.get(pk=self.object.pk).assistance_listing_number
+
+        response = super().form_valid(form)
+
+        new_value = form.cleaned_data.get("assistance_listing_number")
+        subsection_ids = self.request.POST.getlist("replace_subsections")
+
+        updated_subsections = replace_value_in_subsections(
+            subsection_ids,
+            old_value=old_value,
+            new_value=new_value,
+        )
+
+        success_message = "Updated assistance listing number to “{}”".format(new_value)
 
         if updated_subsections:
             subsection_list_html = "".join(
