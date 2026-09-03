@@ -10,6 +10,10 @@ on:
     branches:
       - main
 
+  # Allows release_please.yml to trigger CI on a release PR's branch: PRs opened by
+  # the default GITHUB_TOKEN don't fire pull_request-triggered workflows on their own.
+  workflow_dispatch:
+
 jobs:
   run-tests:
     name: Run Tests

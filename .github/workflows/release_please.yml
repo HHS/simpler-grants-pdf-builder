@@ -1,0 +1,51 @@
+# release_please.yml
+#
+# Keeps a standing "release PR" up to date on every push to main, listing the merged
+# PRs since the last release (grouped by Conventional Commit type) and bumping
+# CHANGELOG.md + the version in pyproject.toml. Merging that PR cuts the tag/release.
+#
+# The GITHUB_TOKEN used to open/update the release PR does NOT trigger other
+# workflows (GitHub's anti-recursion rule for Actions-authored events), so the
+# required "CI must pass" check never appears on it on its own. The second job
+# below explicitly dispatches the orchestrator workflow against the release PR's
+# branch so that check has a chance to run.
+
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    outputs:
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  dispatch-ci:
+    name: Dispatch CI for release PR
+    needs: release-please
+    if: needs.release-please.outputs.pr != ''
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Trigger orchestrator workflow on the release PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_JSON: ${{ needs.release-please.outputs.pr }}
+        run: |
+          branch=$(echo "$PR_JSON" | jq -r '.headBranchName')
+          gh workflow run main.yml --repo "${{ github.repository }}" --ref "$branch"

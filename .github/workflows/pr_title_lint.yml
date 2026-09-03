@@ -1,0 +1,28 @@
+# pr_title_lint.yml
+#
+# Checks for Conventional Commit-style PR titles (feat:, fix:, chore:, etc.). Advisory
+# only, not a required check. This repo allows squash and rebase merges (merge commits
+# are disabled - see DEPLOYMENT.md): under squash, GitHub uses the PR title as the
+# landed commit message, so a conventional title reliably drives release_please.yml's
+# categorization. Under rebase, each individual commit lands as-is and must itself be
+# conventional - a passing title here does not guarantee that. See DEPLOYMENT.md for
+# the retroactive BEGIN_COMMIT_OVERRIDE fix when a rebase-merged PR goes missing from
+# CHANGELOG.md despite a valid title.
+
+name: PR Title Lint
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  lint-pr-title:
+    name: Lint PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
