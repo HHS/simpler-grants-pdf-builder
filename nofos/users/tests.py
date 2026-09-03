@@ -259,3 +259,26 @@ class UsersManagersTests(TestCase):
             User.objects.create_superuser(
                 email="super@user.com", password="foo", group="cdc"
             )
+
+
+class BloomUserCanPublishToSggTests(TestCase):
+    def test_superuser_can_publish_to_sgg(self):
+        user = User.objects.create_user(
+            email="super@user.com", password="foo", group="bloom", is_superuser=True
+        )
+        self.assertTrue(user.can_publish_to_sgg)
+
+    def test_opdiv_admin_can_publish_to_sgg(self):
+        user = User.objects.create_user(
+            email="opdiv-admin@user.com",
+            password="foo",
+            group="hrsa",
+            is_opdiv_admin=True,
+        )
+        self.assertTrue(user.can_publish_to_sgg)
+
+    def test_regular_user_cannot_publish_to_sgg(self):
+        user = User.objects.create_user(
+            email="normal@user.com", password="foo", group="hrsa"
+        )
+        self.assertFalse(user.can_publish_to_sgg)
