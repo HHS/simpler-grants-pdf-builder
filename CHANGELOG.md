@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.34.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.33.0...nofos-v3.34.0) (2026-09-03)
+
+
+### Features
+
+* add publish-to-SGG permission gate (OpDiv Admins and Superusers) ([#854](https://github.com/HHS/simpler-grants-pdf-builder/issues/854)) ([dce5f12](https://github.com/HHS/simpler-grants-pdf-builder/commit/dce5f12a7d7534c940645e1a2b6e8cd68251fda7))
+* persist readability metric snapshots for NOFOs ([#834](https://github.com/HHS/simpler-grants-pdf-builder/issues/834)) ([479bc76](https://github.com/HHS/simpler-grants-pdf-builder/commit/479bc76fc8d5f4863df28c4e46835a9af5fb9207))
+
+
+### Bug Fixes
+
+* capitalize NOFO in group filter label on NOFO index page ([#850](https://github.com/HHS/simpler-grants-pdf-builder/issues/850)) ([1e7827e](https://github.com/HHS/simpler-grants-pdf-builder/commit/1e7827e4b593980566eb13f24ccd14ef92f2a98d))
+
+
+### Miscellaneous Chores
+
+* add release-please automation for CHANGELOG and release PRs ([#848](https://github.com/HHS/simpler-grants-pdf-builder/issues/848)) ([87f0695](https://github.com/HHS/simpler-grants-pdf-builder/commit/87f069577e827c37e48d8c9054b749a0b0bed770))
+* **deps:** update django-ninja to 1.6.3 and boto3 to 1.43.72 ([#849](https://github.com/HHS/simpler-grants-pdf-builder/issues/849)) ([014b24e](https://github.com/HHS/simpler-grants-pdf-builder/commit/014b24e9571a9591c543d4f084d8efe47865d1ee))
+
 ## [3.33.0] - 2026-05-26
 
 ### Added
