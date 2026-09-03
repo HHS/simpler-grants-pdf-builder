@@ -1406,6 +1406,16 @@ def nofo_has_end_notes_section(nofo):
     return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
 
 
+def get_subsection_action_availability(nofo):
+    """Present existing status restrictions; action views still enforce access."""
+    return {
+        "can_edit_subsections": not nofo.archived
+        and nofo.status != "cancelled"
+        and (nofo.status != "published" or bool(nofo.modifications)),
+        "can_delete_subsections": not nofo.archived and nofo.status == "draft",
+    }
+
+
 def get_nofo_action_links(nofo):
     # Canonical action builders
     def _link_compare(nofo):

@@ -98,7 +98,7 @@ Edit “{{ nofo|nofo_name }}”
 </div>
 
 <!-- Consolidated NOFO Status and Actions Summary Box -->
-<div class="usa-summary-box margin-bottom-2" role="region" aria-labelledby="summary-box-key-information">
+<div class="usa-summary-box margin-bottom-2" id="nofo-status" role="region" aria-labelledby="summary-box-key-information">
   <div class="usa-summary-box__body">
 
     {# NOFO status #}
@@ -152,7 +152,7 @@ Edit “{{ nofo|nofo_name }}”
       {% elif nofo.status == 'published' and nofo.modifications %}
         <!-- PUBLISHED WITH MODIFICATIONS -->
          <div>
-          <span>This NOFO is <strong>published with modifications</strong>. It can be edited or re-imported, but <em>not</em> deleted.</span>
+          <span>This NOFO is <strong>published with modifications</strong>. It can be edited, but <em>not</em> re-imported or deleted.</span>
           <p>Make sure to update the "<a href="#modifications">Modifications</a>" section at the end of this NOFO with the changes you've made since publication.</p>
           <p><a href="{% url 'nofos:nofo_history_modifications' nofo.id %}">See changes made since this NOFO was modified</a>.</p>
           <p>Last modification date on cover page: <a href="{% url 'nofos:nofo_modifications' nofo.id %}">{{ nofo.modifications|date:"F j, Y" }}</a>.</p>
@@ -209,6 +209,13 @@ Edit “{{ nofo|nofo_name }}”
         <div class="usa-prose">
           <span>This is a <strong>draft</strong> NOFO. It can be edited, re-imported, or deleted.</span>
         </div>
+      {% endif %}
+
+      {% if not nofo.archived and nofo.status != 'draft' %}
+        <p>Deleting a NOFO or its subsections requires <strong>Draft</strong> status. Only change the status when appropriate for your workflow.</p>
+        {% if nofo.status != 'active' and nofo.status != 'ready-for-qa' %}
+          <p>Re-importing requires <strong>Draft</strong>, <strong>Active</strong>, or <strong>Ready for QA</strong> status.</p>
+        {% endif %}
       {% endif %}
 
     </div>

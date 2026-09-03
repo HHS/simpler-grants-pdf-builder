@@ -195,6 +195,7 @@
     </summary>
 
     <div class="usa-accordion__content usa-prose">
+      {% include "nofos/includes/subsection_action_guidance.html" %}
       <ul class="usa-list usa-list--unstyled">
         <li>
           <a class="usa-button usa-button--green" href="{% url 'nofos:subsection_create' nofo.id subsection.section.id %}?insert_order={{ subsection.order|add:"1" }}&prev_subsection_id={{ subsection.id }}&return_to=subsection_edit">
@@ -202,9 +203,13 @@
           </a> — add a new subsection after this one
         </li>
         <li>
+          {% if can_delete_subsections %}
           <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.section.id subsection.id %}?return_to=subsection_edit">
             Delete subsection
           </a> — remove this subsection completely
+          {% else %}
+            <span class="text-base">Delete subsection unavailable</span> — requires Draft status
+          {% endif %}
         </li>
       </ul>
     </div>

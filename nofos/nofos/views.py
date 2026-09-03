@@ -114,6 +114,7 @@ from .nofo import (
     get_sections_from_soup,
     get_side_nav_links,
     get_step_2_section,
+    get_subsection_action_availability,
     get_subsections_from_sections,
     modifications_update_announcement_text,
     nofo_has_end_notes_section,
@@ -2252,6 +2253,7 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["section"] = self.object
         context["nofo"] = self.nofo
+        context.update(get_subsection_action_availability(self.nofo))
         context["error_heading"] = self.request.session.pop("error_heading", "Error")
         context["success_heading"] = self.request.session.pop("success_heading", "")
         return context
@@ -2518,6 +2520,7 @@ class NofoSubsectionEditView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
+        context.update(get_subsection_action_availability(self.nofo))
         return context
 
 

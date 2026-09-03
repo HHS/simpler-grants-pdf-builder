@@ -22,7 +22,9 @@
   <h2 class="font-heading-lg margin-y-1 text-base" aria-hidden="true">{{ section.name }}</h2>
 </div>
 
-{% if nofo.status != 'published' and nofo.status != 'cancelled' and not nofo.archived %}
+{% include "nofos/includes/subsection_action_guidance.html" %}
+
+{% if can_edit_subsections %}
 <div
   class="usa-summary-box margin-top-4"
   role="region"
@@ -88,6 +90,7 @@
     </tr>
   </thead>
   <tbody>
+    {% if can_edit_subsections %}
     <tr>
       <td class="nofo-edit-table--subsection--add-subsection" colspan="4">
         <a class="usa-button usa-button--outline usa-button--light text-primary usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add usa-button--icon--table-stretch" type="button" href="{% url 'nofos:subsection_create' section.nofo.id section.id %}?insert_order=1&return_to=section_detail">
@@ -95,6 +98,7 @@
         </a>
       </td>
     </tr>
+    {% endif %}
     {% for subsection in section.subsections.all|dictsort:"order" %}
     <tr>
       <th scope="row"
@@ -120,14 +124,20 @@
       </td>
       <td class="nofo-edit-table--subsection--manage">
         <span class="floating">
+          {% if can_delete_subsections %}
           <a class="text-secondary-dark" href="{% url 'nofos:subsection_delete' section.nofo.id section.id subsection.id %}?return_to=section_detail">
             Delete <span class="usa-sr-only"> subsection: {{ subsection.name }}</span>
           </a>
+          {% else %}
+            <span class="text-base">Delete unavailable</span>
+          {% endif %}
         </span>
 
+        {% if can_edit_subsections %}
         <a class="usa-button usa-button--outline usa-button--light text-primary usa-button--icon--before usa-button--icon--usa-blue usa-button--icon--usa-blue--hover usa-button--add" type="button" href="{% url 'nofos:subsection_create' section.nofo.id section.id %}?section_id={{ section.id }}&insert_order={{ subsection.order|add:"1" }}&prev_subsection_id={{ subsection.id }}&return_to=section_detail">
           Add subsection
         </a>
+        {% endif %}
       </td>
     </tr>
     {% endfor %}
