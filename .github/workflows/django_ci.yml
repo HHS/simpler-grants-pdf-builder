@@ -38,3 +38,7 @@ jobs:
 
       - name: Run tests
         run: poetry run python manage.py test
+
+      - name: Run JavaScript unit tests
+        # Uses Node's built-in test runner (available on ubuntu-latest); no npm dependencies.
+        run: node --test ../tests/js/*.test.cjs
