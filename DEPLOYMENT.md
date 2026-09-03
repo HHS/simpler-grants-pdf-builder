@@ -38,6 +38,16 @@ Branch off of `main` and name your branch descriptively. There is no enforced na
 
 Open a PR targeting `main`. CI will run automatically on every PR.
 
+**PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)** — start the title with a type prefix, e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`, `refactor: ...`, `test: ...`, `ci: ...`. This is enforced by `.github/workflows/pr_title_lint.yml` (not a required check, so it won't block merging) and, more importantly, is what [release-please](https://github.com/googleapis/release-please) uses to group merged PRs into CHANGELOG.md entries — see `release-please-config.json` for the type-to-section mapping. A title without a recognized prefix means the change is miscategorized or silently omitted from the changelog.
+
+**This only works reliably under squash merge.** Release-please reads the commit message(s) that actually land on `main`, not the PR title — squash merge is the one method where GitHub sets the resulting commit's message to the PR title, so those line up. Under rebase, your individual commits land as-is; if they aren't themselves Conventional-Commit-formatted, the PR can pass title lint and still be silently missing from the changelog. `pr_title_lint.yml` is advisory only (not a required check) — it nudges toward a good title, but doesn't by itself guarantee correct categorization under rebase. If a PR does go missing from the changelog, you can fix it after the fact: edit the *merged* PR's description to add
+```
+BEGIN_COMMIT_OVERRIDE
+feat: whatever the PR actually did
+END_COMMIT_OVERRIDE
+```
+and release-please will pick it up on its next run — no re-merge needed.
+
 ### 3. CI must pass
 
 The Django CI workflow (`.github/workflows/django_ci.yml`) runs the full test suite:
@@ -50,7 +60,17 @@ The PR cannot be merged until this check passes.
 
 ### 4. Merge
 
-Once CI is green, you can merge your own PR. No human approval is required. The allowed merge methods are merge commit, squash, and rebase.
+Once CI is green, you can merge your own PR. No human approval is required. The allowed merge methods are squash and rebase (merge commits are disabled at the repo level).
+
+---
+
+## Releases
+
+[release-please](https://github.com/googleapis/release-please) keeps a standing PR open with everything merged to `main` since the last release. Merging it isn't just internal bookkeeping — the resulting CHANGELOG.md entry is what users see via the "Latest updates" link in the app footer, so treat merging it as user-facing communication, not busywork to defer.
+
+- **If a `feat:` in the batch improves the user experience**, merge the release PR (and request the corresponding production deploy — see below) as soon as it's ready. Don't wait for a fixed cadence just to sit on something users would benefit from seeing sooner.
+- **If the batch is only `fix:`/`chore:`-type changes with no user-visible feature**, there's less urgency — it's fine to let those accumulate and merge on the regular cadence below, or bundle them into the next feature release, whichever comes first.
+- **Otherwise, default to a weekly cadence** rather than letting the release PR sit open indefinitely. Merging it only cuts a CHANGELOG.md entry and a git tag — it does not deploy anything by itself (see Deployment below) — so there's no risk in merging promptly.
 
 ---
 
@@ -149,7 +169,7 @@ The following are excluded from formatting: static files, migration files, SVGs,
 
 ## Hotfixes
 
-If a fix needs to bypass the normal PR flow (e.g. a critical production bug), use `[Hotfix]` in the PR title in lieu of an issue number. CI must still pass before merging.
+If a fix needs to bypass the normal PR flow (e.g. a critical production bug), prefix the PR title with `fix: [Hotfix] ...` in lieu of an issue number — keep the `fix:` type prefix so the change still categorizes correctly in CHANGELOG.md, with `[Hotfix]` flagging why it skipped the normal flow. CI must still pass before merging.
 
 ---
 
