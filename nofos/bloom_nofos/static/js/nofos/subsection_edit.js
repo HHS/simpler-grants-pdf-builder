@@ -26,8 +26,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const threshold = Number(warning.dataset.wordThreshold);
   if (!Number.isFinite(threshold)) return;
 
+  // Unnamed subsections have no name field. Keep this list in sync with
+  // CALLOUT_WORD_WARNING_EXEMPT_NAMES in nofos/nofos/views.py.
+  const nameField = document.getElementById("name");
+  const exemptNames = new Set(["Key facts", "Key Facts", "Key dates", "Key Dates"]);
+
   let editor;
   const update = () => {
+    if (nameField && exemptNames.has(nameField.value.trim())) {
+      if (!warning.hidden) warning.hidden = true;
+      return;
+    }
     // Advisory estimate, matching Python's body.split() and existing floating
     // callouts. Markdown syntax may contribute to the count; this is not a
     // rendered-height or precise readability measurement.
@@ -39,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   checkbox.addEventListener("change", update);
   body.addEventListener("input", update);
+  if (nameField) nameField.addEventListener("input", update);
 
   // Martor initializes Ace on jQuery ready, which can follow DOMContentLoaded.
   // Until it is ready, keep the server-rendered warning and textarea fallback.

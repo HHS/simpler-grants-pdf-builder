@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from nofos.models import Nofo, Section, Subsection
+from nofos.views import CALLOUT_WORD_WARNING_EXEMPT_NAMES
 
 User = get_user_model()
 
@@ -350,6 +351,26 @@ class SubsectionCalloutEditingTests(TestCase):
                 )
                 self.assertEqual(response.status_code, 200)
                 self.assertFalse(response.context["show_callout_word_warning"])
+
+    def test_key_facts_and_key_dates_names_are_exempt_from_warning(self):
+        for order, name in enumerate(CALLOUT_WORD_WARNING_EXEMPT_NAMES):
+            with self.subTest(name=name):
+                subsection = self.make_warning_subsection(name=name, order=order)
+                response = self.client.get(self.edit_url(subsection))
+                self.assertFalse(response.context["show_callout_word_warning"])
+
+    def test_whitespace_padded_exempt_name_still_matches(self):
+        subsection = self.make_warning_subsection(name="  Key facts  ")
+        response = self.client.get(self.edit_url(subsection))
+        self.assertFalse(response.context["show_callout_word_warning"])
+
+    def test_similarly_named_subsections_still_warn(self):
+        names = ["key facts", "KEY FACTS", "Key Fact", "Key facts and figures"]
+        for order, name in enumerate(names):
+            with self.subTest(name=name):
+                subsection = self.make_warning_subsection(name=name, order=order)
+                response = self.client.get(self.edit_url(subsection))
+                self.assertTrue(response.context["show_callout_word_warning"])
 
 
 class SubsectionCalloutRenderingTests(TestCase):
