@@ -135,6 +135,17 @@
         </div>
       </div>
 
+      <div id="callout-word-warning-region" aria-live="polite" aria-atomic="true">
+        <div id="callout-word-warning"
+          data-word-threshold="{{ callout_word_warning_threshold }}"
+          class="margin-top-2 padding-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark"
+          {% if not show_callout_word_warning %}hidden{% endif %}>
+          <strong>This callout box has a lot of content.</strong>
+          Callouts are meant to highlight one important thing, not a full section.
+          Long callouts are less likely to stand out to applicants — consider moving detailed content into the body.
+        </div>
+      </div>
+
       <!-- html_class -->
       <div class="form-group margin-top-4">
         <fieldset class="usa-fieldset">

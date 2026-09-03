@@ -571,6 +571,10 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
 
+# Advisory only: estimated words in the subsection's Markdown source, using the
+# same whitespace count as floating callouts. This is not a publishing limit.
+CALLOUT_WORD_WARNING_THRESHOLD = env.int("CALLOUT_WORD_WARNING_THRESHOLD", default=100)
+
 # Provisional, source-native readability metrics integration. The package is
 # pinned, but each environment opts into the feature explicitly. This env var is
 # only the starting value for the HHS_NOFO_METRICS_ENABLED constance setting,

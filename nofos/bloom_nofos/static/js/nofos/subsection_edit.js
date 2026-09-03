@@ -13,3 +13,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// Keep this independent of the heading-copy button: unnamed subsections have
+// no copy button, but can still be callouts.
+document.addEventListener("DOMContentLoaded", () => {
+  const checkbox = document.getElementById("callout_box");
+  const warning = document.getElementById("callout-word-warning");
+  // Martor adds a generated suffix to the textarea ID.
+  const body = document.querySelector('.main-martor--container textarea[name="body"]');
+  if (!checkbox || !warning || !body) return;
+
+  const threshold = Number(warning.dataset.wordThreshold);
+  if (!Number.isFinite(threshold)) return;
+
+  let editor;
+  const update = () => {
+    // Advisory estimate, matching Python's body.split() and existing floating
+    // callouts. Markdown syntax may contribute to the count; this is not a
+    // rendered-height or precise readability measurement.
+    const text = editor ? editor.getValue() : body.value;
+    const wordCount = (text.match(/\S+/g) || []).length;
+    const hidden = !checkbox.checked || wordCount <= threshold;
+    if (warning.hidden !== hidden) warning.hidden = hidden;
+  };
+
+  checkbox.addEventListener("change", update);
+  body.addEventListener("input", update);
+
+  // Martor initializes Ace on jQuery ready, which can follow DOMContentLoaded.
+  // Until it is ready, keep the server-rendered warning and textarea fallback.
+  const attachEditor = (attempts = 0) => {
+    const element = document.querySelector(".main-martor--container .ace_editor");
+    if (window.ace && element) {
+      editor = window.ace.edit(element);
+      editor.on("change", update);
+      update();
+    } else if (attempts < 50) {
+      setTimeout(() => attachEditor(attempts + 1), 100);
+    }
+  };
+
+  update();
+  attachEditor();
+});

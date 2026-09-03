@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -269,6 +269,87 @@ class SubsectionCalloutEditingTests(TestCase):
         subsection.refresh_from_db()
         self.assertTrue(subsection.callout_box)
         self.assertEqual(subsection.body, "Updated body")
+
+    def make_warning_subsection(self, **overrides):
+        values = {
+            "section": self.section,
+            "name": "Required format",
+            "tag": "h3",
+            "order": 1,
+            "body": "word " * 101,
+            "callout_box": True,
+        }
+        values.update(overrides)
+        return Subsection.objects.create(**values)
+
+    @override_settings(CALLOUT_WORD_WARNING_THRESHOLD=100)
+    def test_warning_threshold_boundary_and_empty_content(self):
+        subsection = self.make_warning_subsection()
+        for count in [0, 99, 100, 101]:
+            with self.subTest(count=count):
+                subsection.body = "word " * count
+                subsection.save()
+                response = self.client.get(self.edit_url(subsection))
+                self.assertEqual(
+                    response.context["show_callout_word_warning"], count > 100
+                )
+                self.assertContains(response, 'data-word-threshold="100"')
+                self.assertContains(response, 'aria-live="polite"')
+                warning = (
+                    response.content.decode()
+                    .split('id="callout-word-warning"')[1]
+                    .split(">", 1)[0]
+                )
+                self.assertEqual("hidden" in warning, count <= 100)
+
+    @override_settings(CALLOUT_WORD_WARNING_THRESHOLD=2)
+    def test_warning_uses_configured_threshold_and_whitespace_count(self):
+        subsection = self.make_warning_subsection(
+            body="  First\n\nsecond\tthird\u00a0 "
+        )
+        response = self.client.get(self.edit_url(subsection))
+        self.assertTrue(response.context["show_callout_word_warning"])
+        self.assertContains(response, 'data-word-threshold="2"')
+
+    def test_long_regular_subsection_has_no_warning(self):
+        subsection = self.make_warning_subsection(callout_box=False)
+        response = self.client.get(self.edit_url(subsection))
+        self.assertFalse(response.context["show_callout_word_warning"])
+
+    def test_unnamed_long_callout_has_warning(self):
+        subsection = self.make_warning_subsection(name="", tag="")
+        response = self.client.get(self.edit_url(subsection))
+        self.assertTrue(response.context["show_callout_word_warning"])
+
+    def test_long_callout_can_still_be_saved(self):
+        subsection = self.make_warning_subsection(body="Short content")
+        body = " ".join(["word"] * 101)
+        response = self.post_subsection(subsection, callout_box=True, body=body)
+        self.assertEqual(response.status_code, 302)
+        subsection.refresh_from_db()
+        self.assertEqual(subsection.body, body)
+        self.assertTrue(subsection.callout_box)
+
+    def test_invalid_form_uses_submitted_body_and_callout_state(self):
+        subsection = self.make_warning_subsection(body="Short", callout_box=False)
+        response = self.post_subsection(
+            subsection, callout_box=True, name="", body="word " * 101
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["show_callout_word_warning"])
+        subsection.refresh_from_db()
+        self.assertEqual(subsection.body, "Short")
+        self.assertFalse(subsection.callout_box)
+
+    def test_invalid_form_can_hide_previous_warning(self):
+        subsection = self.make_warning_subsection()
+        for callout_box, body in [(False, subsection.body), (True, "Short")]:
+            with self.subTest(callout_box=callout_box):
+                response = self.post_subsection(
+                    subsection, callout_box=callout_box, name="", body=body
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertFalse(response.context["show_callout_word_warning"])
 
 
 class SubsectionCalloutRenderingTests(TestCase):
