@@ -26,6 +26,8 @@ OpDiv Admins have the same NOFO visibility as other users in their group — the
 
 **Superuser** status grants full administrative access across the application. Superuser status may only be assigned to users in the Bloom group.
 
+**Publishing to Simpler Grants.gov (SGG)** — triggering a real, external publish of a NOFO to SGG is restricted to OpDiv Admins and Superusers only (`BloomUser.can_publish_to_sgg`, enforced via `PublishToSggRequiredMixin`). A standard User cannot trigger this action, even for a NOFO in their own group.
+
 ## How group is assigned
 
 ### Users

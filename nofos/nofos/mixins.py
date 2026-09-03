@@ -52,6 +52,17 @@ class SuperuserRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class PublishToSggRequiredMixin:
+    """Restricts access to OpDiv Admins and Superusers, the only users allowed
+    to trigger a real external publish to Simpler Grants.gov."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.can_publish_to_sgg:
+            raise PermissionDenied("You don’t have permission to view this page.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 class BaseResponseMixin:
     def render_response(self, response):
         raise NotImplementedError("Subclasses must implement render_response")

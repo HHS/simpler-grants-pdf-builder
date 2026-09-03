@@ -58,6 +58,10 @@ class BloomUser(AbstractUser):
     def can_manage_users(self):
         return self.is_superuser or self.is_opdiv_admin
 
+    @property
+    def can_publish_to_sgg(self):
+        return self.is_superuser or self.is_opdiv_admin
+
     def can_manage_user(self, other_user):
         if self.is_superuser:
             return True
