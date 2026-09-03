@@ -3,11 +3,15 @@
 import math
 from collections.abc import Mapping
 from importlib import import_module
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template.loader import render_to_string
 
 METRICS_MODULE = "hhs_nofo_metrics"
+METRICS_DISTRIBUTION = "hhs-nofo-metrics"
 PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
@@ -182,3 +186,105 @@ def analyze_nofo_readability(nofo):
         raise ReadabilityMetricsAnalysisError(error.to_dict()) from error
 
     return result.to_dict()
+
+
+def get_metrics_package_version():
+    """Return the installed hhs-nofo-metrics version, or '' when absent."""
+
+    try:
+        return package_version(METRICS_DISTRIBUTION)
+    except PackageNotFoundError:
+        return ""
+
+
+def result_is_complete(payload):
+    """
+    Whether every metric the package returned was actually calculated.
+
+    The package reports a status per metric, so an analysis can succeed while
+    individual measurements are unavailable. Those results are worth keeping,
+    but they must not stand in for a complete measurement.
+
+    Completeness is judged against the metrics the payload actually contains,
+    not against GOAL_METRIC_IDS. That constant is the set of metrics Builder
+    allows goals to be configured for, and the two sets legitimately differ:
+    v0.5.2 returns characters_per_word and does not return
+    sentences_per_paragraph.
+    """
+
+    metrics = payload.get("metrics") or {}
+    if not metrics:
+        return False
+
+    return all(
+        (metric or {}).get("status") == "calculated" for metric in metrics.values()
+    )
+
+
+def record_readability_snapshot(nofo, user=None):
+    """
+    Return a durable readability snapshot for the NOFO's current revision.
+
+    Calculates and persists a snapshot only when the current revision has not
+    already been measured under this measurement contract (profile + package
+    version); an already-measured revision returns the stored snapshot without
+    re-running the package.
+
+    Returns a (payload, snapshot) tuple. `snapshot` is None when the NOFO moved
+    to a new revision while the package was running: the payload is still
+    returned to the caller, but storing it would attach a measurement to a
+    revision it does not describe.
+
+    Raises the same errors as analyze_nofo_readability, in which case nothing is
+    written and any earlier snapshot is left as the latest successful
+    measurement.
+
+    Snapshot creation lives here rather than in the view so that save-time or
+    background calculation can reuse it later without touching the model.
+    """
+
+    from .models import NofoReadabilityScore
+
+    metrics_version = get_metrics_package_version()
+
+    existing = NofoReadabilityScore.objects.current_for(
+        nofo, PROFILE_REFERENCE, metrics_version
+    )
+    if existing:
+        return existing.result, existing
+
+    # Read the revision before analyzing, so the snapshot records the revision
+    # that was measured rather than whatever the NOFO becomes later.
+    revision = nofo.updated
+    payload = analyze_nofo_readability(nofo)
+
+    # The export document is rendered from the database while the package runs.
+    # If the NOFO advanced during that window, the measured content and
+    # `revision` no longer agree, and storing the result under either one would
+    # let a later calculation replay metrics for content that never existed.
+    if _read_revision(nofo) != revision:
+        return payload, None
+
+    snapshot, _created = NofoReadabilityScore.objects.get_or_create(
+        nofo=nofo,
+        nofo_revision=revision,
+        profile_reference=PROFILE_REFERENCE,
+        package_version=metrics_version,
+        defaults={
+            "created_by": user if (user and user.is_authenticated) else None,
+            "schema_version": payload.get("schema_version", ""),
+            "result_basis": payload.get("result_basis", ""),
+            "is_complete": result_is_complete(payload),
+            "result": payload,
+            "goals": normalize_readability_metric_goals(settings.HHS_NOFO_METRIC_GOALS),
+        },
+    )
+    return payload, snapshot
+
+
+def _read_revision(nofo):
+    """The NOFO's `updated` value as currently stored, bypassing the instance."""
+
+    return (
+        type(nofo).objects.filter(pk=nofo.pk).values_list("updated", flat=True).first()
+    )

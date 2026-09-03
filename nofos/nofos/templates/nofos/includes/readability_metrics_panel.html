@@ -2,6 +2,7 @@
   id="readability-metrics-panel"
   class="usa-accordion usa-accordion--bordered margin-bottom-2"
   data-metrics-endpoint="{% url 'nofos:nofo_readability_metrics' nofo.id %}"
+  data-csrf-token="{{ csrf_token }}"
 >
   <summary class="usa-accordion__button">
     <h2 class="usa-accordion--heading margin-top-0">
@@ -21,8 +22,9 @@
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">
-      Metrics reflect the current revision only. Editing the NOFO clears them;
-      open this panel again to recalculate.
+      Metrics are saved for the revision you calculate. After editing or
+      reimporting the NOFO, calculate again for updated results. Earlier
+      snapshots are retained but are not shown in this panel.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
       <button

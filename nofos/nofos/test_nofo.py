@@ -1441,6 +1441,21 @@ class OverwriteNOFOTests(TestCase):
             nofo.sections.first().subsections.first().name, "New Subsection 100"
         )
 
+    def test_overwrite_nofo_advances_the_updated_timestamp(self):
+        """
+        Sections are rebuilt with bulk_create, which skips save() and therefore
+        skips touch_updated(). nofo.save() only advances `updated` when a field
+        on the NOFO itself changed, so without an explicit touch a re-import can
+        replace the whole body while leaving `updated` untouched.
+        """
+        nofo = create_nofo("Test Nofo", self.sections, opdiv="Test OpDiv")
+        nofo.refresh_from_db()
+        before = nofo.updated
+
+        nofo = overwrite_nofo(nofo, self.new_sections)
+
+        self.assertGreater(nofo.updated, before)
+
     def test_overwrite_nofo_success_empty_sections(self):
         """
         Test overwriting with a nofo with empty sections is allowed

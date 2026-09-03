@@ -735,6 +735,15 @@ def overwrite_nofo(nofo, sections):
     nofo.sections.all().delete()
     nofo = _build_document(nofo, sections, Section, Subsection)
     nofo.save()  # Save after sections are added
+
+    # _build_document creates sections and subsections with bulk_create, which
+    # skips save() and so never reaches touch_updated(). nofo.save() above only
+    # advances `updated` when a field on the NOFO itself changed, so re-import
+    # can replace the entire body while leaving `updated` untouched. Anything
+    # keyed on that timestamp (readability snapshots) would then replay a
+    # measurement of content that no longer exists.
+    nofo.touch_updated()
+    nofo.refresh_from_db()
     return nofo
 
 

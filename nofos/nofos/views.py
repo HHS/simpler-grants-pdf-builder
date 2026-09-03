@@ -144,6 +144,7 @@ from .readability import (
     ReadabilityMetricsUnavailable,
     analyze_nofo_readability,
     normalize_readability_metric_goals,
+    record_readability_snapshot,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
@@ -417,9 +418,14 @@ class NOFOsExportView(DetailView):
 
 
 class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
-    """Calculate source-native metrics for the current Builder revision."""
+    """
+    Calculate and store source-native metrics for the current Builder revision.
 
-    def get(self, request, *args, **kwargs):
+    POST rather than GET: a calculation creates a durable snapshot, so it is a
+    mutating request and carries CSRF protection.
+    """
+
+    def post(self, request, *args, **kwargs):
         if not config.HHS_NOFO_METRICS_ENABLED:
             return JsonResponse(
                 {
@@ -432,7 +438,7 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
         nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
 
         try:
-            payload = analyze_nofo_readability(nofo)
+            payload, _snapshot = record_readability_snapshot(nofo, user=request.user)
         except ReadabilityMetricsUnavailable as error:
             return JsonResponse(
                 {
@@ -444,6 +450,8 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
         except ReadabilityMetricsAnalysisError as error:
             return JsonResponse(error.payload, status=422)
 
+        # The response stays the package's verbatim payload, whether it was just
+        # calculated or replayed from a stored snapshot for the same revision.
         response = JsonResponse(payload)
         response["Cache-Control"] = "no-store"
         return response
