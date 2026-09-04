@@ -53,6 +53,9 @@ NofoShortNameForm = create_nofo_form_class(["short_name"])
 NofoAgencyForm = create_nofo_form_class(["agency"], not_required_labels=["Agency"])
 NofoApplicationDeadlineForm = create_nofo_form_class(["application_deadline"])
 NofoNumberForm = create_nofo_form_class(["number"])
+NofoAssistanceListingNumberForm = create_nofo_form_class(
+    ["assistance_listing_number"], not_required_labels=["Assistance listing number"]
+)
 NofoGroupForm = create_nofo_form_class(["group"])
 NofoOpDivForm = create_nofo_form_class(["opdiv"])
 NofoSubagencyForm = create_nofo_form_class(

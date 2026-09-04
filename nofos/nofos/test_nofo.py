@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from bs4 import BeautifulSoup
+from constance.test import override_config
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -74,6 +75,7 @@ from .nofo import (
     suggest_all_nofo_fields,
     suggest_nofo_agency,
     suggest_nofo_application_deadline,
+    suggest_nofo_assistance_listing_number,
     suggest_nofo_author,
     suggest_nofo_before_you_begin,
     suggest_nofo_cover,
@@ -4666,6 +4668,86 @@ class HTMLSuggestBeforeYouBeginTests(TestCase):
         self.assertEqual(suggest_nofo_before_you_begin(""), "full")
 
 
+class SuggestNofoAssistanceListingNumberTests(TestCase):
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=False)
+    def test_flag_off_returns_empty_even_on_exact_match(self):
+        html = "<html><body><p>Assistance Listing: 93.884</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_bare_number_after_label(self):
+        html = "<html><body><p>Assistance Listing: 93.884</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "93.884")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_lowercase_label_variant(self):
+        html = "<html><body><p>Assistance listing: 93.679</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "93.679")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_federal_assistance_listing_number_label_variant(self):
+        html = (
+            "<html><body>"
+            '<p class="c0"><span class="c3">Federal Assistance Listing Number: 93.884</span></p>'
+            "</body></html>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "93.884")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_number_followed_by_program_title_strips_title(self):
+        html = (
+            "<html><body><p>Assistance listing: 93.318: Protecting and Improving "
+            "Health Globally: Building and Strengthening Public Health Impact, "
+            "Systems, Capacity, and Security</p></body></html>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "93.318")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_alphanumeric_suffix_matches_sgg_example_format(self):
+        html = "<html><body><p>Assistance Listing: 12.ABC</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "12.ABC")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_no_label_present_returns_empty(self):
+        html = "<html><body><p>Nothing relevant here.</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_malformed_value_after_label_returns_empty(self):
+        html = "<html><body><p>Assistance Listing: not-a-real-number</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_overlong_numeric_suffix_is_rejected_not_truncated(self):
+        """A malformed 7-char code must not silently become a valid-looking 6-char one."""
+        html = "<html><body><p>Assistance Listing: 93.8840</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_overlong_alphanumeric_suffix_is_rejected_not_truncated(self):
+        html = "<html><body><p>Assistance Listing: 12.ABCD</p></body></html>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_space_delimiter_before_trailing_text_still_matches(self):
+        html = (
+            "<html><body><p>Assistance Listing: 93.884 "
+            "(see program description below)</p></body></html>"
+        )
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_assistance_listing_number(soup), "93.884")
+
+
 class SuggestNofoOpDivTests(TestCase):
     def test_opdiv_present_in_paragraph(self):
         html = "<div><p>Opdiv: Center for Awesome NOFOs</p></div>"
@@ -5395,6 +5477,49 @@ class SuggestNofoFieldsTests(TestCase):
         self.assertEqual(nofo.number, "HRSA-2024-1234")
         self.assertEqual(nofo.theme, "portrait-hrsa-blue")
         self.assertEqual(nofo.cover, "nofo--cover-page--text")
+
+
+class SuggestAllNofoFieldsAssistanceListingPreservationTests(TestCase):
+    """A disabled feature, or a re-imported document with no recognized label,
+    must not erase an assistance listing number a prior import already set -
+    unlike title/number/etc, "" is not a valid suggestion for this field, it
+    means "nothing found", so the existing value must be left alone."""
+
+    def setUp(self):
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO",
+            opdiv="Test OpDiv",
+            assistance_listing_number="93.884",
+        )
+        self.soup_with_label = BeautifulSoup(
+            "<html><body><p>Assistance Listing: 12.ABC</p></body></html>",
+            "html.parser",
+        )
+        self.soup_without_label = BeautifulSoup(
+            "<html><body><p>Nothing relevant here.</p></body></html>",
+            "html.parser",
+        )
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=False)
+    def test_flag_off_does_not_erase_existing_value_even_with_label_present(self):
+        suggest_all_nofo_fields(self.nofo, self.soup_with_label)
+        self.assertEqual(self.nofo.assistance_listing_number, "93.884")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_flag_on_missing_label_on_reimport_does_not_erase_existing_value(self):
+        suggest_all_nofo_fields(self.nofo, self.soup_without_label)
+        self.assertEqual(self.nofo.assistance_listing_number, "93.884")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_flag_on_new_recognized_label_does_update_existing_value(self):
+        suggest_all_nofo_fields(self.nofo, self.soup_with_label)
+        self.assertEqual(self.nofo.assistance_listing_number, "12.ABC")
+
+    @override_config(HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True)
+    def test_new_nofo_with_no_label_stays_blank(self):
+        new_nofo = Nofo.objects.create(title="New NOFO", opdiv="Test OpDiv")
+        suggest_all_nofo_fields(new_nofo, self.soup_without_label)
+        self.assertEqual(new_nofo.assistance_listing_number, "")
 
 
 ###########################################################

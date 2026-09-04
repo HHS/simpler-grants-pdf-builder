@@ -456,6 +456,13 @@ Edit “{{ nofo|nofo_name }}”
       <td>{{ nofo.number|get_value_or_none:"number" }}</td>
       <td><a href="{% url 'nofos:nofo_edit_number' nofo.id %}">Edit<span class="usa-sr-only"> number</span></a></td>
     </tr>
+    {% if assistance_listing_enabled %}
+      <tr>
+        <th scope="row">Assistance&nbsp;listing&nbsp;number</th>
+        <td>{{ nofo.assistance_listing_number|get_value_or_none:"assistance listing number" }}</td>
+        <td><a href="{% url 'nofos:nofo_edit_assistance_listing_number' nofo.id %}">Edit<span class="usa-sr-only"> assistance listing number</span></a></td>
+      </tr>
+    {% endif %}
     <tr>
       <th scope="row">Application deadline</th>
       <td>{{ nofo.application_deadline|get_value_or_none:"application deadline" }}</td>

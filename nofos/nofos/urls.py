@@ -82,6 +82,11 @@ urlpatterns = [
         name="nofo_edit_number",
     ),
     path(
+        "<uuid:pk>/edit/assistance-listing-number",
+        views.NofoEditAssistanceListingNumberView.as_view(),
+        name="nofo_edit_assistance_listing_number",
+    ),
+    path(
         "<uuid:pk>/edit/group",
         views.NofoEditGroupView.as_view(),
         name="nofo_edit_group",

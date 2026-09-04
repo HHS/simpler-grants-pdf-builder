@@ -147,6 +147,16 @@
               {{ nofo.number }}
             </span>
           </span>
+          {% if assistance_listing_on_cover_enabled and nofo.assistance_listing_number %}
+            <span class="nofo--cover-page--title--subheading-intro">
+              <span class="nofo--cover-page--title--subheading-intro--label">
+                Assistance listing number:
+              </span>
+              <span class="nofo--cover-page--title--subheading-intro--text">
+                {{ nofo.assistance_listing_number }}
+              </span>
+            </span>
+          {% endif %}
         </div>
       </div>
       <div class="nofo--cover-page--title--logo">
