@@ -2027,6 +2027,39 @@ def suggest_nofo_opportunity_number(soup):
     return suggestion or opportunity_number_default
 
 
+# Label variants seen in real NOFOs today. A future HHS Word template may add a
+# dedicated, single label for this - once confirmed, prefer matching that first.
+ASSISTANCE_LISTING_NUMBER_LABELS = (
+    "Assistance Listing Number:",
+    "Assistance Listing:",
+    "Federal Assistance Listing Number:",
+    "Federal Assistance Listing:",
+)
+
+# CFDA numbers are 2 digits, a period, then up to 3 more characters (eg, 93.884,
+# 12.ABC per SGG's own example). Matches just the code, not any trailing title
+# text (eg, "93.318: Protecting and Improving Health Globally...") - the
+# trailing (?!...) boundary rejects a 4th alphanumeric character rather than
+# silently truncating a malformed, overlong code (eg, "93.8840", "12.ABCD").
+ASSISTANCE_LISTING_NUMBER_PATTERN = re.compile(
+    r"^\s*(\d{2}\.[A-Za-z0-9]{1,3})(?![A-Za-z0-9])"
+)
+
+
+def suggest_nofo_assistance_listing_number(soup):
+    if not config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED:
+        return ""
+
+    for label in ASSISTANCE_LISTING_NUMBER_LABELS:
+        suggestion = _suggest_by_startswith_string(soup, label)
+        if suggestion:
+            match = ASSISTANCE_LISTING_NUMBER_PATTERN.match(suggestion)
+            if match:
+                return match.group(1)
+
+    return ""
+
+
 def suggest_nofo_application_deadline(soup):
     nofo_application_deadline_default = "[WEEKDAY, MONTH DAY, YEAR]"
 
@@ -2154,6 +2187,11 @@ def suggest_all_nofo_fields(nofo, soup):
 
     nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.number = nofo_number
+    # Only overwrite on a real suggestion: a disabled flag or an unrecognized
+    # label both return "", and re-import must not erase an existing value.
+    suggested_assistance_listing_number = suggest_nofo_assistance_listing_number(soup)
+    if suggested_assistance_listing_number:
+        nofo.assistance_listing_number = suggested_assistance_listing_number
     nofo.application_deadline = suggest_nofo_application_deadline(
         soup
     )  # guess the NOFO application deadline

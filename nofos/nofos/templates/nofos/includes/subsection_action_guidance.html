@@ -5,14 +5,14 @@
         {% if nofo.archived %}
           Archived NOFOs cannot be changed. Contact Paul or Ben if you need to restore this NOFO.
         {% elif nofo.status == 'cancelled' %}
-          Subsections cannot be edited, added, or deleted while this NOFO is Cancelled.
-          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">Review NOFO status</a> and only change it when appropriate for your workflow. Deleting subsections requires Draft status.
+          Subsections can't be edited, added, or deleted while this NOFO is Cancelled. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
         {% elif not can_edit_subsections %}
-          This NOFO is Published. To edit or add subsections, add modifications from the main NOFO page. Deleting subsections requires Draft status.
-          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">Review NOFO status</a> and only change it when appropriate for your workflow.
+          This NOFO is Published. To edit or add subsections, add modifications from the main NOFO page. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
         {% else %}
-          Deleting subsections requires Draft status. You can still edit or add subsections.
-          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">Review NOFO status</a> and only change it when appropriate for your workflow.
+          You can still edit or add subsections. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
         {% endif %}
       </p>
     </div>

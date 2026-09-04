@@ -82,7 +82,7 @@ class StatusActionGuidanceTests(TestCase):
                     b'id="toggle-tables-checkbox"' in response.content, can_edit
                 )
                 if not can_delete:
-                    self.assertContains(response, "Delete unavailable")
+                    self.assertNotContains(response, "Delete unavailable")
                     self.assertContains(response, 'id="subsection-action-guidance"')
 
     def test_subsection_editor_hides_delete_but_keeps_add_for_editable_non_drafts(self):
@@ -100,8 +100,28 @@ class StatusActionGuidanceTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertFalse(self.links_to(response, self.delete_url))
                 self.assertTrue(self.links_to(response, self.create_url))
-                self.assertContains(response, "Delete subsection unavailable")
+                self.assertNotContains(response, "Delete subsection unavailable")
                 self.assertContains(response, f'href="{self.edit_url}#nofo-status"')
+                self.assertLess(
+                    response.content.index(b'id="subsection-action-guidance"'),
+                    response.content.index(b'<form class="form"'),
+                )
+
+    def test_status_guidance_names_draft_as_the_delete_requirement(self):
+        for status, modified in [
+            ("cancelled", False),
+            ("published", False),
+            ("active", False),
+            ("published", True),
+        ]:
+            with self.subTest(status=status, modified=modified):
+                self.set_status(status, modified=modified)
+                response = self.client.get(self.section_url)
+                self.assertContains(
+                    response, "Draft is the only status that allows deletion"
+                )
+                self.assertContains(response, "change the status to Draft")
+                self.assertNotContains(response, "appropriate for your workflow")
 
     def test_draft_keeps_existing_delete_links_and_return_destinations(self):
         for url, return_to in [

@@ -302,6 +302,14 @@ class Nofo(BaseNofo):
         help_text="The official opportunity number for this NOFO.",
     )
 
+    assistance_listing_number = models.CharField(
+        "Assistance listing number",
+        max_length=6,
+        validators=[MaxLengthValidator(6)],
+        blank=True,
+        help_text="The CFDA number for this NOFO, as it appears in SAM.gov (eg, 93.884).",
+    )
+
     agency = models.CharField(
         "Agency",
         max_length=511,

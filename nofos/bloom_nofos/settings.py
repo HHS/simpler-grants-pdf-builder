@@ -571,6 +571,10 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
 
+# Advisory only: estimated words in the subsection's Markdown source, using the
+# same whitespace count as floating callouts. This is not a publishing limit.
+CALLOUT_WORD_WARNING_THRESHOLD = env.int("CALLOUT_WORD_WARNING_THRESHOLD", default=100)
+
 # Provisional, source-native readability metrics integration. The package is
 # pinned, but each environment opts into the feature explicitly. This env var is
 # only the starting value for the HHS_NOFO_METRICS_ENABLED constance setting,
@@ -586,6 +590,18 @@ HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
 # superadmins can toggle at runtime.
 HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_POLICY_EXPORT_ENABLED", default=False)
+)
+
+# Prototype: structured assistance listing (CFDA) number field, its
+# import-time auto-suggestion, and its "Basic information" edit screen.
+# These env vars are only the starting values for the
+# HHS_NOFO_ASSISTANCE_LISTING_ENABLED / _ON_COVER_ENABLED constance
+# settings, which superadmins can toggle at runtime.
+HHS_NOFO_ASSISTANCE_LISTING_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_ASSISTANCE_LISTING_ENABLED", default=False)
+)
+HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED", default=False)
 )
 
 DEFAULT_HHS_NOFO_METRIC_GOALS = {
@@ -655,6 +671,16 @@ CONSTANCE_CONFIG = {
     "HHS_NOFO_POLICY_EXPORT_ENABLED": (
         HHS_NOFO_POLICY_EXPORT_ENABLED_DEFAULT,
         "Whether the second export button that strips intact HHS Department Governance language and flags anything ambiguous/altered, for faster OMB clearance review, is available. Does not affect the existing Word/PDF export paths while disabled.",
+        bool,
+    ),
+    "HHS_NOFO_ASSISTANCE_LISTING_ENABLED": (
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED_DEFAULT,
+        "Whether the assistance listing number field is shown on the Basic information edit page, auto-suggested on import, and editable. While disabled, the field is hidden and its edit page 404s even if visited directly.",
+        bool,
+    ),
+    "HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED": (
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED_DEFAULT,
+        "Whether the assistance listing number is displayed on the NOFO's public PDF cover page. Only relevant once HHS_NOFO_ASSISTANCE_LISTING_ENABLED is also on.",
         bool,
     ),
 }
