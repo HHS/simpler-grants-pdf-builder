@@ -9,6 +9,7 @@ from .models import (
     Section,
     Subsection,
 )
+from .nofo import add_table_header_scopes_to_html
 from .utils import get_icon_path_choices, user_is_nih_group
 
 
@@ -304,6 +305,9 @@ class SubsectionEditForm(forms.ModelForm):
 
         return cleaned_data
 
+    def clean_body(self):
+        return add_table_header_scopes_to_html(self.cleaned_data.get("body", ""))
+
 
 class SubsectionCreateForm(forms.ModelForm):
     body = MartorFormField(required=False)
@@ -336,6 +340,9 @@ class SubsectionCreateForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+    def clean_body(self):
+        return add_table_header_scopes_to_html(self.cleaned_data.get("body", ""))
 
 
 # Used only by NofoAddEndNotesSectionView. The Endnotes section's name and

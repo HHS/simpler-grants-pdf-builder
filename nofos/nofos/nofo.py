@@ -203,6 +203,7 @@ def process_nofo_html(soup, top_heading_level):
     preserve_table_heading_links(soup)
     clean_heading_tags(soup)
     decompose_before_you_begin_section(soup)
+    add_table_header_scopes(soup)
     clean_table_cells(soup)
     unwrap_empty_elements(soup)
     decompose_empty_tags(soup)
@@ -758,13 +759,63 @@ def convert_table_first_row_to_header_row(table):
             cell.name = "th"
 
 
+def _get_unambiguous_grouped_header_rows(table, require_exactly_two=False):
+    """Return the first two rows when they form a supported grouped header."""
+    thead = table.find("thead", recursive=False)
+    if not thead:
+        return None
+
+    rows = thead.find_all("tr", recursive=False)
+    if len(rows) < 2 or (require_exactly_two and len(rows) != 2):
+        return None
+
+    first_row_cells = rows[0].find_all(["th", "td"], recursive=False)
+    second_row_cells = rows[1].find_all(["th", "td"], recursive=False)
+
+    if (
+        not first_row_cells
+        or not second_row_cells
+        or any(cell.name != "th" for cell in first_row_cells + second_row_cells)
+    ):
+        return None
+
+    try:
+        group_widths = [int(cell.get("colspan", "1")) for cell in first_row_cells]
+        column_widths = [int(cell.get("colspan", "1")) for cell in second_row_cells]
+        rowspans = [
+            int(cell.get("rowspan", "1")) for cell in first_row_cells + second_row_cells
+        ]
+    except (TypeError, ValueError):
+        return None
+
+    if (
+        any(width <= 1 for width in group_widths)
+        or any(width != 1 for width in column_widths)
+        or any(rowspan != 1 for rowspan in rowspans)
+        or sum(group_widths) != len(second_row_cells)
+    ):
+        return None
+
+    return rows[0], rows[1]
+
+
+def _add_scopes_to_grouped_header_rows(rows):
+    first_row, second_row = rows
+    for cell in first_row.find_all("th", recursive=False):
+        cell["scope"] = "colgroup"
+    for cell in second_row.find_all("th", recursive=False):
+        cell["scope"] = "col"
+
+
 def convert_table_with_all_ths_to_a_regular_table(table):
     """
     Converts a table with all rows in the thead and th cells to a standard table structure.
 
     This function checks if the table has a thead, no tbody, and more than one row in the thead.
-    If these conditions are met, it creates a tbody after the thead and moves all rows except
-    the first one to the tbody. Additionally, it converts all th cells in the tbody to td cells.
+    If these conditions are met, it creates a tbody after the thead and moves
+    data rows into it. A strictly recognized two-row grouped header is kept in
+    the thead with explicit scopes; otherwise only the first row is retained as
+    a header. All th cells moved into the tbody are converted to td cells.
     """
     # if there are cells with "rowspan" not equal to 1, return early
     cells_with_rowspan = table.find_all(
@@ -777,19 +828,70 @@ def convert_table_with_all_ths_to_a_regular_table(table):
     thead = table.find("thead")
     tbody = table.find("tbody")
 
+    rows = thead.find_all("tr", recursive=False) if thead else []
+
     # Check if thead exists, tbody does not exist, and thead contains more than one row
-    if thead and not tbody and len(thead.find_all("tr")) > 1:
+    if thead and not tbody and len(rows) > 1:
+        grouped_header_rows = _get_unambiguous_grouped_header_rows(table)
+        header_row_count = 2 if grouped_header_rows else 1
+
+        if grouped_header_rows:
+            _add_scopes_to_grouped_header_rows(grouped_header_rows)
+
+        data_rows = rows[header_row_count:]
+        if not data_rows:
+            return
+
         # Create a new tbody element as a string and parse it into a BeautifulSoup tag
         new_tbody = BeautifulSoup("<tbody></tbody>", "html.parser").tbody
         table.append(new_tbody)
 
-        # Move all rows except the first one to the new tbody
-        rows = thead.find_all("tr")
-        for row in rows[1:]:
+        # Move data rows to the new tbody
+        for row in data_rows:
             # Convert th cells to td cells
             for th in row.find_all("th"):
                 th.name = "td"
             new_tbody.append(row.extract())
+
+
+def add_table_header_scopes(soup):
+    """Add explicit scope relationships to unambiguous two-row table headers.
+
+    A supported header has exactly two rows: one or more spanning ``th`` cells
+    in the first row and one single-column ``th`` per column in the second.
+    Irregular or more deeply nested headers are left unchanged so the importer
+    never guesses at an ambiguous relationship.
+    """
+    updated_tables = 0
+
+    for table in soup.find_all("table"):
+        grouped_header_rows = _get_unambiguous_grouped_header_rows(
+            table, require_exactly_two=True
+        )
+        if not grouped_header_rows:
+            continue
+
+        _add_scopes_to_grouped_header_rows(grouped_header_rows)
+
+        updated_tables += 1
+
+    return updated_tables
+
+
+def add_table_header_scopes_to_html(value):
+    """Return subsection content with supported HTML table scopes added."""
+    if not value or "<table" not in value.lower():
+        return value
+
+    table_pattern = re.compile(r"<table\b[\s\S]*?</table>", re.IGNORECASE)
+
+    def add_scopes(match):
+        table_soup = BeautifulSoup(match.group(0), "html.parser")
+        if add_table_header_scopes(table_soup):
+            return str(table_soup.table)
+        return match.group(0)
+
+    return table_pattern.sub(add_scopes, value)
 
 
 def get_sections_from_soup(soup, top_heading_level="h1"):
