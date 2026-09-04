@@ -685,6 +685,36 @@ CONSTANCE_CONFIG = {
     ),
 }
 
+# Template-version detection is intentionally declarative so structural signals can
+# evolve with HHS templates without changing the classifier. Keep these rules in
+# source control so changes are reviewed and tested against representative fixtures.
+NOFO_TEMPLATE_VERSION_RULES = [
+    {
+        "id": "fy27-structure-v1",
+        "version": "fy27",
+        "signals": [
+            {
+                "id": "before-you-get-started-heading",
+                "type": "heading",
+                "text": "Before You Get Started",
+            },
+            {
+                "id": "application-submission-deadline",
+                "type": "text_prefix",
+                "text": "Application submission deadline:",
+            },
+            {
+                "id": "other-key-dates-reference",
+                "type": "text_contains",
+                "text": "See other key dates",
+            },
+        ],
+        # Two signals provide conservative classification without making any
+        # single heading or phrase mandatory in modified/AM-generated documents.
+        "minimum_matches": 2,
+    },
+]
+
 # Django codemirror
 DJANGO_MIRROR_DEFAULTS = {
     "mode": "css",

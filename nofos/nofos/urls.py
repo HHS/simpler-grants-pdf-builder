@@ -157,6 +157,11 @@ urlpatterns = [
         name="nofo_edit_byb",
     ),
     path(
+        "<uuid:pk>/edit/template-version",
+        views.NofoEditTemplateVersionView.as_view(),
+        name="nofo_edit_template_version",
+    ),
+    path(
         "<uuid:pk>/edit/modifications",
         views.NofoEditModificationView.as_view(),
         name="nofo_modifications",

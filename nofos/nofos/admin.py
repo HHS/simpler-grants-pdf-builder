@@ -171,6 +171,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
                     "cover_image",
                     "cover_image_alt_text",
                     "before_you_begin",
+                    "template_version",
                     "modifications",
                     "archived",
                     "successor",
@@ -185,12 +186,17 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
             "Advanced options",
             {
                 "classes": ("collapse",),
-                "fields": ("inline_css",),
+                "fields": ("inline_css", "template_version_detection"),
             },
         ),
     )
 
-    readonly_fields = ("filename", "created", "updated")
+    readonly_fields = (
+        "filename",
+        "created",
+        "updated",
+        "template_version_detection",
+    )
     mirror_fields = ("inline_css",)
 
     @admin.action(description="Duplicate selected NOFOs")

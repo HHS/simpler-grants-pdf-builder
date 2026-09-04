@@ -470,6 +470,11 @@ Edit “{{ nofo|nofo_name }}”
             deadline</span></a></td>
     </tr>
     <tr>
+      <th scope="row">Template version</th>
+      <td>{{ nofo.get_template_version_display }}</td>
+      <td><a href="{% url 'nofos:nofo_edit_template_version' nofo.id %}">Edit<span class="usa-sr-only"> template version</span></a></td>
+    </tr>
+    <tr>
       <th scope="row">OpDiv</th>
       <td>{{ nofo.opdiv|get_value_or_none:"OpDiv" }}</td>
       <td><a href="{% url 'nofos:nofo_edit_opdiv' nofo.id %}">Edit<span class="usa-sr-only"> OpDiv</span></a></td>

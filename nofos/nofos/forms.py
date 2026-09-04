@@ -68,6 +68,7 @@ NofoTaglineForm = create_nofo_form_class(
     ["tagline"], not_required_labels=["NOFO tagline"]
 )
 NofoBeforeYouBeginForm = create_nofo_form_class(["before_you_begin"])
+NofoTemplateVersionForm = create_nofo_form_class(["template_version"])
 
 
 # Nofo status form: same options but with a divider inserted after "published"
