@@ -1358,6 +1358,7 @@ label.usa-label {
   width: 15%;
 }
 
+.nofo_edit #nofo-status,
 .nofo_edit table.usa-table th.nofo-edit-table--subsection--name {
   scroll-margin-top: 158px;
 }
