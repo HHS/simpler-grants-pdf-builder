@@ -605,6 +605,11 @@ class BaseNofoImportView(View):
     # Only NOFO Builder's own import views (not Composer or Compare) should
     # log ImportAttempt rows - those tools import different kinds of documents.
     track_import_metrics = False
+    # Overridden by NofosImportOverwriteView. Read by post()'s own failure
+    # branches below so a parsing-stage failure during a reimport is logged
+    # as a reimport (and tied to the NOFO being reimported), not as a failed
+    # new import.
+    is_reimport = False
 
     def get_template_name(self):
         """
@@ -691,6 +696,8 @@ class BaseNofoImportView(View):
                     log_import_attempt(
                         request,
                         filename=attempt_filename,
+                        is_reimport=self.is_reimport,
+                        nofo=getattr(self, "nofo", None),
                         error_code="IMPORT-DOCX-CONVERSION",
                     )
                 return render_blocking_import_error(
@@ -720,6 +727,8 @@ class BaseNofoImportView(View):
                     log_import_attempt(
                         request,
                         filename=attempt_filename,
+                        is_reimport=self.is_reimport,
+                        nofo=getattr(self, "nofo", None),
                         error_code="IMPORT-STRICT-FORMATTING",
                     )
                 return render_blocking_import_error(
@@ -751,6 +760,8 @@ class BaseNofoImportView(View):
                     log_import_attempt(
                         request,
                         filename=attempt_filename,
+                        is_reimport=self.is_reimport,
+                        nofo=getattr(self, "nofo", None),
                         error_code="IMPORT-AMBIGUOUS-HEADINGS",
                     )
                 return render_blocking_import_error(
@@ -772,6 +783,8 @@ class BaseNofoImportView(View):
                 log_import_attempt(
                     request,
                     filename=attempt_filename,
+                    is_reimport=self.is_reimport,
+                    nofo=getattr(self, "nofo", None),
                     error_code="IMPORT-VALIDATION-OTHER",
                 )
             messages.error(request, error_message)
@@ -790,6 +803,8 @@ class BaseNofoImportView(View):
                 log_import_attempt(
                     request,
                     filename=attempt_filename,
+                    is_reimport=self.is_reimport,
+                    nofo=getattr(self, "nofo", None),
                     error_code="IMPORT-UNEXPECTED",
                 )
             return render_import_server_error(request, retry_url=self.get_retry_url())
@@ -972,6 +987,7 @@ class NofosImportOverwriteView(
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
     track_import_metrics = True
+    is_reimport = True
 
     def dispatch(self, request, *args, **kwargs):
         """

@@ -22,6 +22,12 @@ from .models import ImportAttempt, Nofo
 # Builder" for the active-users metric.
 ACTIVITY_CONTENT_TYPES = ["nofo", "section", "subsection"]
 
+# BloomUser.group / Nofo.group values that represent internal Bloomworks
+# staff/admin accounts and the staging test environment, not real OpDiv
+# end-users - excluded from every metric below so internal activity doesn't
+# inflate numbers meant to describe actual product usage.
+EXCLUDED_GROUPS = ["bloom", "staging"]
+
 
 def month_boundaries(start, count):
     """
@@ -55,14 +61,21 @@ def months_from(start, end=None):
 
 
 def total_users_by_month(months):
-    """Cumulative BloomUser count as of the end of each month."""
-    return [BloomUser.objects.filter(date_joined__lt=end).count() for _, end in months]
+    """Cumulative BloomUser count as of the end of each month, excluding
+    Bloomworks/staging accounts."""
+    return [
+        BloomUser.objects.exclude(group__in=EXCLUDED_GROUPS)
+        .filter(date_joined__lt=end)
+        .count()
+        for _, end in months
+    ]
 
 
 def active_users_by_month(months):
     """
     Distinct users with >=1 CRUDEvent on a Nofo, Section, or Subsection within
     each month (import, edit, print - logging in alone doesn't create one).
+    Excludes Bloomworks/staging accounts.
     """
     results = []
     for start, end in months:
@@ -73,6 +86,7 @@ def active_users_by_month(months):
                 datetime__lt=end,
                 user_id__isnull=False,
             )
+            .exclude(user__group__in=EXCLUDED_GROUPS)
             .values("user_id")
             .distinct()
             .count()
@@ -82,9 +96,12 @@ def active_users_by_month(months):
 
 
 def nofos_created_by_month(months):
-    """New NOFO records first imported in each month."""
+    """New NOFO records first imported in each month, excluding
+    Bloomworks/staging NOFOs."""
     return [
-        Nofo.objects.filter(created__gte=start, created__lt=end).count()
+        Nofo.objects.exclude(group__in=EXCLUDED_GROUPS)
+        .filter(created__gte=start, created__lt=end)
+        .count()
         for start, end in months
     ]
 
@@ -128,10 +145,14 @@ def time_to_first_live_pdf_by_month(months):
     calendar time, including any time spent waiting on outside review - not
     just active editing. NOFOs never downloaded aren't counted (there's
     nothing to average), so this only reflects NOFOs that reached a finished
-    PDF.
+    PDF. Excludes Bloomworks/staging NOFOs.
     """
     first_live_by_nofo = _first_live_print_by_nofo()
-    nofos = list(Nofo.objects.filter(created__isnull=False).values("id", "created"))
+    nofos = list(
+        Nofo.objects.exclude(group__in=EXCLUDED_GROUPS)
+        .filter(created__isnull=False)
+        .values("id", "created")
+    )
 
     results = []
     for start, end in months:
@@ -147,12 +168,13 @@ def time_to_first_live_pdf_by_month(months):
 
 
 def import_error_rate_by_month(months):
-    """% of import attempts (new imports + reimports) that failed outright."""
+    """% of import attempts (new imports + reimports) that failed outright.
+    Excludes attempts by Bloomworks/staging accounts."""
     results = []
     for start, end in months:
         attempts = ImportAttempt.objects.filter(
             created_at__gte=start, created_at__lt=end
-        )
+        ).exclude(user__group__in=EXCLUDED_GROUPS)
         total = attempts.count()
         if not total:
             results.append(None)
@@ -163,11 +185,16 @@ def import_error_rate_by_month(months):
 
 
 def avg_warnings_by_month(months):
-    """Average mammoth warning count across successful import attempts."""
+    """Average mammoth warning count across successful import attempts.
+    Excludes attempts by Bloomworks/staging accounts."""
     results = []
     for start, end in months:
-        avg = ImportAttempt.objects.filter(
-            created_at__gte=start, created_at__lt=end, error_code=""
-        ).aggregate(avg=Avg("warning_count"))["avg"]
+        avg = (
+            ImportAttempt.objects.filter(
+                created_at__gte=start, created_at__lt=end, error_code=""
+            )
+            .exclude(user__group__in=EXCLUDED_GROUPS)
+            .aggregate(avg=Avg("warning_count"))["avg"]
+        )
         results.append(round(avg, 2) if avg is not None else None)
     return results
