@@ -37,6 +37,7 @@ from django.views.generic import (
     DetailView,
     FormView,
     ListView,
+    TemplateView,
     UpdateView,
     View,
 )
@@ -83,6 +84,7 @@ from .forms import (
 from .mixins import (
     GroupAccessObjectMixinFactory,
     JsonResponseBadRequestMixin,
+    MetricsViewerRequiredMixin,
     PreventIfArchivedOrCancelledMixin,
     PreventIfPublishedMixin,
     SuperuserRequiredMixin,
@@ -2841,3 +2843,17 @@ class NofoSubsectionDeleteView(
         )
 
         return super().form_valid(form)
+
+
+class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
+    """
+    Usage & import-quality metrics for the NOFO Builder team. Gated by the
+    "nofos.view_builder_metrics" permission (granted via the "Metrics viewers"
+    group, or automatically to superusers).
+
+    This is a placeholder: the actual charts land in a follow-up PR once the
+    query layer (built on top of ImportAttempt, CRUDEvent, Nofo and BloomUser)
+    is in place.
+    """
+
+    template_name = "nofos/builder_metrics.html"
