@@ -198,6 +198,7 @@ urlpatterns = [
         name="nofo_check_links",
     ),
     path("search", views.NofoSearchView.as_view(), name="nofo_search"),
+    path("metrics", views.BuilderMetricsView.as_view(), name="builder_metrics"),
     path(
         "check-link",
         views.CheckNOFOLinkSingleView.as_view(),
