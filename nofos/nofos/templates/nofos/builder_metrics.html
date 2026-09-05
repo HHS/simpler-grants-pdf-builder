@@ -1,8 +1,279 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}NOFO Builder metrics{% endblock %}
 
+{% block css %}
+<style>
+  .metrics-page { padding: 1rem 0 2rem; }
+  .metrics-toolbar {
+    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .metrics-meta { color: var(--color--text-grey); font-size: 0.85rem; margin-top: 0.25rem; }
+  .metrics-pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--color--table-grey); border: 1px solid var(--color--light-grey);
+    border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.8rem; font-weight: 600;
+    color: var(--color--text-default);
+  }
+  .metrics-kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem; margin-bottom: 1.75rem;
+  }
+  .metrics-kpi {
+    background: #fff; border: 1px solid var(--color--light-grey); border-radius: 6px;
+    padding: 0.9rem 1rem;
+  }
+  .metrics-kpi .label {
+    font-size: 0.75rem; color: var(--color--text-grey); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.4rem;
+  }
+  .metrics-kpi .value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+  .metrics-kpi .delta { margin-top: 0.4rem; font-size: 0.78rem; font-weight: 600; }
+  .metrics-kpi .delta.good { color: var(--color--green); }
+  .metrics-kpi .delta.bad { color: var(--color--usa-error-message); }
+  .metrics-kpi .delta.flat { color: var(--color--text-grey); }
+  .metrics-section-heading {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--color--text-grey); margin: 0 0 0.75rem;
+  }
+  .metrics-chart-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;
+  }
+  .metrics-chart-card {
+    background: #fff; border: 1px solid var(--color--light-grey); border-radius: 6px;
+    padding: 1rem 1.1rem 0.6rem;
+  }
+  .metrics-chart-card header {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem;
+  }
+  .metrics-chart-card h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+  .metrics-chart-card .unit {
+    font-size: 0.75rem; color: var(--color--text-grey); font-weight: 600; white-space: nowrap;
+  }
+  .metrics-chart-card .caption { font-size: 0.72rem; color: var(--color--text-grey); margin: 0 0 0.35rem; }
+  .metrics-chart-card svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .metrics-grid-line { stroke: var(--color--light-grey); stroke-width: 1; }
+  .metrics-axis-label { fill: var(--color--text-grey); font-size: 9.5px; }
+  .metrics-hit-target { fill: transparent; cursor: crosshair; }
+  .metrics-chart-def {
+    margin: 0.6rem 0 0.25rem; padding-top: 0.6rem; border-top: 1px solid var(--color--light-grey);
+    font-size: 0.78rem; color: var(--color--text-default); line-height: 1.5;
+  }
+  .metrics-chart-def b { font-weight: 700; }
+  #metrics-tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--color--usa-link-hover); color: #fff;
+    font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.6rem; border-radius: 4px;
+    opacity: 0; transform: translate(-50%, calc(-100% - 8px)); transition: opacity 0.08s ease;
+    white-space: nowrap;
+  }
+  #metrics-tooltip.show { opacity: 1; }
+  #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
+  .metrics-empty-note {
+    margin-top: 1.5rem; color: var(--color--text-grey); font-size: 0.8rem; max-width: 42rem;
+  }
+
+  @media print {
+    .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-  <h1>NOFO Builder metrics</h1>
-  <p>Usage and import-quality metrics are coming soon.</p>
+<div class="metrics-page">
+  <div class="metrics-toolbar">
+    <div>
+      <h1>NOFO Builder metrics</h1>
+      <div class="metrics-meta">
+        <span class="metrics-pill">Since {{ metrics_data.months.0 }} &middot; updates automatically each month</span>
+      </div>
+    </div>
+    <button type="button" class="usa-button" onclick="window.print()">
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <p class="metrics-section-heading">This month at a glance</p>
+  <div class="metrics-kpis" id="metrics-kpi-row"></div>
+
+  <p class="metrics-section-heading" style="margin-top: 0.5rem">Monthly trends</p>
+  <div class="metrics-chart-grid" id="metrics-chart-grid"></div>
+
+  <p class="metrics-empty-note">
+    Numbers reflect NOFO Builder's own database and update automatically each time this page loads -
+    there's nothing to refresh or re-run. Months with no data yet (for example, before import-quality
+    tracking started) show as "No data" rather than zero.
+  </p>
+</div>
+
+{{ metrics_data|json_script:"metrics-data" }}
+
+<div id="metrics-tooltip"><span class="main"></span><span class="sub"></span></div>
+
+<script>
+(function () {
+  var raw = JSON.parse(document.getElementById('metrics-data').textContent);
+  var months = raw.months;
+  var lastIndex = months.length - 1;
+
+  function fmtCount(v) { return v === null || v === undefined ? "No data" : String(v); }
+  function fmtPct(v) { return v === null || v === undefined ? "No data" : v + "%"; }
+  function fmtWarnings(v) { return v === null || v === undefined ? "No data" : v.toFixed(1); }
+  function fmtDuration(v) {
+    if (v === null || v === undefined) return "No data";
+    return v < 24 ? Math.round(v) + " hrs" : (v / 24).toFixed(1) + " days";
+  }
+
+  var metrics = {
+    totalUsers: {
+      title: "Total users", unit: "cumulative", type: "line", color: "var(--color--usa-link)",
+      good: "up", data: raw.totalUsers, fmt: fmtCount,
+      def: "Cumulative number of NOFO Builder accounts that exist, counted from each account's sign-up date. Includes everyone who's ever had access, active or not."
+    },
+    activeUsers: {
+      title: "Monthly active users", unit: "users", type: "bar", color: "var(--color--green)",
+      good: "up", data: raw.activeUsers, fmt: fmtCount,
+      def: "Distinct users who took at least one recorded action that month — importing, editing, or printing/downloading a NOFO. Logging in alone doesn't count."
+    },
+    nofosCreated: {
+      title: "NOFOs created", unit: "per month", type: "bar", color: "var(--color--usa-link)",
+      good: "up", data: raw.nofosCreated, fmt: fmtCount,
+      def: "Number of new NOFO records first imported into NOFO Builder that month."
+    },
+    timeToPdf: {
+      title: "Import → first live PDF", unit: "typical duration", type: "line", color: "var(--color--usa-link-hover)",
+      good: "down", data: raw.timeToPdfHours, fmt: fmtDuration,
+      def: "The median — the middle value, half faster / half slower — time from a NOFO's first import to the first time someone downloads a finished, non-watermarked PDF for it. This is full calendar time, including any time a NOFO spent waiting on outside review, not just active editing."
+    },
+    errorRate: {
+      title: "Blocking import errors", unit: "% of attempts", type: "bar", color: "var(--color--usa-error-message)",
+      good: "down", data: raw.errorRatePct, fmt: fmtPct,
+      def: "Share of Word-document import attempts that fail outright and require the user to fix their document before the NOFO can be created — e.g. a missing required field or an unrecognized heading structure."
+    },
+    avgWarnings: {
+      title: "Warnings per import", unit: "avg count", type: "bar", color: "var(--color--usa-error-message)",
+      good: "down", data: raw.avgWarnings, fmt: fmtWarnings,
+      def: "Average number of non-blocking formatting warnings shown on successful imports. The import still goes through, but the flagged content may need manual cleanup."
+    }
+  };
+
+  var kpiOrder = [
+    ["totalUsers", "Total users"],
+    ["activeUsers", "Active users"],
+    ["nofosCreated", "NOFOs created"],
+    ["timeToPdf", "Typical time to first PDF"],
+    ["errorRate", "Error rate"]
+  ];
+
+  var kpiRow = document.getElementById('metrics-kpi-row');
+  kpiOrder.forEach(function (pair) {
+    var m = metrics[pair[0]], label = pair[1];
+    var cur = m.data[lastIndex];
+    var prev = lastIndex > 0 ? m.data[lastIndex - 1] : null;
+    var cls = "flat", arrow = "—";
+    if (cur !== null && prev !== null && cur !== undefined && prev !== undefined) {
+      var diff = cur - prev;
+      var improved = m.good === "up" ? diff > 0 : diff < 0;
+      if (Math.abs(diff) > 1e-9) {
+        cls = improved ? "good" : "bad";
+        arrow = diff > 0 ? "▲" : "▼";
+      }
+    }
+    var div = document.createElement('div');
+    div.className = 'metrics-kpi';
+    div.innerHTML =
+      '<div class="label">' + label + '</div>' +
+      '<div class="value">' + m.fmt(cur) + '</div>' +
+      '<div class="delta ' + cls + '">' + arrow + ' vs. last month</div>';
+    kpiRow.appendChild(div);
+  });
+
+  var W = 460, H = 190, PAD = { top: 14, right: 12, bottom: 24, left: 8 };
+  var plotW = W - PAD.left - PAD.right, plotH = H - PAD.top - PAD.bottom;
+
+  function scaleY(v, min, max) {
+    if (max === min) return PAD.top + plotH / 2;
+    return PAD.top + plotH - ((v - min) / (max - min)) * plotH;
+  }
+  function scaleX(i, n) { return n <= 1 ? PAD.left : PAD.left + (i / (n - 1)) * plotW; }
+
+  var tooltip = document.getElementById('metrics-tooltip');
+  function showTip(evt, title, sub) {
+    tooltip.querySelector('.main').textContent = title;
+    tooltip.querySelector('.sub').textContent = sub;
+    tooltip.style.left = evt.clientX + 'px';
+    tooltip.style.top = evt.clientY + 'px';
+    tooltip.classList.add('show');
+  }
+  function hideTip() { tooltip.classList.remove('show'); }
+
+  function buildChart(m) {
+    var n = m.data.length;
+    var known = m.data.filter(function (v) { return v !== null && v !== undefined; });
+    var max = known.length ? Math.max.apply(null, known) * 1.18 : 1;
+    var barW = Math.min(30, (plotW / n) * 0.55);
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + m.title + ' by month">';
+    for (var g = 0; g <= 2; g++) {
+      var gy = PAD.top + (plotH / 2) * g;
+      svg += '<line class="metrics-grid-line" x1="' + PAD.left + '" x2="' + (W - PAD.right) + '" y1="' + gy + '" y2="' + gy + '" />';
+    }
+
+    if (m.type === 'line') {
+      var path = '', started = false;
+      m.data.forEach(function (v, i) {
+        if (v === null || v === undefined) { started = false; return; }
+        var x = scaleX(i, n), y = scaleY(v, 0, max);
+        path += (started ? 'L' : 'M') + x + ',' + y + ' ';
+        started = true;
+      });
+      svg += '<path d="' + path.trim() + '" fill="none" stroke="' + m.color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      m.data.forEach(function (v, i) {
+        var x = scaleX(i, n);
+        var partial = i === n - 1;
+        if (v === null || v === undefined) return;
+        var y = scaleY(v, 0, max);
+        svg += '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="' + (partial ? '#fff' : m.color) + '" stroke="' + m.color + '" stroke-width="2"/>';
+        svg += '<circle class="metrics-hit-target" data-month="' + months[i] + '" data-val="' + m.fmt(v) + (partial ? ' (in progress)' : '') + '" cx="' + x + '" cy="' + y + '" r="12"/>';
+      });
+    } else {
+      m.data.forEach(function (v, i) {
+        var x = scaleX(i, n) - barW / 2;
+        var partial = i === n - 1;
+        var val = (v === null || v === undefined) ? 0 : v;
+        var y = scaleY(val, 0, max);
+        svg += '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + ((PAD.top + plotH) - y) + '" rx="4" ry="4" fill="' + m.color + '" opacity="' + (partial ? 0.45 : (v === null || v === undefined ? 0.15 : 1)) + '"/>';
+        svg += '<rect class="metrics-hit-target" data-month="' + months[i] + '" data-val="' + m.fmt(v) + (partial ? ' (in progress)' : '') + '" x="' + (x - 4) + '" y="' + PAD.top + '" width="' + (barW + 8) + '" height="' + plotH + '"/>';
+      });
+    }
+
+    [0, Math.floor((n - 1) / 2), n - 1].forEach(function (i) {
+      svg += '<text class="metrics-axis-label" x="' + scaleX(i, n) + '" y="' + (H - 6) + '" text-anchor="middle">' + months[i] + (i === n - 1 ? '*' : '') + '</text>';
+    });
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  var grid = document.getElementById('metrics-chart-grid');
+  Object.keys(metrics).forEach(function (key) {
+    var m = metrics[key];
+    var card = document.createElement('div');
+    card.className = 'metrics-chart-card';
+    card.innerHTML =
+      '<header><h3>' + m.title + '</h3><span class="unit">' + m.unit + '</span></header>' +
+      '<p class="caption">* most recent month in progress</p>' +
+      buildChart(m) +
+      '<p class="metrics-chart-def"><b>Definition:</b> ' + m.def + '</p>';
+    grid.appendChild(card);
+  });
+
+  document.querySelectorAll('.metrics-hit-target').forEach(function (el) {
+    el.addEventListener('mousemove', function (e) { showTip(e, el.dataset.month, el.dataset.val); });
+    el.addEventListener('mouseleave', hideTip);
+  });
+})();
+</script>
 {% endblock %}

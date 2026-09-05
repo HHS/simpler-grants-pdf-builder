@@ -90,6 +90,15 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
+from .metrics import (
+    active_users_by_month,
+    avg_warnings_by_month,
+    import_error_rate_by_month,
+    months_from,
+    nofos_created_by_month,
+    time_to_first_live_pdf_by_month,
+    total_users_by_month,
+)
 from .models import THEME_CHOICES, ImportAttempt, Nofo, Section, Subsection
 from .nofo import (
     END_NOTES_PLACEHOLDER_BODY,
@@ -2850,10 +2859,28 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
     Usage & import-quality metrics for the NOFO Builder team. Gated by the
     "nofos.view_builder_metrics" permission (granted via the "Metrics viewers"
     group, or automatically to superusers).
-
-    This is a placeholder: the actual charts land in a follow-up PR once the
-    query layer (built on top of ImportAttempt, CRUDEvent, Nofo and BloomUser)
-    is in place.
     """
 
     template_name = "nofos/builder_metrics.html"
+
+    # When NOFO Builder metrics tracking started (see #865) - not a hard
+    # cutoff, just where the trend starts; months_from() has no upper bound,
+    # so later months just keep appending as they occur.
+    metrics_since = datetime(2026, 9, 1)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        start = timezone.make_aware(self.metrics_since)
+        months = months_from(start)
+
+        context["metrics_data"] = {
+            "months": [month_start.strftime("%b '%y") for month_start, _ in months],
+            "totalUsers": total_users_by_month(months),
+            "activeUsers": active_users_by_month(months),
+            "nofosCreated": nofos_created_by_month(months),
+            "timeToPdfHours": time_to_first_live_pdf_by_month(months),
+            "errorRatePct": import_error_rate_by_month(months),
+            "avgWarnings": avg_warnings_by_month(months),
+        }
+        return context
