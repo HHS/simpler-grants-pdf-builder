@@ -9,10 +9,12 @@
    * Box/typography treatment (border-1px border-base-lighter radius-md
    * padding-2 / font-sans-2xs / text-base-dark / text-italic, etc.) reuses
    * the app's existing USWDS utility classes. White background rather than
-   * readability_metrics_panel.html's bg-base-lightest fill (#f0f0f0) - that
-   * gray fill is otherwise only used for alerts/drop-zones/nav chrome
-   * elsewhere in the app, not as a general "boxed content" background, and
-   * it reduces contrast against this page's colored chart lines/bars.
+   * readability_metrics_panel.html's bg-base-lightest fill (#f0f0f0): that
+   * panel's gray fill is doing real visual work there - it marks the
+   * content as "revealed," set apart from the page, when its accordion
+   * opens. This page has no such affordance to support (it's always
+   * visible, nothing to expand), and the fill would only cost contrast
+   * against this page's colored chart lines/bars for no benefit.
    * Only layout/behavior that has no USWDS equivalent is custom CSS below.
    */
   .metrics-page { padding: 1rem 0 2rem; }
