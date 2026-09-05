@@ -22,10 +22,6 @@
     display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
     gap: 1rem; margin-bottom: 1.5rem;
   }
-  .metrics-section-heading {
-    font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-    color: var(--color--text-default); margin: 0 0 0.75rem;
-  }
   .metrics-delta-good { color: var(--color--green); }
   .metrics-delta-bad { color: var(--color--usa-error-message); }
   .metrics-delta-flat { color: var(--color--text-grey); }
@@ -75,10 +71,10 @@
     </button>
   </div>
 
-  <h2 class="metrics-section-heading">This month at a glance</h2>
+  <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
   <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
 
-  <h2 class="metrics-section-heading" style="margin-top: 0.5rem">Monthly trends</h2>
+  <h2 class="font-heading-md margin-top-5 margin-bottom-2">Monthly trends</h2>
   <div class="metrics-chart-grid" id="metrics-chart-grid"></div>
 
   <p class="metrics-empty-note">
