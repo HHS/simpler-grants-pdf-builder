@@ -1179,3 +1179,77 @@ class NofoReadabilityScore(models.Model):
     def is_current(self):
         """Whether this snapshot still describes the NOFO's current content."""
         return self.nofo_revision == self.nofo.updated
+
+
+class ImportAttempt(models.Model):
+    """
+    A record of one NOFO import attempt - new import or reimport, successful or
+    not - used to track import quality over time (blocking errors and non-blocking
+    formatting warnings). Written once, at the end of the attempt; never updated.
+    """
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = "Import attempt"
+        verbose_name_plural = "Import attempts"
+
+    nofo = models.ForeignKey(
+        Nofo,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="import_attempts",
+        help_text=(
+            "The NOFO this attempt created or overwrote, if it succeeded. Null "
+            "for failed new-NOFO imports, since no NOFO exists to point to. If "
+            "the NOFO is later deleted, this row is kept with nofo set to null, "
+            "so the historical count of attempts doesn't change."
+        ),
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="The user who attempted the import.",
+    )
+
+    filename = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="The uploaded file's name, as submitted.",
+    )
+
+    is_reimport = models.BooleanField(
+        default=False,
+        help_text=(
+            "True if this was a reimport (overwrite) of an existing NOFO, rather "
+            "than a new NOFO import."
+        ),
+    )
+
+    error_code = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text=(
+            "The blocking error code shown to the user (eg 'IMPORT-OPDIV-BLANK'), "
+            "or blank if the import succeeded."
+        ),
+    )
+
+    warning_count = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Number of non-blocking Word-formatting warnings mammoth reported for "
+            "this attempt. Always 0 for HTML-file uploads, which never go through "
+            "mammoth."
+        ),
+    )
+
+    def __str__(self):
+        outcome = self.error_code or "succeeded"
+        return f"{self.filename} @ {self.created_at.isoformat()} ({outcome})"
