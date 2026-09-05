@@ -24,7 +24,7 @@
   }
   .metrics-section-heading {
     font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-    color: var(--color--text-grey); margin: 0 0 0.75rem;
+    color: var(--color--text-default); margin: 0 0 0.75rem;
   }
   .metrics-delta-good { color: var(--color--green); }
   .metrics-delta-bad { color: var(--color--usa-error-message); }
@@ -165,7 +165,7 @@
     div.className = 'tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2';
     div.innerHTML =
       '<div class="border-1px border-base-lighter radius-md padding-2 height-full">' +
-        '<div class="font-sans-2xs text-bold text-base-dark">' + label + '</div>' +
+        '<div class="font-sans-2xs text-bold">' + label + '</div>' +
         '<div class="font-heading-lg line-height-sans-2 margin-top-05">' + m.fmt(cur) + '</div>' +
         '<div class="metrics-delta-' + cls + ' font-sans-2xs text-bold margin-top-05">' + arrow + ' vs. last month</div>' +
       '</div>';
@@ -245,10 +245,10 @@
     var card = document.createElement('div');
     card.className = 'metrics-chart-card border-1px border-base-lighter radius-md padding-2';
     card.innerHTML =
-      '<header><h3>' + m.title + '</h3><span class="font-sans-2xs text-base-dark" style="white-space:nowrap">' + m.unit + '</span></header>' +
-      '<p class="font-sans-2xs text-base-dark text-italic margin-y-05">* most recent month in progress</p>' +
+      '<header><h3>' + m.title + '</h3><span class="font-sans-2xs" style="white-space:nowrap">' + m.unit + '</span></header>' +
+      '<p class="font-sans-2xs text-italic margin-y-05">* most recent month in progress</p>' +
       buildChart(m) +
-      '<p class="metrics-chart-def font-sans-2xs text-base-dark"><b>Definition:</b> ' + m.def + '</p>';
+      '<p class="metrics-chart-def font-sans-2xs"><b>Definition:</b> ' + m.def + '</p>';
     grid.appendChild(card);
   });
 
