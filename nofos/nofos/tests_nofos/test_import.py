@@ -81,10 +81,11 @@ class TestParseNofoFile(TestCase):
 
         html_file = SimpleUploadedFile("nofo.html", html_data, content_type="text/html")
 
-        result = parse_uploaded_file_as_html_string(html_file)
+        result, warning_count = parse_uploaded_file_as_html_string(html_file)
         self.assertIsInstance(result, str)
         self.assertTrue(len(result) > 0)
         self.assertIn("<title>My Awesome NOFO</title>", result)
+        self.assertEqual(warning_count, 0)
 
     def test_docx_file_returns_string(self):
         """
@@ -99,9 +100,10 @@ class TestParseNofoFile(TestCase):
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
 
-        result = parse_uploaded_file_as_html_string(docx_file)
+        result, warning_count = parse_uploaded_file_as_html_string(docx_file)
         self.assertIsInstance(result, str)
         self.assertIn("<h2>Step 1: Review the Opportunity</h2>", result)
+        self.assertEqual(warning_count, 0)
 
     def test_indented_application_checklist_rows_survive_render_pipeline(self):
         with open(self.application_checklist_indent_fixture_path, "rb") as f:
@@ -114,7 +116,8 @@ class TestParseNofoFile(TestCase):
         )
 
         with override_config(WORD_IMPORT_STRICT_MODE=True):
-            imported_html = replace_chars(parse_uploaded_file_as_html_string(docx_file))
+            docx_result, _ = parse_uploaded_file_as_html_string(docx_file)
+            imported_html = replace_chars(docx_result)
         imported_soup = BeautifulSoup(imported_html, "html.parser")
         imported_children = imported_soup.select("td p.application-list--left-indent")
 
@@ -152,9 +155,10 @@ class TestParseNofoFile(TestCase):
 
         # Set WORD_IMPORT_STRICT_MODE to True
         with override_config(WORD_IMPORT_STRICT_MODE=True):
-            result = parse_uploaded_file_as_html_string(docx_file)
+            result, warning_count = parse_uploaded_file_as_html_string(docx_file)
 
         self.assertIsInstance(result, str)
+        self.assertEqual(warning_count, 0)
 
     def test_docx_file_with_strict_mode_and_warnings(self):
         """
@@ -281,7 +285,7 @@ class TestFundingDetailsParagraphNormalization(TestCase):
                 ),
             )
 
-        imported_html = parse_uploaded_file_as_html_string(uploaded_file)
+        imported_html, _ = parse_uploaded_file_as_html_string(uploaded_file)
         soup = BeautifulSoup(imported_html, "html.parser")
         top_heading_level = resolve_section_heading_level(soup)
         soup, _ = process_nofo_html(soup, top_heading_level)
@@ -323,7 +327,7 @@ class TestKeyCalloutDocxImport(TestCase):
                 ),
             )
 
-        file_content = parse_uploaded_file_as_html_string(uploaded_file)
+        file_content, _ = parse_uploaded_file_as_html_string(uploaded_file)
         cleaned_content = replace_links(replace_chars(file_content))
         soup = BeautifulSoup(cleaned_content, "html.parser")
         top_heading_level = resolve_section_heading_level(soup)
@@ -900,7 +904,8 @@ class TestBlockingImportErrorPages(TestCase):
     def test_blocked_reimport_uses_shared_page_and_returns_to_nofo(self, parse_file):
         parse_file.return_value = (
             "<p>Opportunity number: TEST-001</p>"
-            "<h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+            "<h1>Section</h1><h2>Subsection</h2><p>Body</p>",
+            0,
         )
         nofo = Nofo.objects.create(
             title="Published NOFO",

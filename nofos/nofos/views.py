@@ -88,7 +88,7 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
-from .models import THEME_CHOICES, Nofo, Section, Subsection
+from .models import THEME_CHOICES, ImportAttempt, Nofo, Section, Subsection
 from .nofo import (
     END_NOTES_PLACEHOLDER_BODY,
     END_NOTES_SECTION_HTML_ID,
@@ -567,6 +567,20 @@ class NofosArchiveView(
         return redirect(self.success_url)
 
 
+def log_import_attempt(
+    request, *, filename, is_reimport=False, nofo=None, error_code="", warning_count=0
+):
+    """Record one NOFO import attempt (success or failure) for the metrics dashboard."""
+    ImportAttempt.objects.create(
+        nofo=nofo,
+        user=request.user if request.user.is_authenticated else None,
+        filename=filename,
+        is_reimport=is_reimport,
+        error_code=error_code,
+        warning_count=warning_count,
+    )
+
+
 class BaseNofoImportView(View):
     """
     Base class with common logic for parsing and processing NOFO uploads.
@@ -577,6 +591,9 @@ class BaseNofoImportView(View):
 
     template_name = "nofos/nofo_import.html"
     redirect_url_name = "nofos:nofo_import"
+    # Only NOFO Builder's own import views (not Composer or Compare) should
+    # log ImportAttempt rows - those tools import different kinds of documents.
+    track_import_metrics = False
 
     def get_template_name(self):
         """
@@ -618,9 +635,14 @@ class BaseNofoImportView(View):
         """
         # 1. Read uploaded file
         uploaded_file = request.FILES.get("nofo-import")
+        # Best-effort filename for ImportAttempt logging if parsing fails below;
+        # the real `filename` local (used on success) isn't computed until after.
+        attempt_filename = getattr(uploaded_file, "name", "") or ""
         try:
             # 2. Parse string to HTML
-            file_content = parse_uploaded_file_as_html_string(uploaded_file)
+            file_content, warning_count = parse_uploaded_file_as_html_string(
+                uploaded_file
+            )
 
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
@@ -654,6 +676,12 @@ class BaseNofoImportView(View):
                     context="BaseNofoImportView:ValidationError:IMPORT-DOCX-CONVERSION",
                     status=422,
                 )
+                if self.track_import_metrics:
+                    log_import_attempt(
+                        request,
+                        filename=attempt_filename,
+                        error_code="IMPORT-DOCX-CONVERSION",
+                    )
                 return render_blocking_import_error(
                     request,
                     title="We couldn’t import this Word document",
@@ -677,6 +705,12 @@ class BaseNofoImportView(View):
                     context="BaseNofoImportView:ValidationError:IMPORT-STRICT-FORMATTING",
                     status=422,
                 )
+                if self.track_import_metrics:
+                    log_import_attempt(
+                        request,
+                        filename=attempt_filename,
+                        error_code="IMPORT-STRICT-FORMATTING",
+                    )
                 return render_blocking_import_error(
                     request,
                     title="We couldn’t import this document",
@@ -702,6 +736,12 @@ class BaseNofoImportView(View):
                     context="BaseNofoImportView:ValidationError:IMPORT-AMBIGUOUS-HEADINGS",
                     status=422,
                 )
+                if self.track_import_metrics:
+                    log_import_attempt(
+                        request,
+                        filename=attempt_filename,
+                        error_code="IMPORT-AMBIGUOUS-HEADINGS",
+                    )
                 return render_blocking_import_error(
                     request,
                     title="We couldn’t safely determine the document structure",
@@ -717,6 +757,12 @@ class BaseNofoImportView(View):
                 )
 
             # These errors show up as inline validation errors
+            if self.track_import_metrics:
+                log_import_attempt(
+                    request,
+                    filename=attempt_filename,
+                    error_code="IMPORT-VALIDATION-OTHER",
+                )
             messages.error(request, error_message)
             return redirect(
                 self.get_redirect_url_name(), **self.get_redirect_url_kwargs()
@@ -729,6 +775,12 @@ class BaseNofoImportView(View):
                 context="BaseNofoImportView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
+            if self.track_import_metrics:
+                log_import_attempt(
+                    request,
+                    filename=attempt_filename,
+                    error_code="IMPORT-UNEXPECTED",
+                )
             return render_import_server_error(request, retry_url=self.get_retry_url())
 
         filename = uploaded_file.name.strip()
@@ -738,7 +790,13 @@ class BaseNofoImportView(View):
 
         # 6. Hand off to child for nofo creation
         return self.handle_nofo_create(
-            request, soup, sections, filename, *args, **kwargs
+            request,
+            soup,
+            sections,
+            filename,
+            *args,
+            warning_count=warning_count,
+            **kwargs,
         )
 
     @staticmethod
@@ -773,10 +831,13 @@ class NofosImportNewView(BaseNofoImportView):
     Handles importing a NEW NOFO from an uploaded file.
     """
 
+    track_import_metrics = True
+
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
         Create a new NOFO with the parsed data.
         """
+        warning_count = kwargs.get("warning_count", 0)
         try:
             nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
@@ -795,6 +856,12 @@ class NofosImportNewView(BaseNofoImportView):
             create_nofo_audit_event(
                 event_type="nofo_import", document=nofo, user=request.user
             )
+            log_import_attempt(
+                request,
+                filename=filename,
+                nofo=nofo,
+                warning_count=warning_count,
+            )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
@@ -808,6 +875,9 @@ class NofosImportNewView(BaseNofoImportView):
                     "IMPORT-HEADING-TOO-LONG"
                 ),
                 status=422,
+            )
+            log_import_attempt(
+                request, filename=filename, error_code="IMPORT-HEADING-TOO-LONG"
             )
             return render_mistagged_heading_error(
                 request,
@@ -830,6 +900,9 @@ class NofosImportNewView(BaseNofoImportView):
 
             # Blank "Opdiv:" field gets a dedicated, actionable error page
             if is_blank_opdiv:
+                log_import_attempt(
+                    request, filename=filename, error_code="IMPORT-OPDIV-BLANK"
+                )
                 return render_blocking_import_error(
                     request,
                     title="We couldn’t import this NOFO",
@@ -851,6 +924,9 @@ class NofosImportNewView(BaseNofoImportView):
                     retry_url=self.get_retry_url(),
                 )
 
+            log_import_attempt(
+                request, filename=filename, error_code="IMPORT-CREATE-INVALID"
+            )
             return render_blocking_import_error(
                 request,
                 title="We couldn’t create this NOFO",
@@ -868,6 +944,9 @@ class NofosImportNewView(BaseNofoImportView):
                 context="NofosImportNewView:Exception:IMPORT-UNEXPECTED",
                 status=500,
             )
+            log_import_attempt(
+                request, filename=filename, error_code="IMPORT-UNEXPECTED"
+            )
             return render_import_server_error(request, retry_url=self.get_retry_url())
 
 
@@ -881,6 +960,7 @@ class NofosImportOverwriteView(
     template_name = "nofos/nofo_import_overwrite.html"
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
+    track_import_metrics = True
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -903,8 +983,16 @@ class NofosImportOverwriteView(
         """
         Overwrite an existing NOFO with the new sections.
         """
+        warning_count = kwargs.get("warning_count", 0)
         nofo = self.nofo
         if nofo.status in ["published", "review", "doge", "paused"]:
+            log_import_attempt(
+                request,
+                filename=filename,
+                is_reimport=True,
+                nofo=nofo,
+                error_code="REIMPORT-STATUS-BLOCKED",
+            )
             return render_blocking_import_error(
                 request,
                 title="We couldn’t re-import this NOFO",
@@ -927,16 +1015,31 @@ class NofosImportOverwriteView(
                 "filename": filename,
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
+                "warning_count": warning_count,
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
         # Step 3: Proceed with reimport
         return self.reimport_nofo(
-            request, nofo, soup, sections, filename, if_preserve_page_breaks
+            request,
+            nofo,
+            soup,
+            sections,
+            filename,
+            if_preserve_page_breaks,
+            warning_count,
         )
 
     @staticmethod
-    def reimport_nofo(request, nofo, soup, sections, filename, if_preserve_page_breaks):
+    def reimport_nofo(
+        request,
+        nofo,
+        soup,
+        sections,
+        filename,
+        if_preserve_page_breaks,
+        warning_count=0,
+    ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
         """
@@ -964,6 +1067,13 @@ class NofosImportOverwriteView(
                 create_nofo_audit_event(
                     event_type="nofo_reimport", document=nofo, user=request.user
                 )
+                log_import_attempt(
+                    request,
+                    filename=filename,
+                    is_reimport=True,
+                    nofo=nofo,
+                    warning_count=warning_count,
+                )
 
             messages.success(request, f"Re-imported NOFO from file: {nofo.filename}")
             return redirect("nofos:nofo_edit", pk=nofo.id)
@@ -979,6 +1089,13 @@ class NofosImportOverwriteView(
                 ),
                 status=422,
             )
+            log_import_attempt(
+                request,
+                filename=filename,
+                is_reimport=True,
+                nofo=nofo,
+                error_code="IMPORT-HEADING-TOO-LONG",
+            )
             return render_mistagged_heading_error(
                 request,
                 e,
@@ -992,6 +1109,13 @@ class NofosImportOverwriteView(
                 e,
                 context="NofosImportOverwriteView:ValidationError:REIMPORT-DOCUMENT-INVALID",
                 status=400,
+            )
+            log_import_attempt(
+                request,
+                filename=filename,
+                is_reimport=True,
+                nofo=nofo,
+                error_code="REIMPORT-DOCUMENT-INVALID",
             )
             return render_blocking_import_error(
                 request,
@@ -1011,6 +1135,13 @@ class NofosImportOverwriteView(
                 e,
                 context="NofosImportOverwriteView:Exception:IMPORT-UNEXPECTED",
                 status=500,
+            )
+            log_import_attempt(
+                request,
+                filename=filename,
+                is_reimport=True,
+                nofo=nofo,
+                error_code="IMPORT-UNEXPECTED",
             )
             return render_import_server_error(
                 request,
@@ -1059,9 +1190,16 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
 
         filename = reimport_data["filename"]
         if_preserve_page_breaks = reimport_data["if_preserve_page_breaks"]
+        warning_count = reimport_data.get("warning_count", 0)
 
         return NofosImportOverwriteView.reimport_nofo(
-            request, nofo, soup, sections, filename, if_preserve_page_breaks
+            request,
+            nofo,
+            soup,
+            sections,
+            filename,
+            if_preserve_page_breaks,
+            warning_count,
         )
 
 
