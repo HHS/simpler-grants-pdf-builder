@@ -6,10 +6,13 @@
 {% block css %}
 <style>
   /*
-   * Box/typography treatment (bg-base-lightest border-1px border-base-lighter
-   * radius-md padding-2 / font-sans-2xs / text-base-dark / text-italic, etc.)
-   * reuses the app's existing USWDS utility classes - see
-   * includes/readability_metrics_panel.html for the same stat-tile pattern.
+   * Box/typography treatment (border-1px border-base-lighter radius-md
+   * padding-2 / font-sans-2xs / text-base-dark / text-italic, etc.) reuses
+   * the app's existing USWDS utility classes. White background rather than
+   * readability_metrics_panel.html's bg-base-lightest fill (#f0f0f0) - that
+   * gray fill is otherwise only used for alerts/drop-zones/nav chrome
+   * elsewhere in the app, not as a general "boxed content" background, and
+   * it reduces contrast against this page's colored chart lines/bars.
    * Only layout/behavior that has no USWDS equivalent is custom CSS below.
    */
   .metrics-page { padding: 1rem 0 2rem; }
@@ -159,7 +162,7 @@
     var div = document.createElement('div');
     div.className = 'tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2';
     div.innerHTML =
-      '<div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full">' +
+      '<div class="border-1px border-base-lighter radius-md padding-2 height-full">' +
         '<div class="font-sans-2xs text-bold text-base-dark">' + label + '</div>' +
         '<div class="font-heading-lg line-height-sans-2 margin-top-05">' + m.fmt(cur) + '</div>' +
         '<div class="metrics-delta-' + cls + ' font-sans-2xs text-bold margin-top-05">' + arrow + ' vs. last month</div>' +
@@ -238,7 +241,7 @@
   Object.keys(metrics).forEach(function (key) {
     var m = metrics[key];
     var card = document.createElement('div');
-    card.className = 'metrics-chart-card bg-base-lightest border-1px border-base-lighter radius-md padding-2';
+    card.className = 'metrics-chart-card border-1px border-base-lighter radius-md padding-2';
     card.innerHTML =
       '<header><h3>' + m.title + '</h3><span class="font-sans-2xs text-base-dark" style="white-space:nowrap">' + m.unit + '</span></header>' +
       '<p class="font-sans-2xs text-base-dark text-italic margin-y-05">* most recent month in progress</p>' +
