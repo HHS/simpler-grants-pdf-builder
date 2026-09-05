@@ -11,7 +11,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import Nofo, Section, Subsection
+from nofos.models import ImportAttempt, Nofo, Section, Subsection
 from nofos.nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -928,6 +928,105 @@ class TestBlockingImportErrorPages(TestCase):
             f'href="{reverse("nofos:nofo_edit", kwargs={"pk": nofo.id})}"',
             content,
         )
+
+
+class TestImportAttemptLogging(TestCase):
+    """
+    Covers the ImportAttempt rows written for NOFO Builder's own import views
+    (see log_import_attempt() and BaseNofoImportView.post() in views.py) - the
+    data the usage & quality metrics dashboard (#865) is built on.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="attempts@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="attempts@example.com", password="testpass123")
+        self.import_url = reverse("nofos:nofo_import")
+        self.docx_warning_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "lists--mammoth-warning.docx",
+        )
+
+    def test_successful_new_import_logs_attempt(self):
+        uploaded_file = SimpleUploadedFile(
+            "brand-new.html",
+            (
+                "<p>Opportunity name: Test NOFO</p>"
+                "<p>Opdiv: ACF</p>"
+                "<p>Opportunity number: NOFO-NEW-001</p>"
+                "<h1>Test Section 1</h1>"
+                "<h2 data-order=\"10\">Eligibility Information</h2>"
+                "<p>Some eligibility content</p>"
+            ).encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get(number="NOFO-NEW-001")
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.nofo, nofo)
+        self.assertEqual(attempt.user, self.user)
+        self.assertFalse(attempt.is_reimport)
+        self.assertEqual(attempt.error_code, "")
+        self.assertEqual(attempt.warning_count, 0)
+        self.assertEqual(attempt.filename, "brand-new.html")
+
+    def test_successful_import_with_mammoth_warnings_records_warning_count(self):
+        with open(self.docx_warning_fixture_path, "rb") as f:
+            docx_file = SimpleUploadedFile(
+                "lists--mammoth-warning.docx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+        response = self.client.post(self.import_url, {"nofo-import": docx_file})
+
+        self.assertEqual(response.status_code, 302)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "")
+        self.assertGreater(attempt.warning_count, 0)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_new_import_parsing_failure_logs_attempt_with_no_nofo(self, parse_file):
+        parse_file.side_effect = ValidationError("boom", code="docx_conversion")
+        uploaded_file = SimpleUploadedFile(
+            "broken.docx",
+            b"not important",
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 422)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "IMPORT-DOCX-CONVERSION")
+        self.assertFalse(attempt.is_reimport)
+        self.assertIsNone(attempt.nofo)
+        self.assertEqual(attempt.filename, "broken.docx")
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_unexpected_new_import_error_logs_attempt(self, parse_file):
+        parse_file.side_effect = RuntimeError("private implementation detail")
+        uploaded_file = SimpleUploadedFile(
+            "test.html", b"<h1>Test</h1>", content_type="text/html"
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 500)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "IMPORT-UNEXPECTED")
+        self.assertFalse(attempt.is_reimport)
+        self.assertIsNone(attempt.nofo)
 
 
 class TestNofoImportMixedHeadingHierarchy(TestCase):
