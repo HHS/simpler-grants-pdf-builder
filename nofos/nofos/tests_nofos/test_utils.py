@@ -32,10 +32,24 @@ class CreateNofoAuditEventTests(TestCase):
         self.user = User.objects.create(email="takumi@speed-stars.com")
         self.nofo = Nofo.objects.create(title="Akina Pass NOFO", opdiv="Test OpDiv")
 
+    def _last_nofo_event(self):
+        # CRUDEvent has no default ordering, so a bare .last() is undefined -
+        # it happened to return the most recently created row in practice
+        # until other CRUDEvent-tracked rows (eg from a data migration) were
+        # also present in the table. Scope explicitly to this NOFO's own
+        # events, ordered by datetime, instead of relying on that.
+        return (
+            CRUDEvent.objects.filter(
+                content_type__model="nofo", object_id=str(self.nofo.id)
+            )
+            .order_by("-datetime", "-id")
+            .first()
+        )
+
     def test_audit_event_exists(self):
         create_nofo_audit_event("nofo_print", self.nofo, self.user)
 
-        event = CRUDEvent.objects.last()
+        event = self._last_nofo_event()
         self.assertEqual(event.event_type, CRUDEvent.UPDATE)
         self.assertEqual(event.object_id, str(self.nofo.id))
         self.assertEqual(event.user, self.user)
@@ -43,7 +57,7 @@ class CreateNofoAuditEventTests(TestCase):
     def test_valid_event_type_nofo_print_test(self):
         create_nofo_audit_event("nofo_print", self.nofo, self.user, is_test_pdf=True)
 
-        event = CRUDEvent.objects.last()
+        event = self._last_nofo_event()
         # Check changed_fields JSON structure for "nofo_print" with "test" mode
         changed_fields = json.loads(event.changed_fields)
         self.assertEqual(changed_fields["action"], "nofo_print")
@@ -53,7 +67,7 @@ class CreateNofoAuditEventTests(TestCase):
     def test_valid_event_type_nofo_print_live(self):
         create_nofo_audit_event("nofo_print", self.nofo, self.user, is_test_pdf=False)
 
-        event = CRUDEvent.objects.last()
+        event = self._last_nofo_event()
         # Check changed_fields JSON structure for "nofo_print" with "live" mode
         changed_fields = json.loads(event.changed_fields)
         self.assertEqual(changed_fields["action"], "nofo_print")
@@ -63,7 +77,7 @@ class CreateNofoAuditEventTests(TestCase):
     def test_valid_event_type_nofo_import(self):
         create_nofo_audit_event("nofo_import", self.nofo, self.user)
 
-        event = CRUDEvent.objects.last()
+        event = self._last_nofo_event()
         changed_fields = json.loads(event.changed_fields)
         self.assertEqual(changed_fields["action"], "nofo_import")
         self.assertNotIn("print_mode", changed_fields)
@@ -72,7 +86,7 @@ class CreateNofoAuditEventTests(TestCase):
     def test_valid_event_type_nofo_reimport(self):
         create_nofo_audit_event("nofo_reimport", self.nofo, self.user)
 
-        event = CRUDEvent.objects.last()
+        event = self._last_nofo_event()
         changed_fields = json.loads(event.changed_fields)
         self.assertEqual(changed_fields["action"], "nofo_reimport")
         self.assertNotIn("print_mode", changed_fields)
