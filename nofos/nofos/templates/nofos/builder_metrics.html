@@ -5,63 +5,40 @@
 
 {% block css %}
 <style>
+  /*
+   * Box/typography treatment (bg-base-lightest border-1px border-base-lighter
+   * radius-md padding-2 / font-sans-2xs / text-base-dark / text-italic, etc.)
+   * reuses the app's existing USWDS utility classes - see
+   * includes/readability_metrics_panel.html for the same stat-tile pattern.
+   * Only layout/behavior that has no USWDS equivalent is custom CSS below.
+   */
   .metrics-page { padding: 1rem 0 2rem; }
   .metrics-toolbar {
     display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
     gap: 1rem; margin-bottom: 1.5rem;
   }
-  .metrics-meta { color: var(--color--text-grey); font-size: 0.85rem; margin-top: 0.25rem; }
-  .metrics-pill {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    background: var(--color--table-grey); border: 1px solid var(--color--light-grey);
-    border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.8rem; font-weight: 600;
-    color: var(--color--text-default);
-  }
-  .metrics-kpis {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.75rem; margin-bottom: 1.75rem;
-  }
-  .metrics-kpi {
-    background: #fff; border: 1px solid var(--color--light-grey); border-radius: 6px;
-    padding: 0.9rem 1rem;
-  }
-  .metrics-kpi .label {
-    font-size: 0.75rem; color: var(--color--text-grey); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.4rem;
-  }
-  .metrics-kpi .value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
-  .metrics-kpi .delta { margin-top: 0.4rem; font-size: 0.78rem; font-weight: 600; }
-  .metrics-kpi .delta.good { color: var(--color--green); }
-  .metrics-kpi .delta.bad { color: var(--color--usa-error-message); }
-  .metrics-kpi .delta.flat { color: var(--color--text-grey); }
   .metrics-section-heading {
     font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
     color: var(--color--text-grey); margin: 0 0 0.75rem;
   }
+  .metrics-delta-good { color: var(--color--green); }
+  .metrics-delta-bad { color: var(--color--usa-error-message); }
+  .metrics-delta-flat { color: var(--color--text-grey); }
   .metrics-chart-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;
-  }
-  .metrics-chart-card {
-    background: #fff; border: 1px solid var(--color--light-grey); border-radius: 6px;
-    padding: 1rem 1.1rem 0.6rem;
   }
   .metrics-chart-card header {
     display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem;
   }
   .metrics-chart-card h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
-  .metrics-chart-card .unit {
-    font-size: 0.75rem; color: var(--color--text-grey); font-weight: 600; white-space: nowrap;
-  }
-  .metrics-chart-card .caption { font-size: 0.72rem; color: var(--color--text-grey); margin: 0 0 0.35rem; }
   .metrics-chart-card svg { width: 100%; height: auto; display: block; overflow: visible; }
   .metrics-grid-line { stroke: var(--color--light-grey); stroke-width: 1; }
   .metrics-axis-label { fill: var(--color--text-grey); font-size: 9.5px; }
   .metrics-hit-target { fill: transparent; cursor: crosshair; }
   .metrics-chart-def {
     margin: 0.6rem 0 0.25rem; padding-top: 0.6rem; border-top: 1px solid var(--color--light-grey);
-    font-size: 0.78rem; color: var(--color--text-default); line-height: 1.5;
+    line-height: 1.5;
   }
-  .metrics-chart-def b { font-weight: 700; }
   #metrics-tooltip {
     position: fixed; pointer-events: none; z-index: 50;
     background: var(--color--usa-link-hover); color: #fff;
@@ -71,9 +48,7 @@
   }
   #metrics-tooltip.show { opacity: 1; }
   #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
-  .metrics-empty-note {
-    margin-top: 1.5rem; color: var(--color--text-grey); font-size: 0.8rem; max-width: 42rem;
-  }
+  .metrics-empty-note { margin-top: 1.5rem; max-width: 42rem; }
 
   @media print {
     .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
@@ -86,8 +61,8 @@
   <div class="metrics-toolbar">
     <div>
       <h1 class="font-heading-xl margin-y-0">NOFO Builder metrics</h1>
-      <div class="metrics-meta">
-        <span class="metrics-pill">Since {{ metrics_data.months.0 }} &middot; updates automatically each month</span>
+      <div class="margin-top-05">
+        <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; updates automatically each month</span>
       </div>
     </div>
     <button type="button" class="usa-button" onclick="window.print()">
@@ -95,13 +70,13 @@
     </button>
   </div>
 
-  <p class="metrics-section-heading">This month at a glance</p>
-  <div class="metrics-kpis" id="metrics-kpi-row"></div>
+  <h2 class="metrics-section-heading">This month at a glance</h2>
+  <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
 
-  <p class="metrics-section-heading" style="margin-top: 0.5rem">Monthly trends</p>
+  <h2 class="metrics-section-heading" style="margin-top: 0.5rem">Monthly trends</h2>
   <div class="metrics-chart-grid" id="metrics-chart-grid"></div>
 
-  <p class="metrics-empty-note">
+  <p class="metrics-empty-note font-sans-xs text-base-dark">
     Numbers reflect NOFO Builder's own database and update automatically each time this page loads -
     there's nothing to refresh or re-run. Months with no data yet (for example, before import-quality
     tracking started) show as "No data" rather than zero.
@@ -182,11 +157,13 @@
       }
     }
     var div = document.createElement('div');
-    div.className = 'metrics-kpi';
+    div.className = 'tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2';
     div.innerHTML =
-      '<div class="label">' + label + '</div>' +
-      '<div class="value">' + m.fmt(cur) + '</div>' +
-      '<div class="delta ' + cls + '">' + arrow + ' vs. last month</div>';
+      '<div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full">' +
+        '<div class="font-sans-2xs text-bold text-base-dark">' + label + '</div>' +
+        '<div class="font-heading-lg line-height-sans-2 margin-top-05">' + m.fmt(cur) + '</div>' +
+        '<div class="metrics-delta-' + cls + ' font-sans-2xs text-bold margin-top-05">' + arrow + ' vs. last month</div>' +
+      '</div>';
     kpiRow.appendChild(div);
   });
 
@@ -261,12 +238,12 @@
   Object.keys(metrics).forEach(function (key) {
     var m = metrics[key];
     var card = document.createElement('div');
-    card.className = 'metrics-chart-card';
+    card.className = 'metrics-chart-card bg-base-lightest border-1px border-base-lighter radius-md padding-2';
     card.innerHTML =
-      '<header><h3>' + m.title + '</h3><span class="unit">' + m.unit + '</span></header>' +
-      '<p class="caption">* most recent month in progress</p>' +
+      '<header><h3>' + m.title + '</h3><span class="font-sans-2xs text-base-dark" style="white-space:nowrap">' + m.unit + '</span></header>' +
+      '<p class="font-sans-2xs text-base-dark text-italic margin-y-05">* most recent month in progress</p>' +
       buildChart(m) +
-      '<p class="metrics-chart-def"><b>Definition:</b> ' + m.def + '</p>';
+      '<p class="metrics-chart-def font-sans-2xs text-base-dark"><b>Definition:</b> ' + m.def + '</p>';
     grid.appendChild(card);
   });
 
