@@ -9,7 +9,11 @@ def create_metrics_viewers_group(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
     ContentType = apps.get_model("contenttypes", "ContentType")
 
-    nofo_content_type = ContentType.objects.get(app_label="nofos", model="nofo")
+    # get_or_create, not get: on a fresh test/dev database this migration runs
+    # before contenttypes' post_migrate signal has created this row.
+    nofo_content_type, _ = ContentType.objects.get_or_create(
+        app_label="nofos", model="nofo"
+    )
     permission, _ = Permission.objects.get_or_create(
         codename="view_builder_metrics",
         content_type=nofo_content_type,
