@@ -26,7 +26,7 @@
   .metrics-delta-bad { color: var(--color--usa-error-message); }
   .metrics-delta-flat { color: var(--color--text-grey); }
   .metrics-chart-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem;
   }
   .metrics-chart-card header {
     display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem;
@@ -36,6 +36,9 @@
   .metrics-grid-line { stroke: var(--color--light-grey); stroke-width: 1; }
   .metrics-axis-label { fill: var(--color--text-grey); font-size: 9.5px; }
   .metrics-hit-target { fill: transparent; cursor: crosshair; }
+  .metrics-data-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+  .metrics-data-table caption { text-align: left; font-weight: 700; }
+  .metrics-data-table th, .metrics-data-table td { text-align: left; padding: 0.25rem; }
   .metrics-chart-def {
     margin: 0.6rem 0 0.25rem; padding-top: 0.6rem; border-top: 1px solid var(--color--light-grey);
     line-height: 1.5;
@@ -192,6 +195,8 @@
     var n = m.data.length;
     var known = m.data.filter(function (v) { return v !== null && v !== undefined; });
     var max = known.length ? Math.max.apply(null, known) * 1.18 : 1;
+    // Keep zero at the baseline even when every known observation is zero.
+    if (max === 0) max = 1;
     var barW = Math.min(30, (plotW / n) * 0.55);
 
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + m.title + ' by month">';
@@ -219,6 +224,7 @@
       });
     } else {
       m.data.forEach(function (v, i) {
+        if (v === null || v === undefined) return;
         var x = scaleX(i, n) - barW / 2;
         var partial = i === n - 1;
         var val = (v === null || v === undefined) ? 0 : v;
@@ -237,6 +243,15 @@
   }
 
   var grid = document.getElementById('metrics-chart-grid');
+  function buildDataTable(m) {
+    // Always visible: historical values must also work without hover and in print.
+    return '<table class="metrics-data-table font-sans-2xs"><caption>' + m.title +
+      ' monthly values</caption><thead><tr><th scope="col">Month</th><th scope="col">Value</th></tr></thead><tbody>' +
+      months.map(function (month, i) {
+        return '<tr><th scope="row">' + month + (i === lastIndex ? ' (in progress)' : '') +
+          '</th><td>' + m.fmt(m.data[i]) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
   Object.keys(metrics).forEach(function (key) {
     var m = metrics[key];
     var card = document.createElement('div');
@@ -245,6 +260,7 @@
       '<header><h3>' + m.title + '</h3><span class="font-sans-2xs" style="white-space:nowrap">' + m.unit + '</span></header>' +
       '<p class="font-sans-2xs text-italic margin-y-05">* most recent month in progress</p>' +
       buildChart(m) +
+      buildDataTable(m) +
       '<p class="metrics-chart-def font-sans-2xs"><b>Definition:</b> ' + m.def + '</p>';
     grid.appendChild(card);
   });
