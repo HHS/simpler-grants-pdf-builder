@@ -11,7 +11,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import Nofo, Section, Subsection
+from nofos.models import ImportAttempt, Nofo, Section, Subsection
 from nofos.nofo import (
     get_sections_from_soup,
     get_subsections_from_sections,
@@ -81,10 +81,11 @@ class TestParseNofoFile(TestCase):
 
         html_file = SimpleUploadedFile("nofo.html", html_data, content_type="text/html")
 
-        result = parse_uploaded_file_as_html_string(html_file)
+        result, warning_count = parse_uploaded_file_as_html_string(html_file)
         self.assertIsInstance(result, str)
         self.assertTrue(len(result) > 0)
         self.assertIn("<title>My Awesome NOFO</title>", result)
+        self.assertEqual(warning_count, 0)
 
     def test_docx_file_returns_string(self):
         """
@@ -99,9 +100,10 @@ class TestParseNofoFile(TestCase):
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
 
-        result = parse_uploaded_file_as_html_string(docx_file)
+        result, warning_count = parse_uploaded_file_as_html_string(docx_file)
         self.assertIsInstance(result, str)
         self.assertIn("<h2>Step 1: Review the Opportunity</h2>", result)
+        self.assertEqual(warning_count, 0)
 
     def test_indented_application_checklist_rows_survive_render_pipeline(self):
         with open(self.application_checklist_indent_fixture_path, "rb") as f:
@@ -114,7 +116,8 @@ class TestParseNofoFile(TestCase):
         )
 
         with override_config(WORD_IMPORT_STRICT_MODE=True):
-            imported_html = replace_chars(parse_uploaded_file_as_html_string(docx_file))
+            docx_result, _ = parse_uploaded_file_as_html_string(docx_file)
+            imported_html = replace_chars(docx_result)
         imported_soup = BeautifulSoup(imported_html, "html.parser")
         imported_children = imported_soup.select("td p.application-list--left-indent")
 
@@ -152,9 +155,10 @@ class TestParseNofoFile(TestCase):
 
         # Set WORD_IMPORT_STRICT_MODE to True
         with override_config(WORD_IMPORT_STRICT_MODE=True):
-            result = parse_uploaded_file_as_html_string(docx_file)
+            result, warning_count = parse_uploaded_file_as_html_string(docx_file)
 
         self.assertIsInstance(result, str)
+        self.assertEqual(warning_count, 0)
 
     def test_docx_file_with_strict_mode_and_warnings(self):
         """
@@ -281,7 +285,7 @@ class TestFundingDetailsParagraphNormalization(TestCase):
                 ),
             )
 
-        imported_html = parse_uploaded_file_as_html_string(uploaded_file)
+        imported_html, _ = parse_uploaded_file_as_html_string(uploaded_file)
         soup = BeautifulSoup(imported_html, "html.parser")
         top_heading_level = resolve_section_heading_level(soup)
         soup, _ = process_nofo_html(soup, top_heading_level)
@@ -323,7 +327,7 @@ class TestKeyCalloutDocxImport(TestCase):
                 ),
             )
 
-        file_content = parse_uploaded_file_as_html_string(uploaded_file)
+        file_content, _ = parse_uploaded_file_as_html_string(uploaded_file)
         cleaned_content = replace_links(replace_chars(file_content))
         soup = BeautifulSoup(cleaned_content, "html.parser")
         top_heading_level = resolve_section_heading_level(soup)
@@ -900,7 +904,8 @@ class TestBlockingImportErrorPages(TestCase):
     def test_blocked_reimport_uses_shared_page_and_returns_to_nofo(self, parse_file):
         parse_file.return_value = (
             "<p>Opportunity number: TEST-001</p>"
-            "<h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+            "<h1>Section</h1><h2>Subsection</h2><p>Body</p>",
+            0,
         )
         nofo = Nofo.objects.create(
             title="Published NOFO",
@@ -923,6 +928,105 @@ class TestBlockingImportErrorPages(TestCase):
             f'href="{reverse("nofos:nofo_edit", kwargs={"pk": nofo.id})}"',
             content,
         )
+
+
+class TestImportAttemptLogging(TestCase):
+    """
+    Covers the ImportAttempt rows written for NOFO Builder's own import views
+    (see log_import_attempt() and BaseNofoImportView.post() in views.py) - the
+    data the usage & quality metrics dashboard (#865) is built on.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="attempts@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="attempts@example.com", password="testpass123")
+        self.import_url = reverse("nofos:nofo_import")
+        self.docx_warning_fixture_path = os.path.join(
+            settings.BASE_DIR,
+            "nofos",
+            "fixtures",
+            "docx",
+            "lists--mammoth-warning.docx",
+        )
+
+    def test_successful_new_import_logs_attempt(self):
+        uploaded_file = SimpleUploadedFile(
+            "brand-new.html",
+            (
+                "<p>Opportunity name: Test NOFO</p>"
+                "<p>Opdiv: ACF</p>"
+                "<p>Opportunity number: NOFO-NEW-001</p>"
+                "<h1>Test Section 1</h1>"
+                "<h2 data-order=\"10\">Eligibility Information</h2>"
+                "<p>Some eligibility content</p>"
+            ).encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get(number="NOFO-NEW-001")
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.nofo, nofo)
+        self.assertEqual(attempt.user, self.user)
+        self.assertFalse(attempt.is_reimport)
+        self.assertEqual(attempt.error_code, "")
+        self.assertEqual(attempt.warning_count, 0)
+        self.assertEqual(attempt.filename, "brand-new.html")
+
+    def test_successful_import_with_mammoth_warnings_records_warning_count(self):
+        with open(self.docx_warning_fixture_path, "rb") as f:
+            docx_file = SimpleUploadedFile(
+                "lists--mammoth-warning.docx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+        response = self.client.post(self.import_url, {"nofo-import": docx_file})
+
+        self.assertEqual(response.status_code, 302)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "")
+        self.assertGreater(attempt.warning_count, 0)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_new_import_parsing_failure_logs_attempt_with_no_nofo(self, parse_file):
+        parse_file.side_effect = ValidationError("boom", code="docx_conversion")
+        uploaded_file = SimpleUploadedFile(
+            "broken.docx",
+            b"not important",
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 422)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "IMPORT-DOCX-CONVERSION")
+        self.assertFalse(attempt.is_reimport)
+        self.assertIsNone(attempt.nofo)
+        self.assertEqual(attempt.filename, "broken.docx")
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_unexpected_new_import_error_logs_attempt(self, parse_file):
+        parse_file.side_effect = RuntimeError("private implementation detail")
+        uploaded_file = SimpleUploadedFile(
+            "test.html", b"<h1>Test</h1>", content_type="text/html"
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        self.assertEqual(response.status_code, 500)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "IMPORT-UNEXPECTED")
+        self.assertFalse(attempt.is_reimport)
+        self.assertIsNone(attempt.nofo)
 
 
 class TestNofoImportMixedHeadingHierarchy(TestCase):

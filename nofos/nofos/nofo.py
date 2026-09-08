@@ -72,7 +72,9 @@ REQUEST_HEADERS = {
 
 def parse_uploaded_file_as_html_string(uploaded_file):
     """
-    Given an uploaded file, return raw HTML as a string.
+    Given an uploaded file, return a tuple of (raw HTML string, mammoth warning
+    count). warning_count is always 0 for HTML-file uploads, since those never
+    go through mammoth.
     Raise a ValidationError if invalid or missing.
     """
     if not uploaded_file:
@@ -82,7 +84,7 @@ def parse_uploaded_file_as_html_string(uploaded_file):
 
     if content_type == "text/html":
         # Decode the HTML file
-        return uploaded_file.read().decode("utf-8")
+        return uploaded_file.read().decode("utf-8"), 0
 
     elif (
         content_type
@@ -106,25 +108,28 @@ def parse_uploaded_file_as_html_string(uploaded_file):
                 code="docx_conversion",
             ) from e
 
-        # If strict mode, check for warnings
-        if config.WORD_IMPORT_STRICT_MODE:
-            warnings = [
-                m.message
-                for m in doc_to_html_result.messages
-                if m.type == "warning"
-                and all(
-                    style_ignore not in m.message
-                    for style_ignore in style_map_manager.get_styles_to_ignore()
-                )
-            ]
-            if warnings:
-                warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
-                raise ValidationError(
-                    f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
-                    code="strict_formatting",
-                )
+        # Always compute warnings (not just in strict mode) so non-blocking
+        # imports still record how many formatting issues mammoth flagged.
+        # Strict mode only changes what happens next, not whether we look.
+        warnings = [
+            m.message
+            for m in doc_to_html_result.messages
+            if m.type == "warning"
+            and all(
+                style_ignore not in m.message
+                for style_ignore in style_map_manager.get_styles_to_ignore()
+            )
+        ]
 
-        return doc_to_html_result.value
+        # If strict mode, raise on any warnings - same condition as before
+        if config.WORD_IMPORT_STRICT_MODE and warnings:
+            warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
+            raise ValidationError(
+                f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
+                code="strict_formatting",
+            )
+
+        return doc_to_html_result.value, len(warnings)
 
     else:
         raise ValidationError("Please import a .docx or HTML file.")

@@ -392,7 +392,8 @@ class CompareImportViewTests(TestCase):
         self, create_document, parse_file
     ):
         parse_file.return_value = (
-            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>",
+            0,
         )
         create_document.side_effect = RuntimeError("private comparison detail")
         uploaded_file = SimpleUploadedFile(
@@ -413,7 +414,8 @@ class CompareImportViewTests(TestCase):
         self, create_document, parse_file
     ):
         parse_file.return_value = (
-            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>"
+            "<p>Opdiv: CDC</p><h1>Section</h1><h2>Subsection</h2><p>Body</p>",
+            0,
         )
         create_document.side_effect = RuntimeError("private compare-to-doc detail")
         document = CompareDocument.objects.create(

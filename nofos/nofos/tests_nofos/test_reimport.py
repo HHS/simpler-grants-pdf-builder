@@ -1,11 +1,14 @@
+from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 from django.contrib.messages import get_messages
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import Nofo, Section, Subsection
+from nofos.models import ImportAttempt, Nofo, Section, Subsection
 from nofos.views import duplicate_nofo
 
 
@@ -549,3 +552,89 @@ class NofosImportOverwriteViewTests(TestCase):
                 "Step 2: Get Ready to Apply",
             ],
         )
+
+
+class ImportAttemptReimportLoggingTests(TestCase):
+    """
+    Covers the ImportAttempt rows written for reimports specifically - both
+    the successful path and, as a regression test, a parsing-stage failure
+    that happens before NofosImportOverwriteView.handle_nofo_create() runs.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client = Client()
+        self.client.login(email="test@example.com", password="testpass123")
+
+        self.nofo = Nofo.objects.create(
+            title="Test NOFO",
+            short_name="test-nofo",
+            number="NOFO-ACF-001",
+            opdiv="ACF",
+            group="bloom",
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Test Section", order=1
+        )
+        self.subsection = Subsection.objects.create(
+            section=self.section,
+            name="Test Subsection",
+            order=1,
+            tag="h3",
+            body="Test Subsection content",
+        )
+        self.reimport_url = reverse(
+            "nofos:nofo_import_overwrite", kwargs={"pk": self.nofo.pk}
+        )
+
+    def test_successful_reimport_logs_attempt_against_current_nofo(self):
+        test_file = create_test_html_file(opportunity_number=self.nofo.number)
+
+        response = self.client.post(
+            self.reimport_url,
+            {
+                "nofo-import": test_file,
+                "preserve_page_breaks": "on",
+                "csrfmiddlewaretoken": "dummy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        attempt = ImportAttempt.objects.get()
+        self.assertTrue(attempt.is_reimport)
+        self.assertEqual(attempt.nofo_id, self.nofo.id)
+        self.assertEqual(attempt.error_code, "")
+        self.assertEqual(attempt.user, self.user)
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_reimport_parsing_failure_is_logged_as_reimport_against_current_nofo(
+        self, parse_file
+    ):
+        """
+        Regression test for a bug where a parsing-stage failure during a
+        reimport (raised before handle_nofo_create() runs, in the parsing
+        steps shared with new imports) was logged with is_reimport=False and
+        nofo=None - indistinguishable from a failed new import, and with no
+        link back to the NOFO actually being reimported.
+        """
+        parse_file.side_effect = ValidationError("boom", code="docx_conversion")
+        uploaded_file = SimpleUploadedFile(
+            "broken.docx",
+            b"not important",
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+        response = self.client.post(
+            self.reimport_url, {"nofo-import": uploaded_file}
+        )
+
+        self.assertEqual(response.status_code, 422)
+        attempt = ImportAttempt.objects.get()
+        self.assertEqual(attempt.error_code, "IMPORT-DOCX-CONVERSION")
+        self.assertTrue(attempt.is_reimport)
+        self.assertEqual(attempt.nofo_id, self.nofo.id)
