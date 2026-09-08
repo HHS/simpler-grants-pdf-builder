@@ -278,6 +278,12 @@ class Nofo(BaseNofo):
     class Meta:
         verbose_name = "NOFO"
         verbose_name_plural = "NOFOs"
+        permissions = [
+            (
+                "view_builder_metrics",
+                "Can view NOFO Builder usage & quality metrics",
+            ),
+        ]
 
     title = models.TextField(
         "NOFO title",

@@ -52,6 +52,20 @@ class SuperuserRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class MetricsViewerRequiredMixin:
+    """
+    Restricts a view to users with the "nofos.view_builder_metrics" permission -
+    granted via the "Metrics viewers" group, or automatically to any superuser
+    (Django grants superusers every permission with no extra wiring).
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.has_perm("nofos.view_builder_metrics"):
+            raise PermissionDenied("You don’t have permission to view this page.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 class PublishToSggRequiredMixin:
     """Restricts access to OpDiv Admins and Superusers, the only users allowed
     to trigger a real external publish to Simpler Grants.gov."""
