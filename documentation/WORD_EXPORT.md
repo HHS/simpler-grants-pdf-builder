@@ -93,6 +93,44 @@ The PR remains draft. No environment was deployed and no export flag was enabled
 during this verification. A flag-off rollback restores the prior provider path,
 not a guarantee that the prior provider's operational problems are resolved.
 
+### Resource and packaging follow-up
+
+Upstream COPYRIGHT, COPYING.md, and source references are now included in
+`/usr/local/share/doc/pandoc` in the image. Source-distribution arrangements still
+need owner confirmation; a URL is not a written source offer.
+
+The reproducible Linux-only `word-export-evidence/resource_probe.py` was run
+against the existing local application image, network disabled, two CPUs and a
+1 GiB container memory limit (no additional swap). Two simultaneous repeated
+paragraph fixtures produced these results:
+
+| HTML bytes per conversion | Result | Duration | Child peak RSS per conversion |
+| --- | --- | --- | --- |
+| 102,947 | Both succeeded | 0.64 seconds each | approximately 142 MiB |
+| 1,029,397 | Both succeeded | 3.32 seconds each | approximately 259 MiB |
+| 9,264,687 | Both returned conversion errors | 9.29 / 21.09 seconds | approximately 583 / 1,065 MiB |
+
+The parent probe survived. The near-limit failure is consistent with memory
+pressure but cgroup OOM counters were not captured, so its exact cause is not
+proven. Peak child RSS is not whole-container memory. Two held cross-process
+slots rejected a third entrant and were reusable after release. This is converter
+stress evidence, not an HTTP or deployed load test. The current 10 MiB admission
+limit is NOT demonstrated safe for a 1 GiB container. Before enabling, choose
+and test a lower limit and/or isolation with the deployment owner. The probe
+does not justify silently increasing container resources.
+
+The stress-tested conversion module's SHA-256 matches this branch. The updated
+image built successfully; the bundled COPYRIGHT and COPYING.md hashes match
+upstream tag 3.11 byte-for-byte. All 23 focused tests passed in the rebuilt
+application filesystem with networking disabled, including timeout cleanup.
+
+Security comparison: the PR leaves `python:3.14-slim`, pyproject.toml, and
+poetry.lock unchanged relative to fetched main. Main's September 8 run
+34270400964 passed Anchore, whereas the September 10 PR scan reports the three
+Python findings above. This supports treating them as base-runtime findings,
+not Pandoc findings, but is not a same-time scanner comparison of both images.
+No vulnerability suppression or dependency changes were made.
+
 ## Draft review gates
 
 ### Committed conversion regression coverage (September 10 follow-up)

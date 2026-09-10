@@ -80,6 +80,7 @@ FROM scratch
 
 # copy the complete filesystem from builder
 COPY --from=builder / /
+COPY documentation/third-party/pandoc/ /usr/local/share/doc/pandoc/
 
 # ensure venv & poetry shims are on PATH
 ENV PATH="/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
