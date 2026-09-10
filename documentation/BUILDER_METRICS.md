@@ -7,7 +7,7 @@ and NOFOs. This addresses #873 under #865.
   UUID. Deleting the account clears its optional link; no name, email, original
   user ID, or audit payload is copied into the fact. This is a pseudonymous
   reference, not a claim that all aggregate activity is anonymous.
-- `MetricsActivity` records one eligible actor/month, using the application's
+- `MetricsActivity` records one eligible actor/month/group, using the application's
   local timezone. Eligibility is the user's group when activity occurs. A later
   move into or out of Bloomworks/staging affects future activity only.
 - `MetricsNofo` records the NOFO UUID, creation time, creation eligibility, and
@@ -45,3 +45,28 @@ There is no scheduled expiration for metric facts. This is separate from log and
 backup retention. Deliberate data corrections require a reviewed migration or
 management procedure identifying affected facts and the reason; there is no
 automatic reclassification or correction interface.
+
+## OPDIV filtering (#886)
+
+The dashboard defaults to All OPDIVs and offers the eight agency groups from
+`GROUP_CHOICES`, excluding Bloomworks and staging. Apply filter updates all six
+metrics in place and stores `?group=cdc` (for example) in the URL. Both HTML and
+JSON responses require the existing metrics-viewer permission. Invalid/internal
+group values are rejected. Print includes the applied group label and all
+monthly tables; changing a dropdown without applying it does not change reports.
+
+Signup facts retain the user's signup group; activity and import attempts retain
+the user's group at the time; NOFO facts retain their creation group. These are
+expected to match in the normal workflow. Activity is stored per actor/month/group,
+while All OPDIVs counts distinct actors per month, not the sum of group counts.
+Rates, warning averages, and median durations are calculated over the selected
+records, never by averaging agency aggregates.
+
+Migrations 0138–0139 add indexed group fields and backfill from surviving eligible
+users and NOFOs. Run with application writes paused, as for the earlier baseline.
+This data step is irreversible. Missing attribution stays blank: eligible records
+still contribute to All OPDIVs, but not an individual agency. Therefore agency
+counts can sum to less than the all-agency count for older history. Current groups
+are a best-effort baseline, not a reconstruction of historical membership. Once
+captured, group facts survive account/NOFO deletion and are not refreshed from
+current records. No agency-transfer workflow or correction UI is introduced.

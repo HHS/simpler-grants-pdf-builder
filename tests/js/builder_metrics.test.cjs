@@ -17,7 +17,7 @@ function render(values, disclosures = [], events = {}) {
     getElementById(id) {
       if (id === 'metrics-data') return { textContent: JSON.stringify(raw) };
       if (id === 'metrics-tooltip') return { classList: { remove: () => {} } };
-      return { appendChild: el => { if (id === 'metrics-chart-grid') cards.push(el.innerHTML); } };
+      return { addEventListener: () => {}, appendChild: el => { if (id === 'metrics-chart-grid') cards.push(el.innerHTML); } };
     },
     createElement: () => ({}),
     querySelectorAll: selector => selector === '.metrics-data-details' ? disclosures : [],

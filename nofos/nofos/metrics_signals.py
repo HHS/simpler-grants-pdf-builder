@@ -25,6 +25,7 @@ def actor_for(user, using):
         defaults={
             "joined_at": user.date_joined,
             "included": user.group not in EXCLUDED_GROUPS,
+            "group": user.group,
         },
     )
     return actor
@@ -44,6 +45,7 @@ def record_nofo(sender, instance, created, raw, using, **kwargs):
             defaults={
                 "created_at": instance.created,
                 "included": instance.group not in EXCLUDED_GROUPS,
+                "group": instance.group,
             },
         )
 
@@ -57,6 +59,7 @@ def classify_import(sender, instance, raw, using, **kwargs):
             .values_list("group", flat=True)
             .first()
         )
+        instance.metrics_group = group or ""
         instance.metrics_included = (
             None if group is None else group not in EXCLUDED_GROUPS
         )
@@ -78,6 +81,7 @@ def record_activity(sender, instance, created, raw, using, **kwargs):
         if user.group not in EXCLUDED_GROUPS:
             MetricsActivity.objects.using(using).get_or_create(
                 actor=actor_for(user, using),
+                group=user.group,
                 month=timezone.localtime(instance.datetime).date().replace(day=1),
             )
     if content_type.model != "nofo" or instance.event_type != CRUDEvent.UPDATE:

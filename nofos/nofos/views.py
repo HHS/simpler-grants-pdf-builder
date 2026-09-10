@@ -87,6 +87,7 @@ from .metrics import (
     import_error_rate_by_month,
     months_from,
     nofos_created_by_month,
+    opdiv_choices,
     time_to_first_live_pdf_by_month,
     total_users_by_month,
 )
@@ -2884,19 +2885,38 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
     # so later months just keep appending as they occur.
     metrics_since = datetime(2026, 9, 1)
 
+    def get(self, request, *args, **kwargs):
+        self.selected_group = request.GET.get("group", "all")
+        if self.selected_group not in {"all", *dict(opdiv_choices())}:
+            return HttpResponseBadRequest("Choose a valid OPDIV group.")
+        context = self.get_context_data(**kwargs)
+        if request.headers.get("Accept") == "application/json":
+            response = JsonResponse(context["metrics_data"])
+        else:
+            response = self.render_to_response(context)
+        response["Cache-Control"] = "private, no-store"
+        response["Vary"] = "Accept, Cookie"
+        return response
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         start = timezone.make_aware(self.metrics_since)
         months = months_from(start)
 
+        group = self.selected_group
+        context["opdiv_choices"] = opdiv_choices()
+        context["selected_group"] = group
+        label = "All OPDIVs" if group == "all" else group.upper()
         context["metrics_data"] = {
+            "group": group,
+            "groupLabel": label,
             "months": [month_start.strftime("%b '%y") for month_start, _ in months],
-            "totalUsers": total_users_by_month(months),
-            "activeUsers": active_users_by_month(months),
-            "nofosCreated": nofos_created_by_month(months),
-            "timeToPdfHours": time_to_first_live_pdf_by_month(months),
-            "errorRatePct": import_error_rate_by_month(months),
-            "avgWarnings": avg_warnings_by_month(months),
+            "totalUsers": total_users_by_month(months, group),
+            "activeUsers": active_users_by_month(months, group),
+            "nofosCreated": nofos_created_by_month(months, group),
+            "timeToPdfHours": time_to_first_live_pdf_by_month(months, group),
+            "errorRatePct": import_error_rate_by_month(months, group),
+            "avgWarnings": avg_warnings_by_month(months, group),
         }
         return context

@@ -1214,6 +1214,9 @@ class ImportAttempt(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    metrics_group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
     metrics_included = models.BooleanField(
         null=True,
         editable=False,
@@ -1267,7 +1270,7 @@ class ImportAttempt(models.Model):
 
 
 class MetricsActor(models.Model):
-    """Durable signup fact; unlink the account on deletion, retain no profile data."""
+    """Durable signup time, eligibility and OPDIV; unlink the account on deletion."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
@@ -1275,6 +1278,9 @@ class MetricsActor(models.Model):
     )
     joined_at = models.DateTimeField(db_index=True)
     included = models.BooleanField()
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
 
 
 class MetricsNofo(models.Model):
@@ -1283,18 +1289,25 @@ class MetricsNofo(models.Model):
     id = models.UUIDField(primary_key=True, editable=False)
     created_at = models.DateTimeField(db_index=True)
     included = models.BooleanField()
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+
     first_live_at = models.DateTimeField(null=True)
 
 
 class MetricsActivity(models.Model):
-    """One eligible activity per actor/month, without audit payloads or user IDs."""
+    """One eligible activity per actor/month/group, without audit payloads."""
 
     actor = models.ForeignKey(MetricsActor, on_delete=models.PROTECT)
     month = models.DateField(db_index=True)
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["actor", "month"], name="metrics_actor_month"
+                fields=["actor", "month", "group"], name="metrics_actor_month_group"
             )
         ]
