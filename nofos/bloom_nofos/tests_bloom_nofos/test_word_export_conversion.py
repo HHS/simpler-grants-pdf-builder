@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest import skipUnless
 from zipfile import ZipFile
 
-from bloom_nofos.word_export import W, convert_html, normalize_docx
+from bloom_nofos.word_export import ASSETS, W, convert_html, normalize_docx
 from constance.test import override_config
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +17,15 @@ from django.urls import reverse
 from nofos.nofo import parse_uploaded_file_as_html_string
 
 FIXTURE = Path(__file__).parent / "fixtures" / "word_export.html"
+
+
+class ReferenceStyleTests(SimpleTestCase):
+    def test_hyperlinks_have_color_and_underlining(self):
+        with ZipFile(ASSETS / "reference.docx") as archive:
+            styles = ET.fromstring(archive.read("word/styles.xml"))
+        hyperlink = styles.find(f"{W}style[@{W}styleId='Hyperlink']/{W}rPr")
+        self.assertEqual(hyperlink.find(W + "u").get(W + "val"), "single")
+        self.assertEqual(hyperlink.find(W + "color").get(W + "val"), "4F81BD")
 
 
 class PageBreakPreservationTests(SimpleTestCase):
@@ -74,6 +83,14 @@ class InstalledPandocTests(TestCase):
             xml = ET.fromstring(archive.read("word/document.xml"))
             relationships = archive.read("word/_rels/document.xml.rels")
             numbering = archive.read("word/numbering.xml")
+            word_styles = ET.fromstring(archive.read("word/styles.xml"))
+        hyperlink_style = word_styles.find(f"{W}style[@{W}styleId='Hyperlink']/{W}rPr")
+        self.assertEqual(hyperlink_style.find(W + "u").get(W + "val"), "single")
+        self.assertEqual(hyperlink_style.find(W + "color").get(W + "val"), "4F81BD")
+        for link in xml.iter(W + "hyperlink"):
+            self.assertIn(
+                "Hyperlink", [node.get(W + "val") for node in link.iter(W + "rStyle")]
+            )
         text = " ".join(node.text or "" for node in xml.iter(W + "t"))
         expected = (
             "Step 1: Review the Opportunity",
