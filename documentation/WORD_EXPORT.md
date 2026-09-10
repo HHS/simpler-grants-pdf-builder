@@ -26,9 +26,13 @@ preserved all markers in order and returned zero strict-parser warnings.
 
 The normal export was opened, edited, and saved in desktop Microsoft Word, then
 submitted through the actual Builder import and overwrite routes. All seven
-sections and 100 markers survived, and the edit persisted in Builder. Composer,
-Writer, and clearance files also opened in Word without a repair prompt; this is
-not yet an equivalent edit/re-import test for those workflows.
+sections and 100 markers survived, and the edit persisted in Builder. Subsequent
+desktop Word edits also passed Composer template import (six fixture sections,
+recognized instructions restored, `{Amount}` placeholder retained) and Writer
+export import into Builder (seven sections, edited value retained). Both preserved
+all 100 markers with zero strict-parser warnings. The Writer check imports a new
+Builder NOFO; it does not write changes back into the Writer instance. Clearance
+also opened in Word without a repair prompt.
 
 Local Word PDF renders of normal, clearance, and Writer contained all 100 markers,
 with no blank pages or extracted words outside page bounds. Sampled pages showed
@@ -42,7 +46,16 @@ callout styling. These differences need product acceptance for basic editable Wo
 Local evidence is saved in `Documents/NOFO_Improvements/pandoc-882-verification-2026-09-10`
 on the verification workstation, including source HTML, DOCX, rendered pages,
 route results, and the desktop Word round-trip report. These are synthetic
-documents, not representative production NOFOs or a deployment verification.
+documents and local copies, not a deployment verification.
+
+A locally held CDC K01 example subsequently passed the actual import, Pandoc
+export, and strict re-import routes, retaining seven sections. Comparing all
+approximately 9,300 export-target words against DOCX text found only two adjacent
+formatting-run joins in dates (`3` + `0` and `2` + `9`), with no other token changes.
+Its rendered first page was inspected; full-document visual/link/image approval
+is still outstanding. The ACF 0028 example was rejected by existing strict-import
+style checks before export ran, so it is not counted as a Pandoc failure or pass.
+Source documents and derived real-document content remain local.
 
 ## Draft review gates
 
@@ -66,7 +79,7 @@ Pandoc-first agreement and the remaining rollout conditions.
 - Decide whether remote/SVG images are required; if so, add safe support and verification before rollout. Bundled and embedded raster images are supported; other sources fail explicitly.
 - Complete browser verification of Composer/Writer/clearance workflows beyond their successful server-side export/import checks.
 - Expand representative full-length fixtures. A committed structural fixture and actual conversion/page-break/access/clearance regression checks now complement timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling tests.
-- Complete representative real-document and full-page visual review, plus Word edit/save/import checks for Composer and Writer. The longer synthetic normal-document round trip passed; this does not establish all-workflow fidelity.
+- Complete representative real-document and full-page visual/link/image review. Normal, Composer, and Writer synthetic Word edit/save/import checks passed, and one real CDC document passed route-level conversion/re-import; this does not establish all-workflow fidelity.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.
 
 No provider cutover, account retirement, or production readiness is implied by this draft.
