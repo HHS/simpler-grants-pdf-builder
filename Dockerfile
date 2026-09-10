@@ -22,6 +22,18 @@ RUN apt-get update && \
   libpq-dev \
   && rm -rf /var/lib/apt/lists/*
 
+# Install pinned local Word converter
+RUN arch="$(dpkg --print-architecture)" && \
+  case "$arch" in \
+    amd64) checksum=37edb3bbcf722f921a009941bf5874e2e0c09263226c9b4a2d980788cb062ab6 ;; \
+    arm64) checksum=56ed5566ec41d22ec9ee0704e6ac0b98ba102e92384efd5306173a22d314c79a ;; \
+    *) exit 1 ;; \
+  esac && \
+  curl -fsSL "https://github.com/jgm/pandoc/releases/download/3.11/pandoc-3.11-linux-${arch}.tar.gz" -o /tmp/pandoc.tar.gz && \
+  echo "$checksum  /tmp/pandoc.tar.gz" | sha256sum -c - && \
+  tar -xzf /tmp/pandoc.tar.gz -C /usr/local --strip-components=1 && \
+  rm /tmp/pandoc.tar.gz
+
 # Install Poetry and create user
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 - && \
   useradd --create-home --shell /bin/bash appuser && \

@@ -375,3 +375,4 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
 
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Deployment & contribution workflow.
 - [Groups](documentation/GROUPS.md) — how user and NOFO groups work, and how to add a new group.
+- [Word export](documentation/WORD_EXPORT.md) — Operations and review gates for the disabled-by-default local Pandoc path.
