@@ -8,6 +8,7 @@ from bloom_nofos.word_export import (
     ExportError,
     conversion_slot,
     convert_html,
+    embed_image,
     normalize_docx,
     pandoc_download_response,
     render_export_html,
@@ -17,6 +18,40 @@ from django.test import RequestFactory, SimpleTestCase
 
 
 class WordExportTests(SimpleTestCase):
+    def test_bundled_image_embedded_without_network(self):
+        result = embed_image("/static/img/logo-img.png", "testserver")
+        self.assertTrue(result.startswith("data:image/png;base64,"))
+        self.assertEqual(
+            result,
+            embed_image("https://testserver/static/img/logo-img.png", "testserver"),
+        )
+
+    def test_untrusted_image_paths_are_rejected_before_file_lookup(self):
+        for source in (
+            "https://other.test/static/img/logo-img.png",
+            "//169.254.169.254/static/img/logo-img.png",
+            "file:///static/img/logo-img.png",
+            "/static/../settings.py",
+            "/static/%2e%2e/settings.py",
+            "/static/%2fetc/passwd",
+            "/static/img/../../settings.py",
+            "/private/image.png",
+        ):
+            with self.subTest(source=source), patch(
+                "bloom_nofos.word_export.finders.find"
+            ) as lookup, self.assertRaises(ExportError):
+                embed_image(source, "testserver")
+            lookup.assert_not_called()
+
+    def test_invalid_embedded_image_is_rejected(self):
+        for source in (
+            "data:image/png;base64,not base64",
+            "data:image/png;base64,YWJj",
+            "data:image/svg+xml;base64,PHN2Zz4=",
+        ):
+            with self.subTest(source=source), self.assertRaises(ExportError):
+                embed_image(source, "testserver")
+
     def test_feature_flag_routes_only_when_enabled(self):
         from bloom_nofos.utils import generate_docx_download_response
 

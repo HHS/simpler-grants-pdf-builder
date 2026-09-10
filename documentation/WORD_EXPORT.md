@@ -8,11 +8,20 @@ Two conversions may run per container. Additional requests receive HTTP 503 and 
 
 The Docker build verifies pinned Linux amd64/arm64 archive hashes. Local developers can provide `PANDOC_BINARY` through Django settings. Basic semantic formatting is intentional; this is not designed-PDF fidelity. The reference file derives from Pandoc's default reference document with the evaluated typography adjustments.
 
+Embedded PNG/JPEG/GIF images and public bundled static images are supported. Static files are read locally and embedded; no URL is fetched. Image paths cannot traverse outside the static namespace, decoded images are limited to 5 MiB each, and unsupported or malformed image headers fail clearly. Remote images and SVG are deliberately not supported yet. Use `127.0.0.1` for local browser testing: the existing shared button disables downloads on hosts containing `localhost`.
+
+## Local verification (September 10, 2026)
+
+- 1,915 Django tests and three focused JavaScript error-handling tests passed.
+- Actual export POST routes returned DOCX for normal NOFO, normal policy NOFO, clearance, Composer, and Writer preview downloads. All five re-imported with zero strict-parser warnings. Normal/policy/clearance files each contained two images (embedded plus bundled); Writer contained one.
+- Local browser: successful normal download with bundled image; deliberately occupied conversion slots produced an actionable busy message; malformed image produced an actionable error. The existing generic-error dialog was fixed to display only designated structured export errors, with a generic fallback for unexpected responses.
+- These are synthetic fixtures in an isolated local database, not dev or production testing, and not a full visual-fidelity signoff. [Success](word-export-evidence/success.png) and [image error](word-export-evidence/image-error.png) screenshots capture the actual browser states.
+
 ## Draft review gates
 
-- Support and verify stored/remote image sources safely. Currently only embedded PNG/JPEG/GIF images are accepted; other images fail clearly. This is a rollout blocker, not a silent fidelity compromise.
-- Browser verification of busy/error messages, preview/export actions, and normal/Composer/Writer/clearance fixtures against this actual implementation.
-- Expand regression tests for timeout process cleanup, DOCX style/break normalization, feature-flag routing, and access restrictions.
+- Decide whether remote/SVG images are required; if so, add safe support and verification before rollout. Bundled and embedded raster images are supported; other sources fail explicitly.
+- Complete browser verification of Composer/Writer/clearance workflows beyond their successful server-side export/import checks.
+- Expand committed document fixtures and DOCX page-break/access regression coverage. Timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling have focused tests.
 - Repeat full-length and Word edit/save tests against this implementation, including tables, lists, links, and image fidelity.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.
 

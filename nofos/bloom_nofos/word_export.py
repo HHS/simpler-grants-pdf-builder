@@ -1,5 +1,7 @@
 """Gated, local basic DOCX conversion. No vendor calls or credential forwarding."""
 
+import base64
+import binascii
 import fcntl
 import io
 import os
@@ -10,12 +12,13 @@ import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.http import HttpResponse, QueryDict
+from django.contrib.staticfiles import finders
+from django.http import HttpResponse, JsonResponse, QueryDict
 from django.urls import resolve
 from django.utils.http import content_disposition_header
 
@@ -23,10 +26,74 @@ ASSETS = Path(__file__).parent / "word_export_assets"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 MAX_INPUT = 10 * 1024 * 1024
 MAX_OUTPUT = 20 * 1024 * 1024
+MAX_IMAGE = 5 * 1024 * 1024
 
 
 class ExportError(Exception):
     pass
+
+
+def embed_image(source, host):
+    """Allow bounded inline raster images or public bundled static files only."""
+    if source.startswith("data:"):
+        header, separator, encoded = source.partition(",")
+        if (
+            header
+            not in {
+                "data:image/png;base64",
+                "data:image/jpeg;base64",
+                "data:image/gif;base64",
+            }
+            or not separator
+            or len(encoded) > (MAX_IMAGE * 4 // 3 + 4)
+        ):
+            raise ExportError("Unsupported or oversized embedded Word export image.")
+        try:
+            data = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error) as exc:
+            raise ExportError("Invalid embedded Word export image.") from exc
+    else:
+        url = urlsplit(source)
+        prefix = "/" + urlsplit(settings.STATIC_URL).path.strip("/") + "/"
+        path = unquote(url.path)
+        if (
+            (url.netloc and url.netloc != host)
+            or url.scheme not in ("", "http", "https")
+            or not path.startswith(prefix)
+            or "\\" in path
+            or "\x00" in path
+            or any(part in (".", "..") for part in path.split("/"))
+        ):
+            raise ExportError(
+                "Word export supports embedded or bundled images only, not remote images."
+            )
+        relative = path[len(prefix) :]
+        if not relative or relative.startswith("/"):
+            raise ExportError("Invalid bundled Word export image path.")
+        filename = finders.find(relative)
+        if not filename and settings.STATIC_ROOT:
+            root = Path(settings.STATIC_ROOT).resolve()
+            candidate = (root / relative).resolve()
+            if candidate.is_relative_to(root) and candidate.is_file():
+                filename = candidate
+        if not filename:
+            raise ExportError("A bundled Word export image could not be found.")
+        try:
+            with open(filename, "rb") as image:
+                data = image.read(MAX_IMAGE + 1)
+        except OSError as exc:
+            raise ExportError("A bundled Word export image could not be read.") from exc
+    if len(data) > MAX_IMAGE:
+        raise ExportError("Word export image exceeds the 5 MiB limit.")
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        mime = "image/png"
+    elif data.startswith(b"\xff\xd8\xff"):
+        mime = "image/jpeg"
+    elif data.startswith((b"GIF87a", b"GIF89a")):
+        mime = "image/gif"
+    else:
+        raise ExportError("Word export images must be PNG, JPEG, or GIF.")
+    return "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")
 
 
 @contextmanager
@@ -84,17 +151,8 @@ def render_export_html(request, export_url, target_element):
     for element in target.select("script, style, form, input, button, iframe, object"):
         element.decompose()
     for image in target.select("img"):
-        if not image.get("src", "").startswith(
-            (
-                "data:image/png;base64,",
-                "data:image/jpeg;base64,",
-                "data:image/gif;base64,",
-            )
-        ):
-            raise ExportError(
-                "This experimental Word exporter does not yet support this image source. "
-                "Ask an administrator to use the existing exporter."
-            )
+        image["src"] = embed_image(image.get("src", ""), request.get_host())
+        image.attrs.pop("srcset", None)
     html = "<!doctype html><html><body>" + str(target) + "</body></html>"
     if len(html.encode()) > MAX_INPUT:
         raise ExportError(
@@ -225,15 +283,15 @@ def pandoc_download_response(request, export_url, target_element, filename_base)
         return HttpResponse("Please sign in to export Word documents.", status=403)
     with conversion_slot() as admitted:
         if not admitted:
-            return HttpResponse(
-                "Word export is busy. Please retry shortly.",
+            return JsonResponse(
+                {"word_export_error": "Word export is busy. Please retry shortly."},
                 status=503,
                 headers={"Retry-After": "5"},
             )
         try:
             data = convert_html(render_export_html(request, export_url, target_element))
         except ExportError as exc:
-            return HttpResponse(str(exc), status=422)
+            return JsonResponse({"word_export_error": str(exc)}, status=422)
     return HttpResponse(
         data,
         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
