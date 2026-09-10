@@ -31,6 +31,8 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 14
+    commit-message:
+      prefix: "ci"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -47,6 +49,8 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 14
+    commit-message:
+      prefix: "build"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
