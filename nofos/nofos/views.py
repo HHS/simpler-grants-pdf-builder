@@ -2292,6 +2292,8 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         # fetch a protected URL (which can return the login page). Deliberately
         # do not attach the request or run its context processors: credentials,
         # CSRF tokens, and user-specific controls must not leave the application.
+        # Keep this document-only context aligned with NofosDetailView when its
+        # rendering changes; request/context-processor additions do not run here.
         document_view = NofosDetailView()
         document_view.object = nofo
         document_context = document_view.get_context_data()
