@@ -6,6 +6,39 @@ from .endnotes import analyze_endnotes, convert_bracketed_endnotes
 
 
 class BracketedEndnotesTests(TestCase):
+    def test_partial_ordered_citations_retain_generated_target_in_markdown(self):
+        from .nofo_markdown import md
+
+        soup = self.soup(
+            "<p>Read [1] [2]</p><h1>Endnotes</h1><ol><li>[1]</li><li>[2] Source</li></ol>"
+        )
+        convert_bracketed_endnotes(soup)
+        stored = md(str(soup))
+        self.assertIn('id="endnote-manual-2"', stored)
+        self.assertIn('href="#endnote-manual-2"', stored)
+
+    def test_nested_citations_keep_targets_in_both_reference_orders(self):
+        from .nofo_markdown import md
+
+        for references in ("[1] [2]", "[2] [1]"):
+            with self.subTest(references=references):
+                soup = self.soup(
+                    f"<p>Read {references}</p><h1>Endnotes</h1><ul><li>[1] Outer<ul><li>[2] Inner</li></ul></li></ul>"
+                )
+                convert_bracketed_endnotes(soup)
+                stored = md(str(soup))
+                for number in (1, 2):
+                    self.assertEqual(
+                        len(soup.find_all(id=f"endnote-manual-{number}")), 1
+                    )
+                    self.assertIn(f'id="endnote-manual-{number}"', stored)
+                self.assertFalse(
+                    any(
+                        issue["code"] == "destination"
+                        for issue in analyze_endnotes(soup)
+                    )
+                )
+
     def test_mixed_numbering_uses_document_order(self):
         native = '<a id="footnote-ref-8" href="#footnote-8">[1]</a>'
         citations = '<h1>Endnotes</h1><ol><li id="footnote-8">Native<a href="#footnote-ref-8">↑</a></li></ol><p>[2] Manual</p>'

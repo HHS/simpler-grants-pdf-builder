@@ -304,10 +304,21 @@ def _wrap_range(soup, block, start, end, wrapper):
             parts = [NavigableString("") for _ in range(3)]
             parts[0 if position <= start else 2 if position >= end else 1] = copy(node)
             return parts
+        # Keep untouched subtrees intact. Copying a later nested citation here
+        # would leave the conversion plan pointing at a detached original.
+        length = sum(
+            len(text) for text in node.descendants if isinstance(text, NavigableString)
+        )
+        if position + length <= start or position >= end:
+            index = 0 if position + length <= start else 2
+            position += length
+            parts = [NavigableString("") for _ in range(3)]
+            parts[index] = node
+            return parts
         parts = [copy(node) for _ in range(3)]
         for part in parts:
             part.clear()
-        for child in node.contents:
+        for child in list(node.contents):
             for part, fragment in zip(parts, split(child)):
                 if str(fragment):
                     part.append(fragment)

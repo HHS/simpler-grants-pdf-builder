@@ -115,6 +115,8 @@ class NofoMarkdownConverter(MarkdownConverter):
         return super().convert_img(el, text, parent_tags)
 
     def convert_ol(self, el, text, parent_tags):
+        if el.find(id=re.compile(r"^endnote-manual-")):
+            return "\n\n" + str(el) + "\n\n"
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
         if start and start != "1":
