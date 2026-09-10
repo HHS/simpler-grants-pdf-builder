@@ -8,6 +8,8 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 14
+    commit-message:
+      prefix: "chore"
     ignore:
       - dependency-name: "*"
         update-types:
