@@ -19,9 +19,26 @@ Embedded PNG/JPEG/GIF images and public bundled static images are supported. Sta
 
 ## Draft review gates
 
+### Committed conversion regression coverage (September 10 follow-up)
+
+The synthetic HTML fixture and `test_word_export_conversion.py` exercise real
+Pandoc output: content order, semantic headings, emphasis, nested and continued
+lists, table content, external/internal links, native page breaks, and strict
+re-import. Real download-route tests distinguish normal and clearance content,
+retain review labels and pre-decisional text, re-evaluate edits and canonical-text
+changes, and verify the clearance flag and cross-group access restriction.
+
+Run these alongside `test_word_export.py` with Pandoc installed. Converter tests
+skip on developer machines without the binary; page-break normalization tests
+still run. These checks inspect DOCX structure and text, not rendered Word layout.
+All 23 focused export tests passed locally and in the application image with
+networking disabled, including the installed Pandoc tests without skips.
+The [implementation decision](adr/2026-09-10-local-word-export.md) records the
+Pandoc-first agreement and the remaining rollout conditions.
+
 - Decide whether remote/SVG images are required; if so, add safe support and verification before rollout. Bundled and embedded raster images are supported; other sources fail explicitly.
 - Complete browser verification of Composer/Writer/clearance workflows beyond their successful server-side export/import checks.
-- Expand committed document fixtures and DOCX page-break/access regression coverage. Timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling have focused tests.
+- Expand representative full-length fixtures. A committed structural fixture and actual conversion/page-break/access/clearance regression checks now complement timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling tests.
 - Repeat full-length and Word edit/save tests against this implementation, including tables, lists, links, and image fidelity.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.
 
