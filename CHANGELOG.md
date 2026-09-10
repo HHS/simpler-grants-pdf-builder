@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.35.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.34.0...nofos-v3.35.0) (2026-09-08)
+
+
+### Features
+
+* add structured assistance listing (CFDA) number field to Nofo, flag-gated ([#861](https://github.com/HHS/simpler-grants-pdf-builder/issues/861)) ([430a55e](https://github.com/HHS/simpler-grants-pdf-builder/commit/430a55e94ea676aa56a3b8f7c283b1f0982540eb))
+* warn editors about long callout boxes ([#857](https://github.com/HHS/simpler-grants-pdf-builder/issues/857)) ([8b9a027](https://github.com/HHS/simpler-grants-pdf-builder/commit/8b9a027ce47760daf3f017e91efd135ddd39534a))
+
+
+### Bug Fixes
+
+* increase spacing below PDF H3 headings ([#864](https://github.com/HHS/simpler-grants-pdf-builder/issues/864)) ([a559e79](https://github.com/HHS/simpler-grants-pdf-builder/commit/a559e793d3406d537d14b8b86ec910a0bfada7bb))
+* prevent shared footer overflow on narrow screens ([#871](https://github.com/HHS/simpler-grants-pdf-builder/issues/871)) ([e25cda4](https://github.com/HHS/simpler-grants-pdf-builder/commit/e25cda46b88a1071121cec0c8e173fcc20fa39bd))
+
 ## [3.34.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.33.0...nofos-v3.34.0) (2026-09-03)
 
 

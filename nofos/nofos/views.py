@@ -81,15 +81,6 @@ from .forms import (
     SubsectionCreateForm,
     SubsectionEditForm,
 )
-from .mixins import (
-    GroupAccessObjectMixinFactory,
-    JsonResponseBadRequestMixin,
-    MetricsViewerRequiredMixin,
-    PreventIfArchivedOrCancelledMixin,
-    PreventIfPublishedMixin,
-    SuperuserRequiredMixin,
-    has_group_permission_func,
-)
 from .metrics import (
     active_users_by_month,
     avg_warnings_by_month,
@@ -98,6 +89,15 @@ from .metrics import (
     nofos_created_by_month,
     time_to_first_live_pdf_by_month,
     total_users_by_month,
+)
+from .mixins import (
+    GroupAccessObjectMixinFactory,
+    JsonResponseBadRequestMixin,
+    MetricsViewerRequiredMixin,
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    SuperuserRequiredMixin,
+    has_group_permission_func,
 )
 from .models import THEME_CHOICES, ImportAttempt, Nofo, Section, Subsection
 from .nofo import (
