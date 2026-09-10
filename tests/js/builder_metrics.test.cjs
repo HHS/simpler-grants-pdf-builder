@@ -8,7 +8,7 @@ const template = readFileSync(join(__dirname,
   '../../nofos/nofos/templates/nofos/builder_metrics.html'), 'utf8');
 const source = template.match(/<script>([\s\S]*?)<\/script>/)[1];
 
-function render(values) {
+function render(values, disclosures = [], events = {}) {
   const cards = [];
   const raw = { months: values.map((_, i) => `Month ${i + 1}`) };
   for (const key of ['totalUsers', 'activeUsers', 'nofosCreated',
@@ -16,12 +16,13 @@ function render(values) {
   const document = {
     getElementById(id) {
       if (id === 'metrics-data') return { textContent: JSON.stringify(raw) };
+      if (id === 'metrics-tooltip') return { classList: { remove: () => {} } };
       return { appendChild: el => { if (id === 'metrics-chart-grid') cards.push(el.innerHTML); } };
     },
     createElement: () => ({}),
-    querySelectorAll: () => [],
+    querySelectorAll: selector => selector === '.metrics-data-details' ? disclosures : [],
   };
-  runInNewContext(source, { document });
+  runInNewContext(source, { document, window: { addEventListener: (name, handler) => { events[name] = handler; } } });
   return cards;
 }
 
@@ -54,4 +55,29 @@ test('all-missing data does not create chart marks', () => {
     assert.doesNotMatch(card, /<rect |<circle /);
     assert.equal([...card.matchAll(/<td>No data<\/td>/g)].length, 2);
   }
+});
+
+test('monthly tables are inside closed disclosures with metric-specific labels', () => {
+  for (const card of render(Array(12).fill(1))) {
+    assert.match(card, /<details class="metrics-data-details[^">]*">/);
+    assert.match(card, /<summary><span>View monthly data<span class="usa-sr-only"> for .+<\/span><\/span><\/summary>/);
+    assert.match(card, /<\/table><\/details><p class="metrics-chart-def/);
+    assert.equal([...card.matchAll(/<th scope="row">/g)].length, 12);
+  }
+});
+
+test('printing opens all tables and restores mixed states, including repeated print events', () => {
+  const disclosures = [{ open: false }, { open: true }, { open: false }];
+  const events = {};
+  render([1, null], disclosures, events);
+  events.afterprint();
+  events.beforeprint();
+  events.beforeprint();
+  assert.deepEqual(disclosures.map(el => el.open), [true, true, true]);
+  events.afterprint();
+  assert.deepEqual(disclosures.map(el => el.open), [false, true, false]);
+  disclosures[0].open = true;
+  events.beforeprint();
+  events.afterprint();
+  assert.deepEqual(disclosures.map(el => el.open), [true, true, false]);
 });

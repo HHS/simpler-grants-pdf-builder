@@ -244,13 +244,14 @@
 
   var grid = document.getElementById('metrics-chart-grid');
   function buildDataTable(m) {
-    // Always visible: historical values must also work without hover and in print.
-    return '<table class="metrics-data-table font-sans-2xs"><caption>' + m.title +
+    return '<details class="metrics-data-details margin-top-2 font-sans-2xs">' +
+      '<summary><span>View monthly data<span class="usa-sr-only"> for ' + m.title + '</span></span></summary>' +
+      '<table class="metrics-data-table"><caption>' + m.title +
       ' monthly values</caption><thead><tr><th scope="col">Month</th><th scope="col">Value</th></tr></thead><tbody>' +
       months.map(function (month, i) {
         return '<tr><th scope="row">' + month + (i === lastIndex ? ' (in progress)' : '') +
           '</th><td>' + m.fmt(m.data[i]) + '</td></tr>';
-      }).join('') + '</tbody></table>';
+      }).join('') + '</tbody></table></details>';
   }
   Object.keys(metrics).forEach(function (key) {
     var m = metrics[key];
@@ -263,6 +264,24 @@
       buildDataTable(m) +
       '<p class="metrics-chart-def font-sans-2xs"><b>Definition:</b> ' + m.def + '</p>';
     grid.appendChild(card);
+  });
+
+  // Include every monthly value in browser print / Save as PDF, then restore
+  // the reader's disclosure choices when the print dialog closes or is canceled.
+  var disclosureState = null;
+  window.addEventListener('beforeprint', function () {
+    if (disclosureState !== null) return;
+    disclosureState = Array.from(document.querySelectorAll('.metrics-data-details')).map(function (el) {
+      var state = { element: el, open: el.open };
+      el.open = true;
+      return state;
+    });
+    hideTip();
+  });
+  window.addEventListener('afterprint', function () {
+    if (disclosureState === null) return;
+    disclosureState.forEach(function (state) { state.element.open = state.open; });
+    disclosureState = null;
   });
 
   document.querySelectorAll('.metrics-hit-target').forEach(function (el) {
