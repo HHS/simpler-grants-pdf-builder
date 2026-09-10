@@ -17,6 +17,33 @@ Embedded PNG/JPEG/GIF images and public bundled static images are supported. Sta
 - Local browser: successful normal download with bundled image; deliberately occupied conversion slots produced an actionable busy message; malformed image produced an actionable error. The existing generic-error dialog was fixed to display only designated structured export errors, with a generic fallback for unexpected responses.
 - These are synthetic fixtures in an isolated local database, not dev or production testing, and not a full visual-fidelity signoff. [Success](word-export-evidence/success.png) and [image error](word-export-evidence/image-error.png) screenshots capture the actual browser states.
 
+### Longer-document and desktop Word verification
+
+Five synthetic exports (normal, policy-normal, clearance, Composer, and Writer)
+were expanded to approximately 3,200–3,600 words, including five 12-row tables,
+continued/nested lists, and 100 ordered content markers. Actual download routes
+preserved all markers in order and returned zero strict-parser warnings.
+
+The normal export was opened, edited, and saved in desktop Microsoft Word, then
+submitted through the actual Builder import and overwrite routes. All seven
+sections and 100 markers survived, and the edit persisted in Builder. Composer,
+Writer, and clearance files also opened in Word without a repair prompt; this is
+not yet an equivalent edit/re-import test for those workflows.
+
+Local Word PDF renders of normal, clearance, and Writer contained all 100 markers,
+with no blank pages or extracted words outside page bounds. Sampled pages showed
+readable tables, continued numbering, and clearance review/priority labels.
+This is a sampled visual check, not full-document visual approval. Word produced
+10, 13, and 11 pages respectively; LibreOffice produced 17, 19, and 17 pages.
+LibreOffice's narrow table columns did not reproduce on the inspected Word pages.
+Clearance labels retain their text and bold emphasis, not the browser's colored
+callout styling. These differences need product acceptance for basic editable Word.
+
+Local evidence is saved in `Documents/NOFO_Improvements/pandoc-882-verification-2026-09-10`
+on the verification workstation, including source HTML, DOCX, rendered pages,
+route results, and the desktop Word round-trip report. These are synthetic
+documents, not representative production NOFOs or a deployment verification.
+
 ## Draft review gates
 
 ### Committed conversion regression coverage (September 10 follow-up)
@@ -39,7 +66,7 @@ Pandoc-first agreement and the remaining rollout conditions.
 - Decide whether remote/SVG images are required; if so, add safe support and verification before rollout. Bundled and embedded raster images are supported; other sources fail explicitly.
 - Complete browser verification of Composer/Writer/clearance workflows beyond their successful server-side export/import checks.
 - Expand representative full-length fixtures. A committed structural fixture and actual conversion/page-break/access/clearance regression checks now complement timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling tests.
-- Repeat full-length and Word edit/save tests against this implementation, including tables, lists, links, and image fidelity.
+- Complete representative real-document and full-page visual review, plus Word edit/save/import checks for Composer and Writer. The longer synthetic normal-document round trip passed; this does not establish all-workflow fidelity.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.
 
 No provider cutover, account retirement, or production readiness is implied by this draft.
