@@ -52,10 +52,46 @@ A locally held CDC K01 example subsequently passed the actual import, Pandoc
 export, and strict re-import routes, retaining seven sections. Comparing all
 approximately 9,300 export-target words against DOCX text found only two adjacent
 formatting-run joins in dates (`3` + `0` and `2` + `9`), with no other token changes.
-Its rendered first page was inspected; full-document visual/link/image approval
-is still outstanding. The ACF 0028 example was rejected by existing strict-import
+All 32 pages of its desktop Word PDF were visually inspected. Tables were readable
+with repeated headers; some rows split awkwardly (pages 17–18 and 30–31), and a
+bold body lead-in was stranded at the bottom of page 7. No visual clipping or
+overlap was observed. Two glued bold lead-ins already lack whitespace in the
+export-target HTML, so they are not newly introduced by conversion. This is basic
+editable output, not designed-PDF layout equivalence.
+
+All 98 external hyperlink destinations and their occurrence counts matched the
+HTML target. Both formats contained 24 internal links, including the same two
+unresolved links: “responsiveness criteria” and “Contacts and Support.” External
+URL availability and interactive navigation were not tested. This CDC target has
+no images, so it does not extend the synthetic raster-image evidence.
+
+The ACF 0028 example was rejected by existing strict-import
 style checks before export ran, so it is not counted as a Pandoc failure or pass.
 Source documents and derived real-document content remain local.
+
+### Deployment-safety check
+
+The local application image runs Pandoc 3.11 as non-root `appuser`. Its 45-second
+conversion deadline is shorter than the 89-second Gunicorn timeout. Two slots
+and size checks are useful controls, but they are not hard per-process memory,
+CPU, or temporary-disk limits. HTML rendering and image embedding also precede
+the final input-size check. Peak-resource behavior under concurrent, large
+documents still needs testing against the intended deployment sizing.
+
+The latest checked CI run (34516002973) passed tests, image build, Trivy, and
+Dockle. Anchore failed on three Python 3.14.7 findings: CVE-2026-17084,
+CVE-2026-15806, and CVE-2026-15310. Do not suppress these or upgrade to a release
+candidate merely to clear the gate.
+
+Pandoc's [versioned copyright notice](https://raw.githubusercontent.com/jgm/pandoc/3.11/COPYRIGHT)
+identifies GPL v2-or-later licensing with component exceptions. Confirm the
+appropriate notices and corresponding-source handling for the packaged binary
+with the deployment owner; downloading a verified archive does not itself settle
+those requirements. This remains a review gate, not a licensing determination.
+
+The PR remains draft. No environment was deployed and no export flag was enabled
+during this verification. A flag-off rollback restores the prior provider path,
+not a guarantee that the prior provider's operational problems are resolved.
 
 ## Draft review gates
 
