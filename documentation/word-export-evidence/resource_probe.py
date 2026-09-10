@@ -46,7 +46,7 @@ def slot(ready, release):
 
 if __name__ == "__main__":
     multiprocessing.set_start_method("fork")  # Linux-only, also supports stdin.
-    for size in (100_000, 1_000_000, 9_000_000):
+    for size in (100_000, 1_000_000, 2_000_000, 9_000_000):
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as pool:
             print(
                 json.dumps(

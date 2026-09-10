@@ -24,7 +24,7 @@ from django.utils.http import content_disposition_header
 
 ASSETS = Path(__file__).parent / "word_export_assets"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-MAX_INPUT = 10 * 1024 * 1024
+MAX_INPUT = 2 * 1024 * 1024
 MAX_OUTPUT = 20 * 1024 * 1024
 MAX_IMAGE = 5 * 1024 * 1024
 
@@ -98,12 +98,12 @@ def embed_image(source, host):
 
 @contextmanager
 def conversion_slot():
-    """Two active conversions per container, shared across Gunicorn workers."""
+    """One active export per container, shared across Gunicorn workers."""
     directory = Path(tempfile.gettempdir()) / "builder-word-export-locks"
     directory.mkdir(mode=0o700, exist_ok=True)
     handles = []
     try:
-        for index in range(2):
+        for index in range(1):
             handle = (directory / str(index)).open("a")
             handles.append(handle)
             try:
@@ -144,14 +144,27 @@ def render_export_html(request, export_url, target_element):
         raise ExportError("Unable to render the Word export.")
     if hasattr(response, "render"):
         response.render()
+    # Bound parsing work before constructing a BeautifulSoup tree. The view has
+    # already rendered; this is not a limit on Django's rendering memory.
+    if len(response.content) > MAX_INPUT:
+        raise ExportError(
+            "This document exceeds the experimental Word export size limit."
+        )
     soup = BeautifulSoup(response.content, "html.parser")
     target = soup.select_one(target_element)
     if target is None or not target.get_text(strip=True):
         raise ExportError("The Word export contains no document content.")
     for element in target.select("script, style, form, input, button, iframe, object"):
         element.decompose()
+    image_budget = MAX_INPUT
     for image in target.select("img"):
-        image["src"] = embed_image(image.get("src", ""), request.get_host())
+        embedded = embed_image(image.get("src", ""), request.get_host())
+        image_budget -= len(embedded)
+        if image_budget < 0:
+            raise ExportError(
+                "This document exceeds the experimental Word export size limit."
+            )
+        image["src"] = embedded
         image.attrs.pop("srcset", None)
     html = "<!doctype html><html><body>" + str(target) + "</body></html>"
     if len(html.encode()) > MAX_INPUT:
@@ -231,12 +244,22 @@ def normalize_docx(data):
 
 
 def convert_html(html):
+    if len(html.encode("utf-8")) > MAX_INPUT:
+        raise ExportError(
+            "This document exceeds the experimental Word export size limit."
+        )
     with tempfile.TemporaryDirectory(prefix="builder-word-") as directory:
         source = Path(directory) / "input.html"
         output = Path(directory) / "output.docx"
         source.write_text(html, encoding="utf-8")
         command = [
             getattr(settings, "PANDOC_BINARY", "pandoc"),
+            # Supported by the pinned official GHC-built binary. This bounds the
+            # managed heap, NOT total RSS or Django's memory. No unbounded retry.
+            "+RTS",
+            "-M192m",
+            "-K16m",
+            "-RTS",
             "--sandbox",
             "-f",
             "html",
@@ -272,7 +295,10 @@ def convert_html(html):
             ) from exc
         # Do not log stderr: converter diagnostics may contain document content.
         if process.returncode or errors.strip() or not output.exists():
-            raise ExportError("Word conversion failed. No document was downloaded.")
+            raise ExportError(
+                "Word conversion failed or exceeded resource limits. "
+                "No document was downloaded. Try a smaller document."
+            )
         if output.stat().st_size > MAX_OUTPUT:
             raise ExportError("Word export exceeded the output size limit.")
         return normalize_docx(output.read_bytes())

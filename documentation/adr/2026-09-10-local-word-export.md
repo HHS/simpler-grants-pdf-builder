@@ -33,10 +33,14 @@ failure handling. This is basic Word formatting, not the PDF design or paginatio
 ## Resource and failure controls
 
 The local evaluation found that unrestricted concurrent exports delayed browsing.
-Start with two active conversions per container, reject excess requests with a
+Start with one active export per container, reject excess requests with a
 retryable busy response, and terminate conversions after 45 seconds. Do not queue
 work inside application requests or silently fall back to an external vendor.
 The synthetic evaluation does not establish production capacity.
+After the large-document probe failed under a 1 GiB container limit, lower the
+HTML budget to 2 MiB and cap Pandoc's managed heap at 192 MiB and stack at 16 MiB.
+This bounds converter-managed allocations, not total process RSS or Django's
+rendering memory. Keep deployment sizing and realistic load validation as gates.
 
 ## Validation and rollout
 

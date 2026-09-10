@@ -4,7 +4,7 @@ Pandoc is the proposed basic editable Word converter under #880. This draft impl
 
 The local path renders the existing authorized export GET view, extracts its document target, and converts locally using pinned Pandoc 3.11, a reference document, and a Lua page-break adapter. Clearance uses its existing feature flag and export-time evaluation. No authenticated URL, session cookie, or document is sent to a conversion vendor by this path.
 
-Two conversions may run per container. Additional requests receive HTTP 503 and Retry-After. This is admission control, not a queue; multiple replicas each have their own limit. Conversion subprocesses have a 45-second deadline and are killed/reaped on timeout. Temporary directories are removed on success and handled failures. Documents have a 10 MiB HTML limit and 20 MiB DOCX limit. Errors never silently return empty files or fall back to GrabzIt.
+One export may run per container. Additional requests receive HTTP 503 and Retry-After. This is admission control, not a queue; multiple replicas each have their own limit. Conversion subprocesses have a 45-second deadline and are killed/reaped on timeout. Temporary directories are removed on success and handled failures. Documents have a 2 MiB HTML limit and 20 MiB DOCX limit. Pandoc receives a 192 MiB managed-heap limit and 16 MiB stack limit. These are not hard whole-process RSS limits. Errors never silently return empty files or fall back to GrabzIt.
 
 The Docker build verifies pinned Linux amd64/arm64 archive hashes. Local developers can provide `PANDOC_BINARY` through Django settings. Basic semantic formatting is intentional; this is not designed-PDF fidelity. The reference file derives from Pandoc's default reference document with the evaluated typography adjustments.
 
@@ -72,7 +72,7 @@ Source documents and derived real-document content remain local.
 ### Deployment-safety check
 
 The local application image runs Pandoc 3.11 as non-root `appuser`. Its 45-second
-conversion deadline is shorter than the 89-second Gunicorn timeout. Two slots
+conversion deadline is shorter than the 89-second Gunicorn timeout. Admission slots
 and size checks are useful controls, but they are not hard per-process memory,
 CPU, or temporary-disk limits. HTML rendering and image embedding also precede
 the final input-size check. Peak-resource behavior under concurrent, large
@@ -114,10 +114,34 @@ The parent probe survived. The near-limit failure is consistent with memory
 pressure but cgroup OOM counters were not captured, so its exact cause is not
 proven. Peak child RSS is not whole-container memory. Two held cross-process
 slots rejected a third entrant and were reusable after release. This is converter
-stress evidence, not an HTTP or deployed load test. The current 10 MiB admission
+stress evidence, not an HTTP or deployed load test. The former 10 MiB admission
 limit is NOT demonstrated safe for a 1 GiB container. Before enabling, choose
 and test a lower limit and/or isolation with the deployment owner. The probe
 does not justify silently increasing container resources.
+
+Follow-up implementation reduces the input limit to 2 MiB, admits only one export
+per container, and always passes `+RTS -M192m -K16m -RTS` to the pinned converter.
+Rendered response bytes are checked before HTML parsing, aggregate embedded-image
+bytes are bounded during embedding, and direct conversion checks size before
+creating a temporary directory or subprocess. Django rendering itself remains
+outside these limits. Large embedded images may now exceed the total export
+budget even if below the individual image limit.
+
+Repeating the probe in the same 1 GiB / two-CPU container with the changed module:
+102,947-byte inputs completed in 0.34–0.35 seconds; 1,029,397-byte inputs in
+1.81–1.85 seconds; 2,058,817-byte inputs in 3.64–3.66 seconds (approximately
+309 MiB peak child RSS each). Both 9,264,687-byte inputs were rejected before
+launch with zero child RSS. These direct-converter parallel tests deliberately
+bypass admission; separately, exactly one cross-process slot was admitted and
+the slot was reusable after release. This does not establish deployed capacity.
+
+An additional diagnostic bypassed only the input-size gate in the test process
+and submitted 400,000 repeated `<p>stress content</p>` paragraphs. With the heap
+and stack flags still enforced, conversion returned the handled resource/failure
+error after 42 seconds, peaked at approximately 419 MiB child RSS, and removed
+its conversion directory. The container's memory.events reported zero OOM and
+OOM-kill events. The underlying converter diagnostic was not captured, so this
+does not identify which internal limit caused the exit. The parent survived.
 
 The stress-tested conversion module's SHA-256 matches this branch. The updated
 image built successfully; the bundled COPYRIGHT and COPYING.md hashes match

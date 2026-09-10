@@ -114,11 +114,46 @@ class WordExportTests(SimpleTestCase):
 
     def test_slots_are_shared_and_released(self):
         with conversion_slot() as first, conversion_slot() as second:
-            with conversion_slot() as third:
-                self.assertTrue(first and second)
-                self.assertFalse(third)
+            self.assertTrue(first)
+            self.assertFalse(second)
         with conversion_slot() as available:
             self.assertTrue(available)
+
+    def test_oversized_conversion_rejected_before_process_start(self):
+        with patch("bloom_nofos.word_export.MAX_INPUT", 10), patch(
+            "bloom_nofos.word_export.subprocess.Popen"
+        ) as popen, self.assertRaisesMessage(ExportError, "size limit"):
+            convert_html("é" * 6)
+        popen.assert_not_called()
+
+    def test_heap_and_stack_limits_are_always_passed(self):
+        with patch(
+            "bloom_nofos.word_export.subprocess.Popen", side_effect=FileNotFoundError
+        ) as popen:
+            with self.assertRaises(ExportError):
+                convert_html("<p>Content</p>")
+        self.assertEqual(
+            popen.call_args.args[0][1:5], ["+RTS", "-M192m", "-K16m", "-RTS"]
+        )
+
+    def test_oversized_render_rejected_before_parsing(self):
+        match = SimpleNamespace(
+            url_name="nofo_export",
+            func=lambda *a, **k: HttpResponse("x" * 11),
+            args=(),
+            kwargs={},
+        )
+        with patch("bloom_nofos.word_export.resolve", return_value=match), patch(
+            "bloom_nofos.word_export.MAX_INPUT", 10
+        ), patch(
+            "bloom_nofos.word_export.BeautifulSoup"
+        ) as parse, self.assertRaisesMessage(
+            ExportError, "size limit"
+        ):
+            render_export_html(
+                self.request(), "http://testserver/export", "#download_target"
+            )
+        parse.assert_not_called()
 
     def test_invalid_and_empty_outputs_rejected(self):
         with self.assertRaises(ExportError):
@@ -128,6 +163,26 @@ class WordExportTests(SimpleTestCase):
             archive.writestr("word/document.xml", "<document/>")
         with self.assertRaises(ExportError):
             normalize_docx(output.getvalue())
+
+    def test_aggregate_images_rejected_during_embedding(self):
+        match = SimpleNamespace(
+            url_name="nofo_export",
+            func=lambda *a, **k: HttpResponse(
+                '<div id="download_target"><p>Content</p><img src="a"><img src="b"><img src="c"></div>'
+            ),
+            args=(),
+            kwargs={},
+        )
+        with patch("bloom_nofos.word_export.resolve", return_value=match), patch(
+            "bloom_nofos.word_export.MAX_INPUT", 200
+        ), patch(
+            "bloom_nofos.word_export.embed_image", return_value="x" * 150
+        ) as embed:
+            with self.assertRaisesMessage(ExportError, "size limit"):
+                render_export_html(
+                    self.request(), "http://testserver/export", "#download_target"
+                )
+        self.assertEqual(embed.call_count, 2)
 
     def test_external_destination_rejected(self):
         with self.assertRaises(ExportError):
