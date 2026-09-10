@@ -49,11 +49,13 @@ automatic reclassification or correction interface.
 ## OpDiv filtering (#886)
 
 The dashboard defaults to All OpDivs and offers the eight agency groups from
-`GROUP_CHOICES`, excluding Bloomworks and staging. Apply filter updates all six
+`GROUP_CHOICES`, excluding Bloomworks and staging. Changing the dropdown updates all six
 metrics in place and stores `?group=cdc` (for example) in the URL. Both HTML and
 JSON responses require the existing metrics-viewer permission. Invalid/internal
-group values are rejected. Print includes the applied group label and all
-monthly tables; changing a dropdown without applying it does not change reports.
+group values are rejected. The applied group label appears only in print, with all monthly tables expanded.
+Completion messages are available to screen readers without visible repetition.
+The dropdown retains focus; only the latest request can update the report. Failed
+requests display an error and reset the dropdown to the last successful group.
 
 Signup facts retain the user's signup group; activity and import attempts retain
 the user's group at the time; NOFO facts retain their creation group. These are

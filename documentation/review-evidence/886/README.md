@@ -17,14 +17,15 @@ Validation:
 - PostgreSQL: all 25 metrics/history/filter tests passed with fresh migrations.
 - All 17 JavaScript unit tests passed; migration drift and whitespace checks passed.
 - `tests/js/metrics_opdiv.browser.cjs` checked nine dropdown choices, 72 monthly
-  rows, actual filtered JSON updates without a document navigation, URL reload,
+  rows, automatic filtered JSON updates without a document navigation, keyboard
+  selection with retained focus, out-of-order responses, URL reload,
   failure/retry preserving applied results, an empty agency, keyboard disclosure
   opening, responsive bounds at 320/375/768px, print expansion/restoration, and
   no JavaScript errors. Set METRICS_URL, METRICS_COOKIE_FILE (local Playwright
   cookie JSON), CHROME_PATH, and make Playwright available to Node to rerun with
   the same 12-month synthetic dataset and a metrics-viewer session.
 - An actual three-page A4 PDF contains the applied CDC label, all six monthly
-  table captions and final-month rows, despite an unapplied NIH dropdown choice.
+  table captions and final-month rows, with the selected scope hidden on screen and visible in print.
   The PNG shows continuous print styles, not PDF pagination.
 
 This does not claim a manual screen-reader audit. The historical attribution

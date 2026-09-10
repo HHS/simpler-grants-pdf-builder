@@ -17,6 +17,7 @@
    * against this page's colored chart lines/bars for no benefit.
    * Only layout/behavior that has no USWDS equivalent is custom CSS below.
    */
+  .metrics-print-scope { display: none; }
   .metrics-filter { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
   .metrics-filter .usa-select { max-width: 100%; }
   .metrics-filter-control { width: 24rem; max-width: 100%; }
@@ -58,6 +59,7 @@
   .metrics-empty-note { margin-top: 1.5rem; max-width: 42rem; }
 
   @media print {
+    .metrics-print-scope { display: block; }
     .metrics-filter, #metrics-filter-status, .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
   }
 </style>
@@ -100,20 +102,20 @@
       This history is separate from application logs and database backups.</p>
   </details>
 
-  <form method="get" id="metrics-filter" class="metrics-filter margin-bottom-2">
+  <div id="metrics-filter" class="metrics-filter margin-bottom-3">
     <div class="metrics-filter-control">
       <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
-      <select class="usa-select" name="group" id="metrics-group">
+      <select class="usa-select" name="group" id="metrics-group" aria-describedby="metrics-filter-hint">
         <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
         {% for value, label in opdiv_choices %}
         <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
     </div>
-    <button class="usa-button" type="submit">Apply filter</button>
-  </form>
-  <p id="metrics-filter-status" role="status" aria-live="polite" class="font-sans-2xs"></p>
-  <p class="font-sans-sm text-bold margin-bottom-3">OpDiv group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
+  </div>
+  <span id="metrics-filter-hint" class="usa-sr-only">Selecting an OpDiv updates all metrics on this page.</span>
+  <p id="metrics-filter-status" role="status" aria-live="polite" class="usa-sr-only"></p>
+  <p class="metrics-print-scope font-sans-sm text-bold margin-bottom-3">OpDiv group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
   <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
   <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
 
@@ -316,37 +318,36 @@
   }
   renderMetrics(JSON.parse(document.getElementById('metrics-data').textContent));
 
-  var form = document.getElementById('metrics-filter');
+  var select = document.getElementById('metrics-group');
+  var appliedGroup = JSON.parse(document.getElementById('metrics-data').textContent).group;
   var status = document.getElementById('metrics-filter-status');
-  var loading = false;
-  form.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    if (loading) return;
-    loading = true;
-    var apply = form.querySelector('button');
+  var requestNumber = 0;
+  select.addEventListener('change', async function () {
+    // Keep the native select enabled and focused. Only the latest selection may
+    // update results, including when earlier requests finish out of order.
+    var currentRequest = ++requestNumber;
     var print = document.getElementById('metrics-print');
-    var select = document.getElementById('metrics-group');
     var url = new URL(window.location.href);
     url.searchParams.set('group', select.value);
-    apply.disabled = true;
     print.disabled = true;
-    select.disabled = true;
+    status.className = 'usa-sr-only';
     status.textContent = 'Updating metrics…';
     try {
       var response = await fetch(url, {headers: {'Accept': 'application/json'}});
       if (!response.ok) throw new Error('Metrics request failed');
       var data = await response.json();
+      if (currentRequest !== requestNumber) return;
       renderMetrics(data);
+      appliedGroup = data.group;
       window.history.replaceState(null, '', url);
       status.textContent = 'Metrics updated for ' + data.groupLabel + '.';
     } catch (error) {
-      status.textContent = 'Unable to update metrics. Your previous results are still shown. Please try again.';
+      if (currentRequest !== requestNumber) return;
+      select.value = appliedGroup;
+      status.className = 'font-sans-2xs';
+      status.textContent = 'Unable to update metrics. Your previous results are still shown. Select an OpDiv to try again.';
     } finally {
-      loading = false;
-      apply.disabled = false;
-      print.disabled = false;
-      select.disabled = false;
-      apply.focus();
+      if (currentRequest === requestNumber) print.disabled = false;
     }
   });
 
