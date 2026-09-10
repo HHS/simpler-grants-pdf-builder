@@ -155,6 +155,15 @@ Python findings above. This supports treating them as base-runtime findings,
 not Pandoc findings, but is not a same-time scanner comparison of both images.
 No vulnerability suppression or dependency changes were made.
 
+Same-day baseline confirmed: the September 10 main deployment run
+[34518310317](https://github.com/HHS/simpler-grants-gov/actions/runs/34518310317)
+passed tests, Trivy, and Dockle but failed Anchore on exactly the same three
+Python 3.14.7 CVEs. Deploy was skipped. This supersedes the earlier historical-only
+comparison above: these findings also affect main without the Pandoc change.
+The dev workflow requires both checks and vulnerability scans before deployment;
+do not bypass it. No additional deployment was dispatched while this blocker
+remains. Ben can review the local Word evidence independently of deployment.
+
 ## Draft review gates
 
 ### Committed conversion regression coverage (September 10 follow-up)
