@@ -91,10 +91,10 @@
       group changes cannot be recovered. Import-quality tracking starts when
       import attempts were first recorded; attempts with unknown user eligibility
       are excluded. Missing import-quality data shows as “No data,” not zero.</p>
-    <p>OPDIV filters use the recorded user group for accounts, activity, and import
+    <p>OpDiv filters use the recorded user group for accounts, activity, and import
       attempts, and the recorded NOFO group for creation and time to first PDF.
-      Older OPDIV assignments use the records available when filtering was introduced.
-      History with an unknown OPDIV remains in All OPDIVs but not an individual agency.
+      Older OpDiv assignments use the records available when filtering was introduced.
+      History with an unknown OpDiv remains in All OpDivs but not an individual agency.
       Bloomworks and staging are excluded.</p>
     <p>There is no automatic age-based cutoff for these metric records.
       This history is separate from application logs and database backups.</p>
@@ -102,9 +102,9 @@
 
   <form method="get" id="metrics-filter" class="metrics-filter margin-bottom-2">
     <div class="metrics-filter-control">
-      <label class="usa-label margin-top-0" for="metrics-group">OPDIV group</label>
+      <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
       <select class="usa-select" name="group" id="metrics-group">
-        <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OPDIVs</option>
+        <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
         {% for value, label in opdiv_choices %}
         <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
@@ -113,7 +113,7 @@
     <button class="usa-button" type="submit">Apply filter</button>
   </form>
   <p id="metrics-filter-status" role="status" aria-live="polite" class="font-sans-2xs"></p>
-  <p class="font-sans-sm text-bold margin-bottom-3">OPDIV group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
+  <p class="font-sans-sm text-bold margin-bottom-3">OpDiv group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
   <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
   <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
 

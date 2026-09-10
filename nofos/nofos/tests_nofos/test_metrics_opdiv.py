@@ -144,7 +144,7 @@ class MetricsOpdivTests(TestCase):
         self.assertEqual(response.json()["errorRatePct"], [50.0])
         self.assertEqual(response["Cache-Control"], "private, no-store")
         html = self.client.get(self.url, {"group": "cdc"})
-        self.assertContains(html, "OPDIV group")
+        self.assertContains(html, "OpDiv group")
         self.assertContains(html, 'value="cdc" selected')
         self.assertNotContains(html, 'value="bloom"')
         self.assertNotContains(html, 'value="staging"')

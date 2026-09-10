@@ -1,4 +1,4 @@
-# OPDIV filter review evidence
+# OpDiv filter review evidence
 
 Captured September 10, 2026 in local Chrome against the running Django app and an
 isolated SQLite database. A fictional metrics-viewer account and 12 months of
@@ -6,9 +6,9 @@ synthetic CDC, NIH, and ACF records exercise the actual HTML/JSON view and query
 layer. The local clock is fixed at August 12, 2027 so all sample months appear.
 These are not dev or production records.
 
-- [All OPDIVs](all-opdivs.png): default filter, above the monthly summary.
+- [All OpDivs](all-opdivs.png): default filter, above the monthly summary.
 - [CDC applied](cdc.png): same dashboard updated without navigation.
-- [CDC print styles](cdc-print.png): applied OPDIV label and all monthly tables.
+- [CDC print styles](cdc-print.png): applied OpDiv label and all monthly tables.
 - [CDC mobile](cdc-mobile.png): 375px viewport with one table expanded.
 
 Validation:

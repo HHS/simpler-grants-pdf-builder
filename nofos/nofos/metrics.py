@@ -29,7 +29,7 @@ def for_opdiv(queryset, group, field="group"):
     if group == "all":
         return queryset
     if group not in dict(opdiv_choices()):
-        raise ValueError("Unknown OPDIV group")
+        raise ValueError("Unknown OpDiv group")
     return queryset.filter(**{field: group})
 
 

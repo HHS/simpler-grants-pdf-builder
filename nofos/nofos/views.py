@@ -2888,7 +2888,7 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         self.selected_group = request.GET.get("group", "all")
         if self.selected_group not in {"all", *dict(opdiv_choices())}:
-            return HttpResponseBadRequest("Choose a valid OPDIV group.")
+            return HttpResponseBadRequest("Choose a valid OpDiv group.")
         context = self.get_context_data(**kwargs)
         if request.headers.get("Accept") == "application/json":
             response = JsonResponse(context["metrics_data"])
@@ -2907,7 +2907,7 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
         group = self.selected_group
         context["opdiv_choices"] = opdiv_choices()
         context["selected_group"] = group
-        label = "All OPDIVs" if group == "all" else group.upper()
+        label = "All OpDivs" if group == "all" else group.upper()
         context["metrics_data"] = {
             "group": group,
             "groupLabel": label,

@@ -1270,7 +1270,7 @@ class ImportAttempt(models.Model):
 
 
 class MetricsActor(models.Model):
-    """Durable signup time, eligibility and OPDIV; unlink the account on deletion."""
+    """Durable signup time, eligibility and OpDiv; unlink the account on deletion."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
