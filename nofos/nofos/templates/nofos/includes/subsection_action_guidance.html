@@ -1,0 +1,20 @@
+{% if not can_delete_subsections %}
+  <div class="usa-alert usa-alert--info usa-alert--slim margin-top-3 margin-bottom-2" id="subsection-action-guidance">
+    <div class="usa-alert__body">
+      <p class="usa-alert__text">
+        {% if nofo.archived %}
+          Archived NOFOs cannot be changed. Contact Paul or Ben if you need to restore this NOFO.
+        {% elif nofo.status == 'cancelled' %}
+          Subsections can't be edited, added, or deleted while this NOFO is Cancelled. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
+        {% elif not can_edit_subsections %}
+          This NOFO is Published. To edit or add subsections, add modifications from the main NOFO page. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
+        {% else %}
+          You can still edit or add subsections. Draft is the only status that allows deletion —
+          <a href="{% url 'nofos:nofo_edit' nofo.id %}#nofo-status">change the status to Draft</a> if you need to.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+{% endif %}
