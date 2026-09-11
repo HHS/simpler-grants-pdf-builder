@@ -117,13 +117,13 @@ from .nofo import (
     decompose_before_you_begin_section,
     extract_page_break_context,
     find_broken_links,
+    find_endnote_issues,
     find_external_link,
     find_external_links,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
-    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -496,7 +496,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
-        context["unconverted_footnotes"] = find_unconverted_footnotes(self.object)
+        context["unconverted_footnotes"] = find_endnote_issues(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
