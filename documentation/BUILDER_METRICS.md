@@ -25,8 +25,14 @@ Migration 0135 creates the **Metrics viewers** Django permission group. Add each
 approved viewer to this group. This is separate from the user's OpDiv field;
 keep their existing OpDiv assignment.
 
-The current user-admin screen does not expose permission-group membership. An
-administrator with access to the environment's Django shell can grant access
+In **Django admin → Users**, open the user and find **Can view metrics** under
+**Permissions**. Check it to grant access or uncheck it to remove membership in
+**Metrics viewers**, then **Save**. The checkbox is also available when creating
+a user in Django admin. It does not appear on the front-end team management page.
+The checkbox represents this group membership; superuser access is automatic,
+and the form flags any additional direct or other-group metrics grants.
+
+As an alternative, an administrator with Django shell access can grant access
 with the following code, replacing the example email with the intended user's:
 
 ```python

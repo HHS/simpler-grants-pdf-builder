@@ -49,6 +49,7 @@ class BloomUserAdmin(UserAdmin):
                 "fields": (
                     "is_superuser",
                     "is_composer_admin",
+                    "can_view_metrics",
                     "is_opdiv_admin",
                     "is_active",
                 )
@@ -78,6 +79,7 @@ class BloomUserAdmin(UserAdmin):
                 "fields": (
                     "is_superuser",
                     "is_composer_admin",
+                    "can_view_metrics",
                     "is_opdiv_admin",
                     "is_active",
                 ),
