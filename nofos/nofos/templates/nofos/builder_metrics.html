@@ -21,11 +21,7 @@
   .metrics-filter { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
   .metrics-filter .usa-select { max-width: 100%; }
   .metrics-filter-control { width: 24rem; max-width: 100%; }
-  .metrics-page { padding: 1rem 0 2rem; }
-  .metrics-toolbar {
-    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
-    gap: 1rem; margin-bottom: 1.5rem;
-  }
+  .metrics-page { padding-bottom: 2rem; }
   .metrics-delta-good { color: var(--color--green); }
   .metrics-delta-bad { color: var(--color--usa-error-message); }
   .metrics-delta-flat { color: var(--color--text-grey); }
@@ -56,7 +52,6 @@
   }
   #metrics-tooltip.show { opacity: 1; }
   #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
-  .metrics-empty-note { margin-top: 1.5rem; max-width: 42rem; }
 
   @media print {
     .metrics-print-scope { display: block; }
@@ -67,16 +62,18 @@
 
 {% block content %}
 <div class="metrics-page">
-  <div class="metrics-toolbar">
-    <div>
+  <div class="metrics-toolbar margin-bottom-3">
+    <div class="nofo_index--header">
       <h1 class="font-heading-xl margin-y-0">Usage &amp; quality metrics</h1>
-      <div class="margin-top-05">
-        <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; no fixed end date, new months appear on their own</span>
+      <div class="nofo_index--header--view font-sans-md">
+        <button id="metrics-print" type="button" class="usa-button margin-0" onclick="window.print()">
+          Print / Save as PDF
+        </button>
       </div>
     </div>
-    <button id="metrics-print" type="button" class="usa-button" onclick="window.print()">
-      Print / Save as PDF
-    </button>
+    <div class="margin-top-1">
+      <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; no fixed end date, new months appear on their own</span>
+    </div>
   </div>
 
   <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
@@ -122,11 +119,13 @@
   <h2 class="font-heading-md margin-top-5 margin-bottom-2">Monthly trends</h2>
   <div class="metrics-chart-grid" id="metrics-chart-grid"></div>
 
-  <p class="metrics-empty-note">
+  <div class="usa-prose margin-top-3">
+  <p>
     Numbers reflect NOFO Builder's own database and update automatically each time this page loads -
     there's nothing to refresh or re-run. Months with no data yet (for example, before import-quality
     tracking started) show as "No data" rather than zero.
   </p>
+  </div>
 </div>
 
 {{ metrics_data|json_script:"metrics-data" }}
