@@ -1,4 +1,89 @@
-# Historical Builder metrics
+# NOFO Builder usage & quality metrics
+
+The metrics dashboard supports issue #865 and reports total users, monthly active
+users, NOFOs created, time from import to first live PDF, blocking import errors,
+and warnings per successful import.
+
+## Opening the dashboard
+
+Open `/nofos/metrics` on the environment's normal hostname.
+
+There is no feature toggle or additional environment variable to enable. Access
+is controlled by the `nofos.view_builder_metrics` permission. Active superusers
+have access automatically.
+
+The dashboard defaults to **All OpDivs**. Selecting an agency updates all six
+metrics without leaving the page. The selected agency is preserved in the URL,
+for example `/nofos/metrics?group=cdc`.
+
+Metrics viewers can see all available OpDiv results. The filter does not restrict
+a viewer to their own agency.
+
+## Granting and removing access
+
+Migration 0135 creates the **Metrics viewers** Django permission group. Add each
+approved viewer to this group. This is separate from the user's OpDiv field;
+keep their existing OpDiv assignment.
+
+The current user-admin screen does not expose permission-group membership. An
+administrator with access to the environment's Django shell can grant access
+with the following code, replacing the example email with the intended user's:
+
+```python
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+
+user = get_user_model().objects.get(email="person@example.gov")
+metrics_viewers = Group.objects.get(name="Metrics viewers")
+user.groups.add(metrics_viewers)
+```
+
+To remove that group membership in the same shell session:
+
+```python
+user.groups.remove(metrics_viewers)
+```
+
+Removing membership does not revoke access granted separately through another
+permission group, a direct permission, or superuser status. No application restart
+is required; reload the page to check access.
+
+## Initial production rollout
+
+Follow the normal release and deployment process in [DEPLOYMENT.md](../DEPLOYMENT.md).
+
+1. Confirm a current database backup is available.
+2. Pause application writes while applying the historical baseline migrations.
+   Migration 0137 captures existing history; migration 0139 attributes eligible
+   history to OpDivs. These data migrations are intentionally irreversible.
+3. Confirm migrations finish successfully before resuming writes. Apply pending
+   migrations through the normal deployment process; do not rerun completed
+   baselines to refresh the dashboard.
+4. Grant access to the intended metrics viewers.
+5. Verify that an authorized viewer can open the dashboard and that a user
+   without permission cannot.
+6. Select an OpDiv and verify that the charts and monthly tables update. Check
+   that Print / Save as PDF includes the applied OpDiv and all monthly values.
+
+The baseline uses records already in the environment. It cannot reconstruct
+previously deleted records or former group membership. See the baseline sections
+below for details.
+
+## Sample data and ongoing operation
+
+The metrics PRs do not install synthetic accounts, NOFOs, or metric values.
+Screenshot examples used isolated local databases or substituted display values;
+automated tests use test databases. Review screenshots can remain in the repository
+without affecting deployed metrics.
+
+Metrics are queried when the page loads or the filter changes. No scheduled
+refresh job or manual seeding step is required.
+
+Monthly data tables are collapsed by default. Print / Save as PDF expands them
+automatically and restores their previous state afterward. Missing observations
+display as **No data**, and the current month is marked as in progress.
+
+## Historical metrics
 
 The six metrics use durable facts rather than joins to currently existing users
 and NOFOs. This addresses #873 under #865.
