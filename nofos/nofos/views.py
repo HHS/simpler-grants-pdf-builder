@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 import docraptor
+from bloom_nofos.context_processors import template_context
 from bloom_nofos.error_helpers import (
     DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     MistaggedHeadingError,
@@ -26,6 +27,7 @@ from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
@@ -126,6 +128,7 @@ from .nofo import (
     get_sections_from_soup,
     get_side_nav_links,
     get_step_2_section,
+    get_subsection_action_availability,
     get_subsections_from_sections,
     modifications_update_announcement_text,
     nofo_has_end_notes_section,
@@ -2277,7 +2280,8 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
         doc_api = docraptor.DocApi()
         doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
-        doc_api.api_client.configuration.debug = True
+        # The request now contains the complete NOFO; do not log its payload.
+        doc_api.api_client.configuration.debug = False
 
         # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
         is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
@@ -2293,15 +2297,32 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 "Server error printing NOFO. Can't print a NOFO on localhost."
             )
 
+        # Authorization has already run in GroupAccessObjectMixin. Render the
+        # same document as the detail page here, rather than asking DocRaptor to
+        # fetch a protected URL (which can return the login page). Deliberately
+        # do not attach the request or run its context processors: credentials,
+        # CSRF tokens, and user-specific controls must not leave the application.
+        # Keep this document-only context aligned with NofosDetailView when its
+        # rendering changes; request/context-processor additions do not run here.
+        document_view = NofosDetailView()
+        document_view.object = nofo
+        document_context = document_view.get_context_data()
+        document_context.pop("view", None)
+        # This helper only returns explicit application metadata/settings and
+        # does not read its request argument. Preserve the base-page metadata.
+        document_context.update(template_context(None))
+        document_content = render_to_string("nofos/nofo_pdf.html", document_context)
+
         try:
             response = doc_api.create_doc(
                 {
                     "test": is_test_pdf,  # test documents are free but watermarked
-                    "document_url": nofo_url,
+                    "document_content": document_content,
                     "document_type": "pdf",
                     "javascript": False,
                     "pipeline": 11,
                     "prince_options": {
+                        "baseurl": nofo_url,  # resolve relative assets and links
                         "media": "print",  # use print styles instead of screen styles
                         "profile": "PDF/UA-1",
                     },
@@ -2480,6 +2501,7 @@ class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["section"] = self.object
         context["nofo"] = self.nofo
+        context.update(get_subsection_action_availability(self.nofo))
         context["error_heading"] = self.request.session.pop("error_heading", "Error")
         context["success_heading"] = self.request.session.pop("success_heading", "")
         return context
@@ -2751,6 +2773,7 @@ class NofoSubsectionEditView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
+        context.update(get_subsection_action_availability(self.nofo))
         form = context["form"]
         threshold = settings.CALLOUT_WORD_WARNING_THRESHOLD
         context["callout_word_warning_threshold"] = threshold

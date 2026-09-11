@@ -5,7 +5,10 @@
 #
 # Upstream builds and caches the image in a separate workflow (ci-nofos.yml) and the
 # scan jobs restore it. There is no equivalent build workflow here, so the build job
-# below fills that role and the three scan jobs restore its cached image.
+# below fills that role and the three scan jobs download its image as a workflow
+# artifact (not actions/cache - a cache entry can be evicted by unrelated cache
+# writes elsewhere in the repo before same-run sibling jobs get to restore it;
+# artifacts are guaranteed to last for the run).
 
 name: Code Scans
 
@@ -45,11 +48,12 @@ jobs:
       - name: Save prod container image to file
         run: docker save nofos:latest > /tmp/docker-image.tar
 
-      - name: Cache Docker image PROD
-        uses: actions/cache/save@v4
+      - name: Upload prod container image artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: nofos-image-${{ github.run_id }}
           path: /tmp/docker-image.tar
-          key: nofos-image-${{ github.sha }}-${{ github.run_id }}
+          retention-days: 1
 
   trivy-scan:
     name: Trivy Scan
@@ -106,13 +110,13 @@ jobs:
           path: ${{ github.workspace }}/.cache/trivy
           key: trivy-cache-${{ steps.date.outputs.date }}
 
-      - name: Restore cached Docker image
-        uses: actions/cache/restore@v4
+      - name: Download prod container image artifact
+        uses: actions/download-artifact@v4
         with:
-          path: /tmp/docker-image.tar
-          key: nofos-image-${{ github.sha }}-${{ github.run_id }}
+          name: nofos-image-${{ github.run_id }}
+          path: /tmp
 
-      - name: Load cached Docker image
+      - name: Load Docker image
         run: docker load < /tmp/docker-image.tar
 
       - name: Run Trivy vulnerability scan
@@ -153,13 +157,13 @@ jobs:
           rm .grype.yml
           mv new.grype.yml .grype.yml
 
-      - name: Restore cached Docker image
-        uses: actions/cache/restore@v4
+      - name: Download prod container image artifact
+        uses: actions/download-artifact@v4
         with:
-          path: /tmp/docker-image.tar
-          key: nofos-image-${{ github.sha }}-${{ github.run_id }}
+          name: nofos-image-${{ github.run_id }}
+          path: /tmp
 
-      - name: Load cached Docker image
+      - name: Load Docker image
         id: load
         run: docker load < /tmp/docker-image.tar
 
@@ -196,13 +200,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4.4.0
 
-      - name: Restore cached Docker image
-        uses: actions/cache/restore@v4
+      - name: Download prod container image artifact
+        uses: actions/download-artifact@v4
         with:
-          path: /tmp/docker-image.tar
-          key: nofos-image-${{ github.sha }}-${{ github.run_id }}
+          name: nofos-image-${{ github.run_id }}
+          path: /tmp
 
-      - name: Load cached Docker image
+      - name: Load Docker image
         run: docker load < /tmp/docker-image.tar
 
       # Dockle doesn't allow you to have an ignore file for the DOCKLE_ACCEPT_FILES

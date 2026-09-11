@@ -33,6 +33,8 @@
     </div>
   {% endwith %}
 
+  {% include "nofos/includes/subsection_action_guidance.html" %}
+
   <p>Edit page for this subsection.</p>
 
   {% if nofo.modifications %}
@@ -212,11 +214,13 @@
             Add subsection
           </a> — add a new subsection after this one
         </li>
-        <li>
+        {% if can_delete_subsections %}
+          <li>
           <a class="usa-button usa-button--secondary" href="{% url 'nofos:subsection_delete' nofo.id subsection.section.id subsection.id %}?return_to=subsection_edit">
             Delete subsection
           </a> — remove this subsection completely
-        </li>
+          </li>
+        {% endif %}
       </ul>
     </div>
   </details>
