@@ -607,8 +607,9 @@ def get_as_markdown(html_or_string):
     return md_body
 
 
-def create_nofo(title, sections, opdiv):
-    nofo = Nofo(title=title)
+@transaction.atomic
+def create_nofo(title, sections, opdiv, group="bloom"):
+    nofo = Nofo(title=title, group=group)
     nofo.number = "NOFO #999"
     nofo.opdiv = opdiv
     nofo.save()
@@ -1412,6 +1413,16 @@ END_NOTES_PLACEHOLDER_BODY = """<ol>
 
 def nofo_has_end_notes_section(nofo):
     return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
+
+
+def get_subsection_action_availability(nofo):
+    """Present existing status restrictions; action views still enforce access."""
+    return {
+        "can_edit_subsections": not nofo.archived
+        and nofo.status != "cancelled"
+        and (nofo.status != "published" or bool(nofo.modifications)),
+        "can_delete_subsections": not nofo.archived and nofo.status == "draft",
+    }
 
 
 def get_nofo_action_links(nofo):
