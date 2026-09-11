@@ -74,6 +74,24 @@
     </button>
   </div>
 
+  <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
+    <summary class="text-bold">How historical metrics are preserved</summary>
+    <p>Recorded activity stays in these metrics when a NOFO or account is deleted.
+      Later group changes do not rewrite earlier results. Bloomworks and staging
+      accounts are excluded using their group at signup for total users, and at
+      the time of activity for usage and import quality. NOFOs use their group at creation.</p>
+    <p>A past month’s typical time to first PDF can still change when a NOFO
+      imported that month gets its first finished PDF later. The current month
+      is also still in progress.</p>
+    <p>Older history was reconstructed from the records and groups available when
+      history protection was introduced. Previously deleted records and earlier
+      group changes cannot be recovered. Import-quality tracking starts when
+      import attempts were first recorded; attempts with unknown user eligibility
+      are excluded. Missing import-quality data shows as “No data,” not zero.</p>
+    <p>There is no automatic age-based cutoff for these metric records.
+      This history is separate from application logs and database backups.</p>
+  </details>
+
   <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
   <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
 
@@ -109,7 +127,7 @@
     totalUsers: {
       title: "Total users", unit: "cumulative", type: "line", color: "var(--color--usa-link)",
       good: "up", data: raw.totalUsers, fmt: fmtCount,
-      def: "Cumulative number of NOFO Builder accounts that exist, counted from each account's sign-up date. Includes everyone who's ever had access, active or not."
+      def: "Cumulative eligible signups, including accounts later deleted or made inactive. Eligibility is recorded at signup; older accounts use the group available when history protection was introduced."
     },
     activeUsers: {
       title: "Monthly active users", unit: "users", type: "bar", color: "var(--color--green)",

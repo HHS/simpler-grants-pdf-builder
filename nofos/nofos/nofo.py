@@ -604,8 +604,9 @@ def get_as_markdown(html_or_string):
     return md_body
 
 
-def create_nofo(title, sections, opdiv):
-    nofo = Nofo(title=title)
+@transaction.atomic
+def create_nofo(title, sections, opdiv, group="bloom"):
+    nofo = Nofo(title=title, group=group)
     nofo.number = "NOFO #999"
     nofo.opdiv = opdiv
     nofo.save()
