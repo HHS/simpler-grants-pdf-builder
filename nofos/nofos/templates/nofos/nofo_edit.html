@@ -294,9 +294,9 @@ Edit “{{ nofo|nofo_name }}”
                 aria-selected="false"
                 aria-controls="tabpanel-4"
                 tabindex="-1"
-                aria-label="Check possible unconverted footnotes ({{ unconverted_footnotes|length }})">
+                aria-label="Review endnotes ({{ unconverted_footnotes|length }})">
           <span class="focus">
-            <span class="nofo_edit--tab-label">Check possible unconverted footnotes</span>
+            <span class="nofo_edit--tab-label">Review endnotes</span>
             <span class="nofo_edit--tab-count">({{ unconverted_footnotes|length }})</span>
           </span>
         </button>
@@ -396,24 +396,24 @@ Edit “{{ nofo|nofo_name }}”
       <div id="tabpanel-4" role="tabpanel" class="secondary-darker is-hidden" tabindex="0" aria-labelledby="tab-4">
         <div class="usa-alert">
           <div class="usa-alert__body">
-            <h3 class="usa-alert__heading">Warning: review possible unconverted footnotes</h3>
+            <h3 class="usa-alert__heading">Warning: review endnotes</h3>
             <div>
               <details>
                 <summary>
                   {% if unconverted_footnotes|length == 1 %}
-                  <span>There is 1 location to review</span>
+                  <span>There is 1 issue to review</span>
                   {% else %}
-                  <span>There are {{ unconverted_footnotes|length }} locations to review</span>
+                  <span>There are {{ unconverted_footnotes|length }} issues to review</span>
                   {% endif %}
                 </summary>
                 <div>
                   <ol class="usa-list usa-list--no-max-width">
                     {% for unconverted_footnote in unconverted_footnotes %}
-                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.footnote_text }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
+                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
                     {% endfor %}
                   </ol>
                   <p>
-                    Endnotes must be added using Microsoft Word's endnote tool or linked in Announcement Module — not typed manually.
+                    Some endnotes need review. NOFO Builder supports endnotes created with Microsoft Word's endnote tool and matching [1] references and citations exported from Announcement Module.
                     <a class="usa-link usa-link--external" rel="noreferrer" target="_blank" href="https://support.microsoft.com/en-us/office/insert-footnotes-and-endnotes-in-word-61f3fb1a-4717-414c-9a8f-015a5f3ff4cb">Learn how to use Microsoft Word's endnote tool</a>.
                   </p>
                   <ul class="usa-list">
@@ -422,7 +422,7 @@ Edit “{{ nofo|nofo_name }}”
                     <li>To cross-reference an earlier endnote, use the next number in the sequence and repeat that endnote's text — don't reuse a number</li>
                   </ul>
                   <p>
-                    Fix this in the source NOFO Word document, then reimport it.
+                    For source-document issues, repair affected endnotes using Microsoft Word's endnote tool or correct the bracketed numbers and citations in Announcement Module, then export and import the document again. If the issue was introduced by an edit in NOFO Builder, correct the affected content here.
                   </p>
                 </div>
               </details>
