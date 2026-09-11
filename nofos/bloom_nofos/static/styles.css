@@ -406,6 +406,15 @@ footer .usa-footer__primary-link:visited {
   flex-direction: row-reverse;
 }
 
+/* Below the footer's USWDS breakpoint, its nav has no horizontal padding
+   to absorb the grid's negative gutter margins. */
+@media (max-width: 29.999em) {
+  .usa-footer__nav > .grid-row.grid-gap {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 a.back-to-top::before {
   height: 12px;
   width: 18px;
@@ -1358,6 +1367,7 @@ label.usa-label {
   width: 15%;
 }
 
+.nofo_edit #nofo-status,
 .nofo_edit table.usa-table th.nofo-edit-table--subsection--name {
   scroll-margin-top: 158px;
 }

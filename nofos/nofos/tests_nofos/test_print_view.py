@@ -1,12 +1,13 @@
 from unittest.mock import patch
 
 import docraptor
-from django.test import Client, TestCase
+from constance.test import override_config
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from easyaudit.models import CRUDEvent
 from users.models import BloomUser
 
-from nofos.models import Nofo
+from nofos.models import Nofo, Section, Subsection
 
 
 class PrintNofoAsPDFViewTest(TestCase):
@@ -81,6 +82,104 @@ class PrintNofoAsPDFViewTest(TestCase):
     ###################################################
     # POST behaviour is unchanged
     ###################################################
+
+    @override_config(
+        HHS_NOFO_ASSISTANCE_LISTING_ENABLED=True,
+        HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED=True,
+    )
+    @override_settings(GITHUB_SHA="safe-build-sha")
+    @patch(
+        "nofos.views.get_cover_image",
+        return_value="https://images.example.org/cover.jpg",
+    )
+    @patch("nofos.views.docraptor.DocApi")
+    def test_post_submits_rendered_document_without_request_secrets(
+        self, mock_doc_api, mock_cover
+    ):
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+        self.nofo.theme = "portrait-cdc-blue"
+        self.nofo.author = "Document author"
+        self.nofo.subject = "Document subject"
+        self.nofo.keywords = "funding, health"
+        self.nofo.assistance_listing_number = "93.123"
+        self.nofo.inline_css = ".document-custom-style { color: blue; }"
+        self.nofo.save()
+        section = Section.objects.create(nofo=self.nofo, name="Eligibility", order=2)
+        Subsection.objects.create(
+            section=section,
+            name="Eligible applicants",
+            tag="h3",
+            order=1,
+            body="Unique authorized document body.",
+        )
+        self.client.cookies["csrftoken"] = "a" * 32
+        session_cookie = self.client.cookies["sessionid"].value
+
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION="Bearer private-secret"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = mock_doc_api.return_value.create_doc.call_args.args[0]
+        self.assertNotIn("document_url", payload)
+        self.assertEqual(
+            payload["prince_options"]["baseurl"],
+            "http://testserver" + reverse("nofos:nofo_view", args=[self.nofo.pk]),
+        )
+        html = payload["document_content"]
+        for expected in (
+            self.nofo.title,
+            "Unique authorized document body.",
+            "theme-orientation-portrait",
+            "theme-opdiv-cdc-blue",
+            'name="author" content="Document author"',
+            'name="subject" content="Document subject"',
+            'name="keywords" content="funding, health"',
+            'name="github_sha" content="safe-build-sha"',
+            "section--cover-page",
+            "https://images.example.org/cover.jpg",
+            "93.123",
+            ".document-custom-style",
+        ):
+            self.assertIn(expected, html)
+        for secret in (
+            "csrfmiddlewaretoken",
+            "<form",
+            "Edit this NOFO",
+            self.user.email,
+            self.user.password,
+            session_cookie,
+            "a" * 32,
+            "private-secret",
+        ):
+            self.assertNotIn(secret, html)
+        self.assertEqual(payload["document_type"], "pdf")
+        self.assertIs(payload["javascript"], False)
+        self.assertEqual(payload["pipeline"], 11)
+        self.assertEqual(payload["prince_options"]["media"], "print")
+        self.assertEqual(payload["prince_options"]["profile"], "PDF/UA-1")
+        self.assertIs(mock_doc_api.return_value.api_client.configuration.debug, False)
+        mock_cover.assert_called_once_with(self.nofo)
+
+    @override_config(DOCRAPTOR_LIVE_MODE=True)
+    @patch("nofos.views.docraptor.DocApi")
+    def test_test_mode_query_override_and_invalid_disposition(self, mock_doc_api):
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+        self.client.post(self.url)
+        self.assertIs(
+            mock_doc_api.return_value.create_doc.call_args.args[0]["test"], False
+        )
+        response = self.client.post(self.url + "?is_test_pdf=true&mode=invalid")
+        self.assertIs(
+            mock_doc_api.return_value.create_doc.call_args.args[0]["test"], True
+        )
+        self.assertTrue(response["Content-Disposition"].startswith("attachment;"))
+
+    @patch("nofos.views.docraptor.DocApi")
+    def test_localhost_is_still_rejected(self, mock_doc_api):
+        response = self.client.post(self.url, HTTP_HOST="localhost")
+        self.assertEqual(response.status_code, 400)
+        mock_doc_api.return_value.create_doc.assert_not_called()
 
     @patch("nofos.views.docraptor.DocApi")
     def test_post_returns_pdf_inline(self, mock_doc_api):
@@ -175,7 +274,9 @@ class PrintNofoAsPDFViewTest(TestCase):
 
     def test_login_required(self):
         anon_client = Client()
-        response = anon_client.get(self.url)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/login", response["Location"])
+        with patch("nofos.views.docraptor.DocApi") as mock_doc_api:
+            for method in (anon_client.get, anon_client.post):
+                response = method(self.url)
+                self.assertEqual(response.status_code, 302)
+                self.assertIn("/login", response["Location"])
+        mock_doc_api.assert_not_called()
