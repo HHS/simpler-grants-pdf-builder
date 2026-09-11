@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.36.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.35.0...nofos-v3.36.0) (2026-09-11)
+
+
+### Features
+
+* add "Metrics viewers" permission and gated metrics page skeleton ([#867](https://github.com/HHS/simpler-grants-pdf-builder/issues/867)) ([7993c3c](https://github.com/HHS/simpler-grants-pdf-builder/commit/7993c3c2e48f882fcab1131d33fc7ebd65cd7a53))
+* add ImportAttempt tracking for import quality metrics ([#866](https://github.com/HHS/simpler-grants-pdf-builder/issues/866)) ([d2cd0ed](https://github.com/HHS/simpler-grants-pdf-builder/commit/d2cd0edc0f1a4efd77537ffb8883abf9b304b469))
+* add NOFO Builder usage & quality metrics page (step 4) ([#869](https://github.com/HHS/simpler-grants-pdf-builder/issues/869)) ([3c1035f](https://github.com/HHS/simpler-grants-pdf-builder/commit/3c1035f93354e79f253419323f56cdc5eda7ab18))
+* add query layer for usage & quality metrics ([#868](https://github.com/HHS/simpler-grants-pdf-builder/issues/868)) ([2d3b505](https://github.com/HHS/simpler-grants-pdf-builder/commit/2d3b505ca1a3021bb4dbaef231812e02c96bbd02))
+* filter Builder metrics by OpDiv ([#887](https://github.com/HHS/simpler-grants-pdf-builder/issues/887)) ([333bb4c](https://github.com/HHS/simpler-grants-pdf-builder/commit/333bb4c968614ac9a8b1db28cb9267ae20ea61b4))
+* link bracketed endnotes during Word import ([#885](https://github.com/HHS/simpler-grants-pdf-builder/issues/885)) ([650260d](https://github.com/HHS/simpler-grants-pdf-builder/commit/650260da827433770db6a9413f4e4945256556ff))
+
+
+### Bug Fixes
+
+* explain status-dependent NOFO actions ([#860](https://github.com/HHS/simpler-grants-pdf-builder/issues/860)) ([e9710ca](https://github.com/HHS/simpler-grants-pdf-builder/commit/e9710ca12fa1e35bb908f7f9ed4fc1e15cc3b2ca))
+* mirror upstream grype ignores for new Python stdlib CVEs ([#889](https://github.com/HHS/simpler-grants-pdf-builder/issues/889)) ([554de8f](https://github.com/HHS/simpler-grants-pdf-builder/commit/554de8f50194b254d10675e368577d6668193523))
+* pass the built Docker image via artifact, not cache, in code scans ([#890](https://github.com/HHS/simpler-grants-pdf-builder/issues/890)) ([c84fd3c](https://github.com/HHS/simpler-grants-pdf-builder/commit/c84fd3ca0620d35648d5d596e87870fa0faa60e8))
+* preserve historical Builder metrics after record deletion ([#874](https://github.com/HHS/simpler-grants-pdf-builder/issues/874)) ([6a2514e](https://github.com/HHS/simpler-grants-pdf-builder/commit/6a2514ee9987f9e4591065047373abb6d4c9b6fd))
+* prevent PDF preview from rendering the login page ([#879](https://github.com/HHS/simpler-grants-pdf-builder/issues/879)) ([2f80b9f](https://github.com/HHS/simpler-grants-pdf-builder/commit/2f80b9f868996c9566d75c80bb8610a8d5852c78))
+
+
+### Documentation
+
+* add metrics dashboard setup and access guidance ([#892](https://github.com/HHS/simpler-grants-pdf-builder/issues/892)) ([b178b15](https://github.com/HHS/simpler-grants-pdf-builder/commit/b178b15db90368b70d3fe37ef0c9814b5b321b8e))
+
+
+### Miscellaneous Chores
+
+* bump the python-minor-and-patch group across 1 directory with 2 updates ([#891](https://github.com/HHS/simpler-grants-pdf-builder/issues/891)) ([1d2364d](https://github.com/HHS/simpler-grants-pdf-builder/commit/1d2364d060dad2e485db08fdb62a2122989255d1))
+* **deps:** prefix pip Dependabot commit messages for PR title lint ([#881](https://github.com/HHS/simpler-grants-pdf-builder/issues/881)) ([d2b0bbd](https://github.com/HHS/simpler-grants-pdf-builder/commit/d2b0bbd03352af0d8b0194173c9938778361ffa0))
+
 ## [3.35.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.34.0...nofos-v3.35.0) (2026-09-08)
 
 
