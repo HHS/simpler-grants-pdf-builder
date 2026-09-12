@@ -1,3 +1,10 @@
+"""
+PDF metadata placeholder normalization, applied at import time.
+
+Implements import rule IMPORT-048 in documentation/IMPORT_RULES.md. Update
+that entry if you change this file's behavior.
+"""
+
 import re
 
 PDF_METADATA_FIELDS = (

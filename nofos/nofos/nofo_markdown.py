@@ -1,3 +1,10 @@
+"""
+HTML->Markdown conversion rules applied during NOFO import (import rules
+IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033 in
+documentation/IMPORT_RULES.md). Update that document if you change one of
+NofoMarkdownConverter's conversion rules.
+"""
+
 import re
 
 from bs4 import BeautifulSoup

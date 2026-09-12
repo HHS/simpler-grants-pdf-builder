@@ -1,3 +1,13 @@
+"""
+NOFO import pipeline: DOCX/HTML parsing, cleanup, sectioning, and metadata
+suggestion.
+
+Most of the content-transformation rules cataloged in
+documentation/IMPORT_RULES.md (IMPORT-001 and up) live in this file. If you
+add, remove, or change one of those rules, update the matching entry in
+that document in the same PR.
+"""
+
 import datetime
 import json
 import logging
