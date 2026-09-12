@@ -11,6 +11,7 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 - `nofos/nofos/nofo_markdown.py` — `NofoMarkdownConverter`, the HTML→Markdown conversion rules
 - `nofos/nofos/policy_language.py` — policy-language status detection (feature-flagged)
 - `nofos/nofos/pdf_metadata.py` — PDF metadata placeholder normalization
+- `nofos/nofos/endnotes.py` — bracketed manual endnote detection and linking
 - `nofos/composer/models.py` — `extract_variables` (Composer-only)
 
 **Format note for automated/AI readers:** Each rule has a stable ID (`IMPORT-NNN`) that never changes or gets reused, even if a rule is later removed (mark it `status: removed` instead). Every rule uses the same five fields in the same order — **Type**, **Trigger**, **Action**, **Source**, **Status** — so a rule's meaning can be extracted reliably without parsing prose. The index table below is a complete, compact summary of every rule; the sections after it give full detail. If you are an AI agent editing import-pipeline code, treat this file as the authoritative rule registry: check it before changing behavior, and update it as part of the same change.
@@ -53,6 +54,9 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-015 | conversion | Footnotes/Endnotes | Missing "Endnotes" heading + trailing footnote list detected → heading synthesized | `nofo.py` |
 | IMPORT-016 | conversion | Footnotes/Endnotes | Footnote/endnote `<ol>` → preserved as raw HTML through Markdown conversion | `nofo_markdown.py` |
 | IMPORT-017 | conversion | Footnotes/Endnotes | Footnote/endnote `<a>` → wrapped in `<sup>`, preserved as raw HTML | `nofo_markdown.py` |
+| IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
+| IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
+| IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
@@ -202,7 +206,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ## Footnotes & Endnotes
 
-The example that prompted this document: detecting a footnote/endnote list and formatting it consistently.
+The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers both native Word/Google Docs notes (IMPORT-015 through IMPORT-017) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
 
 ### IMPORT-015 — Synthesize missing "Endnotes" heading
 - **Type:** conversion
@@ -210,6 +214,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** (a) Repurpose that `<hr>` as an `h1`/`h2` with text "Endnotes"; (b) insert a new `h1`/`h2` "Endnotes" heading immediately before that `<ol>`.
 - **Source:** `nofo.py::add_endnotes_header_if_exists`
 - **Status:** active
+- **Note:** covers a *missing* heading. See IMPORT-049 for the case where a note-section heading exists but reads "Footnotes"/"Footnote:"/etc. instead of "Endnotes".
 
 ### IMPORT-016 — Footnote/endnote list preserved as raw HTML
 - **Type:** conversion
@@ -217,6 +222,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Keep the entire list as raw (prettified) HTML rather than converting to Markdown list syntax, and add `tabindex="-1"` to every `<li>`, so ids and structure survive.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol`
 - **Status:** active
+- **Note:** covers native Word/Google notes specifically. See IMPORT-051 for the equivalent rule covering manually bracket-linked notes.
 
 ### IMPORT-017 — Footnote/endnote reference preserved as raw HTML
 - **Type:** conversion
@@ -224,6 +230,29 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Wrap it in `<sup>` and keep it as raw HTML instead of Markdown link syntax, so the reference displays as a superscript and its id survives.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_a`
 - **Status:** active
+- **Note:** covers native Word/Google notes specifically. See IMPORT-051 for the equivalent rule covering manually bracket-linked notes.
+
+### IMPORT-049 — Footnote/Endnote heading text normalization
+- **Type:** conversion
+- **Trigger:** A heading (`h1`-`h7`, including the synthetic H7 `div`) whose text, ignoring case and an optional trailing colon, reads "endnote", "endnotes", "footnote", or "footnotes".
+- **Action:** Rewrite the heading's text to the canonical "Endnotes", so downstream detection (IMPORT-050, IMPORT-051) and the reader both see one consistent heading regardless of which variant the author used. If more than one such heading exists in the document, none are renamed and no bracketed-endnote linking (IMPORT-050) happens at all — the ambiguity is left for the author to resolve rather than guessed at.
+- **Source:** `nofo.py::rename_footnotes_heading_to_endnotes` (via `endnotes.py::is_endnotes_heading`)
+- **Status:** active
+
+### IMPORT-050 — Bracketed manual endnote reference/citation linking
+- **Type:** conversion
+- **Trigger:** The document has exactly one recognized Endnotes heading (after IMPORT-049), and contains a `[N]` marker in body text (a "reference") that unambiguously pairs with a `[N]` marker starting a paragraph under that heading (a "citation"): each number used exactly once as a reference and once as a citation, neither already linked, and not colliding with a native Word/Google note number already in the document.
+- **Action:** Wrap the in-body `[N]` marker in a forward link to its citation (rendered as a superscript), give the citation paragraph a matching target id, and append a `↑` return link back to the reference. Numbering gaps or out-of-sequence citations are only advisory and don't block linking an otherwise-valid pair. Anything ambiguous — a missing, duplicate, empty, or conflicting marker, or more than one candidate Endnotes heading — is left completely unlinked; NOFO Builder never silently renumbers or guesses at a bracketed reference. Conversion runs on both fresh import and reimport; it never modifies the original source Word file.
+- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::convert_bracketed_endnotes`, `_inspect`, `_scan`)
+- **Status:** active
+
+### IMPORT-051 — Manual endnote lists/links preserved as raw HTML in Markdown
+- **Type:** conversion
+- **Trigger:** During HTML→Markdown conversion: (a) an `<ol>`/`<ul>` contains any element with an `id` starting with `endnote-manual-` (a citation linked by IMPORT-050); (b) an `<a>` whose `id` starts with `footnote`/`endnote` is already wrapped in a `<sup>` (one of IMPORT-050's own generated links).
+- **Action:** (a) the whole list is kept as raw HTML instead of Markdown list syntax; (b) the existing `<sup>` wrapper is reused instead of wrapping it again.
+- **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul/convert_a`
+- **Status:** active
+- **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones.
 
 ---
 
@@ -491,3 +520,5 @@ These rules don't change the visible content, but they run automatically at impo
 ## Related, But Out of Scope
 
 The rules above cover **import time** only. A separate, parallel layer of "if pattern, then transform" rules runs at **render/view/export time** instead — every time a NOFO is displayed, edited, or exported to PDF/DOCX, via `nofos/nofos/templatetags/*.py` (e.g. `add_classes_to_tables.py`, `convert_paragraphs_to_hrs.py` turning literal `page-break`/`column-break` paragraph text into styled `<hr>` markers, `replace_unicode_with_icon.py`, `truncate_anchor_links_for_docx.py` truncating bookmark ids to Word's 40-character limit on export, and `add_footnote_ids.py` reformatting footnote reference links for display). If this document's scope is ever widened to "everything automatic," those belong in a sibling document (e.g. `RENDER_EXPORT_RULES.md`), kept clearly separate from import-time behavior since they run on every page view rather than once at upload.
+
+One view-time rule is worth calling out here specifically because it shares detection logic with IMPORT-050/IMPORT-051: **`nofo.py::find_endnote_issues`** reruns the same bracketed-endnote analysis (`endnotes.py::analyze_endnotes`) fresh against a NOFO's *saved* content every time its detail page is viewed, surfacing warnings (missing/duplicate/empty/malformed/conflicting markers, non-sequential numbering, missing return links) without changing stored content or ids. It's what powers the `unconverted_footnotes` warnings shown in the editor — not an import transformation itself, but the reason a NOFO's endnote warnings can change after import without anyone re-importing it.

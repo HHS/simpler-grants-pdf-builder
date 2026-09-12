@@ -86,6 +86,7 @@ The NOFO import pipeline (`.docx`/HTML → NOFO Builder) applies a large number 
 - `nofos/nofos/nofo_markdown.py`
 - `nofos/nofos/policy_language.py`
 - `nofos/nofos/pdf_metadata.py`
+- `nofos/nofos/endnotes.py`
 - `nofos/composer/models.py` (`extract_variables`)
 
 This isn't currently CI-enforced — it relies on the PR template checklist and reviewer judgment — so treat it as a hard expectation, not an optional nicety. If a change to one of these files is unrelated to import behavior (e.g. an unrelated bug fix or refactor), no doc update is needed; use judgment.

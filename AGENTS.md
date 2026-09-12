@@ -34,6 +34,7 @@ the matching entry in the same change:**
 - `nofos/nofos/nofo_markdown.py`
 - `nofos/nofos/policy_language.py`
 - `nofos/nofos/pdf_metadata.py`
+- `nofos/nofos/endnotes.py`
 - `nofos/composer/models.py` (`extract_variables`)
 
 See `DEPLOYMENT.md` § Updating Import Rules for the full contribution policy.
