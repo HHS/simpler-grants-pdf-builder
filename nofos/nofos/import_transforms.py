@@ -1,3 +1,10 @@
+"""
+Preserve supported Word-only semantics before Mammoth emits HTML.
+
+Implements import rule IMPORT-001 in documentation/IMPORT_RULES.md. Update
+that entry if you change this file's behavior.
+"""
+
 from mammoth import documents
 
 APPLICATION_CHECKLIST_CHILD_CLASS = "application-list--left-indent"

@@ -18,3 +18,23 @@ from CHANGELOG.md despite a valid title. If that happens, add a `BEGIN_COMMIT_OV
 
 See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules, and the hotfix
 title convention.
+
+## NOFO import rules
+
+This repo automatically transforms content on NOFO import (`.docx`/HTML upload) — footnote/endnote
+handling, list/table repair, link cleanup, metadata suggestion, and more. Every one of these rules
+is cataloged with a stable ID in `documentation/IMPORT_RULES.md`.
+
+**Before changing behavior in any of these files, read that document. After changing it, update
+the matching entry in the same change:**
+
+- `nofos/nofos/nofo.py`
+- `nofos/nofos/utils.py` (the Mammoth style map)
+- `nofos/nofos/import_transforms.py`
+- `nofos/nofos/nofo_markdown.py`
+- `nofos/nofos/policy_language.py`
+- `nofos/nofos/pdf_metadata.py`
+- `nofos/nofos/endnotes.py`
+- `nofos/composer/models.py` (`extract_variables`)
+
+See `DEPLOYMENT.md` § Updating Import Rules for the full contribution policy.

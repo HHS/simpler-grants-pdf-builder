@@ -1,3 +1,13 @@
+"""
+NOFO import pipeline: DOCX/HTML parsing, cleanup, sectioning, and metadata
+suggestion.
+
+Most of the content-transformation rules cataloged in
+documentation/IMPORT_RULES.md (IMPORT-001 and up) live in this file. If you
+add, remove, or change one of those rules, update the matching entry in
+that document in the same PR.
+"""
+
 import datetime
 import json
 import logging
@@ -219,7 +229,7 @@ def process_nofo_html(soup, top_heading_level):
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
-    convert_bracketed_endnotes(soup)
+    convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
 
     soup = add_em_to_de_minimis(soup)
 
@@ -1748,6 +1758,11 @@ def find_endnote_issues(nofo):
     Reconstruct the document's heading order on a disposable HTML tree. Location
     metadata belongs only to this tree, so warnings follow subsequent edits without
     a migration, persisted import diagnostics, or rewriting legacy content.
+
+    Runs at view time (see views.py), not at import - not itself one of the
+    IMPORT-NNN rules in documentation/IMPORT_RULES.md, but reuses IMPORT-050's
+    detection logic (endnotes.py::analyze_endnotes) and is documented in that
+    file's "Related, But Out of Scope" section since the two are tightly coupled.
     """
     soup = BeautifulSoup("", "html.parser")
     locations = {}
@@ -2459,6 +2474,8 @@ def rename_footnotes_heading_to_endnotes(soup):
 
     Preserve separate headings when there are several note sections; the matcher
     reports the ambiguity instead of silently merging their citation lists.
+
+    Implements import rule IMPORT-049 in documentation/IMPORT_RULES.md.
     """
     headings = soup.find_all(re.compile(r"^h[1-6]$")) + soup.find_all(is_h7)
 

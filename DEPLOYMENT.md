@@ -74,6 +74,25 @@ Once CI is green, you can merge your own PR. No human approval is required. The 
 
 ---
 
+## Updating Import Rules
+
+The NOFO import pipeline (`.docx`/HTML → NOFO Builder) applies a large number of automatic content rules — footnote/endnote handling, list/table repair, link cleanup, metadata auto-suggestion, and more. Every one of these rules is cataloged in [`documentation/IMPORT_RULES.md`](documentation/IMPORT_RULES.md).
+
+**If your PR adds, removes, or changes behavior in any of the following files, update `documentation/IMPORT_RULES.md` in the same PR** (add/edit/retire the matching `IMPORT-NNN` entry — see that document's own maintenance note for the exact convention):
+
+- `nofos/nofos/nofo.py`
+- `nofos/nofos/utils.py` (the Mammoth style map)
+- `nofos/nofos/import_transforms.py`
+- `nofos/nofos/nofo_markdown.py`
+- `nofos/nofos/policy_language.py`
+- `nofos/nofos/pdf_metadata.py`
+- `nofos/nofos/endnotes.py`
+- `nofos/composer/models.py` (`extract_variables`)
+
+This isn't currently CI-enforced — it relies on the PR template checklist and reviewer judgment — so treat it as a hard expectation, not an optional nicety. If a change to one of these files is unrelated to import behavior (e.g. an unrelated bug fix or refactor), no doc update is needed; use judgment.
+
+---
+
 ## Deployment
 
 ### Development
