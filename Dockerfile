@@ -13,8 +13,16 @@ WORKDIR /app
 # image. Upgrading is preferred over a .grype.yml entry because the fix exists.
 # Remove this line once the base image ships util-linux >= 2.41.5-0+deb13u1.
 # Last checked: 08/17/2026
+#
+# gzip, libpcre2-8-0, and libsqlite3-0 are the same situation: Debian shipped
+# fixes (gzip 1.13-1+deb13u1 for CVE-2026-41991/41992; libpcre2-8-0
+# 10.46-1~deb13u2 for CVE-2026-86145, CVE-2026-89156/89157/89158/89160/89161/89162;
+# libsqlite3-0 3.46.1-7+deb13u2 for CVE-2026-11822/11824) before the base image
+# was rebuilt. Remove once python:3.14-slim ships those versions or newer.
+# Last checked: 09/14/2026
 RUN apt-get update && \
-  apt-get install -y --only-upgrade --no-install-recommends util-linux && \
+  apt-get install -y --only-upgrade --no-install-recommends \
+  util-linux gzip libpcre2-8-0 libsqlite3-0 && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
