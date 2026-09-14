@@ -73,12 +73,13 @@ When the feature flag is enabled, the normal NOFO edit screen shows a compact,
 collapsed readability accordion after the primary NOFO status. A **Beta** tag
 identifies the feature as experimental. Expanding the accordion starts an
 on-demand calculation; the button allows retries or **Recalculate**. The result
-displays the six configured
-metric values, any metric-specific unavailable status, a scope explanation for
-metrics that use different denominators, and collapsed package notes. The
-browser reads only the endpoint response; metric calculation and source
-rendering remain server-side. The package profile and version remain available
-in the API response for diagnostics but are not shown to editors.
+displays the four Tier 2 clearance metrics: word count, words per sentence,
+Flesch-Kincaid grade level, and passive sentences. It also displays any
+metric-specific unavailable status, a scope explanation for metrics that use
+different denominators, and collapsed package notes. The browser reads only the
+endpoint response; metric calculation and source rendering remain server-side.
+The package profile and version remain available in the API response for
+diagnostics but are not shown to editors.
 
 The panel does not assign pass/fail bands. It explains that calculations are
 saved for the measured revision and that earlier snapshots are retained but not
@@ -125,11 +126,9 @@ comparisons apply. Builder compares the unrounded metric value and uses
 **Within target**, **Check NOFO type**, or **Needs improvement** language rather
 than pass or fail.
 
-When the package publishes `paragraph_count` and `sentences_per_paragraph` as
-components of its sentence-scope results, Builder displays the latter as a
-separate card. Older package versions leave that optional card hidden. The
-denominator remains the package's source-native, sentence-bearing semantic
-blocks.
+The package response and stored snapshot retain all calculated metrics.
+`sentences_per_paragraph` and `flesch_reading_ease` do not have cards in the
+edit-screen panel because they are not Tier 2 clearance metrics.
 
 The application must not infer a category from the NOFO title or prose.
 
@@ -156,6 +155,13 @@ Or start Builder normally and toggle `HHS_NOFO_METRICS_ENABLED` in the constance
 admin.
 
 ## Release activation
+
+For the release that introduces the four Tier 2 clearance metric cards, enable
+readability metrics in the target environment after merging and deploying the
+change. Set `HHS_NOFO_METRICS_ENABLED` to true in the constance admin, then open
+a NOFO's Readability metrics accordion and confirm that calculation succeeds
+and all four clearance metric cards appear. Changing the environment variable
+alone does not override a previously saved admin setting.
 
 Before enabling the feature outside local development:
 
