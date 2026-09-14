@@ -221,16 +221,21 @@ jobs:
         run: echo "DKL-DI-0006" > .dockleignore
 
       - name: Run Dockle container linter
-        uses: erzz/dockle-action@v1.4.1
+        uses: goodwithtech/dockle-action@v0.4.15
         with:
           image: nofos:latest
           exit-code: "1"
-          failure-threshold: WARN
-          accept-filenames: ${{ env.DOCKLE_ACCEPT_FILES }}
+          exit-level: warn
+          format: json
+          output: dockle-report.json
+          # These image settings control runtime behavior and do not contain secrets.
+          accept-key: IS_PROD,PYTHONUNBUFFERED,IS_PROD_ARG,PYTHONDONTWRITEBYTECODE,IS_DOCKER,PATH
+          accept-file: ${{ env.DOCKLE_ACCEPT_FILES }}
 
       - name: Save output to workflow summary
-        if: failure() # Only runs if there is a failure
+        if: always() # Runs even if there is a failure
         run: |
+          [ -f dockle-report.json ] || exit 0
           {
             echo '```json'
             cat dockle-report.json
