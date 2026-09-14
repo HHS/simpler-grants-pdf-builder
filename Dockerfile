@@ -5,24 +5,17 @@ FROM python:3.14-slim AS builder
 WORKDIR /app
 
 # Install system dependencies (Debian-based)
-# The --only-upgrade line patches CVE-2026-13595 and CVE-2026-27456, both Medium,
-# both in the util-linux source package family: bsdutils, libblkid1, liblastlog2-2,
-# libmount1, libsmartcols1, libuuid1, login, mount, util-linux.
-# python:3.14-slim ships 2.41-5. Debian published the fix as 2.41.5-0+deb13u1
-# before the base image was rebuilt, so Anchore/Grype fails on any freshly built
-# image. Upgrading is preferred over a .grype.yml entry because the fix exists.
-# Remove this line once the base image ships util-linux >= 2.41.5-0+deb13u1.
-# Last checked: 08/17/2026
-#
-# gzip, libpcre2-8-0, and libsqlite3-0 are the same situation: Debian shipped
-# fixes (gzip 1.13-1+deb13u1 for CVE-2026-41991/41992; libpcre2-8-0
-# 10.46-1~deb13u2 for CVE-2026-86145, CVE-2026-89156/89157/89158/89160/89161/89162;
-# libsqlite3-0 3.46.1-7+deb13u2 for CVE-2026-11822/11824) before the base image
-# was rebuilt. Remove once python:3.14-slim ships those versions or newer.
+# The --only-upgrade line patches fixable vulnerabilities in packages shipped by
+# python:3.14-slim before the base image is rebuilt. Upgrading is preferred over
+# adding .grype.yml entries because Debian fixes are available.
+# Remove packages from this line once the base image includes the fixed versions.
 # Last checked: 09/14/2026
 RUN apt-get update && \
   apt-get install -y --only-upgrade --no-install-recommends \
-  util-linux gzip libpcre2-8-0 libsqlite3-0 && \
+  util-linux \
+  gzip \
+  libpcre2-8-0 \
+  libsqlite3-0 && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
