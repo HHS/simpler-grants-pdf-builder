@@ -1,3 +1,13 @@
+"""
+NOFO import pipeline: DOCX/HTML parsing, cleanup, sectioning, and metadata
+suggestion.
+
+Most of the content-transformation rules cataloged in
+documentation/IMPORT_RULES.md (IMPORT-001 and up) live in this file. If you
+add, remove, or change one of those rules, update the matching entry in
+that document in the same PR.
+"""
+
 import datetime
 import json
 import logging
@@ -27,6 +37,7 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
+from .endnotes import analyze_endnotes, convert_bracketed_endnotes, is_endnotes_heading
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
     transform_word_document,
@@ -35,6 +46,7 @@ from .models import Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .policy_language import detect_policy_language_status, get_candidate_slots
+from .templatetags.add_footnote_ids import add_footnote_ids
 from .utils import (
     add_html_id_to_subsection,
     clean_string,
@@ -217,6 +229,7 @@ def process_nofo_html(soup, top_heading_level):
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
+    convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
 
     soup = add_em_to_de_minimis(soup)
 
@@ -604,8 +617,9 @@ def get_as_markdown(html_or_string):
     return md_body
 
 
-def create_nofo(title, sections, opdiv):
-    nofo = Nofo(title=title)
+@transaction.atomic
+def create_nofo(title, sections, opdiv, group="bloom"):
+    nofo = Nofo(title=title, group=group)
     nofo.number = "NOFO #999"
     nofo.opdiv = opdiv
     nofo.save()
@@ -1735,189 +1749,78 @@ def find_broken_links(nofo):
     return broken_links
 
 
-# Matches the short numeric reference markers used by imported footnotes/endnotes,
-# eg "[1]" and "[23]". Limiting the length avoids treating bracketed years as
-# footnotes; a structural "Footnotes" or "Endnotes" heading is also required.
-UNCONVERTED_FOOTNOTE_RE = re.compile(r"\[\d{1,3}\]")
-
-# Real Word footnotes/endnotes get auto-labeled "Endnotes" on import (see
-# `add_endnotes_header_if_exists`'s `_match_endnotes`). A section or subsection
-# literally headed "Footnote" or "Footnotes" means the source document's footnotes
-# may have been typed manually instead of inserted with Word's built-in tool. A trailing
-# colon is allowed because it does not change the heading's meaning.
-UNCONVERTED_FOOTNOTES_HEADING_RE = re.compile(r"footnotes?\s*:?\s*", re.IGNORECASE)
 FOOTNOTE_HEADING_TAGS = ("h2", "h3", "h4", "h5", "h6", "h7")
 
 
-def _is_footnotes_heading(value):
-    return bool(UNCONVERTED_FOOTNOTES_HEADING_RE.fullmatch((value or "").strip()))
+def find_endnote_issues(nofo):
+    """Recheck saved content without modifying records or their link destinations.
 
+    Reconstruct the document's heading order on a disposable HTML tree. Location
+    metadata belongs only to this tree, so warnings follow subsequent edits without
+    a migration, persisted import diagnostics, or rewriting legacy content.
 
-def _is_endnotes_heading(value):
-    return (value or "").strip() == END_NOTES_SECTION_NAME
-
-
-def _find_unlinked_footnote_markers(body):
-    soup = BeautifulSoup(markdown.markdown(body, extensions=["extra"]), "html.parser")
-    markers = []
-
-    for text_node in soup.find_all(string=UNCONVERTED_FOOTNOTE_RE):
-        # Existing links already have a working destination (or are handled by the
-        # broken-links warning), and bracketed numbers in code are content, not
-        # reference markers.
-        if text_node.find_parent(("a", "code", "pre")):
-            continue
-
-        markers.extend(
-            match.group() for match in UNCONVERTED_FOOTNOTE_RE.finditer(text_node)
-        )
-
-    return markers
-
-
-def find_unconverted_footnotes(nofo):
+    Runs at view time (see views.py), not at import - not itself one of the
+    IMPORT-NNN rules in documentation/IMPORT_RULES.md, but reuses IMPORT-050's
+    detection logic (endnotes.py::analyze_endnotes) and is documented in that
+    file's "Related, But Out of Scope" section since the two are tightly coupled.
     """
-    Identifies footnotes that were typed directly into the source Word document's text
-    instead of being inserted with Word's built-in footnote/endnote tool.
+    soup = BeautifulSoup("", "html.parser")
+    locations = {}
 
-    NOFO Builder's import process converts real Word footnotes/endnotes (inserted via
-    Word's References > Insert Footnote/Endnote tool) into linked endnotes, wrapping the
-    in-text reference in a link (eg, `<a href="#footnote-1">[1]</a>`), and labelling
-    the endnotes list "Endnotes" on import.
-    A footnote reference that was typed manually has no such link, so it survives import
-    unlinked and won't work in the final PDF. To avoid treating unrelated bracketed
-    numbers as footnotes, this function requires the first structural signal before it
-    considers the second:
+    def append_fragment(fragment, section, subsection=None):
+        key = str(len(locations))
+        locations[key] = (section, subsection)
+        for node in list(fragment.contents):
+            if isinstance(node, Tag):
+                node["data-endnote-location"] = key
+            soup.append(node.extract())
 
-    1. A section or subsection heading titled "Footnote"/"Footnotes", or an "Endnotes"
-       heading produced by the import-time Footnotes rename.
-    2. A short "[1]"-style reference elsewhere in the document that isn't inside a link
-       or code element (eg, an in-text citation like "...evidence[1]").
-
-    A Footnotes heading is itself an unconverted signal and is included once in the
-    result. An Endnotes heading is included only when its note-list body contains an
-    unlinked numeric marker; this keeps correctly converted Endnotes from being flagged.
-    Note-list bodies are reported once rather than once per marker. If neither structural
-    heading exists, the function returns no results.
-
-    Args:
-        nofo (Nofo): A Nofo object which contains sections and subsections. Each
-                     subsection's body is expected to be in markdown format.
-
-    Returns:
-        list of dict: A list of dictionaries for locations to review, each with the
-                      section and subsection it was found in, and the raw signal text.
-                      The structure is as follows:
-                      [
-                          {
-                              "section": <Section object>,
-                              "subsection": <Subsection object or None>,
-                              "footnote_text": "[1]",
-                          },
-                          ...
-                      ]
-    """
-    sections = [
-        (section, list(section.subsections.all().order_by("order")))
-        for section in nofo.sections.all().order_by("order")
-    ]
-    footnotes_section_ids = {
-        section.id for section, _ in sections if _is_footnotes_heading(section.name)
-    }
-    footnotes_subsection_ids = {
-        subsection.id
-        for _, subsections in sections
-        for subsection in subsections
-        if subsection.tag in FOOTNOTE_HEADING_TAGS
-        and _is_footnotes_heading(subsection.name)
-    }
-    endnotes_section_ids = {
-        section.id for section, _ in sections if _is_endnotes_heading(section.name)
-    }
-    endnotes_subsection_ids = {
-        subsection.id
-        for _, subsections in sections
-        for subsection in subsections
-        if subsection.tag in FOOTNOTE_HEADING_TAGS
-        and _is_endnotes_heading(subsection.name)
-    }
-
-    if not (
-        footnotes_section_ids
-        or footnotes_subsection_ids
-        or endnotes_section_ids
-        or endnotes_subsection_ids
-    ):
-        return []
-
-    unconverted_footnotes = []
-
-    for section, subsections in sections:
-        if section.id in footnotes_section_ids:
-            unconverted_footnotes.append(
-                {
-                    "section": section,
-                    "subsection": None,
-                    "footnote_text": section.name,
-                }
+    for section in nofo.sections.all().order_by("order"):
+        heading = soup.new_tag("h1")
+        heading.string = section.name
+        if section.html_id:
+            heading["id"] = section.html_id
+        fragment = BeautifulSoup("", "html.parser")
+        fragment.append(heading)
+        append_fragment(fragment, section)
+        for subsection in section.subsections.all().order_by("order"):
+            fragment = BeautifulSoup("", "html.parser")
+            if subsection.tag in FOOTNOTE_HEADING_TAGS and subsection.name:
+                heading = soup.new_tag(subsection.tag)
+                heading.string = subsection.name
+                if subsection.html_id:
+                    heading["id"] = subsection.html_id
+                fragment.append(heading)
+            body = BeautifulSoup(
+                add_footnote_ids(
+                    markdown.markdown(subsection.body or "", extensions=["extra"])
+                ),
+                "html.parser",
             )
-            # The whole section is the structural prerequisite and note list.
-            # Report it once instead of counting each note-list marker.
+            for node in list(body.contents):
+                fragment.append(node.extract())
+            append_fragment(fragment, section, subsection)
+
+    results = []
+    for issue in analyze_endnotes(soup):
+        tag = issue["tag"]
+        location = (
+            tag
+            if tag.has_attr("data-endnote-location")
+            else tag.find_parent(attrs={"data-endnote-location": True})
+        )
+        if location is None:
             continue
-
-        if section.id in endnotes_section_ids:
-            if any(
-                _find_unlinked_footnote_markers(subsection.body)
-                for subsection in subsections
-            ):
-                unconverted_footnotes.append(
-                    {
-                        "section": section,
-                        "subsection": None,
-                        "footnote_text": section.name,
-                    }
-                )
-            # A real Endnotes section is the note list. Report it once only when it
-            # contains raw markers, rather than counting every note-list entry.
-            continue
-
-        for subsection in subsections:
-            if subsection.id in footnotes_subsection_ids:
-                unconverted_footnotes.append(
-                    {
-                        "section": section,
-                        "subsection": subsection,
-                        "footnote_text": subsection.name,
-                    }
-                )
-                # This subsection is the structural prerequisite and is already
-                # reported, so don't count its note-list entries as references too.
-                continue
-
-            markers = _find_unlinked_footnote_markers(subsection.body)
-
-            if subsection.id in endnotes_subsection_ids:
-                if markers:
-                    unconverted_footnotes.append(
-                        {
-                            "section": section,
-                            "subsection": subsection,
-                            "footnote_text": subsection.name,
-                        }
-                    )
-                # As with a section-level Endnotes list, report the heading once.
-                continue
-
-            for marker in markers:
-                unconverted_footnotes.append(
-                    {
-                        "section": section,
-                        "subsection": subsection,
-                        "footnote_text": marker,
-                    }
-                )
-
-    return unconverted_footnotes
+        section, subsection = locations[location["data-endnote-location"]]
+        results.append(
+            {
+                "section": section,
+                "subsection": subsection,
+                "message": issue["message"],
+                "code": issue["code"],
+            }
+        )
+    return results
 
 
 def get_side_nav_links(nofo):
@@ -2567,31 +2470,17 @@ def replace_src_for_inline_images(soup):
 
 
 def rename_footnotes_heading_to_endnotes(soup):
-    """
-    This function mutates the soup!
+    """Normalize structural note headings in imported HTML, never on page access.
 
-    NOFO Builder only recognizes a heading literally titled "Endnotes" as a document's
-    real endnotes list (see `add_endnotes_header_if_exists`'s `_match_endnotes`), and the
-    "Add Endnotes" NOFO action refuses to run once a Section slugifies to "endnotes" (see
-    `nofo_has_end_notes_section`). A source Word document that used a manually typed
-    "Footnotes"/"Footnote" heading instead of Word's built-in endnote tool (see
-    `find_unconverted_footnotes`) would otherwise import as an ordinary heading that
-    NOFO Builder doesn't recognize as endnotes - and, if it's a top-level section,
-    one users have no way to delete.
+    Preserve separate headings when there are several note sections; the matcher
+    reports the ambiguity instead of silently merging their citation lists.
 
-    Rename any such heading to "Endnotes" on import, so it's immediately treated as an
-    endnotes section and does not require a duplicate "Add Endnotes" step. The
-    unconverted-footnotes warning still detects raw, unlinked markers in the renamed
-    section. Skipped entirely if the document already has a heading that reads "Endnotes",
-    to avoid creating a duplicate.
+    Implements import rule IMPORT-049 in documentation/IMPORT_RULES.md.
     """
     headings = soup.find_all(re.compile(r"^h[1-6]$")) + soup.find_all(is_h7)
 
-    if any(heading.text.strip() == END_NOTES_SECTION_NAME for heading in headings):
-        return
-
     for heading in headings:
-        if _is_footnotes_heading(heading.text):
+        if is_endnotes_heading(heading.get_text()):
             heading.string = END_NOTES_SECTION_NAME
 
 
@@ -2616,7 +2505,9 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
     """
 
     def _match_endnotes(tag):
-        return (tag.name == "h1" or tag.name == "h2") and tag.text == "Endnotes"
+        return (
+            tag.name in {"h1", "h2", "h3", "h4", "h5", "h6", "h7"} or is_h7(tag)
+        ) and is_endnotes_heading(tag.get_text())
 
     def _find_google_doc_html_endnotes(soup):
         hrs = soup.find_all("hr")

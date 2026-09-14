@@ -374,5 +374,7 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
 ## Related resources
 
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Deployment & contribution workflow.
+- [Builder usage & quality metrics](documentation/BUILDER_METRICS.md) — Dashboard access, production setup, OpDiv filtering, and historical data.
 - [Groups](documentation/GROUPS.md) — how user and NOFO groups work, and how to add a new group.
 - [Word export](documentation/WORD_EXPORT.md) — Operations and review gates for the disabled-by-default local Pandoc path.
+- [Import rules](documentation/IMPORT_RULES.md) — every automatic content rule applied when a NOFO is imported.

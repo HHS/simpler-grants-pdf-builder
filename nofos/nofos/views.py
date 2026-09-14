@@ -83,6 +83,16 @@ from .forms import (
     SubsectionCreateForm,
     SubsectionEditForm,
 )
+from .metrics import (
+    active_users_by_month,
+    avg_warnings_by_month,
+    import_error_rate_by_month,
+    months_from,
+    nofos_created_by_month,
+    opdiv_choices,
+    time_to_first_live_pdf_by_month,
+    total_users_by_month,
+)
 from .mixins import (
     GroupAccessObjectMixinFactory,
     JsonResponseBadRequestMixin,
@@ -107,13 +117,13 @@ from .nofo import (
     decompose_before_you_begin_section,
     extract_page_break_context,
     find_broken_links,
+    find_endnote_issues,
     find_external_link,
     find_external_links,
     find_incorrectly_nested_heading_levels,
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
-    find_unconverted_footnotes,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
@@ -486,7 +496,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
-        context["unconverted_footnotes"] = find_unconverted_footnotes(self.object)
+        context["unconverted_footnotes"] = find_endnote_issues(self.object)
         context["page_breaks_count"] = count_page_breaks_nofo(self.object)
 
         context["side_nav_headings"] = get_side_nav_links(self.object)
@@ -862,7 +872,7 @@ class NofosImportNewView(BaseNofoImportView):
             nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
 
-            nofo = create_nofo(nofo_title, sections, opdiv)
+            nofo = create_nofo(nofo_title, sections, opdiv, group=request.user.group)
             add_headings_to_document(nofo)
             add_page_breaks_to_headings(nofo)
             # group must be set before suggest_all_nofo_fields() so it can key
@@ -2889,10 +2899,47 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
     Usage & import-quality metrics for the NOFO Builder team. Gated by the
     "nofos.view_builder_metrics" permission (granted via the "Metrics viewers"
     group, or automatically to superusers).
-
-    This is a placeholder: the actual charts land in a follow-up PR once the
-    query layer (built on top of ImportAttempt, CRUDEvent, Nofo and BloomUser)
-    is in place.
     """
 
     template_name = "nofos/builder_metrics.html"
+
+    # When NOFO Builder metrics tracking started (see #865) - not a hard
+    # cutoff, just where the trend starts; months_from() has no upper bound,
+    # so later months just keep appending as they occur.
+    metrics_since = datetime(2026, 9, 1)
+
+    def get(self, request, *args, **kwargs):
+        self.selected_group = request.GET.get("group", "all")
+        if self.selected_group not in {"all", *dict(opdiv_choices())}:
+            return HttpResponseBadRequest("Choose a valid OpDiv group.")
+        context = self.get_context_data(**kwargs)
+        if request.headers.get("Accept") == "application/json":
+            response = JsonResponse(context["metrics_data"])
+        else:
+            response = self.render_to_response(context)
+        response["Cache-Control"] = "private, no-store"
+        response["Vary"] = "Accept, Cookie"
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        start = timezone.make_aware(self.metrics_since)
+        months = months_from(start)
+
+        group = self.selected_group
+        context["opdiv_choices"] = opdiv_choices()
+        context["selected_group"] = group
+        label = "All OpDivs" if group == "all" else group.upper()
+        context["metrics_data"] = {
+            "group": group,
+            "groupLabel": label,
+            "months": [month_start.strftime("%b '%y") for month_start, _ in months],
+            "totalUsers": total_users_by_month(months, group),
+            "activeUsers": active_users_by_month(months, group),
+            "nofosCreated": nofos_created_by_month(months, group),
+            "timeToPdfHours": time_to_first_live_pdf_by_month(months, group),
+            "errorRatePct": import_error_rate_by_month(months, group),
+            "avgWarnings": avg_warnings_by_month(months, group),
+        }
+        return context

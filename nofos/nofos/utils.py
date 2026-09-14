@@ -1,3 +1,9 @@
+"""
+Includes style_map_manager, the Mammoth DOCX->HTML style-name map used
+during NOFO import (import rules IMPORT-001 through IMPORT-007 in
+documentation/IMPORT_RULES.md). Update that document if you change it.
+"""
+
 import json
 import re
 import uuid

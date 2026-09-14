@@ -1,8 +1,374 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}NOFO Builder metrics{% endblock %}
+{% block title %}Usage &amp; quality metrics — NOFO Builder{% endblock %}
+
+{% block css %}
+<style>
+  /*
+   * Box/typography treatment (border-1px border-base-lighter radius-md
+   * padding-2 / font-sans-2xs / text-base-dark / text-italic, etc.) reuses
+   * the app's existing USWDS utility classes. White background rather than
+   * readability_metrics_panel.html's bg-base-lightest fill (#f0f0f0): that
+   * panel's gray fill is doing real visual work there - it marks the
+   * content as "revealed," set apart from the page, when its accordion
+   * opens. This page has no such affordance to support (it's always
+   * visible, nothing to expand), and the fill would only cost contrast
+   * against this page's colored chart lines/bars for no benefit.
+   * Only layout/behavior that has no USWDS equivalent is custom CSS below.
+   */
+  .metrics-print-scope { display: none; }
+  .metrics-filter { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+  .metrics-filter .usa-select { max-width: 100%; }
+  .metrics-filter-control { width: 24rem; max-width: 100%; }
+  .metrics-page { padding-bottom: 2rem; }
+  .metrics-delta-good { color: var(--color--green); }
+  .metrics-delta-bad { color: var(--color--usa-error-message); }
+  .metrics-delta-flat { color: var(--color--text-grey); }
+  .metrics-chart-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem;
+  }
+  .metrics-chart-card header {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem;
+  }
+  .metrics-chart-card h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+  .metrics-chart-card svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .metrics-grid-line { stroke: var(--color--light-grey); stroke-width: 1; }
+  .metrics-axis-label { fill: var(--color--text-grey); font-size: 9.5px; }
+  .metrics-hit-target { fill: transparent; cursor: crosshair; }
+  .metrics-data-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+  .metrics-data-table caption { text-align: left; font-weight: 700; }
+  .metrics-data-table th, .metrics-data-table td { text-align: left; padding: 0.25rem; }
+  .metrics-chart-def {
+    margin: 0.6rem 0 0.25rem; padding-top: 0.6rem; border-top: 1px solid var(--color--light-grey);
+    line-height: 1.5;
+  }
+  #metrics-tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--color--usa-link-hover); color: #fff;
+    font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.6rem; border-radius: 4px;
+    opacity: 0; transform: translate(-50%, calc(-100% - 8px)); transition: opacity 0.08s ease;
+    white-space: nowrap;
+  }
+  #metrics-tooltip.show { opacity: 1; }
+  #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
+
+  @media print {
+    .metrics-print-scope { display: block; }
+    .metrics-filter, #metrics-filter-status, .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-  <h1>NOFO Builder metrics</h1>
-  <p>Usage and import-quality metrics are coming soon.</p>
+<div class="metrics-page">
+  <div class="metrics-toolbar margin-bottom-3">
+    <div class="nofo_index--header">
+      <h1 class="font-heading-xl margin-y-0">Usage &amp; quality metrics</h1>
+      <div class="nofo_index--header--view font-sans-md">
+        <button id="metrics-print" type="button" class="usa-button margin-0" onclick="window.print()">
+          Print / Save as PDF
+        </button>
+      </div>
+    </div>
+    <div class="margin-top-1">
+      <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; no fixed end date, new months appear on their own</span>
+    </div>
+  </div>
+
+  <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
+    <summary class="text-bold">How historical metrics are preserved</summary>
+    <p>Recorded activity stays in these metrics when a NOFO or account is deleted.
+      Later group changes do not rewrite earlier results. Internal and staging
+      accounts are excluded using their group at signup for total users, and at
+      the time of activity for usage and import quality. NOFOs use their group at creation.</p>
+    <p>A past month’s typical time to first PDF can still change when a NOFO
+      imported that month gets its first finished PDF later. The current month
+      is also still in progress.</p>
+    <p>Older history was reconstructed from the records and groups available when
+      history protection was introduced. Previously deleted records and earlier
+      group changes cannot be recovered. Import-quality tracking starts when
+      import attempts were first recorded; attempts with unknown user eligibility
+      are excluded. Missing import-quality data shows as “No data,” not zero.</p>
+    <p>OpDiv filters use the recorded user group for accounts, activity, and import
+      attempts, and the recorded NOFO group for creation and time to first PDF.
+      Older OpDiv assignments use the records available when filtering was introduced.
+      History with an unknown OpDiv remains in All OpDivs but not an individual agency.
+      Internal and staging are excluded.</p>
+    <p>There is no automatic age-based cutoff for these metric records.
+      This history is separate from application logs and database backups.</p>
+  </details>
+
+  <div id="metrics-filter" class="metrics-filter margin-bottom-3">
+    <div class="metrics-filter-control">
+      <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
+      <select class="usa-select" name="group" id="metrics-group" aria-describedby="metrics-filter-hint">
+        <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
+        {% for value, label in opdiv_choices %}
+        <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <span id="metrics-filter-hint" class="usa-sr-only">Selecting an OpDiv updates all metrics on this page.</span>
+  <p id="metrics-filter-status" role="status" aria-live="polite" class="usa-sr-only"></p>
+  <p class="metrics-print-scope font-sans-sm text-bold margin-bottom-3">OpDiv group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
+  <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
+  <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>
+
+  <h2 class="font-heading-md margin-top-5 margin-bottom-2">Monthly trends</h2>
+  <div class="metrics-chart-grid" id="metrics-chart-grid"></div>
+
+  <div class="usa-prose margin-top-3">
+  <p>
+    Numbers reflect NOFO Builder's own database and update automatically each time this page loads -
+    there's nothing to refresh or re-run. Months with no data yet (for example, before import-quality
+    tracking started) show as "No data" rather than zero.
+  </p>
+  </div>
+</div>
+
+{{ metrics_data|json_script:"metrics-data" }}
+
+<div id="metrics-tooltip"><span class="main"></span><span class="sub"></span></div>
+
+<script>
+(function () {
+  function renderMetrics(raw) {
+    document.getElementById('metrics-kpi-row').innerHTML = '';
+    document.getElementById('metrics-chart-grid').innerHTML = '';
+    document.getElementById('metrics-applied-group').textContent = raw.groupLabel;
+    var months = raw.months;
+    var lastIndex = months.length - 1;
+
+    function fmtCount(v) { return v === null || v === undefined ? "No data" : String(v); }
+    function fmtPct(v) { return v === null || v === undefined ? "No data" : v + "%"; }
+    function fmtWarnings(v) { return v === null || v === undefined ? "No data" : v.toFixed(1); }
+    function fmtDuration(v) {
+      if (v === null || v === undefined) return "No data";
+      return v < 24 ? Math.round(v) + " hrs" : (v / 24).toFixed(1) + " days";
+    }
+
+    var metrics = {
+      totalUsers: {
+        title: "Total users", unit: "cumulative", type: "line", color: "var(--color--usa-link)",
+        good: "up", data: raw.totalUsers, fmt: fmtCount,
+        def: "Cumulative eligible signups, including accounts later deleted or made inactive. Eligibility is recorded at signup; older accounts use the group available when history protection was introduced."
+      },
+      activeUsers: {
+        title: "Monthly active users", unit: "users", type: "bar", color: "var(--color--green)",
+        good: "up", data: raw.activeUsers, fmt: fmtCount,
+        def: "Distinct users who took at least one recorded action that month — importing, editing, or printing/downloading a NOFO. Logging in alone doesn't count."
+      },
+      nofosCreated: {
+        title: "NOFOs created", unit: "per month", type: "bar", color: "var(--color--usa-link)",
+        good: "up", data: raw.nofosCreated, fmt: fmtCount,
+        def: "Number of new NOFO records first imported into NOFO Builder that month."
+      },
+      timeToPdf: {
+        title: "Import → first live PDF", unit: "typical duration", type: "line", color: "var(--color--usa-link-hover)",
+        good: "down", data: raw.timeToPdfHours, fmt: fmtDuration,
+        def: "The median — the middle value, half faster / half slower — time from a NOFO's first import to the first time someone downloads a finished, non-watermarked PDF for it. This is full calendar time, including any time a NOFO spent waiting on outside review, not just active editing."
+      },
+      errorRate: {
+        title: "Blocking import errors", unit: "% of attempts", type: "bar", color: "var(--color--usa-error-message)",
+        good: "down", data: raw.errorRatePct, fmt: fmtPct,
+        def: "Share of Word-document import attempts that fail outright and require the user to fix their document before the NOFO can be created — e.g. a missing required field or an unrecognized heading structure."
+      },
+      avgWarnings: {
+        title: "Warnings per import", unit: "avg count", type: "bar", color: "var(--color--usa-error-message)",
+        good: "down", data: raw.avgWarnings, fmt: fmtWarnings,
+        def: "Average number of non-blocking formatting warnings shown on successful imports. The import still goes through, but the flagged content may need manual cleanup."
+      }
+    };
+
+    var kpiOrder = [
+      ["totalUsers", "Total users"],
+      ["activeUsers", "Active users"],
+      ["nofosCreated", "NOFOs created"],
+      ["timeToPdf", "Typical time to first PDF"],
+      ["errorRate", "Error rate"],
+      ["avgWarnings", "Warnings per import"]
+    ];
+
+    var kpiRow = document.getElementById('metrics-kpi-row');
+    kpiOrder.forEach(function (pair) {
+      var m = metrics[pair[0]], label = pair[1];
+      var cur = m.data[lastIndex];
+      var prev = lastIndex > 0 ? m.data[lastIndex - 1] : null;
+      var cls = "flat", arrow = "—";
+      if (cur !== null && prev !== null && cur !== undefined && prev !== undefined) {
+        var diff = cur - prev;
+        var improved = m.good === "up" ? diff > 0 : diff < 0;
+        if (Math.abs(diff) > 1e-9) {
+          cls = improved ? "good" : "bad";
+          arrow = diff > 0 ? "▲" : "▼";
+        }
+      }
+      var div = document.createElement('div');
+      div.className = 'tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2';
+      div.innerHTML =
+        '<div class="border-1px border-base-lighter radius-md padding-2 height-full">' +
+          '<div class="font-sans-2xs text-bold">' + label + '</div>' +
+          '<div class="font-heading-lg line-height-sans-2 margin-top-05">' + m.fmt(cur) + '</div>' +
+          '<div class="metrics-delta-' + cls + ' font-sans-2xs text-bold margin-top-05">' + arrow + ' vs. last month</div>' +
+        '</div>';
+      kpiRow.appendChild(div);
+    });
+
+    var W = 460, H = 190, PAD = { top: 14, right: 12, bottom: 24, left: 8 };
+    var plotW = W - PAD.left - PAD.right, plotH = H - PAD.top - PAD.bottom;
+
+    function scaleY(v, min, max) {
+      if (max === min) return PAD.top + plotH / 2;
+      return PAD.top + plotH - ((v - min) / (max - min)) * plotH;
+    }
+    function scaleX(i, n) { return n <= 1 ? PAD.left : PAD.left + (i / (n - 1)) * plotW; }
+
+    var tooltip = document.getElementById('metrics-tooltip');
+    function showTip(evt, title, sub) {
+      tooltip.querySelector('.main').textContent = title;
+      tooltip.querySelector('.sub').textContent = sub;
+      tooltip.style.left = evt.clientX + 'px';
+      tooltip.style.top = evt.clientY + 'px';
+      tooltip.classList.add('show');
+    }
+    function hideTip() { tooltip.classList.remove('show'); }
+
+    function buildChart(m) {
+      var n = m.data.length;
+      var known = m.data.filter(function (v) { return v !== null && v !== undefined; });
+      var max = known.length ? Math.max.apply(null, known) * 1.18 : 1;
+      // Keep zero at the baseline even when every known observation is zero.
+      if (max === 0) max = 1;
+      var barW = Math.min(30, (plotW / n) * 0.55);
+
+      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + m.title + ' by month">';
+      for (var g = 0; g <= 2; g++) {
+        var gy = PAD.top + (plotH / 2) * g;
+        svg += '<line class="metrics-grid-line" x1="' + PAD.left + '" x2="' + (W - PAD.right) + '" y1="' + gy + '" y2="' + gy + '" />';
+      }
+
+      if (m.type === 'line') {
+        var path = '', started = false;
+        m.data.forEach(function (v, i) {
+          if (v === null || v === undefined) { started = false; return; }
+          var x = scaleX(i, n), y = scaleY(v, 0, max);
+          path += (started ? 'L' : 'M') + x + ',' + y + ' ';
+          started = true;
+        });
+        svg += '<path d="' + path.trim() + '" fill="none" stroke="' + m.color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        m.data.forEach(function (v, i) {
+          var x = scaleX(i, n);
+          var partial = i === n - 1;
+          if (v === null || v === undefined) return;
+          var y = scaleY(v, 0, max);
+          svg += '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="' + (partial ? '#fff' : m.color) + '" stroke="' + m.color + '" stroke-width="2"/>';
+          svg += '<circle class="metrics-hit-target" data-month="' + months[i] + '" data-val="' + m.fmt(v) + (partial ? ' (in progress)' : '') + '" cx="' + x + '" cy="' + y + '" r="12"/>';
+        });
+      } else {
+        m.data.forEach(function (v, i) {
+          if (v === null || v === undefined) return;
+          var x = scaleX(i, n) - barW / 2;
+          var partial = i === n - 1;
+          var val = (v === null || v === undefined) ? 0 : v;
+          var y = scaleY(val, 0, max);
+          svg += '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + ((PAD.top + plotH) - y) + '" rx="4" ry="4" fill="' + m.color + '" opacity="' + (partial ? 0.45 : (v === null || v === undefined ? 0.15 : 1)) + '"/>';
+          svg += '<rect class="metrics-hit-target" data-month="' + months[i] + '" data-val="' + m.fmt(v) + (partial ? ' (in progress)' : '') + '" x="' + (x - 4) + '" y="' + PAD.top + '" width="' + (barW + 8) + '" height="' + plotH + '"/>';
+        });
+      }
+
+      [0, Math.floor((n - 1) / 2), n - 1].forEach(function (i) {
+        svg += '<text class="metrics-axis-label" x="' + scaleX(i, n) + '" y="' + (H - 6) + '" text-anchor="middle">' + months[i] + (i === n - 1 ? '*' : '') + '</text>';
+      });
+
+      svg += '</svg>';
+      return svg;
+    }
+
+    var grid = document.getElementById('metrics-chart-grid');
+    function buildDataTable(m) {
+      return '<details class="metrics-data-details margin-top-2 font-sans-2xs">' +
+        '<summary><span>View monthly data<span class="usa-sr-only"> for ' + m.title + '</span></span></summary>' +
+        '<table class="metrics-data-table"><caption>' + m.title +
+        ' monthly values</caption><thead><tr><th scope="col">Month</th><th scope="col">Value</th></tr></thead><tbody>' +
+        months.map(function (month, i) {
+          return '<tr><th scope="row">' + month + (i === lastIndex ? ' (in progress)' : '') +
+            '</th><td>' + m.fmt(m.data[i]) + '</td></tr>';
+        }).join('') + '</tbody></table></details>';
+    }
+    Object.keys(metrics).forEach(function (key) {
+      var m = metrics[key];
+      var card = document.createElement('div');
+      card.className = 'metrics-chart-card border-1px border-base-lighter radius-md padding-2';
+      card.innerHTML =
+        '<header><h3>' + m.title + '</h3><span class="font-sans-2xs" style="white-space:nowrap">' + m.unit + '</span></header>' +
+        '<p class="font-sans-2xs text-italic margin-y-05">* most recent month in progress</p>' +
+        buildChart(m) +
+        buildDataTable(m) +
+        '<p class="metrics-chart-def font-sans-2xs"><b>Definition:</b> ' + m.def + '</p>';
+      grid.appendChild(card);
+    });
+
+    document.querySelectorAll('.metrics-hit-target').forEach(function (el) {
+      el.addEventListener('mousemove', function (e) { showTip(e, el.dataset.month, el.dataset.val); });
+      el.addEventListener('mouseleave', hideTip);
+    });
+  }
+  renderMetrics(JSON.parse(document.getElementById('metrics-data').textContent));
+
+  var select = document.getElementById('metrics-group');
+  var appliedGroup = JSON.parse(document.getElementById('metrics-data').textContent).group;
+  var status = document.getElementById('metrics-filter-status');
+  var requestNumber = 0;
+  select.addEventListener('change', async function () {
+    // Keep the native select enabled and focused. Only the latest selection may
+    // update results, including when earlier requests finish out of order.
+    var currentRequest = ++requestNumber;
+    var print = document.getElementById('metrics-print');
+    var url = new URL(window.location.href);
+    url.searchParams.set('group', select.value);
+    print.disabled = true;
+    status.className = 'usa-sr-only';
+    status.textContent = 'Updating metrics…';
+    try {
+      var response = await fetch(url, {headers: {'Accept': 'application/json'}});
+      if (!response.ok) throw new Error('Metrics request failed');
+      var data = await response.json();
+      if (currentRequest !== requestNumber) return;
+      renderMetrics(data);
+      appliedGroup = data.group;
+      window.history.replaceState(null, '', url);
+      status.textContent = 'Metrics updated for ' + data.groupLabel + '.';
+    } catch (error) {
+      if (currentRequest !== requestNumber) return;
+      select.value = appliedGroup;
+      status.className = 'font-sans-2xs';
+      status.textContent = 'Unable to update metrics. Your previous results are still shown. Select an OpDiv to try again.';
+    } finally {
+      if (currentRequest === requestNumber) print.disabled = false;
+    }
+  });
+
+  // Include every monthly value in browser print / Save as PDF, then restore
+  // the reader's disclosure choices when the print dialog closes or is canceled.
+  var disclosureState = null;
+  window.addEventListener('beforeprint', function () {
+    if (disclosureState !== null) return;
+    disclosureState = Array.from(document.querySelectorAll('.metrics-data-details')).map(function (el) {
+      var state = { element: el, open: el.open };
+      el.open = true;
+      return state;
+    });
+    document.getElementById('metrics-tooltip').classList.remove('show');
+  });
+  window.addEventListener('afterprint', function () {
+    if (disclosureState === null) return;
+    disclosureState.forEach(function (state) { state.element.open = state.open; });
+    disclosureState = null;
+  });
+
+
+})();
+</script>
 {% endblock %}

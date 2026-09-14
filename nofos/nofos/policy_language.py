@@ -1,6 +1,9 @@
 """
 Department Governance policy-language detection.
 
+Tagged as import rule IMPORT-046 in documentation/IMPORT_RULES.md - update
+that entry if you change this file's behavior.
+
 Called once, at import time, from _build_document() in nofo.py - the same
 pass that builds Section/Subsection rows - never at export time. Export
 (a later phase) only consumes the policy_language_status/policy_language_slot

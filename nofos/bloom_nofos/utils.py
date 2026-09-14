@@ -152,6 +152,8 @@ def generate_docx_download_response(
         settings.GRABZIT_APPLICATION_KEY,
         settings.GRABZIT_APPLICATION_SECRET,
     )
+    # The SDK defaults to HTTP; enable TLS before sending any cookies or requests.
+    grabzit.UseSSL(True)
 
     # Set cookies only for the exact host GrabzIt will request.
     if not grabzit.SetCookie("sessionid", export_host, session_value):

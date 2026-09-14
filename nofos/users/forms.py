@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 
 from .models import BloomUser
@@ -20,7 +21,48 @@ def validate_user_group_for_superuser(cleaned_data):
 ###########################################################
 
 
-class BloomUserCreationForm(UserCreationForm):
+class MetricsAccessForm(forms.ModelForm):
+    can_view_metrics = forms.BooleanField(
+        label="Can view metrics",
+        required=False,
+        help_text=(
+            "Adds this user to the Metrics viewers group, allowing access to metrics "
+            "for all OpDivs. Superusers have access automatically."
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial["can_view_metrics"] = self.instance.groups.filter(
+                name="Metrics viewers"
+            ).exists()
+            if (
+                self.instance.user_permissions.filter(
+                    content_type__app_label="nofos", codename="view_builder_metrics"
+                ).exists()
+                or self.instance.groups.exclude(name="Metrics viewers")
+                .filter(
+                    permissions__content_type__app_label="nofos",
+                    permissions__codename="view_builder_metrics",
+                )
+                .exists()
+            ):
+                self.fields["can_view_metrics"].help_text += (
+                    " This user also has metrics permission granted separately. "
+                    "Unchecking this box will not remove that separate access."
+                )
+
+    def _save_m2m(self):
+        super()._save_m2m()
+        metrics_viewers = Group.objects.get(name="Metrics viewers")
+        if self.cleaned_data["can_view_metrics"]:
+            self.instance.groups.add(metrics_viewers)
+        else:
+            self.instance.groups.remove(metrics_viewers)
+
+
+class BloomUserCreationForm(MetricsAccessForm, UserCreationForm):
     full_name = forms.CharField(
         label="Full name",
     )
@@ -34,7 +76,7 @@ class BloomUserCreationForm(UserCreationForm):
         return validate_user_group_for_superuser(cleaned_data)
 
 
-class BloomUserChangeForm(UserChangeForm):
+class BloomUserChangeForm(MetricsAccessForm, UserChangeForm):
     class Meta:
         model = BloomUser
         fields = (

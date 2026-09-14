@@ -1,10 +1,38 @@
+import markdown
+from bs4 import BeautifulSoup
 from django.test import TestCase
 
+from nofos.endnotes import convert_bracketed_endnotes
 from nofos.nofo_markdown import md
 
 #########################################################
 ############# MARKDOWNIFY CONVERTER TESTS ###############
 #########################################################
+
+
+class ManualEndnoteRoundTripTests(TestCase):
+    def test_citation_targets_survive_in_lists_and_table_cells(self):
+        for citation in (
+            "<ul><li>[1] Source</li></ul>",
+            "<ol><li>[1] Source</li></ol>",
+            "<table><tr><td>[1] Source</td></tr></table>",
+            "<table><tr><td><p>[1] Source</p></td></tr></table>",
+        ):
+            with self.subTest(citation=citation):
+                soup = BeautifulSoup(
+                    "<p>Claim [1]</p><h1>Endnotes</h1>" + citation, "html.parser"
+                )
+                convert_bracketed_endnotes(soup)
+                rendered = BeautifulSoup(
+                    markdown.markdown(md(str(soup)), extensions=["extra"]),
+                    "html.parser",
+                )
+                forward = rendered.find("a", id="endnote-ref-manual-1")
+                self.assertIsNotNone(forward)
+                target = rendered.find(id=forward["href"][1:])
+                self.assertIsNotNone(target)
+                self.assertEqual(target["tabindex"], "-1")
+                self.assertIsNotNone(target.find("a", href="#endnote-ref-manual-1"))
 
 
 class NofoMarkdownConverterTABLETest(TestCase):

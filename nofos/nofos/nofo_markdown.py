@@ -1,3 +1,10 @@
+"""
+HTML->Markdown conversion rules applied during NOFO import (import rules
+IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033 in
+documentation/IMPORT_RULES.md). Update that document if you change one of
+NofoMarkdownConverter's conversion rules.
+"""
+
 import re
 
 from bs4 import BeautifulSoup
@@ -83,6 +90,8 @@ class NofoMarkdownConverter(MarkdownConverter):
         # keep the in-text footnote links as HTML so that the ids aren't lost
         if el and el.attrs.get("id", "").startswith(("footnote", "endnote")):
             self._remove_classes_recursive(el)
+            if el.parent and el.parent.name == "sup":
+                return str(el.parent)
             # wrap these links in <sup> element
             el.wrap(BeautifulSoup("", "html.parser").new_tag("sup"))
             # return link AND parent (which is <sup>)
@@ -113,6 +122,8 @@ class NofoMarkdownConverter(MarkdownConverter):
         return super().convert_img(el, text, parent_tags)
 
     def convert_ol(self, el, text, parent_tags):
+        if el.find(id=re.compile(r"^endnote-manual-")):
+            return "\n\n" + str(el) + "\n\n"
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
         if start and start != "1":
@@ -136,6 +147,8 @@ class NofoMarkdownConverter(MarkdownConverter):
         return super().convert_ol(el, text, parent_tags)
 
     def convert_ul(self, el, text, parent_tags):
+        if el.find(id=re.compile(r"^endnote-manual-")):
+            return "\n\n" + str(el) + "\n\n"
         for parent in el.parents:
             if parent.name == "td":
                 self._remove_classes_recursive(el)
@@ -204,12 +217,17 @@ class NofoMarkdownConverter(MarkdownConverter):
         # if the paragraph has an id that includes the string "bookmark", keep the paragraph as-is
         p_id = el.attrs.get("id") if el else None
         if p_id:
+            if p_id.startswith("endnote-manual-"):
+                return "\n\n" + str(el) + "\n\n"
             if "bookmark" in p_id or "table-heading" in p_id:
                 return str(el)
 
         return super().convert_p(el, text, parent_tags)
 
     def convert_table(self, el, text, parent_tags):
+        if el.find(id=re.compile(r"^endnote-manual-")):
+            return "\n\n" + str(el) + "\n\n"
+
         def _has_colspan_or_rowspan_not_one(tag):
             # Check for colspan/rowspan attributes not equal to '1'
             colspan = tag.get("colspan", "1")

@@ -1214,6 +1214,14 @@ class ImportAttempt(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    metrics_group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+    metrics_included = models.BooleanField(
+        null=True,
+        editable=False,
+        help_text="Eligibility at import time; null means historical attribution is unknown.",
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1259,3 +1267,47 @@ class ImportAttempt(models.Model):
     def __str__(self):
         outcome = self.error_code or "succeeded"
         return f"{self.filename} @ {self.created_at.isoformat()} ({outcome})"
+
+
+class MetricsActor(models.Model):
+    """Durable signup time, eligibility and OpDiv; unlink the account on deletion."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    joined_at = models.DateTimeField(db_index=True)
+    included = models.BooleanField()
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+
+
+class MetricsNofo(models.Model):
+    """Creation cohort and earliest live print, independent of the source NOFO."""
+
+    id = models.UUIDField(primary_key=True, editable=False)
+    created_at = models.DateTimeField(db_index=True)
+    included = models.BooleanField()
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+
+    first_live_at = models.DateTimeField(null=True)
+
+
+class MetricsActivity(models.Model):
+    """One eligible activity per actor/month/group, without audit payloads."""
+
+    actor = models.ForeignKey(MetricsActor, on_delete=models.PROTECT)
+    month = models.DateField(db_index=True)
+    group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["actor", "month", "group"], name="metrics_actor_month_group"
+            )
+        ]

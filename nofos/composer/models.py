@@ -440,6 +440,9 @@ class ContentGuideSubsection(BaseSubsection):
         """
         Parse this subsection's body for variable placeholders.
 
+        Implements import rule IMPORT-047 in documentation/IMPORT_RULES.md
+        (at the repo root). Update that entry if you change this behavior.
+
         Syntax:
           {Prompt text}            -> string variable
           {List: label text}       -> list variable
