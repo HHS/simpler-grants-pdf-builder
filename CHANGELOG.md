@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.37.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.36.0...nofos-v3.37.0) (2026-09-14)
+
+
+### Features
+
+* manage metrics viewer access in Django admin ([#895](https://github.com/HHS/simpler-grants-pdf-builder/issues/895)) ([887914f](https://github.com/HHS/simpler-grants-pdf-builder/commit/887914fe0646aba3892aa481b4de578663e5e936))
+* **metrics:** show Tier 2 clearance metrics ([#900](https://github.com/HHS/simpler-grants-pdf-builder/issues/900)) ([88dd7df](https://github.com/HHS/simpler-grants-pdf-builder/commit/88dd7df84f941a47e8b91a793c3b518d65a46d8c))
+
+
+### Bug Fixes
+
+* align metrics page layout with existing pages ([#893](https://github.com/HHS/simpler-grants-pdf-builder/issues/893)) ([17eaba4](https://github.com/HHS/simpler-grants-pdf-builder/commit/17eaba448416898d1ed70abd626c3f1244509fba))
+* **metrics:** use Internal label in metrics accordion copy ([#897](https://github.com/HHS/simpler-grants-pdf-builder/issues/897)) ([9f76194](https://github.com/HHS/simpler-grants-pdf-builder/commit/9f76194d22843cca7581e72ea2219b4b94c1d2f9))
+* stabilize container security scans ([#898](https://github.com/HHS/simpler-grants-pdf-builder/issues/898)) ([9118e1b](https://github.com/HHS/simpler-grants-pdf-builder/commit/9118e1b5211a0bc7ba7311ff7d287228612e4bd9))
+* use TLS for Word conversion provider requests ([#883](https://github.com/HHS/simpler-grants-pdf-builder/issues/883)) ([2d8134e](https://github.com/HHS/simpler-grants-pdf-builder/commit/2d8134eb3c8cf8449b0829332634d413d3752102))
+
+
+### Documentation
+
+* add NOFO import rules reference and PR template ([#896](https://github.com/HHS/simpler-grants-pdf-builder/issues/896)) ([6ecdfa1](https://github.com/HHS/simpler-grants-pdf-builder/commit/6ecdfa1f1cd2952d74dd9437e23750b6da62538e))
+
 ## [3.36.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.35.0...nofos-v3.36.0) (2026-09-11)
 
 
