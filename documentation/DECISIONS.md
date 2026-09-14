@@ -4,6 +4,27 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-14 — Display Tier 2 clearance metrics in the readability accordion
+
+**Context:** The current NOFO clearance guidance requires four readability
+metrics at Tier 2 submission: word count, words per sentence, Flesch-Kincaid
+grade level, and passive sentences. Sentences per paragraph applies only to
+Tier 1 drafting, and Flesch Reading Ease is not included in the current
+guidance. The underlying NOFO readability metrics package can continue to
+calculate and return its full metric set independently of what the Builder
+interface presents.
+
+**Decision:** Show only the four Tier 2 clearance metrics in the Readability
+metrics accordion. Keep the other calculated values in the package response and
+stored snapshots so the measurement contract does not change. Present the four
+cards as a two-column grid on tablet and desktop screens, with the existing
+single-column mobile layout. This keeps the interface focused on clearance
+submission requirements and avoids an unbalanced five-card layout. Sentences
+per paragraph can be reconsidered later if the accordion expands to include
+Tier 1 drafting guidance.
+
+---
+
 ## 2026-06-11 — Renamed "Download PDF (live)" button to "Download PDF"
 
 **Context:** Users expressed confusion about what "live" meant in the "Download PDF (live)" button label. The term was originally used to distinguish the final, unwatermarked PDF from the watermarked "Preview PDF".

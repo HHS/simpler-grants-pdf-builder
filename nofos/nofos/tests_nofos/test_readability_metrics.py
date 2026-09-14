@@ -104,17 +104,26 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
-        self.assertEqual(len(panel.select("[data-metric-id]")), 6)
-        self.assertIsNone(panel.select_one('[data-metric-id="characters_per_word"]'))
-        paragraph_card = panel.select_one(
-            '[data-metric-id="sentences_per_paragraph"]'
-        ).parent
-        self.assertIn("hidden", paragraph_card.attrs)
-        self.assertIn("data-optional-metric-card", paragraph_card.attrs)
+        metric_cards = panel.select("[data-metric-id]")
+        self.assertEqual(
+            {metric["data-metric-id"] for metric in metric_cards},
+            {
+                "word_count",
+                "words_per_sentence",
+                "flesch_kincaid_grade_level",
+                "passive_sentence_percentage",
+            },
+        )
         self.assertTrue(
             all(
-                "bg-base-lightest" in metric.get("class", [])
-                for metric in panel.select("[data-metric-id]")
+                "tablet:grid-col-6" in metric.parent.get("class", [])
+                for metric in metric_cards
+            )
+        )
+        self.assertFalse(panel.select(".desktop\\:grid-col-4"))
+        self.assertTrue(
+            all(
+                "bg-base-lightest" in metric.get("class", []) for metric in metric_cards
             )
         )
         self.assertFalse(panel.select(".text-base"))
