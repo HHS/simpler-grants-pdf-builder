@@ -166,6 +166,33 @@ remains. Ben can review the local Word evidence independently of deployment.
 
 ## Draft review gates
 
+### September 14 integration verification
+
+The branch was refreshed against main at `9f76194d`, including the separate TLS
+fix for the flag-off provider path. Its transport tests explicitly isolate the
+Pandoc flag so the real-SDK HTTPS check does not query Constance's database.
+
+In an isolated copy of the synthetic local database, the Composer and Writer
+browser download actions returned HTTP 200. Separate route-level DOCX checks
+confirmed Composer instructions and `{Amount}`, Writer's edited value and table
+text with one embedded image, and normal export with two bundled/embedded images.
+These are not new shared-dev or desktop Word layout checks.
+
+The refreshed Linux application image was tested with networking disabled, two
+CPUs, and a 1 GiB memory limit without additional swap. Direct-converter probes
+at 102,947, 1,029,397, and 2,058,817 HTML bytes succeeded; the largest took
+3.78–3.82 seconds and peaked at about 311 MiB child RSS. The probe deliberately
+runs two converters in parallel outside admission. Inputs of 9,264,687 bytes
+were rejected before subprocess launch. The separate cross-process admission
+check admitted exactly one holder, rejected another entrant, and reused the slot
+after release. This is converter evidence, not HTTP-load or deployed capacity
+validation; child RSS does not measure whole-container memory.
+
+Shared dev was redeployed to main on September 14. Further branch testing there
+requires a coordinated temporary deployment; no shared environment was changed
+during these isolated checks. Production enablement and the remaining review
+gates below remain separate.
+
 ### Committed conversion regression coverage (September 10 follow-up)
 
 The synthetic HTML fixture and `test_word_export_conversion.py` exercise real
