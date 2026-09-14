@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import ANY, call, mock_open, patch
 
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
@@ -12,6 +13,13 @@ from ..utils import generate_docx_download_response, parse_docraptor_ip_addresse
 )
 class DocxTransportTests(SimpleTestCase):
     def setUp(self):
+        # Exercise the provider path without querying Constance's database backend.
+        config_patch = patch(
+            "constance.config",
+            SimpleNamespace(PANDOC_WORD_EXPORT_ENABLED=False),
+        )
+        config_patch.start()
+        self.addCleanup(config_patch.stop)
         self.request = RequestFactory().get("/", HTTP_HOST="synthetic.example")
         self.request.COOKIES = {
             "sessionid": "synthetic-session",
