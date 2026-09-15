@@ -74,7 +74,8 @@ collapsed readability accordion after the primary NOFO status. A **Beta** tag
 identifies the feature as experimental. Expanding the accordion starts an
 on-demand calculation; the button allows retries or **Recalculate**. The result
 displays the four Tier 2 clearance metrics: word count, words per sentence,
-Flesch-Kincaid grade level, and passive sentences. It also displays any
+Flesch-Kincaid grade level, and passive sentences, plus sentences per paragraph
+(target: 3 or lower), labeled as Tier 1 drafting. It also displays any
 metric-specific unavailable status, a scope explanation for metrics that use
 different denominators, and collapsed package notes. The browser reads only the
 endpoint response; metric calculation and source rendering remain server-side.
@@ -127,8 +128,12 @@ comparisons apply. Builder compares the unrounded metric value and uses
 than pass or fail.
 
 The package response and stored snapshot retain all calculated metrics.
-`sentences_per_paragraph` and `flesch_reading_ease` do not have cards in the
-edit-screen panel because they are not Tier 2 clearance metrics.
+`flesch_reading_ease` does not have a card in the edit-screen panel.
+Sentences per paragraph uses the component supplied with words per sentence;
+when unavailable, its card displays an unavailable value instead of zero.
+The five cards use five columns at a results width of 52rem, two columns from
+32rem (2–2–1), and one column below 32rem. Labels and target comparisons use
+at least 1rem text; browser zoom can reduce the column count.
 
 The application must not infer a category from the NOFO title or prose.
 

@@ -59,18 +59,14 @@
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        {% comment %}
-          Sentences per paragraph is a drafting metric, not a Tier 2 clearance
-          requirement. The package can continue to calculate and store it, but
-          the panel intentionally does not display it.
-          <div class="tablet:grid-col-6 margin-bottom-2" data-optional-metric-card hidden>
-            <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="sentences_per_paragraph">
-              <dt class="font-sans-2xs text-bold text-base-dark">Sentences per paragraph</dt>
-              <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
-              <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
-            </div>
+        <div class="tablet:grid-col-6 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="sentences_per_paragraph">
+            <dt class="font-sans-2xs text-bold text-base-dark">Sentences per paragraph</dt>
+            <dd class="margin-left-0 font-sans-2xs text-base-dark">Tier 1 drafting</dd>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
-        {% endcomment %}
+        </div>
         {% comment %}
           Flesch Reading Ease is not included in the current clearance guidance.
           The package can continue to calculate and store it, but the panel

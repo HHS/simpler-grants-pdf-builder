@@ -110,6 +110,7 @@ class NofoReadabilityMetricsTests(TestCase):
             {
                 "word_count",
                 "words_per_sentence",
+                "sentences_per_paragraph",
                 "flesch_kincaid_grade_level",
                 "passive_sentence_percentage",
             },

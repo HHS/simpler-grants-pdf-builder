@@ -6,6 +6,14 @@ This file records significant architectural, product, and implementation decisio
 
 ## 2026-09-14 — Display Tier 2 clearance metrics in the readability accordion
 
+**Update, 2026-09-15:** Include sentences per paragraph (target: 3 or lower)
+as a fifth metric, explicitly labeled Tier 1 drafting. Retain the four
+clearance metrics and keep Flesch Reading Ease excluded. Use five columns
+when the results area is at least 52rem wide, two columns from 32rem, and
+one column below that. Labels and target comparisons remain at least 1rem;
+cards wrap text and grow vertically instead of shrinking text to fit.
+This supersedes the four-card-only presentation decision below.
+
 **Context:** The current NOFO clearance guidance requires four readability
 metrics at Tier 2 submission: word count, words per sentence, Flesch-Kincaid
 grade level, and passive sentences. Sentences per paragraph applies only to
