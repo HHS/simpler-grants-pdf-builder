@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.38.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.37.0...nofos-v3.38.0) (2026-09-15)
+
+
+### Features
+
+* **metrics:** add paragraph metric and responsive five-card layout ([#903](https://github.com/HHS/simpler-grants-pdf-builder/issues/903)) ([0822c29](https://github.com/HHS/simpler-grants-pdf-builder/commit/0822c2928ddfddce40f10cfeed890c63855fe946))
+
 ## [3.37.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.36.0...nofos-v3.37.0) (2026-09-14)
 
 
