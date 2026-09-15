@@ -90,11 +90,13 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
         self.assertContains(
-            response, "Metrics are saved for the revision you calculate"
+            response, "NOFO Builder saves metrics for the revision you have calculated"
         )
         # The panel POSTs to the endpoint, so it needs a CSRF token to send.
         self.assertContains(response, "data-csrf-token=")
-        self.assertContains(response, "snapshots are retained but are not shown")
+        self.assertContains(
+            response, "We retain earlier snapshots, but they do not appear"
+        )
         self.assertNotContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
