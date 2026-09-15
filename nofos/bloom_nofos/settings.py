@@ -631,7 +631,7 @@ DEFAULT_HHS_NOFO_METRIC_GOALS = {
         "value": 39,
     },
     "flesch_kincaid_grade_level": {
-        "label": "Target range, depending on NOFO type",
+        "label": "Target by NOFO type",
         "operator": "at_most_by_category",
         "minimum": 11.5,
         "maximum": 12.5,

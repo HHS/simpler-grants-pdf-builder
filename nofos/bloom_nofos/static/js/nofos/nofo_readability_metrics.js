@@ -134,9 +134,13 @@
       return metrics[metricId];
     }
     const sentenceMetric = metrics.words_per_sentence || {};
+    const value = sentenceMetric.components?.sentences_per_paragraph;
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      return { status: "unavailable", value: null, reason: "Unavailable" };
+    }
     return {
       ...sentenceMetric,
-      value: sentenceMetric.components?.sentences_per_paragraph,
+      value,
     };
   };
 

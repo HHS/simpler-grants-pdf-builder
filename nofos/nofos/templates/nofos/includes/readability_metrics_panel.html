@@ -22,9 +22,10 @@
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">
-      Metrics are saved for the revision you calculate. After editing or
-      reimporting the NOFO, calculate again for updated results. Earlier
-      snapshots are retained but are not shown in this panel.
+      NOFO Builder saves metrics for the revision you have calculated. After
+      editing or reimporting the NOFO, calculate your metrics again for updated
+      results. We retain earlier snapshots, but only the most recent version
+      appears in this panel.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
       <button
@@ -59,18 +60,13 @@
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        {% comment %}
-          Sentences per paragraph is a drafting metric, not a Tier 2 clearance
-          requirement. The package can continue to calculate and store it, but
-          the panel intentionally does not display it.
-          <div class="tablet:grid-col-6 margin-bottom-2" data-optional-metric-card hidden>
-            <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="sentences_per_paragraph">
-              <dt class="font-sans-2xs text-bold text-base-dark">Sentences per paragraph</dt>
-              <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
-              <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
-            </div>
+        <div class="tablet:grid-col-6 margin-bottom-2">
+          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="sentences_per_paragraph">
+            <dt class="font-sans-2xs text-bold text-base-dark">Sentences per paragraph</dt>
+            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+            <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
-        {% endcomment %}
+        </div>
         {% comment %}
           Flesch Reading Ease is not included in the current clearance guidance.
           The package can continue to calculate and store it, but the panel
