@@ -95,7 +95,8 @@ class NofoReadabilityMetricsTests(TestCase):
         # The panel POSTs to the endpoint, so it needs a CSRF token to send.
         self.assertContains(response, "data-csrf-token=")
         self.assertContains(
-            response, "We retain earlier snapshots, but they do not appear"
+            response,
+            "We retain earlier snapshots, but only the most recent version",
         )
         self.assertNotContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
