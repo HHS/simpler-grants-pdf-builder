@@ -75,7 +75,7 @@ identifies the feature as experimental. Expanding the accordion starts an
 on-demand calculation; the button allows retries or **Recalculate**. The result
 displays the four Tier 2 clearance metrics: word count, words per sentence,
 Flesch-Kincaid grade level, and passive sentences, plus sentences per paragraph
-(target: 3 or lower), labeled as Tier 1 drafting. It also displays any
+(target: 3 or lower), a Tier 1 drafting measure. It also displays any
 metric-specific unavailable status, a scope explanation for metrics that use
 different denominators, and collapsed package notes. The browser reads only the
 endpoint response; metric calculation and source rendering remain server-side.

@@ -5,6 +5,8 @@ application styles, JavaScript, and standard grid-container width. Values are
 synthetic. These isolated previews are not production screenshots.
 
 - Desktop, 1440px: five columns; labels and targets remain 16px and wrap.
+  Values and assessment badges align across the row. The default grade target
+  uses the shorter “Target by NOFO type” label; no tier subtitle is displayed.
 - Tablet, 768px: two columns (2–2–1).
 - Mobile, 390px: one column.
 - Reflow, 320px: one column, representing the CSS viewport width of a

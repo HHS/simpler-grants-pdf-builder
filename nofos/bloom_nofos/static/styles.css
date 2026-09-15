@@ -2671,6 +2671,17 @@ hr.usa-prose:not([size]) {
 
 #readability-metrics-results [data-metric-id] {
   overflow-wrap: anywhere;
+  display: flex;
+  flex-direction: column;
+}
+
+#readability-metrics-results [data-metric-goal-item].usa-tag:last-child {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+#readability-metrics-results [data-metric-goal-item]:not(.usa-tag) {
+  margin-bottom: 0.5rem;
 }
 
 #readability-metrics-results dt,
@@ -2680,6 +2691,14 @@ hr.usa-prose:not([size]) {
 }
 
 @container (min-width: 32rem) {
+  #readability-metrics-results dt {
+    min-height: 3em;
+  }
+
+  #readability-metrics-results [data-metric-goal-item].usa-tag:last-child {
+    min-height: 3em;
+  }
+
   #readability-metrics-results > dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

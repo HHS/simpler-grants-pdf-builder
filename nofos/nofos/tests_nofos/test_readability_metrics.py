@@ -150,7 +150,7 @@ class NofoReadabilityMetricsTests(TestCase):
             goals["flesch_kincaid_grade_level"],
             [
                 {
-                    "label": "Target range, depending on NOFO type",
+                    "label": "Target by NOFO type",
                     "operator": "at_most_by_category",
                     "minimum": 11.5,
                     "maximum": 12.5,
