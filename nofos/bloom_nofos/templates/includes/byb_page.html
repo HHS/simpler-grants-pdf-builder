@@ -1,6 +1,6 @@
 {% load split_char_and_remove %}
 
-<section id="section--before-you-begin" class="before-you-begin{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}{% if nofo.before_you_begin == 'era' %} before-you-begin--era{% endif %}">
+<section id="section--before-you-begin" class="before-you-begin{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}{% if nofo.before_you_begin == 'era' %} before-you-begin--era{% endif %}{% if nofo.before_you_begin == 'hrsa' %} before-you-begin--hrsa{% endif %}">
   <div class="section--before-you-begin--icon">
     {% if "thin" in nofo.icon_style %}
       {% include "includes/icons/thin/0-before.svg" %}
@@ -11,7 +11,7 @@
   <h2 id="section--before-you-begin--heading">Before you begin</h2>
   <div class="before-you-begin--content">
 
-    {% if nofo.before_you_begin == 'full' %}
+    {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'hrsa' %}
       <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up to date.</p>
     {% elif nofo.before_you_begin == 'era' %}
       <p>
@@ -29,7 +29,7 @@
       <p class="highlight-strong">STEP 2 SECTION MISSING</p>
     {% endif %}
 
-    {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'era' %}
+    {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'era' or nofo.before_you_begin == 'hrsa' %}
       <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
       <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
       {% if step_2_section %}
@@ -72,5 +72,9 @@
           <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
       </div>
     </div>
+    {% if nofo.before_you_begin == 'hrsa' %}
+      <h3 class="before-you-begin--requirements">Application and funding requirements</h3>
+      <p>All activities proposed in your application and budget narrative must align with applicable law, including but not limited to statutes, executive orders, federal regulations and applicable judicial holdings. Accordingly, discretionary awards shall not be used to fund, promote, encourage, subsidize, or facilitate; racial preferences or other forms of racial discrimination by the recipient, including activities where race or intentional proxies for race will be used as a selection criterion for employment or program participation; denial by the recipient of the sex binary in humans, or the belief that sex is a chosen or mutable characteristic; illegal immigration; or any other initiatives that compromise public safety. If an application does not align, the application will not receive funding to the extent permitted by law and applicable court orders.</p>
+    {% endif %}
   </div>
 </section>
