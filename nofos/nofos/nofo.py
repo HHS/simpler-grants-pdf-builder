@@ -215,6 +215,7 @@ def process_nofo_html(soup, top_heading_level):
     add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
+    repair_acf_required_alignment_lists(soup)
     preserve_bookmark_links(soup)
     preserve_heading_links(soup)
     preserve_table_heading_links(soup)
@@ -2015,7 +2016,7 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
-    if "acf-" in nofo_number.lower():
+    if is_acf_nofo_metadata(nofo_number, opdiv):
         return "portrait-acf-white"
 
     if "acl-" in nofo_number.lower():
@@ -2217,6 +2218,121 @@ def join_nested_lists(soup):
             previous_element = _get_previous_element(lst)
             if previous_element and previous_element.name in ["ul", "ol"]:
                 _join_lists(lst, previous_element)
+
+    return soup
+
+
+def is_acf_nofo_metadata(nofo_number="", opdiv=""):
+    """Return whether imported metadata identifies an ACF NOFO."""
+    number = sanitize_imported_text(nofo_number).casefold()
+    opdiv_text = sanitize_imported_text(opdiv).casefold()
+
+    return bool(
+        re.search(r"(?:^|-)acf(?:-|$)", number)
+        or "administration for children and families" in opdiv_text
+        or re.search(r"\bacf\b", opdiv_text)
+    )
+
+
+def repair_acf_required_alignment_lists(soup):
+    """Convert the canonical ACF required-alignment bullets to numbering."""
+    nofo_number = suggest_nofo_opportunity_number(soup)
+    opdiv = suggest_nofo_opdiv(soup)
+    if not is_acf_nofo_metadata(nofo_number, opdiv):
+        return soup
+
+    heading_names = {f"h{level}" for level in range(1, 7)}
+    required_title = (
+        "required alignment with acf vision, mission, values, priorities, "
+        "and guiding principles"
+    )
+    opening_prefix = (
+        "the recipient of this award must implement any funds awarded under this "
+        "nofo to effectuate program goals or agency priorities"
+    )
+    expected_label_groups = [
+        ["program integrity and fiscal stewardship:"],
+        [
+            "evidence-based and outcome-focused practices:",
+            "partnership and local leadership:",
+        ],
+        [
+            "family stability and child well-being:",
+            "work, self-sufficiency, and economic mobility:",
+            "high-quality early care and learning:",
+        ],
+    ]
+
+    def _normalized_text(tag):
+        return clean_string(tag.get_text(" ", strip=True)).casefold()
+
+    def _heading_level(tag):
+        return int(tag.name[1])
+
+    agency_headings = soup.find_all(
+        lambda tag: tag.name in heading_names
+        and _normalized_text(tag) == "agency priorities"
+    )
+
+    for agency_heading in agency_headings:
+        agency_level = _heading_level(agency_heading)
+        containing_section_heading = agency_heading.find_previous(
+            lambda tag: tag.name in heading_names and _heading_level(tag) < agency_level
+        )
+        if containing_section_heading is None or not _normalized_text(
+            containing_section_heading
+        ).startswith("step 1"):
+            continue
+
+        content_tags = []
+        for sibling in agency_heading.next_siblings:
+            if not isinstance(sibling, Tag):
+                continue
+            if (
+                sibling.name in heading_names
+                and _heading_level(sibling) <= agency_level
+            ):
+                break
+            if clean_string(sibling.get_text(" ", strip=True)):
+                content_tags.append(sibling)
+
+        if len(content_tags) < 2:
+            continue
+
+        title_paragraph = content_tags[0]
+        title_strong = title_paragraph.find("strong")
+        if (
+            title_paragraph.name != "p"
+            or title_strong is None
+            or _normalized_text(title_paragraph) != required_title
+            or _normalized_text(title_strong) != required_title
+        ):
+            continue
+
+        if not _normalized_text(content_tags[1]).startswith(opening_prefix):
+            continue
+
+        lists = [tag for tag in content_tags if tag.name == "ul"]
+        if len(lists) != len(expected_label_groups):
+            continue
+
+        actual_label_groups = []
+        for unordered_list in lists:
+            labels = []
+            for item in unordered_list.find_all("li", recursive=False):
+                strong = item.find("strong")
+                labels.append(_normalized_text(strong) if strong else "")
+            actual_label_groups.append(labels)
+
+        if actual_label_groups != expected_label_groups:
+            continue
+
+        for start, unordered_list in zip((1, 2, 4), lists):
+            unordered_list.name = "ol"
+            if start == 1:
+                unordered_list.attrs.pop("start", None)
+            else:
+                unordered_list["start"] = str(start)
 
     return soup
 

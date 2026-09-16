@@ -61,6 +61,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
+| IMPORT-052 | repair | Lists | Canonical ACF required-alignment bullet groups → continuing numbered lists | `nofo.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
@@ -287,6 +288,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_li`
 - **Status:** active
 
+### IMPORT-052 — ACF required-alignment bullet groups → continuing numbered lists
+- **Type:** repair
+- **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening bold paragraph is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
+- **Action:** Retag only those three `<ul>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
+- **Source:** `nofo.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
+- **Status:** active
+
 ---
 
 ## Table Handling
@@ -463,9 +471,9 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-042 — Cover theme suggestion
 - **Type:** extraction
-- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`).
+- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym.
 - **Action:** Suggest the matching portrait theme.
-- **Source:** `nofo.py::suggest_nofo_theme`
+- **Source:** `nofo.py::suggest_nofo_theme`, `is_acf_nofo_metadata`
 - **Status:** active
 
 ### IMPORT-043 — Cover style suggestion

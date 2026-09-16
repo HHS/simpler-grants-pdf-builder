@@ -48,12 +48,14 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    get_as_markdown,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
     get_side_nav_links,
     get_step_2_section,
     get_subsections_from_sections,
+    is_acf_nofo_metadata,
     is_callout_box_table,
     join_nested_lists,
     modifications_update_announcement_text,
@@ -67,6 +69,7 @@ from .nofo import (
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
     rename_footnotes_heading_to_endnotes,
+    repair_acf_required_alignment_lists,
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
@@ -1255,6 +1258,136 @@ class HTMLNofoFileTests(TestCase):
                 section.get("subsections")[0].get("name"),
                 section_info[index].get("subsections_first_title"),
             )
+
+
+class RepairAcfRequiredAlignmentListsTests(TestCase):
+    def _html(
+        self,
+        *,
+        number="HHS-2027-ACF-ECD-TH-0003",
+        opdiv="Administration for Children and Families (ACF)",
+        section_heading="Step 1: Review the Opportunity",
+        first_label="Program integrity and fiscal stewardship:",
+    ):
+        return f"""
+            <p>Opportunity Number: {number}</p>
+            <p>Opdiv: {opdiv}</p>
+            <h1>{section_heading}</h1>
+            <h2>Agency priorities</h2>
+            <p><strong>Required alignment with ACF Vision, Mission, Values,
+            Priorities, and Guiding Principles</strong></p>
+            <p>The recipient of this award must implement any funds awarded under
+            this NOFO to effectuate program goals or agency priorities in accordance
+            with <a href="https://acf.gov/about/acf-vision-mission-values">ACF's
+            vision, mission, values, priorities, &amp; guiding principles</a> when
+            authorized. This source wording must be preserved.</p>
+            <p>Consistent with ACF's values, adhere to the following principle:</p>
+            <ul><li><strong>{first_label}</strong> Administer funds carefully.</li></ul>
+            <p>The recipient must also adhere to these principles:</p>
+            <ul>
+              <li><strong>Evidence-based and outcome-focused practices:</strong>
+              Use evidence.</li>
+              <li><strong>Partnership and local leadership:</strong>
+              Coordinate locally.</li>
+            </ul>
+            <p>The recipient must also advance these objectives:</p>
+            <ul>
+              <li><strong>Family stability and child well-being:</strong>
+              Strengthen families.</li>
+              <li><strong>Work, self-sufficiency, and economic mobility:</strong>
+              Support employment.</li>
+              <li><strong>High-quality early care and learning:</strong>
+              Support early learning.</li>
+            </ul>
+            <p>Demonstrate ongoing compliance.</p>
+            <h2>Program description</h2>
+            <p>Following content.</p>
+        """
+
+    def test_converts_matching_acf_bullets_to_continuing_numbered_lists(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+
+        lists = soup.find_all(["ol", "ul"])
+        self.assertEqual([tag.name for tag in lists], ["ol", "ol", "ol"])
+        self.assertEqual([tag.get("start") for tag in lists], [None, "2", "4"])
+        self.assertIn("This source wording must be preserved.", soup.get_text())
+        self.assertEqual(
+            soup.find("a", href=True)["href"],
+            "https://acf.gov/about/acf-vision-mission-values",
+        )
+
+    def test_real_pipeline_produces_expected_editor_markup(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+        soup, _ = process_nofo_html(soup, top_heading_level="h1")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h1"),
+            top_heading_level="h1",
+        )
+        agency_priorities = sections[0]["subsections"][0]
+
+        markdown_body = get_as_markdown(agency_priorities["body"])
+
+        self.assertIn("1. **Program integrity and fiscal stewardship:**", markdown_body)
+        self.assertIn('<ol start="2">', markdown_body)
+        self.assertIn('<ol start="4">', markdown_body)
+        self.assertIn(
+            "(https://acf.gov/about/acf-vision-mission-values)", markdown_body
+        )
+        self.assertIn("This source wording must be preserved.", markdown_body)
+
+    def test_recognizes_acf_from_opdiv_without_acf_opportunity_number(self):
+        soup = BeautifulSoup(self._html(number="HHS-2027-UNKNOWN-0001"), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 3)
+        self.assertTrue(
+            is_acf_nofo_metadata(
+                "HHS-2027-UNKNOWN-0001",
+                "Administration for Children and Families (ACF)",
+            )
+        )
+
+    def test_does_not_change_non_acf_nofo(self):
+        soup = BeautifulSoup(
+            self._html(number="HHS-2027-HRSA-0001", opdiv="HRSA"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_does_not_change_agency_priorities_outside_step_one(self):
+        soup = BeautifulSoup(
+            self._html(section_heading="Step 2: Get Ready to Apply"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_does_not_change_content_when_a_principle_label_differs(self):
+        soup = BeautifulSoup(
+            self._html(first_label="A different fiscal principle:"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_is_idempotent_for_already_repaired_content(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+        first_result = str(soup)
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(str(soup), first_result)
 
 
 def _get_sections_dict():
@@ -4114,6 +4247,21 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_number = "HHS-2024-ACF-ANA-NB-0050"
         nofo_theme = "portrait-acf-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_acf_opdiv_returns_acf_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "HHS-2027-UNKNOWN-0001",
+                opdiv="Administration for Children and Families (ACF)",
+            ),
+            "portrait-acf-white",
+        )
+
+    def test_suggest_opdiv_containing_acf_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("HHS-2027-UNKNOWN-0001", opdiv="SACFunding"),
+            "portrait-nih-white",
+        )
 
     def test_suggest_nofo_number_acl_returns_acl_theme(self):
         nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
