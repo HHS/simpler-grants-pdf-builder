@@ -1812,10 +1812,19 @@ def find_endnote_issues(nofo):
         if location is None:
             continue
         section, subsection = locations[location["data-endnote-location"]]
+        # Basic information is represented by the metadata table rather than its
+        # imported subsection, and unnamed subsections have no editor anchor.
+        # In either case, link to the containing section, which is always rendered.
+        subsection_is_linkable = (
+            subsection and subsection.name != "Basic information" and subsection.html_id
+        )
         results.append(
             {
                 "section": section,
                 "subsection": subsection,
+                "location_html_id": (
+                    subsection.html_id if subsection_is_linkable else section.html_id
+                ),
                 "message": issue["message"],
                 "code": issue["code"],
             }

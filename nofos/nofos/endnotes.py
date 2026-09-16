@@ -91,12 +91,17 @@ def _inspect(soup):
         issues.append({"tag": tag, "message": message, "code": code})
 
     # Ordinary bracketed numbers in a document without note evidence are not notes.
-    evidence = headings or any(
-        HEADING.fullmatch(t.get_text(strip=True))
+    nonstructural_headings = [
+        t
         for t in soup.find_all(["p", "strong", "b"])
-    )
+        if HEADING.fullmatch(t.get_text(strip=True))
+    ]
+    evidence = headings or nonstructural_headings
     if evidence and len(headings) != 1:
-        tag = headings[0] if headings else next(iter(blocks), soup)
+        # Point the warning at the text that should become a structural heading.
+        # Falling back to the first body block made the editor report unrelated
+        # content (usually Basic information) and could produce a dead link.
+        tag = headings[0] if headings else nonstructural_headings[0]
         warn(
             tag,
             "Use one structural Endnotes heading so citations can be identified.",
