@@ -194,7 +194,10 @@ class ResolveSectionHeadingLevelTests(TestCase):
         self.assertIn("Heading 2 before its first Heading 1", message)
         self.assertIn('Heading 2 "Step 1: Review the Opportunity"', message)
         self.assertIn('Heading 1 "Appendix A: Award data"', message)
-        self.assertIn("apply the same heading level to all main sections", message)
+        # What to do about it is the error page's job, not the exception's: the
+        # headings travel as data so the page can show them as details.
+        self.assertEqual(context.exception.h2_text, "Step 1: Review the Opportunity")
+        self.assertEqual(context.exception.h1_text, "Appendix A: Award data")
 
 
 class TestsCleanTableCells(TestCase):

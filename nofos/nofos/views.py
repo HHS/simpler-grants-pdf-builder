@@ -6,13 +6,13 @@ from datetime import datetime
 import docraptor
 from bloom_nofos.context_processors import template_context
 from bloom_nofos.error_helpers import (
-    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     MistaggedHeadingError,
-    render_blocking_import_error,
+    render_import_error,
     render_import_server_error,
     render_mistagged_heading_error,
 )
 from bloom_nofos.html_diff import has_diff, html_diff
+from bloom_nofos.import_errors import IMPORT_ERROR_CATALOG
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
 from bs4 import BeautifulSoup
@@ -582,6 +582,93 @@ class NofosArchiveView(
         return redirect(self.success_url)
 
 
+# ValidationError.code -> the import error code it becomes.
+#
+# These three already produced a blocking error page in every import flow, so
+# Composer and Compare keep getting them too.
+SHARED_PARSE_VALIDATION_ERROR_CODES = {
+    "docx_conversion": "IMPORT-DOCX-CONVERSION",
+    "strict_formatting": "IMPORT-STRICT-FORMATTING",
+    "ambiguous_heading_hierarchy": "IMPORT-AMBIGUOUS-HEADINGS",
+}
+
+# Failures that NOFO Builder's own import views now name specifically (#913),
+# instead of folding them into one unnamed flash message. Composer and Compare
+# keep their existing inline behaviour: they import different documents and
+# carry their own COMPOSER-* / COMPARE-* codes, so naming a document problem
+# for them is separate work.
+BUILDER_PARSE_VALIDATION_ERROR_CODES = {
+    "no_file": "IMPORT-NO-FILE",
+    "unsupported_file_type": "IMPORT-FILE-TYPE",
+    "no_sections": "IMPORT-NO-SECTIONS",
+}
+
+# Routine "the document (or the click) wasn't right" failures. They are worth a
+# log line for the metrics trail, but they are not defects, so they don't page
+# anyone at error level. IMPORT-DOCX-CONVERSION stays at error level, as before.
+WARNING_LEVEL_IMPORT_ERROR_CODES = {
+    "IMPORT-AMBIGUOUS-HEADINGS",
+    "IMPORT-NO-FILE",
+    "IMPORT-FILE-TYPE",
+    "IMPORT-NO-SECTIONS",
+}
+
+
+def document_validation_details(error):
+    """
+    Turn a model-validation failure into detail rows a NOFO writer can act on.
+
+    `_raise_document_validation_error` already flattens the field errors into
+    readable sentences; this just caps how many we show, so a document with
+    dozens of problems doesn't bury the recovery steps.
+    """
+    return [
+        {"label": "What we found", "value": message}
+        for message in getattr(error, "messages", [])[:5]
+    ]
+
+
+def parse_error_details(error, error_code, uploaded_file=None):
+    """
+    Build the per-failure detail rows shown above the recovery steps.
+
+    The catalog owns the copy that is the same every time; this owns the part
+    that is specific to the document in front of the user - the two headings
+    that clash, the file type they actually picked.
+
+    Deliberately absent: the style names behind IMPORT-STRICT-FORMATTING. Those
+    are converter internals, and keeping them off the page is an existing
+    decision this change leaves alone.
+    """
+    if error_code == "IMPORT-AMBIGUOUS-HEADINGS":
+        h2_text = getattr(error, "h2_text", "")
+        h1_text = getattr(error, "h1_text", "")
+        if not (h2_text or h1_text):
+            return []
+        return [
+            {"label": "First Heading 2", "value": h2_text},
+            {"label": "First Heading 1", "value": h1_text},
+        ]
+
+    if error_code == "IMPORT-FILE-TYPE":
+        details = []
+        filename = getattr(uploaded_file, "name", "")
+        content_type = getattr(uploaded_file, "content_type", "")
+        if filename:
+            details.append({"label": "File selected", "value": filename})
+        if content_type:
+            details.append({"label": "Detected file type", "value": content_type})
+        return details
+
+    if error_code == "IMPORT-VALIDATION-OTHER":
+        return [
+            {"label": "What we found", "value": message}
+            for message in getattr(error, "messages", [])[:5]
+        ]
+
+    return []
+
+
 def log_import_attempt(
     request, *, filename, is_reimport=False, nofo=None, error_code="", warning_count=0
 ):
@@ -606,8 +693,10 @@ class BaseNofoImportView(View):
 
     template_name = "nofos/nofo_import.html"
     redirect_url_name = "nofos:nofo_import"
-    # Only NOFO Builder's own import views (not Composer or Compare) should
-    # log ImportAttempt rows - those tools import different kinds of documents.
+    # Marks NOFO Builder's own import views, as opposed to Composer's and
+    # Compare's - those tools import different kinds of documents. It gates two
+    # things: whether the attempt is recorded as an ImportAttempt, and whether a
+    # parse failure gets one of NOFO Builder's catalogued error pages (#913).
     track_import_metrics = False
     # Overridden by NofosImportOverwriteView. Read by post()'s own failure
     # branches below so a parsing-stage failure during a reimport is logged
@@ -687,113 +776,60 @@ class BaseNofoImportView(View):
             error_codes = {
                 error.code for error in getattr(e, "error_list", []) if error.code
             }
-            error_message = ",".join(e.messages)
 
-            if "docx_conversion" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    context="BaseNofoImportView:ValidationError:IMPORT-DOCX-CONVERSION",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-DOCX-CONVERSION",
+            known_codes = dict(SHARED_PARSE_VALIDATION_ERROR_CODES)
+            if self.track_import_metrics:
+                known_codes.update(BUILDER_PARSE_VALIDATION_ERROR_CODES)
+
+            error_code = next(
+                (
+                    import_error_code
+                    for code, import_error_code in known_codes.items()
+                    if code in error_codes
+                ),
+                None,
+            )
+
+            if error_code is None:
+                if not self.track_import_metrics:
+                    # Composer and Compare still surface these inline on their
+                    # own import form.
+                    messages.error(request, ",".join(e.messages))
+                    return redirect(
+                        self.get_redirect_url_name(), **self.get_redirect_url_kwargs()
                     )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t import this Word document",
-                    summary=(
-                        "NOFO Builder could not read the selected Word document. "
-                        "The document was not imported."
-                    ),
-                    error_code="IMPORT-DOCX-CONVERSION",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word and confirm that it opens normally.",
-                        "Save it as a new .docx file, then select the new file.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
 
-            if "strict_formatting" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    context="BaseNofoImportView:ValidationError:IMPORT-STRICT-FORMATTING",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-STRICT-FORMATTING",
-                    )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t import this document",
-                    summary=(
-                        "The Word document contains formatting that NOFO Builder "
-                        "cannot safely process while strict import checks are enabled."
-                    ),
-                    error_code="IMPORT-STRICT-FORMATTING",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word.",
-                        "Ask a NOFO designer or administrator to review its custom formatting and styles.",
-                        "Save the document, then select it again.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
+                # In NOFO Builder, the catch-all still gets a page and a code the
+                # user can quote. It is the safety net, not the default: a failure
+                # that keeps landing here has earned a code of its own. See
+                # bloom_nofos/import_errors.py and documentation/IMPORT_ERROR_CODES.md.
+                error_code = "IMPORT-VALIDATION-OTHER"
 
-            if "ambiguous_heading_hierarchy" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    level="warning",
-                    context="BaseNofoImportView:ValidationError:IMPORT-AMBIGUOUS-HEADINGS",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-AMBIGUOUS-HEADINGS",
-                    )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t safely determine the document structure",
-                    summary=error_message,
-                    error_code="IMPORT-AMBIGUOUS-HEADINGS",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word and review the Heading 1 and Heading 2 styles named above.",
-                        "Apply one consistent heading level to all main sections.",
-                        "Save the document, then select it again.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
-
-            # These errors show up as inline validation errors
+            log_exception(
+                request,
+                e,
+                level=(
+                    "warning"
+                    if error_code in WARNING_LEVEL_IMPORT_ERROR_CODES
+                    else "error"
+                ),
+                context=f"BaseNofoImportView:ValidationError:{error_code}",
+                status=IMPORT_ERROR_CATALOG[error_code]["status"],
+            )
             if self.track_import_metrics:
                 log_import_attempt(
                     request,
                     filename=attempt_filename,
                     is_reimport=self.is_reimport,
                     nofo=getattr(self, "nofo", None),
-                    error_code="IMPORT-VALIDATION-OTHER",
+                    error_code=error_code,
                 )
-            messages.error(request, error_message)
-            return redirect(
-                self.get_redirect_url_name(), **self.get_redirect_url_kwargs()
+
+            return render_import_error(
+                request,
+                error_code,
+                error_details=parse_error_details(e, error_code, uploaded_file),
+                retry_url=self.get_retry_url(),
             )
 
         except Exception as e:
@@ -837,7 +873,9 @@ class BaseNofoImportView(View):
         """
         sections = get_sections_from_soup(soup, top_heading_level)
         if not len(sections):
-            raise ValidationError("That file does not contain a NOFO.")
+            raise ValidationError(
+                "That file does not contain a NOFO.", code="no_sections"
+            )
         return get_subsections_from_sections(sections, top_heading_level)
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
@@ -933,38 +971,19 @@ class NofosImportNewView(BaseNofoImportView):
                 log_import_attempt(
                     request, filename=filename, error_code="IMPORT-OPDIV-BLANK"
                 )
-                return render_blocking_import_error(
+                return render_import_error(
                     request,
-                    title="We couldn’t import this NOFO",
-                    summary=(
-                        "NOFO Builder couldn’t reliably read a value from the "
-                        "‘Opdiv:’ field on page 1 of the Word document. The value "
-                        "may be missing or separated from the label in a way "
-                        "Builder can’t recognize."
-                    ),
-                    error_code="IMPORT-OPDIV-BLANK",
-                    status=400,
-                    recovery_steps=[
-                        "Open the Word document.",
-                        "Put the agency’s operating division on the same line as "
-                        "‘Opdiv:’ (for example, ‘Opdiv: Administration for "
-                        "Children and Families’ or ‘Opdiv: CDC’).",
-                        "Save the document, then select it again.",
-                    ],
+                    "IMPORT-OPDIV-BLANK",
                     retry_url=self.get_retry_url(),
                 )
 
             log_import_attempt(
                 request, filename=filename, error_code="IMPORT-CREATE-INVALID"
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t create this NOFO",
-                summary=(
-                    "NOFO Builder could not create a valid NOFO from the uploaded document."
-                ),
-                error_code="IMPORT-CREATE-INVALID",
-                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                "IMPORT-CREATE-INVALID",
+                error_details=document_validation_details(e),
                 retry_url=self.get_retry_url(),
             )
         except Exception as e:
@@ -1024,15 +1043,12 @@ class NofosImportOverwriteView(
                 nofo=nofo,
                 error_code="REIMPORT-STATUS-BLOCKED",
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t re-import this NOFO",
-                summary="{} NOFOs can’t be re-imported.".format(
-                    nofo.get_status_display()
-                ),
-                error_code="REIMPORT-STATUS-BLOCKED",
-                retry_url=reverse("nofos:nofo_edit", kwargs={"pk": nofo.id}),
-                retry_label="Return to the NOFO",
+                "REIMPORT-STATUS-BLOCKED",
+                summary_context={"status": nofo.get_status_display()},
+                retry_url=reverse("nofos:nofo_edit_status", kwargs={"pk": nofo.id}),
+                retry_label="Change this NOFO’s status",
             )
 
         if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
@@ -1148,14 +1164,10 @@ class NofosImportOverwriteView(
                 nofo=nofo,
                 error_code="REIMPORT-DOCUMENT-INVALID",
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t re-import this NOFO",
-                summary=(
-                    "NOFO Builder could not replace this NOFO with the uploaded document."
-                ),
-                error_code="REIMPORT-DOCUMENT-INVALID",
-                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                "REIMPORT-DOCUMENT-INVALID",
+                error_details=document_validation_details(e),
                 retry_url=reverse(
                     "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
                 ),
