@@ -1994,7 +1994,10 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_before_you_begin(nofo_group):
+def suggest_nofo_before_you_begin(nofo_group, nofo_theme=""):
+    if "hrsa-" in nofo_theme.lower():
+        return "hrsa"
+
     if nofo_group == "nih":
         return "era"
 
@@ -2098,10 +2101,13 @@ def suggest_nofo_cover_image(nofo):
     return ""
 
 
-def suggest_all_nofo_fields(nofo, soup):
-    first_time_import = (
-        not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
-    )
+def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
+    # Import views know whether this is a new record, even when a legacy record
+    # still has a blank/default opportunity number.
+    if first_time_import is None:
+        first_time_import = (
+            not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
+        )
 
     nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.number = nofo_number
@@ -2122,7 +2128,8 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
 
-    if not nofo.cover_image:
+    preserve_hrsa_image = not first_time_import and "hrsa-" in nofo.theme.lower()
+    if not nofo.cover_image and not preserve_hrsa_image:
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
@@ -2140,7 +2147,7 @@ def suggest_all_nofo_fields(nofo, soup):
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
-            nofo.group
+            nofo.group, nofo.theme
         )  # guess the NOFO "Before you begin" page
 
 

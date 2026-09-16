@@ -878,7 +878,7 @@ class NofosImportNewView(BaseNofoImportView):
             # group must be set before suggest_all_nofo_fields() so it can key
             # group-specific defaults (e.g. the NIH "before you begin" page) off it
             nofo.group = request.user.group
-            suggest_all_nofo_fields(nofo, soup)
+            suggest_all_nofo_fields(nofo, soup, first_time_import=True)
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
@@ -1091,7 +1091,7 @@ class NofosImportOverwriteView(
 
                 add_headings_to_document(nofo)
                 add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup)
+                suggest_all_nofo_fields(nofo, soup, first_time_import=False)
                 nofo.filename = filename
                 nofo.save()
 

@@ -159,6 +159,8 @@ NIH_ALLOWED_CHOICES = {
     "icon_style": frozenset(["nofo--icons--solid"]),
 }
 
+HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text"])
+
 # Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
 RETIRED_THEME_CHOICES = {
     "portrait-hrsa-blue": "HRSA (Default, legacy)",
@@ -245,6 +247,32 @@ class NofoThemeOptionsForm(forms.ModelForm):
                 self.fields["icon_style"].choices = get_icon_path_choices(
                     self.instance.theme
                 )
+
+        # Base the restriction on the document as well as the submitted theme,
+        # so staff editing HRSA records get the same server-side validation.
+        selected_theme = (
+            self.data.get(self.add_prefix("theme"), "") if self.is_bound else ""
+        )
+        if not user_is_nih_group(user) and (
+            "hrsa-" in self.instance.theme
+            or "hrsa-" in selected_theme
+            or self.instance.group == "hrsa"
+        ):
+            legacy_cover = (
+                self.instance.cover if not self.instance._state.adding else None
+            )
+            self.fields["cover"].choices = [
+                (
+                    value,
+                    (
+                        label
+                        if value in HRSA_ALLOWED_COVERS
+                        else f"{label} (current legacy value)"
+                    ),
+                )
+                for value, label in Nofo.COVER_CHOICES
+                if value in HRSA_ALLOWED_COVERS or value == legacy_cover
+            ]
 
     def clean(self):
         cleaned_data = super().clean()

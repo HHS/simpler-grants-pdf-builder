@@ -84,7 +84,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields | `nofo.py` |
 | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
 | IMPORT-043 | extraction | Metadata Suggestion | Theme prefix → suggested cover style (text-only vs. medium) | `nofo.py` |
-| IMPORT-044 | extraction | Metadata Suggestion | Importing user's group → suggested "before you begin" page variant | `nofo.py` |
+| IMPORT-044 | extraction | Metadata Suggestion | New import's HRSA theme / user's group → suggested "before you begin" page variant | `nofo.py` |
 | IMPORT-045 | extraction | Metadata Suggestion | Opportunity number / title substring → suggested cover image | `nofo.py` |
 | IMPORT-046 | tagging | Non-Visual Tagging | Subsection body vs. canonical policy-language templates → compliance status tag | `policy_language.py` |
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
@@ -479,21 +479,21 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 ### IMPORT-043 — Cover style suggestion
 - **Type:** extraction
 - **Trigger:** Theme prefix is `acf-`/`acl-`/`hrsa-`/`nih-`.
-- **Action:** Suggest a text-only cover; otherwise suggest the "medium" cover.
+- **Action:** On a new import, suggest a text-only cover for those themes, or the "medium" cover for other themes. Re-imports preserve the stored cover style, including when the existing opportunity number is blank or a placeholder. HRSA theme forms offer only text-only plus the record's current legacy cover, if any; loading the form does not update the record.
 - **Source:** `nofo.py::suggest_nofo_cover`
 - **Status:** active
 
 ### IMPORT-044 — "Before you begin" page variant suggestion
-- **Type:** extraction *(derived from the importing user's account group, not the document text)*
-- **Trigger:** Importing user's group is `"nih"`.
-- **Action:** Suggest the `"era"` before-you-begin page variant; otherwise `"full"`.
-- **Source:** `nofo.py::suggest_nofo_before_you_begin`
+- **Type:** extraction
+- **Trigger:** Brand-new import whose suggested theme is HRSA (derived from opportunity number / OpDiv), or importing user's group is `"nih"`.
+- **Action:** Select the persisted `"hrsa"` variant for an HRSA theme, otherwise `"era"` for an NIH user, otherwise `"full"`. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Re-imports retain their saved variant, even with a blank/placeholder opportunity number. Adding the choice does not backfill any existing records.
+- **Source:** `nofo.py::suggest_nofo_before_you_begin`, `suggest_all_nofo_fields`; explicit new/re-import context from `views.py`
 - **Status:** active
 
 ### IMPORT-045 — Cover image suggestion
 - **Type:** extraction
 - **Trigger:** A static cover image file exists matching the opportunity number, or the title contains "pepfar".
-- **Action:** Suggest that image, or the hardcoded CDC PEPFAR cover for the "pepfar" case.
+- **Action:** Suggest that image, or the hardcoded CDC PEPFAR cover for the "pepfar" case. HRSA re-imports preserve the stored cover image, including an empty value.
 - **Source:** `nofo.py::suggest_nofo_cover_image`
 - **Status:** active
 

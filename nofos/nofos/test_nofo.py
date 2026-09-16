@@ -4977,7 +4977,7 @@ class SuggestNofoFieldsTests(TestCase):
         )
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
-        self.assertEqual(self.nofo.before_you_begin, "full")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
         # HTML content with some missing fields
@@ -5008,15 +5008,15 @@ class SuggestNofoFieldsTests(TestCase):
         # still get set
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
-        self.assertEqual(self.nofo.before_you_begin, "full")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
 
-    def test_suggest_all_nofo_fields_nih_group_sets_before_you_begin_era(self):
-        """A NOFO belonging to the NIH group defaults its BYB page to the eRA variant."""
+    def test_suggest_all_nofo_fields_hrsa_theme_takes_priority_over_nih_group(self):
+        """HRSA document metadata determines the variant, regardless of uploader."""
         self.nofo.group = "nih"
         suggest_all_nofo_fields(self.nofo, self.soup)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.before_you_begin, "era")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
         suggest_all_nofo_fields(self.nofo, self.soup)
