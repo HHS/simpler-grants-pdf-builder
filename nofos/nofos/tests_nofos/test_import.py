@@ -180,8 +180,24 @@ class TestParseNofoFile(TestCase):
                 parse_uploaded_file_as_html_string(docx_file)
 
             self.assertIn(
-                "[\"<p>Mammoth warnings found. These styles are not recognized by our style map:</p><ul><li>Unrecognised paragraph style: Paul's undocumented style (Style ID: Paulsundocumentedstyle)</li><li>Unrecognised paragraph style: Paul's undocumented style 2 (Style ID: Paulsundocumentedstyle2)</li></ul>\"]",
+                "These styles are not recognized by our style map: "
+                "Unrecognised paragraph style: Paul's undocumented style "
+                "(Style ID: Paulsundocumentedstyle); Unrecognised paragraph "
+                "style: Paul's undocumented style 2 "
+                "(Style ID: Paulsundocumentedstyle2)",
                 str(context.exception),
+            )
+            # The style names stay on the exception (and so in the logs) but
+            # never reach the error page - see test_strict_mode_warning_is_
+            # actionable_and_hides_converter_details.
+            self.assertEqual(
+                context.exception.warnings,
+                [
+                    "Unrecognised paragraph style: Paul's undocumented style "
+                    "(Style ID: Paulsundocumentedstyle)",
+                    "Unrecognised paragraph style: Paul's undocumented style 2 "
+                    "(Style ID: Paulsundocumentedstyle2)",
+                ],
             )
 
     @patch("nofos.nofo.mammoth.convert_to_html")
@@ -491,20 +507,20 @@ class TestNofoImportOpdiv(TestCase):
 
     def _assert_actionable_opdiv_error_page(self, content):
         # New heading and body copy
-        self.assertIn("We couldn’t import this NOFO", content)
+        self.assertIn("We couldn’t read the Opdiv from this document", content)
         self.assertIn(
             "couldn’t reliably read a value from the",
             content,
         )
-        self.assertIn("may be missing or separated from the label", content)
+        self.assertIn("may be missing, or separated from its label", content)
 
         # Steps to fix
-        self.assertIn("Open the Word document.", content)
+        self.assertIn("Open the Word document and go to page 1.", content)
         self.assertIn(
             "Put the agency’s operating division on the same line as", content
         )
         self.assertNotIn("field on page 1 of the Word document is blank", content)
-        self.assertIn("Save the document, then select it again.", content)
+        self.assertIn("Save the document, then import it again.", content)
         # The retry action returns directly to the import form.
         self.assertIn(f'href="{reverse("nofos:nofo_import")}"', content)
         self.assertIn("Try the import again", content)
@@ -699,7 +715,7 @@ class TestBlockingImportErrorPages(TestCase):
 
         content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 422)
-        self.assertIn("We couldn’t import this document", content)
+        self.assertIn("This document uses formatting we don’t recognize", content)
         self.assertIn("IMPORT-STRICT-FORMATTING", content)
         self.assertIn(f'href="{self.import_url}"', content)
         self.assertIn("simplerNOFOs@agile6.com", content)
@@ -924,8 +940,11 @@ class TestBlockingImportErrorPages(TestCase):
         content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 400)
         self.assertIn("REIMPORT-STATUS-BLOCKED", content)
+        self.assertIn("Published", content)
+        self.assertIn("only draft NOFOs can be", content)
+        self.assertIn("Change the status back to ‘Draft’", content)
         self.assertIn(
-            f'href="{reverse("nofos:nofo_edit", kwargs={"pk": nofo.id})}"',
+            f'href="{reverse("nofos:nofo_edit_status", kwargs={"pk": nofo.id})}"',
             content,
         )
 
@@ -962,7 +981,7 @@ class TestImportAttemptLogging(TestCase):
                 "<p>Opdiv: ACF</p>"
                 "<p>Opportunity number: NOFO-NEW-001</p>"
                 "<h1>Test Section 1</h1>"
-                "<h2 data-order=\"10\">Eligibility Information</h2>"
+                '<h2 data-order="10">Eligibility Information</h2>'
                 "<p>Some eligibility content</p>"
             ).encode("utf-8"),
             content_type="text/html",
@@ -1097,12 +1116,16 @@ class TestNofoImportMixedHeadingHierarchy(TestCase):
 
         content = response.content.decode("utf-8")
         self.assertEqual(response.status_code, 422)
-        self.assertIn("We couldn’t safely determine the document structure", content)
+        self.assertIn("We couldn’t tell which headings are the main sections", content)
         self.assertIn("IMPORT-AMBIGUOUS-HEADINGS", content)
         self.assertIn("Heading 2 before its first Heading 1", content)
+        # Both clashing headings are named as details, so the writer can find
+        # them in Word without guessing.
+        self.assertIn("First Heading 2", content)
         self.assertIn("Step 1: Review the Opportunity", content)
+        self.assertIn("First Heading 1", content)
         self.assertIn("Appendix A: Award data", content)
-        self.assertIn("Apply one consistent heading level", content)
+        self.assertIn("apply the same heading level to every main section", content)
         self.assertIn(f'href="{self.import_url}"', content)
         self.assertIn("simplerNOFOs@agile6.com", content)
         self.assertEqual(Nofo.objects.count(), 0)
@@ -1146,4 +1169,103 @@ class TestNofoImportMixedHeadingHierarchy(TestCase):
                 "Step 1: Review the Opportunity",
                 "Step 2: Get Ready to Apply",
             ],
+        )
+
+
+class TestSpecificImportErrorCodes(TestCase):
+    """
+    Failures that used to be silent or generic now get their own code and copy
+    (see #913). The point of each test is that the user is told which document
+    problem stopped the import, and is given a code they can quote.
+    """
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="codes@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.login(email="codes@example.com", password="testpass123")
+        self.import_url = reverse("nofos:nofo_import")
+
+    def test_submitting_no_file_names_the_problem(self):
+        response = self.client.post(self.import_url, {})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("IMPORT-NO-FILE", content)
+        self.assertIn("Select a document to import", content)
+        self.assertIn("Choose a file using the file picker", content)
+        self.assertEqual(
+            ImportAttempt.objects.get().error_code,
+            "IMPORT-NO-FILE",
+        )
+
+    def test_unsupported_file_type_names_the_file_and_the_fix(self):
+        uploaded_file = SimpleUploadedFile(
+            "nofo.pdf", b"%PDF-1.7 not really", content_type="application/pdf"
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("IMPORT-FILE-TYPE", content)
+        self.assertIn("We can’t import this kind of file", content)
+        # The details name what they actually picked, which is usually the
+        # explanation on its own.
+        self.assertIn("nofo.pdf", content)
+        self.assertIn("application/pdf", content)
+        self.assertIn("export or download", content)
+        self.assertEqual(
+            ImportAttempt.objects.get().error_code,
+            "IMPORT-FILE-TYPE",
+        )
+
+    def test_document_without_headings_explains_why_it_looks_empty(self):
+        uploaded_file = SimpleUploadedFile(
+            "no-headings.html",
+            (
+                "<p>Opportunity name: Test NOFO</p>"
+                "<p>Opdiv: CDC</p>"
+                "<p><strong>Step 1: Review the Opportunity</strong></p>"
+                "<p>Body text that was never given a heading style.</p>"
+            ).encode("utf-8"),
+            content_type="text/html",
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-NO-SECTIONS", content)
+        self.assertIn("couldn’t find any NOFO content", content)
+        self.assertIn("Styles pane", content)
+        self.assertEqual(Nofo.objects.count(), 0)
+        self.assertEqual(
+            ImportAttempt.objects.get().error_code,
+            "IMPORT-NO-SECTIONS",
+        )
+
+    @patch("nofos.views.parse_uploaded_file_as_html_string")
+    def test_uncatalogued_validation_failure_still_shows_a_code(self, parse_file):
+        """
+        The catch-all used to exit through a flash message, which left the user
+        with nothing to quote and the metrics page with a silent bucket.
+        """
+        parse_file.side_effect = ValidationError("Something specific about page 4.")
+        uploaded_file = SimpleUploadedFile(
+            "surprise.html", b"<p>placeholder</p>", content_type="text/html"
+        )
+
+        response = self.client.post(self.import_url, {"nofo-import": uploaded_file})
+
+        content = response.content.decode("utf-8")
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("IMPORT-VALIDATION-OTHER", content)
+        self.assertIn("Something specific about page 4.", content)
+        self.assertEqual(
+            ImportAttempt.objects.get().error_code,
+            "IMPORT-VALIDATION-OTHER",
         )

@@ -22,7 +22,11 @@ import cssutils
 import mammoth
 import markdown
 import requests
-from bloom_nofos.error_helpers import MistaggedHeadingError
+from bloom_nofos.error_helpers import (
+    AmbiguousHeadingHierarchyError,
+    MistaggedHeadingError,
+    StrictFormattingError,
+)
 from bloom_nofos.s3.utils import (
     get_image_url_from_s3,
     remove_file_from_s3,
@@ -90,7 +94,7 @@ def parse_uploaded_file_as_html_string(uploaded_file):
     Raise a ValidationError if invalid or missing.
     """
     if not uploaded_file:
-        raise ValidationError("Oops! No fos uploaded.")
+        raise ValidationError("Oops! No fos uploaded.", code="no_file")
 
     content_type = uploaded_file.content_type
 
@@ -135,16 +139,14 @@ def parse_uploaded_file_as_html_string(uploaded_file):
 
         # If strict mode, raise on any warnings - same condition as before
         if config.WORD_IMPORT_STRICT_MODE and warnings:
-            warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
-            raise ValidationError(
-                f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
-                code="strict_formatting",
-            )
+            raise StrictFormattingError(warnings)
 
         return doc_to_html_result.value, len(warnings)
 
     else:
-        raise ValidationError("Please import a .docx or HTML file.")
+        raise ValidationError(
+            "Please import a .docx or HTML file.", code="unsupported_file_type"
+        )
 
 
 def resolve_section_heading_level(soup):
@@ -182,14 +184,7 @@ def resolve_section_heading_level(soup):
     h1_text = clean_string(
         section_heading_candidates[first_h1_index].get_text(" ", strip=True)
     )
-    raise ValidationError(
-        "The document uses Heading 2 before its first Heading 1. "
-        f'NOFO Builder would skip content beginning with Heading 2 "{h2_text}" '
-        f'and start at Heading 1 "{h1_text}". '
-        "In Word, apply the same heading level to all main sections, save the "
-        "document, and import it again.",
-        code="ambiguous_heading_hierarchy",
-    )
+    raise AmbiguousHeadingHierarchyError(h2_text=h2_text, h1_text=h1_text)
 
 
 def process_nofo_html(soup, top_heading_level):
@@ -468,7 +463,16 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 max_length=obj._meta.get_field("name").max_length,
             ) from validation_error
 
-        raise ValidationError(str(validation_error)) from validation_error
+        # Surface the field and rule that failed as plain sentences. str() on a
+        # ValidationError with an error_dict renders the dict repr, which is not
+        # something we can put in front of a NOFO writer.
+        readable = []
+        for field, errors in getattr(validation_error, "error_dict", {}).items():
+            label = "Document" if field == "__all__" else field
+            for error in errors:
+                readable.extend(f"{label}: {message}" for message in error.messages)
+
+        raise ValidationError(readable or [str(validation_error)]) from validation_error
 
     sections_to_create = []
     subsections_to_create = []

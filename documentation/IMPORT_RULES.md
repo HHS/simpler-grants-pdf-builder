@@ -4,6 +4,8 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 
 **⚠️ Maintenance requirement:** If your PR adds, removes, or changes behavior in any of the source files below, update the matching rule entry in this document in the same PR (add a new `IMPORT-NNN` entry, edit an existing one, or mark one `status: removed` — never delete an entry outright, so the numbering and history stay stable). See [DEPLOYMENT.md § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) for the enforced contribution policy.
 
+**Not to be confused with import error *codes*.** The `IMPORT-NNN` IDs here are numbered rule identifiers for content transformations. The `IMPORT-NAME` strings a user sees when an import is blocked (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, and so on) are a separate namespace, catalogued in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md). A rule here can be the *reason* an error code fires; they are not the same registry.
+
 **Source files covered by this document:**
 - `nofos/nofos/nofo.py` — `process_nofo_html()` and the ~20 cleanup passes it runs, plus sectioning/subsectioning and metadata-suggestion logic
 - `nofos/nofos/utils.py` — `style_map_manager`, the Mammoth DOCX→HTML style-name map
@@ -178,7 +180,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 ### IMPORT-011 — Ambiguous heading hierarchy blocks import
 - **Type:** validation
 - **Trigger:** Document contains an `h2` before its first `h1`.
-- **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content.
+- **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content. The user sees error code `IMPORT-AMBIGUOUS-HEADINGS`.
 - **Source:** `nofo.py::resolve_section_heading_level`
 - **Status:** active
 
