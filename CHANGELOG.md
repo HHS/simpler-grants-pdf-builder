@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.38.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.37.0...nofos-v3.38.0) (2026-09-16)
+
+
+### Features
+
+* add HRSA requirements for new NOFO imports ([#911](https://github.com/HHS/simpler-grants-pdf-builder/issues/911)) ([065be97](https://github.com/HHS/simpler-grants-pdf-builder/commit/065be973dc04a5dad7ea1d1dfec44261ac3f2825))
+* **metrics:** add paragraph metric and responsive five-card layout ([#903](https://github.com/HHS/simpler-grants-pdf-builder/issues/903)) ([0822c29](https://github.com/HHS/simpler-grants-pdf-builder/commit/0822c2928ddfddce40f10cfeed890c63855fe946))
+
+
+### Bug Fixes
+
+* number canonical ACF priority lists on import ([#910](https://github.com/HHS/simpler-grants-pdf-builder/issues/910)) ([a2bb2ea](https://github.com/HHS/simpler-grants-pdf-builder/commit/a2bb2ea4f2e9d90db360b2fa10c6b3270cbe3b39))
+* repair endnote warning location links ([#906](https://github.com/HHS/simpler-grants-pdf-builder/issues/906)) ([8fd4d7a](https://github.com/HHS/simpler-grants-pdf-builder/commit/8fd4d7a97cd1bfef66ec5107a4b7b4620d9eb63c))
+
 ## [3.37.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.36.0...nofos-v3.37.0) (2026-09-14)
 
 
