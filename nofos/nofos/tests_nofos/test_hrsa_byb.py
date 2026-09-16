@@ -168,15 +168,29 @@ class HrsaBeforeYouBeginTests(TestCase):
         self.assertEqual(nofo.before_you_begin, "full")
         self.assertEqual(nofo.icon_style, "nofo--icons--solid")
 
-    def test_hrsa_template_has_semantic_heading_after_callout_and_toc_link(self):
+    def test_hrsa_template_has_peer_headings_before_final_callout_and_toc_link(self):
         nofo = self.new_import()
         response = self.client.get(reverse("nofos:nofo_view", kwargs={"pk": nofo.pk}))
         soup = BeautifulSoup(response.content, "html.parser")
         page = soup.select_one(".before-you-begin--hrsa")
         self.assertEqual(page.h2.get_text(), "Before you begin")
-        heading = page.select_one(".callout-box").find_next_sibling("h3")
+        self.assertEqual(
+            [heading.get_text() for heading in page.find_all("h3")],
+            [
+                "SAM.gov registration (this can take several weeks)",
+                "Grants.gov registration (this can take several days)",
+                "Apply by the application due date",
+                "Application and funding requirements",
+            ],
+        )
+        heading = page.select_one(".before-you-begin--requirements")
         self.assertEqual(heading.get_text(), "Application and funding requirements")
-        paragraph = heading.find_next_sibling("p").get_text()
+        paragraph_tag = heading.find_next_sibling("p")
+        self.assertEqual(
+            paragraph_tag.find_next_sibling(), page.select_one(".callout-box")
+        )
+        self.assertIsNone(page.select_one(".callout-box").find_next_sibling())
+        paragraph = paragraph_tag.get_text()
         self.assertTrue(
             paragraph.startswith("All activities proposed in your application")
         )
@@ -201,6 +215,7 @@ class HrsaBeforeYouBeginTests(TestCase):
                 )
                 self.assertNotIn("Application and funding requirements", html)
                 self.assertNotIn("before-you-begin--hrsa", html)
+                self.assertNotIn("<h3", html)
 
     def test_cover_image_can_still_be_saved_for_text_only_hrsa_record(self):
         nofo = self.new_import()

@@ -9,7 +9,7 @@ The fixture is synthetic; no existing NOFO records were changed.
 - `before.png`: the existing `full` BYB variant, with the HRSA stylesheet from
   base commit `8fd4d7a9`. This remains the layout of existing HRSA records.
 - `after.png`: the new `hrsa` BYB variant, with the required heading and exact
-  paragraph after the internal-links callout. Only this variant loses the
+  paragraph before the final internal-links callout. Only this variant loses the
   portrait page's extra 150px top padding.
 
 Both renders use `portrait-hrsa-white`, the default filled icon style
@@ -20,9 +20,10 @@ to verify that the text-only cover does not display it.
 ## Verification
 
 - The full document remains five pages; all BYB content fits on page 3.
-- The new heading is a semantic `h3` under the page's `h2`; the PDF is tagged.
-- Body text stays at 11pt; the subordinate heading is 13pt.
-- The last line ends at 734.55pt, above the footer text starting at 770.90pt.
+- All four subsection headings are semantic `h3` elements under the page's `h2`;
+  the PDF is tagged.
+- Body text stays at 11pt. All four subsection headings use the same inherited
+  typeface, 13pt size, 600 weight, color, line height, and margins.
 - Visually inspected both screenshots: no clipping, overlap, orphaned heading,
   or footer collision.
 - PDF text extraction retains the complete paragraph in reading order.

@@ -21,7 +21,7 @@
       <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> registration now. If you are already registered, make sure your registration is active and up to date.</p>
     {% endif %}
 
-    <p class="section--before-you-begin--psuedo-header">SAM.gov registration (this can take several weeks)</p>
+    {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="SAM.gov registration (this can take several weeks)" only %}
     <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
     {% if step_2_section %}
       <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
@@ -30,7 +30,7 @@
     {% endif %}
 
     {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'era' or nofo.before_you_begin == 'hrsa' %}
-      <p class="section--before-you-begin--psuedo-header">Grants.gov registration (this can take several days)</p>
+      {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Grants.gov registration (this can take several days)" only %}
       <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
       {% if step_2_section %}
         <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
@@ -50,7 +50,7 @@
       {% endif %}
     {% endif %}
 
-    <p class="section--before-you-begin--psuedo-header">Apply by the application due date</p>
+    {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Apply by the application due date" only %}
     {% if "|" in nofo.application_deadline %}
       <p>Applications are due by 11:59 p.m. Eastern Time:</p>
       <ul>
@@ -60,6 +60,11 @@
       </ul>
     {% else %}
       <p>Applications are due by {% if nofo.before_you_begin == 'era' %}5:00 p.m. local time{% else %}11:59 p.m. Eastern Time{% endif %} on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
+    {% endif %}
+
+    {% if nofo.before_you_begin == 'hrsa' %}
+      <h3 class="before-you-begin--requirements">Application and funding requirements</h3>
+      <p>All activities proposed in your application and budget narrative must align with applicable law, including but not limited to statutes, executive orders, federal regulations and applicable judicial holdings. Accordingly, discretionary awards shall not be used to fund, promote, encourage, subsidize, or facilitate; racial preferences or other forms of racial discrimination by the recipient, including activities where race or intentional proxies for race will be used as a selection criterion for employment or program participation; denial by the recipient of the sex binary in humans, or the belief that sex is a chosen or mutable characteristic; illegal immigration; or any other initiatives that compromise public safety. If an application does not align, the application will not receive funding to the extent permitted by law and applicable court orders.</p>
     {% endif %}
 
     <div class="callout-box callout-box--icon callout-box--keyboard">
@@ -72,9 +77,5 @@
           <p>To help you find what you need, this NOFO uses internal links. In Adobe Reader, you can go back to where you were by pressing Alt + Left Arrow (Windows) or Command + Left Arrow (Mac) on your keyboard.</p>
       </div>
     </div>
-    {% if nofo.before_you_begin == 'hrsa' %}
-      <h3 class="before-you-begin--requirements">Application and funding requirements</h3>
-      <p>All activities proposed in your application and budget narrative must align with applicable law, including but not limited to statutes, executive orders, federal regulations and applicable judicial holdings. Accordingly, discretionary awards shall not be used to fund, promote, encourage, subsidize, or facilitate; racial preferences or other forms of racial discrimination by the recipient, including activities where race or intentional proxies for race will be used as a selection criterion for employment or program participation; denial by the recipient of the sex binary in humans, or the belief that sex is a chosen or mutable characteristic; illegal immigration; or any other initiatives that compromise public safety. If an application does not align, the application will not receive funding to the extent permitted by law and applicable court orders.</p>
-    {% endif %}
   </div>
 </section>
