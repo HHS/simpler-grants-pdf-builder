@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Import errors — Usage &amp; quality metrics{% endblock %}
+
+{% block css %}
+<style>
+  /*
+   * Same treatment as builder_metrics.html: USWDS utility classes do the
+   * boxes and type, and only what has no USWDS equivalent lives here.
+   */
+  .metrics-errors-table { width: 100%; border-collapse: collapse; }
+  .metrics-errors-table caption { text-align: left; font-weight: 700; padding-bottom: 0.5rem; }
+  .metrics-errors-table th, .metrics-errors-table td {
+    text-align: left; padding: 0.4rem 0.6rem 0.4rem 0;
+    border-bottom: 1px solid var(--color--light-grey); vertical-align: top;
+  }
+  .metrics-errors-table td.metrics-errors-number { white-space: nowrap; }
+  .metrics-errors-filename { word-break: break-word; }
+  .metrics-errors-scroll { overflow-x: auto; }
+
+  @media print {
+    /* The table is the page. Drop the controls that can't be acted on in print. */
+    .metrics-filter, .metrics-errors-pagination, .back-link,
+    header.usa-header, footer.usa-footer { display: none !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  {% url 'nofos:builder_metrics' as metrics_href %}
+  {# String literals in templates are marked safe, so the entity is written out
+     rather than a bare ampersand - same as the dashboard's own heading. #}
+  {% include "includes/page_heading.html" with title="Import errors" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+
+  <div class="usa-prose margin-top-2">
+    <p>
+      Every blocking import failure behind the “Blocking import errors” chart, since
+      {{ since_month|date:"F Y" }}. Same attempts, same window, and the same exclusion of
+      internal and staging accounts as the chart, so these numbers reconcile with it.
+    </p>
+  </div>
+
+  <div class="metrics-filter margin-bottom-3">
+    <form method="get" class="display-flex flex-align-end flex-wrap" style="gap: 1rem;">
+      <div style="width: 24rem; max-width: 100%;">
+        <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
+        <select class="usa-select" name="group" id="metrics-group">
+          <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
+          {% for value, label in opdiv_choices %}
+            <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="usa-button margin-0">Apply</button>
+    </form>
+  </div>
+
+  <h2 class="font-heading-md margin-top-4 margin-bottom-2">By error code</h2>
+
+  {% if error_summary %}
+    <div class="metrics-errors-scroll">
+      <table class="metrics-errors-table font-sans-2xs">
+        <caption class="usa-sr-only">Blocking import errors by code, most frequent first</caption>
+        <thead>
+          <tr>
+            <th scope="col">Error code</th>
+            <th scope="col">What the user saw</th>
+            <th scope="col">Attempts</th>
+            <th scope="col">Share of failures</th>
+            <th scope="col">Most recent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in error_summary %}
+            <tr>
+              <th scope="row"><code>{{ row.code }}</code></th>
+              <td>{{ row.meaning }}</td>
+              <td class="metrics-errors-number">{{ row.attempts }}</td>
+              <td class="metrics-errors-number">{{ row.share_pct }}%</td>
+              <td class="metrics-errors-number">{{ row.most_recent|date:"M j, Y" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">All codes</th>
+            <td></td>
+            <td class="metrics-errors-number">{{ total_failures }}</td>
+            <td class="metrics-errors-number">100%</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <p class="font-sans-2xs text-base-dark margin-top-1">
+      What each code means, and what to tell someone who hits it, is catalogued in
+      <code>documentation/IMPORT_ERROR_CODES.md</code>.
+    </p>
+  {% else %}
+    <p class="usa-prose">
+      No import errors recorded for {{ group_label }} in this period. That is a clean
+      result, not missing data: imports were attempted and none failed outright, or no
+      imports were attempted at all.
+    </p>
+  {% endif %}
+
+  <h2 class="font-heading-md margin-top-5 margin-bottom-2">Recent failed attempts</h2>
+
+  {% if attempts_page.object_list %}
+    <div class="metrics-errors-scroll">
+      <table class="metrics-errors-table font-sans-2xs">
+        <caption class="usa-sr-only">Individual failed import attempts, newest first</caption>
+        <thead>
+          <tr>
+            <th scope="col">When</th>
+            <th scope="col">Error code</th>
+            <th scope="col">File</th>
+            <th scope="col">OpDiv</th>
+            <th scope="col">Kind</th>
+            <th scope="col">NOFO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attempt in attempts_page %}
+            <tr>
+              <th scope="row" class="metrics-errors-number">{{ attempt.created_at|date:"M j, Y, g:i a" }}</th>
+              <td><code>{{ attempt.error_code }}</code></td>
+              <td class="metrics-errors-filename">{{ attempt.filename|default:"—" }}</td>
+              <td>{{ attempt.metrics_group|upper|default:"Unknown" }}</td>
+              <td>{% if attempt.is_reimport %}Re-import{% else %}New import{% endif %}</td>
+              <td>
+                {% if attempt.viewer_can_open_nofo %}
+                  <a href="{{ attempt.nofo.get_absolute_url }}">{{ attempt.nofo.short_name|default:attempt.nofo.title|default:"Open NOFO" }}</a>
+                {% elif attempt.nofo %}
+                  {{ attempt.nofo.short_name|default:attempt.nofo.title|default:"—" }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if attempts_page.has_other_pages %}
+      <nav class="metrics-errors-pagination margin-top-2" aria-label="Failed import attempts pages">
+        <p class="font-sans-2xs">
+          {% if attempts_page.has_previous %}
+            <a href="?group={{ selected_group }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>
+          {% endif %}
+          <span class="margin-x-1">Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }}</span>
+          {% if attempts_page.has_next %}
+            <a href="?group={{ selected_group }}&amp;page={{ attempts_page.next_page_number }}">Next</a>
+          {% endif %}
+        </p>
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="usa-prose">No failed import attempts to show for {{ group_label }}.</p>
+  {% endif %}
+{% endblock %}
