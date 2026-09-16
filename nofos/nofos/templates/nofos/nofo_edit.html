@@ -409,7 +409,7 @@ Edit “{{ nofo|nofo_name }}”
                 <div>
                   <ol class="usa-list usa-list--no-max-width">
                     {% for unconverted_footnote in unconverted_footnotes %}
-                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
+                    <li><a href="#{{ unconverted_footnote.location_html_id }}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
                     {% endfor %}
                   </ol>
                   <p>
