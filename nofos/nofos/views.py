@@ -22,6 +22,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
@@ -84,12 +85,15 @@ from .forms import (
     SubsectionEditForm,
 )
 from .metrics import (
+    METRICS_SINCE,
     active_users_by_month,
     avg_warnings_by_month,
     import_error_rate_by_month,
+    import_errors_by_code,
     months_from,
     nofos_created_by_month,
     opdiv_choices,
+    recent_import_errors,
     time_to_first_live_pdf_by_month,
     total_users_by_month,
 )
@@ -2915,10 +2919,9 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
 
     template_name = "nofos/builder_metrics.html"
 
-    # When NOFO Builder metrics tracking started (see #865) - not a hard
-    # cutoff, just where the trend starts; months_from() has no upper bound,
-    # so later months just keep appending as they occur.
-    metrics_since = datetime(2026, 9, 1)
+    # Shared with the import-errors drill-down so the two can't report over
+    # different windows. See metrics.METRICS_SINCE.
+    metrics_since = METRICS_SINCE
 
     def get(self, request, *args, **kwargs):
         self.selected_group = request.GET.get("group", "all")
@@ -2953,5 +2956,77 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "timeToPdfHours": time_to_first_live_pdf_by_month(months, group),
             "errorRatePct": import_error_rate_by_month(months, group),
             "avgWarnings": avg_warnings_by_month(months, group),
+            # Carried in the payload, not hardcoded in the template's JS, so the
+            # link keeps pointing at the OpDiv the reader is actually looking at
+            # after the filter re-renders the cards.
+            "importErrorsUrl": "{}?group={}".format(
+                reverse("nofos:builder_metrics_import_errors"), group
+            ),
         }
+        return context
+
+
+class BuilderMetricsImportErrorsView(MetricsViewerRequiredMixin, TemplateView):
+    """
+    Which errors are behind the "Blocking import errors" rate (see #912).
+
+    The chart says how often imports fail; this says why, so one recurring
+    fixable problem can be told apart from a scatter of unrelated ones. Reads
+    the same attempts, window and OpDiv filter as the chart, so the numbers
+    reconcile.
+    """
+
+    template_name = "nofos/builder_metrics_import_errors.html"
+    metrics_since = METRICS_SINCE
+
+    # Enough to see a pattern without an unbounded table. The summary above it
+    # counts every failure in the window regardless of this.
+    attempts_per_page = 50
+
+    def get(self, request, *args, **kwargs):
+        self.selected_group = request.GET.get("group", "all")
+        if self.selected_group not in {"all", *dict(opdiv_choices())}:
+            return HttpResponseBadRequest("Choose a valid OpDiv group.")
+
+        response = super().get(request, *args, **kwargs)
+        response["Cache-Control"] = "private, no-store"
+        response["Vary"] = "Cookie"
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        months = months_from(timezone.make_aware(self.metrics_since))
+        group = self.selected_group
+
+        summary = import_errors_by_code(months, group)
+        for row in summary:
+            entry = IMPORT_ERROR_CATALOG.get(row["code"])
+            # A code with no catalog entry is either retired or never got one.
+            # Say so rather than leaving the cell blank, so the gap is visible.
+            row["meaning"] = entry["title"] if entry else "Not in the error catalog"
+
+        page = Paginator(
+            recent_import_errors(months, group), self.attempts_per_page
+        ).get_page(self.request.GET.get("page"))
+        for attempt in page:
+            # Metrics viewers see every OpDiv's numbers, but opening a NOFO still
+            # goes through the normal group check - so only link where the link
+            # would actually work.
+            attempt.viewer_can_open_nofo = bool(
+                attempt.nofo
+                and has_group_permission_func(self.request.user, attempt.nofo)
+            )
+
+        context.update(
+            {
+                "opdiv_choices": opdiv_choices(),
+                "selected_group": group,
+                "group_label": "All OpDivs" if group == "all" else group.upper(),
+                "since_month": months[0][0],
+                "error_summary": summary,
+                "total_failures": sum(row["attempts"] for row in summary),
+                "attempts_page": page,
+            }
+        )
         return context

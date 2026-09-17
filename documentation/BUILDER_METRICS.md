@@ -19,6 +19,37 @@ for example `/nofos/metrics?group=cdc`.
 Metrics viewers can see all available OpDiv results. The filter does not restrict
 a viewer to their own agency.
 
+## Seeing which import errors are behind the error rate
+
+The "Blocking import errors" card links to **Review import errors**, at
+`/nofos/metrics/import-errors`. It answers the question the chart cannot: whether
+a rising error rate is one recurring, fixable problem or a scatter of unrelated
+ones.
+
+The page has two tables:
+
+- **By error code** — every code behind the rate, most frequent first, with its
+  attempt count, its share of all failures, and when it last happened. The "What
+  the user saw" column is the error page's own heading, read from the catalog in
+  `nofos/bloom_nofos/import_errors.py`; [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md)
+  has the full entry for each, including what to tell someone who reports it. A
+  code with no catalog entry reads "Not in the error catalog" rather than showing
+  an empty cell.
+- **Recent failed attempts** — the individual failures, newest first, with the
+  date, code, filename, OpDiv, and whether it was a new import or a re-import,
+  50 per page. A NOFO is linked only when the viewer's own group access would let
+  them open it; metrics access alone does not open other agencies' NOFOs.
+
+It reads the same attempts, the same month window, and the same internal/staging
+exclusions as the chart, so the two reconcile. The OpDiv filter works the same way
+and is carried through the link, so arriving from `?group=cdc` keeps you on CDC.
+
+Filenames are as the user submitted them and may name a draft NOFO. The page is
+behind the same `nofos.view_builder_metrics` permission as the dashboard.
+
+Non-blocking formatting warnings have no equivalent page: `ImportAttempt` stores a
+warning count, not the warning text, so there is nothing to list.
+
 ## Granting and removing access
 
 Migration 0135 creates the **Metrics viewers** Django permission group. Add each

@@ -1199,6 +1199,15 @@ class ImportAttempt(models.Model):
         ordering = ["-created_at", "-id"]
         verbose_name = "Import attempt"
         verbose_name_plural = "Import attempts"
+        indexes = [
+            # The metrics queries all window on created_at, and the import-error
+            # drill-down (#912) groups and filters on error_code within that
+            # window.
+            models.Index(fields=["created_at"], name="import_attempt_created_idx"),
+            models.Index(
+                fields=["error_code", "created_at"], name="import_attempt_error_idx"
+            ),
+        ]
 
     nofo = models.ForeignKey(
         Nofo,
