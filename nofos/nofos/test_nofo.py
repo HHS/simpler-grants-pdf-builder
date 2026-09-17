@@ -13,6 +13,7 @@ from freezegun import freeze_time
 from .models import Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    INVALID_LINK_ERROR,
     PUBLIC_INFORMATION_SUBSECTION,
     REQUEST_HEADERS,
 )
@@ -3523,6 +3524,100 @@ class TestFindExternalLinks(TestCase):
 
         self.assertEqual(len(links), 0)
 
+    def test_find_external_links_includes_google_docs_links(self):
+        """Google Docs URLs are ordinary external links. See issue #908."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            "<p>Section 1 body with link to "
+            '<a href="https://docs.google.com/document/d/some-document">Draft NOFO</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(
+            links[0]["url"], "https://docs.google.com/document/d/some-document"
+        )
+        self.assertEqual(links[0]["domain"], "docs.google.com")
+        self.assertEqual(links[0]["link_text"], "Draft NOFO")
+        # not an invalid destination: it gets a normal status check
+        self.assertFalse(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_about_blank_as_invalid_destination(self):
+        """
+        "about:blank" is surfaced here, flagged so it is never requested.
+        See issue #908.
+        """
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="about:blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "about:blank")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertEqual(links[0]["domain"], "")
+        self.assertTrue(links[0]["invalid_destination"])
+        self.assertEqual(links[0]["error"], INVALID_LINK_ERROR)
+
+    def test_find_external_links_ignores_about_blank_without_visible_text(self):
+        """An empty about:blank anchor is an artifact, not a link to fix."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with an empty <a href="about:blank"></a> anchor</p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_about_blank_is_matched_case_insensitively(self):
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="About:Blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertTrue(links[0]["invalid_destination"])
+
+    @patch("nofos.nofo.requests.head")
+    def test_find_external_links_with_status_does_not_request_about_blank(
+        self, mock_head
+    ):
+        """
+        No HTTP request is made for a link with no destination, but real
+        external links in the same NOFO are still checked.
+        """
+        mock_head.return_value = MagicMock(status_code=200, history=[], url="")
+
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="about:blank">Apply here</a></p>'
+        ]
+        self_sections[0]["subsections"][1]["body"] = [
+            "<p>Section 2 body with link to "
+            '<a href="https://groundhog-day.com">Groundhog Day</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=True)
+
+        self.assertEqual(len(links), 2)
+        requested_urls = [call.args[0] for call in mock_head.call_args_list]
+        self.assertEqual(requested_urls, ["https://groundhog-day.com"])
+
+        about_blank_link = next(link for link in links if link["url"] == "about:blank")
+        self.assertEqual(about_blank_link["status"], "")
+        self.assertEqual(about_blank_link["error"], INVALID_LINK_ERROR)
+
 
 class TestFindBrokenLinks(TestCase):
     def setUp(self):
@@ -3616,31 +3711,24 @@ class TestFindBrokenLinks(TestCase):
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 9)
+        self.assertEqual(len(broken_links), 7)
+        self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
         self.assertEqual(broken_links[2]["link_href"], "/contacts")
         self.assertEqual(
             broken_links[3]["link_href"],
-            "https://docs.google.com/document/d/some-document",
-        )
-        self.assertEqual(
-            broken_links[4]["link_href"],
-            "about:blank",
-        )
-        self.assertEqual(
-            broken_links[5]["link_href"],
             "#_Paper_Submissions",
         )
         self.assertEqual(
-            broken_links[6]["link_href"],
+            broken_links[4]["link_href"],
             "#fake",
         )
         self.assertEqual(
-            broken_links[7]["link_href"],
+            broken_links[5]["link_href"],
             "bookmark://_Collaborations",
         )
         self.assertEqual(
-            broken_links[8]["link_href"],
+            broken_links[6]["link_href"],
             "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
         )
 
@@ -3654,8 +3742,6 @@ class TestFindBrokenLinks(TestCase):
                 link["link_href"].startswith("#h.")
                 or link["link_href"].startswith("#id.")
                 or link["link_href"].startswith("/")
-                or link["link_href"].startswith("https://docs.google.com")
-                or link["link_href"].startswith("about:blank")
                 or link["link_href"].startswith("#_")
                 or link["link_href"].startswith("#fake")
                 or link["link_href"].startswith("bookmark")
@@ -3663,6 +3749,59 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+    def test_find_broken_links_excludes_google_docs_links(self):
+        """
+        Google Docs URLs point outside the NOFO, so they are external links,
+        not broken internal anchors. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn(
+            "https://docs.google.com/document/d/some-document", broken_hrefs
+        )
+        for href in broken_hrefs:
+            self.assertFalse(href.startswith("https://docs.google.com"))
+
+    def test_find_broken_links_excludes_about_blank_links(self):
+        """
+        "about:blank" is a missing destination in the source document, not a
+        link into the NOFO. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn("about:blank", broken_hrefs)
+
+    def test_find_broken_links_still_flags_other_external_schemes(self):
+        """
+        Excluding Google Docs must not exclude every http(s) URL: "file://"
+        and "bookmark://" links are still broken.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertIn("bookmark://_Collaborations", broken_hrefs)
+        self.assertIn(
+            "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
+            broken_hrefs,
+        )
+
+    def test_find_broken_links_google_docs_and_about_blank_are_external(self):
+        """
+        The two hrefs dropped from find_broken_links() are still reported:
+        both show up in find_external_links() instead.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        external_hrefs = [
+            link["url"] for link in find_external_links(nofo, with_status=False)
+        ]
+
+        self.assertIn(
+            "https://docs.google.com/document/d/some-document", external_hrefs
+        )
+        self.assertIn("about:blank", external_hrefs)
 
 
 class TestFindH7Headers(TestCase):

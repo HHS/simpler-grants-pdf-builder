@@ -1340,6 +1340,19 @@ def find_incorrectly_nested_heading_levels(nofo):
     return incorrectly_nested_heading_levels
 
 
+# Link destinations that are neither an internal anchor nor a fetchable URL.
+# Word and Google Docs both write "about:blank" when a hyperlink in the source
+# document has no destination, so it is a source-document defect rather than a
+# broken link into the NOFO. It is reported alongside the external links (the
+# other category of link that points outside the NOFO) and never requested.
+INVALID_LINK_DESTINATIONS = ("about:blank",)
+INVALID_LINK_ERROR = "No link destination in the source document"
+
+
+def _is_invalid_link_destination(url):
+    return url.strip().lower() in INVALID_LINK_DESTINATIONS
+
+
 def _update_link_statuses(all_links):
     logging.basicConfig(
         level=logging.WARNING
@@ -1347,6 +1360,10 @@ def _update_link_statuses(all_links):
     logger = logging.getLogger(__name__)
 
     def check_link_status(link):
+        if link.get("invalid_destination"):
+            # Nothing to request: there is no destination to resolve.
+            return link
+
         try:
             # First try HEAD request
             response = requests.head(
@@ -1637,6 +1654,8 @@ def find_external_links(nofo, with_status=False):
 
     This function processes the markdown content of each subsection, converts it to HTML using BeautifulSoup and markdown libraries, and searches for all 'a' tags (hyperlinks). It then filters these links to include only those that are external (not part of the 'nofo.rodeo' domain).
 
+    Links with an invalid destination (see INVALID_LINK_DESTINATIONS, eg. "about:blank") are included here too, flagged with 'invalid_destination': they point outside the NOFO rather than at one of its own anchors, so they belong in this list rather than in find_broken_links(). They are never requested over HTTP, because there is no destination to request.
+
     Parameters:
         nofo (Nofo instance): The NOFO object whose sections and subsections are to be scanned for external links.
         with_status (bool): A flag indicating whether to update the status of each link (e.g., check if the link is live, if it redirects, etc.) by calling the `_update_link_statuses` function.
@@ -1650,6 +1669,7 @@ def find_external_links(nofo, with_status=False):
             - 'status' (str): A placeholder for the status of the link; it remains empty unless updated externally.
             - 'error' (str): A placeholder for any error associated with the link; it remains empty unless updated externally.
             - 'redirect_url' (str): A placeholder for the URL where the link redirects; it remains empty unless updated externally.
+            - 'invalid_destination' (bool): True if the link has no real destination (eg. "about:blank"), in which case 'error' is pre-filled and no HTTP request is made.
     """
     all_links = []
 
@@ -1666,7 +1686,27 @@ def find_external_links(nofo, with_status=False):
             for link in links:
                 url = link.get("href", "#")
 
-                if url.startswith("http"):
+                if _is_invalid_link_destination(url):
+                    # An anchor with no visible text is a leftover artifact, not
+                    # something a reader can click: only surface the ones a
+                    # designer can actually find and fix in the document.
+                    if not link.get_text(strip=True):
+                        continue
+
+                    all_links.append(
+                        {
+                            "url": url,
+                            "link_text": link.get_text(),
+                            "domain": "",
+                            "section": section,
+                            "subsection": subsection,
+                            "status": "",
+                            "error": INVALID_LINK_ERROR,
+                            "redirect_url": "",
+                            "invalid_destination": True,
+                        }
+                    )
+                elif url.startswith("http"):
                     if not "nofo.rodeo" in url:
                         all_links.append(
                             {
@@ -1678,6 +1718,7 @@ def find_external_links(nofo, with_status=False):
                                 "status": "",
                                 "error": "",
                                 "redirect_url": "",
+                                "invalid_destination": False,
                             }
                         )
 
@@ -1691,9 +1732,16 @@ def find_broken_links(nofo):
     """
     Identifies and returns a list of broken links within a given Nofo.
 
-    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/", "https://docs.google.com", "#_heading", or "_bookmark".
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#" (eg. "#h.", "#id.", "#_heading"),
+    "/", "bookmark", or "file://", and which does not resolve to an id that exists in the NOFO.
     This means that someone created an internal link to a header, and then later the header was deleted or otherwise
     modified so the original link doesn't point anywhere.
+
+    Links to destinations *outside* the NOFO are deliberately not counted here, even when they are a problem:
+    Google Docs URLs (`https://docs.google.com/...`) are ordinary external links and are reported by
+    find_external_links(), and destination-less links (eg. "about:blank") are reported there too as
+    invalid destinations. Neither is an internal anchor, so calling them broken internal links was
+    both misleading and, for Google Docs, a duplicate of the external-link report.
 
     Args:
         nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
@@ -1719,8 +1767,6 @@ def find_broken_links(nofo):
         return tag.name == "a" and (
             tag.get("href", "").startswith("/")
             or tag.get("href", "").startswith("#")
-            or tag.get("href", "").startswith("https://docs.google.com")
-            or tag.get("href", "") == "about:blank"
             or tag.get("href", "").startswith("bookmark")
             or tag.get("href", "").startswith("file://")
         )

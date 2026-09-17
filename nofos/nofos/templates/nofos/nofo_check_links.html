@@ -19,6 +19,21 @@
 
   <p>There are <strong>{{ links|length }} external links</strong> in this NOFO.</p>
 
+  {% if invalid_destination_links %}
+    <div class="usa-alert usa-alert--warning usa-alert--slim">
+      <div class="usa-alert__body">
+        <p class="usa-alert__text">
+          {% if invalid_destination_links|length == 1 %}
+            1 of these links has <strong>no destination</strong> in the source document.
+          {% else %}
+            {{ invalid_destination_links|length }} of these links have <strong>no destination</strong> in the source document.
+          {% endif %}
+          They can’t be checked automatically — fix them in the Word document, or remove the link.
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
   {% if with_status %}
   <details>
     <summary><span>What does the ‘Status’ number mean?</span></summary>
@@ -108,7 +123,11 @@
       {% for link in links %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td style="word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
+          {% if link.invalid_destination %}
+            <td style="word-break: break-all;"><em>No destination</em> (<code>{{ link.url }}</code>)</td>
+          {% else %}
+            <td style="word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
+          {% endif %}
           <td style="word-break: break-word;"><div>{{ link.link_text }}</div></td>
           <td class="nofo_links--location">
             {{ link.section.name }}
@@ -118,12 +137,18 @@
             </span>
           </td>
           <td>
-            {% if link.error %}
-              <span title="500: Exception">500</span>
+            {% if link.invalid_destination %}
+              <span title="{{ link.error }}">Not checked</span>
+              <span aria-hidden="true">⛔️</span>
             {% else %}
-              {{ link.status }}
-            {% endif%}
-            <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% elif link.error %}🟠{% endif %}</span></td>
+              {% if link.error %}
+                <span title="500: Exception">500</span>
+              {% else %}
+                {{ link.status }}
+              {% endif%}
+              <span aria-hidden="true">{% if link.status < 300 %}🟢{% elif link.status < 400 %}🔵{% elif link.status < 500 %}⛔️{% elif link.status < 600 %}🟠{% elif link.error %}🟠{% endif %}</span>
+            {% endif %}
+          </td>
           <td>{% if link.redirect_url %}Yes{% endif %}</td>
         </tr>
       {% endfor %}
