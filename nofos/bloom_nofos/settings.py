@@ -653,6 +653,11 @@ HHS_NOFO_METRIC_GOALS = (
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "PANDOC_WORD_EXPORT_ENABLED": (
+        False,
+        "Experimental local Word conversion. Enable only after export verification.",
+        bool,
+    ),
     "DOCRAPTOR_IPS": (
         DOCRAPTOR_IPS,
         "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",
