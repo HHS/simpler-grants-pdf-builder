@@ -29,9 +29,11 @@
             {% if nofo.number %}<p>Opportunity number: {{ nofo.number }}</p>{% endif %}
             {% if nofo.application_deadline %}<p>Application deadline: {{ nofo.application_deadline }}</p>{% endif %}
             {% if nofo.tagline %}<p>Tagline: {{ nofo.tagline }}</p>{% endif %}
+            {% if not for_readability_metrics %}
             {% if nofo.author %}<p>Metadata author: {{ nofo.author }}</p>{% endif %}
             {% if nofo.subject %}<p>Metadata subject: {{ nofo.subject }}</p>{% endif %}
             {% if nofo.keywords %}<p>Metadata keywords: {{ nofo.keywords }}</p>{% endif %}
+            {% endif %}
           </div>
         </div>
       {% endif %}
