@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.39.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.38.0...nofos-v3.39.0) (2026-09-17)
+
+
+### Features
+
+* give every import error a specific message and a documented catalog ([#914](https://github.com/HHS/simpler-grants-pdf-builder/issues/914)) ([5f060ff](https://github.com/HHS/simpler-grants-pdf-builder/commit/5f060ff2dc7b7755d4d9fdaea71d3b256726d2fa))
+* **metrics:** show which import errors are behind the error rate ([#916](https://github.com/HHS/simpler-grants-pdf-builder/issues/916)) ([f9398de](https://github.com/HHS/simpler-grants-pdf-builder/commit/f9398dea1d7f301f174324f4de4d185e86033aab))
+
 ## [3.38.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.37.0...nofos-v3.38.0) (2026-09-16)
 
 
