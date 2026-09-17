@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.40.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.39.1...nofos-v3.40.0) (2026-09-17)
+
+
+### Features
+
+* default CDC NOFOs to the text-only cover ([#925](https://github.com/HHS/simpler-grants-pdf-builder/issues/925)) ([ede09d1](https://github.com/HHS/simpler-grants-pdf-builder/commit/ede09d1581c1273aa3747f3f72a225611b2b8f19))
+
+
+### Bug Fixes
+
+* exclude administrative metadata from readability metrics ([#921](https://github.com/HHS/simpler-grants-pdf-builder/issues/921)) ([70ec2a1](https://github.com/HHS/simpler-grants-pdf-builder/commit/70ec2a16958f2c59a67ca5f72b08eb0fc95ac7e9))
+
 ## [3.39.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.39.0...nofos-v3.39.1) (2026-09-17)
 
 
