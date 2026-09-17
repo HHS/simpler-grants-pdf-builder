@@ -1039,17 +1039,24 @@ class NofoReadabilityScoreQuerySet(models.QuerySet):
         """
         return self.filter(nofo=nofo).complete().first()
 
-    def current_for(self, nofo, profile_reference, package_version):
+    def current_for(
+        self, nofo, profile_reference, package_version, input_contract_version=None
+    ):
         """
         The snapshot for this NOFO's current revision under the given
         measurement contract, or None. A hit can be replayed to the panel
         without re-running the metrics package.
         """
+        if input_contract_version is None:
+            from .readability import INPUT_CONTRACT_VERSION
+
+            input_contract_version = INPUT_CONTRACT_VERSION
         return self.filter(
             nofo=nofo,
             nofo_revision=nofo.updated,
             profile_reference=profile_reference,
             package_version=package_version,
+            input_contract_version=input_contract_version,
         ).first()
 
 
@@ -1075,6 +1082,7 @@ class NofoReadabilityScore(models.Model):
                     "nofo_revision",
                     "profile_reference",
                     "package_version",
+                    "input_contract_version",
                 ],
                 name="unique_readability_score_per_nofo_revision",
             ),
@@ -1127,6 +1135,15 @@ class NofoReadabilityScore(models.Model):
     package_version = models.CharField(
         max_length=32,
         help_text="Installed hhs-nofo-metrics version, eg '0.5.2'.",
+    )
+
+    input_contract_version = models.CharField(
+        max_length=64,
+        default="word-export-v1",
+        help_text=(
+            "Builder metrics rendering contract. word-export-v1 includes PDF "
+            "metadata; word-export-v2 excludes it. Legacy snapshots retain v1."
+        ),
     )
 
     schema_version = models.CharField(
@@ -1184,8 +1201,13 @@ class NofoReadabilityScore(models.Model):
 
     @property
     def is_current(self):
-        """Whether this snapshot still describes the NOFO's current content."""
-        return self.nofo_revision == self.nofo.updated
+        """Whether content and Builder's measurement input contract are current."""
+        from .readability import INPUT_CONTRACT_VERSION
+
+        return (
+            self.nofo_revision == self.nofo.updated
+            and self.input_contract_version == INPUT_CONTRACT_VERSION
+        )
 
 
 class ImportAttempt(models.Model):

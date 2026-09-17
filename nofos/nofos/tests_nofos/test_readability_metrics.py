@@ -17,6 +17,7 @@ from nofos.models import Nofo, NofoReadabilityScore, Section, Subsection
 from nofos.nofo import overwrite_nofo
 from nofos.readability import (
     GOAL_METRIC_IDS,
+    INPUT_CONTRACT_VERSION,
     PROFILE_REFERENCE,
     ReadabilityMetricsAnalysisError,
     ReadabilityMetricsUnavailable,
@@ -62,7 +63,7 @@ class NofoReadabilityMetricsTests(TestCase):
             "nofos:nofo_readability_metrics", kwargs={"pk": self.nofo.pk}
         )
 
-    def test_metrics_fragment_is_the_same_fragment_used_by_word_export(self):
+    def test_metrics_fragment_matches_word_export_without_metadata(self):
         fragment = BeautifulSoup(
             render_nofo_export_document(self.nofo), "html.parser"
         ).select_one("#download_target")
@@ -77,6 +78,31 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("input[name=csrfmiddlewaretoken]"))
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
+
+    def test_metrics_omit_administrative_metadata_but_export_preserves_it(self):
+        self.nofo.author = "Metadata-only author"
+        self.nofo.subject = "Metadata-only subject"
+        self.nofo.keywords = "Metadata-only keywords"
+        self.nofo.save()
+        fragment = render_nofo_export_document(self.nofo).decode()
+        exported = self.client.get(
+            reverse("nofos:nofo_export", kwargs={"pk": self.nofo.pk})
+        ).content.decode()
+        for value in (self.nofo.author, self.nofo.subject, self.nofo.keywords):
+            self.assertNotIn(value, fragment)
+            self.assertIn(value, exported)
+        self.assertIn("Applicants describe their proposed work.", fragment)
+
+    @skipUnless(find_spec("hhs_nofo_metrics"), "metrics package is not installed")
+    def test_metadata_changes_do_not_change_metrics(self):
+        before = analyze_nofo_readability(self.nofo)["metrics"]
+        self.nofo.author = "An author with a very long administrative name"
+        self.nofo.subject = (
+            "These sentences are administrative. They are not instructions."
+        )
+        self.nofo.keywords = "grant metadata application opportunity"
+        after = analyze_nofo_readability(self.nofo)["metrics"]
+        self.assertEqual(before, after)
 
     @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @override_settings(HHS_NOFO_METRIC_GOALS={})
@@ -513,6 +539,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         snapshot = NofoReadabilityScore.objects.get()
         self.assertEqual(snapshot.profile_reference, PROFILE_REFERENCE)
         self.assertEqual(snapshot.package_version, "0.5.2")
+        self.assertEqual(snapshot.input_contract_version, INPUT_CONTRACT_VERSION)
         self.assertEqual(snapshot.schema_version, "1.1.0")
         self.assertEqual(snapshot.result_basis, "structured_estimate")
         self.assertEqual(
@@ -573,6 +600,43 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         )
 
     # -- failed and incomplete calculations ----------------------------------
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_legacy_input_contract_is_history_not_a_current_cached_measurement(
+        self, analyze, _version
+    ):
+        legacy = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference=PROFILE_REFERENCE,
+            package_version="0.5.2",
+            result=build_payload(),
+            is_complete=True,
+        )
+        self.assertEqual(legacy.input_contract_version, "word-export-v1")
+        self.assertFalse(legacy.is_current)
+        self.assertIsNone(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.2"
+            )
+        )
+        # The earlier result remains available as history until recalculation.
+        self.assertEqual(NofoReadabilityScore.objects.latest_for(self.nofo), legacy)
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        analyze.assert_called_once()
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.2"
+        )
+        self.assertNotEqual(current.pk, legacy.pk)
+        self.assertEqual(current.nofo_revision, legacy.nofo_revision)
+        self.assertEqual(current.input_contract_version, INPUT_CONTRACT_VERSION)
+        self.assertTrue(current.is_current)
+        legacy.refresh_from_db()
+        self.assertEqual(legacy.input_contract_version, "word-export-v1")
+        self.assertEqual(legacy.result, build_payload())
 
     @patch("nofos.readability.analyze_nofo_readability")
     def test_unavailable_package_writes_no_snapshot(self, analyze, _version):
