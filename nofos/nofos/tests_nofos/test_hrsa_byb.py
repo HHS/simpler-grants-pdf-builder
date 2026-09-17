@@ -10,7 +10,7 @@ from users.models import BloomUser
 from nofos.forms import NofoCoverImageForm, NofoThemeOptionsForm
 from nofos.models import Nofo
 from nofos.nofo import DEFAULT_NOFO_OPPORTUNITY_NUMBER
-from nofos.views import NofosImportNewView, NofosImportOverwriteView
+from nofos.views import NofosImportNewView, NofosImportOverwriteView, duplicate_nofo
 
 
 class HrsaBeforeYouBeginTests(TestCase):
@@ -231,3 +231,90 @@ class HrsaBeforeYouBeginTests(TestCase):
         nofo.refresh_from_db()
         self.assertEqual(nofo.cover_image, "img/cover-img/hrsa-25-066.jpg")
         self.assertEqual(nofo.cover, "nofo--cover-page--text")
+
+
+class BeforeYouBeginOnDuplicateTests(TestCase):
+    """
+    Duplicating a NOFO copies its "Before you begin" variant as-is. Nothing is
+    re-suggested, so a copy of a record that predates the HRSA variant still
+    says "full".
+
+    These pin the current behaviour rather than change it. The behaviour was
+    incidental - `duplicate_nofo()` clones the row and never calls the suggest
+    functions - so nothing stopped a later change to those functions from
+    quietly altering what a copy looks like. Whether an HRSA duplicate *should*
+    move to the HRSA page is an open product question (see IMPORT-044); if it
+    is answered yes, these are the tests to change, deliberately.
+    """
+
+    def make_nofo(self, **overrides):
+        fields = {
+            "title": "HRSA Legacy NOFO",
+            "number": "HRSA-26-014",
+            "opdiv": "HRSA",
+            "group": "hrsa",
+            "theme": "portrait-hrsa-blue",
+            # What every pre-#911 record has: the variant that was the default
+            # for everyone except NIH.
+            "before_you_begin": "full",
+        }
+        fields.update(overrides)
+        return Nofo.objects.create(**fields)
+
+    def test_duplicating_a_legacy_hrsa_nofo_keeps_the_legacy_page(self):
+        nofo = self.make_nofo()
+
+        copy = duplicate_nofo(nofo)
+
+        self.assertEqual(copy.before_you_begin, "full")
+        self.assertEqual(Nofo.objects.get(pk=copy.pk).before_you_begin, "full")
+
+    def test_duplicating_a_post_911_hrsa_nofo_keeps_the_hrsa_page(self):
+        """The copy carries the variant forward, whichever one that is."""
+        nofo = self.make_nofo(before_you_begin="hrsa")
+
+        copy = duplicate_nofo(nofo)
+
+        self.assertEqual(copy.before_you_begin, "hrsa")
+
+    def test_every_variant_is_copied_as_is(self):
+        for variant in ["full", "hrsa", "era", "sole_source", "none"]:
+            with self.subTest(variant=variant):
+                nofo = self.make_nofo(
+                    number=f"HRSA-26-{variant}", before_you_begin=variant
+                )
+
+                copy = duplicate_nofo(nofo)
+
+                self.assertEqual(copy.before_you_begin, variant)
+
+    def test_the_original_record_is_left_alone(self):
+        nofo = self.make_nofo()
+
+        duplicate_nofo(nofo)
+        nofo.refresh_from_db()
+
+        self.assertEqual(nofo.before_you_begin, "full")
+
+    def test_a_reimports_archive_snapshot_keeps_the_saved_variant(self):
+        """
+        The is_successor copy records the NOFO as it was before a re-import, so
+        it must never be re-suggested - that would put a page in the archive
+        that never existed.
+        """
+        nofo = self.make_nofo()
+
+        snapshot = duplicate_nofo(nofo, is_successor=True)
+
+        self.assertEqual(snapshot.before_you_begin, "full")
+
+    def test_cover_settings_are_copied_as_is_too(self):
+        """#911 also narrowed HRSA cover choices; duplication re-suggests none of it."""
+        nofo = self.make_nofo(
+            cover="nofo--cover-page--medium", cover_image="img/cover-img/legacy.png"
+        )
+
+        copy = duplicate_nofo(nofo)
+
+        self.assertEqual(copy.cover, "nofo--cover-page--medium")
+        self.assertEqual(copy.cover_image, "img/cover-img/legacy.png")

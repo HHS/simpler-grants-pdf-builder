@@ -86,7 +86,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields | `nofo.py` |
 | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
 | IMPORT-043 | extraction | Metadata Suggestion | Theme prefix → suggested cover style (text-only vs. medium) | `nofo.py` |
-| IMPORT-044 | extraction | Metadata Suggestion | New import's HRSA theme / user's group → suggested "before you begin" page variant | `nofo.py` |
+| IMPORT-044 | extraction | Metadata Suggestion | New import's HRSA theme / user's group → suggested "before you begin" page variant; duplicates copy the saved variant | `nofo.py` |
 | IMPORT-045 | extraction | Metadata Suggestion | Opportunity number / title substring → suggested cover image | `nofo.py` |
 | IMPORT-046 | tagging | Non-Visual Tagging | Subsection body vs. canonical policy-language templates → compliance status tag | `policy_language.py` |
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
@@ -489,7 +489,11 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 - **Type:** extraction
 - **Trigger:** Brand-new import whose suggested theme is HRSA (derived from opportunity number / OpDiv), or importing user's group is `"nih"`.
 - **Action:** Select the persisted `"hrsa"` variant for an HRSA theme, otherwise `"era"` for an NIH user, otherwise `"full"`. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Re-imports retain their saved variant, even with a blank/placeholder opportunity number. Adding the choice does not backfill any existing records.
-- **Source:** `nofo.py::suggest_nofo_before_you_begin`, `suggest_all_nofo_fields`; explicit new/re-import context from `views.py`
+
+  **Duplication does not re-suggest anything.** `duplicate_nofo()` clones the record, so a copy carries the saved variant forward whatever it is — a copy of a record imported before the HRSA variant existed still says `"full"`, and gets no HRSA paragraph. That applies equally to the archive snapshot a re-import takes (`is_successor=True`), which must keep the variant the record actually had. Someone can change a copy's variant by hand at `/nofos/<id>/edit/before-you-begin`.
+
+  *Open question:* whether duplicating an HRSA NOFO should move the copy from `"full"` to `"hrsa"`, on the grounds that a duplicate is usually where the next NOFO starts. Deliberately not decided here; the behaviour above is what ships, and `tests_nofos/test_hrsa_byb.py::BeforeYouBeginOnDuplicateTests` pins it.
+- **Source:** `nofo.py::suggest_nofo_before_you_begin`, `suggest_all_nofo_fields`; explicit new/re-import context from `views.py`; duplication in `views.py::duplicate_nofo`
 - **Status:** active
 
 ### IMPORT-045 — Cover image suggestion
