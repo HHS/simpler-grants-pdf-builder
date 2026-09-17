@@ -13,6 +13,7 @@ from freezegun import freeze_time
 from .models import Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    INVALID_LINK_ERROR,
     PUBLIC_INFORMATION_SUBSECTION,
     REQUEST_HEADERS,
 )
@@ -3523,6 +3524,199 @@ class TestFindExternalLinks(TestCase):
 
         self.assertEqual(len(links), 0)
 
+    def test_find_external_links_includes_google_docs_links(self):
+        """Google Docs URLs are ordinary external links. See issue #908."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            "<p>Section 1 body with link to "
+            '<a href="https://docs.google.com/document/d/some-document">Draft NOFO</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(
+            links[0]["url"], "https://docs.google.com/document/d/some-document"
+        )
+        self.assertEqual(links[0]["domain"], "docs.google.com")
+        self.assertEqual(links[0]["link_text"], "Draft NOFO")
+        # not an invalid destination: it gets a normal status check
+        self.assertFalse(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_about_blank_as_invalid_destination(self):
+        """
+        "about:blank" is surfaced here, flagged so it is never requested.
+        See issue #908.
+        """
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="about:blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "about:blank")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertEqual(links[0]["domain"], "")
+        self.assertTrue(links[0]["invalid_destination"])
+        self.assertEqual(links[0]["error"], INVALID_LINK_ERROR)
+
+    def test_find_external_links_ignores_about_blank_without_visible_text(self):
+        """An empty about:blank anchor is an artifact, not a link to fix."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with an empty <a href="about:blank"></a> anchor</p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    # --- Links that name no destination (issue #908) -----------------------
+    #
+    # These are built as stored subsection bodies rather than through
+    # create_nofo(), because create_nofo() runs the HTML->Markdown import
+    # conversion first, and that step FLATTENS an anchor with an empty or
+    # missing href to plain text (see
+    # test_import_flattens_destination_less_anchors_to_plain_text below).
+    # What these functions actually read is the stored body, where such a
+    # link arrives as markdown "[text]()" or as raw HTML typed in the editor.
+
+    def _nofo_with_body(self, body):
+        nofo = Nofo.objects.create(title="No-destination Nofo", opdiv="Test OpDiv")
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+        Subsection.objects.create(
+            section=section, name="Links", tag="h3", body=body, order=2
+        )
+        return nofo
+
+    def test_import_flattens_destination_less_anchors_to_plain_text(self):
+        """
+        Pins why the tests below bypass create_nofo(): on import, an anchor
+        with an empty or missing href loses its <a> entirely, so it can only
+        reach a stored body by being authored in the editor.
+        """
+        self.assertEqual(
+            md('<p>link to <a href="">Apply here</a></p>'), "link to Apply here"
+        )
+        self.assertEqual(md("<p>an <a>Apply here</a> link</p>"), "an Apply here link")
+        # a whitespace href survives the conversion, and re-parses as href=""
+        self.assertEqual(
+            md('<p>link to <a href="   ">Apply here</a></p>'),
+            "link to [Apply here](   )",
+        )
+
+    def test_find_external_links_includes_empty_markdown_target(self):
+        """`[text]()` renders as href="" -- a link naming no destination."""
+        nofo = self._nofo_with_body("An [Apply here]() link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertTrue(links[0]["invalid_destination"])
+        self.assertEqual(links[0]["error"], INVALID_LINK_ERROR)
+
+    def test_find_external_links_includes_whitespace_markdown_target(self):
+        """`[text](   )` also renders as href="" once markdown parses it."""
+        nofo = self._nofo_with_body("An [Apply here](   ) link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_empty_href_in_raw_html(self):
+        nofo = self._nofo_with_body('An <a href="">Apply here</a> link.')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_missing_href_in_raw_html(self):
+        """
+        An <a> with visible text and no href at all goes nowhere. 'url' is
+        reported as "" rather than a "#" placeholder never in the document.
+        """
+        nofo = self._nofo_with_body("An <a>Apply here</a> link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_ignores_href_less_bookmark_target(self):
+        """
+        An href-less anchor carrying an id/name is a bookmark *target*, not a
+        link -- and some targets keep their original visible label. Reporting
+        those as "no destination" links would be a false positive. See the
+        "category 2b" tests in tests_nofos/test_templatetags.py.
+        """
+        nofo = self._nofo_with_body('Body. <a id="bookmark=id.2xcytpi">Bookmark</a>')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_ignores_empty_href_without_visible_text(self):
+        nofo = self._nofo_with_body('Body with an empty <a href=""></a> anchor.')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_still_ignores_hash_only_href(self):
+        """
+        "#" is a real fragment, not a missing destination: it stays with the
+        broken-internal-links panel and out of the external-links list.
+        """
+        nofo = self._nofo_with_body("An [Apply here](#) link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_about_blank_is_matched_case_insensitively(self):
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="About:Blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertTrue(links[0]["invalid_destination"])
+
+    @patch("nofos.nofo.requests.head")
+    def test_find_external_links_with_status_does_not_request_invalid_destinations(
+        self, mock_head
+    ):
+        """
+        No HTTP request is made for a link with no destination, but real
+        external links in the same NOFO are still checked.
+        """
+        mock_head.return_value = MagicMock(status_code=200, history=[], url="")
+
+        nofo = self._nofo_with_body(
+            "An [Apply here](about:blank) link, [an empty one](), "
+            '<a href="">a blank one</a>, <a>an href-less one</a>, '
+            "and [Groundhog Day](https://groundhog-day.com)."
+        )
+        links = find_external_links(nofo, with_status=True)
+
+        self.assertEqual(len(links), 5)
+        requested_urls = [call.args[0] for call in mock_head.call_args_list]
+        self.assertEqual(requested_urls, ["https://groundhog-day.com"])
+
+        invalid = [link for link in links if link["invalid_destination"]]
+        self.assertEqual(len(invalid), 4)
+        for link in invalid:
+            self.assertEqual(link["status"], "")
+            self.assertEqual(link["error"], INVALID_LINK_ERROR)
+
 
 class TestFindBrokenLinks(TestCase):
     def setUp(self):
@@ -3613,34 +3807,54 @@ class TestFindBrokenLinks(TestCase):
             order=11,
         )
 
+        # The three "no destination" shapes. None belongs in the broken-links
+        # panel, so none of them changes the count asserted below -- which is
+        # exactly why they are in the fixture.
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with an empty href",
+            tag="h3",
+            body='This is an <a href="">Empty href link</a>.',
+            order=12,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a whitespace href",
+            tag="h3",
+            body='This is a <a href="   ">Whitespace href link</a>.',
+            order=13,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with no href at all",
+            tag="h3",
+            body="This is an <a>Href-less link</a>.",
+            order=14,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 9)
+        self.assertEqual(len(broken_links), 7)
+        self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
         self.assertEqual(broken_links[2]["link_href"], "/contacts")
         self.assertEqual(
             broken_links[3]["link_href"],
-            "https://docs.google.com/document/d/some-document",
-        )
-        self.assertEqual(
-            broken_links[4]["link_href"],
-            "about:blank",
-        )
-        self.assertEqual(
-            broken_links[5]["link_href"],
             "#_Paper_Submissions",
         )
         self.assertEqual(
-            broken_links[6]["link_href"],
+            broken_links[4]["link_href"],
             "#fake",
         )
         self.assertEqual(
-            broken_links[7]["link_href"],
+            broken_links[5]["link_href"],
             "bookmark://_Collaborations",
         )
         self.assertEqual(
-            broken_links[8]["link_href"],
+            broken_links[6]["link_href"],
             "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
         )
 
@@ -3654,8 +3868,6 @@ class TestFindBrokenLinks(TestCase):
                 link["link_href"].startswith("#h.")
                 or link["link_href"].startswith("#id.")
                 or link["link_href"].startswith("/")
-                or link["link_href"].startswith("https://docs.google.com")
-                or link["link_href"].startswith("about:blank")
                 or link["link_href"].startswith("#_")
                 or link["link_href"].startswith("#fake")
                 or link["link_href"].startswith("bookmark")
@@ -3663,6 +3875,100 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+    def test_find_broken_links_excludes_google_docs_links(self):
+        """
+        Google Docs URLs point outside the NOFO, so they are external links,
+        not broken internal anchors. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn(
+            "https://docs.google.com/document/d/some-document", broken_hrefs
+        )
+        for href in broken_hrefs:
+            self.assertFalse(href.startswith("https://docs.google.com"))
+
+    def test_find_broken_links_excludes_about_blank_links(self):
+        """
+        "about:blank" is a missing destination in the source document, not a
+        link into the NOFO. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn("about:blank", broken_hrefs)
+
+    def test_find_broken_links_excludes_every_no_destination_shape(self):
+        """
+        An empty href, a whitespace-only href, and no href at all are all
+        "no destination" links, reported with the external links rather than
+        in the broken-internal-links panel.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken = find_broken_links(nofo)
+        broken_hrefs = [link["link_href"] for link in broken]
+        broken_text = [link["link_text"] for link in broken]
+
+        for href in ("", "   ", "about:blank"):
+            self.assertNotIn(href, broken_hrefs)
+
+        for text in (
+            "Empty href link",
+            "Whitespace href link",
+            "Href-less link",
+            "About:Blank link",
+        ):
+            self.assertNotIn(text, broken_text)
+
+    def test_find_broken_links_no_destination_shapes_are_external(self):
+        """All three are reported on the external-links side instead."""
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        invalid = [
+            link
+            for link in find_external_links(nofo, with_status=False)
+            if link["invalid_destination"]
+        ]
+
+        self.assertEqual(
+            sorted(link["link_text"] for link in invalid),
+            [
+                "About:Blank link",
+                "Empty href link",
+                "Href-less link",
+                "Whitespace href link",
+            ],
+        )
+
+    def test_find_broken_links_still_flags_other_external_schemes(self):
+        """
+        Excluding Google Docs must not exclude every http(s) URL: "file://"
+        and "bookmark://" links are still broken.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertIn("bookmark://_Collaborations", broken_hrefs)
+        self.assertIn(
+            "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
+            broken_hrefs,
+        )
+
+    def test_find_broken_links_google_docs_and_about_blank_are_external(self):
+        """
+        The two hrefs dropped from find_broken_links() are still reported:
+        both show up in find_external_links() instead.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        external_hrefs = [
+            link["url"] for link in find_external_links(nofo, with_status=False)
+        ]
+
+        self.assertIn(
+            "https://docs.google.com/document/d/some-document", external_hrefs
+        )
+        self.assertIn("about:blank", external_hrefs)
 
 
 class TestFindH7Headers(TestCase):

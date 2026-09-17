@@ -2258,6 +2258,9 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
         context["links"] = find_external_links(self.object, with_status)
+        context["invalid_destination_links"] = [
+            link for link in context["links"] if link.get("invalid_destination")
+        ]
         context["with_status"] = with_status
         return context
 

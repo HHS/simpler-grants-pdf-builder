@@ -4,6 +4,50 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-17 — Classify Google Docs and `about:blank` links outside broken internal links
+
+**Context:** The broken-links warning panel on the edit page reported two kinds
+of link that do not point anywhere inside the NOFO: Google Docs URLs and the
+`about:blank` placeholder Word and Google Docs write when a hyperlink in the
+source document has no destination. Google Docs URLs were already listed on the
+Check external links page, so a designer saw the same link twice under two
+different problem headings, one of which claimed a NOFO-internal problem that
+did not exist. `about:blank` has no destination at all, so neither an internal
+anchor check nor an HTTP status check says anything useful about it.
+
+**Decision:** Reserve the broken-internal-link warning for links meant to
+resolve within the NOFO — `#`-fragments, root-relative paths, `bookmark://`, and
+`file://`. Treat Google Docs URLs as ordinary external links, checked and
+counted once, on the external links page only. Report `about:blank` on that same
+page as an invalid destination, shown as "no destination / not checked" and
+never requested over HTTP, since it is a defect in the source `.docx` rather
+than a link the Builder can resolve either way.
+
+Treat every "no destination" link the same way, not just `about:blank`: an
+empty or whitespace-only href, and an `<a>` with no href attribute, are the
+same defect wearing different clothes, and a designer has no way to find one
+otherwise. All of them are highlighted inline in the editor body as well,
+because they are deliberately absent from the broken-links panel and the
+highlight is the only thing that shows where they are. They share one
+"Link with no destination" tooltip rather than naming a scheme: the editor's
+sanitizer strips the href from both `about:blank` and `bookmark://` links, so
+at the point the tooltip is applied the original scheme is no longer knowable,
+and the previous "Broken bookmark link" wording was a guess that was wrong for
+half the cases reaching it.
+
+Destination-less anchors carrying no visible link text are not reported at all,
+and neither is an href-less anchor carrying an `id`/`name`, which is a bookmark
+target rather than a link. The alternative considered was listing every such
+anchor for completeness; it was rejected because an anchor a reader cannot see
+or click is an artifact, and a designer given its location has nothing to act
+on. If these turn out to matter for diagnosing source documents, they belong in
+an import diagnostic rather than in a warning aimed at designers.
+
+See [#908](https://github.com/HHS/simpler-grants-pdf-builder/issues/908) and
+[`IMPORT_RULES.md` § Related, But Out of Scope](IMPORT_RULES.md#related-but-out-of-scope).
+
+---
+
 ## 2026-09-15 — Add sentences per paragraph as a supporting readability metric
 
 **Context:** The four Tier 2 clearance metrics remain the primary measures in
