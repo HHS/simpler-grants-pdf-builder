@@ -165,6 +165,19 @@ class ImportErrorPageTests(ImportErrorDrilldownTestCase):
         self.assertIn(f'href="{reverse("nofos:builder_metrics")}"', content)
         self.assertIn("Back to usage &amp; quality metrics", content)
 
+    def test_page_renders_no_template_source_as_body_text(self):
+        """
+        A multi-line {# #} isn't a comment in Django - it prints. Caught in a
+        screenshot rather than by a test, so now it's a test.
+        """
+        self.authorize()
+
+        content = self.client.get(self.url).content.decode("utf-8")
+
+        self.assertNotIn("{#", content)
+        self.assertNotIn("{%", content)
+        self.assertNotIn("String literals in templates", content)
+
     def test_recent_attempts_show_the_detail_needed_to_chase_one_down(self):
         self.authorize()
 

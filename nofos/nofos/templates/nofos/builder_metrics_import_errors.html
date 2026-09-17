@@ -28,8 +28,11 @@
 
 {% block content %}
   {% url 'nofos:builder_metrics' as metrics_href %}
-  {# String literals in templates are marked safe, so the entity is written out
-     rather than a bare ampersand - same as the dashboard's own heading. #}
+  {% comment %}
+    String literals in templates are marked safe, so the entity is written out
+    rather than a bare ampersand - same as the dashboard's own heading.
+    ({# #} is single-line only; spanning lines with it prints the text.)
+  {% endcomment %}
   {% include "includes/page_heading.html" with title="Import errors" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
 
   <div class="usa-prose margin-top-2">
