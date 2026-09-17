@@ -124,7 +124,7 @@
         <tr>
           <td>{{ forloop.counter }}</td>
           {% if link.invalid_destination %}
-            <td style="word-break: break-all;"><em>No destination</em> (<code>{{ link.url }}</code>)</td>
+            <td style="word-break: break-all;"><em>No destination</em> ({% if link.url %}<code>{{ link.url }}</code>{% else %}no <code>href</code>{% endif %})</td>
           {% else %}
             <td style="word-break: break-all;"><details><summary>{{ link.domain }}</summary><div><a href="{{ link.url }}">{{ link.url }}</a></div></details></td>
           {% endif %}

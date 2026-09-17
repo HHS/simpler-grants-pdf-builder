@@ -1532,7 +1532,7 @@ class TestAddClassesToBrokenLinks(TestCase):
     # These tests were added after an investigation into a false-positive report:
     # a manually-authored anchor target like `<a id="alignment-with-acf-vision"></a>`
     # embedded in a heading was correctly resolving as a link target in the HTML/PDF
-    # render, but was still getting a "Broken bookmark link" tooltip in the editor.
+    # render, but was still getting a broken-link tooltip in the editor.
     #
     # Root cause: the `href=False` branch used to flag ANY <a> tag lacking an
     # href, with no check for whether it had visible text or a valid `id` that
@@ -1568,7 +1568,11 @@ class TestAddClassesToBrokenLinks(TestCase):
         soup = BeautifulSoup(str(modified_html), "html.parser")
         link = soup.find("a")
         self.assertIn("nofo_edit--broken-link", link.get("class", []))
-        self.assertEqual(link.get("title"), "Broken bookmark link")
+        # The message is the generic "no destination" one rather than a
+        # bookmark-specific one: martor strips the href for "about:" too
+        # (an "about:blank" link also lands here, href-less), so this branch
+        # can't tell which scheme it started as. See issue #908.
+        self.assertEqual(link.get("title"), "Link with no destination")
 
     def test_valid_bookmark_target_referenced_elsewhere_is_not_flagged(self):
         """
@@ -1677,6 +1681,59 @@ class TestAddClassesToBrokenLinks(TestCase):
         soup = BeautifulSoup(str(modified_html), "html.parser")
         anchor = soup.find("a", id="unused-anchor")
         self.assertNotIn("nofo_edit--broken-link", anchor.get("class", []))
+
+    # --- Coverage for links whose href names no destination (issue #908) ---
+    #
+    # These never appear in `broken_links`: they are reported on the
+    # external-links page, not in the broken-internal-links panel. The inline
+    # highlight is what tells a designer *where* in the body to find them, so
+    # it has to come from the href itself rather than from the passed-in list.
+
+    def test_about_blank_link_is_flagged_with_no_destination_message(self):
+        html = '<p>This is an <a href="about:blank">Apply here</a> link.</p>'
+        modified_html = add_classes_to_broken_links(html, [])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertIn("nofo_edit--broken-link", link.get("class", []))
+        self.assertEqual(link.get("title"), "Link with no destination")
+
+    def test_empty_href_link_is_flagged_with_no_destination_message(self):
+        html = '<p>This is an <a href="">Apply here</a> link.</p>'
+        modified_html = add_classes_to_broken_links(html, [])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertIn("nofo_edit--broken-link", link.get("class", []))
+        self.assertEqual(link.get("title"), "Link with no destination")
+
+    def test_whitespace_href_link_is_flagged_with_no_destination_message(self):
+        html = '<p>This is a <a href="   ">Apply here</a> link.</p>'
+        modified_html = add_classes_to_broken_links(html, [])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertIn("nofo_edit--broken-link", link.get("class", []))
+        self.assertEqual(link.get("title"), "Link with no destination")
+
+    def test_no_destination_href_without_visible_text_is_not_flagged(self):
+        """Consistent with the href-less branch: no text, nothing to fix."""
+        html = '<p>Text outside <a href="about:blank"></a> the anchor.</p>'
+        modified_html = add_classes_to_broken_links(html, [])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertNotIn("nofo_edit--broken-link", link.get("class", []))
+
+    def test_hash_only_href_is_not_flagged_as_no_destination(self):
+        """
+        "#" is a real fragment. It belongs to the broken-links panel, so it is
+        flagged only when it is passed in via `broken_links` -- never by the
+        no-destination branch.
+        """
+        html = '<p>This is a <a href="#">Apply here</a> link.</p>'
+        modified_html = add_classes_to_broken_links(html, [])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertNotIn("nofo_edit--broken-link", link.get("class", []))
+
+    def test_broken_links_list_still_wins_over_no_destination_branch(self):
+        """A genuine broken link keeps its own "Broken link" message."""
+        html = '<p>This is a <a href="#_Purpose">Purpose</a> link.</p>'
+        modified_html = add_classes_to_broken_links(html, [{"link_href": "#_Purpose"}])
+        link = BeautifulSoup(str(modified_html), "html.parser").find("a")
+        self.assertEqual(link.get("title"), "Broken link")
 
     def test_empty_id_edge_case(self):
         """

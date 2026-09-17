@@ -1340,17 +1340,56 @@ def find_incorrectly_nested_heading_levels(nofo):
     return incorrectly_nested_heading_levels
 
 
-# Link destinations that are neither an internal anchor nor a fetchable URL.
-# Word and Google Docs both write "about:blank" when a hyperlink in the source
-# document has no destination, so it is a source-document defect rather than a
-# broken link into the NOFO. It is reported alongside the external links (the
-# other category of link that points outside the NOFO) and never requested.
-INVALID_LINK_DESTINATIONS = ("about:blank",)
+# Href values that name no destination at all. "" covers both an empty href
+# and a whitespace-only one (the check strips first); "about:blank" is what
+# Word and Google Docs write when a hyperlink in the source document was never
+# given a target. Neither is a broken link *into* the NOFO, so both are
+# reported with the external links -- the other category of link that points
+# outside the NOFO -- and neither is ever requested over HTTP.
+INVALID_LINK_DESTINATIONS = ("", "about:blank")
 INVALID_LINK_ERROR = "No link destination in the source document"
 
 
 def _is_invalid_link_destination(url):
+    """True for an href value that names no destination. None means no href attribute at all, which is_dangling_link_anchor() decides on instead, since it needs the rest of the tag to tell a link from a bookmark target."""
+    if url is None:
+        return False
+
     return url.strip().lower() in INVALID_LINK_DESTINATIONS
+
+
+def is_dangling_link_anchor(tag):
+    """
+    True when an `<a>` is a link a reader can see but that goes nowhere.
+
+    Two shapes count:
+      - an `href` that names no destination ("", whitespace, "about:blank")
+      - no `href` attribute at all, which is what martor's sanitizer leaves
+        behind when it strips a disallowed scheme such as "bookmark://"
+
+    Two shapes deliberately do not:
+      - no visible text: an artifact a designer can neither see nor click, so
+        there is nothing to report and nothing to fix
+      - no `href` but carrying an `id`/`name`: that is a bookmark *target*,
+        not a link, and some targets keep their original visible label (see
+        `preserve_bookmark_links` below, and the "category 2b" tests in
+        tests_nofos/test_templatetags.py). Text alone isn't enough to call
+        an href-less anchor broken.
+
+    Shared with `templatetags/add_classes_to_links.py` so the inline tooltip
+    in the editor body and the external-links page agree on what counts.
+    """
+    if getattr(tag, "name", None) != "a":
+        return False
+
+    if not tag.get_text(strip=True):
+        return False
+
+    href = tag.get("href")
+    if href is None:
+        return not (tag.get("id") or tag.get("name"))
+
+    return _is_invalid_link_destination(href)
 
 
 def _update_link_statuses(all_links):
@@ -1654,7 +1693,7 @@ def find_external_links(nofo, with_status=False):
 
     This function processes the markdown content of each subsection, converts it to HTML using BeautifulSoup and markdown libraries, and searches for all 'a' tags (hyperlinks). It then filters these links to include only those that are external (not part of the 'nofo.rodeo' domain).
 
-    Links with an invalid destination (see INVALID_LINK_DESTINATIONS, eg. "about:blank") are included here too, flagged with 'invalid_destination': they point outside the NOFO rather than at one of its own anchors, so they belong in this list rather than in find_broken_links(). They are never requested over HTTP, because there is no destination to request.
+    Links that name no destination at all are included here too, flagged with 'invalid_destination': an empty or whitespace-only href, "about:blank", or no href attribute (see is_dangling_link_anchor). None of them is an anchor into the NOFO, so they belong in this list rather than in find_broken_links(), and none is ever requested over HTTP because there is no destination to request. Anchors with no visible text, and href-less bookmark *targets* carrying an id/name, are skipped.
 
     Parameters:
         nofo (Nofo instance): The NOFO object whose sections and subsections are to be scanned for external links.
@@ -1669,7 +1708,7 @@ def find_external_links(nofo, with_status=False):
             - 'status' (str): A placeholder for the status of the link; it remains empty unless updated externally.
             - 'error' (str): A placeholder for any error associated with the link; it remains empty unless updated externally.
             - 'redirect_url' (str): A placeholder for the URL where the link redirects; it remains empty unless updated externally.
-            - 'invalid_destination' (bool): True if the link has no real destination (eg. "about:blank"), in which case 'error' is pre-filled and no HTTP request is made.
+            - 'invalid_destination' (bool): True if the link has no destination at all (empty/whitespace href, "about:blank", or no href attribute), in which case 'url' is the literal href (""  when absent), 'error' is pre-filled, and no HTTP request is made.
     """
     all_links = []
 
@@ -1684,15 +1723,13 @@ def find_external_links(nofo, with_status=False):
             )
             links = soup.find_all("a")
             for link in links:
-                url = link.get("href", "#")
+                href = link.get("href")
+                # "" when the anchor has no href attribute at all, so the row
+                # reports the literal (missing) destination rather than a "#"
+                # placeholder that was never in the document.
+                url = href if href is not None else ""
 
-                if _is_invalid_link_destination(url):
-                    # An anchor with no visible text is a leftover artifact, not
-                    # something a reader can click: only surface the ones a
-                    # designer can actually find and fix in the document.
-                    if not link.get_text(strip=True):
-                        continue
-
+                if is_dangling_link_anchor(link):
                     all_links.append(
                         {
                             "url": url,
@@ -1739,9 +1776,10 @@ def find_broken_links(nofo):
 
     Links to destinations *outside* the NOFO are deliberately not counted here, even when they are a problem:
     Google Docs URLs (`https://docs.google.com/...`) are ordinary external links and are reported by
-    find_external_links(), and destination-less links (eg. "about:blank") are reported there too as
-    invalid destinations. Neither is an internal anchor, so calling them broken internal links was
-    both misleading and, for Google Docs, a duplicate of the external-link report.
+    find_external_links(), and links that name no destination at all (an empty or whitespace-only href,
+    "about:blank", or no href attribute) are reported there too as invalid destinations. None of them is
+    an internal anchor, so calling them broken internal links was both misleading and, for Google Docs,
+    a duplicate of the external-link report.
 
     Args:
         nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
