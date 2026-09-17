@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.39.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.39.0...nofos-v3.39.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* classify Google Docs and no-destination links outside broken internal links ([#920](https://github.com/HHS/simpler-grants-pdf-builder/issues/920)) ([c7a4531](https://github.com/HHS/simpler-grants-pdf-builder/commit/c7a45312a6e86045c190118b7db8daba7c758c33))
+* import an underscore-only tagline as blank ([#919](https://github.com/HHS/simpler-grants-pdf-builder/issues/919)) ([a045b97](https://github.com/HHS/simpler-grants-pdf-builder/commit/a045b97de55d7957215921e6925657c28b6d5ab6))
+
+
+### Tests
+
+* pin how duplication treats the "Before you begin" variant ([#917](https://github.com/HHS/simpler-grants-pdf-builder/issues/917)) ([4a5c180](https://github.com/HHS/simpler-grants-pdf-builder/commit/4a5c1804eef81a532ab9a505570c32a0f3948197))
+
 ## [3.39.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.38.0...nofos-v3.39.0) (2026-09-17)
 
 
