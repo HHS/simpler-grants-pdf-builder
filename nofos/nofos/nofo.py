@@ -2074,8 +2074,25 @@ def suggest_nofo_subagency2(soup):
     return suggestion or ""
 
 
+# Word templates leave a ruled blank for the tagline, which converts to a run of
+# underscores. Sanitizing keeps them (they are ordinary printable characters), so
+# the placeholder would otherwise be saved and rendered as the tagline itself.
+TAGLINE_UNDERSCORE_PLACEHOLDER_PATTERN = re.compile(r"[\s_]*_[\s_]*")
+
+
+def _is_underscore_placeholder(value):
+    """True for a value made up only of underscores (and whitespace)."""
+    return bool(value) and bool(TAGLINE_UNDERSCORE_PLACEHOLDER_PATTERN.fullmatch(value))
+
+
 def suggest_nofo_tagline(soup):
     suggestion = _suggest_by_startswith_string(soup, "Tagline:")
+
+    # Scoped to the tagline on purpose: other metadata fields have no reason to
+    # treat underscores as a blank, and IMPORT-041 otherwise keeps them as-is.
+    if _is_underscore_placeholder(suggestion):
+        return ""
+
     return suggestion or ""
 
 

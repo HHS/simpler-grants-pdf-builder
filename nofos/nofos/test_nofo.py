@@ -4838,6 +4838,47 @@ class SuggestNofoTaglineTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
 
+    def test_tagline_is_underscore_placeholder(self):
+        html = "<div><p>Tagline: _________</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_single_underscore(self):
+        html = "<div><p>Tagline: _</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_placeholder_with_surrounding_whitespace(self):
+        html = "<div><p>Tagline:    _________   </p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_runs_split_by_spaces(self):
+        html = "<div><p>Tagline: ____ ____</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_placeholder_broken_up_by_spans(self):
+        html = "<div><p><span>Tagline: </span><span>____</span><span>_____</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_with_underscores_and_other_characters_is_preserved(self):
+        html = "<div><p>Tagline: Apply by ____ to be considered</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "Apply by ____ to be considered")
+
+    def test_tagline_of_only_underscores_and_a_word_is_preserved(self):
+        html = "<div><p>Tagline: ____ TBD</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "____ TBD")
+
+    def test_tagline_underscore_placeholder_does_not_affect_other_fields(self):
+        html = "<div><p>Agency: _________</p><p>Subagency: _________</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "_________")
+        self.assertEqual(suggest_nofo_subagency(soup), "_________")
+
 
 class SuggestNofoAuthorTests(TestCase):
     def test_author_present_in_paragraph(self):
