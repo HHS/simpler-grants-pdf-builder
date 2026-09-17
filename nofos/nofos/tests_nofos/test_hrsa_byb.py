@@ -74,8 +74,17 @@ class HrsaBeforeYouBeginTests(TestCase):
                 )
 
     def test_non_hrsa_import_keeps_existing_defaults_and_cover_choices(self):
+        # CDC also defaults to the text-only cover (IMPORT-043), but unlike HRSA
+        # it keeps every cover choice selectable.
         nofo = self.new_import("CDC-27-001", "CDC")
         self.assertEqual(nofo.before_you_begin, "full")
+        self.assertEqual(nofo.cover, "nofo--cover-page--text")
+        form = NofoThemeOptionsForm(instance=nofo, user=self.user)
+        self.assertEqual(list(form.fields["cover"].choices), Nofo.COVER_CHOICES)
+
+    def test_non_hrsa_import_without_text_cover_rule_keeps_medium_cover(self):
+        # An OpDiv with no text-only rule still starts on the image cover.
+        nofo = self.new_import("CMS-27-001", "CMS")
         self.assertEqual(nofo.cover, "nofo--cover-page--medium")
         form = NofoThemeOptionsForm(instance=nofo, user=self.user)
         self.assertEqual(list(form.fields["cover"].choices), Nofo.COVER_CHOICES)

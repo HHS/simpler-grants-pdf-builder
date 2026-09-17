@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 from freezegun import freeze_time
 
-from .models import Nofo, Section, Subsection
+from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     INVALID_LINK_ERROR,
@@ -4688,9 +4688,19 @@ class HTMLSuggestThemeTests(TestCase):
 
 
 class HTMLSuggestCoverTests(TestCase):
-    def test_suggest_nofo_cover_cdc_returns_medium(self):
-        nofo_cover = "nofo--cover-page--medium"
+    def test_suggest_nofo_cover_cdc_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
         self.assertEqual(suggest_nofo_cover("portrait-cdc-blue"), nofo_cover)
+
+    def test_suggest_nofo_cover_all_cdc_themes_return_text(self):
+        """Every CDC theme variant, portrait or legacy landscape, defaults to text only."""
+        cdc_themes = [theme for theme, _ in THEME_CHOICES if "cdc-" in theme.lower()]
+        # Guard against the theme list being renamed out from under this test
+        self.assertIn("portrait-cdc-blue", cdc_themes)
+
+        for theme in cdc_themes:
+            with self.subTest(theme=theme):
+                self.assertEqual(suggest_nofo_cover(theme), "nofo--cover-page--text")
 
     def test_suggest_nofo_cover_cms_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
@@ -5367,6 +5377,44 @@ class SuggestNofoFieldsTests(TestCase):
         self.nofo.save()
 
         self.assertEqual(self.nofo.before_you_begin, "hrsa")
+
+    def test_suggest_all_nofo_fields_cdc_nofo_defaults_to_text_cover(self):
+        """A newly imported CDC NOFO gets the CDC theme and the text-only cover."""
+        cdc_html = """
+            <html>
+                <body>
+                    <p>Opportunity Name: Cowpolk Public Health 2024-2025</p>
+                    <p>Opportunity Number: CDC-RFA-DP-25-001</p>
+                    <p>OpDiv: Centers for Disease Control and Prevention (CDC)</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(cdc_html, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
+
+    def test_suggest_all_nofo_fields_does_not_reset_cdc_cover_on_reimport(self):
+        """A CDC NOFO that already picked an image cover keeps it when re-imported."""
+        self.nofo.number = "CDC-RFA-DP-25-001"
+        self.nofo.theme = "portrait-cdc-blue"
+        self.nofo.cover = "nofo--cover-page--medium"
+        self.nofo.save()
+
+        cdc_html = """
+            <html>
+                <body>
+                    <p>Opportunity Name: Cowpolk Public Health 2024-2025</p>
+                    <p>Opportunity Number: CDC-RFA-DP-25-001</p>
+                    <p>OpDiv: Centers for Disease Control and Prevention (CDC)</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(cdc_html, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
         suggest_all_nofo_fields(self.nofo, self.soup)

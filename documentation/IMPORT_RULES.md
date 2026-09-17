@@ -482,8 +482,10 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-043 — Cover style suggestion
 - **Type:** extraction
-- **Trigger:** Theme prefix is `acf-`/`acl-`/`hrsa-`/`nih-`.
+- **Trigger:** Theme prefix is `acf-`/`acl-`/`cdc-`/`hrsa-`/`nih-`.
 - **Action:** On a new import, suggest a text-only cover for those themes, or the "medium" cover for other themes. Re-imports preserve the stored cover style, including when the existing opportunity number is blank or a placeholder. HRSA theme forms offer only text-only plus the record's current legacy cover, if any; loading the form does not update the record.
+
+  **CDC.** The `cdc-` prefix matches every CDC theme — the portrait defaults, the division themes (NCIPC, DGHP, DHP, IOD, ORR), and the retired `landscape-cdc-*` pair — so all of them start on the text-only cover. Unlike HRSA and NIH, CDC's theme form is not restricted: all three cover styles stay selectable, and a CDC writer can switch a NOFO to "Standard image" or "Full coverage with image" at any point. This is a starting value, not a constraint. Existing records are untouched: the suggestion only runs on a first-time import, so CDC NOFOs imported before this changed keep the "medium" cover they were given.
 - **Source:** `nofo.py::suggest_nofo_cover`
 - **Status:** active
 
