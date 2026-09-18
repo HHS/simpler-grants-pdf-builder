@@ -1201,12 +1201,13 @@ class NofoReadabilityScore(models.Model):
 
     @property
     def is_current(self):
-        """Whether content and Builder's measurement input contract are current."""
-        from .readability import INPUT_CONTRACT_VERSION
+        """Whether content and the installed measurement contract are current."""
+        from .readability import INPUT_CONTRACT_VERSION, get_metrics_package_version
 
         return (
             self.nofo_revision == self.nofo.updated
             and self.input_contract_version == INPUT_CONTRACT_VERSION
+            and self.package_version == get_metrics_package_version()
         )
 
 

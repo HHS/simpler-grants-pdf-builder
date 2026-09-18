@@ -592,13 +592,29 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self.client.post(self.metrics_url)
 
         # Same content, different measurement contract: not the same measurement.
-        version.return_value = "0.6.0"
+        previous = NofoReadabilityScore.objects.get()
+        self.assertTrue(previous.is_current)
+        version.return_value = "0.5.3"
+        self.assertFalse(previous.is_current)
+        self.assertIsNone(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.3"
+            )
+        )
+        self.client.post(self.metrics_url)
         self.client.post(self.metrics_url)
 
         self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        self.assertEqual(analyze.call_count, 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.3"
+        )
+        self.assertTrue(current.is_current)
+        previous.refresh_from_db()
+        self.assertEqual(previous.result, build_payload())
         self.assertEqual(
             set(NofoReadabilityScore.objects.values_list("package_version", flat=True)),
-            {"0.5.2", "0.6.0"},
+            {"0.5.2", "0.5.3"},
         )
 
     # -- failed and incomplete calculations ----------------------------------
