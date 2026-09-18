@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -53,6 +55,14 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         panel = soup.find(id="tabpanel-4")
         self.assertIsNotNone(tab)
         self.assertEqual(tab.get("aria-label"), f"Review endnotes ({len(issues)})")
+        copy_button = panel.find("button", string="Copy endnote issues")
+        self.assertIsNotNone(copy_button)
+        self.assertEqual(copy_button.get("type"), "button")
+        self.assertIn("usa-button--content_copy", copy_button.get("class", []))
+        self.assertIn(
+            f"There are {len(issues)} endnote issues to review",
+            panel.find("summary").get_text(" ", strip=True),
+        )
         location_links = panel.select("ol li a")
         self.assertTrue(location_links)
         for location_link in location_links:
@@ -75,6 +85,29 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         self.assertIn("correct the affected content here", panel_text)
         self.assertNotIn("not typed manually", panel_text)
         self.assertNotIn("could not be linked automatically", panel_text)
+
+    @patch("nofos.views.find_endnote_issues")
+    def test_warning_uses_singular_copy_for_one_issue(self, find_endnote_issues):
+        section = self.nofo.sections.first()
+        subsection = section.subsections.first()
+        find_endnote_issues.return_value = [
+            {
+                "section": section,
+                "subsection": subsection,
+                "location_html_id": section.html_id,
+                "message": "Review this endnote",
+                "code": "reference",
+            }
+        ]
+
+        response = self.client.get(self.edit_url)
+        soup = BeautifulSoup(response.content, "html.parser")
+        summary = soup.select_one("#tabpanel-4 summary")
+
+        self.assertEqual(
+            summary.get_text(" ", strip=True),
+            "There is 1 endnote issue to review",
+        )
 
     def test_renamed_endnotes_section_still_shows_warning(self):
         footnotes_section = self.nofo.sections.get(name="Footnotes")
