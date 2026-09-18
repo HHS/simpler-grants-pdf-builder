@@ -397,13 +397,14 @@ Edit “{{ nofo|nofo_name }}”
         <div class="usa-alert">
           <div class="usa-alert__body">
             <h3 class="usa-alert__heading">Warning: review endnotes</h3>
+            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy endnote issues</button>
             <div>
               <details>
                 <summary>
                   {% if unconverted_footnotes|length == 1 %}
-                  <span>There is 1 issue to review</span>
+                  <span>There is 1 endnote issue to review</span>
                   {% else %}
-                  <span>There are {{ unconverted_footnotes|length }} issues to review</span>
+                  <span>There are {{ unconverted_footnotes|length }} endnote issues to review</span>
                   {% endif %}
                 </summary>
                 <div>

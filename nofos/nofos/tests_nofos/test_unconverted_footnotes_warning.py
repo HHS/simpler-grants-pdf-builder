@@ -53,6 +53,14 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         panel = soup.find(id="tabpanel-4")
         self.assertIsNotNone(tab)
         self.assertEqual(tab.get("aria-label"), f"Review endnotes ({len(issues)})")
+        copy_button = panel.find("button", string="Copy endnote issues")
+        self.assertIsNotNone(copy_button)
+        self.assertEqual(copy_button.get("type"), "button")
+        self.assertIn("usa-button--content_copy", copy_button.get("class", []))
+        self.assertIn(
+            f"There are {len(issues)} endnote issues to review",
+            panel.find("summary").get_text(" ", strip=True),
+        )
         location_links = panel.select("ol li a")
         self.assertTrue(location_links)
         for location_link in location_links:
