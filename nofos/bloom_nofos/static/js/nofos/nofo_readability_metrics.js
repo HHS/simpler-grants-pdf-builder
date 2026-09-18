@@ -232,7 +232,7 @@
       showScopeSummary(payload.metrics);
       showWarnings(payload.warnings);
       results.hidden = false;
-      status.textContent = "Calculated for the current revision.";
+      status.textContent = "Calculated for your current version.";
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate";
       button.classList.add("usa-button--outline");

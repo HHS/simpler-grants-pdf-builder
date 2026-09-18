@@ -116,14 +116,10 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
         self.assertContains(
-            response, "NOFO Builder saves metrics for the revision you have calculated"
+            response, "NOFO Builder saves metrics for your current version"
         )
         # The panel POSTs to the endpoint, so it needs a CSRF token to send.
         self.assertContains(response, "data-csrf-token=")
-        self.assertContains(
-            response,
-            "We retain earlier snapshots, but only the most recent version",
-        )
         self.assertNotContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
@@ -133,6 +129,12 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
+        # Snapshot retention is real, but reviewing earlier snapshots has not
+        # shipped, and "revision" is internal vocabulary, so the panel says
+        # neither.
+        panel_text = panel.get_text().lower()
+        self.assertNotIn("snapshot", panel_text)
+        self.assertNotIn("revision", panel_text)
         metric_cards = panel.select("[data-metric-id]")
         self.assertEqual(
             {metric["data-metric-id"] for metric in metric_cards},

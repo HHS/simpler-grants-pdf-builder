@@ -82,12 +82,19 @@ endpoint response; metric calculation and source rendering remain server-side.
 The package profile and version remain available in the API response for
 diagnostics but are not shown to editors.
 
-The panel does not assign pass/fail bands. It explains that calculations are
-saved for the measured revision and that earlier snapshots are retained but not
-shown here. Reloading the page resets the panel; reopening it retrieves the
-stored result if the revision and measurement contract are unchanged, or
-calculates a new result otherwise. Target comparisons use current configuration,
-not the goals saved with a previous snapshot.
+The panel does not assign pass/fail bands. It tells the editor that metrics are
+saved for their current version and to calculate again after editing or
+reimporting, and its status line reports "Calculated for your current version."
+on success. That copy deliberately avoids the words "revision" and "snapshot"
+throughout: both are internal vocabulary, and snapshot retention is not
+something an editor can act on until reviewing earlier snapshots ships.
+Retention itself is unchanged and still documented under
+[Stored snapshots](#stored-snapshots); `revision` also remains the field name in
+the API response, which editors do not see.
+Reloading the page resets the panel; reopening it retrieves the stored result if
+the revision and measurement contract are unchanged, or calculates a new result
+otherwise. Target comparisons use current configuration, not the goals saved
+with a previous snapshot.
 
 ## Target comparisons
 
