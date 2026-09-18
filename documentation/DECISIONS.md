@@ -4,6 +4,57 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-18 — Say "your current version" in the readability panel, and drop the snapshot sentence
+
+**Context:** The intro paragraph in the Readability metrics accordion read:
+"NOFO Builder saves metrics for the revision you have calculated. After editing
+or reimporting the NOFO, calculate your metrics again for updated results. We
+retain earlier snapshots, but only the most recent version appears in this
+panel."
+
+Two problems. First, "revision" is internal vocabulary. It is precise — a
+revision is what the stored snapshot is keyed to — but the point the sentence
+is trying to make to an editor is simply that the numbers reflect the NOFO as
+it stands now, including an edit made a moment ago. An editor does not think in
+revisions and has no interface anywhere else in the Builder that uses the word.
+
+Second, the snapshot sentence describes real behavior — retention is
+append-only and documented — but it is written for a feature that has not
+shipped. Nothing in the interface lets an editor review an earlier snapshot, so
+the sentence answers a question the product does not yet let anyone ask, and
+the qualifier "but only the most recent version appears in this panel" reads as
+an apology for a missing capability rather than as guidance.
+
+**Decision:** Use "NOFO Builder saves metrics for your current version. After
+editing or reimporting the NOFO, calculate your metrics again for updated
+results." Remove the snapshot sentence from the panel entirely rather than
+rewording it; restore a sentence about earlier results when reviewing them is
+something an editor can actually do.
+
+Apply the same vocabulary to the rest of the feature's interface, so the panel
+does not say "current version" in one place and "revision" in another: the
+status line shown after a successful calculation now reads "Calculated for your
+current version." rather than "Calculated for the current revision."
+`revision` stays as an internal field name, in the API response and the stored
+snapshot, where no editor reads it.
+
+This is a copy change only. Snapshots are still created, still append-only,
+still retained, and still keyed to the NOFO revision; only the panel's
+description of that behavior changes. `READABILITY_METRICS.md` § Stored
+snapshots remains the record of what actually happens.
+
+Two alternatives were considered and rejected. Wording the first sentence
+around the calculation rather than the version — "These metrics reflect the
+version you last calculated" — is strictly more accurate, because a NOFO edited
+since the last calculation shows numbers for the previous version until it is
+recalculated. It was rejected as the smaller gain: the second sentence already
+tells the editor to recalculate after an edit, and leading with "last
+calculated" puts the caveat ahead of the plain answer. Softening the snapshot
+sentence instead of cutting it was rejected because any wording still commits
+the panel to describing storage the editor cannot see.
+
+---
+
 ## 2026-09-17 — Classify Google Docs and `about:blank` links outside broken internal links
 
 **Context:** The broken-links warning panel on the edit page reported two kinds
