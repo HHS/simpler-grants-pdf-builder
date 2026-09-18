@@ -4,6 +4,33 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-18 — Make endnote warnings copyable for sharing
+
+**Context:** The broken-links warning already lets an editor copy its issue
+summary and numbered list so the problems can be pasted into an email or other
+message. The Review endnotes warning identifies similarly actionable problems,
+including the affected subsection, but previously required editors to
+reconstruct that information by hand before sharing it with someone else.
+
+**Decision:** Add a "Copy endnote issues" button to the Review endnotes warning
+and use the same clipboard structure as the broken-links warning: the issue
+count and summary first, followed by a blank line and a numbered list containing
+each issue's text and section or subsection location. Use endnote-specific
+singular and plural summary text ("There is 1 endnote issue to review" / "There
+are N endnote issues to review") so pasted content remains understandable
+outside NOFO Builder.
+
+Keep one shared warning-panel copy interaction rather than introducing separate
+JavaScript for each warning. After a successful copy, briefly show "Copied!"
+and then restore the label that belonged to the selected button, whether that
+label was "Copy links" or "Copy endnote issues."
+
+This changes only how existing endnote warnings are presented and shared. It
+does not change endnote detection, import transforms, or the underlying issue
+list.
+
+---
+
 ## 2026-09-18 — Say "your current version" in the readability panel, and drop the snapshot sentence
 
 **Context:** The intro paragraph in the Readability metrics accordion read:
