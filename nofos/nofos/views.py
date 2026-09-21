@@ -2213,7 +2213,7 @@ class NofoRemovePageBreaksView(
         return redirect("nofos:nofo_edit", pk=nofo.id)
 
 
-class NofoSearchView(SuperuserRequiredMixin, ListView):
+class NofoSearchView(ListView):
     model = Nofo
     template_name = "nofos/nofo_search.html"
     context_object_name = "nofo_list"
@@ -2221,6 +2221,11 @@ class NofoSearchView(SuperuserRequiredMixin, ListView):
     def get_queryset(self):
         # Start with non-archived NOFOs
         queryset = Nofo.objects.filter(archived__isnull=True)
+
+        # Non-bloom users can only search within their own group. Bloom users
+        # retain their existing cross-group search visibility.
+        if self.request.user.group != "bloom":
+            queryset = queryset.filter(group=self.request.user.group)
 
         # Search query
         query = self.request.GET.get("query", "").strip()
