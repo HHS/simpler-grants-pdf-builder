@@ -184,7 +184,16 @@ def resolve_section_heading_level(soup):
     h1_text = clean_string(
         section_heading_candidates[first_h1_index].get_text(" ", strip=True)
     )
-    raise AmbiguousHeadingHierarchyError(h2_text=h2_text, h1_text=h1_text)
+    # A lone final H1 is a likely style outlier, not evidence that preceding
+    # H2s are its children. Do not infer intent from counts in mixed hierarchies.
+    trailing_h1_outlier = (
+        first_h1_index == len(section_heading_candidates) - 1 and first_h1_index >= 2
+    )
+    raise AmbiguousHeadingHierarchyError(
+        h2_text=h2_text,
+        h1_text=h1_text,
+        preceding_h2_count=first_h1_index if trailing_h1_outlier else None,
+    )
 
 
 def process_nofo_html(soup, top_heading_level):

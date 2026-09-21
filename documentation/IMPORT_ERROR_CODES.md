@@ -126,7 +126,18 @@ registries are maintained separately.
 2. Decide which one is a main section, and apply the same heading level to every main section in the document.
 3. Save the document, then import it again.
 
-**What support should say:** Usually a title or preamble styled as Heading 2. The fix is in the document, not in Builder: one consistent heading level for main sections.
+**What support should say:** A single final Heading 1 after multiple Heading 2 headings gets a likely Word fix naming that heading and suggesting Heading 2 if they are all main sections. Other mixed structures keep neutral guidance. Builder does not change the document or guess its intent.
+
+For example, seven Heading 2 headings followed by a single Heading 1 named
+"Endnotes" also show this document-specific detail:
+
+> **Likely Word fix**
+>
+> “Endnotes” uses Heading 1 after 7 headings that use Heading 2. If these are all main sections, in Word, select “Endnotes” and apply the Heading 2 style. Save the document, then import it again.
+
+The suggestion is not specific to Endnotes. It requires at least two nonempty,
+non-table Heading 2 headings followed by exactly one final Heading 1, with no
+later Heading 2. Other ambiguous patterns retain only the neutral steps above.
 
 ### `IMPORT-HEADING-TOO-LONG`
 

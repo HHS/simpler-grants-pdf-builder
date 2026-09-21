@@ -649,10 +649,24 @@ def parse_error_details(error, error_code, uploaded_file=None):
         h1_text = getattr(error, "h1_text", "")
         if not (h2_text or h1_text):
             return []
-        return [
+        details = [
             {"label": "First Heading 2", "value": h2_text},
             {"label": "First Heading 1", "value": h1_text},
         ]
+        preceding_h2_count = getattr(error, "preceding_h2_count", None)
+        if preceding_h2_count is not None:
+            details.append(
+                {
+                    "label": "Likely Word fix",
+                    "value": (
+                        f"“{h1_text}” uses Heading 1 after {preceding_h2_count} "
+                        "headings that use Heading 2. If these are all main sections, "
+                        f"in Word, select “{h1_text}” and apply the Heading 2 style. "
+                        "Save the document, then import it again."
+                    ),
+                }
+            )
+        return details
 
     if error_code == "IMPORT-FILE-TYPE":
         details = []

@@ -1049,6 +1049,46 @@ class TestImportAttemptLogging(TestCase):
 
 
 class TestNofoImportMixedHeadingHierarchy(TestCase):
+    def test_likely_fix_is_specific_and_safely_escaped(self):
+        html = (
+            "<p>OpDiv: CMS</p>"
+            + "".join(f"<h2>Step {i}</h2>" for i in range(7))
+            + "<h1>Endnotes &lt;script&gt;alert(1)&lt;/script&gt;</h1>"
+        )
+        response = self.client.post(
+            self.import_url,
+            {
+                "nofo-import": SimpleUploadedFile(
+                    "headings.html", html.encode(), content_type="text/html"
+                )
+            },
+        )
+        self.assertContains(
+            response, "uses Heading 1 after 7 headings", status_code=422
+        )
+        self.assertContains(response, "apply the Heading 2 style", status_code=422)
+        self.assertNotContains(response, "<script>alert(1)</script>", status_code=422)
+        self.assertEqual(Nofo.objects.count(), 0)
+
+    def test_uncertain_structure_keeps_neutral_page(self):
+        response = self.client.post(
+            self.import_url,
+            {
+                "nofo-import": SimpleUploadedFile(
+                    "headings.html",
+                    b"<p>OpDiv: CMS</p><h2>Preamble</h2><h1>Main section</h1>",
+                    content_type="text/html",
+                )
+            },
+        )
+        self.assertNotContains(response, "Likely Word fix", status_code=422)
+        self.assertContains(
+            response,
+            "apply the same heading level to every main section",
+            status_code=422,
+        )
+        self.assertEqual(Nofo.objects.count(), 0)
+
     def setUp(self):
         self.user = BloomUser.objects.create_user(
             email="heading-test@example.com",
@@ -1125,6 +1165,9 @@ class TestNofoImportMixedHeadingHierarchy(TestCase):
         self.assertIn("Step 1: Review the Opportunity", content)
         self.assertIn("First Heading 1", content)
         self.assertIn("Appendix A: Award data", content)
+        self.assertIn("Likely Word fix", content)
+        self.assertIn("uses Heading 1 after 2 headings", content)
+        self.assertIn("apply the Heading 2 style", content)
         self.assertIn("apply the same heading level to every main section", content)
         self.assertIn(f'href="{self.import_url}"', content)
         self.assertIn("simplerNOFOs@agile6.com", content)
