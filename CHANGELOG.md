@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.41.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.40.0...nofos-v3.41.0) (2026-09-21)
+
+
+### Features
+
+* copy endnote warning issues ([#937](https://github.com/HHS/simpler-grants-pdf-builder/issues/937)) ([6afca71](https://github.com/HHS/simpler-grants-pdf-builder/commit/6afca71f341eab670a5f16b3c5b2d8e5f25933db))
+
+
+### Bug Fixes
+
+* adopt metrics 0.5.3 and mark older snapshots non-current ([#928](https://github.com/HHS/simpler-grants-pdf-builder/issues/928)) ([43df914](https://github.com/HHS/simpler-grants-pdf-builder/commit/43df9146134bc301fc235a3574c580fcb0334f1c))
+* allow OpDiv users to search NOFOs ([#942](https://github.com/HHS/simpler-grants-pdf-builder/issues/942)) ([cda1275](https://github.com/HHS/simpler-grants-pdf-builder/commit/cda12757dd315387a0c24a215699ae48659c9196))
+* say "your current version" in the readability panel copy ([#926](https://github.com/HHS/simpler-grants-pdf-builder/issues/926)) ([1cd21b1](https://github.com/HHS/simpler-grants-pdf-builder/commit/1cd21b169001507d5e47b79a8307761943316ad6))
+* suggest Word style repair for trailing heading outliers ([#939](https://github.com/HHS/simpler-grants-pdf-builder/issues/939)) ([27fde0b](https://github.com/HHS/simpler-grants-pdf-builder/commit/27fde0b99628505843c888b226990d05171b876f))
+
+
+### Miscellaneous Chores
+
+* bump boto3 in the python-minor-and-patch group across 1 directory ([de1575f](https://github.com/HHS/simpler-grants-pdf-builder/commit/de1575f75288a06eb07ca278f24d1d32b6f716c5))
+
 ## [3.40.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.39.1...nofos-v3.40.0) (2026-09-17)
 
 
