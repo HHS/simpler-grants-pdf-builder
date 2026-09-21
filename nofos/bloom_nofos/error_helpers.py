@@ -66,9 +66,10 @@ class AmbiguousHeadingHierarchyError(ValidationError):
 
     code = "ambiguous_heading_hierarchy"
 
-    def __init__(self, *, h2_text, h1_text):
+    def __init__(self, *, h2_text, h1_text, preceding_h2_count=None):
         self.h2_text = h2_text
         self.h1_text = h1_text
+        self.preceding_h2_count = preceding_h2_count
         super().__init__(
             (
                 "The document uses Heading 2 before its first Heading 1. "

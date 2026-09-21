@@ -182,6 +182,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Trigger:** Document contains an `h2` before its first `h1`.
 - **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content. The user sees error code `IMPORT-AMBIGUOUS-HEADINGS`.
 - **Source:** `nofo.py::resolve_section_heading_level`
+- **Guidance:** Only a single final H1 following at least two eligible H2 headings gets a likely Word fix naming the H1 and suggesting Heading 2, conditional on those headings being peer main sections. Blank and table-contained headings do not count. Other ambiguous structures retain neutral guidance; valid leading-H1 hierarchies are unchanged. This is advice only, not an automatic repair.
 - **Status:** active
 
 ### IMPORT-012 — Default section level

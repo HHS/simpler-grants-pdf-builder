@@ -157,9 +157,10 @@ IMPORT_ERROR_CATALOG = {
             "first Heading 1, which makes the section level ambiguous."
         ),
         "support": (
-            "Usually a title or preamble styled as Heading 2. The fix is in the "
-            "document, not in Builder: one consistent heading level for main "
-            "sections."
+            "A single final Heading 1 after multiple Heading 2 headings gets a "
+            "likely Word fix naming that heading and suggesting Heading 2 if "
+            "they are all main sections. Other mixed structures keep neutral "
+            "guidance. Builder does not change the document or guess its intent."
         ),
     },
     "IMPORT-HEADING-TOO-LONG": {

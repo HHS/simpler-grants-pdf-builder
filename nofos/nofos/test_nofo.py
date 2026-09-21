@@ -146,6 +146,51 @@ class ReplaceCharsTests(TestCase):
 
 
 class ResolveSectionHeadingLevelTests(TestCase):
+    def test_seven_h2s_and_trailing_h1_get_likely_fix_without_mutation(self):
+        for title in ("Endnotes", "Appendix A"):
+            with self.subTest(title=title):
+                soup = BeautifulSoup(
+                    "".join(f"<h2>Step {i}</h2>" for i in range(1, 8))
+                    + f"<h1>{title}</h1>",
+                    "html.parser",
+                )
+                before = str(soup)
+                with self.assertRaises(ValidationError) as context:
+                    resolve_section_heading_level(soup)
+                self.assertEqual(context.exception.preceding_h2_count, 7)
+                self.assertEqual(context.exception.h1_text, title)
+                self.assertEqual(str(soup), before)
+
+    def test_uncertain_mixed_hierarchies_have_no_suggestion(self):
+        for html in (
+            "<h2>Preamble</h2><h1>Step 1</h1>",
+            "<h2>Step 1</h2><h2>Step 2</h2><h1>Appendix</h1><h2>Child</h2>",
+            "<h2>Preamble</h2><h1>Step 1</h1><h1>Step 2</h1>",
+        ):
+            with self.subTest(html=html):
+                with self.assertRaises(ValidationError) as context:
+                    resolve_section_heading_level(BeautifulSoup(html, "html.parser"))
+                self.assertIsNone(context.exception.preceding_h2_count)
+
+    def test_suggestion_count_excludes_blank_and_table_headings(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1</h2><h2> </h2>"
+            "<table><tr><td><h1>Table title</h1><h2>Table detail</h2></td></tr></table>"
+            "<h2>Step 2</h2><h1>Endnotes</h1><h2> </h2>",
+            "html.parser",
+        )
+        with self.assertRaises(ValidationError) as context:
+            resolve_section_heading_level(soup)
+        self.assertEqual(context.exception.preceding_h2_count, 2)
+        self.assertEqual(context.exception.h1_text, "Endnotes")
+
+    def test_leading_h1_title_with_many_h2s_remains_valid(self):
+        soup = BeautifulSoup(
+            "<h1>Document title</h1>" + "".join(f"<h2>Step {i}</h2>" for i in range(7)),
+            "html.parser",
+        )
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
     def test_h1_only_document_is_valid(self):
         soup = BeautifulSoup("<h1>Step 1</h1><p>Body</p><h1>Step 2</h1>", "html.parser")
 
