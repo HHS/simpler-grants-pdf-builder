@@ -1141,7 +1141,7 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   @prince-pdf {
     /* Open Acrobat with bookmarks panel open by default */
     -prince-pdf-page-mode: show-bookmarks;
-    prince-pdf-role-map: "H7" P, "HHSNofoCover" Sect;
+    prince-pdf-role-map: "H7" P, "HHSNofoCover" Sect, "HHSNofoContents" Sect;
   }
 
   /* Tag elements in the PDF */
@@ -1153,6 +1153,11 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   /* Include contents headings and section-local navigation in the TOC scope. */
   .toc,
   .section--title-page--toc {
+    -prince-pdf-tag-type: "HHSNofoContents";
+  }
+
+  .toc ol,
+  .section--title-page--toc ul {
     -prince-pdf-tag-type: TOC;
   }
 
