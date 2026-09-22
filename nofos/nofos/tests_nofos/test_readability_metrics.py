@@ -81,6 +81,28 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
 
+    def test_metrics_exclude_editor_tooltips_but_preserve_link_and_author_text(self):
+        subsection = Subsection.objects.get(section__nofo=self.nofo)
+        subsection.body = (
+            '<p>See <span class="usa-tooltip">'
+            '<a href="#missing">eligibility requirements</a>'
+            '<span class="usa-tooltip__body" role="tooltip">Broken link</span>'
+            "</span> before applying.</p><p>Report a Broken link to support.</p>"
+        )
+        subsection.save()
+        fragment = BeautifulSoup(render_nofo_export_document(self.nofo), "html.parser")
+        self.assertFalse(fragment.select(".usa-tooltip__body"))
+        self.assertEqual(
+            fragment.select_one('a[href="#missing"]').get_text(),
+            "eligibility requirements",
+        )
+        self.assertIn("Report a Broken link to support.", fragment.get_text())
+        self.assertIn(
+            "See eligibility requirements before applying.", fragment.get_text()
+        )
+        subsection.refresh_from_db()
+        self.assertIn("usa-tooltip__body", subsection.body)
+
     def test_metrics_include_designed_introduction_without_changing_word_export(self):
         for variant in ("full", "sole_source", "era", "hrsa", "none"):
             with self.subTest(variant=variant):
@@ -782,7 +804,35 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         current = NofoReadabilityScore.objects.current_for(
             self.nofo, PROFILE_REFERENCE, "0.5.2"
         )
-        self.assertEqual(current.input_contract_version, "reader-content-v3")
+        self.assertEqual(current.input_contract_version, INPUT_CONTRACT_VERSION)
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_tooltip_scope_change_invalidates_v3_without_deleting_history(
+        self, analyze, _version
+    ):
+        prior = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference=PROFILE_REFERENCE,
+            package_version="0.5.2",
+            input_contract_version="reader-content-v3",
+            result=build_payload(),
+            is_complete=True,
+        )
+        self.assertFalse(prior.is_current)
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        analyze.assert_called_once()
+        prior.refresh_from_db()
+        self.assertEqual(prior.input_contract_version, "reader-content-v3")
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        self.assertEqual(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.2"
+            ).input_contract_version,
+            "reader-content-v4",
+        )
 
     @patch("nofos.readability.analyze_nofo_readability")
     def test_analysis_error_leaves_the_last_successful_snapshot_in_place(
