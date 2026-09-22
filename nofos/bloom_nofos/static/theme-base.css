@@ -1141,15 +1141,23 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   @prince-pdf {
     /* Open Acrobat with bookmarks panel open by default */
     -prince-pdf-page-mode: show-bookmarks;
-    prince-pdf-role-map: "H7" P;
+    prince-pdf-role-map: "H7" P, "HHSNofoCover" Sect;
   }
 
   /* Tag elements in the PDF */
-  .toc ol {
+  /* Retain accessible cover content while declaring its measurement scope. */
+  .nofo--cover-page {
+    -prince-pdf-tag-type: "HHSNofoCover";
+  }
+
+  /* Include contents headings and section-local navigation in the TOC scope. */
+  .toc,
+  .section--title-page--toc {
     -prince-pdf-tag-type: TOC;
   }
 
-  .toc li {
+  .toc li,
+  .section--title-page--toc li {
     -prince-pdf-tag-type: TOCI;
   }
 
