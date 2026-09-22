@@ -17,7 +17,7 @@ EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
 # Bump when Builder changes what it renders for measurement, independently of
 # the package/profile versions. Persisted results from older renderers stay history.
-INPUT_CONTRACT_VERSION = "word-export-v2"
+INPUT_CONTRACT_VERSION = "reader-content-v3"
 GOAL_OPERATORS = frozenset({"at_least", "at_most", "at_most_by_category"})
 GOAL_METRIC_IDS = frozenset(
     {
@@ -154,11 +154,16 @@ def normalize_readability_metric_goals(configuration):
 
 
 def render_nofo_export_document(nofo):
-    """Render export content without non-reader-facing PDF metadata."""
+    """Render reader content, including the designed introduction, for metrics."""
+    from nofos.nofo import get_step_2_section
 
     return render_to_string(
         "nofos/includes/nofo_export_document.html",
-        {"nofo": nofo, "for_readability_metrics": True},
+        {
+            "nofo": nofo,
+            "for_readability_metrics": True,
+            "step_2_section": get_step_2_section(nofo),
+        },
     ).encode("utf-8")
 
 
