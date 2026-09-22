@@ -1,5 +1,12 @@
 {% load martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs truncate_anchor_links_for_docx policy_language_export %}
 <div id="download_target" class="nofo_view">
+  {% if for_readability_metrics %}
+    {% if nofo.number == 'hrsa-application-guide' %}
+      {% include "includes/byb_page_guide.html" %}
+    {% elif nofo.before_you_begin != 'none' %}
+      {% include "includes/byb_page.html" with nofo=nofo step_2_section=step_2_section for_readability_metrics=True only %}
+    {% endif %}
+  {% endif %}
   {% if strip_policy_language %}
     <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
     <table class="policy-export-watermark">

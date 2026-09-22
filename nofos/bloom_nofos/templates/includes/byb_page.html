@@ -23,31 +23,37 @@
 
     {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="SAM.gov registration (this can take several weeks)" only %}
     <p>You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI).</p>
+    {% if for_readability_metrics %}<nav>{% endif %}
     {% if step_2_section %}
       <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
     {% else %}
       <p class="highlight-strong">STEP 2 SECTION MISSING</p>
     {% endif %}
+    {% if for_readability_metrics %}</nav>{% endif %}
 
     {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'era' or nofo.before_you_begin == 'hrsa' %}
       {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Grants.gov registration (this can take several days)" only %}
       <p>You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well.</p>
+      {% if for_readability_metrics %}<nav>{% endif %}
       {% if step_2_section %}
         <a href="#{{ step_2_section.html_id }}">See {{ step_2_section.name }}</a>
       {% else %}
         <p class="highlight-strong">STEP 2 SECTION MISSING</p>
       {% endif %}
+      {% if for_readability_metrics %}</nav>{% endif %}
     {% endif %}
 
     {% if nofo.before_you_begin == 'era' %}
       <!-- eRA.NIH.gov registration section moved above Apply by the application due date -->
       <p class="section--before-you-begin--psuedo-header">eRA Commons registration</p>
       <p>Once an organization has established its unique organization identifier, organizations can <a href="https://grants.nih.gov/grants/guide/url_redirect.htm?id=11123" target="_blank">register with eRA Commons</a> in tandem with completing Grants.gov registration. You must have all registrations in place at the time of submission. eRA Commons requires organizations to identify at least one Signing Official (SO) and at least one Program Director/Principal Investigator (PD/PI) account in order to submit an application.</p>
+      {% if for_readability_metrics %}<nav>{% endif %}
       {% if step_2_section %}
         <a href="#{{ step_2_section.html_id }}">See Step 2: Get Ready to Apply</a>
       {% else %}
         <p class="highlight-strong">STEP 2 SECTION MISSING</p>
       {% endif %}
+      {% if for_readability_metrics %}</nav>{% endif %}
     {% endif %}
 
     {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Apply by the application due date" only %}

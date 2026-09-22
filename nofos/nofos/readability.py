@@ -6,6 +6,7 @@ from importlib import import_module
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template.loader import render_to_string
@@ -17,7 +18,7 @@ EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
 # Bump when Builder changes what it renders for measurement, independently of
 # the package/profile versions. Persisted results from older renderers stay history.
-INPUT_CONTRACT_VERSION = "word-export-v2"
+INPUT_CONTRACT_VERSION = "reader-content-v4"
 GOAL_OPERATORS = frozenset({"at_least", "at_most", "at_most_by_category"})
 GOAL_METRIC_IDS = frozenset(
     {
@@ -154,12 +155,26 @@ def normalize_readability_metric_goals(configuration):
 
 
 def render_nofo_export_document(nofo):
-    """Render export content without non-reader-facing PDF metadata."""
+    """Render reader content, including the designed introduction, for metrics."""
+    from nofos.nofo import get_step_2_section
 
-    return render_to_string(
+    rendered = render_to_string(
         "nofos/includes/nofo_export_document.html",
-        {"nofo": nofo, "for_readability_metrics": True},
-    ).encode("utf-8")
+        {
+            "nofo": nofo,
+            "for_readability_metrics": True,
+            "step_2_section": get_step_2_section(nofo),
+        },
+    )
+    # Imported/stored HTML can contain editor tooltip markup. These annotations
+    # are not reader content; leave their links and the stored source untouched.
+    fragment = BeautifulSoup(rendered, "html.parser")
+    tooltips = fragment.select('.usa-tooltip__body[role="tooltip"]')
+    if not tooltips:
+        return rendered.encode("utf-8")
+    for tooltip in tooltips:
+        tooltip.decompose()
+    return str(fragment).encode("utf-8")
 
 
 def analyze_nofo_readability(nofo):
