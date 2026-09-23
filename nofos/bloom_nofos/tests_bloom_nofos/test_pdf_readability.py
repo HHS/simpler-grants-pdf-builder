@@ -76,6 +76,26 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "HHS | NOFO Builder", status_code=503)
         self.assertContains(response, "Back to top", status_code=503)
         self.assertContains(response, "Latest updates", status_code=503)
+        self.assertContains(
+            response,
+            "contact your agency's grants policy office first",
+            status_code=503,
+        )
+        self.assertContains(response, "NOFO Builder Feedback Form", status_code=503)
+        self.assertContains(
+            response,
+            'href="https://forms.office.com/r/KH4icQuZ0S"',
+            status_code=503,
+        )
+        self.assertContains(response, 'target="_blank"', status_code=503)
+        self.assertContains(
+            response,
+            'rel="nofollow noopener noreferrer"',
+            status_code=503,
+        )
+        self.assertNotContains(
+            response, "the team that provided this link", status_code=503
+        )
         self.assertNotContains(response, 'type="file"', status_code=503)
         self.assertNotIn("Retry-After", response)
         self.assertIn("no-store", response["Cache-Control"])
