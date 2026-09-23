@@ -1,9 +1,11 @@
 """Public PDF readability page; processing itself is tested in nofos tests."""
 
+from pathlib import Path
 from unittest.mock import patch
 
 from bloom_nofos.views import _metric_rows, _safe_upload_name
 from constance.test import override_config
+from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -59,6 +61,12 @@ REPORT = {
 class PdfReadabilityPageTests(TestCase):
     def setUp(self):
         self.url = reverse("pdf_readability")
+
+    def test_print_styles_hide_footer(self):
+        css_path = finders.find("pdf_readability.css")
+        self.assertIsNotNone(css_path)
+        css = Path(css_path).read_text()
+        self.assertIn(".usa-footer { display: none !important; }", css)
 
     def test_flag_is_off_by_default_for_get_and_post(self):
         self.assertEqual(self.client.get(self.url).status_code, 503)
