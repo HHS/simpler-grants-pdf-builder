@@ -963,6 +963,25 @@ label.usa-label {
   background: white;
 }
 
+.nofo_edit .menu-button-links .nofo-action-submit {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 0;
+  background: transparent;
+  color: #005ea2;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.nofo_edit .menu-button-links .nofo-action-submit:hover,
+.nofo_edit .menu-button-links .nofo-action-submit:focus {
+  color: #162e51;
+  background: #f1f1f1;
+}
+
 .nofo_edit .menu-button-links .menu-button-links__list .usa-link--destructive,
 .nofo_edit
   .menu-button-links
