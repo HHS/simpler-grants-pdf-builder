@@ -588,6 +588,12 @@ HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
 )
 
+# Standalone public PDF pilot. Separate from the authenticated Builder metrics
+# panel so either capability can be disabled independently.
+HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_PDF_METRICS_PILOT_ENABLED", default=False)
+)
+
 # Prototype: export a Word copy with intact HHS Department Governance
 # language stripped (and anything ambiguous/altered flagged) to speed up
 # OMB/Departmental clearance review. This env var is only the starting
@@ -666,6 +672,11 @@ CONSTANCE_CONFIG = {
     "HHS_NOFO_METRICS_ENABLED": (
         HHS_NOFO_METRICS_ENABLED_DEFAULT,
         "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and saved as revision-scoped snapshots.",
+        bool,
+    ),
+    "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
+        HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
+        "Whether the standalone, signed-out PDF readability pilot is available. Uploads and reports are not saved.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (

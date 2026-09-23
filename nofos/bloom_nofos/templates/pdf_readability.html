@@ -1,0 +1,103 @@
+{% extends "base_barebones.html" %}
+{% load static %}
+
+{% block title %}PDF readability report | NOFO Builder{% endblock %}
+{% block base_css %}
+  {{ block.super }}
+  <link href="{% static 'pdf_readability.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="readability-page">
+    <header class="readability-brand no-print" aria-label="Service name">NOFO Builder</header>
+    {% if report %}
+      <article aria-labelledby="report-title">
+        <div class="readability-report-heading">
+          <p class="text-base margin-bottom-1">PDF readability pilot</p>
+          <h1 id="report-title" class="font-heading-xl margin-y-0">Readability report</h1>
+          <p class="usa-intro margin-top-2">Estimates for text recovered from your PDF</p>
+        </div>
+
+        <dl class="readability-report-meta">
+          <div><dt>File</dt><dd>{{ filename }}</dd></div>
+          <div><dt>Analyzed</dt><dd>{{ analysis_date|date:"F j, Y" }}</dd></div>
+          <div><dt>Measurement version</dt><dd>{{ report.version|default:"Unavailable" }}</dd></div>
+        </dl>
+
+        <div class="usa-alert usa-alert--info margin-y-3" role="note">
+          <div class="usa-alert__body">
+            <h2 class="usa-alert__heading">How to read these results</h2>
+            <p class="usa-alert__text">These are estimates, not a compliance, accessibility, or clearance determination. NOFO Builder measures its own drafts from structured HTML; this report measures text extracted from a PDF. Scores can differ even for the same document.</p>
+          </div>
+        </div>
+
+        <section aria-labelledby="scope-title" class="margin-top-4">
+          <h2 id="scope-title" class="font-heading-lg">Measurement scope</h2>
+          <p>
+            {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} analyzed.
+            {% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable. All values are low-reliability estimates.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}
+          </p>
+          {% if report.coverage %}<p>{{ report.coverage }}</p>{% endif %}
+          <p>Overall reliability: <strong>{{ report.reliability|capfirst }}</strong>.</p>
+        </section>
+
+        <section aria-labelledby="metrics-title" class="margin-top-4">
+          <h2 id="metrics-title" class="font-heading-lg">Readability measures</h2>
+          <div class="readability-metrics">
+            {% for metric in metric_rows %}
+              <div class="readability-metric">
+                <h3 class="font-heading-md margin-y-0">{{ metric.label }}</h3>
+                <p class="readability-metric-value margin-y-1">{{ metric.value }}</p>
+                <p class="margin-y-0">{{ metric.explanation }}</p>
+                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }} · {{ metric.reliability|capfirst }} reliability</p>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        {% if report.warnings %}
+          <section aria-labelledby="warnings-title" class="readability-warnings margin-top-4">
+            <h2 id="warnings-title" class="font-heading-lg">Extraction notes and limitations</h2>
+            <ul class="usa-list">
+              {% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}
+            </ul>
+          </section>
+        {% endif %}
+
+        <p class="margin-top-4">Your PDF was processed temporarily. This tool does not keep a report history. Save a copy now with your browser’s print dialog.</p>
+        <div class="readability-actions no-print">
+          <button class="usa-button" type="button" id="print-readability-report">Print / save as PDF</button>
+          <a class="usa-button usa-button--outline" href="{% url 'pdf_readability' %}">Analyze another PDF</a>
+        </div>
+      </article>
+    {% else %}
+      <h1 class="font-heading-xl">Check a PDF’s readability</h1>
+      <p class="usa-intro">Upload one PDF to get an immediate readability report you can print or save as a PDF.</p>
+      <p>Your PDF is processed temporarily. This tool does not keep a report history. Save your report before leaving the page. Do not use the estimates as a compliance or clearance decision.</p>
+      <p>Text-based PDFs work best. Scanned or image-only pages may not be measurable. PDFs without usable tags can produce less reliable estimates.</p>
+
+      {% if error %}
+        <div class="usa-alert usa-alert--error margin-y-3" role="alert" id="readability-error-summary" tabindex="-1" autofocus>
+          <div class="usa-alert__body">
+            <h2 class="usa-alert__heading">We couldn’t analyze your PDF</h2>
+            <p class="usa-alert__text"><a href="#pdf">{{ error }}</a></p>
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
+        {% csrf_token %}
+        <div class="usa-form-group{% if error %} usa-form-group--error{% endif %}">
+          <label class="usa-label" for="pdf">Choose a PDF</label>
+          <span class="usa-hint" id="pdf-hint">One PDF, up to {{ max_upload_mb }} MB. The report measures text recovered from the file.</span>
+          {% if error %}<span class="usa-error-message" id="pdf-error">{{ error }}</span>{% endif %}
+          <input class="usa-file-input" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
+        </div>
+        <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze PDF</button>
+        <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block js_footer %}<script src="{% static 'js/pdf_readability.js' %}"></script>{% endblock %}
