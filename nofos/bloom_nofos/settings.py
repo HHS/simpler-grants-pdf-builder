@@ -137,6 +137,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "bloom_nofos.middleware.PdfReadabilityResponseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

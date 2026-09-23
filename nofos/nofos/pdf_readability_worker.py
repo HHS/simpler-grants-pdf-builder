@@ -29,6 +29,39 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
     payload = result.to_dict()
     coverage = payload.get("coverage", {})
     metrics = {}
+
+    def count(value):
+        return (
+            value
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0
+            else None
+        )
+
+    recovered_words = count(payload["metrics"]["word_count"].get("value"))
+    sentence_components = (
+        payload["metrics"]["words_per_sentence"].get("components") or {}
+    )
+    sentence_words = count(sentence_components.get("word_count"))
+    complete_sentences = count(sentence_components.get("sentence_count"))
+    excluded_words = (
+        recovered_words - sentence_words
+        if recovered_words is not None
+        and sentence_words is not None
+        and recovered_words >= sentence_words
+        else None
+    )
+    excluded_percentage = (
+        round(100 * excluded_words / recovered_words, 1)
+        if excluded_words is not None and recovered_words
+        else None
+    )
+    scope = {
+        "recovered_word_count": recovered_words,
+        "sentence_word_count": sentence_words,
+        "complete_sentence_count": complete_sentences,
+        "excluded_word_count": excluded_words,
+        "excluded_word_percentage": excluded_percentage,
+    }
     reliability_rank = {"low": 0, "moderate": 1, "high": 2}
     levels = []
     for metric_id in METRIC_IDS:
@@ -106,6 +139,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         "coverage": f"{pages_with_text} of {page_count} pages contain extractable text",
         "warnings": warnings,
         "version": PACKAGE_VERSION,
+        "scope": scope,
         "metrics": metrics,
     }
 

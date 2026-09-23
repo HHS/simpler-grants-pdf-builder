@@ -61,9 +61,12 @@ class PdfReadabilityPageTests(TestCase):
         self.url = reverse("pdf_readability")
 
     def test_flag_is_off_by_default_for_get_and_post(self):
-        self.assertEqual(self.client.get(self.url).status_code, 404)
+        self.assertEqual(self.client.get(self.url).status_code, 503)
         response = self.client.post(self.url, {"pdf": sample_pdf()})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 503)
+        self.assertContains(response, "Service status", status_code=503)
+        self.assertNotContains(response, 'type="file"', status_code=503)
+        self.assertNotIn("Retry-After", response)
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
@@ -72,12 +75,33 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "pdf_readability.css")
         self.assertNotContains(response, "theme-base.css")
+        self.assertNotContains(response, "fonts.googleapis.com")
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
         self.assertContains(response, "One PDF, up to 15 MB")
         self.assertNotContains(response, "Login")
         self.assertNotContains(response, "All NOFOs")
         self.assertIn("no-store", response["Cache-Control"])
+
+    def test_noindex_headers_cover_disabled_errors_and_unsupported_methods(self):
+        for enabled in (False, True):
+            with override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=enabled):
+                client = self.client_class(enforce_csrf_checks=True)
+                for response in (
+                    client.get(self.url),
+                    client.post(self.url),
+                    client.put(self.url),
+                ):
+                    self.assertEqual(
+                        response["X-Robots-Tag"],
+                        "noindex, nofollow, noarchive, nosnippet",
+                    )
+                    self.assertIn("no-store", response["Cache-Control"])
+
+    def test_public_metric_policy_omits_reading_ease(self):
+        rows = _metric_rows(REPORT)
+        self.assertEqual(len(rows), 5)
+        self.assertNotIn("Flesch Reading Ease", [row["label"] for row in rows])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_post_rejects_missing_or_multiple_files(self):
@@ -109,7 +133,11 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Not available")
         self.assertNotContains(response, "Unavailable · Low reliability")
         self.assertContains(response, "Unavailable")
-        self.assertContains(response, "low-reliability estimates")
+        self.assertContains(response, "low-reliability estimate")
+        self.assertContains(response, "Copy metrics")
+        self.assertContains(response, "HHS NOFO Builder")
+        self.assertContains(response, "Calculation notes (1)")
+        self.assertNotContains(response, "Flesch Reading Ease")
         self.assertContains(response, "2 of 3 pages processed")
         self.assertNotContains(response, "2 of 3 pages analyzed")
         self.assertContains(response, "Some text was not measured.")

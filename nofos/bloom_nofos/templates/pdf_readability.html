@@ -2,13 +2,15 @@
 {% load static %}
 
 {% block title %}PDF readability report | NOFO Builder{% endblock %}
+{% block metadata %}<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">{% endblock %}
+{% block external_fonts %}{% endblock %}
 {% block base_css %}
   <link href="{% static 'pdf_readability.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
   <div class="readability-page">
-    <header class="readability-brand no-print" aria-label="Service name">NOFO Builder</header>
+    <header class="readability-brand" aria-label="Service name">HHS NOFO Builder</header>
     {% if report %}
       <article aria-labelledby="report-title">
         <div class="readability-report-heading">
@@ -18,26 +20,38 @@
         </div>
 
         <dl class="readability-report-meta">
-          <div><dt>File</dt><dd>{{ filename }}</dd></div>
-          <div><dt>Analyzed</dt><dd>{{ analysis_date|date:"F j, Y" }}</dd></div>
-          <div><dt>Measurement version</dt><dd>{{ report.version|default:"Unavailable" }}</dd></div>
+          <div><dt>File</dt><dd id="readability-file">{{ filename }}</dd></div>
+          <div><dt>Analyzed</dt><dd id="readability-date">{{ analysis_date|date:"F j, Y" }}</dd></div>
+          <div><dt>Measurement version</dt><dd id="readability-version">{{ report.version|default:"Unavailable" }}</dd></div>
         </dl>
 
         <div class="usa-alert usa-alert--info margin-y-3" role="note">
           <div class="usa-alert__body">
             <h2 class="usa-alert__heading">How to read these results</h2>
-            <p class="usa-alert__text">These are estimates, not a compliance, accessibility, or clearance determination. NOFO Builder measures its own drafts from structured HTML; this report measures text extracted from a PDF. Scores can differ even for the same document.</p>
+            <p class="usa-alert__text" id="readability-disclaimer">These are estimates, not a compliance, accessibility, or clearance determination. NOFO Builder measures its own drafts from structured HTML; this report measures text extracted from a PDF. Scores can differ even for the same document.</p>
           </div>
         </div>
 
         <section aria-labelledby="scope-title" class="margin-top-4">
           <h2 id="scope-title" class="font-heading-lg">Measurement scope</h2>
-          <p>
+          <p id="readability-scope-pages">
             {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} processed.
-            {% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable. All values are low-reliability estimates.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}
           </p>
-          {% if report.coverage %}<p>{{ report.coverage }}</p>{% endif %}
-          <p>Overall reliability: <strong>{{ report.reliability|capfirst }}</strong>.</p>
+          <p id="readability-scope-method">{% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          {% if report.coverage %}<p id="readability-coverage">{{ report.coverage }}</p>{% endif %}
+          {% if report.scope.recovered_word_count or report.scope.recovered_word_count == 0 %}
+            <p id="readability-word-scope">Word count includes all text recovered from the PDF: {{ report.scope.recovered_word_count }} words.
+              {% if report.scope.sentence_word_count or report.scope.sentence_word_count == 0 %}{% if report.scope.complete_sentence_count or report.scope.complete_sentence_count == 0 %}{% if report.scope.excluded_word_count or report.scope.excluded_word_count == 0 %}
+                Sentence-based formulas use {{ report.scope.sentence_word_count }} words in {{ report.scope.complete_sentence_count }} complete sentences. The remaining {{ report.scope.excluded_word_count }} words{% if report.scope.excluded_word_percentage or report.scope.excluded_word_percentage == 0 %} ({{ report.scope.excluded_word_percentage }}%){% endif %} are in text that does not form complete sentences, such as some headings, labels, list items, table cells, and other fragments, so sentence-based scores exclude them.
+              {% endif %}{% endif %}{% endif %}
+            </p>
+          {% endif %}
+          <div class="usa-alert usa-alert--warning readability-reliability" role="note" id="readability-reliability">
+            <div class="usa-alert__body">
+              <h3 class="usa-alert__heading">Reliability of these estimates: {{ report.reliability|capfirst }}</h3>
+              <p class="usa-alert__text">{% if report.profile == 'generic' %}PDF tags were unavailable, so the text order was inferred from page layout. Treat every value as a low-reliability estimate.{% else %}Usable PDF tags helped recover text order, but extraction can still omit or rearrange content. Review the source PDF when interpreting these estimates.{% endif %}</p>
+            </div>
+          </div>
         </section>
 
         <section aria-labelledby="metrics-title" class="margin-top-4">
@@ -55,24 +69,28 @@
         </section>
 
         {% if report.warnings %}
-          <section aria-labelledby="warnings-title" class="readability-warnings margin-top-4">
-            <h2 id="warnings-title" class="font-heading-lg">Extraction notes and limitations</h2>
-            <ul class="usa-list">
+          <details class="readability-warnings margin-top-4" id="readability-calculation-notes" open>
+            <summary class="font-heading-lg">Calculation notes ({{ report.warnings|length }})</summary>
+            <ul class="usa-list" id="readability-warning-list">
               {% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}
             </ul>
-          </section>
+          </details>
         {% endif %}
 
-        <p class="margin-top-4">Your PDF was processed temporarily. This tool does not keep a report history. Save a copy now with your browser’s print dialog.</p>
+        <p class="margin-top-4">Your PDF was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / save as PDF</button>
+          <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
           <a class="usa-button usa-button--outline" href="{% url 'pdf_readability' %}">Analyze another PDF</a>
         </div>
+        <p id="readability-copy-status" role="status" aria-live="polite" class="no-print"></p>
+        <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>
       </article>
     {% else %}
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
-      <p class="usa-intro">Upload one PDF to get an immediate readability report you can print or save as a PDF.</p>
-      <p>Your PDF is processed temporarily. This tool does not keep a report history. Save your report before leaving the page. Do not use the estimates as a compliance or clearance decision.</p>
+      <p class="usa-intro">Upload one draft NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
+      <p>This pilot is intended for draft NOFOs created from the approved HHS FY27 template. Contact your agency grants policy office to confirm which template to use. This report does not validate format compliance or make a clearance decision.</p>
+      <p>Your PDF is processed temporarily on HHS-operated systems to calculate these estimates. It is not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
       <p>Text-based PDFs work best. Scanned or image-only pages may not be measurable. PDFs without usable tags can produce less reliable estimates.</p>
 
       {% if error %}

@@ -156,8 +156,11 @@ def _analyze_uploaded_pdf(upload) -> dict:
                         timeout=TIMEOUT_SECONDS,
                         check=False,
                         cwd=Path(__file__).resolve().parents[1],
+                        # The PDF parser must not inherit web-process credentials
+                        # or Python startup hooks from the application environment.
                         env={
-                            **os.environ,
+                            "PATH": os.defpath,
+                            "PYTHONDONTWRITEBYTECODE": "1",
                             "TMPDIR": directory,
                             "TMP": directory,
                             "TEMP": directory,

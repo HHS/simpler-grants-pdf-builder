@@ -11,22 +11,47 @@ is still public; direct distribution is not access control.
 environments until the checks below are complete. This application change does
 not install ingress rate limiting or authorize production enablement.
 
-Before enabling:
+Release gates before enabling the anonymous route (merge is not approval to enable):
 
-- Verify request-rate and request-body controls at ingress. Application analysis
-  concurrency and size limits are not substitutes for ingress abuse protection.
-- Verify the actual deployed dependency, configured processing limits, cleanup
-  after failures/timeouts, and cross-worker concurrency protection.
-- Test the PostgreSQL advisory lock with independent production-like connections;
-  local SQLite file-lock tests do not establish PostgreSQL behavior. Validate Linux
-  resource limits in the target container, not only on macOS.
-- Test approved representative tagged and untagged PDFs. Confirm the report's
-  extraction caveats and unavailable metrics, not just successful uploads.
-- Inspect the browser-saved report for readable page breaks and complete warnings.
-- Confirm acceptable transient processing and operational log handling for the
-  intended documents. Do not claim that processing happens only in the browser.
-- Name a support contact and person who can turn the flag off. Use existing
-  operational logs/monitoring; do not record filenames, extracted text, or metrics.
+- Limit use to draft NOFOs made from an approved HHS FY27 template. Tell users to
+  obtain the correct template from their agency grants policy office. Before
+  calculation, recognize a supported format using the expected tagged-PDF profile
+  and validated canonical heading/section coverage. Do not assume today's PDFs
+  contain a template/version marker; adopt one only if approved templates add it.
+  Recognition is not a clearance or accessibility determination. Test against
+  approved representative PDFs and reject unrelated or unsupported PDFs.
+- Return `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet` on all route
+  responses, including errors and the disabled state; add equivalent page metadata.
+  Keep the route out of navigation and sitemaps. `robots.txt` and an unlinked URL
+  are not access controls.
+- Verify ingress request/body limits, per-client rate limiting, burst protection,
+  monitoring, and a tested infrastructure-level route block. The application
+  analysis slot and upload limit are not substitutes for these controls.
+- Run the analyzer with a minimal allow-listed environment and without application
+  secrets. Review a separately contained, nonprivileged task with no outbound
+  network, a read-only application filesystem, and narrow temporary storage.
+  Current subprocess time and resource limits alone are not a security sandbox.
+- Obtain security/privacy and operations approval for the intended data
+  classification, deployed logging, crash dumps, observability, temporary-disk
+  cleanup and retention, and incident handling. Do not claim pre-decisional use is
+  safe or that files are never saved until those checks are complete.
+- Confirm the *stored* Constance value of `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` is
+  off in every deployment environment; an existing database value overrides the
+  environment default. Name the owner who can disable it, test the route-level
+  infrastructure backstop, and provide a purpose-built 503 without an upload form
+  for disabled GET and POST. Preserve `no-store` and noindex; use `Retry-After`
+  only with a credible restoration time. Name a support path.
+- Align the public report with the authenticated readability panel: scope counts,
+  five displayed metrics and their definitions, a visible extraction-reliability
+  caveat, and a Calculation notes disclosure for secondary warnings. Add an
+  accessible Copy metrics action and keep HHS/NOFO Builder identity and the
+  estimates disclaimer in the saved report. Self-host fonts for this page.
+- Verify the deployed metrics dependency, processing bounds, failure/timeout
+  cleanup, and cross-worker concurrency. Test the PostgreSQL advisory lock with
+  independent production-like connections and Linux resource limits in the target
+  container; local SQLite/macOS results do not establish deployment behavior.
+  Inspect browser-saved reports for readable page breaks, identity, disclaimer,
+  and complete notes. Do not log filenames, extracted text, or metrics.
 
 For local verification only, enable the flag in the isolated development database
 or use the corresponding environment default with a fresh local database. Do not

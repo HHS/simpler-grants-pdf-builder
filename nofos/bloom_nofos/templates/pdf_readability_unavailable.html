@@ -1,0 +1,19 @@
+{% extends "base_barebones.html" %}
+{% load static %}
+{% block title %}Readability service unavailable | HHS NOFO Builder{% endblock %}
+{% block external_fonts %}{% endblock %}
+{% block metadata %}<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">{% endblock %}
+{% block base_css %}<link href="{% static 'pdf_readability.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<div class="readability-page">
+  <header class="readability-brand">HHS NOFO Builder</header>
+  <div class="usa-site-alert usa-site-alert--info" aria-label="Service status">
+    <div class="usa-alert">
+      <div class="usa-alert__body">
+        <h1 class="usa-alert__heading">PDF readability is currently unavailable</h1>
+        <p class="usa-alert__text">Please try again later. If you need help, contact the team that provided this link or your agency grants policy office.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -29,13 +29,8 @@ PDF_METRIC_PRESENTATION = (
         "Average length of reconstructed paragraphs, where available.",
     ),
     (
-        "flesch_reading_ease",
-        "Flesch Reading Ease",
-        "A higher score generally means easier-to-read text.",
-    ),
-    (
         "flesch_kincaid_grade_level",
-        "Flesch–Kincaid grade level",
+        "Flesch-Kincaid Grade Level",
         "An approximate U.S. school grade level for the measured text.",
     ),
     (
@@ -102,7 +97,7 @@ def _metric_rows(report):
 def pdf_readability(request):
     """Public, deliberately unlinked entry point for one ephemeral PDF report."""
     if not config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED:
-        response = render(request, "404.html", status=404)
+        response = render(request, "pdf_readability_unavailable.html", status=503)
         response["Cache-Control"] = "no-store"
         return response
 

@@ -77,6 +77,65 @@ class PdfReadabilityTests(SimpleTestCase):
         self.assertNotIn("source", report)
         self.assertNotIn("analysis_id", report)
         self.assertEqual(report["metrics"]["sentences_per_paragraph"]["value"], 3.0)
+        self.assertEqual(
+            report["scope"],
+            {
+                "recovered_word_count": 23,
+                "sentence_word_count": 20,
+                "complete_sentence_count": 3,
+                "excluded_word_count": 3,
+                "excluded_word_percentage": 13.0,
+            },
+        )
+
+    def test_worker_receives_no_web_secrets_and_still_extracts_text(self):
+        original_run = subprocess.run
+        child_environments = []
+
+        def run_child(*args, **kwargs):
+            child_environments.append(kwargs["env"])
+            return original_run(*args, **kwargs)
+
+        injected = {
+            "AWS_SECRET_ACCESS_KEY": "synthetic-aws-secret",
+            "DATABASE_URL": "synthetic-database-secret",
+            "DJANGO_SECRET_KEY": "synthetic-django-secret",
+            "PYTHONPATH": "/synthetic/unsafe/import/path",
+        }
+        with patch.dict(os.environ, injected), patch(
+            "nofos.pdf_readability.subprocess.run", side_effect=run_child
+        ):
+            report = analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
+
+        self.assertEqual(report["scope"]["recovered_word_count"], 23)
+        self.assertEqual(len(child_environments), 1)
+        child_env = child_environments[0]
+        for name in injected:
+            self.assertNotIn(name, child_env)
+        self.assertEqual(
+            set(child_env),
+            {"PATH", "PYTHONDONTWRITEBYTECODE", "TMPDIR", "TMP", "TEMP"},
+        )
+        self.assertEqual(child_env["TMPDIR"], child_env["TMP"])
+        self.assertEqual(child_env["TMPDIR"], child_env["TEMP"])
+
+    def test_scope_counts_reject_invalid_or_inconsistent_values(self):
+        import hhs_nofo_metrics as metrics
+
+        result = metrics.analyze(
+            metrics.SourceBundle.from_pdf(synthetic_text_pdf()),
+            profile="hhs-nofo-fy27-generic-pdf-estimate@0.4.0",
+        )
+        payload = result.to_dict()
+        payload["metrics"]["word_count"]["value"] = 4
+        payload["metrics"]["words_per_sentence"]["components"]["word_count"] = 8
+        payload["metrics"]["words_per_sentence"]["components"]["sentence_count"] = True
+        report = _safe_result(SimpleNamespace(to_dict=lambda: payload), "generic", 2)
+        self.assertEqual(report["scope"]["recovered_word_count"], 4)
+        self.assertEqual(report["scope"]["sentence_word_count"], 8)
+        self.assertIsNone(report["scope"]["complete_sentence_count"])
+        self.assertIsNone(report["scope"]["excluded_word_count"])
+        self.assertIsNone(report["scope"]["excluded_word_percentage"])
 
     def test_known_package_warning_is_sanitized(self):
         import hhs_nofo_metrics as metrics
