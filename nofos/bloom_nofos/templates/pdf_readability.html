@@ -82,8 +82,10 @@
       </article>
     {% else %}
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
-      <p class="usa-intro">Upload one draft NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
-      <p>This pilot is intended for draft NOFOs created from the approved HHS FY27 template. Contact your agency grants policy office to confirm which template to use. This report does not validate format compliance or make a clearance decision.</p>
+      <p class="usa-intro">Upload a draft NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
+      <p>This pilot is intended for draft NOFOs created from an HHS-approved FY27 template or NOFO development tool.</p>
+      <p>Contact your agency's grants policy office to confirm template compliance.</p>
+      <p><strong>This report does not validate format compliance or make a clearance decision.</strong></p>
       <p>Your PDF is processed temporarily on HHS-operated systems to calculate these estimates. It is not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
       <p>Text-based PDFs work best. Scanned or image-only pages may not be measurable. PDFs without usable tags can produce less reliable estimates.</p>
 
@@ -98,12 +100,7 @@
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
-        <div class="usa-form-group{% if error %} usa-form-group--error{% endif %}">
-          <label class="usa-label" for="pdf">Choose a PDF</label>
-          <span class="usa-hint" id="pdf-hint">One PDF, up to {{ max_upload_mb }} MB. The report measures text recovered from the file.</span>
-          {% if error %}<span class="usa-error-message" id="pdf-error">{{ error }}</span>{% endif %}
-          <input class="usa-file-input usa-file-input__input cursor-pointer padding-2 border-2px border-dashed{% if error %} bg-secondary-lighter border-secondary{% else %} border-base bg-base-lightest{% endif %}" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required{% if error %} aria-invalid="true"{% endif %} aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
-        </div>
+        {% include "includes/file_input.html" with id="pdf" label="Choose a PDF" hint=upload_hint accept=".pdf,application/pdf" error=error required=True only %}
         <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze PDF</button>
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
       </form>

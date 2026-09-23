@@ -109,7 +109,14 @@ def pdf_readability(request):
 
 @csrf_protect
 def _pdf_readability_form(request):
-    context = {"max_upload_mb": MAX_UPLOAD_BYTES // (1024 * 1024)}
+    max_upload_mb = MAX_UPLOAD_BYTES // (1024 * 1024)
+    context = {
+        "max_upload_mb": max_upload_mb,
+        "upload_hint": (
+            f"One PDF, up to {max_upload_mb} MB. "
+            "The report measures text recovered from the file."
+        ),
+    }
     status = 200
     retry_after = None
     if request.method == "POST":

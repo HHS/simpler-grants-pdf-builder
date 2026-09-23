@@ -88,6 +88,21 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
         self.assertContains(response, "One PDF, up to 15 MB")
+        self.assertContains(response, "Upload a draft NOFO PDF")
+        self.assertNotContains(response, "Upload one draft NOFO PDF")
+        self.assertContains(
+            response,
+            "created from an HHS-approved FY27 template or NOFO development tool",
+        )
+        self.assertContains(
+            response,
+            "Contact your agency's grants policy office to confirm template compliance",
+        )
+        self.assertContains(
+            response,
+            "<strong>This report does not validate format compliance or make a clearance decision.</strong>",
+            html=True,
+        )
         self.assertNotContains(response, "Login")
         self.assertNotContains(response, "All NOFOs")
         self.assertIn("no-store", response["Cache-Control"])
@@ -167,7 +182,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "The analyzer is busy", status_code=429)
         self.assertContains(response, 'aria-invalid="true"', status_code=429)
         self.assertContains(
-            response, 'aria-describedby="pdf-hint pdf-error"', status_code=429
+            response, 'aria-describedby="pdf--hint pdf--error"', status_code=429
         )
         self.assertIn("no-store", response["Cache-Control"])
 
