@@ -1344,3 +1344,37 @@ class MetricsActivity(models.Model):
                 fields=["actor", "month", "group"], name="metrics_actor_month_group"
             )
         ]
+
+
+class ExternalSourceHandoff(models.Model):
+    """Metadata receipt for one opaque external source version; never a document store."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    source_system = models.CharField(max_length=128)
+    source_record_id = models.CharField(max_length=255)
+    source_version = models.CharField(max_length=255)
+    group = models.CharField(max_length=16, choices=settings.GROUP_CHOICES)
+    received_at = models.DateTimeField(default=timezone.now, editable=False)
+    state = models.CharField(max_length=32, default="received")
+    state_changed_at = models.DateTimeField(default=timezone.now)
+    nofo = models.ForeignKey(
+        Nofo,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="external_source_handoffs",
+    )
+    linked_nofo_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Stable linkage tombstone if the Builder NOFO is later deleted.",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_system", "source_record_id", "source_version"],
+                name="unique_external_source_handoff_version",
+            )
+        ]
