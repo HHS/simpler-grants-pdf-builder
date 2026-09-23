@@ -70,6 +70,8 @@ class PdfReadabilityPageTests(TestCase):
     def test_signed_out_form_has_csrf_file_label_and_no_login_link(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "pdf_readability.css")
+        self.assertNotContains(response, "theme-base.css")
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
         self.assertContains(response, "One PDF, up to 15 MB")
@@ -97,6 +99,11 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         analyze.assert_called_once()
         self.assertContains(response, "Readability report")
+        self.assertContains(response, "How to read these results")
+        self.assertContains(
+            response, "not a compliance, accessibility, or clearance determination"
+        )
+        self.assertNotContains(response, "theme-base.css")
         self.assertContains(response, "Print / save as PDF")
         self.assertContains(response, "1,234")
         self.assertContains(response, "Not available")
