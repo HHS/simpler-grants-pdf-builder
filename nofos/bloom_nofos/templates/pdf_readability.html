@@ -34,7 +34,7 @@
         <section aria-labelledby="scope-title" class="margin-top-4">
           <h2 id="scope-title" class="font-heading-lg">Measurement scope</h2>
           <p>
-            {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} analyzed.
+            {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} processed.
             {% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable. All values are low-reliability estimates.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}
           </p>
           {% if report.coverage %}<p>{{ report.coverage }}</p>{% endif %}
@@ -49,7 +49,7 @@
                 <h3 class="font-heading-md margin-y-0">{{ metric.label }}</h3>
                 <p class="readability-metric-value margin-y-1">{{ metric.value }}</p>
                 <p class="margin-y-0">{{ metric.explanation }}</p>
-                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }} · {{ metric.reliability|capfirst }} reliability</p>
+                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %} · {{ metric.reliability|capfirst }} reliability{% endif %}</p>
               </div>
             {% endfor %}
           </div>
@@ -91,7 +91,7 @@
           <label class="usa-label" for="pdf">Choose a PDF</label>
           <span class="usa-hint" id="pdf-hint">One PDF, up to {{ max_upload_mb }} MB. The report measures text recovered from the file.</span>
           {% if error %}<span class="usa-error-message" id="pdf-error">{{ error }}</span>{% endif %}
-          <input class="usa-file-input" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
+          <input class="usa-file-input" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required{% if error %} aria-invalid="true"{% endif %} aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
         </div>
         <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze PDF</button>
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>

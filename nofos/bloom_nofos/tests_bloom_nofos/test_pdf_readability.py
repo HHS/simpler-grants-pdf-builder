@@ -100,7 +100,11 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Print / save as PDF")
         self.assertContains(response, "1,234")
         self.assertContains(response, "Not available")
+        self.assertNotContains(response, "Unavailable · Low reliability")
+        self.assertContains(response, "Unavailable")
         self.assertContains(response, "low-reliability estimates")
+        self.assertContains(response, "2 of 3 pages processed")
+        self.assertNotContains(response, "2 of 3 pages analyzed")
         self.assertContains(response, "Some text was not measured.")
         self.assertContains(response, "A table may have been read out of order.")
         self.assertContains(response, "hhs-nofo-metrics 0.5.3")
@@ -117,6 +121,10 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response["Retry-After"], "15")
         self.assertContains(response, "The analyzer is busy", status_code=429)
+        self.assertContains(response, 'aria-invalid="true"', status_code=429)
+        self.assertContains(
+            response, 'aria-describedby="pdf-hint pdf-error"', status_code=429
+        )
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
