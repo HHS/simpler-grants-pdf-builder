@@ -75,7 +75,7 @@
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / save as PDF</button>
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
-          <a class="usa-button usa-button--outline" href="{% url 'pdf_readability' %}">Analyze another PDF</a>
+          <a class="usa-link text-bold" href="{% url 'pdf_readability' %}">Analyze another PDF</a>
         </div>
         <p id="readability-copy-status" role="status" aria-live="polite" class="no-print"></p>
         <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>

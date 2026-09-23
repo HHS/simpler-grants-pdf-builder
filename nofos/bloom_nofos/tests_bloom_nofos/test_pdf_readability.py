@@ -159,6 +159,15 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Unavailable")
         self.assertContains(response, "low-reliability estimate")
         self.assertContains(response, "Copy metrics")
+        self.assertContains(
+            response,
+            '<a class="usa-link text-bold" href="/readability/">Analyze another PDF</a>',
+            html=True,
+        )
+        self.assertNotContains(
+            response,
+            'class="usa-button usa-button--outline" href="/readability/"',
+        )
         self.assertContains(response, "HHS | NOFO Builder")
         self.assertContains(response, "Calculation notes (1)")
         self.assertNotContains(response, 'id="readability-calculation-notes" open')
