@@ -159,3 +159,35 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(len(_safe_upload_name("x" * 300 + ".pdf")), 180)
         report = {**REPORT, "metrics": {"word_count": {"value": float("nan")}}}
         self.assertEqual(_metric_rows(report)[0]["value"], "Not available")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    @patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT)
+    def test_long_hostile_filename_is_bounded_and_escaped_in_report(self, analyze):
+        name = "<script>" + "x" * 200 + ".pdf"
+        response = self.client.post(self.url, {"pdf": sample_pdf(name)})
+
+        self.assertEqual(response.status_code, 200)
+        analyze.assert_called_once()
+        self.assertEqual(len(response.context["filename"]), 180)
+        self.assertContains(response, "&lt;script&gt;" + "x" * 172)
+        self.assertNotContains(response, "<script>")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    @patch("bloom_nofos.views.analyze_uploaded_pdf")
+    def test_report_keeps_unavailable_measure_and_many_long_warnings(self, analyze):
+        warnings = [
+            f"Extraction note {index:02d}. " + "More detail. " * 40
+            for index in range(20)
+        ]
+        warnings.append("A <fragment> was excluded.")
+        analyze.return_value = {**REPORT, "warnings": warnings}
+
+        response = self.client.post(self.url, {"pdf": sample_pdf()})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Not available")
+        self.assertNotContains(response, "Unavailable · Low reliability")
+        for warning in warnings[:-1]:
+            self.assertContains(response, warning)
+        self.assertContains(response, "A &lt;fragment&gt; was excluded.")
+        self.assertNotContains(response, "<fragment>")
