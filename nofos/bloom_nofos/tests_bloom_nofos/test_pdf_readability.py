@@ -161,6 +161,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Copy metrics")
         self.assertContains(response, "HHS | NOFO Builder")
         self.assertContains(response, "Calculation notes (1)")
+        self.assertNotContains(response, 'id="readability-calculation-notes" open')
         self.assertNotContains(response, "Flesch Reading Ease")
         self.assertContains(response, "2 of 3 pages processed")
         self.assertNotContains(response, "2 of 3 pages analyzed")

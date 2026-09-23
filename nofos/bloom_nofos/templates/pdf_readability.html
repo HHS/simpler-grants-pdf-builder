@@ -63,7 +63,7 @@
         </section>
 
         {% if report.warnings %}
-          <details class="readability-warnings margin-top-4" id="readability-calculation-notes" open>
+          <details class="readability-warnings margin-top-4" id="readability-calculation-notes">
             <summary class="font-heading-lg">Calculation notes ({{ report.warnings|length }})</summary>
             <ul class="usa-list" id="readability-warning-list">
               {% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}
