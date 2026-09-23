@@ -1,0 +1,65 @@
+{% extends "base_barebones.html" %}
+{% load static %}
+
+{% block metadata %}<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">{% endblock %}
+{% block external_fonts %}{% endblock %}
+
+{% block base_css %}
+  <link href="{% static 'styles.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block css %}
+  <link href="{% static 'pdf_readability.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block uswds_js %}
+  <script src="{% static 'uswds/uswds-init.js' %}"></script>
+  <link rel="preload" href="{% static 'uswds/uswds.js' %}" as="script">
+{% endblock %}
+
+{% block header %}
+  <header class="usa-header usa-header--basic">
+    <div class="usa-nav-container">
+      <div class="usa-navbar">
+        <div class="usa-logo">
+          <em class="usa-logo__text">
+            <span>HHS | NOFO Builder</span>
+          </em>
+        </div>
+      </div>
+    </div>
+  </header>
+{% endblock %}
+
+{% block main_container_start %}
+  <main id="main-content">
+    <section class="usa-section">
+      <div class="grid-container">
+{% endblock %}
+
+{% block main_container_end %}
+      </div>
+    </section>
+  </main>
+{% endblock %}
+
+{% block footer %}
+  <footer class="usa-footer">
+    <div class="usa-footer__primary-section">
+      <nav class="usa-footer__nav usa-footer__nav--reverse" aria-label="Footer navigation">
+        <ul class="grid-row grid-gap">
+          <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
+            <a class="usa-footer__primary-link back-to-top" href="#back-to-top">Back to top</a>
+          </li>
+          <li class="mobile-lg:grid-col-4 desktop:grid-col-auto usa-footer__primary-content">
+            <a class="usa-footer__primary-link" href="https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Latest updates</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+{% endblock %}
+
+{% block uswds_js_footer %}
+  <script src="{% static 'uswds/uswds.js' %}"></script>
+{% endblock %}

@@ -1,12 +1,7 @@
-{% extends "base_barebones.html" %}
-{% load static %}
+{% extends "pdf_readability_base.html" %}
 {% block title %}Readability service unavailable | HHS NOFO Builder{% endblock %}
-{% block external_fonts %}{% endblock %}
-{% block metadata %}<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">{% endblock %}
-{% block base_css %}<link href="{% static 'pdf_readability.css' %}" rel="stylesheet">{% endblock %}
 {% block content %}
 <div class="readability-page">
-  <header class="readability-brand">HHS NOFO Builder</header>
   <div class="usa-site-alert usa-site-alert--info" aria-label="Service status">
     <div class="usa-alert">
       <div class="usa-alert__body">

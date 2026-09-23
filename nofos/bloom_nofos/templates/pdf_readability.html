@@ -1,16 +1,10 @@
-{% extends "base_barebones.html" %}
+{% extends "pdf_readability_base.html" %}
 {% load static %}
 
 {% block title %}PDF readability report | NOFO Builder{% endblock %}
-{% block metadata %}<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">{% endblock %}
-{% block external_fonts %}{% endblock %}
-{% block base_css %}
-  <link href="{% static 'pdf_readability.css' %}" rel="stylesheet">
-{% endblock %}
 
 {% block content %}
   <div class="readability-page">
-    <header class="readability-brand" aria-label="Service name">HHS NOFO Builder</header>
     {% if report %}
       <article aria-labelledby="report-title">
         <div class="readability-report-heading">
@@ -108,7 +102,7 @@
           <label class="usa-label" for="pdf">Choose a PDF</label>
           <span class="usa-hint" id="pdf-hint">One PDF, up to {{ max_upload_mb }} MB. The report measures text recovered from the file.</span>
           {% if error %}<span class="usa-error-message" id="pdf-error">{{ error }}</span>{% endif %}
-          <input class="usa-file-input" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required{% if error %} aria-invalid="true"{% endif %} aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
+          <input class="usa-file-input usa-file-input__input cursor-pointer padding-2 border-2px border-dashed{% if error %} bg-secondary-lighter border-secondary{% else %} border-base bg-base-lightest{% endif %}" type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" required{% if error %} aria-invalid="true"{% endif %} aria-describedby="pdf-hint{% if error %} pdf-error{% endif %}">
         </div>
         <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze PDF</button>
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
