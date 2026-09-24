@@ -63,9 +63,14 @@ Reuse the pinned `hhs-nofo-metrics` package. PDF results are extraction-based
 estimates, not identical to Builder's semantic-HTML metrics or a compliance
 determination. Untagged PDFs need particularly clear reliability caveats.
 
-At implementation start, the dependency is 0.5.3. Newer merged parity fixes are not
-in that release. Adoption requires a separately verified package release and lock
-update; a merged source commit alone does not change the deployed dependency.
+The dependency is pinned to 0.5.4, including the tagged-PDF parity fixes for
+producer-declared cover/contents scope, cross-page paragraphs and lists, inline
+word ordering, and numeric list markers. Profiles and formulas are unchanged;
+extracted content and resulting PDF estimates can change. In Builder's stored
+readability snapshots, package identity distinguishes previous scores from new
+calculations. The PDF pilot does not store report history; each report identifies
+its measurement version. This dependency update does not enable the
+pilot or replace the deployment checks above.
 
 ## Stop the pilot
 
