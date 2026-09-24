@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.42.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.41.0...nofos-v3.42.0) (2026-09-24)
+
+
+### Features
+
+* add Appendix action to NOFO editor ([#964](https://github.com/HHS/simpler-grants-pdf-builder/issues/964)) ([f6f9a04](https://github.com/HHS/simpler-grants-pdf-builder/commit/f6f9a04beb2877c665d2848c5f247a0a806446cc))
+* add default-off PDF readability report pilot ([#948](https://github.com/HHS/simpler-grants-pdf-builder/issues/948)) ([fbeeefa](https://github.com/HHS/simpler-grants-pdf-builder/commit/fbeeefa3130968378e86fab2111df8b4363ce7a4))
+
+
+### Bug Fixes
+
+* align Builder readability input and PDF content scope ([#946](https://github.com/HHS/simpler-grants-pdf-builder/issues/946)) ([3d632e3](https://github.com/HHS/simpler-grants-pdf-builder/commit/3d632e3217d08b9795b672d5326d0c5936e54e18))
+
 ## [3.41.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.40.0...nofos-v3.41.0) (2026-09-21)
 
 
