@@ -62,11 +62,11 @@ class PdfReadabilityPageTests(TestCase):
     def setUp(self):
         self.url = reverse("pdf_readability")
 
-    def test_print_styles_hide_footer(self):
+    def test_print_styles_hide_banner_and_footer(self):
         css_path = finders.find("pdf_readability.css")
         self.assertIsNotNone(css_path)
         css = Path(css_path).read_text()
-        self.assertIn(".usa-footer { display: none !important; }", css)
+        self.assertIn(".usa-banner, .usa-footer { display: none !important; }", css)
 
     def test_flag_is_off_by_default_for_get_and_post(self):
         self.assertEqual(self.client.get(self.url).status_code, 503)
