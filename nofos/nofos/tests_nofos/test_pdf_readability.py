@@ -152,6 +152,12 @@ class PdfReadabilityTests(SimpleTestCase):
                 ("opportunity_number", "assistance_listing"),
             ),
             (
+                {},
+                "Funding opportunity number: ABC-123-XYZ-001 "
+                "Assistance Listing Number: 43.012",
+                ("opportunity_number", "assistance_listing"),
+            ),
+            (
                 {"/Description": "Funding opportunity no. TI-26-006"},
                 "See Grants.gov for updates.",
                 ("opportunity_number", "grants_gov"),
