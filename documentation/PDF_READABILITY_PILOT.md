@@ -7,6 +7,12 @@ is still public; direct distribution is not access control.
 
 ## Default-off release
 
+Track remaining enablement work in [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
+Reuse the [source-based safeguards inventory](PDF_READABILITY_SAFEGUARDS.md)
+and [deployment verification checklist](PDF_READABILITY_RELEASE_CHECKLIST.md)
+to record target-environment evidence. Neither document grants approval to enable
+the route or certifies current deployment settings.
+
 `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` defaults to false. Keep it off in shared
 environments until the checks below are complete. This application change does
 not install ingress rate limiting or authorize production enablement.
