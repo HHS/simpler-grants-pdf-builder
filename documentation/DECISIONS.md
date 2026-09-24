@@ -4,6 +4,27 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-24 — Show the USWDS government website banner on every page
+
+**Context:** NOFO Builder now has a public, unauthenticated PDF readability page
+at `/readability/`. People who reach it may never have used NOFO Builder and
+have no other cue that it is a government service. simpler.grants.gov already
+uses the standard USWDS government website banner ("An official website of the
+United States government"), but NOFO Builder did not show it anywhere.
+
+**Decision:** Add the standard USWDS banner above the header on every NOFO
+Builder page. That includes the public readability page and the signed-in app
+(NOFO Builder, NOFO Compare, and NOFO Composer), so the whole site signals it is
+a government website in the conventional way. Use the unmodified USWDS markup,
+kept in one shared include (`templates/includes/gov_banner.html`), and the flag
+and icon images that already ship with our static copy of USWDS.
+
+Keep the banner off NOFO document views and exports, which become the published
+PDFs, and off Django admin. Hide it when the readability report is printed. The
+banner's ".gov" guidance assumes NOFO Builder is served from a .gov domain.
+
+---
+
 ## 2026-09-18 — Make endnote warnings copyable for sharing
 
 **Context:** The broken-links warning already lets an editor copy its issue
