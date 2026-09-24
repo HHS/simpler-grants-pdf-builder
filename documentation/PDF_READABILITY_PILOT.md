@@ -31,9 +31,11 @@ The field shapes are grounded in the [Simpler.Grants.gov Opportunities v1
 OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/post_v1_opportunities_search):
 `ABC-123-XYZ-001` for `opportunity_number` and `43.012` for
 `assistance_listing_number`. Its Assistance Listing search filter accepts two
-digits, a period, and two or three alphanumeric characters. The pilot uses this
-contract as a format reference only; upload processing does not call the
-Simpler.Grants.gov API or send document-derived values to another service.
+digits, a period, and two or three alphanumeric characters, including documented
+examples such as `45.C9` and `45.1C9`; its search documentation also shows the
+longer opportunity number `EPA-R9-SFUND-23-003`. The pilot uses this contract as
+a format reference only; upload processing does not call the Simpler.Grants.gov
+API or send document-derived values to another service.
 
 This gate is modest abuse deterrence for the unlinked public pilot. It can admit
 an unrelated document that contains two signals and can reject an unusually
