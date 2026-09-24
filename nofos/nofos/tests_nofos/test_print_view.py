@@ -276,6 +276,8 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertNotIn(sentinel, repr(logs.records[0].__dict__))
         self.assertEqual(logs.records[0].status, 400)
         self.assertEqual(logs.records[0].exception_type, "PDFGenerationError")
+        self.assertEqual(logs.records[0].vendor_status, 422)
+        self.assertFalse(logs.records[0].retryable)
 
     @patch("nofos.pdf_service.docraptor.DocApi")
     def test_vendor_exception_content_is_absent_from_all_request_logs(
@@ -310,7 +312,33 @@ class PrintNofoAsPDFViewTest(TestCase):
             )
 
         self.assertNotIn(sentinel, str(caught.exception))
+        self.assertEqual(caught.exception.status_code, 422)
+        self.assertFalse(caught.exception.is_retryable)
         self.assertEqual(self._print_event_count(), 0)
+
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_service_classifies_retryable_vendor_failures(self, mock_doc_api):
+        for status_code, is_retryable in (
+            (0, True),
+            (408, True),
+            (422, False),
+            (429, True),
+            (503, True),
+        ):
+            with self.subTest(status_code=status_code):
+                mock_doc_api.return_value.create_doc.side_effect = (
+                    docraptor.rest.ApiException(status=status_code)
+                )
+
+                with self.assertRaises(PDFGenerationError) as caught:
+                    generate_nofo_pdf(
+                        self.nofo,
+                        base_url="https://builder.example.org/nofos/authorized-record",
+                        is_test_pdf=False,
+                    )
+
+                self.assertEqual(caught.exception.status_code, status_code)
+                self.assertIs(caught.exception.is_retryable, is_retryable)
 
     @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_lets_unexpected_exceptions_return_500(self, mock_doc_api):

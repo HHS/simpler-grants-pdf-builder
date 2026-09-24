@@ -2332,7 +2332,7 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             )
 
             return response
-        except PDFGenerationError:
+        except PDFGenerationError as error:
             # Vendor errors may echo submitted HTML or credentials. Record only
             # safe diagnostics, not the exception message or traceback.
             logging.getLogger("django.request").error(
@@ -2342,8 +2342,10 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                     "exception_type": "PDFGenerationError",
                     "method": request.method,
                     "path": request.path,
+                    "retryable": error.is_retryable,
                     "status": 400,
                     "user_id": str(request.user.pk),
+                    "vendor_status": error.status_code,
                 },
             )
             return HttpResponseBadRequest(

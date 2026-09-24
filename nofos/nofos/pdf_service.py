@@ -19,6 +19,18 @@ class GeneratedPDF:
 class PDFGenerationError(Exception):
     """DocRaptor rejected PDF generation; no vendor details are exposed."""
 
+    def __init__(self, *, status_code=None):
+        super().__init__("DocRaptor PDF generation failed")
+        # HTTP status codes are safe operational metadata. Do not retain the
+        # vendor reason, response body, or headers because they may echo the
+        # submitted NOFO or credentials.
+        self.status_code = status_code if type(status_code) is int else None
+        self.is_retryable = (
+            self.status_code is None
+            or self.status_code in (0, 408, 429)
+            or self.status_code >= 500
+        )
+
 
 def generate_nofo_pdf(nofo, *, base_url: str, is_test_pdf: bool) -> GeneratedPDF:
     """Render and generate a PDF for an already-authorized NOFO.
@@ -54,6 +66,6 @@ def generate_nofo_pdf(nofo, *, base_url: str, is_test_pdf: bool) -> GeneratedPDF
                 },
             }
         )
-    except docraptor.rest.ApiException:
-        raise PDFGenerationError("DocRaptor PDF generation failed") from None
+    except docraptor.rest.ApiException as error:
+        raise PDFGenerationError(status_code=error.status) from None
     return GeneratedPDF(content=content, is_test_pdf=is_test_pdf)
