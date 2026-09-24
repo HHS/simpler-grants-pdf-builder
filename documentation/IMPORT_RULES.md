@@ -543,6 +543,8 @@ These rules don't change the visible content, but they run automatically at impo
 
 The rules above cover **import time** only. A separate, parallel layer of "if pattern, then transform" rules runs at **render/view/export time** instead — every time a NOFO is displayed, edited, or exported to PDF/DOCX, via `nofos/nofos/templatetags/*.py` (e.g. `add_classes_to_tables.py`, `convert_paragraphs_to_hrs.py` turning literal `page-break`/`column-break` paragraph text into styled `<hr>` markers, `replace_unicode_with_icon.py`, `truncate_anchor_links_for_docx.py` truncating bookmark ids to Word's 40-character limit on export, and `add_footnote_ids.py` reformatting footnote reference links for display). If this document's scope is ever widened to "everything automatic," those belong in a sibling document (e.g. `RENDER_EXPORT_RULES.md`), kept clearly separate from import-time behavior since they run on every page view rather than once at upload.
 
+`nofo.py::get_nofo_action_links` is also outside the import pipeline. The Add Appendix menu action creates a fixed, empty section after import; it does not transform an imported Word document and has no `IMPORT-NNN` rule.
+
 The two view-time link-checking functions are worth calling out here because they are frequently mistaken for import rules, and because what counts as "broken" changed in [#908](https://github.com/HHS/simpler-grants-pdf-builder/issues/908):
 
 - **`nofo.py::find_broken_links`** reports links that were *supposed* to resolve inside the NOFO but don't — `#`-fragments with no matching id, root-relative `/…` paths, `bookmark://…`, and `file://…`. These power the "some internal links are broken" warning panel on the edit page.

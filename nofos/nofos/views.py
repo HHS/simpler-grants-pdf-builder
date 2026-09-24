@@ -136,6 +136,7 @@ from .nofo import (
     get_subsection_action_availability,
     get_subsections_from_sections,
     modifications_update_announcement_text,
+    nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
@@ -2402,6 +2403,41 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 
 
+def _order_trailing_sections(nofo):
+    """Keep Endnotes, Appendix, then Modifications at the document's end.
+
+    Called while the parent NOFO row is locked. Temporary, unused order values
+    avoid colliding with the unique (nofo, order) constraint during reordering.
+    """
+    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    tail_ids = ("endnotes", "appendix", "modifications")
+
+    def tail_id(section):
+        if section.html_id in tail_ids:
+            return section.html_id
+        # Imported sections can have generated IDs like "7--modifications".
+        # The modifications action itself recognizes the section by name.
+        if section.name.strip().casefold() in ("endnotes", "modifications"):
+            return section.name.strip().casefold()
+        return None
+
+    ordered = [section for section in sections if tail_id(section) is None]
+    ordered.extend(
+        section
+        for html_id in tail_ids
+        for section in sections
+        if tail_id(section) == html_id
+    )
+    if [section.pk for section in sections] == [section.pk for section in ordered]:
+        return
+
+    unused_order = max(section.order or 0 for section in sections) + 1
+    for offset, section in enumerate(ordered):
+        Section.objects.filter(pk=section.pk).update(order=unused_order + offset)
+    for order, section in enumerate(ordered, start=1):
+        Section.objects.filter(pk=section.pk).update(order=order)
+
+
 class NofoAddEndNotesSectionView(
     GroupAccessObjectMixin,
     PreventIfArchivedOrCancelledMixin,
@@ -2468,27 +2504,15 @@ class NofoAddEndNotesSectionView(
             if response:
                 return response
 
-            # Slot Endnotes directly above Modifications when it exists.
-            sections = self.nofo.sections.select_for_update()
-            modifications_section = sections.filter(name="Modifications").first()
-
-            if modifications_section:
-                order = modifications_section.order
-                # Shift in descending order to preserve the unique (nofo, order)
-                # constraint even when Modifications is not currently last.
-                for section in sections.filter(order__gte=order).order_by("-order"):
-                    section.order += 1
-                    section.save(update_fields=["order"])
-            else:
-                order = Section.get_next_order(self.nofo)
-
             self.section = Section.objects.create(
                 nofo=self.nofo,
                 name=END_NOTES_SECTION_NAME,
                 html_id=END_NOTES_SECTION_HTML_ID,
                 has_section_page=False,
-                order=order,
+                order=Section.get_next_order(self.nofo),
             )
+
+            _order_trailing_sections(self.nofo)
 
             form.instance.section = self.section
             form.instance.name = ""
@@ -2520,6 +2544,57 @@ class NofoAddEndNotesSectionView(
         context["nofo"] = self.nofo
         context["cancel_url"] = self.get_cancel_url()
         return context
+
+
+class NofoAddAppendixSectionView(
+    GroupAccessObjectMixin,
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    View,
+):
+    """Create the fixed Appendix section directly from the NOFO actions menu."""
+
+    http_method_names = ["post"]
+    published_error_message = "Appendix can’t be added to published NOFOs."
+    archived_error_message = "Appendix can’t be added to archived NOFOs."
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+    def post(self, request, *args, **kwargs):
+        with transaction.atomic():
+            # Lock the parent row, then repeat guards inside the transaction.
+            # This serializes simultaneous requests for the same NOFO.
+            nofo = Nofo.objects.select_for_update().get(pk=self.nofo.pk)
+            if nofo.archived:
+                return self.render_response(self.archived_error_message)
+            if nofo.status == "cancelled":
+                return self.render_response(self.cancelled_error_message)
+            if nofo.status == "published":
+                return self.render_response(self.published_error_message)
+            if nofo_has_appendix_section(nofo):
+                messages.warning(request, "This NOFO already has an Appendix section.")
+                return redirect("nofos:nofo_edit", pk=nofo.pk)
+
+            section = Section.objects.create(
+                nofo=nofo,
+                name="Appendix",
+                html_id="appendix",
+                has_section_page=False,
+                order=Section.get_next_order(nofo),
+            )
+            _order_trailing_sections(nofo)
+
+        messages.success(
+            request,
+            "Added new section: “<a href='#{}'>{}</a>”".format(
+                section.html_id, section.name
+            ),
+        )
+        return redirect(
+            "{}#{}".format(reverse("nofos:nofo_edit", args=[nofo.pk]), section.html_id)
+        )
 
 
 class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):

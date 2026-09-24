@@ -1495,6 +1495,10 @@ def nofo_has_end_notes_section(nofo):
     return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
 
 
+def nofo_has_appendix_section(nofo):
+    return nofo.sections.filter(html_id="appendix").exists()
+
+
 def get_subsection_action_availability(nofo):
     """Present existing status restrictions; action views still enforce access."""
     return {
@@ -1559,6 +1563,14 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
         }
 
+    def _link_add_appendix(nofo):
+        return {
+            "key": "add_appendix",
+            "label": "Add Appendix",
+            "href": reverse_lazy("nofos:section_add_appendix", args=[nofo.pk]),
+            "method": "post",
+        }
+
     # Status → allowed actions
     _STATUS_ACTIONS = {
         "draft": (
@@ -1566,6 +1578,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
             "delete",
@@ -1575,6 +1588,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1583,6 +1597,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1591,6 +1606,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "doge": (
@@ -1598,6 +1614,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),  # Deputy Secretary review
         "published": ("export",),
@@ -1606,6 +1623,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "cancelled": ("export",),
@@ -1620,6 +1638,7 @@ def get_nofo_action_links(nofo):
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
         "add_end_notes": lambda: _link_add_end_notes(nofo),
+        "add_appendix": lambda: _link_add_appendix(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
@@ -1629,6 +1648,8 @@ def get_nofo_action_links(nofo):
     for key in actions:
         # A NOFO can only ever have one Endnotes section.
         if key == "add_end_notes" and nofo_has_end_notes_section(nofo):
+            continue
+        if key == "add_appendix" and (nofo.archived or nofo_has_appendix_section(nofo)):
             continue
 
         build = link_builders.get(key)
