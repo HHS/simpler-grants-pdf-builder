@@ -37,6 +37,18 @@ _ERRORS = {
         "This PDF has no extractable text. Scanned PDFs need OCR before analysis.",
         400,
     ),
+    "format_unsupported": (
+        "This PDF does not match a supported pilot format. Check that you used an approved HHS FY27 template or NOFO development tool, and contact your agency's grants policy office for help.",
+        400,
+    ),
+    "format_indeterminate": (
+        "We could not confirm this PDF is in a supported pilot format. Check that you used an approved HHS FY27 template or NOFO development tool, and contact your agency's grants policy office for help.",
+        400,
+    ),
+    "format_unavailable": (
+        "Format recognition is not configured for this pilot yet. No readability report was calculated. Please try again after the pilot opens.",
+        503,
+    ),
     "timeout": (
         "This PDF took too long to analyze. Try a shorter PDF or try again later.",
         503,
