@@ -1,0 +1,31 @@
+.readability-page { width: 100%; }
+.readability-form { max-width: 35rem; }
+.readability-report-heading { border-bottom: 2px solid #005ea2; padding-bottom: 1rem; }
+.readability-report-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.readability-report-meta dt { font-weight: 700; }
+.readability-report-meta dd { margin: .25rem 0 0; overflow-wrap: anywhere; }
+.readability-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+.readability-metric { border: 1px solid #aeb0b5; padding: 1rem; break-inside: avoid; }
+.readability-metric-value { font-size: 1.6rem; font-weight: 700; }
+.readability-warnings { border-left: .4rem solid #ffbe2e; padding-left: 1rem; break-inside: avoid; }
+.readability-warnings summary { cursor: pointer; font-weight: 700; }
+.readability-warnings ul { margin-top: 1rem; }
+.readability-reliability { break-inside: avoid; }
+.readability-copy-fallback { display: block; width: 100%; min-height: 10rem; margin-top: 1rem; }
+.readability-copy-fallback[hidden] { display: none; }
+.readability-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-top: 2rem; }
+@media print {
+  @page { margin: .65in; }
+  body { color: #000; font-size: 10pt; }
+  .readability-page { width: auto; }
+  .usa-footer { display: none !important; }
+  .no-print { display: none !important; }
+  .readability-report-heading, .readability-report-meta, .readability-metric { break-inside: avoid; }
+  .readability-warnings { break-inside: auto; }
+  .readability-warnings > summary { list-style: none; }
+  .readability-warnings > summary::marker { content: ""; }
+  .readability-warnings li { break-inside: avoid; }
+  .readability-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .usa-alert { border: 1px solid #555; background: #fff !important; color: #000; }
+  a { color: #000; text-decoration: none; }
+}
