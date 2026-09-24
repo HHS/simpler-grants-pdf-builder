@@ -66,8 +66,10 @@ determination. Untagged PDFs need particularly clear reliability caveats.
 The dependency is pinned to 0.5.4, including the tagged-PDF parity fixes for
 producer-declared cover/contents scope, cross-page paragraphs and lists, inline
 word ordering, and numeric list markers. Profiles and formulas are unchanged;
-extracted content and resulting PDF estimates can change. Package identity keeps
-previous scores distinguishable. This dependency update does not enable the
+extracted content and resulting PDF estimates can change. In Builder's stored
+readability snapshots, package identity distinguishes previous scores from new
+calculations. The PDF pilot does not store report history; each report identifies
+its measurement version. This dependency update does not enable the
 pilot or replace the deployment checks above.
 
 ## Stop the pilot

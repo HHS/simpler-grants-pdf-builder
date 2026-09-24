@@ -21,7 +21,7 @@ from nofos.pdf_readability import (
     _analysis_slot,
     analyze_uploaded_pdf,
 )
-from nofos.pdf_readability_worker import _safe_result
+from nofos.pdf_readability_worker import TAGGED_ADAPTER, _safe_result
 
 
 def synthetic_text_pdf():
@@ -53,6 +53,11 @@ def synthetic_text_pdf():
 
 
 class PdfReadabilityTests(SimpleTestCase):
+    def test_tagged_adapter_pin_matches_installed_package(self):
+        from hhs_nofo_metrics.adapters.tagged_pdf import ADAPTER_VERSION
+
+        self.assertEqual(TAGGED_ADAPTER, f"hhs-tagged-pdf-adapter@{ADAPTER_VERSION}")
+
     def setUp(self):
         super().setUp()
         directory = tempfile.TemporaryDirectory(prefix="pdf-readability-test-lock-")
