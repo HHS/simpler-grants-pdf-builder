@@ -4,6 +4,35 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-24 — Use a loose two-signal NOFO check for the PDF readability pilot
+
+**Context:** The unauthenticated `/readability/` pilot needs modest protection
+against use as a general-purpose PDF analyzer, but strict FY27 template or
+semantic-heading recognition would reject legitimate HHS NOFOs, especially
+ordinary agency variations and untagged PDFs. Document recognition is not a
+determination of template compliance, accessibility, policy, or clearance.
+
+**Decision:** Inspect descriptive PDF metadata and text extracted from the first
+two pages for four distinct signals: an HHS agency or division in metadata, a
+labeled opportunity number, a labeled Assistance Listing number, and a
+Grants.gov reference. Allow analysis when any two signals are present. Count
+each signal at most once, do not use the filename, and do not retain or expose
+matched document content.
+
+Keep recognition independent of the metrics package's tagged-PDF support check.
+Untagged text-based PDFs may pass and receive the existing low-reliability
+extraction warning. Treat PDFs with readable text on the inspected pages but
+fewer than two signals as unsupported; treat PDFs without extractable text there as
+indeterminate and direct the user toward OCR. Keep the threshold and bounded
+page scope in application code so later evidence can tune this small policy
+without building a document-classification platform.
+
+The check intentionally favors recall over precision. It may admit unrelated
+documents that contain two signals and may reject nonstandard NOFOs that do not.
+A successful report must continue to say that it is an estimate, not approval.
+
+---
+
 ## 2026-09-24 — Show the USWDS government website banner on every page
 
 **Context:** NOFO Builder now has a public, unauthenticated PDF readability page

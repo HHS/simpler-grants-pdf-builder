@@ -1,117 +1,147 @@
-"""Conservative, content-free recognition of approved PDF pilot formats.
+"""Lightweight, content-free recognition for the PDF readability pilot.
 
-Approval and representative fixtures are still pending (#969). Keep the rule
-tuple empty until those decisions are recorded; no document is supported by
-default. This is intentionally separate from Builder's DOCX/HTML import rules.
+Recognition is deliberately a loose abuse-deterrence check, not template,
+accessibility, policy, or clearance validation. Only fixed signal identifiers
+leave this module; document text and metadata are never returned or logged.
 """
+
+from __future__ import annotations
 
 import re
 import unicodedata
 from dataclasses import dataclass
+from typing import Mapping
 
 
 @dataclass(frozen=True)
-class HeadingSignal:
-    id: str
-    alternatives: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class FormatRule:
-    id: str
-    headings: tuple[HeadingSignal, ...]
-    minimum_matches: int
+class RecognitionPolicy:
+    minimum_signals: int = 2
+    pages_to_inspect: int = 2
 
 
 @dataclass(frozen=True)
 class Recognition:
     status: str  # supported, unsupported, indeterminate
     reason: str  # fixed code; never source text
+    signal_ids: tuple[str, ...]
 
 
-# Add rules only after product/policy approval and representative fixture review.
-SUPPORTED_FORMAT_RULES: tuple[FormatRule, ...] = ()
+DEFAULT_POLICY = RecognitionPolicy()
+
+# HHS divisions that administer or oversee grants. Match acronyms as whole
+# words so short names such as ACL and NIH do not match inside ordinary words.
+_HHS_AGENCY_NAMES = (
+    "HHS",
+    "ACF",
+    "ACL",
+    "AHRQ",
+    "ARPA-H",
+    "ASPR",
+    "ATSDR",
+    "CDC",
+    "CMS",
+    "FDA",
+    "HRSA",
+    "IHS",
+    "NIH",
+    "OASH",
+    "OIG",
+    "ONC",
+    "SAMHSA",
+    "Department of Health and Human Services",
+    "Department of Health & Human Services",
+    "Administration for Children and Families",
+    "Administration for Children & Families",
+    "Administration for Community Living",
+    "Agency for Healthcare Research and Quality",
+    "Advanced Research Projects Agency for Health",
+    "Administration for Strategic Preparedness and Response",
+    "Agency for Toxic Substances and Disease Registry",
+    "Centers for Disease Control and Prevention",
+    "Centers for Medicare and Medicaid Services",
+    "Centers for Medicare & Medicaid Services",
+    "Food and Drug Administration",
+    "Health Resources and Services Administration",
+    "Indian Health Service",
+    "National Institutes of Health",
+    "Substance Abuse and Mental Health Services Administration",
+)
+_HHS_AGENCY_RE = re.compile(
+    r"(?<![\w-])(?:"
+    + "|".join(re.escape(item) for item in _HHS_AGENCY_NAMES)
+    + r")(?![\w-])",
+    re.IGNORECASE,
+)
+_OPPORTUNITY_NUMBER_RE = re.compile(
+    r"\b(?:funding\s+)?opportunity\s+(?:number|no\.?|id)\s*:?\s*"
+    r"[A-Z0-9]+(?:-[A-Z0-9]+){1,10}-[0-9]{3,4}\b",
+    re.IGNORECASE,
+)
+_ASSISTANCE_LISTING_RE = re.compile(
+    r"\b(?:federal\s+)?assistance\s+listing"
+    r"(?:\s+(?:number|no\.?|id))?\s*:?\s*[0-9]{2}\.[A-Z0-9]{2,3}\b",
+    re.IGNORECASE,
+)
+_GRANTS_GOV_RE = re.compile(
+    r"(?<![\w.])(?:https?://)?(?:www\.)?grants\.gov\b", re.IGNORECASE
+)
+
+
+def validate_policy(policy: RecognitionPolicy) -> None:
+    if (
+        not isinstance(policy, RecognitionPolicy)
+        or type(policy.minimum_signals) is not int
+        or not 1 <= policy.minimum_signals <= 4
+        or type(policy.pages_to_inspect) is not int
+        or not 1 <= policy.pages_to_inspect <= 5
+    ):
+        raise ValueError("invalid recognition policy")
 
 
 def _normalize(value: str) -> str:
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value)).strip().casefold()
+    value = unicodedata.normalize("NFKC", value)
+    value = re.sub(r"\s*-\s*", "-", value)
+    return re.sub(r"\s+", " ", value).strip()
 
 
-def validate_rules(rules: tuple[FormatRule, ...]) -> None:
-    """Reject invalid configurations before reading or scoring an uploaded PDF."""
-    if not isinstance(rules, tuple) or len(rules) > 12:
-        raise ValueError("invalid recognition rules")
-    rule_ids = set()
-    for rule in rules:
-        if (
-            not isinstance(rule, FormatRule)
-            or not isinstance(rule.id, str)
-            or not rule.id
-            or len(rule.id) > 80
-            or rule.id in rule_ids
-        ):
-            raise ValueError("invalid recognition rule")
-        rule_ids.add(rule.id)
-        if (
-            not isinstance(rule.headings, tuple)
-            or not 2 <= len(rule.headings) <= 16
-            or type(rule.minimum_matches) is not int
-            or not 2 <= rule.minimum_matches <= len(rule.headings)
-        ):
-            raise ValueError("invalid recognition threshold")
-        signal_ids = set()
-        used_labels = set()
-        for signal in rule.headings:
-            if (
-                not isinstance(signal, HeadingSignal)
-                or not isinstance(signal.id, str)
-                or not signal.id
-                or len(signal.id) > 80
-                or signal.id in signal_ids
-                or not isinstance(signal.alternatives, tuple)
-                or not 1 <= len(signal.alternatives) <= 8
-                or any(
-                    not isinstance(item, str) or not _normalize(item) or len(item) > 160
-                    for item in signal.alternatives
-                )
-            ):
-                raise ValueError("invalid recognition signal")
-            signal_ids.add(signal.id)
-            labels = {_normalize(item) for item in signal.alternatives}
-            if used_labels & labels:
-                raise ValueError("overlapping recognition signals")
-            used_labels.update(labels)
+def metadata_text(metadata: Mapping | None) -> str:
+    """Return only the descriptive PDF metadata fields used for recognition."""
+    if not metadata:
+        return ""
+    values = []
+    for key in ("/Author", "/Subject", "/Description", "/Title", "/Keywords"):
+        value = metadata.get(key)
+        if isinstance(value, str):
+            values.append(value)
+    return _normalize(" ".join(values))
 
 
-def recognize_format(
-    adapter_status: str,
-    segments: tuple,
-    rules: tuple[FormatRule, ...] = SUPPORTED_FORMAT_RULES,
+def recognize_nofo(
+    metadata: Mapping | None,
+    first_pages_text: str,
+    policy: RecognitionPolicy = DEFAULT_POLICY,
 ) -> Recognition:
-    """Decide only format support; never assert template compliance or clearance."""
-    validate_rules(rules)
-    if not rules:
-        raise ValueError("recognition rules not approved")
-    if adapter_status != "supported":
-        # Untagged or unreadable-tag PDFs have no trustworthy semantic headings.
-        return Recognition("indeterminate", "structure_unavailable")
+    """Recognize a likely HHS NOFO from distinct, intentionally loose signals."""
+    validate_policy(policy)
+    descriptive_metadata = metadata_text(metadata)
+    page_text = (
+        _normalize(first_pages_text) if isinstance(first_pages_text, str) else ""
+    )
+    searchable_text = _normalize(f"{descriptive_metadata} {page_text}")
 
-    headings = {
-        _normalize(segment.text)
-        for segment in segments
-        if getattr(segment, "role", None) == "heading"
-        and isinstance(getattr(segment, "text", None), str)
-    }
-    for rule in rules:
-        matches = sum(
-            any(_normalize(label) in headings for label in signal.alternatives)
-            for signal in rule.headings
-        )
-        if matches >= rule.minimum_matches:
-            return Recognition("supported", "matched_approved_structure")
+    signal_ids = []
+    if _HHS_AGENCY_RE.search(descriptive_metadata):
+        signal_ids.append("hhs_agency_metadata")
+    if _OPPORTUNITY_NUMBER_RE.search(searchable_text):
+        signal_ids.append("opportunity_number")
+    if _ASSISTANCE_LISTING_RE.search(searchable_text):
+        signal_ids.append("assistance_listing")
+    if _GRANTS_GOV_RE.search(searchable_text):
+        signal_ids.append("grants_gov")
 
-    # Enough distinct semantic headings to have met the smallest approved rule
-    # makes a mismatch meaningful. Below that, coverage is indeterminate.
-    if len(headings) >= min(rule.minimum_matches for rule in rules):
-        return Recognition("unsupported", "heading_coverage_mismatch")
-    return Recognition("indeterminate", "insufficient_heading_evidence")
+    signals = tuple(signal_ids)
+    if len(signals) >= policy.minimum_signals:
+        return Recognition("supported", "minimum_signals_met", signals)
+    if not page_text:
+        return Recognition("indeterminate", "first_pages_text_unavailable", signals)
+    return Recognition("unsupported", "insufficient_nofo_signals", signals)
