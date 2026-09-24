@@ -11,6 +11,37 @@ is still public; direct distribution is not access control.
 environments until the checks below are complete. This application change does
 not install ingress rate limiting or authorize production enablement.
 
+## Format-recognition status (#969, partial)
+
+The application now has a conservative format-recognition gate inside the
+existing bounded PDF worker. It reuses the pinned metrics package's tagged-PDF
+support check and extracted semantic heading segments, then applies small,
+source-code-configured multi-heading rules. A match means only that the PDF
+resembles an approved pilot format; it is **not** template compliance,
+accessibility, policy, or clearance approval. Untagged PDFs and PDFs with an
+unreadable tag tree remain indeterminate; the generic metrics adapter is still
+available internally but does not by itself confer supported-format status.
+
+No approved formats or rules have been recorded yet. The rule tuple is empty,
+so an otherwise valid PDF receives a service-configuration-unavailable message
+and **no readability report**, even if the route flag is enabled locally.
+Invalid rules also fail closed. Rules are immutable application code imported
+by the worker, not a runtime environment variable, request parameter, database
+value, or secret passed across the subprocess boundary. The route flag must
+remain off in shared environments. No user should interpret this partial work
+as satisfaction of the #969 release gate.
+
+To complete #969, the product owner and grants-policy representatives must
+identify the accepted HHS FY27 template and development-tool output variants,
+approve tagged/untagged handling, and review representative positive and
+negative synthetic or approved-public PDFs (including ordinary edits,
+incomplete structure, and misleading headings). Only then should rules and
+their tolerances be configured and tested. No filename or required
+template-version marker is used. Recognized documents may cost two metrics
+package extraction passes—one for format recognition and one for analysis—both
+inside the existing 15-second subprocess deadline; tune this with approved
+fixtures before enablement.
+
 Release gates before enabling the anonymous route (merge is not approval to enable):
 
 - Limit use to draft NOFOs made from an approved HHS FY27 template. Tell users to

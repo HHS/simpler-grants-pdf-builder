@@ -9,6 +9,12 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
+from nofos.pdf_format_recognition import (
+    SUPPORTED_FORMAT_RULES,
+    recognize_format,
+    validate_rules,
+)
+
 TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.5.0"
 GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.4.0"
 TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.6"
@@ -144,8 +150,10 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
     }
 
 
-def analyze(path: Path, max_pages: int) -> dict:
+def analyze(path: Path, max_pages: int, *, rules=SUPPORTED_FORMAT_RULES) -> dict:
     import hhs_nofo_metrics as metrics
+    from hhs_nofo_metrics.adapters import default_registry
+    from hhs_nofo_metrics.sources import materialize_source_bundle
 
     with path.open("rb") as stream:
         if stream.read(5) != b"%PDF-":
@@ -164,12 +172,44 @@ def analyze(path: Path, max_pages: int) -> dict:
     if page_count > max_pages:
         raise ValueError("too_many_pages")
 
+    try:
+        validate_rules(rules)
+    except ValueError as exc:
+        raise ValueError("format_unavailable") from exc
+    if not rules:
+        raise ValueError("format_unavailable")
+
     source = metrics.SourceBundle.from_pdf(path)
     support = metrics.inspect_adapter_support(source, adapter=TAGGED_ADAPTER)[0][
         "assessment"
     ]["status"]
     if support == "indeterminate":
-        raise ValueError("invalid_pdf")
+        raise ValueError("format_indeterminate")
+    if support == "supported":
+        # Reuse the metrics package's semantic segments, not a second PDF
+        # parser or typography-based heading inference. The public adapter
+        # contract exposes extract(); metrics.analyze later repeats extraction
+        # under the same 15-second child deadline when a format is recognized.
+        with materialize_source_bundle(source) as materialized:
+            document = (
+                default_registry()
+                .resolve(TAGGED_ADAPTER)
+                .extract(materialized, config={})
+                .document
+            )
+        segments = document.segments
+    else:
+        segments = ()
+    decision = recognize_format(support, segments, rules)
+    if decision.status != "supported":
+        raise ValueError(f"format_{decision.status}")
+    return _analyze_metrics(source, support, page_count)
+
+
+def _analyze_metrics(source, support: str, page_count: int) -> dict:
+    """Existing tagged/generic metric path, kept independently testable."""
+    import hhs_nofo_metrics as metrics
+
     profile_kind = "tagged" if support == "supported" else "generic"
     profile = TAGGED_PROFILE if profile_kind == "tagged" else GENERIC_PROFILE
     try:
@@ -200,7 +240,16 @@ def main() -> int:
             "ok": False,
             "code": (
                 code
-                if code in {"invalid_pdf", "encrypted", "too_many_pages", "no_text"}
+                if code
+                in {
+                    "invalid_pdf",
+                    "encrypted",
+                    "too_many_pages",
+                    "no_text",
+                    "format_unavailable",
+                    "format_unsupported",
+                    "format_indeterminate",
+                }
                 else "invalid_pdf"
             ),
         }
