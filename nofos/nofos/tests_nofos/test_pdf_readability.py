@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from contextlib import nullcontext
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,8 +13,19 @@ from unittest.mock import patch
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase
 from pypdf import PdfWriter
-from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+from pypdf.generic import (
+    ArrayObject,
+    DecodedStreamObject,
+    DictionaryObject,
+    NameObject,
+    NumberObject,
+)
 
+from nofos.pdf_format_recognition import (
+    FormatRule,
+    HeadingSignal,
+    recognize_format,
+)
 from nofos.pdf_readability import (
     MAX_UPLOAD_BYTES,
     PdfReadabilityError,
@@ -21,7 +33,24 @@ from nofos.pdf_readability import (
     _analysis_slot,
     analyze_uploaded_pdf,
 )
-from nofos.pdf_readability_worker import TAGGED_ADAPTER, _safe_result
+from nofos.pdf_readability_worker import (
+    TAGGED_ADAPTER,
+    _analyze_metrics,
+    _safe_result,
+    analyze,
+)
+
+SYNTHETIC_RULES = (
+    FormatRule(
+        id="synthetic-fy27-test-only",
+        headings=(
+            HeadingSignal("overview", ("Program overview", "Overview of program")),
+            HeadingSignal("eligibility", ("Eligibility",)),
+            HeadingSignal("application", ("Application instructions",)),
+        ),
+        minimum_matches=2,
+    ),
+)
 
 
 def synthetic_text_pdf():
@@ -52,11 +81,177 @@ def synthetic_text_pdf():
     return data.getvalue()
 
 
+def synthetic_tagged_pdf(headings):
+    """A one-page tagged PDF with genuine MCID-backed heading groups."""
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    font = writer._add_object(
+        DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/Type1"),
+                NameObject("/BaseFont"): NameObject("/Helvetica"),
+            }
+        )
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+    )
+    elements = ArrayObject()
+    content = []
+    for index, heading in enumerate(headings):
+        assert heading.isascii() and "(" not in heading and ")" not in heading
+        elements.append(
+            writer._add_object(
+                DictionaryObject(
+                    {
+                        NameObject("/Type"): NameObject("/StructElem"),
+                        NameObject("/S"): NameObject("/H1"),
+                        NameObject("/Pg"): page.indirect_reference,
+                        NameObject("/K"): NumberObject(index),
+                    }
+                )
+            )
+        )
+        content.append(
+            f"/H1 <</MCID {index}>> BDC BT /F1 12 Tf 72 {700-index*24} Td ({heading}) Tj ET EMC".encode()
+        )
+    root = writer._add_object(
+        DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/StructTreeRoot"),
+                NameObject("/K"): elements,
+            }
+        )
+    )
+    writer._root_object[NameObject("/StructTreeRoot")] = root
+    stream = DecodedStreamObject()
+    stream.set_data(b"\n".join(content))
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    data = BytesIO()
+    writer.write(data)
+    return data.getvalue()
+
+
 class PdfReadabilityTests(SimpleTestCase):
     def test_tagged_adapter_pin_matches_installed_package(self):
         from hhs_nofo_metrics.adapters.tagged_pdf import ADAPTER_VERSION
 
         self.assertEqual(TAGGED_ADAPTER, f"hhs-tagged-pdf-adapter@{ADAPTER_VERSION}")
+
+    def test_recognition_matches_multiple_semantic_headings_with_normalization(self):
+        segments = (
+            SimpleNamespace(role="heading", text="  PROGRAM  OVERVIEW "),
+            SimpleNamespace(role="heading", text="Eligibility"),
+            SimpleNamespace(role="body", text="Application instructions"),
+        )
+        decision = recognize_format("supported", segments, SYNTHETIC_RULES)
+        self.assertEqual(decision.status, "supported")
+        self.assertNotIn("PROGRAM", repr(decision))
+
+    def test_recognition_rejects_misleading_and_incomplete_structure(self):
+        misleading = (
+            SimpleNamespace(role="heading", text="Overview"),
+            SimpleNamespace(role="heading", text="Eligibility"),
+            SimpleNamespace(role="heading", text="Budget"),
+        )
+        self.assertEqual(
+            recognize_format("supported", misleading, SYNTHETIC_RULES).status,
+            "unsupported",
+        )
+        self.assertEqual(
+            recognize_format("supported", misleading[:1], SYNTHETIC_RULES).status,
+            "indeterminate",
+        )
+        self.assertEqual(
+            recognize_format("unsupported", misleading, SYNTHETIC_RULES).status,
+            "indeterminate",
+        )
+
+    def test_worker_accepts_only_with_injected_synthetic_approved_rule(self):
+        segments = (
+            SimpleNamespace(role="heading", text="Program overview"),
+            SimpleNamespace(role="heading", text="Eligibility"),
+        )
+        plugin = SimpleNamespace(
+            extract=lambda *args, **kwargs: SimpleNamespace(
+                document=SimpleNamespace(segments=segments)
+            )
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "synthetic.pdf"
+            path.write_bytes(synthetic_text_pdf())
+            with patch(
+                "hhs_nofo_metrics.inspect_adapter_support",
+                return_value=[{"assessment": {"status": "supported"}}],
+            ), patch(
+                "hhs_nofo_metrics.adapters.default_registry",
+                return_value=SimpleNamespace(resolve=lambda adapter: plugin),
+            ), patch(
+                "hhs_nofo_metrics.sources.materialize_source_bundle",
+                return_value=nullcontext(SimpleNamespace()),
+            ), patch(
+                "nofos.pdf_readability_worker._analyze_metrics",
+                return_value={"recognized": True},
+            ) as metrics:
+                self.assertEqual(
+                    analyze(path, 150, rules=SYNTHETIC_RULES),
+                    {"recognized": True},
+                )
+                metrics.assert_called_once()
+
+    def test_real_tagged_pdf_path_with_test_only_rules(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "synthetic-tagged.pdf"
+            path.write_bytes(
+                synthetic_tagged_pdf(("Overview of program", "Eligibility", "Budget"))
+            )
+            report = analyze(path, 150, rules=SYNTHETIC_RULES)
+        self.assertEqual(report["profile"], "tagged")
+        self.assertEqual(report["pages_total"], 1)
+        self.assertGreater(report["scope"]["recovered_word_count"], 0)
+
+    def test_real_tagged_pdf_negative_and_incomplete_structures(self):
+        for headings, expected in (
+            (("Unrelated notice", "Eligibility", "Budget"), "format_unsupported"),
+            (("Program overview",), "format_indeterminate"),
+        ):
+            with self.subTest(expected=expected):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "synthetic-tagged.pdf"
+                    path.write_bytes(synthetic_tagged_pdf(headings))
+                    with self.assertRaises(ValueError) as caught:
+                        analyze(path, 150, rules=SYNTHETIC_RULES)
+                self.assertEqual(str(caught.exception), expected)
+
+    def test_worker_fails_closed_with_no_or_invalid_rules(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "synthetic.pdf"
+            path.write_bytes(synthetic_text_pdf())
+            for rules in (
+                (),
+                (FormatRule("bad", (), 1),),
+                (
+                    FormatRule(
+                        "duplicate-alias",
+                        (
+                            HeadingSignal("one", ("Eligibility",)),
+                            HeadingSignal("two", (" ELIGIBILITY ",)),
+                        ),
+                        2,
+                    ),
+                ),
+                (
+                    FormatRule(
+                        "bad-id",
+                        (HeadingSignal(2, ("One",)), HeadingSignal("two", ("Two",))),
+                        2,
+                    ),
+                ),
+            ):
+                with self.subTest(rules=rules), self.assertRaises(ValueError) as caught:
+                    analyze(path, 150, rules=rules)
+                self.assertEqual(str(caught.exception), "format_unavailable")
 
     def setUp(self):
         super().setUp()
@@ -73,7 +268,11 @@ class PdfReadabilityTests(SimpleTestCase):
         )
 
     def test_synthetic_pdf_report_has_safe_fields_only(self):
-        report = analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
+        from hhs_nofo_metrics import SourceBundle
+
+        report = _analyze_metrics(
+            SourceBundle.from_pdf(synthetic_text_pdf()), "unsupported", 2
+        )
         self.assertEqual(report["profile"], "generic")
         self.assertEqual(report["pages_total"], 2)
         self.assertEqual(report["reliability"], "low")
@@ -110,9 +309,10 @@ class PdfReadabilityTests(SimpleTestCase):
         with patch.dict(os.environ, injected), patch(
             "nofos.pdf_readability.subprocess.run", side_effect=run_child
         ):
-            report = analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
+            with self.assertRaises(PdfReadabilityError) as caught:
+                analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
 
-        self.assertEqual(report["scope"]["recovered_word_count"], 23)
+        self.assertEqual(caught.exception.code, "format_unavailable")
         self.assertEqual(len(child_environments), 1)
         child_env = child_environments[0]
         for name in injected:
@@ -172,7 +372,7 @@ class PdfReadabilityTests(SimpleTestCase):
     def test_empty_file_and_scanned_pdf(self):
         for contents, expected in (
             (b"", "invalid_pdf"),
-            (self._blank_pdf(), "no_text"),
+            (self._blank_pdf(), "format_unavailable"),
         ):
             with self.subTest(expected=expected):
                 with self.assertRaises(PdfReadabilityError) as caught:
@@ -204,8 +404,9 @@ class PdfReadabilityTests(SimpleTestCase):
             with self.assertRaises(PdfReadabilityError) as caught:
                 analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
             self.assertEqual(caught.exception.code, "busy")
-        report = analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
-        self.assertEqual(report["pages_total"], 2)
+        with self.assertRaises(PdfReadabilityError) as caught:
+            analyze_uploaded_pdf(self.upload(synthetic_text_pdf()))
+        self.assertEqual(caught.exception.code, "format_unavailable")
 
     def test_file_slot_contends_across_processes(self):
         child_code = (

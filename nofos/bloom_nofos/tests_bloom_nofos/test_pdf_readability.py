@@ -225,6 +225,28 @@ class PdfReadabilityPageTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    @patch("bloom_nofos.views.analyze_uploaded_pdf")
+    def test_format_decisions_never_show_normal_results(self, analyze):
+        for code, status, phrase in (
+            ("format_unsupported", 400, "does not match a supported pilot format"),
+            ("format_indeterminate", 400, "could not confirm this PDF"),
+            ("format_unavailable", 503, "not configured for this pilot yet"),
+        ):
+            with self.subTest(code=code):
+                analyze.side_effect = PdfReadabilityError(code)
+                response = self.client.post(self.url, {"pdf": sample_pdf()})
+                self.assertContains(response, phrase, status_code=status)
+                self.assertContains(response, 'role="alert"', status_code=status)
+                self.assertNotContains(
+                    response, "Readability measures", status_code=status
+                )
+                self.assertIn("no-store", response["Cache-Control"])
+                self.assertEqual(
+                    response["X-Robots-Tag"],
+                    "noindex, nofollow, noarchive, nosnippet",
+                )
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_csrf_is_enforced_for_public_post(self):
         client = self.client_class(enforce_csrf_checks=True)
         response = client.post(self.url, {"pdf": sample_pdf()})
