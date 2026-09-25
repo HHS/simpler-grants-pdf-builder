@@ -82,11 +82,11 @@
       </article>
     {% else %}
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
-      <p class="usa-intro">Upload a draft NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
+      <p class="usa-intro">Upload a draft or published NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
       <p>This pilot is intended for HHS notices of funding opportunity. We use a few basic details in the PDF to screen out unrelated documents.</p>
       <p>Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
       <p><strong>This report does not validate format compliance or make a clearance decision.</strong></p>
-      <p>Your PDF is processed temporarily on HHS-operated systems to calculate these estimates. It is not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
+      <p>Save or copy your results before leaving this page; they cannot be recovered later.</p>
       <p>Text-based PDFs work best. Scanned or image-only pages need OCR before they can be recognized or measured. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
 
       {% if error %}
@@ -97,6 +97,19 @@
           </div>
         </div>
       {% endif %}
+
+      <div class="usa-alert usa-alert--info margin-top-3 margin-bottom-0" role="region" aria-labelledby="readability-privacy-heading" id="readability-privacy-notice">
+        <div class="usa-alert__body">
+          <h2 class="usa-alert__heading" id="readability-privacy-heading">Your file and your privacy</h2>
+          <p class="usa-alert__text">Follow your agency’s rules for sharing pre-decisional NOFO content.</p>
+          <ul class="usa-list">
+            <li>Your PDF is processed temporarily on HHS-operated systems. It isn’t sent to any outside service.</li>
+            <li>It isn’t added to NOFO Builder, and no report history is kept.</li>
+            <li>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</li>
+          </ul>
+          <p class="usa-alert__text"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
+        </div>
+      </div>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
