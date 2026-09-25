@@ -120,11 +120,11 @@ class PdfReadabilityPageTests(TestCase):
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
             response,
-            "created from an HHS-approved FY27 template or NOFO development tool",
+            "intended for HHS notices of funding opportunity",
         )
         self.assertContains(
             response,
-            "Contact your agency's grants policy office to confirm template compliance",
+            "Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible",
         )
         self.assertContains(
             response,
@@ -228,9 +228,9 @@ class PdfReadabilityPageTests(TestCase):
     @patch("bloom_nofos.views.analyze_uploaded_pdf")
     def test_format_decisions_never_show_normal_results(self, analyze):
         for code, status, phrase in (
-            ("format_unsupported", 400, "does not match a supported pilot format"),
-            ("format_indeterminate", 400, "could not confirm this PDF"),
-            ("format_unavailable", 503, "not configured for this pilot yet"),
+            ("format_unsupported", 400, "does not appear to be an HHS notice"),
+            ("format_indeterminate", 400, "not find enough extractable information"),
+            ("format_unavailable", 503, "recognition is temporarily unavailable"),
         ):
             with self.subTest(code=code):
                 analyze.side_effect = PdfReadabilityError(code)

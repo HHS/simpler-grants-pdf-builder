@@ -17,46 +17,48 @@ the route or certifies current deployment settings.
 environments until the checks below are complete. This application change does
 not install ingress rate limiting or authorize production enablement.
 
-## Format-recognition status (#969, partial)
+## Loose NOFO recognition (#969)
 
-The application now has a conservative format-recognition gate inside the
-existing bounded PDF worker. It reuses the pinned metrics package's tagged-PDF
-support check and extracted semantic heading segments, then applies small,
-source-code-configured multi-heading rules. A match means only that the PDF
-resembles an approved pilot format; it is **not** template compliance,
-accessibility, policy, or clearance approval. Untagged PDFs and PDFs with an
-unreadable tag tree remain indeterminate; the generic metrics adapter is still
-available internally but does not by itself confer supported-format status.
+The launch approach is a deliberately loose NOFO check, not approved-template
+recognition. Before analysis, the bounded worker inspects descriptive PDF
+metadata and extractable text from the first two pages for four distinct
+signals: an HHS agency or division in metadata, a labeled opportunity number, a
+labeled Assistance Listing number, and a Grants.gov reference. Any two signals
+allow analysis. Repeating one signal in multiple fields does not increase the
+count, and filename alone never counts.
 
-No approved formats or rules have been recorded yet. The rule tuple is empty,
-so an otherwise valid PDF receives a service-configuration-unavailable message
-and **no readability report**, even if the route flag is enabled locally.
-Invalid rules also fail closed. Rules are immutable application code imported
-by the worker, not a runtime environment variable, request parameter, database
-value, or secret passed across the subprocess boundary. The route flag must
-remain off in shared environments. No user should interpret this partial work
-as satisfaction of the #969 release gate.
+The field shapes are grounded in the [Simpler.Grants.gov Opportunities v1
+OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/post_v1_opportunities_search):
+`ABC-123-XYZ-001` for `opportunity_number` and `43.012` for
+`assistance_listing_number`. Its Assistance Listing search filter accepts two
+digits, a period, and two or three alphanumeric characters, including documented
+examples such as `45.C9` and `45.1C9`; its search documentation also shows the
+longer opportunity number `EPA-R9-SFUND-23-003`. The pilot uses this contract as
+a format reference only; upload processing does not call the Simpler.Grants.gov
+API or send document-derived values to another service.
 
-To complete #969, the product owner and grants-policy representatives must
-identify the accepted HHS FY27 template and development-tool output variants,
-approve tagged/untagged handling, and review representative positive and
-negative synthetic or approved-public PDFs (including ordinary edits,
-incomplete structure, and misleading headings). Only then should rules and
-their tolerances be configured and tested. No filename or required
-template-version marker is used. Recognized documents may cost two metrics
-package extraction passes—one for format recognition and one for analysis—both
-inside the existing 15-second subprocess deadline; tune this with approved
-fixtures before enablement.
+This gate is modest abuse deterrence for the unlinked public pilot. It can admit
+an unrelated document that contains two signals and can reject an unusually
+formatted NOFO that contains fewer than two. Passing means only "likely HHS
+NOFO"; it is **not** template compliance, accessibility, policy, or clearance
+approval. The policy and its threshold remain immutable application code in the
+worker so they can be adjusted later without creating a classification service
+or retaining uploaded content.
+
+Recognition is independent of PDF tagging. A text-based untagged PDF can pass
+and is then measured with the existing generic adapter and low-reliability
+warning. A document with extractable text on the inspected pages but too few signals is
+unsupported. If those pages have no extractable text, recognition is
+indeterminate and the user is directed to run OCR. The analyzer still performs
+its existing extraction checks after recognition; passing recognition does not
+guarantee that enough text can be measured.
 
 Release gates before enabling the anonymous route (merge is not approval to enable):
 
-- Limit use to draft NOFOs made from an approved HHS FY27 template. Tell users to
-  obtain the correct template from their agency grants policy office. Before
-  calculation, recognize a supported format using the expected tagged-PDF profile
-  and validated canonical heading/section coverage. Do not assume today's PDFs
-  contain a template/version marker; adopt one only if approved templates add it.
-  Recognition is not a clearance or accessibility determination. Test against
-  approved representative PDFs and reject unrelated or unsupported PDFs.
+- Limit use to HHS NOFOs. Before calculation, require any two of the four loose
+  recognition signals documented above. Do not use filename, require a template
+  marker, or imply that recognition validates format. Test representative
+  labeled variants, ordinary line wrapping, unrelated text, and image-only PDFs.
 - Return `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet` on all route
   responses, including errors and the disabled state; add equivalent page metadata.
   Keep the route out of navigation and sitemaps. `robots.txt` and an unlinked URL

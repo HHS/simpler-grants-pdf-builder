@@ -10,9 +10,10 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from nofos.pdf_format_recognition import (
-    SUPPORTED_FORMAT_RULES,
-    recognize_format,
-    validate_rules,
+    DEFAULT_POLICY,
+    RecognitionPolicy,
+    recognize_nofo,
+    validate_policy,
 )
 
 TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.5.0"
@@ -150,10 +151,10 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
     }
 
 
-def analyze(path: Path, max_pages: int, *, rules=SUPPORTED_FORMAT_RULES) -> dict:
+def analyze(
+    path: Path, max_pages: int, *, policy: RecognitionPolicy = DEFAULT_POLICY
+) -> dict:
     import hhs_nofo_metrics as metrics
-    from hhs_nofo_metrics.adapters import default_registry
-    from hhs_nofo_metrics.sources import materialize_source_bundle
 
     with path.open("rb") as stream:
         if stream.read(5) != b"%PDF-":
@@ -173,36 +174,26 @@ def analyze(path: Path, max_pages: int, *, rules=SUPPORTED_FORMAT_RULES) -> dict
         raise ValueError("too_many_pages")
 
     try:
-        validate_rules(rules)
+        validate_policy(policy)
     except ValueError as exc:
         raise ValueError("format_unavailable") from exc
-    if not rules:
-        raise ValueError("format_unavailable")
+
+    first_pages_text = []
+    for page in reader.pages[: policy.pages_to_inspect]:
+        try:
+            text = page.extract_text()
+        except Exception:
+            text = ""
+        if isinstance(text, str):
+            first_pages_text.append(text)
+    decision = recognize_nofo(reader.metadata, "\n".join(first_pages_text), policy)
+    if decision.status != "supported":
+        raise ValueError(f"format_{decision.status}")
 
     source = metrics.SourceBundle.from_pdf(path)
     support = metrics.inspect_adapter_support(source, adapter=TAGGED_ADAPTER)[0][
         "assessment"
     ]["status"]
-    if support == "indeterminate":
-        raise ValueError("format_indeterminate")
-    if support == "supported":
-        # Reuse the metrics package's semantic segments, not a second PDF
-        # parser or typography-based heading inference. The public adapter
-        # contract exposes extract(); metrics.analyze later repeats extraction
-        # under the same 15-second child deadline when a format is recognized.
-        with materialize_source_bundle(source) as materialized:
-            document = (
-                default_registry()
-                .resolve(TAGGED_ADAPTER)
-                .extract(materialized, config={})
-                .document
-            )
-        segments = document.segments
-    else:
-        segments = ()
-    decision = recognize_format(support, segments, rules)
-    if decision.status != "supported":
-        raise ValueError(f"format_{decision.status}")
     return _analyze_metrics(source, support, page_count)
 
 

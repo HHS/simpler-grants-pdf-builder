@@ -38,15 +38,15 @@ _ERRORS = {
         400,
     ),
     "format_unsupported": (
-        "This PDF does not match a supported pilot format. Check that you used an approved HHS FY27 template or NOFO development tool, and contact your agency's grants policy office for help.",
+        "This PDF does not appear to be an HHS notice of funding opportunity. Check that its first two pages include basic NOFO details such as an opportunity number, Assistance Listing number, or Grants.gov reference.",
         400,
     ),
     "format_indeterminate": (
-        "We could not confirm this PDF is in a supported pilot format. Check that you used an approved HHS FY27 template or NOFO development tool, and contact your agency's grants policy office for help.",
+        "We could not find enough extractable information to confirm this is an HHS notice of funding opportunity. If this is a scanned PDF, run OCR and try again.",
         400,
     ),
     "format_unavailable": (
-        "Format recognition is not configured for this pilot yet. No readability report was calculated. Please try again after the pilot opens.",
+        "Document recognition is temporarily unavailable. No readability report was calculated. Please try again later.",
         503,
     ),
     "timeout": (

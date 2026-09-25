@@ -83,11 +83,11 @@
     {% else %}
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
       <p class="usa-intro">Upload a draft NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
-      <p>This pilot is intended for draft NOFOs created from an HHS-approved FY27 template or NOFO development tool.</p>
-      <p>Contact your agency's grants policy office to confirm template compliance.</p>
+      <p>This pilot is intended for HHS notices of funding opportunity. We use a few basic details in the PDF to screen out unrelated documents.</p>
+      <p>Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
       <p><strong>This report does not validate format compliance or make a clearance decision.</strong></p>
       <p>Your PDF is processed temporarily on HHS-operated systems to calculate these estimates. It is not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
-      <p>Text-based PDFs work best. Scanned or image-only pages may not be measurable. This pilot currently needs usable PDF structure tags to recognize a supported format; untagged PDFs do not receive a report.</p>
+      <p>Text-based PDFs work best. Scanned or image-only pages need OCR before they can be recognized or measured. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
 
       {% if error %}
         <div class="usa-alert usa-alert--error margin-y-3" role="alert" id="readability-error-summary" tabindex="-1" autofocus>
