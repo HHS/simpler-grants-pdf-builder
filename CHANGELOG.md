@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.43.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.42.0...nofos-v3.43.0) (2026-09-25)
+
+
+### Features
+
+* add configurable PDF format recognition foundation ([#973](https://github.com/HHS/simpler-grants-pdf-builder/issues/973)) ([9ee68cd](https://github.com/HHS/simpler-grants-pdf-builder/commit/9ee68cd1fb2c4a64fb7f1382f3e26a12e9a4bc12))
+* add loose NOFO recognition for PDF pilot ([#978](https://github.com/HHS/simpler-grants-pdf-builder/issues/978)) ([9fd2799](https://github.com/HHS/simpler-grants-pdf-builder/commit/9fd27994e92e931153b5f86635930e3e258accbf)), closes [#969](https://github.com/HHS/simpler-grants-pdf-builder/issues/969)
+* add the USWDS government website banner to every page ([#966](https://github.com/HHS/simpler-grants-pdf-builder/issues/966)) ([a797e02](https://github.com/HHS/simpler-grants-pdf-builder/commit/a797e02fcd43ffaac27f15f519c654d793e2cd58))
+
+
+### Bug Fixes
+
+* adopt metrics 0.5.4 parity corrections ([#965](https://github.com/HHS/simpler-grants-pdf-builder/issues/965)) ([21f0c2f](https://github.com/HHS/simpler-grants-pdf-builder/commit/21f0c2fbabb97aa5c088e82085a58879aa828d5d))
+
+
+### Documentation
+
+* document Word import drift findings ([#977](https://github.com/HHS/simpler-grants-pdf-builder/issues/977)) ([85e1572](https://github.com/HHS/simpler-grants-pdf-builder/commit/85e157296a898ff231a09f0aab75d1e2352083f8))
+* record PDF readability pilot release checks ([#972](https://github.com/HHS/simpler-grants-pdf-builder/issues/972)) ([a0e92ca](https://github.com/HHS/simpler-grants-pdf-builder/commit/a0e92cad7a6b2ce786c6b58411dae5735531f110))
+
+
+### Code Refactoring
+
+* extract reusable NOFO PDF generation service ([#975](https://github.com/HHS/simpler-grants-pdf-builder/issues/975)) ([20ffad7](https://github.com/HHS/simpler-grants-pdf-builder/commit/20ffad7b0e55a71444003913ab493d0bab6c9ff1))
+
 ## [3.42.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.41.0...nofos-v3.42.0) (2026-09-24)
 
 
