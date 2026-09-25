@@ -214,7 +214,7 @@ class NofoAddAppendixSectionViewTests(TestCase):
         self.assertIsNotNone(toc_entry)
         self.assertIn("toc--no-icon", toc_entry.get("class", []))
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_pdf_source_and_word_export_include_appendix(self, mock_doc_api):
         self.client.post(self.url)
         Subsection.objects.create(
