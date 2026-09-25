@@ -4,6 +4,27 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
+
+**Context:** The public `/readability/` page invited users to upload a draft NOFO,
+but its only data-handling text was a plain paragraph among several others above
+the form. It named no privacy policy or support path, and the pilot runbook
+forbids claiming pre-decisional use is safe before security/privacy approval.
+
+**Decision:** Show one **Your file and your privacy** alert directly above the
+file input, with no environment or approval-dependent variants. Invite draft or
+published NOFOs, and ask users to follow their agency's rules for sharing
+pre-decisional content. List only facts the code establishes (temporary
+processing on HHS-operated systems, no outside service, nothing added to NOFO
+Builder, no report history), link the HHS Privacy Policy, and reuse the
+unavailable page's support path. Open both links in a new tab, with
+screen-reader text saying so.
+
+The notice does not state a data classification, approve pre-decisional use, or
+promise deletion timing. Those remain #968 release gates.
+
+---
+
 ## 2026-09-24 — Use a loose two-signal NOFO check for the PDF readability pilot
 
 **Context:** The unauthenticated `/readability/` pilot needs modest protection
