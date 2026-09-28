@@ -80,25 +80,39 @@ def assert_internal_endnote_links_are_reciprocal(test_case, soup):
         test_case.assertTrue(backlinks, forward)
 
 
-def native_notes_docx():
+def native_notes_docx(custom_endnote_mark=False):
     """Build a minimal real DOCX with one Word footnote and one Word endnote."""
     fixture = Path(__file__).parents[1] / "fixtures" / "docx" / "lists.docx"
-    document_xml = b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    if custom_endnote_mark:
+        note_references = b"""<w:r><w:t xml:space="preserve">Custom endnote claim </w:t></w:r><w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:endnoteReference w:customMarkFollows="1" w:id="1"/><w:t>[1]</w:t></w:r>"""
+        endnote_marker = b"""<w:r><w:rPr><w:rStyle w:val="EndnoteReference"/></w:rPr><w:t>[1]</w:t></w:r>"""
+    else:
+        note_references = b"""<w:r><w:t xml:space="preserve">Footnote claim</w:t></w:r><w:r><w:footnoteReference w:id="1"/><w:t xml:space="preserve"> and endnote claim</w:t></w:r><w:r><w:endnoteReference w:id="1"/><w:t>.</w:t></w:r>"""
+        endnote_marker = b"""<w:r><w:endnoteRef/></w:r>"""
+    document_xml = (
+        b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
  <w:body>
   <w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t>Program</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Footnote claim</w:t></w:r><w:r><w:footnoteReference w:id="1"/><w:t xml:space="preserve"> and endnote claim</w:t></w:r><w:r><w:endnoteReference w:id="1"/><w:t>.</w:t></w:r></w:p>
+  <w:p>"""
+        + note_references
+        + b"""</w:p>
   <w:sectPr/>
  </w:body>
 </w:document>"""
+    )
     footnotes_xml = b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
  <w:footnote w:id="1"><w:p><w:r><w:footnoteRef/><w:t xml:space="preserve"> Footnote citation.</w:t></w:r></w:p></w:footnote>
 </w:footnotes>"""
-    endnotes_xml = b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    endnotes_xml = (
+        b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:endnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
- <w:endnote w:id="1"><w:p><w:r><w:endnoteRef/><w:t xml:space="preserve"> Endnote citation.</w:t></w:r></w:p></w:endnote>
+ <w:endnote w:id="1"><w:p>"""
+        + endnote_marker
+        + b"""<w:r><w:t xml:space="preserve"> Endnote citation.</w:t></w:r></w:p></w:endnote>
 </w:endnotes>"""
+    )
 
     with ZipFile(fixture) as source:
         files = {name: source.read(name) for name in source.namelist()}
@@ -222,6 +236,30 @@ class BracketedEndnoteImportTests(TestCase):
 
 
 class NativeWordNoteImportTests(TestCase):
+    def test_docx_custom_endnote_mark_does_not_duplicate_or_trigger_manual_warning(
+        self,
+    ):
+        upload = SimpleUploadedFile(
+            "custom-mark.docx",
+            native_notes_docx(custom_endnote_mark=True),
+            content_type=DOCX_CONTENT_TYPE,
+        )
+        html, _ = parse_uploaded_file_as_html_string(upload)
+        self.assertIn(
+            '<sup><sup><a href="#endnote-1" id="endnote-ref-1">[1]</a></sup>[1]</sup>',
+            html,
+        )
+
+        nofo = import_html_to_nofo(html, title="Custom endnote mark")
+        stored = render_stored_document(nofo)
+        claim = next(
+            paragraph
+            for paragraph in stored.find_all("p")
+            if "Custom endnote claim" in paragraph.get_text()
+        )
+        self.assertEqual(claim.get_text("", strip=True), "Custom endnote claim[1]")
+        self.assertEqual(find_endnote_issues(nofo), [])
+
     def test_docx_footnote_and_endnote_relationships_survive_storage(self):
         upload = SimpleUploadedFile(
             "native-notes.docx", native_notes_docx(), content_type=DOCX_CONTENT_TYPE
