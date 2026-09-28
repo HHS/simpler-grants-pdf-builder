@@ -41,7 +41,12 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
-from .endnotes import analyze_endnotes, convert_bracketed_endnotes, is_endnotes_heading
+from .endnotes import (
+    analyze_endnotes,
+    convert_bracketed_endnotes,
+    is_endnotes_heading,
+    remove_duplicate_native_note_custom_marks,
+)
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
     transform_word_document,
@@ -234,6 +239,7 @@ def process_nofo_html(soup, top_heading_level):
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
+    remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
 
     soup = add_em_to_de_minimis(soup)

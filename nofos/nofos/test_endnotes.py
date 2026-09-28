@@ -2,10 +2,30 @@ from unittest import TestCase
 
 from bs4 import BeautifulSoup
 
-from .endnotes import analyze_endnotes, convert_bracketed_endnotes
+from .endnotes import (
+    analyze_endnotes,
+    convert_bracketed_endnotes,
+    remove_duplicate_native_note_custom_marks,
+)
 
 
 class BracketedEndnotesTests(TestCase):
+    def test_duplicate_word_custom_mark_is_removed_only_from_nested_superscript(self):
+        soup = self.soup(
+            '<p><sup><sup><a href="#endnote-2" id="endnote-ref-2">[1]</a>'
+            '</sup>[1]</sup> <sup><a href="#endnote-3" '
+            'id="endnote-ref-3">[2]</a></sup>[2]</p>'
+            '<ol><li id="endnote-2"><p>[1] Source one '
+            '<a href="#endnote-ref-2">↑</a></p></li></ol>'
+        )
+
+        self.assertEqual(remove_duplicate_native_note_custom_marks(soup), 1)
+        self.assertEqual(soup.find("p").get_text(), "[1] [2][2]")
+        self.assertEqual(
+            soup.find(id="endnote-2").get_text(" ", strip=True), "Source one ↑"
+        )
+        self.assertEqual(remove_duplicate_native_note_custom_marks(soup), 0)
+
     def test_partial_ordered_citations_retain_generated_target_in_markdown(self):
         from .nofo_markdown import md
 

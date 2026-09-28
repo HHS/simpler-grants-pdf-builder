@@ -59,6 +59,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
+| IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
@@ -210,7 +211,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ## Footnotes & Endnotes
 
-The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers both native Word/Google Docs notes (IMPORT-015 through IMPORT-017) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
+The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers native Word/Google Docs notes (IMPORT-015 through IMPORT-017 and IMPORT-053) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
 
 ### IMPORT-015 — Synthesize missing "Endnotes" heading
 - **Type:** conversion
@@ -258,6 +259,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul/convert_a`
 - **Status:** active
 - **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones.
+
+### IMPORT-053 — Duplicate Word custom note mark removal
+- **Type:** repair
+- **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
+- **Action:** Remove the repeated unlinked body marker and the matching custom mark at the start of the native ordered-list citation, leaving one linked body marker, one list number, and the native citation relationship intact. Ignore bracketed custom marks inside native citation targets when analyzing previously stored content, so older imports are not mistaken for manually-authored citations. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
+- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
+- **Status:** active
 
 ---
 
