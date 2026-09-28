@@ -73,7 +73,8 @@ Release gates before enabling the anonymous route (merge is not approval to enab
 - Obtain security/privacy and operations approval for the intended data
   classification, deployed logging, crash dumps, observability, temporary-disk
   cleanup and retention, and incident handling. Do not claim pre-decisional use is
-  safe or that files are never saved until those checks are complete.
+  safe or that files are never saved until those checks are complete. The
+  [upload privacy notice](#upload-privacy-notice) is not that approval.
 - Confirm the *stored* Constance value of `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` is
   off in every deployment environment; an existing database value overrides the
   environment default. Name the owner who can disable it, test the route-level
@@ -95,6 +96,27 @@ Release gates before enabling the anonymous route (merge is not approval to enab
 For local verification only, enable the flag in the isolated development database
 or use the corresponding environment default with a fresh local database. Do not
 change a shared environment as part of local testing.
+
+## Upload privacy notice
+
+The upload page always shows a **Your file and your privacy** notice directly
+above the file input. The page invites draft or published NOFOs and asks users to
+follow their agency's rules for sharing pre-decisional content. There is one
+version of this notice; it does not change when the pilot is enabled.
+
+Every statement in the notice is limited to what the application code
+establishes: the PDF is processed temporarily on HHS-operated systems, upload
+processing does not call an outside service, and nothing is added to NOFO Builder
+or kept as report history. The notice links to the
+[HHS Privacy Policy](https://www.hhs.gov/privacy/privacy-policy/index.html) and
+uses the same support path as the unavailable page: the user's agency grants
+policy office, then the NOFO Builder Feedback Form.
+
+The notice deliberately does not state a data classification, say that
+pre-decisional use is approved, or promise deletion timing. Change that wording
+only after the security/privacy approval and the logging and temporary-file
+retention checks in the [safeguards inventory](PDF_READABILITY_SAFEGUARDS.md)
+are recorded in #968.
 
 ## Measurement scope
 
