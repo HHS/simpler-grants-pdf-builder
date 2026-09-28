@@ -259,7 +259,12 @@ class NativeWordNoteImportTests(TestCase):
         )
         self.assertEqual(claim.get_text("", strip=True), "Custom endnote claim[1]")
         citation = stored.find(id="endnote-1")
+        self.assertEqual(citation.name, "li")
+        self.assertEqual(citation.get("tabindex"), "-1")
+        self.assertEqual(citation.parent.name, "ol")
+        self.assertEqual(citation.find("p", recursive=False).parent, citation)
         self.assertEqual(citation.get_text(" ", strip=True), "Endnote citation. ↑")
+        self.assertEqual(citation.find_all("a")[-1].get("href"), "#endnote-ref-1")
         self.assertEqual(find_endnote_issues(nofo), [])
 
     def test_docx_footnote_and_endnote_relationships_survive_storage(self):
