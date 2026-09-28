@@ -2378,7 +2378,7 @@ def is_acf_nofo_metadata(nofo_number="", opdiv=""):
 
 
 def repair_acf_required_alignment_lists(soup):
-    """Convert the canonical ACF required-alignment bullets to numbering."""
+    """Normalize the canonical ACF required-alignment groups to numbering."""
     nofo_number = suggest_nofo_opportunity_number(soup)
     opdiv = suggest_nofo_opdiv(soup)
     if not is_acf_nofo_metadata(nofo_number, opdiv):
@@ -2442,27 +2442,33 @@ def repair_acf_required_alignment_lists(soup):
         if len(content_tags) < 2:
             continue
 
-        title_paragraph = content_tags[0]
-        title_strong = title_paragraph.find("strong")
-        if (
-            title_paragraph.name != "p"
-            or title_strong is None
-            or _normalized_text(title_paragraph) != required_title
-            or _normalized_text(title_strong) != required_title
+        title_tag = content_tags[0]
+        title_strong = title_tag.find("strong")
+        title_is_bold_paragraph = (
+            title_tag.name == "p"
+            and title_strong is not None
+            and _normalized_text(title_strong) == required_title
+        )
+        title_is_nested_heading = (
+            title_tag.name in heading_names
+            and _heading_level(title_tag) == agency_level + 1
+        )
+        if _normalized_text(title_tag) != required_title or not (
+            title_is_bold_paragraph or title_is_nested_heading
         ):
             continue
 
         if not _normalized_text(content_tags[1]).startswith(opening_prefix):
             continue
 
-        lists = [tag for tag in content_tags if tag.name == "ul"]
+        lists = [tag for tag in content_tags if tag.name in {"ul", "ol"}]
         if len(lists) != len(expected_label_groups):
             continue
 
         actual_label_groups = []
-        for unordered_list in lists:
+        for source_list in lists:
             labels = []
-            for item in unordered_list.find_all("li", recursive=False):
+            for item in source_list.find_all("li", recursive=False):
                 strong = item.find("strong")
                 labels.append(_normalized_text(strong) if strong else "")
             actual_label_groups.append(labels)
@@ -2470,12 +2476,12 @@ def repair_acf_required_alignment_lists(soup):
         if actual_label_groups != expected_label_groups:
             continue
 
-        for start, unordered_list in zip((1, 2, 4), lists):
-            unordered_list.name = "ol"
+        for start, source_list in zip((1, 2, 4), lists):
+            source_list.name = "ol"
             if start == 1:
-                unordered_list.attrs.pop("start", None)
+                source_list.attrs.pop("start", None)
             else:
-                unordered_list["start"] = str(start)
+                source_list["start"] = str(start)
 
     return soup
 
