@@ -263,7 +263,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-053 — Duplicate Word custom note mark removal
 - **Type:** repair
 - **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
-- **Action:** Remove only the repeated unlinked body marker, leaving the native linked marker and citation relationship intact. Ignore the matching visible custom mark inside the native citation target when scanning for manually-authored bracketed citations, so the label remains visible without being treated as a second note. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
+- **Action:** Remove the repeated unlinked body marker and the matching custom mark at the start of the native ordered-list citation, leaving one linked body marker, one list number, and the native citation relationship intact. Ignore bracketed custom marks inside native citation targets when analyzing previously stored content, so older imports are not mistaken for manually-authored citations. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
 - **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
 - **Status:** active
 

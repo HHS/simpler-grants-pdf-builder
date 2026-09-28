@@ -258,6 +258,8 @@ class NativeWordNoteImportTests(TestCase):
             if "Custom endnote claim" in paragraph.get_text()
         )
         self.assertEqual(claim.get_text("", strip=True), "Custom endnote claim[1]")
+        citation = stored.find(id="endnote-1")
+        self.assertEqual(citation.get_text(" ", strip=True), "Endnote citation. ↑")
         self.assertEqual(find_endnote_issues(nofo), [])
 
     def test_docx_footnote_and_endnote_relationships_survive_storage(self):

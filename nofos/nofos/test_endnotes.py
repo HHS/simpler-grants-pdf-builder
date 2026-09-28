@@ -15,10 +15,15 @@ class BracketedEndnotesTests(TestCase):
             '<p><sup><sup><a href="#endnote-2" id="endnote-ref-2">[1]</a>'
             '</sup>[1]</sup> <sup><a href="#endnote-3" '
             'id="endnote-ref-3">[2]</a></sup>[2]</p>'
+            '<ol><li id="endnote-2"><p>[1] Source one '
+            '<a href="#endnote-ref-2">↑</a></p></li></ol>'
         )
 
         self.assertEqual(remove_duplicate_native_note_custom_marks(soup), 1)
-        self.assertEqual(soup.p.get_text(), "[1] [2][2]")
+        self.assertEqual(soup.find("p").get_text(), "[1] [2][2]")
+        self.assertEqual(
+            soup.find(id="endnote-2").get_text(" ", strip=True), "Source one ↑"
+        )
         self.assertEqual(remove_duplicate_native_note_custom_marks(soup), 0)
 
     def test_partial_ordered_citations_retain_generated_target_in_markdown(self):

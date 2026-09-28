@@ -40,8 +40,10 @@ def remove_duplicate_native_note_custom_marks(soup):
     Word stores a custom note mark as an endnote/footnote reference with
     ``customMarkFollows=1`` followed by the visible mark in the same superscript
     run. Mammoth renders the reference as its own nested ``sup`` link and also
-    emits the following mark as text, producing ``[1][1]``. The nested
-    superscript shape lets us repair that artifact without treating an ordinary
+    emits the following mark as text, producing ``[1][1]``. It also keeps the
+    same custom mark at the start of the generated ordered-list citation,
+    producing ``1. [1] Citation``. The native relationship and ordered-list
+    structure let us repair both artifacts without treating an ordinary
     bracketed reference after a native note as a duplicate.
     """
     removed = 0
@@ -78,6 +80,22 @@ def remove_duplicate_native_note_custom_marks(soup):
             duplicate.replace_with(NavigableString(remainder))
         else:
             duplicate.extract()
+
+        targets = soup.find_all(id=anchor["href"][1:])
+        if len(targets) == 1:
+            first_text = next(
+                (text for text in targets[0].find_all(string=True) if text.strip()),
+                None,
+            )
+            if first_text is not None:
+                citation_text = str(first_text)
+                citation_marker = re.match(
+                    rf"^\s*{re.escape(label)}(?:\s+)?", citation_text
+                )
+                if citation_marker:
+                    first_text.replace_with(
+                        NavigableString(citation_text[citation_marker.end() :])
+                    )
         removed += 1
 
     return removed
