@@ -1252,7 +1252,12 @@ class NofoDuplicateView(
     def get(self, request, pk):
         original = get_object_or_404(Nofo, pk=pk)
 
-        new_nofo = duplicate_nofo(original)
+        with transaction.atomic():
+            new_nofo = duplicate_nofo(original)
+            # User-created copies start new assignments; reimport snapshots do not.
+            new_nofo.designer = (request.user.full_name or "").strip()
+            new_nofo.coach = ""
+            new_nofo.save(update_fields=["designer", "coach"])
 
         return redirect("nofos:nofo_duplicate_title", pk=new_nofo.pk)
 

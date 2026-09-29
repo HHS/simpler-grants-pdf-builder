@@ -1,11 +1,51 @@
 from unittest.mock import MagicMock, patch
 
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from users.models import BloomUser
 
 from nofos.forms import NofoCoachDesignerForm
 from nofos.models import Nofo
 from nofos.views import NofosImportNewView
+
+
+class NofoDuplicateAssignmentsTest(TestCase):
+    def test_duplicate_assignments_for_regular_users_and_superusers(self):
+        for group, is_superuser in [("hrsa", False), ("bloom", True)]:
+            for full_name in ["  New Designer \t", "", " \t\n"]:
+                with self.subTest(group=group, full_name=full_name):
+                    user = BloomUser.objects.create_user(
+                        email=f"duplicate-{BloomUser.objects.count()}@example.com",
+                        password=None,
+                        full_name=full_name,
+                        group=group,
+                        is_superuser=is_superuser,
+                        force_password_reset=False,
+                    )
+                    original = Nofo.objects.create(
+                        title="Original NOFO",
+                        opdiv="HRSA",
+                        group="hrsa",
+                        coach="ashley",
+                        designer="Original Designer",
+                    )
+                    self.client.force_login(user)
+                    previous_ids = set(Nofo.objects.values_list("pk", flat=True))
+
+                    response = self.client.get(
+                        reverse("nofos:nofo_duplicate", args=[original.pk])
+                    )
+
+                    duplicate = Nofo.objects.exclude(pk__in=previous_ids).get()
+                    self.assertRedirects(
+                        response,
+                        reverse("nofos:nofo_duplicate_title", args=[duplicate.pk]),
+                    )
+                    self.assertEqual(duplicate.designer, full_name.strip())
+                    self.assertEqual(duplicate.coach, "")
+                    original.refresh_from_db()
+                    self.assertEqual(original.designer, "Original Designer")
+                    self.assertEqual(original.coach, "ashley")
 
 
 class NofoDesignerAutoAssignTest(TestCase):
