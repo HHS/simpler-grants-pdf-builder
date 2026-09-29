@@ -9,9 +9,15 @@ from dataclasses import dataclass
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import models, transaction
 
-from .models import ExternalSourceHandoff, Nofo
+from .models import (
+    ExternalSourceHandoff,
+    ExternalSourceHandoffCurrent,
+    ExternalSourceHandoffResult,
+    Nofo,
+)
+from .word_handoff_lifecycle import ReviewDecision
 
 
 @dataclass(frozen=True)
@@ -58,7 +64,75 @@ def record_handoff(*, principal, source_record_id, source_version):
 
 @transaction.atomic
 def link_handoff_to_nofo(*, principal, handoff_id, nofo_id):
-    """Make a first, scope-matched NOFO link; never reassign a linked receipt."""
+    """Create the first immutable result, or retry that exact initial link."""
+    handoff, nofo = _locked_scope(principal, handoff_id, nofo_id)
+    selection = ExternalSourceHandoffCurrent.objects.filter(handoff=handoff).first()
+    if selection is not None:
+        if (
+            selection.result.supersedes_id is None
+            and selection.result.linked_nofo_uuid == nofo.pk
+        ):
+            if selection.result.nofo_id is None:
+                raise ValidationError("A deleted NOFO link cannot be restored.")
+            return selection.result
+        raise ValidationError(
+            "A linked handoff requires an explicit replacement decision."
+        )
+    result = ExternalSourceHandoffResult.objects.create(
+        handoff=handoff, nofo=nofo, linked_nofo_uuid=nofo.pk
+    )
+    ExternalSourceHandoffCurrent.objects.create(handoff=handoff, result=result)
+    return result
+
+
+@transaction.atomic
+def replace_handoff_result(
+    *, principal, handoff_id, nofo_id, expected_current_result_id, review
+):
+    """Atomically append a replacement and advance the one current selector.
+
+    ``review`` is evidence supplied by a future trusted adapter, not authentication
+    or an authorization check implemented by this module.
+    """
+    handoff, nofo = _locked_scope(principal, handoff_id, nofo_id)
+    if not isinstance(review, ReviewDecision):
+        raise PermissionDenied("An explicit trusted replacement decision is required.")
+    for value in (
+        review.reviewer_id,
+        review.authorization_reference,
+        review.decision_id,
+    ):
+        _require_opaque(value, "review", 255)
+    selection = ExternalSourceHandoffCurrent.objects.select_for_update().get(
+        handoff=handoff
+    )
+    prior = selection.result
+    if prior.pk != expected_current_result_id:
+        raise ValidationError("Current result changed; replacement is stale.")
+    if prior.linked_nofo_uuid == nofo.pk:
+        raise ValidationError("A result's NOFO cannot be relinked or reused.")
+    result = ExternalSourceHandoffResult.objects.create(
+        handoff=handoff,
+        nofo=nofo,
+        linked_nofo_uuid=nofo.pk,
+        supersedes=prior,
+        reviewer_id=review.reviewer_id,
+        authorization_reference=review.authorization_reference,
+        decision_id=review.decision_id,
+    )
+    # The public manager blocks selector writes. This narrowly scoped ORM update
+    # is the only intended mutation path, guarded by the receipt lock and CAS.
+    changed = (
+        models.QuerySet(model=ExternalSourceHandoffCurrent, using=selection._state.db)
+        .filter(pk=handoff.pk, result_id=prior.pk)
+        .update(result=result)
+    )
+    if changed != 1:
+        raise ValidationError("Current result changed; replacement is stale.")
+    return result
+
+
+def _locked_scope(principal, handoff_id, nofo_id):
     _validate_principal(principal)
     handoff = ExternalSourceHandoff.objects.select_for_update().get(pk=handoff_id)
     if (
@@ -69,12 +143,4 @@ def link_handoff_to_nofo(*, principal, handoff_id, nofo_id):
     nofo = Nofo.objects.select_for_update().get(pk=nofo_id)
     if nofo.group != handoff.group:
         raise PermissionDenied("The NOFO is outside the handoff's OpDiv scope.")
-    if handoff.linked_nofo_uuid is not None and handoff.linked_nofo_uuid != nofo.pk:
-        raise ValidationError("A handoff's NOFO link cannot be reassigned.")
-    if handoff.linked_nofo_uuid is not None and handoff.nofo_id is None:
-        raise ValidationError("A deleted NOFO link cannot be restored or reassigned.")
-    if handoff.nofo_id is None:
-        handoff.nofo = nofo
-        handoff.linked_nofo_uuid = nofo.pk
-        handoff.save(update_fields=["nofo", "linked_nofo_uuid"])
-    return handoff
+    return handoff, nofo

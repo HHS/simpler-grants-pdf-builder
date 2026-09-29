@@ -2,7 +2,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from nofos.models import ExternalSourceHandoff, Nofo
+from nofos.models import ExternalSourceHandoff, ExternalSourceHandoffCurrent, Nofo
 from nofos.word_handoff_identity import (
     TrustedHandoffPrincipal,
     link_handoff_to_nofo,
@@ -112,15 +112,17 @@ class WordHandoffIdentityTests(TestCase):
                 handoff_id=receipt.pk,
                 nofo_id=other_hrsa_nofo.pk,
             )
-        receipt.refresh_from_db()
-        self.assertEqual(receipt.nofo_id, hrsa_nofo.pk)
-        self.assertEqual(receipt.linked_nofo_uuid, hrsa_nofo.pk)
+        self.assertEqual(
+            ExternalSourceHandoffCurrent.objects.get(handoff=receipt).result_id,
+            linked.pk,
+        )
+        self.assertEqual(linked.linked_nofo_uuid, hrsa_nofo.pk)
 
         hrsa_nofo_id = hrsa_nofo.pk
         hrsa_nofo.delete()
-        receipt.refresh_from_db()
-        self.assertIsNone(receipt.nofo_id)
-        self.assertEqual(receipt.linked_nofo_uuid, hrsa_nofo_id)
+        linked.refresh_from_db()
+        self.assertIsNone(linked.nofo_id)
+        self.assertEqual(linked.linked_nofo_uuid, hrsa_nofo_id)
         with self.assertRaises(ValidationError):
             link_handoff_to_nofo(
                 principal=self.hrsa,
