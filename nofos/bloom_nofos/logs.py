@@ -1,9 +1,19 @@
 import logging
+import logging.config
 import traceback
 
 from pythonjsonlogger import jsonlogger
 
 logger = logging.getLogger("django.request")
+
+
+def configure_logging(config):
+    """Keep existing handlers while protecting framework request errors too."""
+    logging.config.dictConfig(config)
+    # Django installs parent handlers before applying our configuration. Security
+    # errors (including CSRF rejections) reach those handlers through propagation.
+    for handler in logging.getLogger("django").handlers:
+        handler.addFilter(ReadabilityRequestFilter())
 
 
 def log_exception(request, e, level="error", context=None, status=None):
@@ -45,6 +55,27 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             log_record["levelname"] = record.levelname
         if "message" not in log_record:
             log_record["message"] = record.getMessage()
+
+
+class ReadabilityRequestFilter(logging.Filter):
+    """Sanitize Django's own request error records, outside our middleware."""
+
+    def filter(self, record):
+        request = getattr(record, "request", None)
+        if request is None or request.path_info.rstrip("/") != "/readability":
+            return True
+        record.msg = "HTTP Request"
+        record.args = ()
+        if record.exc_info:
+            record.exception_type = record.exc_info[0].__name__
+        record.exc_info = None
+        record.exc_text = None
+        record.stack_info = None
+        record.url = request.path
+        record.method = request.method
+        # The request object contains headers, query parameters and uploads.
+        del record.request
+        return True
 
 
 class PrintLoggerNameFilter(logging.Filter):

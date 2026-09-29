@@ -25,6 +25,22 @@ with the selected environment before marking a safeguard verified.
 | Upload and temporary-file lifecycle | The runner writes `input.pdf` under a request-scoped `TemporaryDirectory` and closes the upload; normal completion and handled errors clean it up ([runner](../nofos/nofos/pdf_readability.py)). The [ECS task definition](https://github.com/HHS/simpler-grants-gov/blob/7a4ab9519c9e20da17ef5ffb78bf1914b1f68fe7/infra/modules/service/main.tf) declares a 1 GiB `/tmp` tmpfs; whether Fargate applies that declaration must be verified in the deployed runtime. Worker/host termination can interrupt application cleanup, and Django upload buffering also needs review. | Privacy/operations owners: verify actual temporary paths and backing storage, task replacement/stale-file cleanup and retention on success, parser failure, timeout, web-worker kill and task termination. Record the approved cleanup window and evidence without retaining document content. |
 | Logs, traces, crash dumps and retention | The pilot runner discards parser stderr and maps failures to fixed public codes ([runner](../nofos/nofos/pdf_readability.py)). However, Builder's [request middleware](../nofos/bloom_nofos/middleware.py) logs the full path **including query string**, and in production the user agent/referrer; unhandled exceptions include message and traceback. Infrastructure source configures [WAF logging and request sampling](https://github.com/HHS/simpler-grants-gov/blob/7a4ab9519c9e20da17ef5ffb78bf1914b1f68fe7/infra/modules/service/waf.tf) and [ECS application logs](https://github.com/HHS/simpler-grants-gov/blob/7a4ab9519c9e20da17ef5ffb78bf1914b1f68fe7/infra/modules/service/application_logs.tf) at 1,827 days; [ALB access logs](https://github.com/HHS/simpler-grants-gov/blob/7a4ab9519c9e20da17ef5ffb78bf1914b1f68fe7/infra/modules/service/access_logs.tf) expire after 2,555 days. | Security/privacy/observability owners: inspect deployed request, WAF, ALB, app, forwarding, tracing and crash-dump pipelines and their access/retention. Specifically test whether a query-string filename or content, referrer, exception, uploaded filename, extracted text or metrics could enter a log. Approve a route-specific handling plan and remediate any leak before enablement. Source retention settings are not proof of effective deployed retention. |
 
+## Application logging update (#986)
+
+The Logs row above describes the September 24 source baseline. The application
+logging portion is superseded by #986: for `/readability` (with or without a
+trailing slash), request middleware logs the path without its query string and
+omits referrer and user-agent fields. Exception records retain type, status and
+timing but omit exception messages and tracebacks. A route-specific filter also
+sanitizes Django's own request error records, including exception information and
+the attached request object. Other routes retain their existing logging.
+
+This does not sanitize ALB or WAF logs, which can still record the full URL and
+query string. Their effective retention and handling still need a decision under
+#970. Verify the deployed application log pipeline under #970/#971; local tests
+are not evidence that the change is deployed or that every observability system
+has the same policy.
+
 ## Required decision record
 
 For each selected environment, the release owner must link restricted, dated

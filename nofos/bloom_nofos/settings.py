@@ -23,7 +23,12 @@ from django.utils.timezone import now
 from pythonjsonlogger import jsonlogger
 
 from .aws import generate_iam_auth_token_func, is_aws_db
-from .logs import CustomJsonFormatter, PrintLoggerNameFilter, SuppressWellKnown404Filter
+from .logs import (
+    CustomJsonFormatter,
+    PrintLoggerNameFilter,
+    ReadabilityRequestFilter,
+    SuppressWellKnown404Filter,
+)
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,6 +182,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
 # Logging
+LOGGING_CONFIG = "bloom_nofos.logs.configure_logging"
 if "test" in sys.argv:
     LOGGING = {
         "version": 1,
@@ -202,6 +208,7 @@ else:
             "json": {"()": CustomJsonFormatter, "format": None},
         },
         "filters": {
+            "readability_request": {"()": ReadabilityRequestFilter},
             "suppress_well_known_404s": {
                 "()": SuppressWellKnown404Filter,
             },
@@ -222,6 +229,7 @@ else:
         "loggers": {
             "django.request": {
                 "handlers": ["console"],
+                "filters": ["readability_request"],
                 "level": "INFO",
                 "propagate": False,
             },
