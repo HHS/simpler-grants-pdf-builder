@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.44.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.43.0...nofos-v3.44.0) (2026-09-28)
+
+
+### Features
+
+* add privacy notice to PDF readability upload page ([#979](https://github.com/HHS/simpler-grants-pdf-builder/issues/979)) ([70eb2ef](https://github.com/HHS/simpler-grants-pdf-builder/commit/70eb2ef9106e0444764ae8a71abe82588b27f30f))
+
+
+### Bug Fixes
+
+* continue ACF alignment list numbering ([#984](https://github.com/HHS/simpler-grants-pdf-builder/issues/984)) ([48aa983](https://github.com/HHS/simpler-grants-pdf-builder/commit/48aa983f1a5345ea0317fb26a6407660d323b612))
+* prevent duplicate Word custom endnote markers ([#983](https://github.com/HHS/simpler-grants-pdf-builder/issues/983)) ([5a5fe62](https://github.com/HHS/simpler-grants-pdf-builder/commit/5a5fe62327757423a50886958134696ad46bf41a))
+
 ## [3.43.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.42.0...nofos-v3.43.0) (2026-09-25)
 
 
