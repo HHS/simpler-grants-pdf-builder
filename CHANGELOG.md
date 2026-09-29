@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.45.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.44.0...nofos-v3.45.0) (2026-09-29)
+
+
+### Features
+
+* add synthetic Word handoff identity and lifecycle foundation ([#963](https://github.com/HHS/simpler-grants-pdf-builder/issues/963)) ([47f164a](https://github.com/HHS/simpler-grants-pdf-builder/commit/47f164acd6e4060b29702fcb3a8569ac36e60bf0))
+
+
+### Bug Fixes
+
+* assign duplicating user as NOFO designer ([#989](https://github.com/HHS/simpler-grants-pdf-builder/issues/989)) ([92be7b4](https://github.com/HHS/simpler-grants-pdf-builder/commit/92be7b4eca01c06090e8bfd46ebc6db5676fa20f))
+* sanitize readability request and framework error logs ([#987](https://github.com/HHS/simpler-grants-pdf-builder/issues/987)) ([f2aff6c](https://github.com/HHS/simpler-grants-pdf-builder/commit/f2aff6ca6eb40cc6be64c769035eb6dcd49b2d44))
+
 ## [3.44.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.43.0...nofos-v3.44.0) (2026-09-28)
 
 
