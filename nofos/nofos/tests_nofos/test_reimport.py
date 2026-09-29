@@ -46,6 +46,8 @@ class DuplicateNofoTests(TestCase):
             opdiv="ACF",
             group="bloom",
             status="active",
+            coach="ashley",
+            designer="Original Designer",
         )
 
         self.section = Section.objects.create(
@@ -70,6 +72,8 @@ class DuplicateNofoTests(TestCase):
         self.assertEqual(new_nofo.short_name, "test-nofo (copy)")
         self.assertEqual(new_nofo.status, "draft")
         self.assertEqual(new_nofo.opdiv, self.original_nofo.opdiv)
+        self.assertEqual(new_nofo.coach, "")
+        self.assertEqual(new_nofo.designer, "")
 
         # since this is not a "successor" nofo, successor and archived fields are None
         self.assertIsNone(new_nofo.successor)
@@ -84,6 +88,8 @@ class DuplicateNofoTests(TestCase):
 
         self.assertEqual(self.original_nofo.title, "Test NOFO")  # No change
         self.assertEqual(self.original_nofo.status, "active")  # No change
+        self.assertEqual(self.original_nofo.coach, "ashley")
+        self.assertEqual(self.original_nofo.designer, "Original Designer")
         self.assertIsNone(self.original_nofo.successor)
         self.assertIsNone(self.original_nofo.archived)
 
@@ -104,6 +110,11 @@ class DuplicateNofoTests(TestCase):
 
         # Set successor on new NOFO
         self.assertEqual(new_nofo.successor, self.original_nofo)
+        self.assertEqual(new_nofo.coach, "ashley")
+        self.assertEqual(new_nofo.designer, "Original Designer")
+        self.original_nofo.refresh_from_db()
+        self.assertEqual(self.original_nofo.coach, "ashley")
+        self.assertEqual(self.original_nofo.designer, "Original Designer")
 
     def test_duplicate_nofo_copies_sections(self):
         """Test that duplicating a NOFO also duplicates its sections."""
@@ -325,6 +336,9 @@ class NofoReimportTests(TransactionTestCase):
 
     def test_reimport_creates_archived_copy(self):
         """Test that reimport creates an archived copy of the existing NOFO."""
+        self.nofo.coach = "ashley"
+        self.nofo.designer = "Original Designer"
+        self.nofo.save()
         test_file = create_test_html_file()
 
         # Perform reimport
@@ -358,6 +372,10 @@ class NofoReimportTests(TransactionTestCase):
         self.assertIsNotNone(copied_nofo)
         self.assertIsNotNone(copied_nofo.archived)
         self.assertEqual(copied_nofo.successor, original_nofo)
+        self.assertEqual(copied_nofo.coach, "ashley")
+        self.assertEqual(copied_nofo.designer, "Original Designer")
+        self.assertEqual(original_nofo.coach, "ashley")
+        self.assertEqual(original_nofo.designer, "Original Designer")
 
         # Ensure sections and subsections were copied
         self.assertEqual(copied_nofo.sections.count(), self.nofo.sections.count())
@@ -629,9 +647,7 @@ class ImportAttemptReimportLoggingTests(TestCase):
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
 
-        response = self.client.post(
-            self.reimport_url, {"nofo-import": uploaded_file}
-        )
+        response = self.client.post(self.reimport_url, {"nofo-import": uploaded_file})
 
         self.assertEqual(response.status_code, 422)
         attempt = ImportAttempt.objects.get()

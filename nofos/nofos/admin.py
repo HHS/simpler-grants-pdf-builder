@@ -196,7 +196,7 @@ class NofoAdmin(MirrorAdmin, admin.ModelAdmin):
     @admin.action(description="Duplicate selected NOFOs")
     def duplicate_nofo_admin(self, request, queryset):
         for original_nofo in queryset:
-            duplicate_nofo(original_nofo)
+            duplicate_nofo(original_nofo, duplicated_by=request.user)
 
 
 admin.site.register(Subsection, SubsectionAdmin)
