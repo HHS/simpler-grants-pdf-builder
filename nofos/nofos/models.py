@@ -1344,3 +1344,207 @@ class MetricsActivity(models.Model):
                 fields=["actor", "month", "group"], name="metrics_actor_month_group"
             )
         ]
+
+
+class _ProtectedHandoffQuerySet(models.QuerySet):
+    """Do not expose bulk ORM writes that bypass the model's identity guard."""
+
+    def update(self, **kwargs):
+        if (
+            self.model is ExternalSourceHandoff
+            and {
+                "id",
+                "pk",
+                "source_system",
+                "source_record_id",
+                "source_version",
+                "group",
+                "received_at",
+                "state",
+                "state_changed_at",
+            }
+            & kwargs.keys()
+        ):
+            raise ValidationError("A handoff receipt's identity cannot be changed.")
+        if self.model is ExternalSourceHandoffResult:
+            raise ValidationError("Handoff results are append-only.")
+        if self.model is ExternalSourceHandoffCurrent:
+            raise ValidationError("Use the guarded handoff replacement operation.")
+        return super().update(**kwargs)
+
+    def delete(self):
+        raise ValidationError("Handoff history cannot be deleted through the ORM.")
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        raise ValidationError("Handoff history cannot be bulk-updated.")
+
+    def bulk_create(self, objs, *args, **kwargs):
+        raise ValidationError("Handoff history cannot be bulk-created or upserted.")
+
+
+class ExternalSourceHandoff(models.Model):
+    """Metadata receipt for one opaque external source version; never a document store."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    source_system = models.CharField(max_length=128)
+    source_record_id = models.CharField(max_length=255)
+    source_version = models.CharField(max_length=255)
+    group = models.CharField(max_length=16, choices=settings.GROUP_CHOICES)
+    received_at = models.DateTimeField(default=timezone.now, editable=False)
+    state = models.CharField(max_length=32, default="received")
+    state_changed_at = models.DateTimeField(default=timezone.now)
+    objects = _ProtectedHandoffQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_system", "source_record_id", "source_version"],
+                name="unique_external_source_handoff_version",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        if (
+            self._state.adding
+            and self.pk
+            and type(self)._base_manager.filter(pk=self.pk).exists()
+        ):
+            raise ValidationError("An existing handoff receipt cannot be overwritten.")
+        if not self._state.adding:
+            original = type(self)._base_manager.get(pk=self._loaded_pk)
+            for field in (
+                "id",
+                "source_system",
+                "source_record_id",
+                "source_version",
+                "group",
+                "received_at",
+                "state",
+                "state_changed_at",
+            ):
+                if getattr(self, field) != getattr(original, field):
+                    raise ValidationError(
+                        "A handoff receipt's identity cannot be changed."
+                    )
+        super().save(*args, **kwargs)
+        self._loaded_pk = self.pk
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_pk = instance.pk
+        return instance
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("Handoff receipts cannot be deleted through the ORM.")
+
+
+class ExternalSourceHandoffResult(models.Model):
+    """An append-only NOFO linkage; UUID survives deletion of the live NOFO."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    handoff = models.ForeignKey(
+        ExternalSourceHandoff, on_delete=models.PROTECT, related_name="results"
+    )
+    nofo = models.ForeignKey(
+        Nofo,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="external_source_handoff_results",
+    )
+    linked_nofo_uuid = models.UUIDField(
+        editable=False,
+        help_text="Stable linkage tombstone if the Builder NOFO is later deleted.",
+    )
+    supersedes = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="replacement",
+        editable=False,
+    )
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    reviewer_id = models.CharField(
+        max_length=255, null=True, blank=True, editable=False
+    )
+    authorization_reference = models.CharField(
+        max_length=255, null=True, blank=True, editable=False
+    )
+    decision_id = models.CharField(
+        max_length=255, null=True, blank=True, editable=False
+    )
+
+    objects = _ProtectedHandoffQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["handoff", "linked_nofo_uuid"],
+                name="unique_external_handoff_nofo_uuid",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding or (
+            self.pk and type(self)._base_manager.filter(pk=self.pk).exists()
+        ):
+            raise ValidationError("Handoff results are append-only.")
+        if self.nofo_id is None:
+            raise ValidationError("A new handoff result needs a live NOFO.")
+        if self.nofo_id != self.linked_nofo_uuid:
+            raise ValidationError("A result's live NOFO must match its UUID tombstone.")
+        if self.nofo.group != self.handoff.group:
+            raise ValidationError("A result's NOFO must match its handoff OpDiv scope.")
+        if self.supersedes_id and self.supersedes.handoff_id != self.handoff_id:
+            raise ValidationError("A result may only supersede its own handoff result.")
+        evidence = (self.reviewer_id, self.authorization_reference, self.decision_id)
+        if self.supersedes_id:
+            if any(
+                not isinstance(value, str) or not value.strip() or len(value) > 255
+                for value in evidence
+            ):
+                raise ValidationError(
+                    "A replacement needs bounded review-decision evidence."
+                )
+        elif any(value is not None for value in evidence):
+            raise ValidationError(
+                "An initial result cannot claim replacement evidence."
+            )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("Handoff results cannot be deleted through the ORM.")
+
+
+class ExternalSourceHandoffCurrent(models.Model):
+    """The sole mutable current-result selector for a receipt."""
+
+    handoff = models.OneToOneField(
+        ExternalSourceHandoff,
+        on_delete=models.PROTECT,
+        primary_key=True,
+        related_name="current_selection",
+    )
+    result = models.OneToOneField(
+        ExternalSourceHandoffResult,
+        on_delete=models.PROTECT,
+        related_name="current_selection",
+    )
+    objects = _ProtectedHandoffQuerySet.as_manager()
+
+    def save(self, *args, **kwargs):
+        if (
+            not self._state.adding
+            or type(self)._base_manager.filter(pk=self.pk).exists()
+        ):
+            raise ValidationError("Use the guarded handoff replacement operation.")
+        if self.result.handoff_id != self.handoff_id:
+            raise ValidationError("Current result must belong to its handoff.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "A current-result selection cannot be deleted through the ORM."
+        )
