@@ -7,6 +7,45 @@ is still public; direct distribution is not access control.
 
 ## Default-off release
 
+### Content-free outcome monitoring (draft approval gate, #985)
+
+Metrics viewers can open `/nofos/metrics/readability-pilot` from **Other metrics**
+on `/nofos/metrics`, including while the pilot is disabled. The page shows the
+stored pilot flag, recording state, retained daily/weekly attempts, all-attempt
+success and capacity rates, nearest-rank durations, outcome meanings, and pages
+of 50 recent attempts. JSON uses the same permission and `private, no-store`.
+No OpDiv or user attribution is possible. It is a support trend source, not an
+infrastructure alarm or evidence that #970's safeguards are deployed.
+
+Recording is separately default-off via
+`PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false`, including disabled POSTs.
+Do not turn it on before privacy approves notice wording and a retention window
+in #968, and operations configures and verifies cleanup. The proposed 13 months
+is **not approved** or a code default. No public privacy notice is changed here.
+Set `PDF_READABILITY_ATTEMPT_RETENTION_DAYS` to the agreed positive number of days
+only after approval. The management command
+`python manage.py cleanup_pdf_readability_attempts --dry-run` previews deletion;
+without `--dry-run` it deletes older rows. It refuses an unset/invalid window.
+This change installs **no schedule**: operations must agree on a cadence and
+schedule this command through the deployment's existing job mechanism, verify
+the effective cutoff, and record ownership/evidence in #968 before recording.
+
+When enabled, each handled upload POST stores only a timestamp, outcome,
+returned HTTP status and processing duration, plus Django's internal row ID.
+No filename, document hash/size/pages/text/signals/metrics, request headers,
+IP address, session or user ID is stored. The application inserts rows only;
+they are not registered for admin editing or exposed through a write API.
+Recording runs after the analysis slot releases. Database failure leaves the
+response unchanged and emits only a fixed warning, without exception details.
+The duration ends before the database write. GETs, CSRF rejections and upstream
+rejections are not upload-analysis outcomes and are not counted; unexpected
+uncaught framework failures also remain outside this bounded catalog. Thus
+the literal “every POST” acceptance criterion requires that explicit scope
+agreement before merge. A disabled route records `disabled` only when recording
+has separately been approved/enabled. Zero records with recording disabled is
+not evidence of zero use. Retention cleanup concurrent with a page read may
+briefly make aggregates differ; refresh for a new snapshot.
+
 Track remaining enablement work in [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
 Reuse the [source-based safeguards inventory](PDF_READABILITY_SAFEGUARDS.md)
 and [deployment verification checklist](PDF_READABILITY_RELEASE_CHECKLIST.md)

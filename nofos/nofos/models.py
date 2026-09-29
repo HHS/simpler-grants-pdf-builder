@@ -1211,6 +1211,18 @@ class NofoReadabilityScore(models.Model):
         )
 
 
+class PdfReadabilityAttempt(models.Model):
+    """Content-free outcomes; application only inserts, retention cleanup deletes."""
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    outcome = models.CharField(max_length=32)
+    http_status = models.PositiveSmallIntegerField()
+    duration_ms = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+
+
 class ImportAttempt(models.Model):
     """
     A record of one NOFO import attempt - new import or reimport, successful or

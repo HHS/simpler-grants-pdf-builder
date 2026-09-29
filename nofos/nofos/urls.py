@@ -1,10 +1,16 @@
 from django.urls import path
 
 from . import views
+from .pdf_readability_metrics import PdfReadabilityMetricsView
 
 app_name = "nofos"
 
 urlpatterns = [
+    path(
+        "metrics/readability-pilot",
+        PdfReadabilityMetricsView.as_view(),
+        name="builder_metrics_readability_pilot",
+    ),
     path("", views.NofosListView.as_view(), name="nofo_index"),
     path("import", views.NofosImportNewView.as_view(), name="nofo_import"),
     path("<uuid:pk>/delete", views.NofosArchiveView.as_view(), name="nofo_archive"),

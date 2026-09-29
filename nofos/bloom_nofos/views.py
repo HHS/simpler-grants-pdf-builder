@@ -1,5 +1,6 @@
 import math
 import os
+import time
 import unicodedata
 
 from constance import config
@@ -15,6 +16,7 @@ from nofos.pdf_readability import (
     PdfSizeLimitUploadHandler,
     analyze_uploaded_pdf,
 )
+from nofos.pdf_readability_metrics import record_attempt
 
 PDF_METRIC_PRESENTATION = (
     ("word_count", "Word count", "Estimated number of words recovered from the PDF."),
@@ -96,15 +98,21 @@ def _metric_rows(report):
 @csrf_exempt
 def pdf_readability(request):
     """Public, deliberately unlinked entry point for one ephemeral PDF report."""
+    started = time.monotonic()
     if not config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED:
         response = render(request, "pdf_readability_unavailable.html", status=503)
         response["Cache-Control"] = "no-store"
+        if request.method == "POST":
+            record_attempt("disabled", response.status_code, started)
         return response
 
     if request.method == "POST":
         # Must be installed before CSRF middleware reads multipart request.POST.
         request.upload_handlers.insert(0, PdfSizeLimitUploadHandler(request))
-    return _pdf_readability_form(request)
+    response = _pdf_readability_form(request)
+    if request.method == "POST" and hasattr(request, "pdf_readability_outcome"):
+        record_attempt(request.pdf_readability_outcome, response.status_code, started)
+    return response
 
 
 @csrf_protect
@@ -122,11 +130,13 @@ def _pdf_readability_form(request):
     if request.method == "POST":
         uploads = request.FILES.getlist("pdf")
         if getattr(request, "pdf_upload_too_large", False):
+            request.pdf_readability_outcome = "too_large"
             context["error"] = (
                 f"This PDF is too large. Choose a file under {context['max_upload_mb']} MB."
             )
             status = 413
         elif len(uploads) != 1 or len(request.FILES) != 1:
+            request.pdf_readability_outcome = "invalid_pdf"
             context["error"] = "Choose one PDF file to analyze."
             status = 400
         else:
@@ -134,11 +144,13 @@ def _pdf_readability_form(request):
             try:
                 report = analyze_uploaded_pdf(upload)
             except PdfReadabilityError as error:
+                request.pdf_readability_outcome = error.code
                 context["error"] = error.message
                 status = error.http_status
                 if error.code == "busy":
                     retry_after = "15"
             else:
+                request.pdf_readability_outcome = "success"
                 context.update(
                     {
                         "report": report,
