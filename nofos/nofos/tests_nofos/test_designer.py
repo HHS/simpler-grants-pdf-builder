@@ -1,7 +1,10 @@
+import json
 from unittest.mock import MagicMock, patch
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
+from easyaudit.models import CRUDEvent
 from users.models import BloomUser
 
 from nofos.forms import NofoCoachDesignerForm
@@ -46,6 +49,38 @@ class NofoDuplicateAssignmentsTest(TestCase):
                     original.refresh_from_db()
                     self.assertEqual(original.designer, "Original Designer")
                     self.assertEqual(original.coach, "ashley")
+
+    def test_duplicate_creation_audit_has_only_final_assignments(self):
+        user = BloomUser.objects.create_user(
+            email="duplicate-audit@example.com",
+            password=None,
+            full_name="New Designer",
+            group="hrsa",
+            force_password_reset=False,
+        )
+        original = Nofo.objects.create(
+            title="Original NOFO",
+            opdiv="HRSA",
+            group="hrsa",
+            coach="ashley",
+            designer="Original Designer",
+        )
+        self.client.force_login(user)
+        previous_ids = set(Nofo.objects.values_list("pk", flat=True))
+
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.get(reverse("nofos:nofo_duplicate", args=[original.pk]))
+
+        duplicate = Nofo.objects.exclude(pk__in=previous_ids).get()
+        events = CRUDEvent.objects.filter(
+            content_type=ContentType.objects.get_for_model(Nofo),
+            object_id=str(duplicate.pk),
+        )
+        create_event = events.get(event_type=CRUDEvent.CREATE)
+        created_fields = json.loads(create_event.object_json_repr)[0]["fields"]
+        self.assertEqual(created_fields["coach"], "")
+        self.assertEqual(created_fields["designer"], "New Designer")
+        self.assertFalse(events.filter(event_type=CRUDEvent.UPDATE).exists())
 
 
 class NofoDesignerAutoAssignTest(TestCase):

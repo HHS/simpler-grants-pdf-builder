@@ -72,6 +72,8 @@ class DuplicateNofoTests(TestCase):
         self.assertEqual(new_nofo.short_name, "test-nofo (copy)")
         self.assertEqual(new_nofo.status, "draft")
         self.assertEqual(new_nofo.opdiv, self.original_nofo.opdiv)
+        self.assertEqual(new_nofo.coach, "")
+        self.assertEqual(new_nofo.designer, "")
 
         # since this is not a "successor" nofo, successor and archived fields are None
         self.assertIsNone(new_nofo.successor)
@@ -86,6 +88,8 @@ class DuplicateNofoTests(TestCase):
 
         self.assertEqual(self.original_nofo.title, "Test NOFO")  # No change
         self.assertEqual(self.original_nofo.status, "active")  # No change
+        self.assertEqual(self.original_nofo.coach, "ashley")
+        self.assertEqual(self.original_nofo.designer, "Original Designer")
         self.assertIsNone(self.original_nofo.successor)
         self.assertIsNone(self.original_nofo.archived)
 
