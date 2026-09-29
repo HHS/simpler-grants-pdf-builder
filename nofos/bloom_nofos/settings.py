@@ -50,6 +50,14 @@ env_exists = os.path.exists(env_path)
 if env_exists:
     environ.Env.read_env(env_path)
 
+# Pending privacy approval in #968; no scheduler is installed by this change.
+PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
+    "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
+)
+PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
+    "PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
+)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 print("=====")
@@ -567,6 +575,8 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 # NofoReadabilityScore is already an append-only record of when metrics were
 # calculated, so auditing it would only duplicate rows it already holds.
 DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
+    # Audit events can attach request/user metadata: never audit anonymous outcomes.
+    "nofos.PdfReadabilityAttempt",
     "nofos.NofoReadabilityScore",
     "nofos.MetricsActor",
     "nofos.MetricsNofo",

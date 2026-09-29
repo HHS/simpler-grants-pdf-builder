@@ -60,6 +60,13 @@ _ERRORS = {
     ),
 }
 
+# Single catalog for validation, recording, and the staff outcome table.
+PDF_READABILITY_OUTCOMES = {
+    "success": "A readability report was returned.",
+    **{code: message for code, (message, _) in _ERRORS.items()},
+    "disabled": "The PDF readability pilot is disabled.",
+}
+
 
 class PdfReadabilityError(Exception):
     """A typed, user-safe failure; never contains parser text or document data."""

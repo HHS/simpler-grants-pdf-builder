@@ -54,6 +54,7 @@
   #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
 
   @media print {
+    .metrics-other-pages { display: none !important; }
     .metrics-print-scope { display: block; }
     .metrics-filter, #metrics-filter-status, .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
   }
@@ -75,6 +76,11 @@
       <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; no fixed end date, new months appear on their own</span>
     </div>
   </div>
+
+  <nav class="metrics-other-pages margin-bottom-3" aria-label="Other metrics pages">
+    <h2 class="font-heading-sm">Other metrics</h2>
+    <ul><li><a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a></li></ul>
+  </nav>
 
   <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
     <summary class="text-bold">How historical metrics are preserved</summary>
