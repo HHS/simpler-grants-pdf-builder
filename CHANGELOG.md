@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.44.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.43.0...nofos-v3.44.0) (2026-09-28)
+
+
+### Features
+
+* add privacy notice to PDF readability upload page ([#979](https://github.com/HHS/simpler-grants-pdf-builder/issues/979)) ([70eb2ef](https://github.com/HHS/simpler-grants-pdf-builder/commit/70eb2ef9106e0444764ae8a71abe82588b27f30f))
+
+
+### Bug Fixes
+
+* continue ACF alignment list numbering ([#984](https://github.com/HHS/simpler-grants-pdf-builder/issues/984)) ([48aa983](https://github.com/HHS/simpler-grants-pdf-builder/commit/48aa983f1a5345ea0317fb26a6407660d323b612))
+* prevent duplicate Word custom endnote markers ([#983](https://github.com/HHS/simpler-grants-pdf-builder/issues/983)) ([5a5fe62](https://github.com/HHS/simpler-grants-pdf-builder/commit/5a5fe62327757423a50886958134696ad46bf41a))
+
+## [3.43.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.42.0...nofos-v3.43.0) (2026-09-25)
+
+
+### Features
+
+* add configurable PDF format recognition foundation ([#973](https://github.com/HHS/simpler-grants-pdf-builder/issues/973)) ([9ee68cd](https://github.com/HHS/simpler-grants-pdf-builder/commit/9ee68cd1fb2c4a64fb7f1382f3e26a12e9a4bc12))
+* add loose NOFO recognition for PDF pilot ([#978](https://github.com/HHS/simpler-grants-pdf-builder/issues/978)) ([9fd2799](https://github.com/HHS/simpler-grants-pdf-builder/commit/9fd27994e92e931153b5f86635930e3e258accbf)), closes [#969](https://github.com/HHS/simpler-grants-pdf-builder/issues/969)
+* add the USWDS government website banner to every page ([#966](https://github.com/HHS/simpler-grants-pdf-builder/issues/966)) ([a797e02](https://github.com/HHS/simpler-grants-pdf-builder/commit/a797e02fcd43ffaac27f15f519c654d793e2cd58))
+
+
+### Bug Fixes
+
+* adopt metrics 0.5.4 parity corrections ([#965](https://github.com/HHS/simpler-grants-pdf-builder/issues/965)) ([21f0c2f](https://github.com/HHS/simpler-grants-pdf-builder/commit/21f0c2fbabb97aa5c088e82085a58879aa828d5d))
+
+
+### Documentation
+
+* document Word import drift findings ([#977](https://github.com/HHS/simpler-grants-pdf-builder/issues/977)) ([85e1572](https://github.com/HHS/simpler-grants-pdf-builder/commit/85e157296a898ff231a09f0aab75d1e2352083f8))
+* record PDF readability pilot release checks ([#972](https://github.com/HHS/simpler-grants-pdf-builder/issues/972)) ([a0e92ca](https://github.com/HHS/simpler-grants-pdf-builder/commit/a0e92cad7a6b2ce786c6b58411dae5735531f110))
+
+
+### Code Refactoring
+
+* extract reusable NOFO PDF generation service ([#975](https://github.com/HHS/simpler-grants-pdf-builder/issues/975)) ([20ffad7](https://github.com/HHS/simpler-grants-pdf-builder/commit/20ffad7b0e55a71444003913ab493d0bab6c9ff1))
+
+## [3.42.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.41.0...nofos-v3.42.0) (2026-09-24)
+
+
+### Features
+
+* add Appendix action to NOFO editor ([#964](https://github.com/HHS/simpler-grants-pdf-builder/issues/964)) ([f6f9a04](https://github.com/HHS/simpler-grants-pdf-builder/commit/f6f9a04beb2877c665d2848c5f247a0a806446cc))
+* add default-off PDF readability report pilot ([#948](https://github.com/HHS/simpler-grants-pdf-builder/issues/948)) ([fbeeefa](https://github.com/HHS/simpler-grants-pdf-builder/commit/fbeeefa3130968378e86fab2111df8b4363ce7a4))
+
+
+### Bug Fixes
+
+* align Builder readability input and PDF content scope ([#946](https://github.com/HHS/simpler-grants-pdf-builder/issues/946)) ([3d632e3](https://github.com/HHS/simpler-grants-pdf-builder/commit/3d632e3217d08b9795b672d5326d0c5936e54e18))
+
 ## [3.41.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.40.0...nofos-v3.41.0) (2026-09-21)
 
 

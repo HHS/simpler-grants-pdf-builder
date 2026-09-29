@@ -737,6 +737,31 @@ class NofoReadabilityScorePersistenceTests(TestCase):
     # -- failed and incomplete calculations ----------------------------------
 
     @patch("nofos.readability.analyze_nofo_readability")
+    def test_054_upgrade_preserves_053_snapshot_and_recalculates(
+        self, analyze, version
+    ):
+        analyze.return_value = build_payload()
+        version.return_value = "0.5.3"
+        self.client.post(self.metrics_url)
+        previous = NofoReadabilityScore.objects.get()
+
+        version.return_value = "0.5.4"
+        self.assertFalse(previous.is_current)
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+
+        self.assertEqual(analyze.call_count, 2)
+        previous.refresh_from_db()
+        self.assertEqual(previous.package_version, "0.5.3")
+        self.assertEqual(previous.result, build_payload())
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.4"
+        )
+        self.assertIsNotNone(current)
+        self.assertTrue(current.is_current)
+
+    @patch("nofos.readability.analyze_nofo_readability")
     def test_legacy_input_contract_is_history_not_a_current_cached_measurement(
         self, analyze, _version
     ):

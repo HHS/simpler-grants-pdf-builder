@@ -59,11 +59,18 @@ Edit “{{ nofo|nofo_name }}”
         <ul id="nofo-actions-{{ object.pk }}" class="menu-button-links__list usa-sidenav" hidden>
           {% for link in action_links %}
             <li class="usa-sidenav__item">
+              {% if link.method == "post" %}
+                <form method="post" action="{{ link.href }}">
+                  {% csrf_token %}
+                  <button type="submit" class="nofo-action-submit">{{ link.label }}</button>
+                </form>
+              {% else %}
               <a
                 href="{{ link.href }}"
                 class="{% if link.danger %}usa-link--destructive{% endif %} {% if link.external %}usa-link--external{% endif %}"
                 {% if link.external %}target="_blank"{% endif %}
               >{{ link.label }}</a>
+              {% endif %}
             </li>
           {% endfor %}
         </ul>

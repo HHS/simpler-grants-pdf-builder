@@ -4,6 +4,77 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
+
+**Context:** The public `/readability/` page invited users to upload a draft NOFO,
+but its only data-handling text was a plain paragraph among several others above
+the form. It named no privacy policy or support path, and the pilot runbook
+forbids claiming pre-decisional use is safe before security/privacy approval.
+
+**Decision:** Show one **Your file and your privacy** alert directly above the
+file input, with no environment or approval-dependent variants. Invite draft or
+published NOFOs, and ask users to follow their agency's rules for sharing
+pre-decisional content. List only facts the code establishes (temporary
+processing on HHS-operated systems, no outside service, nothing added to NOFO
+Builder, no report history), link the HHS Privacy Policy, and reuse the
+unavailable page's support path. Open both links in a new tab, with
+screen-reader text saying so.
+
+The notice does not state a data classification, approve pre-decisional use, or
+promise deletion timing. Those remain #968 release gates.
+
+---
+
+## 2026-09-24 — Use a loose two-signal NOFO check for the PDF readability pilot
+
+**Context:** The unauthenticated `/readability/` pilot needs modest protection
+against use as a general-purpose PDF analyzer, but strict FY27 template or
+semantic-heading recognition would reject legitimate HHS NOFOs, especially
+ordinary agency variations and untagged PDFs. Document recognition is not a
+determination of template compliance, accessibility, policy, or clearance.
+
+**Decision:** Inspect descriptive PDF metadata and text extracted from the first
+two pages for four distinct signals: an HHS agency or division in metadata, a
+labeled opportunity number, a labeled Assistance Listing number, and a
+Grants.gov reference. Allow analysis when any two signals are present. Count
+each signal at most once, do not use the filename, and do not retain or expose
+matched document content.
+
+Keep recognition independent of the metrics package's tagged-PDF support check.
+Untagged text-based PDFs may pass and receive the existing low-reliability
+extraction warning. Treat PDFs with readable text on the inspected pages but
+fewer than two signals as unsupported; treat PDFs without extractable text there as
+indeterminate and direct the user toward OCR. Keep the threshold and bounded
+page scope in application code so later evidence can tune this small policy
+without building a document-classification platform.
+
+The check intentionally favors recall over precision. It may admit unrelated
+documents that contain two signals and may reject nonstandard NOFOs that do not.
+A successful report must continue to say that it is an estimate, not approval.
+
+---
+
+## 2026-09-24 — Show the USWDS government website banner on every page
+
+**Context:** NOFO Builder now has a public, unauthenticated PDF readability page
+at `/readability/`. People who reach it may never have used NOFO Builder and
+have no other cue that it is a government service. simpler.grants.gov already
+uses the standard USWDS government website banner ("An official website of the
+United States government"), but NOFO Builder did not show it anywhere.
+
+**Decision:** Add the standard USWDS banner above the header on every NOFO
+Builder page. That includes the public readability page and the signed-in app
+(NOFO Builder, NOFO Compare, and NOFO Composer), so the whole site signals it is
+a government website in the conventional way. Use the unmodified USWDS markup,
+kept in one shared include (`templates/includes/gov_banner.html`), and the flag
+and icon images that already ship with our static copy of USWDS.
+
+Keep the banner off NOFO document views and exports, which become the published
+PDFs, and off Django admin. Hide it when the readability report is printed. The
+banner's ".gov" guidance assumes NOFO Builder is served from a .gov domain.
+
+---
+
 ## 2026-09-18 — Make endnote warnings copyable for sharing
 
 **Context:** The broken-links warning already lets an editor copy its issue

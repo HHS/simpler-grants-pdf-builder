@@ -1317,39 +1317,51 @@ class RepairAcfRequiredAlignmentListsTests(TestCase):
         opdiv="Administration for Children and Families (ACF)",
         section_heading="Step 1: Review the Opportunity",
         first_label="Program integrity and fiscal stewardship:",
+        section_tag="h1",
+        agency_tag="h2",
+        title_tag="p",
+        list_tag="ul",
     ):
+        required_title = (
+            "Required alignment with ACF Vision, Mission, Values, "
+            "Priorities, and Guiding Principles"
+        )
+        if title_tag == "p":
+            title_markup = f"<p><strong>{required_title}</strong></p>"
+        else:
+            title_markup = f"<{title_tag}>{required_title}</{title_tag}>"
+
         return f"""
             <p>Opportunity Number: {number}</p>
             <p>Opdiv: {opdiv}</p>
-            <h1>{section_heading}</h1>
-            <h2>Agency priorities</h2>
-            <p><strong>Required alignment with ACF Vision, Mission, Values,
-            Priorities, and Guiding Principles</strong></p>
+            <{section_tag}>{section_heading}</{section_tag}>
+            <{agency_tag}>Agency priorities</{agency_tag}>
+            {title_markup}
             <p>The recipient of this award must implement any funds awarded under
             this NOFO to effectuate program goals or agency priorities in accordance
             with <a href="https://acf.gov/about/acf-vision-mission-values">ACF's
             vision, mission, values, priorities, &amp; guiding principles</a> when
             authorized. This source wording must be preserved.</p>
             <p>Consistent with ACF's values, adhere to the following principle:</p>
-            <ul><li><strong>{first_label}</strong> Administer funds carefully.</li></ul>
+            <{list_tag}><li><strong>{first_label}</strong> Administer funds carefully.</li></{list_tag}>
             <p>The recipient must also adhere to these principles:</p>
-            <ul>
+            <{list_tag}>
               <li><strong>Evidence-based and outcome-focused practices:</strong>
               Use evidence.</li>
               <li><strong>Partnership and local leadership:</strong>
               Coordinate locally.</li>
-            </ul>
+            </{list_tag}>
             <p>The recipient must also advance these objectives:</p>
-            <ul>
+            <{list_tag}>
               <li><strong>Family stability and child well-being:</strong>
               Strengthen families.</li>
               <li><strong>Work, self-sufficiency, and economic mobility:</strong>
               Support employment.</li>
               <li><strong>High-quality early care and learning:</strong>
               Support early learning.</li>
-            </ul>
+            </{list_tag}>
             <p>Demonstrate ongoing compliance.</p>
-            <h2>Program description</h2>
+            <{agency_tag}>Program description</{agency_tag}>
             <p>Following content.</p>
         """
 
@@ -1385,6 +1397,33 @@ class RepairAcfRequiredAlignmentListsTests(TestCase):
             "(https://acf.gov/about/acf-vision-mission-values)", markdown_body
         )
         self.assertIn("This source wording must be preserved.", markdown_body)
+
+    def test_real_pipeline_repairs_current_acf_word_export_shape(self):
+        soup = BeautifulSoup(
+            self._html(
+                section_tag="h2",
+                agency_tag="h3",
+                title_tag="h4",
+                list_tag="ol",
+            ),
+            "html.parser",
+        )
+        soup, _ = process_nofo_html(soup, top_heading_level="h2")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"),
+            top_heading_level="h2",
+        )
+        required_alignment = next(
+            subsection
+            for subsection in sections[0]["subsections"]
+            if subsection["name"].startswith("Required alignment with ACF")
+        )
+
+        markdown_body = get_as_markdown(required_alignment["body"])
+
+        self.assertIn("1. **Program integrity and fiscal stewardship:**", markdown_body)
+        self.assertIn('<ol start="2">', markdown_body)
+        self.assertIn('<ol start="4">', markdown_body)
 
     def test_recognizes_acf_from_opdiv_without_acf_opportunity_number(self):
         soup = BeautifulSoup(self._html(number="HHS-2027-UNKNOWN-0001"), "html.parser")
@@ -3338,6 +3377,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
                 "delete",
@@ -3371,19 +3411,26 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[4],
+            key="add_appendix",
+            label="Add Appendix",
+            url_name="nofos:section_add_appendix",
+        )
+        self.assertEqual(links[4]["method"], "post")
+        self._assert_link(
+            links[5],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[5],
+            links[6],
             key="export",
             label="Export Word doc",
             url_name="nofos:nofo_export",
             external=True,
         )
         self._assert_link(
-            links[6],
+            links[7],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
@@ -3402,6 +3449,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
             ],
@@ -3419,6 +3467,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
             ],
@@ -3431,7 +3480,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_doge_has_findreplace_compare(self):
@@ -3441,7 +3497,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_published_has_no_actions(self):
@@ -3461,7 +3524,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_cancelled_has_no_actions(self):
@@ -3485,7 +3555,15 @@ class TestBuildNofoActionLinks(TestCase):
         self.assertNotIn("add_end_notes", [l["key"] for l in links])
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_appendix",
+                "reimport",
+                "export",
+                "delete",
+            ],
         )
 
     def test_add_end_notes_absent_when_html_id_exists_under_another_name(self):

@@ -41,7 +41,12 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
-from .endnotes import analyze_endnotes, convert_bracketed_endnotes, is_endnotes_heading
+from .endnotes import (
+    analyze_endnotes,
+    convert_bracketed_endnotes,
+    is_endnotes_heading,
+    remove_duplicate_native_note_custom_marks,
+)
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
     transform_word_document,
@@ -234,6 +239,7 @@ def process_nofo_html(soup, top_heading_level):
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
+    remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
 
     soup = add_em_to_de_minimis(soup)
@@ -1495,6 +1501,10 @@ def nofo_has_end_notes_section(nofo):
     return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
 
 
+def nofo_has_appendix_section(nofo):
+    return nofo.sections.filter(html_id="appendix").exists()
+
+
 def get_subsection_action_availability(nofo):
     """Present existing status restrictions; action views still enforce access."""
     return {
@@ -1559,6 +1569,14 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
         }
 
+    def _link_add_appendix(nofo):
+        return {
+            "key": "add_appendix",
+            "label": "Add Appendix",
+            "href": reverse_lazy("nofos:section_add_appendix", args=[nofo.pk]),
+            "method": "post",
+        }
+
     # Status → allowed actions
     _STATUS_ACTIONS = {
         "draft": (
@@ -1566,6 +1584,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
             "delete",
@@ -1575,6 +1594,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1583,6 +1603,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1591,6 +1612,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "doge": (
@@ -1598,6 +1620,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),  # Deputy Secretary review
         "published": ("export",),
@@ -1606,6 +1629,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "cancelled": ("export",),
@@ -1620,6 +1644,7 @@ def get_nofo_action_links(nofo):
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
         "add_end_notes": lambda: _link_add_end_notes(nofo),
+        "add_appendix": lambda: _link_add_appendix(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
@@ -1629,6 +1654,8 @@ def get_nofo_action_links(nofo):
     for key in actions:
         # A NOFO can only ever have one Endnotes section.
         if key == "add_end_notes" and nofo_has_end_notes_section(nofo):
+            continue
+        if key == "add_appendix" and (nofo.archived or nofo_has_appendix_section(nofo)):
             continue
 
         build = link_builders.get(key)
@@ -2357,7 +2384,7 @@ def is_acf_nofo_metadata(nofo_number="", opdiv=""):
 
 
 def repair_acf_required_alignment_lists(soup):
-    """Convert the canonical ACF required-alignment bullets to numbering."""
+    """Normalize the canonical ACF required-alignment groups to numbering."""
     nofo_number = suggest_nofo_opportunity_number(soup)
     opdiv = suggest_nofo_opdiv(soup)
     if not is_acf_nofo_metadata(nofo_number, opdiv):
@@ -2421,27 +2448,33 @@ def repair_acf_required_alignment_lists(soup):
         if len(content_tags) < 2:
             continue
 
-        title_paragraph = content_tags[0]
-        title_strong = title_paragraph.find("strong")
-        if (
-            title_paragraph.name != "p"
-            or title_strong is None
-            or _normalized_text(title_paragraph) != required_title
-            or _normalized_text(title_strong) != required_title
+        title_tag = content_tags[0]
+        title_strong = title_tag.find("strong")
+        title_is_bold_paragraph = (
+            title_tag.name == "p"
+            and title_strong is not None
+            and _normalized_text(title_strong) == required_title
+        )
+        title_is_nested_heading = (
+            title_tag.name in heading_names
+            and _heading_level(title_tag) == agency_level + 1
+        )
+        if _normalized_text(title_tag) != required_title or not (
+            title_is_bold_paragraph or title_is_nested_heading
         ):
             continue
 
         if not _normalized_text(content_tags[1]).startswith(opening_prefix):
             continue
 
-        lists = [tag for tag in content_tags if tag.name == "ul"]
+        lists = [tag for tag in content_tags if tag.name in {"ul", "ol"}]
         if len(lists) != len(expected_label_groups):
             continue
 
         actual_label_groups = []
-        for unordered_list in lists:
+        for source_list in lists:
             labels = []
-            for item in unordered_list.find_all("li", recursive=False):
+            for item in source_list.find_all("li", recursive=False):
                 strong = item.find("strong")
                 labels.append(_normalized_text(strong) if strong else "")
             actual_label_groups.append(labels)
@@ -2449,12 +2482,12 @@ def repair_acf_required_alignment_lists(soup):
         if actual_label_groups != expected_label_groups:
             continue
 
-        for start, unordered_list in zip((1, 2, 4), lists):
-            unordered_list.name = "ol"
+        for start, source_list in zip((1, 2, 4), lists):
+            source_list.name = "ol"
             if start == 1:
-                unordered_list.attrs.pop("start", None)
+                source_list.attrs.pop("start", None)
             else:
-                unordered_list["start"] = str(start)
+                source_list["start"] = str(start)
 
     return soup
 

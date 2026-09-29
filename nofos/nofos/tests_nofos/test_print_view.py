@@ -8,6 +8,7 @@ from easyaudit.models import CRUDEvent
 from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection
+from nofos.pdf_service import GeneratedPDF, PDFGenerationError, generate_nofo_pdf
 
 
 class PrintNofoAsPDFViewTest(TestCase):
@@ -50,7 +51,7 @@ class PrintNofoAsPDFViewTest(TestCase):
     # Unsupported methods return 405, never a 500
     ###################################################
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_get_returns_405_and_does_not_print(self, mock_doc_api):
         """A follow-up GET (what the Acrobat extension issues) must not 500."""
         response = self.client.get("{}?mode=inline".format(self.url))
@@ -61,7 +62,7 @@ class PrintNofoAsPDFViewTest(TestCase):
         mock_doc_api.assert_not_called()
         self.assertEqual(self._print_event_count(), 0)
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_head_returns_405_and_does_not_print(self, mock_doc_api):
         """DetailView also accepts HEAD, so it needs the same guard as GET."""
         response = self.client.head(self.url)
@@ -70,7 +71,7 @@ class PrintNofoAsPDFViewTest(TestCase):
         mock_doc_api.assert_not_called()
         self.assertEqual(self._print_event_count(), 0)
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_range_request_returns_405_and_does_not_print(self, mock_doc_api):
         """Byte-range re-requests against an inline PDF must not 500 either."""
         response = self.client.get(self.url, headers={"range": "bytes=0-1023"})
@@ -89,10 +90,10 @@ class PrintNofoAsPDFViewTest(TestCase):
     )
     @override_settings(GITHUB_SHA="safe-build-sha")
     @patch(
-        "nofos.views.get_cover_image",
+        "nofos.nofo_document_context.get_cover_image",
         return_value="https://images.example.org/cover.jpg",
     )
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_submits_rendered_document_without_request_secrets(
         self, mock_doc_api, mock_cover
     ):
@@ -161,8 +162,34 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertIs(mock_doc_api.return_value.api_client.configuration.debug, False)
         mock_cover.assert_called_once_with(self.nofo)
 
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_service_returns_bytes_without_a_browser_request_or_print_audit(
+        self, mock_doc_api
+    ):
+        mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
+
+        generated = generate_nofo_pdf(
+            self.nofo,
+            base_url="https://builder.example.org/nofos/authorized-record",
+            is_test_pdf=True,
+        )
+
+        self.assertEqual(
+            generated,
+            GeneratedPDF(content=b"%PDF-1.4 fake pdf", is_test_pdf=True),
+        )
+        payload = mock_doc_api.return_value.create_doc.call_args.args[0]
+        self.assertTrue(payload["test"])
+        self.assertEqual(
+            payload["prince_options"]["baseurl"],
+            "https://builder.example.org/nofos/authorized-record",
+        )
+        self.assertIn(self.nofo.title, payload["document_content"])
+        self.assertNotIn("<form", payload["document_content"])
+        self.assertEqual(self._print_event_count(), 0)
+
     @override_config(DOCRAPTOR_LIVE_MODE=True)
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_test_mode_query_override_and_invalid_disposition(self, mock_doc_api):
         mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
         self.client.post(self.url)
@@ -175,13 +202,13 @@ class PrintNofoAsPDFViewTest(TestCase):
         )
         self.assertTrue(response["Content-Disposition"].startswith("attachment;"))
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_localhost_is_still_rejected(self, mock_doc_api):
         response = self.client.post(self.url, HTTP_HOST="localhost")
         self.assertEqual(response.status_code, 400)
         mock_doc_api.return_value.create_doc.assert_not_called()
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_returns_pdf_inline(self, mock_doc_api):
         mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
 
@@ -194,7 +221,7 @@ class PrintNofoAsPDFViewTest(TestCase):
         )
         self.assertEqual(response.content, b"%PDF-1.4 fake pdf")
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_returns_pdf_as_attachment_by_default(self, mock_doc_api):
         mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
 
@@ -205,7 +232,7 @@ class PrintNofoAsPDFViewTest(TestCase):
             response["Content-Disposition"], 'attachment; filename="nofo-test-001.pdf"'
         )
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_creates_a_single_print_audit_event(self, mock_doc_api):
         mock_doc_api.return_value.create_doc.return_value = b"%PDF-1.4 fake pdf"
 
@@ -217,7 +244,7 @@ class PrintNofoAsPDFViewTest(TestCase):
     # Exception handling degrades gracefully
     ###################################################
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_handles_docraptor_api_exception(self, mock_doc_api):
         mock_doc_api.return_value.create_doc.side_effect = docraptor.rest.ApiException(
             status=422, reason="Unprocessable Entity"
@@ -229,7 +256,91 @@ class PrintNofoAsPDFViewTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(self._print_event_count(), 0)
 
-    @patch("nofos.views.docraptor.DocApi")
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_vendor_failure_diagnostic_omits_exception_payload_and_query(
+        self, mock_doc_api
+    ):
+        sentinel = "synthetic-private-nofo-and-api-key"
+        mock_doc_api.return_value.create_doc.side_effect = docraptor.rest.ApiException(
+            status=422, reason=sentinel
+        )
+
+        # Check the explicit ERROR diagnostic. Django's separate WARNING for a
+        # 400 response may include the request query and is outside this seam.
+        with self.assertLogs("django.request", level="ERROR") as logs:
+            response = self.client.post(self.url + "?secret=" + sentinel)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self._print_event_count(), 0)
+        self.assertEqual(len(logs.records), 1)
+        self.assertNotIn(sentinel, repr(logs.records[0].__dict__))
+        self.assertEqual(logs.records[0].status, 400)
+        self.assertEqual(logs.records[0].exception_type, "PDFGenerationError")
+        self.assertEqual(logs.records[0].vendor_status, 422)
+        self.assertFalse(logs.records[0].retryable)
+
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_vendor_exception_content_is_absent_from_all_request_logs(
+        self, mock_doc_api
+    ):
+        sentinel = "synthetic-private-vendor-payload"
+        vendor_error = docraptor.rest.ApiException(status=422, reason=sentinel)
+        vendor_error.body = sentinel
+        vendor_error.headers = {"X-Sensitive": sentinel}
+        mock_doc_api.return_value.create_doc.side_effect = vendor_error
+
+        with self.assertLogs("django.request", level="DEBUG") as logs:
+            response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertGreaterEqual(len(logs.records), 1)
+        for record in logs.records:
+            self.assertNotIn(sentinel, repr(record.__dict__))
+
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_service_normalizes_vendor_failure_without_message(self, mock_doc_api):
+        sentinel = "synthetic-sensitive-vendor-response"
+        mock_doc_api.return_value.create_doc.side_effect = docraptor.rest.ApiException(
+            status=422, reason=sentinel
+        )
+
+        with self.assertRaises(PDFGenerationError) as caught:
+            generate_nofo_pdf(
+                self.nofo,
+                base_url="https://builder.example.org/nofos/authorized-record",
+                is_test_pdf=False,
+            )
+
+        self.assertNotIn(sentinel, str(caught.exception))
+        self.assertEqual(caught.exception.status_code, 422)
+        self.assertFalse(caught.exception.is_retryable)
+        self.assertEqual(self._print_event_count(), 0)
+
+    @patch("nofos.pdf_service.docraptor.DocApi")
+    def test_service_classifies_retryable_vendor_failures(self, mock_doc_api):
+        for status_code, is_retryable in (
+            (0, True),
+            (408, True),
+            (422, False),
+            (429, True),
+            (503, True),
+        ):
+            with self.subTest(status_code=status_code):
+                mock_doc_api.return_value.create_doc.side_effect = (
+                    docraptor.rest.ApiException(status=status_code)
+                )
+
+                with self.assertRaises(PDFGenerationError) as caught:
+                    generate_nofo_pdf(
+                        self.nofo,
+                        base_url="https://builder.example.org/nofos/authorized-record",
+                        is_test_pdf=False,
+                    )
+
+                self.assertEqual(caught.exception.status_code, status_code)
+                self.assertIs(caught.exception.is_retryable, is_retryable)
+
+    @patch("nofos.pdf_service.docraptor.DocApi")
     def test_post_lets_unexpected_exceptions_return_500(self, mock_doc_api):
         """
         Only DocRaptor API errors are treated as 400s. Anything else (a bug, a
@@ -266,7 +377,7 @@ class PrintNofoAsPDFViewTest(TestCase):
         other_client = Client()
         other_client.login(email="other@example.com", password="testpass123")
 
-        with patch("nofos.views.docraptor.DocApi") as mock_doc_api:
+        with patch("nofos.pdf_service.docraptor.DocApi") as mock_doc_api:
             response = other_client.post(self.url)
 
         self.assertEqual(response.status_code, 403)
@@ -274,7 +385,7 @@ class PrintNofoAsPDFViewTest(TestCase):
 
     def test_login_required(self):
         anon_client = Client()
-        with patch("nofos.views.docraptor.DocApi") as mock_doc_api:
+        with patch("nofos.pdf_service.docraptor.DocApi") as mock_doc_api:
             for method in (anon_client.get, anon_client.post):
                 response = method(self.url)
                 self.assertEqual(response.status_code, 302)

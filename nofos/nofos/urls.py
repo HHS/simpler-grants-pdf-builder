@@ -168,6 +168,11 @@ urlpatterns = [
         name="section_add_end_notes",
     ),
     path(
+        "<uuid:pk>/section/add-appendix",
+        views.NofoAddAppendixSectionView.as_view(),
+        name="section_add_appendix",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/create",
         views.NofoSubsectionCreateView.as_view(),
         name="subsection_create",

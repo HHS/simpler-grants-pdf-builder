@@ -59,11 +59,12 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
+| IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
-| IMPORT-052 | repair | Lists | Canonical ACF required-alignment bullet groups → continuing numbered lists | `nofo.py` |
+| IMPORT-052 | repair | Lists | Canonical ACF required-alignment list groups → continuing numbered lists | `nofo.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
@@ -210,7 +211,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ## Footnotes & Endnotes
 
-The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers both native Word/Google Docs notes (IMPORT-015 through IMPORT-017) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
+The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers native Word/Google Docs notes (IMPORT-015 through IMPORT-017 and IMPORT-053) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
 
 ### IMPORT-015 — Synthesize missing "Endnotes" heading
 - **Type:** conversion
@@ -259,6 +260,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 - **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones.
 
+### IMPORT-053 — Duplicate Word custom note mark removal
+- **Type:** repair
+- **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
+- **Action:** Remove the repeated unlinked body marker and the matching custom mark at the start of the native ordered-list citation, leaving one linked body marker, one list number, and the native citation relationship intact. Ignore bracketed custom marks inside native citation targets when analyzing previously stored content, so older imports are not mistaken for manually-authored citations. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
+- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
+- **Status:** active
+
 ---
 
 ## List Structure Repair
@@ -291,10 +299,10 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_li`
 - **Status:** active
 
-### IMPORT-052 — ACF required-alignment bullet groups → continuing numbered lists
+### IMPORT-052 — ACF required-alignment list groups → continuing numbered lists
 - **Type:** repair
-- **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening bold paragraph is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
-- **Action:** Retag only those three `<ul>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
+- **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening content is either a bold paragraph or an immediately nested heading whose exact text is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered or ordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
+- **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
 - **Source:** `nofo.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
 
@@ -542,6 +550,8 @@ These rules don't change the visible content, but they run automatically at impo
 ## Related, But Out of Scope
 
 The rules above cover **import time** only. A separate, parallel layer of "if pattern, then transform" rules runs at **render/view/export time** instead — every time a NOFO is displayed, edited, or exported to PDF/DOCX, via `nofos/nofos/templatetags/*.py` (e.g. `add_classes_to_tables.py`, `convert_paragraphs_to_hrs.py` turning literal `page-break`/`column-break` paragraph text into styled `<hr>` markers, `replace_unicode_with_icon.py`, `truncate_anchor_links_for_docx.py` truncating bookmark ids to Word's 40-character limit on export, and `add_footnote_ids.py` reformatting footnote reference links for display). If this document's scope is ever widened to "everything automatic," those belong in a sibling document (e.g. `RENDER_EXPORT_RULES.md`), kept clearly separate from import-time behavior since they run on every page view rather than once at upload.
+
+`nofo.py::get_nofo_action_links` is also outside the import pipeline. The Add Appendix menu action creates a fixed, empty section after import; it does not transform an imported Word document and has no `IMPORT-NNN` rule.
 
 The two view-time link-checking functions are worth calling out here because they are frequently mistaken for import rules, and because what counts as "broken" changed in [#908](https://github.com/HHS/simpler-grants-pdf-builder/issues/908):
 

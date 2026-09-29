@@ -13,6 +13,20 @@ from django.utils.deprecation import MiddlewareMixin
 _local = threading.local()
 
 
+class PdfReadabilityResponseMiddleware:
+    """Apply indexing/privacy headers even to middleware-generated errors."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.path_info.rstrip("/") == "/readability":
+            response["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet"
+            response["Cache-Control"] = "no-store"
+        return response
+
+
 def set_current_user(user):
     _local.user = user
 

@@ -1,10 +1,9 @@
 import io
 import json
+import logging
 import uuid
 from datetime import datetime
 
-import docraptor
-from bloom_nofos.context_processors import template_context
 from bloom_nofos.error_helpers import (
     MistaggedHeadingError,
     render_import_error,
@@ -28,7 +27,6 @@ from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
@@ -132,10 +130,10 @@ from .nofo import (
     get_nofo_action_links,
     get_sections_from_soup,
     get_side_nav_links,
-    get_step_2_section,
     get_subsection_action_availability,
     get_subsections_from_sections,
     modifications_update_announcement_text,
+    nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
@@ -154,7 +152,9 @@ from .nofo import (
     suggest_nofo_title,
     upload_cover_image_to_s3,
 )
+from .nofo_document_context import get_nofo_document_context
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .pdf_service import PDFGenerationError, generate_nofo_pdf
 from .policy_language import (
     get_policy_language_export_summary,
     refresh_policy_language_tags,
@@ -341,27 +341,7 @@ class NofosDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # add theme information to the context
-        # theme is formatted like "landscape-cdc-blue"
-        orientation, opdiv, colour = self.object.theme.split("-")
-
-        context["nofo_theme_base"] = "{}-{}".format(opdiv, colour)
-
-        # get the name of the opdiv (eg, "cdc", "hrsa", etc)
-        context["nofo_opdiv"] = opdiv
-        # get the orientation (eg, "landscape" or "portrait")
-        context["nofo_theme_orientation"] = orientation
-
-        context["nofo_cover_image"] = get_cover_image(self.object)
-
-        context["step_2_section"] = get_step_2_section(self.object)
-
-        context["assistance_listing_on_cover_enabled"] = (
-            config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED
-            and config.HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED
-        )
-
+        context.update(get_nofo_document_context(self.object))
         return context
 
 
@@ -2317,11 +2297,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         if mode not in ["attachment", "inline"]:
             mode = "attachment"
 
-        doc_api = docraptor.DocApi()
-        doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
-        # The request now contains the complete NOFO; do not log its payload.
-        doc_api.api_client.configuration.debug = False
-
         # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
         is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
         is_test_pdf = cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
@@ -2336,39 +2311,11 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 "Server error printing NOFO. Can't print a NOFO on localhost."
             )
 
-        # Authorization has already run in GroupAccessObjectMixin. Render the
-        # same document as the detail page here, rather than asking DocRaptor to
-        # fetch a protected URL (which can return the login page). Deliberately
-        # do not attach the request or run its context processors: credentials,
-        # CSRF tokens, and user-specific controls must not leave the application.
-        # Keep this document-only context aligned with NofosDetailView when its
-        # rendering changes; request/context-processor additions do not run here.
-        document_view = NofosDetailView()
-        document_view.object = nofo
-        document_context = document_view.get_context_data()
-        document_context.pop("view", None)
-        # This helper only returns explicit application metadata/settings and
-        # does not read its request argument. Preserve the base-page metadata.
-        document_context.update(template_context(None))
-        document_content = render_to_string("nofos/nofo_pdf.html", document_context)
-
         try:
-            response = doc_api.create_doc(
-                {
-                    "test": is_test_pdf,  # test documents are free but watermarked
-                    "document_content": document_content,
-                    "document_type": "pdf",
-                    "javascript": False,
-                    "pipeline": 11,
-                    "prince_options": {
-                        "baseurl": nofo_url,  # resolve relative assets and links
-                        "media": "print",  # use print styles instead of screen styles
-                        "profile": "PDF/UA-1",
-                    },
-                },
+            generated = generate_nofo_pdf(
+                nofo, base_url=nofo_url, is_test_pdf=is_test_pdf
             )
-
-            pdf_file = io.BytesIO(response)
+            pdf_file = io.BytesIO(generated.content)
 
             # Build response
             response = HttpResponse(pdf_file, content_type="application/pdf")
@@ -2385,12 +2332,21 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             )
 
             return response
-        except docraptor.rest.ApiException as e:
-            log_exception(
-                request,
-                e,
-                context="PrintNofoAsPDFView:docraptor.rest.ApiException",
-                status=400,
+        except PDFGenerationError as error:
+            # Vendor errors may echo submitted HTML or credentials. Record only
+            # safe diagnostics, not the exception message or traceback.
+            logging.getLogger("django.request").error(
+                "DocRaptor PDF generation failed",
+                extra={
+                    "context": "PrintNofoAsPDFView:docraptor.rest.ApiException",
+                    "exception_type": "PDFGenerationError",
+                    "method": request.method,
+                    "path": request.path,
+                    "retryable": error.is_retryable,
+                    "status": 400,
+                    "user_id": str(request.user.pk),
+                    "vendor_status": error.status_code,
+                },
             )
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
@@ -2400,6 +2356,41 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 ##################### SECTION VIEWS #######################
 ###########################################################
+
+
+def _order_trailing_sections(nofo):
+    """Keep Endnotes, Appendix, then Modifications at the document's end.
+
+    Called while the parent NOFO row is locked. Temporary, unused order values
+    avoid colliding with the unique (nofo, order) constraint during reordering.
+    """
+    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    tail_ids = ("endnotes", "appendix", "modifications")
+
+    def tail_id(section):
+        if section.html_id in tail_ids:
+            return section.html_id
+        # Imported sections can have generated IDs like "7--modifications".
+        # The modifications action itself recognizes the section by name.
+        if section.name.strip().casefold() in ("endnotes", "modifications"):
+            return section.name.strip().casefold()
+        return None
+
+    ordered = [section for section in sections if tail_id(section) is None]
+    ordered.extend(
+        section
+        for html_id in tail_ids
+        for section in sections
+        if tail_id(section) == html_id
+    )
+    if [section.pk for section in sections] == [section.pk for section in ordered]:
+        return
+
+    unused_order = max(section.order or 0 for section in sections) + 1
+    for offset, section in enumerate(ordered):
+        Section.objects.filter(pk=section.pk).update(order=unused_order + offset)
+    for order, section in enumerate(ordered, start=1):
+        Section.objects.filter(pk=section.pk).update(order=order)
 
 
 class NofoAddEndNotesSectionView(
@@ -2468,27 +2459,15 @@ class NofoAddEndNotesSectionView(
             if response:
                 return response
 
-            # Slot Endnotes directly above Modifications when it exists.
-            sections = self.nofo.sections.select_for_update()
-            modifications_section = sections.filter(name="Modifications").first()
-
-            if modifications_section:
-                order = modifications_section.order
-                # Shift in descending order to preserve the unique (nofo, order)
-                # constraint even when Modifications is not currently last.
-                for section in sections.filter(order__gte=order).order_by("-order"):
-                    section.order += 1
-                    section.save(update_fields=["order"])
-            else:
-                order = Section.get_next_order(self.nofo)
-
             self.section = Section.objects.create(
                 nofo=self.nofo,
                 name=END_NOTES_SECTION_NAME,
                 html_id=END_NOTES_SECTION_HTML_ID,
                 has_section_page=False,
-                order=order,
+                order=Section.get_next_order(self.nofo),
             )
+
+            _order_trailing_sections(self.nofo)
 
             form.instance.section = self.section
             form.instance.name = ""
@@ -2520,6 +2499,57 @@ class NofoAddEndNotesSectionView(
         context["nofo"] = self.nofo
         context["cancel_url"] = self.get_cancel_url()
         return context
+
+
+class NofoAddAppendixSectionView(
+    GroupAccessObjectMixin,
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    View,
+):
+    """Create the fixed Appendix section directly from the NOFO actions menu."""
+
+    http_method_names = ["post"]
+    published_error_message = "Appendix can’t be added to published NOFOs."
+    archived_error_message = "Appendix can’t be added to archived NOFOs."
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+    def post(self, request, *args, **kwargs):
+        with transaction.atomic():
+            # Lock the parent row, then repeat guards inside the transaction.
+            # This serializes simultaneous requests for the same NOFO.
+            nofo = Nofo.objects.select_for_update().get(pk=self.nofo.pk)
+            if nofo.archived:
+                return self.render_response(self.archived_error_message)
+            if nofo.status == "cancelled":
+                return self.render_response(self.cancelled_error_message)
+            if nofo.status == "published":
+                return self.render_response(self.published_error_message)
+            if nofo_has_appendix_section(nofo):
+                messages.warning(request, "This NOFO already has an Appendix section.")
+                return redirect("nofos:nofo_edit", pk=nofo.pk)
+
+            section = Section.objects.create(
+                nofo=nofo,
+                name="Appendix",
+                html_id="appendix",
+                has_section_page=False,
+                order=Section.get_next_order(nofo),
+            )
+            _order_trailing_sections(nofo)
+
+        messages.success(
+            request,
+            "Added new section: “<a href='#{}'>{}</a>”".format(
+                section.html_id, section.name
+            ),
+        )
+        return redirect(
+            "{}#{}".format(reverse("nofos:nofo_edit", args=[nofo.pk]), section.html_id)
+        )
 
 
 class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
