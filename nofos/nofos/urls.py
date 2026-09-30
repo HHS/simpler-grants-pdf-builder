@@ -1,10 +1,16 @@
 from django.urls import path
 
 from . import views
+from .pdf_readability_metrics import PdfReadabilityMetricsView
 
 app_name = "nofos"
 
 urlpatterns = [
+    path(
+        "metrics/readability-pilot",
+        PdfReadabilityMetricsView.as_view(),
+        name="builder_metrics_readability_pilot",
+    ),
     path("", views.NofosListView.as_view(), name="nofo_index"),
     path("import", views.NofosImportNewView.as_view(), name="nofo_import"),
     path("<uuid:pk>/delete", views.NofosArchiveView.as_view(), name="nofo_archive"),
@@ -168,6 +174,11 @@ urlpatterns = [
         name="section_add_end_notes",
     ),
     path(
+        "<uuid:pk>/section/add-appendix",
+        views.NofoAddAppendixSectionView.as_view(),
+        name="section_add_appendix",
+    ),
+    path(
         "<uuid:pk>/section/<uuid:section_pk>/subsection/create",
         views.NofoSubsectionCreateView.as_view(),
         name="subsection_create",
@@ -199,6 +210,11 @@ urlpatterns = [
     ),
     path("search", views.NofoSearchView.as_view(), name="nofo_search"),
     path("metrics", views.BuilderMetricsView.as_view(), name="builder_metrics"),
+    path(
+        "metrics/import-errors",
+        views.BuilderMetricsImportErrorsView.as_view(),
+        name="builder_metrics_import_errors",
+    ),
     path(
         "check-link",
         views.CheckNOFOLinkSingleView.as_view(),

@@ -226,11 +226,11 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.client.login(email="hrsa@example.com", password="testpass123")
         self.url = reverse("nofos:nofo_edit_theme_options", kwargs={"pk": self.nofo.id})
 
-    def test_non_nih_user_sees_all_cover_choices(self):
+    def test_hrsa_user_can_keep_current_legacy_cover_only(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
         cover_values = [v for v, _ in form.fields["cover"].choices]
         self.assertIn("nofo--cover-page--hero", cover_values)
-        self.assertIn("nofo--cover-page--medium", cover_values)
+        self.assertNotIn("nofo--cover-page--medium", cover_values)
         self.assertIn("nofo--cover-page--text", cover_values)
 
     def test_hrsa_user_only_sees_hrsa_light_theme(self):
@@ -282,14 +282,14 @@ class NonNIHUserThemeOptionsTests(TestCase):
             self.url,
             {
                 "theme": "portrait-hrsa-blue",
-                "cover": "nofo--cover-page--medium",
+                "cover": "nofo--cover-page--hero",
                 "icon_style": "nofo--icons--solid",
             },
         )
         self.assertEqual(response.status_code, 302)
         self.nofo.refresh_from_db()
         self.assertEqual(self.nofo.theme, "portrait-hrsa-blue")
-        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--hero")
         self.assertEqual(self.nofo.icon_style, "nofo--icons--solid")
 
     def test_legacy_hrsa_theme_remains_model_valid_and_renderable(self):
@@ -305,7 +305,7 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "portrait-hrsa-blue")
 
-    def test_non_nih_user_can_submit_any_valid_cover(self):
+    def test_hrsa_user_can_preserve_current_legacy_cover(self):
         data = {
             "theme": "portrait-hrsa-white",
             "cover": "nofo--cover-page--hero",
@@ -404,3 +404,51 @@ class RetiredCdcLandscapeThemeTests(TestCase):
         form = NofoThemeOptionsForm(data, instance=nofo, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn("theme", form.errors)
+
+
+class CDCUserCoverOptionsTests(TestCase):
+    """CDC defaults to the text-only cover, but keeps every cover option selectable."""
+
+    def setUp(self):
+        self.user = _make_user("cdc")
+        self.nofo = _make_nofo(
+            "cdc",
+            theme="portrait-cdc-blue",
+            cover="nofo--cover-page--text",
+            icon_style="nofo--icons--solid",
+        )
+        self.client = Client()
+        self.client.login(email="cdc@example.com", password="testpass123")
+        self.url = reverse("nofos:nofo_edit_theme_options", kwargs={"pk": self.nofo.id})
+
+    def test_cdc_user_sees_all_cover_choices(self):
+        form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
+        cover_values = [v for v, _ in form.fields["cover"].choices]
+        self.assertIn("nofo--cover-page--hero", cover_values)
+        self.assertIn("nofo--cover-page--medium", cover_values)
+        self.assertIn("nofo--cover-page--text", cover_values)
+
+    def test_cdc_user_can_switch_to_image_cover(self):
+        response = self.client.post(
+            self.url,
+            {
+                "theme": "portrait-cdc-blue",
+                "cover": "nofo--cover-page--medium",
+                "icon_style": "nofo--icons--solid",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
+
+    def test_cdc_user_cover_is_not_reset_on_page_load(self):
+        # The text-only default applies at import time only: an explicit
+        # choice must survive revisiting the theme options page.
+        self.nofo.cover = "nofo--cover-page--hero"
+        self.nofo.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.nofo.refresh_from_db()
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--hero")

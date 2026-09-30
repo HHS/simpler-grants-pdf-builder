@@ -7,7 +7,7 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js %}
   <script src="{% static 'js/nofos/nofo_edit.js' %}" defer></script>
-  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=0.5.6" defer></script>
+  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=0.5.7" defer></script>
 {% endblock %}
 
 {% block html_class %}html--nofo_edit{% endblock %}
@@ -59,11 +59,18 @@ Edit “{{ nofo|nofo_name }}”
         <ul id="nofo-actions-{{ object.pk }}" class="menu-button-links__list usa-sidenav" hidden>
           {% for link in action_links %}
             <li class="usa-sidenav__item">
+              {% if link.method == "post" %}
+                <form method="post" action="{{ link.href }}">
+                  {% csrf_token %}
+                  <button type="submit" class="nofo-action-submit">{{ link.label }}</button>
+                </form>
+              {% else %}
               <a
                 href="{{ link.href }}"
                 class="{% if link.danger %}usa-link--destructive{% endif %} {% if link.external %}usa-link--external{% endif %}"
                 {% if link.external %}target="_blank"{% endif %}
               >{{ link.label }}</a>
+              {% endif %}
             </li>
           {% endfor %}
         </ul>
@@ -397,19 +404,20 @@ Edit “{{ nofo|nofo_name }}”
         <div class="usa-alert">
           <div class="usa-alert__body">
             <h3 class="usa-alert__heading">Warning: review endnotes</h3>
+            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy endnote issues</button>
             <div>
               <details>
                 <summary>
                   {% if unconverted_footnotes|length == 1 %}
-                  <span>There is 1 issue to review</span>
+                  <span>There is 1 endnote issue to review</span>
                   {% else %}
-                  <span>There are {{ unconverted_footnotes|length }} issues to review</span>
+                  <span>There are {{ unconverted_footnotes|length }} endnote issues to review</span>
                   {% endif %}
                 </summary>
                 <div>
                   <ol class="usa-list usa-list--no-max-width">
                     {% for unconverted_footnote in unconverted_footnotes %}
-                    <li><a href="#{% if unconverted_footnote.subsection %}{{ unconverted_footnote.subsection.html_id }}{% else %}{{ unconverted_footnote.section.html_id }}{% endif %}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
+                    <li><a href="#{{ unconverted_footnote.location_html_id }}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
                     {% endfor %}
                   </ol>
                   <p>

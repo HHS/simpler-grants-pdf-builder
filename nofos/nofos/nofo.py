@@ -22,7 +22,11 @@ import cssutils
 import mammoth
 import markdown
 import requests
-from bloom_nofos.error_helpers import MistaggedHeadingError
+from bloom_nofos.error_helpers import (
+    AmbiguousHeadingHierarchyError,
+    MistaggedHeadingError,
+    StrictFormattingError,
+)
 from bloom_nofos.s3.utils import (
     get_image_url_from_s3,
     remove_file_from_s3,
@@ -37,7 +41,12 @@ from django.urls import reverse_lazy
 from django.utils.html import escape
 from slugify import slugify
 
-from .endnotes import analyze_endnotes, convert_bracketed_endnotes, is_endnotes_heading
+from .endnotes import (
+    analyze_endnotes,
+    convert_bracketed_endnotes,
+    is_endnotes_heading,
+    remove_duplicate_native_note_custom_marks,
+)
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
     transform_word_document,
@@ -90,7 +99,7 @@ def parse_uploaded_file_as_html_string(uploaded_file):
     Raise a ValidationError if invalid or missing.
     """
     if not uploaded_file:
-        raise ValidationError("Oops! No fos uploaded.")
+        raise ValidationError("Oops! No fos uploaded.", code="no_file")
 
     content_type = uploaded_file.content_type
 
@@ -135,16 +144,14 @@ def parse_uploaded_file_as_html_string(uploaded_file):
 
         # If strict mode, raise on any warnings - same condition as before
         if config.WORD_IMPORT_STRICT_MODE and warnings:
-            warnings_str = "<ul><li>{}</li></ul>".format("</li><li>".join(warnings))
-            raise ValidationError(
-                f"<p>Mammoth warnings found. These styles are not recognized by our style map:</p>{warnings_str}",
-                code="strict_formatting",
-            )
+            raise StrictFormattingError(warnings)
 
         return doc_to_html_result.value, len(warnings)
 
     else:
-        raise ValidationError("Please import a .docx or HTML file.")
+        raise ValidationError(
+            "Please import a .docx or HTML file.", code="unsupported_file_type"
+        )
 
 
 def resolve_section_heading_level(soup):
@@ -182,13 +189,15 @@ def resolve_section_heading_level(soup):
     h1_text = clean_string(
         section_heading_candidates[first_h1_index].get_text(" ", strip=True)
     )
-    raise ValidationError(
-        "The document uses Heading 2 before its first Heading 1. "
-        f'NOFO Builder would skip content beginning with Heading 2 "{h2_text}" '
-        f'and start at Heading 1 "{h1_text}". '
-        "In Word, apply the same heading level to all main sections, save the "
-        "document, and import it again.",
-        code="ambiguous_heading_hierarchy",
+    # A lone final H1 is a likely style outlier, not evidence that preceding
+    # H2s are its children. Do not infer intent from counts in mixed hierarchies.
+    trailing_h1_outlier = (
+        first_h1_index == len(section_heading_candidates) - 1 and first_h1_index >= 2
+    )
+    raise AmbiguousHeadingHierarchyError(
+        h2_text=h2_text,
+        h1_text=h1_text,
+        preceding_h2_count=first_h1_index if trailing_h1_outlier else None,
     )
 
 
@@ -215,6 +224,7 @@ def process_nofo_html(soup, top_heading_level):
     add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
+    repair_acf_required_alignment_lists(soup)
     preserve_bookmark_links(soup)
     preserve_heading_links(soup)
     preserve_table_heading_links(soup)
@@ -229,6 +239,7 @@ def process_nofo_html(soup, top_heading_level):
     add_endnotes_header_if_exists(soup, top_heading_level)
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
+    remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
 
     soup = add_em_to_de_minimis(soup)
@@ -467,7 +478,16 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
                 max_length=obj._meta.get_field("name").max_length,
             ) from validation_error
 
-        raise ValidationError(str(validation_error)) from validation_error
+        # Surface the field and rule that failed as plain sentences. str() on a
+        # ValidationError with an error_dict renders the dict repr, which is not
+        # something we can put in front of a NOFO writer.
+        readable = []
+        for field, errors in getattr(validation_error, "error_dict", {}).items():
+            label = "Document" if field == "__all__" else field
+            for error in errors:
+                readable.extend(f"{label}: {message}" for message in error.messages)
+
+        raise ValidationError(readable or [str(validation_error)]) from validation_error
 
     sections_to_create = []
     subsections_to_create = []
@@ -1335,6 +1355,58 @@ def find_incorrectly_nested_heading_levels(nofo):
     return incorrectly_nested_heading_levels
 
 
+# Href values that name no destination at all. "" covers both an empty href
+# and a whitespace-only one (the check strips first); "about:blank" is what
+# Word and Google Docs write when a hyperlink in the source document was never
+# given a target. Neither is a broken link *into* the NOFO, so both are
+# reported with the external links -- the other category of link that points
+# outside the NOFO -- and neither is ever requested over HTTP.
+INVALID_LINK_DESTINATIONS = ("", "about:blank")
+INVALID_LINK_ERROR = "No link destination in the source document"
+
+
+def _is_invalid_link_destination(url):
+    """True for an href value that names no destination. None means no href attribute at all, which is_dangling_link_anchor() decides on instead, since it needs the rest of the tag to tell a link from a bookmark target."""
+    if url is None:
+        return False
+
+    return url.strip().lower() in INVALID_LINK_DESTINATIONS
+
+
+def is_dangling_link_anchor(tag):
+    """
+    True when an `<a>` is a link a reader can see but that goes nowhere.
+
+    Two shapes count:
+      - an `href` that names no destination ("", whitespace, "about:blank")
+      - no `href` attribute at all, which is what martor's sanitizer leaves
+        behind when it strips a disallowed scheme such as "bookmark://"
+
+    Two shapes deliberately do not:
+      - no visible text: an artifact a designer can neither see nor click, so
+        there is nothing to report and nothing to fix
+      - no `href` but carrying an `id`/`name`: that is a bookmark *target*,
+        not a link, and some targets keep their original visible label (see
+        `preserve_bookmark_links` below, and the "category 2b" tests in
+        tests_nofos/test_templatetags.py). Text alone isn't enough to call
+        an href-less anchor broken.
+
+    Shared with `templatetags/add_classes_to_links.py` so the inline tooltip
+    in the editor body and the external-links page agree on what counts.
+    """
+    if getattr(tag, "name", None) != "a":
+        return False
+
+    if not tag.get_text(strip=True):
+        return False
+
+    href = tag.get("href")
+    if href is None:
+        return not (tag.get("id") or tag.get("name"))
+
+    return _is_invalid_link_destination(href)
+
+
 def _update_link_statuses(all_links):
     logging.basicConfig(
         level=logging.WARNING
@@ -1342,6 +1414,10 @@ def _update_link_statuses(all_links):
     logger = logging.getLogger(__name__)
 
     def check_link_status(link):
+        if link.get("invalid_destination"):
+            # Nothing to request: there is no destination to resolve.
+            return link
+
         try:
             # First try HEAD request
             response = requests.head(
@@ -1425,6 +1501,10 @@ def nofo_has_end_notes_section(nofo):
     return nofo.sections.filter(html_id=END_NOTES_SECTION_HTML_ID).exists()
 
 
+def nofo_has_appendix_section(nofo):
+    return nofo.sections.filter(html_id="appendix").exists()
+
+
 def get_subsection_action_availability(nofo):
     """Present existing status restrictions; action views still enforce access."""
     return {
@@ -1489,6 +1569,14 @@ def get_nofo_action_links(nofo):
             "href": reverse_lazy("nofos:section_add_end_notes", args=[nofo.pk]),
         }
 
+    def _link_add_appendix(nofo):
+        return {
+            "key": "add_appendix",
+            "label": "Add Appendix",
+            "href": reverse_lazy("nofos:section_add_appendix", args=[nofo.pk]),
+            "method": "post",
+        }
+
     # Status → allowed actions
     _STATUS_ACTIONS = {
         "draft": (
@@ -1496,6 +1584,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
             "delete",
@@ -1505,6 +1594,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1513,6 +1603,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "reimport",
             "export",
         ),
@@ -1521,6 +1612,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "doge": (
@@ -1528,6 +1620,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),  # Deputy Secretary review
         "published": ("export",),
@@ -1536,6 +1629,7 @@ def get_nofo_action_links(nofo):
             "compare",
             "duplicate",
             "add_end_notes",
+            "add_appendix",
             "export",
         ),
         "cancelled": ("export",),
@@ -1550,6 +1644,7 @@ def get_nofo_action_links(nofo):
         "compare": lambda: _link_compare(nofo),
         "duplicate": lambda: _link_duplicate(nofo),
         "add_end_notes": lambda: _link_add_end_notes(nofo),
+        "add_appendix": lambda: _link_add_appendix(nofo),
         "reimport": lambda: _link_reimport(nofo),
         "export": lambda: _link_export(nofo),
         "delete": lambda: _link_delete(nofo),
@@ -1559,6 +1654,8 @@ def get_nofo_action_links(nofo):
     for key in actions:
         # A NOFO can only ever have one Endnotes section.
         if key == "add_end_notes" and nofo_has_end_notes_section(nofo):
+            continue
+        if key == "add_appendix" and (nofo.archived or nofo_has_appendix_section(nofo)):
             continue
 
         build = link_builders.get(key)
@@ -1632,6 +1729,8 @@ def find_external_links(nofo, with_status=False):
 
     This function processes the markdown content of each subsection, converts it to HTML using BeautifulSoup and markdown libraries, and searches for all 'a' tags (hyperlinks). It then filters these links to include only those that are external (not part of the 'nofo.rodeo' domain).
 
+    Links that name no destination at all are included here too, flagged with 'invalid_destination': an empty or whitespace-only href, "about:blank", or no href attribute (see is_dangling_link_anchor). None of them is an anchor into the NOFO, so they belong in this list rather than in find_broken_links(), and none is ever requested over HTTP because there is no destination to request. Anchors with no visible text, and href-less bookmark *targets* carrying an id/name, are skipped.
+
     Parameters:
         nofo (Nofo instance): The NOFO object whose sections and subsections are to be scanned for external links.
         with_status (bool): A flag indicating whether to update the status of each link (e.g., check if the link is live, if it redirects, etc.) by calling the `_update_link_statuses` function.
@@ -1645,6 +1744,7 @@ def find_external_links(nofo, with_status=False):
             - 'status' (str): A placeholder for the status of the link; it remains empty unless updated externally.
             - 'error' (str): A placeholder for any error associated with the link; it remains empty unless updated externally.
             - 'redirect_url' (str): A placeholder for the URL where the link redirects; it remains empty unless updated externally.
+            - 'invalid_destination' (bool): True if the link has no destination at all (empty/whitespace href, "about:blank", or no href attribute), in which case 'url' is the literal href (""  when absent), 'error' is pre-filled, and no HTTP request is made.
     """
     all_links = []
 
@@ -1659,9 +1759,27 @@ def find_external_links(nofo, with_status=False):
             )
             links = soup.find_all("a")
             for link in links:
-                url = link.get("href", "#")
+                href = link.get("href")
+                # "" when the anchor has no href attribute at all, so the row
+                # reports the literal (missing) destination rather than a "#"
+                # placeholder that was never in the document.
+                url = href if href is not None else ""
 
-                if url.startswith("http"):
+                if is_dangling_link_anchor(link):
+                    all_links.append(
+                        {
+                            "url": url,
+                            "link_text": link.get_text(),
+                            "domain": "",
+                            "section": section,
+                            "subsection": subsection,
+                            "status": "",
+                            "error": INVALID_LINK_ERROR,
+                            "redirect_url": "",
+                            "invalid_destination": True,
+                        }
+                    )
+                elif url.startswith("http"):
                     if not "nofo.rodeo" in url:
                         all_links.append(
                             {
@@ -1673,6 +1791,7 @@ def find_external_links(nofo, with_status=False):
                                 "status": "",
                                 "error": "",
                                 "redirect_url": "",
+                                "invalid_destination": False,
                             }
                         )
 
@@ -1686,9 +1805,17 @@ def find_broken_links(nofo):
     """
     Identifies and returns a list of broken links within a given Nofo.
 
-    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#h.", "#id.", "/", "https://docs.google.com", "#_heading", or "_bookmark".
+    A broken link is defined as an anchor (`<a>`) element whose `href` attribute value starts with "#" (eg. "#h.", "#id.", "#_heading"),
+    "/", "bookmark", or "file://", and which does not resolve to an id that exists in the NOFO.
     This means that someone created an internal link to a header, and then later the header was deleted or otherwise
     modified so the original link doesn't point anywhere.
+
+    Links to destinations *outside* the NOFO are deliberately not counted here, even when they are a problem:
+    Google Docs URLs (`https://docs.google.com/...`) are ordinary external links and are reported by
+    find_external_links(), and links that name no destination at all (an empty or whitespace-only href,
+    "about:blank", or no href attribute) are reported there too as invalid destinations. None of them is
+    an internal anchor, so calling them broken internal links was both misleading and, for Google Docs,
+    a duplicate of the external-link report.
 
     Args:
         nofo (Nofo): A Nofo object which contains sections and subsections. Each subsection's body is expected
@@ -1714,8 +1841,6 @@ def find_broken_links(nofo):
         return tag.name == "a" and (
             tag.get("href", "").startswith("/")
             or tag.get("href", "").startswith("#")
-            or tag.get("href", "").startswith("https://docs.google.com")
-            or tag.get("href", "") == "about:blank"
             or tag.get("href", "").startswith("bookmark")
             or tag.get("href", "").startswith("file://")
         )
@@ -1812,10 +1937,19 @@ def find_endnote_issues(nofo):
         if location is None:
             continue
         section, subsection = locations[location["data-endnote-location"]]
+        # Basic information is represented by the metadata table rather than its
+        # imported subsection, and unnamed subsections have no editor anchor.
+        # In either case, link to the containing section, which is always rendered.
+        subsection_is_linkable = (
+            subsection and subsection.name != "Basic information" and subsection.html_id
+        )
         results.append(
             {
                 "section": section,
                 "subsection": subsection,
+                "location_html_id": (
+                    subsection.html_id if subsection_is_linkable else section.html_id
+                ),
                 "message": issue["message"],
                 "code": issue["code"],
             }
@@ -1977,14 +2111,18 @@ def suggest_nofo_application_deadline(soup):
 
 def suggest_nofo_cover(nofo_theme):
     if any(
-        prefix in nofo_theme.lower() for prefix in ["acf-", "acl-", "hrsa-", "nih-"]
+        prefix in nofo_theme.lower()
+        for prefix in ["acf-", "acl-", "cdc-", "hrsa-", "nih-"]
     ):
         return "nofo--cover-page--text"
 
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_before_you_begin(nofo_group):
+def suggest_nofo_before_you_begin(nofo_group, nofo_theme=""):
+    if "hrsa-" in nofo_theme.lower():
+        return "hrsa"
+
     if nofo_group == "nih":
         return "era"
 
@@ -2006,7 +2144,7 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
-    if "acf-" in nofo_number.lower():
+    if is_acf_nofo_metadata(nofo_number, opdiv):
         return "portrait-acf-white"
 
     if "acl-" in nofo_number.lower():
@@ -2057,8 +2195,25 @@ def suggest_nofo_subagency2(soup):
     return suggestion or ""
 
 
+# Word templates leave a ruled blank for the tagline, which converts to a run of
+# underscores. Sanitizing keeps them (they are ordinary printable characters), so
+# the placeholder would otherwise be saved and rendered as the tagline itself.
+TAGLINE_UNDERSCORE_PLACEHOLDER_PATTERN = re.compile(r"[\s_]*_[\s_]*")
+
+
+def _is_underscore_placeholder(value):
+    """True for a value made up only of underscores (and whitespace)."""
+    return bool(value) and bool(TAGLINE_UNDERSCORE_PLACEHOLDER_PATTERN.fullmatch(value))
+
+
 def suggest_nofo_tagline(soup):
     suggestion = _suggest_by_startswith_string(soup, "Tagline:")
+
+    # Scoped to the tagline on purpose: other metadata fields have no reason to
+    # treat underscores as a blank, and IMPORT-041 otherwise keeps them as-is.
+    if _is_underscore_placeholder(suggestion):
+        return ""
+
     return suggestion or ""
 
 
@@ -2088,10 +2243,13 @@ def suggest_nofo_cover_image(nofo):
     return ""
 
 
-def suggest_all_nofo_fields(nofo, soup):
-    first_time_import = (
-        not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
-    )
+def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
+    # Import views know whether this is a new record, even when a legacy record
+    # still has a blank/default opportunity number.
+    if first_time_import is None:
+        first_time_import = (
+            not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
+        )
 
     nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.number = nofo_number
@@ -2112,7 +2270,8 @@ def suggest_all_nofo_fields(nofo, soup):
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
 
-    if not nofo.cover_image:
+    preserve_hrsa_image = not first_time_import and "hrsa-" in nofo.theme.lower()
+    if not nofo.cover_image and not preserve_hrsa_image:
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
@@ -2130,7 +2289,7 @@ def suggest_all_nofo_fields(nofo, soup):
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
-            nofo.group
+            nofo.group, nofo.theme
         )  # guess the NOFO "Before you begin" page
 
 
@@ -2208,6 +2367,127 @@ def join_nested_lists(soup):
             previous_element = _get_previous_element(lst)
             if previous_element and previous_element.name in ["ul", "ol"]:
                 _join_lists(lst, previous_element)
+
+    return soup
+
+
+def is_acf_nofo_metadata(nofo_number="", opdiv=""):
+    """Return whether imported metadata identifies an ACF NOFO."""
+    number = sanitize_imported_text(nofo_number).casefold()
+    opdiv_text = sanitize_imported_text(opdiv).casefold()
+
+    return bool(
+        re.search(r"(?:^|-)acf(?:-|$)", number)
+        or "administration for children and families" in opdiv_text
+        or re.search(r"\bacf\b", opdiv_text)
+    )
+
+
+def repair_acf_required_alignment_lists(soup):
+    """Normalize the canonical ACF required-alignment groups to numbering."""
+    nofo_number = suggest_nofo_opportunity_number(soup)
+    opdiv = suggest_nofo_opdiv(soup)
+    if not is_acf_nofo_metadata(nofo_number, opdiv):
+        return soup
+
+    heading_names = {f"h{level}" for level in range(1, 7)}
+    required_title = (
+        "required alignment with acf vision, mission, values, priorities, "
+        "and guiding principles"
+    )
+    opening_prefix = (
+        "the recipient of this award must implement any funds awarded under this "
+        "nofo to effectuate program goals or agency priorities"
+    )
+    expected_label_groups = [
+        ["program integrity and fiscal stewardship:"],
+        [
+            "evidence-based and outcome-focused practices:",
+            "partnership and local leadership:",
+        ],
+        [
+            "family stability and child well-being:",
+            "work, self-sufficiency, and economic mobility:",
+            "high-quality early care and learning:",
+        ],
+    ]
+
+    def _normalized_text(tag):
+        return clean_string(tag.get_text(" ", strip=True)).casefold()
+
+    def _heading_level(tag):
+        return int(tag.name[1])
+
+    agency_headings = soup.find_all(
+        lambda tag: tag.name in heading_names
+        and _normalized_text(tag) == "agency priorities"
+    )
+
+    for agency_heading in agency_headings:
+        agency_level = _heading_level(agency_heading)
+        containing_section_heading = agency_heading.find_previous(
+            lambda tag: tag.name in heading_names and _heading_level(tag) < agency_level
+        )
+        if containing_section_heading is None or not _normalized_text(
+            containing_section_heading
+        ).startswith("step 1"):
+            continue
+
+        content_tags = []
+        for sibling in agency_heading.next_siblings:
+            if not isinstance(sibling, Tag):
+                continue
+            if (
+                sibling.name in heading_names
+                and _heading_level(sibling) <= agency_level
+            ):
+                break
+            if clean_string(sibling.get_text(" ", strip=True)):
+                content_tags.append(sibling)
+
+        if len(content_tags) < 2:
+            continue
+
+        title_tag = content_tags[0]
+        title_strong = title_tag.find("strong")
+        title_is_bold_paragraph = (
+            title_tag.name == "p"
+            and title_strong is not None
+            and _normalized_text(title_strong) == required_title
+        )
+        title_is_nested_heading = (
+            title_tag.name in heading_names
+            and _heading_level(title_tag) == agency_level + 1
+        )
+        if _normalized_text(title_tag) != required_title or not (
+            title_is_bold_paragraph or title_is_nested_heading
+        ):
+            continue
+
+        if not _normalized_text(content_tags[1]).startswith(opening_prefix):
+            continue
+
+        lists = [tag for tag in content_tags if tag.name in {"ul", "ol"}]
+        if len(lists) != len(expected_label_groups):
+            continue
+
+        actual_label_groups = []
+        for source_list in lists:
+            labels = []
+            for item in source_list.find_all("li", recursive=False):
+                strong = item.find("strong")
+                labels.append(_normalized_text(strong) if strong else "")
+            actual_label_groups.append(labels)
+
+        if actual_label_groups != expected_label_groups:
+            continue
+
+        for start, source_list in zip((1, 2, 4), lists):
+            source_list.name = "ol"
+            if start == 1:
+                source_list.attrs.pop("start", None)
+            else:
+                source_list["start"] = str(start)
 
     return soup
 

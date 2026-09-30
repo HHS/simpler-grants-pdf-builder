@@ -23,7 +23,12 @@ from django.utils.timezone import now
 from pythonjsonlogger import jsonlogger
 
 from .aws import generate_iam_auth_token_func, is_aws_db
-from .logs import CustomJsonFormatter, PrintLoggerNameFilter, SuppressWellKnown404Filter
+from .logs import (
+    CustomJsonFormatter,
+    PrintLoggerNameFilter,
+    ReadabilityRequestFilter,
+    SuppressWellKnown404Filter,
+)
 from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +49,14 @@ env_path = os.path.join(BASE_DIR, "bloom_nofos", env_file)
 env_exists = os.path.exists(env_path)
 if env_exists:
     environ.Env.read_env(env_path)
+
+# Pending privacy approval in #968; no scheduler is installed by this change.
+PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
+    "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
+)
+PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
+    "PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
@@ -137,6 +150,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "bloom_nofos.middleware.PdfReadabilityResponseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -176,6 +190,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "bloom_nofos.wsgi.application"
 
 # Logging
+LOGGING_CONFIG = "bloom_nofos.logs.configure_logging"
 if "test" in sys.argv:
     LOGGING = {
         "version": 1,
@@ -201,6 +216,7 @@ else:
             "json": {"()": CustomJsonFormatter, "format": None},
         },
         "filters": {
+            "readability_request": {"()": ReadabilityRequestFilter},
             "suppress_well_known_404s": {
                 "()": SuppressWellKnown404Filter,
             },
@@ -221,6 +237,7 @@ else:
         "loggers": {
             "django.request": {
                 "handlers": ["console"],
+                "filters": ["readability_request"],
                 "level": "INFO",
                 "propagate": False,
             },
@@ -558,6 +575,8 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 # NofoReadabilityScore is already an append-only record of when metrics were
 # calculated, so auditing it would only duplicate rows it already holds.
 DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
+    # Audit events can attach request/user metadata: never audit anonymous outcomes.
+    "nofos.PdfReadabilityAttempt",
     "nofos.NofoReadabilityScore",
     "nofos.MetricsActor",
     "nofos.MetricsNofo",
@@ -586,6 +605,12 @@ CALLOUT_WORD_WARNING_THRESHOLD = env.int("CALLOUT_WORD_WARNING_THRESHOLD", defau
 # which superadmins can toggle at runtime.
 HHS_NOFO_METRICS_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_METRICS_ENABLED", default=False)
+)
+
+# Standalone public PDF pilot. Separate from the authenticated Builder metrics
+# panel so either capability can be disabled independently.
+HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT = cast_to_boolean(
+    env.get_value("HHS_NOFO_PDF_METRICS_PILOT_ENABLED", default=False)
 )
 
 # Prototype: export a Word copy with intact HHS Department Governance
@@ -631,7 +656,7 @@ DEFAULT_HHS_NOFO_METRIC_GOALS = {
         "value": 39,
     },
     "flesch_kincaid_grade_level": {
-        "label": "Target range, depending on NOFO type",
+        "label": "Target by NOFO type",
         "operator": "at_most_by_category",
         "minimum": 11.5,
         "maximum": 12.5,
@@ -671,6 +696,11 @@ CONSTANCE_CONFIG = {
     "HHS_NOFO_METRICS_ENABLED": (
         HHS_NOFO_METRICS_ENABLED_DEFAULT,
         "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and saved as revision-scoped snapshots.",
+        bool,
+    ),
+    "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
+        HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
+        "Whether the standalone, signed-out PDF readability pilot is available. Uploads and reports are not saved.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (

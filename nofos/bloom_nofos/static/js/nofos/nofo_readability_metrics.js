@@ -134,9 +134,13 @@
       return metrics[metricId];
     }
     const sentenceMetric = metrics.words_per_sentence || {};
+    const value = sentenceMetric.components?.sentences_per_paragraph;
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      return { status: "unavailable", value: null, reason: "Unavailable" };
+    }
     return {
       ...sentenceMetric,
-      value: sentenceMetric.components?.sentences_per_paragraph,
+      value,
     };
   };
 
@@ -228,7 +232,7 @@
       showScopeSummary(payload.metrics);
       showWarnings(payload.warnings);
       results.hidden = false;
-      status.textContent = "Calculated for the current revision.";
+      status.textContent = "Calculated for your current version.";
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate";
       button.classList.add("usa-button--outline");

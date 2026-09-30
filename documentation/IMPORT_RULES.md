@@ -4,6 +4,8 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 
 **⚠️ Maintenance requirement:** If your PR adds, removes, or changes behavior in any of the source files below, update the matching rule entry in this document in the same PR (add a new `IMPORT-NNN` entry, edit an existing one, or mark one `status: removed` — never delete an entry outright, so the numbering and history stay stable). See [DEPLOYMENT.md § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) for the enforced contribution policy.
 
+**Not to be confused with import error *codes*.** The `IMPORT-NNN` IDs here are numbered rule identifiers for content transformations. The `IMPORT-NAME` strings a user sees when an import is blocked (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, and so on) are a separate namespace, catalogued in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md). A rule here can be the *reason* an error code fires; they are not the same registry.
+
 **Source files covered by this document:**
 - `nofos/nofos/nofo.py` — `process_nofo_html()` and the ~20 cleanup passes it runs, plus sectioning/subsectioning and metadata-suggestion logic
 - `nofos/nofos/utils.py` — `style_map_manager`, the Mammoth DOCX→HTML style-name map
@@ -57,10 +59,12 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
+| IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
+| IMPORT-052 | repair | Lists | Canonical ACF required-alignment list groups → continuing numbered lists | `nofo.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
@@ -80,10 +84,10 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-038 | removal | Content Removal | "Before you begin" heading + section → removed (duplicates a Builder-generated page) | `nofo.py` |
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
 | IMPORT-040 | repair | Field Merging | Split label/value paragraphs under "Funding details" → merged into one paragraph | `nofo.py` |
-| IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields | `nofo.py` |
+| IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields; an underscore-only `Tagline:` value → empty | `nofo.py` |
 | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
 | IMPORT-043 | extraction | Metadata Suggestion | Theme prefix → suggested cover style (text-only vs. medium) | `nofo.py` |
-| IMPORT-044 | extraction | Metadata Suggestion | Importing user's group → suggested "before you begin" page variant | `nofo.py` |
+| IMPORT-044 | extraction | Metadata Suggestion | New import's HRSA theme / user's group → suggested "before you begin" page variant; duplicates copy the saved variant | `nofo.py` |
 | IMPORT-045 | extraction | Metadata Suggestion | Opportunity number / title substring → suggested cover image | `nofo.py` |
 | IMPORT-046 | tagging | Non-Visual Tagging | Subsection body vs. canonical policy-language templates → compliance status tag | `policy_language.py` |
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
@@ -177,8 +181,9 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 ### IMPORT-011 — Ambiguous heading hierarchy blocks import
 - **Type:** validation
 - **Trigger:** Document contains an `h2` before its first `h1`.
-- **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content.
+- **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content. The user sees error code `IMPORT-AMBIGUOUS-HEADINGS`.
 - **Source:** `nofo.py::resolve_section_heading_level`
+- **Guidance:** Only a single final H1 following at least two eligible H2 headings gets a likely Word fix naming the H1 and suggesting Heading 2, conditional on those headings being peer main sections. Blank and table-contained headings do not count. Other ambiguous structures retain neutral guidance; valid leading-H1 hierarchies are unchanged. This is advice only, not an automatic repair.
 - **Status:** active
 
 ### IMPORT-012 — Default section level
@@ -206,7 +211,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ## Footnotes & Endnotes
 
-The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers both native Word/Google Docs notes (IMPORT-015 through IMPORT-017) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
+The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers native Word/Google Docs notes (IMPORT-015 through IMPORT-017 and IMPORT-053) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
 
 ### IMPORT-015 — Synthesize missing "Endnotes" heading
 - **Type:** conversion
@@ -245,6 +250,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Wrap the in-body `[N]` marker in a forward link to its citation (rendered as a superscript), give the citation paragraph a matching target id, and append a `↑` return link back to the reference. Numbering gaps or out-of-sequence citations are only advisory and don't block linking an otherwise-valid pair. Anything ambiguous — a missing, duplicate, empty, or conflicting marker, or more than one candidate Endnotes heading — is left completely unlinked; NOFO Builder never silently renumbers or guesses at a bracketed reference. Conversion runs on both fresh import and reimport; it never modifies the original source Word file.
 - **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::convert_bracketed_endnotes`, `_inspect`, `_scan`)
 - **Status:** active
+- **Note:** If note evidence exists only as non-structural text such as a bold "Endnotes" paragraph, the heading warning is associated with that text so the editor can direct the user to the content that needs a structural heading.
 
 ### IMPORT-051 — Manual endnote lists/links preserved as raw HTML in Markdown
 - **Type:** conversion
@@ -253,6 +259,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul/convert_a`
 - **Status:** active
 - **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones.
+
+### IMPORT-053 — Duplicate Word custom note mark removal
+- **Type:** repair
+- **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
+- **Action:** Remove the repeated unlinked body marker and the matching custom mark at the start of the native ordered-list citation, leaving one linked body marker, one list number, and the native citation relationship intact. Ignore bracketed custom marks inside native citation targets when analyzing previously stored content, so older imports are not mistaken for manually-authored citations. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
+- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
+- **Status:** active
 
 ---
 
@@ -284,6 +297,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** Every list item, during Markdown conversion.
 - **Action:** Bullet/number and indentation computed with custom fixed-4-space-indent logic rather than markdownify's default (needed for CommonMark-compliant nesting).
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_li`
+- **Status:** active
+
+### IMPORT-052 — ACF required-alignment list groups → continuing numbered lists
+- **Type:** repair
+- **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening content is either a bold paragraph or an immediately nested heading whose exact text is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered or ordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
+- **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
+- **Source:** `nofo.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
 
 ---
@@ -457,34 +477,42 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 - **Type:** extraction
 - **Trigger:** A paragraph starts with a literal label string (`"Opportunity Number:"`, `"Application Deadline:"`, `"Opportunity Name:"`, `"Opdiv:"`, `"Agency:"`, `"Subagency:"`, `"Subagency2:"`, `"Tagline:"`, `"Metadata Author:"`, `"Metadata Subject:"`, `"Metadata Keywords:"`). For `Opdiv:` specifically, if the value isn't on the same line, the next paragraph is checked too — but only accepted if it doesn't itself look like another metadata label.
 - **Action:** The suggested field is pre-filled with the text following the label (sanitized per IMPORT-010).
-- **Source:** `nofo.py::_suggest_by_startswith_string` and the `suggest_nofo_*` family
+
+  **Tagline exception — underscore-only placeholders.** `Tagline:` alone gets one extra check: if the extracted value is made up entirely of underscores and whitespace (`"Tagline: _________"`, the ruled blank an HHS Word template leaves for a writer to fill in), the tagline is suggested as empty instead. In isolation this step is a **repair**, the same shape as IMPORT-048 for `{placeholder}` PDF metadata values; it's documented here rather than as its own rule because it only ever runs as part of this rule's tagline extraction. IMPORT-010's sanitization keeps underscores — they are ordinary printable characters — so without this the row of underscores would be saved as the tagline and rendered on the NOFO cover. A value that merely *contains* underscores is untouched (`"Apply by ____ to be considered"` imports as written), and no other metadata field treats underscores as blank, so an underscore-only `Agency:` still imports literally. The check lives next to `suggest_nofo_tagline()` rather than in the shared scanner precisely to keep it that narrow.
+- **Source:** `nofo.py::_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
 - **Status:** active
 
 ### IMPORT-042 — Cover theme suggestion
 - **Type:** extraction
-- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`).
+- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym.
 - **Action:** Suggest the matching portrait theme.
-- **Source:** `nofo.py::suggest_nofo_theme`
+- **Source:** `nofo.py::suggest_nofo_theme`, `is_acf_nofo_metadata`
 - **Status:** active
 
 ### IMPORT-043 — Cover style suggestion
 - **Type:** extraction
-- **Trigger:** Theme prefix is `acf-`/`acl-`/`hrsa-`/`nih-`.
-- **Action:** Suggest a text-only cover; otherwise suggest the "medium" cover.
+- **Trigger:** Theme prefix is `acf-`/`acl-`/`cdc-`/`hrsa-`/`nih-`.
+- **Action:** On a new import, suggest a text-only cover for those themes, or the "medium" cover for other themes. Re-imports preserve the stored cover style, including when the existing opportunity number is blank or a placeholder. HRSA theme forms offer only text-only plus the record's current legacy cover, if any; loading the form does not update the record.
+
+  **CDC.** The `cdc-` prefix matches every CDC theme — the portrait defaults, the division themes (NCIPC, DGHP, DHP, IOD, ORR), and the retired `landscape-cdc-*` pair — so all of them start on the text-only cover. Unlike HRSA and NIH, CDC's theme form is not restricted: all three cover styles stay selectable, and a CDC writer can switch a NOFO to "Standard image" or "Full coverage with image" at any point. This is a starting value, not a constraint. Existing records are untouched: the suggestion only runs on a first-time import, so CDC NOFOs imported before this changed keep the "medium" cover they were given.
 - **Source:** `nofo.py::suggest_nofo_cover`
 - **Status:** active
 
 ### IMPORT-044 — "Before you begin" page variant suggestion
-- **Type:** extraction *(derived from the importing user's account group, not the document text)*
-- **Trigger:** Importing user's group is `"nih"`.
-- **Action:** Suggest the `"era"` before-you-begin page variant; otherwise `"full"`.
-- **Source:** `nofo.py::suggest_nofo_before_you_begin`
+- **Type:** extraction
+- **Trigger:** Brand-new import whose suggested theme is HRSA (derived from opportunity number / OpDiv), or importing user's group is `"nih"`.
+- **Action:** Select the persisted `"hrsa"` variant for an HRSA theme, otherwise `"era"` for an NIH user, otherwise `"full"`. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Re-imports retain their saved variant, even with a blank/placeholder opportunity number. Adding the choice does not backfill any existing records.
+
+  **Duplication does not re-suggest anything.** `duplicate_nofo()` clones the record, so a copy carries the saved variant forward whatever it is — a copy of a record imported before the HRSA variant existed still says `"full"`, and gets no HRSA paragraph. That applies equally to the archive snapshot a re-import takes (`is_successor=True`), which must keep the variant the record actually had. Someone can change a copy's variant by hand at `/nofos/<id>/edit/before-you-begin`.
+
+  *Open question:* whether duplicating an HRSA NOFO should move the copy from `"full"` to `"hrsa"`, on the grounds that a duplicate is usually where the next NOFO starts. Deliberately not decided here; the behaviour above is what ships, and `tests_nofos/test_hrsa_byb.py::BeforeYouBeginOnDuplicateTests` pins it.
+- **Source:** `nofo.py::suggest_nofo_before_you_begin`, `suggest_all_nofo_fields`; explicit new/re-import context from `views.py`; duplication in `views.py::duplicate_nofo`
 - **Status:** active
 
 ### IMPORT-045 — Cover image suggestion
 - **Type:** extraction
 - **Trigger:** A static cover image file exists matching the opportunity number, or the title contains "pepfar".
-- **Action:** Suggest that image, or the hardcoded CDC PEPFAR cover for the "pepfar" case.
+- **Action:** Suggest that image, or the hardcoded CDC PEPFAR cover for the "pepfar" case. HRSA re-imports preserve the stored cover image, including an empty value.
 - **Source:** `nofo.py::suggest_nofo_cover_image`
 - **Status:** active
 
@@ -512,6 +540,8 @@ These rules don't change the visible content, but they run automatically at impo
 - **Type:** repair
 - **Trigger:** A suggested PDF metadata value (author/subject/keywords) is a whole-field curly-brace placeholder, e.g. `"{insert author}"`.
 - **Action:** Normalized to an empty string rather than importing the literal placeholder text.
+
+  Scope note: this covers the curly-brace placeholder form on the three PDF metadata fields only. The other placeholder form the templates produce — a ruled blank that converts to a run of underscores — is handled separately, and only for the tagline, under IMPORT-041. No single rule normalizes placeholders across every metadata field; each one is opt-in by design, so an unexpected value is left visible for a human to correct rather than silently dropped.
 - **Source:** `pdf_metadata.py::normalize_pdf_metadata_value`, consumed by `nofo.py::suggest_nofo_author/subject/keywords`
 - **Status:** active
 
@@ -521,4 +551,19 @@ These rules don't change the visible content, but they run automatically at impo
 
 The rules above cover **import time** only. A separate, parallel layer of "if pattern, then transform" rules runs at **render/view/export time** instead — every time a NOFO is displayed, edited, or exported to PDF/DOCX, via `nofos/nofos/templatetags/*.py` (e.g. `add_classes_to_tables.py`, `convert_paragraphs_to_hrs.py` turning literal `page-break`/`column-break` paragraph text into styled `<hr>` markers, `replace_unicode_with_icon.py`, `truncate_anchor_links_for_docx.py` truncating bookmark ids to Word's 40-character limit on export, and `add_footnote_ids.py` reformatting footnote reference links for display). If this document's scope is ever widened to "everything automatic," those belong in a sibling document (e.g. `RENDER_EXPORT_RULES.md`), kept clearly separate from import-time behavior since they run on every page view rather than once at upload.
 
-One view-time rule is worth calling out here specifically because it shares detection logic with IMPORT-050/IMPORT-051: **`nofo.py::find_endnote_issues`** reruns the same bracketed-endnote analysis (`endnotes.py::analyze_endnotes`) fresh against a NOFO's *saved* content every time its detail page is viewed, surfacing warnings (missing/duplicate/empty/malformed/conflicting markers, non-sequential numbering, missing return links) without changing stored content or ids. It's what powers the `unconverted_footnotes` warnings shown in the editor — not an import transformation itself, but the reason a NOFO's endnote warnings can change after import without anyone re-importing it.
+`nofo.py::get_nofo_action_links` is also outside the import pipeline. The Add Appendix menu action creates a fixed, empty section after import; it does not transform an imported Word document and has no `IMPORT-NNN` rule.
+
+The two view-time link-checking functions are worth calling out here because they are frequently mistaken for import rules, and because what counts as "broken" changed in [#908](https://github.com/HHS/simpler-grants-pdf-builder/issues/908):
+
+- **`nofo.py::find_broken_links`** reports links that were *supposed* to resolve inside the NOFO but don't — `#`-fragments with no matching id, root-relative `/…` paths, `bookmark://…`, and `file://…`. These power the "some internal links are broken" warning panel on the edit page.
+- **`nofo.py::find_external_links`** reports every link pointing *outside* the NOFO, and powers the "Check external links" page. **Google Docs URLs (`https://docs.google.com/…`) belong here, not in the broken-internal-link panel** — they are ordinary external destinations and are status-checked like any other. Listing them in both places double-counted them and implied a NOFO-internal problem that didn't exist.
+  - Links that name **no destination at all** are reported here too, flagged `invalid_destination`, so they render as "no destination / not checked" and are **never requested over HTTP**. Three shapes count: `about:blank` (what Word and Google Docs write for a hyperlink whose target was never filled in), an empty or whitespace-only href (markdown `[text]()` or `[text](   )`, or raw `<a href="">`), and an `<a>` with no href attribute at all. Each is a defect in the source document, not a broken anchor into the NOFO. Two anchors are deliberately *not* reported: one with no visible link text (nothing a designer can see or fix) and an href-less anchor carrying an `id`/`name`, which is a bookmark **target** rather than a link.
+
+All of that is a *classification* change only: nothing in the `.docx` import pipeline rewrites or removes these links, so none of it gets an `IMPORT-NNN` entry. If you are looking for why a Google Docs link stopped appearing in the broken-links count, this is it — it moved categories, it was not silently dropped.
+
+Two things worth knowing when tracing one of these by hand, because they make the same link look different at different stages:
+
+- **Import flattens some of them.** The HTML→Markdown conversion (`nofo_markdown.py`) drops the `<a>` entirely for an empty or missing href, so `<a href="">Apply here</a>` is stored as the plain text `Apply here`. A whitespace href survives as `[Apply here](   )` and re-parses as `href=""`; `about:blank` survives intact. So an empty/missing href generally reaches a stored body only when it is authored in the editor, not when it arrives from a `.docx`.
+- **The editor's sanitizer strips two schemes.** martor's bleach pass allows only `http`, `https` and `mailto`, so in the *rendered* edit page both `about:blank` and `bookmark://…` arrive href-less. The inline highlight (`templatetags/add_classes_to_links.py`) therefore cannot tell which scheme a bare `<a>text</a>` started as, which is why every no-destination link gets the same "Link with no destination" tooltip rather than a scheme-specific one.
+
+One more view-time rule is worth calling out because it shares detection logic with IMPORT-050/IMPORT-051: **`nofo.py::find_endnote_issues`** reruns the same bracketed-endnote analysis (`endnotes.py::analyze_endnotes`) fresh against a NOFO's *saved* content every time its detail page is viewed, surfacing warnings (missing/duplicate/empty/malformed/conflicting markers, non-sequential numbering, missing return links) without changing stored content or ids. It's what powers the `unconverted_footnotes` warnings shown in the editor — not an import transformation itself, but the reason a NOFO's endnote warnings can change after import without anyone re-importing it. Warning links use the affected rendered subsection when it has an editor anchor; otherwise they fall back to the containing section so every fragment has a target on the edit page.

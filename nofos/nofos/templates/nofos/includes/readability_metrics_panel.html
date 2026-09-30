@@ -22,9 +22,8 @@
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">
-      Metrics are saved for the revision you calculate. After editing or
-      reimporting the NOFO, calculate again for updated results. Earlier
-      snapshots are retained but are not shown in this panel.
+      NOFO Builder saves metrics for your current version. After editing or
+      reimporting the NOFO, calculate your metrics again for updated results.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
       <button
@@ -45,42 +44,47 @@
 
     <div id="readability-metrics-results" hidden>
       <dl class="grid-row grid-gap-2 margin-top-3 margin-bottom-1">
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+        <div class="tablet:grid-col-6 margin-bottom-2">
           <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="word_count">
             <dt class="font-sans-2xs text-bold text-base-dark">Word count</dt>
             <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+        <div class="tablet:grid-col-6 margin-bottom-2">
           <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="words_per_sentence">
             <dt class="font-sans-2xs text-bold text-base-dark">Words per sentence</dt>
             <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2" data-optional-metric-card hidden>
+        <div class="tablet:grid-col-6 margin-bottom-2">
           <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="sentences_per_paragraph">
             <dt class="font-sans-2xs text-bold text-base-dark">Sentences per paragraph</dt>
             <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
-          <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="flesch_reading_ease">
-            <dt class="font-sans-2xs text-bold text-base-dark">Flesch Reading Ease</dt>
-            <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
-            <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
+        {% comment %}
+          Flesch Reading Ease is not included in the current clearance guidance.
+          The package can continue to calculate and store it, but the panel
+          intentionally does not display it.
+          <div class="tablet:grid-col-6 margin-bottom-2">
+            <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="flesch_reading_ease">
+              <dt class="font-sans-2xs text-bold text-base-dark">Flesch Reading Ease</dt>
+              <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
+              <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
+            </div>
           </div>
-        </div>
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+        {% endcomment %}
+        <div class="tablet:grid-col-6 margin-bottom-2">
           <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="flesch_kincaid_grade_level">
             <dt class="font-sans-2xs text-bold text-base-dark">Flesch-Kincaid Grade Level</dt>
             <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>
             <dd class="margin-left-0 text-base-dark" data-metric-status>Not calculated</dd>
           </div>
         </div>
-        <div class="tablet:grid-col-6 desktop:grid-col-4 margin-bottom-2">
+        <div class="tablet:grid-col-6 margin-bottom-2">
           <div class="bg-base-lightest border-1px border-base-lighter radius-md padding-2 height-full" data-metric-id="passive_sentence_percentage">
             <dt class="font-sans-2xs text-bold text-base-dark">Passive sentences</dt>
             <dd class="font-heading-lg line-height-sans-2 margin-left-0 margin-top-05" data-metric-value>—</dd>

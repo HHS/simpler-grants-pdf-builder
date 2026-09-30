@@ -17,6 +17,9 @@ from bs4 import NavigableString
 MARKER = re.compile(r"\[([1-9][0-9]{0,8})\]")
 HEADING = re.compile(r"^(?:endnotes?|footnotes?)\s*:?$", re.I)
 BLOCK_NAMES = ["p", "li", "td", "th"]
+NATIVE_REFERENCE_ID = re.compile(r"^(?:footnote|endnote)-ref-(?!manual-)")
+NATIVE_TARGET_HREF = re.compile(r"^#(?:footnote|endnote)-(?!manual-)")
+NATIVE_TARGET_ID = re.compile(r"^(?:footnote|endnote)-(?!ref-|manual-)")
 
 
 def _heading(tag):
@@ -29,6 +32,73 @@ def is_endnotes_heading(text):
 
 def _blocks(soup):
     return [t for t in soup.find_all(BLOCK_NAMES) if not t.find_parent(["pre", "code"])]
+
+
+def remove_duplicate_native_note_custom_marks(soup):
+    """Remove Mammoth's duplicate rendering of bracketed Word custom marks.
+
+    Word stores a custom note mark as an endnote/footnote reference with
+    ``customMarkFollows=1`` followed by the visible mark in the same superscript
+    run. Mammoth renders the reference as its own nested ``sup`` link and also
+    emits the following mark as text, producing ``[1][1]``. It also keeps the
+    same custom mark at the start of the generated ordered-list citation,
+    producing ``1. [1] Citation``. The native relationship and ordered-list
+    structure let us repair both artifacts without treating an ordinary
+    bracketed reference after a native note as a duplicate.
+    """
+    removed = 0
+    for anchor in soup.find_all("a", id=NATIVE_REFERENCE_ID, href=NATIVE_TARGET_HREF):
+        label = anchor.get_text(strip=True)
+        if not MARKER.fullmatch(label):
+            continue
+
+        inner_sup = anchor.find_parent("sup")
+        if (
+            inner_sup is None
+            or inner_sup.parent is None
+            or inner_sup.parent.name != "sup"
+        ):
+            continue
+
+        outer_sup = inner_sup
+        while outer_sup.parent is not None and outer_sup.parent.name == "sup":
+            outer_sup = outer_sup.parent
+
+        branch = anchor
+        while branch.parent is not outer_sup:
+            branch = branch.parent
+
+        duplicate = branch.next_sibling
+        if not isinstance(duplicate, NavigableString):
+            continue
+        duplicate_text = str(duplicate)
+        if not duplicate_text.startswith(label):
+            continue
+
+        remainder = duplicate_text[len(label) :]
+        if remainder:
+            duplicate.replace_with(NavigableString(remainder))
+        else:
+            duplicate.extract()
+
+        targets = soup.find_all(id=anchor["href"][1:])
+        if len(targets) == 1:
+            first_text = next(
+                (text for text in targets[0].find_all(string=True) if text.strip()),
+                None,
+            )
+            if first_text is not None:
+                citation_text = str(first_text)
+                citation_marker = re.match(
+                    rf"^\s*{re.escape(label)}(?:\s+)?", citation_text
+                )
+                if citation_marker:
+                    first_text.replace_with(
+                        NavigableString(citation_text[citation_marker.end() :])
+                    )
+        removed += 1
+
+    return removed
 
 
 def _scan(soup):
@@ -47,6 +117,15 @@ def _scan(soup):
     for block in blocks:
         text = block.get_text()
         for match in MARKER.finditer(text):
+            native_target = (
+                block
+                if NATIVE_TARGET_ID.match(block.get("id", ""))
+                else block.find_parent(id=NATIVE_TARGET_ID)
+            )
+            if native_target is not None:
+                # A visible custom mark such as [1] is part of this native
+                # citation's label, not a second manually-authored citation.
+                continue
             # Existing links retain their native relationship. They are validated
             # independently below, never rematched by their visible number.
             offset = 0
@@ -91,12 +170,17 @@ def _inspect(soup):
         issues.append({"tag": tag, "message": message, "code": code})
 
     # Ordinary bracketed numbers in a document without note evidence are not notes.
-    evidence = headings or any(
-        HEADING.fullmatch(t.get_text(strip=True))
+    nonstructural_headings = [
+        t
         for t in soup.find_all(["p", "strong", "b"])
-    )
+        if HEADING.fullmatch(t.get_text(strip=True))
+    ]
+    evidence = headings or nonstructural_headings
     if evidence and len(headings) != 1:
-        tag = headings[0] if headings else next(iter(blocks), soup)
+        # Point the warning at the text that should become a structural heading.
+        # Falling back to the first body block made the editor report unrelated
+        # content (usually Basic information) and could produce a dead link.
+        tag = headings[0] if headings else nonstructural_headings[0]
         warn(
             tag,
             "Use one structural Endnotes heading so citations can be identified.",

@@ -13,6 +13,20 @@ from django.utils.deprecation import MiddlewareMixin
 _local = threading.local()
 
 
+class PdfReadabilityResponseMiddleware:
+    """Apply indexing/privacy headers even to middleware-generated errors."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.path_info.rstrip("/") == "/readability":
+            response["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet"
+            response["Cache-Control"] = "no-store"
+        return response
+
+
 def set_current_user(user):
     _local.user = user
 
@@ -78,9 +92,10 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         super().__init__(get_response)
 
     def _build_log_metadata(self, request, status, response_time_ms):
+        is_readability = request.path_info.rstrip("/") == "/readability"
         metadata = {
             "method": request.method,
-            "url": request.get_full_path(),
+            "url": request.path if is_readability else request.get_full_path(),
             "status": status,
             "response_time": f"{response_time_ms:.3f}ms",
         }
@@ -88,7 +103,7 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         if hasattr(request, "user") and request.user.is_authenticated:
             metadata["user_id"] = str(request.user.id)
 
-        if getattr(settings, "is_prod", False):
+        if getattr(settings, "is_prod", False) and not is_readability:
             # User agent - useful for identifying bots, mobile users
             metadata["user_agent"] = request.META.get("HTTP_USER_AGENT", "")
             # Referrer - shows where users came from
@@ -106,14 +121,15 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         response_time_ms = (time.time() - start_time) * 1000
 
         error_data = self._build_log_metadata(request, 500, response_time_ms)
-        # add error-specific keys
-        error_data.update(
-            {
-                "exception_type": exception.__class__.__name__,
-                "exception_message": str(exception),
-                "traceback": traceback.format_exc(),
-            }
-        )
+        error_data["exception_type"] = exception.__class__.__name__
+        # Never render arbitrary exception content for anonymous PDF requests.
+        if request.path_info.rstrip("/") != "/readability":
+            error_data.update(
+                {
+                    "exception_message": str(exception),
+                    "traceback": traceback.format_exc(),
+                }
+            )
 
         # Mark that we've handled this exception
         request._exception_handled_by_json_middleware = True

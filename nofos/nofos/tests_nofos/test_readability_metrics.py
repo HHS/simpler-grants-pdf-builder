@@ -17,6 +17,7 @@ from nofos.models import Nofo, NofoReadabilityScore, Section, Subsection
 from nofos.nofo import overwrite_nofo
 from nofos.readability import (
     GOAL_METRIC_IDS,
+    INPUT_CONTRACT_VERSION,
     PROFILE_REFERENCE,
     ReadabilityMetricsAnalysisError,
     ReadabilityMetricsUnavailable,
@@ -62,7 +63,9 @@ class NofoReadabilityMetricsTests(TestCase):
             "nofos:nofo_readability_metrics", kwargs={"pk": self.nofo.pk}
         )
 
-    def test_metrics_fragment_is_the_same_fragment_used_by_word_export(self):
+    def test_metrics_fragment_matches_word_export_without_metadata(self):
+        self.nofo.before_you_begin = "none"
+        self.nofo.save()
         fragment = BeautifulSoup(
             render_nofo_export_document(self.nofo), "html.parser"
         ).select_one("#download_target")
@@ -78,6 +81,146 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertIsNone(fragment.select_one("header"))
         self.assertIn("Applicants describe their proposed work.", fragment.get_text())
 
+    def test_metrics_exclude_editor_tooltips_but_preserve_link_and_author_text(self):
+        subsection = Subsection.objects.get(section__nofo=self.nofo)
+        subsection.body = (
+            '<p>See <span class="usa-tooltip">'
+            '<a href="#missing">eligibility requirements</a>'
+            '<span class="usa-tooltip__body" role="tooltip">Broken link</span>'
+            "</span> before applying.</p><p>Report a Broken link to support.</p>"
+        )
+        subsection.save()
+        fragment = BeautifulSoup(render_nofo_export_document(self.nofo), "html.parser")
+        self.assertFalse(fragment.select(".usa-tooltip__body"))
+        self.assertEqual(
+            fragment.select_one('a[href="#missing"]').get_text(),
+            "eligibility requirements",
+        )
+        self.assertIn("Report a Broken link to support.", fragment.get_text())
+        self.assertIn(
+            "See eligibility requirements before applying.", fragment.get_text()
+        )
+        subsection.refresh_from_db()
+        self.assertIn("usa-tooltip__body", subsection.body)
+
+    def test_metrics_include_designed_introduction_without_changing_word_export(self):
+        for variant in ("full", "sole_source", "era", "hrsa", "none"):
+            with self.subTest(variant=variant):
+                self.nofo.before_you_begin = variant
+                self.nofo.save()
+                fragment = BeautifulSoup(
+                    render_nofo_export_document(self.nofo), "html.parser"
+                )
+                introduction = fragment.select_one("#section--before-you-begin")
+                if variant == "none":
+                    self.assertIsNone(introduction)
+                else:
+                    self.assertIn(
+                        "You must have an active account with SAM.gov.",
+                        introduction.get_text(),
+                    )
+                    self.assertEqual(
+                        "active Grants.gov registration" in introduction.get_text(),
+                        variant in ("full", "era", "hrsa"),
+                    )
+                    self.assertEqual(
+                        "eRA Commons requires" in introduction.get_text(),
+                        variant == "era",
+                    )
+                    self.assertTrue(introduction.select("nav"))
+                    self.assertEqual(
+                        "Application and funding requirements"
+                        in introduction.get_text(),
+                        variant == "hrsa",
+                    )
+                exported = self.client.get(
+                    reverse("nofos:nofo_export", kwargs={"pk": self.nofo.pk})
+                )
+                self.assertIsNone(
+                    BeautifulSoup(exported.content, "html.parser").select_one(
+                        "#download_target #section--before-you-begin"
+                    )
+                )
+
+    def test_metrics_include_application_guide_introduction(self):
+        self.nofo.number = "hrsa-application-guide"
+        self.nofo.before_you_begin = "none"
+        self.nofo.save()
+        fragment = render_nofo_export_document(self.nofo).decode()
+        self.assertIn("Introduction", fragment)
+        self.assertIn("The How to Apply - Application Guide is a companion", fragment)
+
+    @skipUnless(find_spec("hhs_nofo_metrics"), "metrics package is not installed")
+    def test_guide_body_after_using_heading_is_in_sentence_scope(self):
+        from hhs_nofo_metrics import SourceBundle
+        from hhs_nofo_metrics.adapters.html import HtmlAdapterPlugin
+        from hhs_nofo_metrics.sources import materialize_source_bundle
+
+        self.nofo.number = "hrsa-application-guide"
+        source = SourceBundle.from_html(render_nofo_export_document(self.nofo))
+        with materialize_source_bundle(source) as materialized:
+            document = HtmlAdapterPlugin().extract(materialized, config={}).document
+        companion = next(
+            s for s in document.segments if "is a companion to the NOFO" in s.text
+        )
+        self.assertEqual(companion.role, "body")
+        updates = next(
+            s
+            for s in document.segments
+            if "We periodically update this guide" in s.text
+        )
+        self.assertEqual(updates.role, "body")
+
+    @skipUnless(find_spec("hhs_nofo_metrics"), "metrics package is not installed")
+    def test_introduction_sentence_inventory_and_navigation_exclusion(self):
+        self.nofo.application_deadline = "October 10, 2025"
+        self.nofo.before_you_begin = "none"
+        baseline = analyze_nofo_readability(self.nofo)["metrics"]
+        self.nofo.before_you_begin = "full"
+        missing_step = analyze_nofo_readability(self.nofo)["metrics"]
+        Section.objects.create(
+            nofo=self.nofo, name="Step 2: Get Ready to Apply", html_id="step-2", order=2
+        )
+        with_step = analyze_nofo_readability(self.nofo)["metrics"]
+        before = baseline["words_per_sentence"]["components"]
+        after = missing_step["words_per_sentence"]["components"]
+        self.assertEqual(after["sentence_count"] - before["sentence_count"], 9)
+        self.assertEqual(after["word_count"] - before["word_count"], 116)
+        self.assertEqual(after["paragraph_count"] - before["paragraph_count"], 5)
+        self.assertEqual(
+            missing_step["word_count"]["value"] - baseline["word_count"]["value"], 139
+        )
+        # The added section heading contributes words, but its navigation links
+        # and the missing-section diagnostic do not enter sentence metrics.
+        self.assertEqual(
+            with_step["words_per_sentence"], missing_step["words_per_sentence"]
+        )
+
+    def test_metrics_omit_administrative_metadata_but_export_preserves_it(self):
+        self.nofo.author = "Metadata-only author"
+        self.nofo.subject = "Metadata-only subject"
+        self.nofo.keywords = "Metadata-only keywords"
+        self.nofo.save()
+        fragment = render_nofo_export_document(self.nofo).decode()
+        exported = self.client.get(
+            reverse("nofos:nofo_export", kwargs={"pk": self.nofo.pk})
+        ).content.decode()
+        for value in (self.nofo.author, self.nofo.subject, self.nofo.keywords):
+            self.assertNotIn(value, fragment)
+            self.assertIn(value, exported)
+        self.assertIn("Applicants describe their proposed work.", fragment)
+
+    @skipUnless(find_spec("hhs_nofo_metrics"), "metrics package is not installed")
+    def test_metadata_changes_do_not_change_metrics(self):
+        before = analyze_nofo_readability(self.nofo)["metrics"]
+        self.nofo.author = "An author with a very long administrative name"
+        self.nofo.subject = (
+            "These sentences are administrative. They are not instructions."
+        )
+        self.nofo.keywords = "grant metadata application opportunity"
+        after = analyze_nofo_readability(self.nofo)["metrics"]
+        self.assertEqual(before, after)
+
     @override_config(HHS_NOFO_METRICS_ENABLED=True)
     @override_settings(HHS_NOFO_METRIC_GOALS={})
     def test_edit_page_offers_revision_scoped_metrics_when_enabled(self):
@@ -90,11 +233,10 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertContains(response, self.metrics_url)
         self.assertContains(response, ">Beta</span>", html=False)
         self.assertContains(
-            response, "Metrics are saved for the revision you calculate"
+            response, "NOFO Builder saves metrics for your current version"
         )
         # The panel POSTs to the endpoint, so it needs a CSRF token to send.
         self.assertContains(response, "data-csrf-token=")
-        self.assertContains(response, "snapshots are retained but are not shown")
         self.assertNotContains(response, "Editing the NOFO clears them")
         self.assertNotContains(response, "data-metrics-profile")
         self.assertContains(response, "data-metrics-scope-summary")
@@ -104,17 +246,33 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertEqual(panel.name, "details")
         self.assertNotIn("open", panel.attrs)
-        self.assertEqual(len(panel.select("[data-metric-id]")), 6)
-        self.assertIsNone(panel.select_one('[data-metric-id="characters_per_word"]'))
-        paragraph_card = panel.select_one(
-            '[data-metric-id="sentences_per_paragraph"]'
-        ).parent
-        self.assertIn("hidden", paragraph_card.attrs)
-        self.assertIn("data-optional-metric-card", paragraph_card.attrs)
+        # Snapshot retention is real, but reviewing earlier snapshots has not
+        # shipped, and "revision" is internal vocabulary, so the panel says
+        # neither.
+        panel_text = panel.get_text().lower()
+        self.assertNotIn("snapshot", panel_text)
+        self.assertNotIn("revision", panel_text)
+        metric_cards = panel.select("[data-metric-id]")
+        self.assertEqual(
+            {metric["data-metric-id"] for metric in metric_cards},
+            {
+                "word_count",
+                "words_per_sentence",
+                "sentences_per_paragraph",
+                "flesch_kincaid_grade_level",
+                "passive_sentence_percentage",
+            },
+        )
         self.assertTrue(
             all(
-                "bg-base-lightest" in metric.get("class", [])
-                for metric in panel.select("[data-metric-id]")
+                "tablet:grid-col-6" in metric.parent.get("class", [])
+                for metric in metric_cards
+            )
+        )
+        self.assertFalse(panel.select(".desktop\\:grid-col-4"))
+        self.assertTrue(
+            all(
+                "bg-base-lightest" in metric.get("class", []) for metric in metric_cards
             )
         )
         self.assertFalse(panel.select(".text-base"))
@@ -140,7 +298,7 @@ class NofoReadabilityMetricsTests(TestCase):
             goals["flesch_kincaid_grade_level"],
             [
                 {
-                    "label": "Target range, depending on NOFO type",
+                    "label": "Target by NOFO type",
                     "operator": "at_most_by_category",
                     "minimum": 11.5,
                     "maximum": 12.5,
@@ -500,6 +658,7 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         snapshot = NofoReadabilityScore.objects.get()
         self.assertEqual(snapshot.profile_reference, PROFILE_REFERENCE)
         self.assertEqual(snapshot.package_version, "0.5.2")
+        self.assertEqual(snapshot.input_contract_version, INPUT_CONTRACT_VERSION)
         self.assertEqual(snapshot.schema_version, "1.1.0")
         self.assertEqual(snapshot.result_basis, "structured_estimate")
         self.assertEqual(
@@ -550,16 +709,94 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self.client.post(self.metrics_url)
 
         # Same content, different measurement contract: not the same measurement.
-        version.return_value = "0.6.0"
+        previous = NofoReadabilityScore.objects.get()
+        self.assertTrue(previous.is_current)
+        version.return_value = "0.5.3"
+        self.assertFalse(previous.is_current)
+        self.assertIsNone(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.3"
+            )
+        )
+        self.client.post(self.metrics_url)
         self.client.post(self.metrics_url)
 
         self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        self.assertEqual(analyze.call_count, 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.3"
+        )
+        self.assertTrue(current.is_current)
+        previous.refresh_from_db()
+        self.assertEqual(previous.result, build_payload())
         self.assertEqual(
             set(NofoReadabilityScore.objects.values_list("package_version", flat=True)),
-            {"0.5.2", "0.6.0"},
+            {"0.5.2", "0.5.3"},
         )
 
     # -- failed and incomplete calculations ----------------------------------
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_054_upgrade_preserves_053_snapshot_and_recalculates(
+        self, analyze, version
+    ):
+        analyze.return_value = build_payload()
+        version.return_value = "0.5.3"
+        self.client.post(self.metrics_url)
+        previous = NofoReadabilityScore.objects.get()
+
+        version.return_value = "0.5.4"
+        self.assertFalse(previous.is_current)
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+
+        self.assertEqual(analyze.call_count, 2)
+        previous.refresh_from_db()
+        self.assertEqual(previous.package_version, "0.5.3")
+        self.assertEqual(previous.result, build_payload())
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.4"
+        )
+        self.assertIsNotNone(current)
+        self.assertTrue(current.is_current)
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_legacy_input_contract_is_history_not_a_current_cached_measurement(
+        self, analyze, _version
+    ):
+        legacy = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference=PROFILE_REFERENCE,
+            package_version="0.5.2",
+            result=build_payload(),
+            is_complete=True,
+        )
+        self.assertEqual(legacy.input_contract_version, "word-export-v1")
+        self.assertFalse(legacy.is_current)
+        self.assertIsNone(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.2"
+            )
+        )
+        # The earlier result remains available as history until recalculation.
+        self.assertEqual(NofoReadabilityScore.objects.latest_for(self.nofo), legacy)
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        analyze.assert_called_once()
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.2"
+        )
+        self.assertNotEqual(current.pk, legacy.pk)
+        self.assertEqual(current.nofo_revision, legacy.nofo_revision)
+        self.assertEqual(current.input_contract_version, INPUT_CONTRACT_VERSION)
+        self.assertTrue(current.is_current)
+        legacy.refresh_from_db()
+        self.assertEqual(legacy.input_contract_version, "word-export-v1")
+        self.assertEqual(legacy.result, build_payload())
 
     @patch("nofos.readability.analyze_nofo_readability")
     def test_unavailable_package_writes_no_snapshot(self, analyze, _version):
@@ -569,6 +806,58 @@ class NofoReadabilityScorePersistenceTests(TestCase):
 
         self.assertEqual(response.status_code, 503)
         self.assertFalse(NofoReadabilityScore.objects.exists())
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_pre_introduction_scores_require_recalculation(self, analyze, _version):
+        prior = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference=PROFILE_REFERENCE,
+            package_version="0.5.2",
+            input_contract_version="word-export-v2",
+            result=build_payload(),
+            is_complete=True,
+        )
+        self.assertFalse(prior.is_current)
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        analyze.assert_called_once()
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        prior.refresh_from_db()
+        self.assertEqual(prior.input_contract_version, "word-export-v2")
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.5.2"
+        )
+        self.assertEqual(current.input_contract_version, INPUT_CONTRACT_VERSION)
+
+    @patch("nofos.readability.analyze_nofo_readability")
+    def test_tooltip_scope_change_invalidates_v3_without_deleting_history(
+        self, analyze, _version
+    ):
+        prior = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference=PROFILE_REFERENCE,
+            package_version="0.5.2",
+            input_contract_version="reader-content-v3",
+            result=build_payload(),
+            is_complete=True,
+        )
+        self.assertFalse(prior.is_current)
+        analyze.return_value = build_payload()
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        analyze.assert_called_once()
+        prior.refresh_from_db()
+        self.assertEqual(prior.input_contract_version, "reader-content-v3")
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        self.assertEqual(
+            NofoReadabilityScore.objects.current_for(
+                self.nofo, PROFILE_REFERENCE, "0.5.2"
+            ).input_contract_version,
+            "reader-content-v4",
+        )
 
     @patch("nofos.readability.analyze_nofo_readability")
     def test_analysis_error_leaves_the_last_successful_snapshot_in_place(

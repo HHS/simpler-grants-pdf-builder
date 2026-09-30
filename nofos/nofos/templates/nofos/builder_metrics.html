@@ -54,6 +54,7 @@
   #metrics-tooltip .sub { display: block; font-weight: 500; opacity: 0.85; font-size: 0.7rem; }
 
   @media print {
+    .metrics-other-pages { display: none !important; }
     .metrics-print-scope { display: block; }
     .metrics-filter, #metrics-filter-status, .metrics-toolbar .usa-button, header.usa-header, footer.usa-footer { display: none !important; }
   }
@@ -75,6 +76,11 @@
       <span class="font-sans-2xs text-normal text-base-dark">Since {{ metrics_data.months.0 }} &middot; no fixed end date, new months appear on their own</span>
     </div>
   </div>
+
+  <nav class="metrics-other-pages margin-bottom-3" aria-label="Other metrics pages">
+    <h2 class="font-heading-sm">Other metrics</h2>
+    <ul><li><a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a></li></ul>
+  </nav>
 
   <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
     <summary class="text-bold">How historical metrics are preserved</summary>
@@ -173,7 +179,13 @@
       errorRate: {
         title: "Blocking import errors", unit: "% of attempts", type: "bar", color: "var(--color--usa-error-message)",
         good: "down", data: raw.errorRatePct, fmt: fmtPct,
-        def: "Share of Word-document import attempts that fail outright and require the user to fix their document before the NOFO can be created — e.g. a missing required field or an unrecognized heading structure."
+        def: "Share of Word-document import attempts that fail outright and require the user to fix their document before the NOFO can be created — e.g. a missing required field or an unrecognized heading structure.",
+        // The rate says how often; the drill-down says which errors. Its URL
+        // comes from the payload so it follows the OpDiv filter - and if the
+        // payload doesn't carry one, no link rather than a broken one.
+        link: raw.importErrorsUrl
+          ? { href: raw.importErrorsUrl, text: "Review import errors" }
+          : null
       },
       avgWarnings: {
         title: "Warnings per import", unit: "avg count", type: "bar", color: "var(--color--usa-error-message)",
@@ -306,6 +318,9 @@
         '<p class="font-sans-2xs text-italic margin-y-05">* most recent month in progress</p>' +
         buildChart(m) +
         buildDataTable(m) +
+        (m.link
+          ? '<p class="font-sans-2xs margin-top-1"><a href="' + m.link.href + '">' + m.link.text + '</a></p>'
+          : '') +
         '<p class="metrics-chart-def font-sans-2xs"><b>Definition:</b> ' + m.def + '</p>';
       grid.appendChild(card);
     });

@@ -11,10 +11,16 @@ from datetime import datetime
 from statistics import median
 
 from django.conf import settings
-from django.db.models import Avg
+from django.db.models import Avg, Count, Max
 from django.utils import timezone
 
 from .models import ImportAttempt, MetricsActivity, MetricsActor, MetricsNofo
+
+# When NOFO Builder metrics tracking started (see #865) - not a hard cutoff,
+# just where every metrics view's window begins. `months_from()` has no upper
+# bound, so later months keep appending as they occur. Shared so the dashboard
+# and its import-errors drill-down can't drift onto different windows.
+METRICS_SINCE = datetime(2026, 9, 1)
 
 
 def opdiv_choices():
@@ -158,3 +164,55 @@ def avg_warnings_by_month(months, group="all"):
         ).aggregate(avg=Avg("warning_count"))["avg"]
         results.append(round(avg, 2) if avg is not None else None)
     return results
+
+
+def eligible_import_attempts(months, group="all"):
+    """
+    The import attempts the dashboard counts, over the same window and under the
+    same filters as `import_error_rate_by_month()`. Anything reading individual
+    attempts goes through here, so a drill-down can never show rows the chart
+    above it didn't count.
+    """
+    start, end = months[0][0], months[-1][1]
+    return for_opdiv(
+        ImportAttempt.objects.filter(created_at__gte=start, created_at__lt=end).filter(
+            metrics_included=True
+        ),
+        group,
+        "metrics_group",
+    )
+
+
+def import_errors_by_code(months, group="all"):
+    """
+    One row per error code behind the blocking-import-error rate: how many
+    attempts it accounts for, what share of all failures that is, and when it
+    last happened. Most frequent first, which is the order you want when you're
+    deciding what to fix.
+    """
+    failures = eligible_import_attempts(months, group).exclude(error_code="")
+    total = failures.count()
+    if not total:
+        return []
+
+    return [
+        {
+            "code": row["error_code"],
+            "attempts": row["attempts"],
+            "share_pct": round(100 * row["attempts"] / total, 1),
+            "most_recent": row["most_recent"],
+        }
+        for row in failures.values("error_code")
+        .annotate(attempts=Count("id"), most_recent=Max("created_at"))
+        .order_by("-attempts", "error_code")
+    ]
+
+
+def recent_import_errors(months, group="all"):
+    """The individual failures behind those counts, newest first."""
+    return (
+        eligible_import_attempts(months, group)
+        .exclude(error_code="")
+        .select_related("nofo")
+        .order_by("-created_at", "-id")
+    )

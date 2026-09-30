@@ -10,9 +10,10 @@ from django.test import TestCase
 from django.urls import reverse
 from freezegun import freeze_time
 
-from .models import Nofo, Section, Subsection
+from .models import THEME_CHOICES, Nofo, Section, Subsection
 from .nofo import (
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
+    INVALID_LINK_ERROR,
     PUBLIC_INFORMATION_SUBSECTION,
     REQUEST_HEADERS,
 )
@@ -48,12 +49,14 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    get_as_markdown,
     get_cover_image,
     get_nofo_action_links,
     get_sections_from_soup,
     get_side_nav_links,
     get_step_2_section,
     get_subsections_from_sections,
+    is_acf_nofo_metadata,
     is_callout_box_table,
     join_nested_lists,
     modifications_update_announcement_text,
@@ -67,6 +70,7 @@ from .nofo import (
     remove_cover_image_from_s3,
     remove_google_tracking_info_from_links,
     rename_footnotes_heading_to_endnotes,
+    repair_acf_required_alignment_lists,
     replace_chars,
     replace_src_for_inline_images,
     replace_value_in_subsections,
@@ -142,6 +146,51 @@ class ReplaceCharsTests(TestCase):
 
 
 class ResolveSectionHeadingLevelTests(TestCase):
+    def test_seven_h2s_and_trailing_h1_get_likely_fix_without_mutation(self):
+        for title in ("Endnotes", "Appendix A"):
+            with self.subTest(title=title):
+                soup = BeautifulSoup(
+                    "".join(f"<h2>Step {i}</h2>" for i in range(1, 8))
+                    + f"<h1>{title}</h1>",
+                    "html.parser",
+                )
+                before = str(soup)
+                with self.assertRaises(ValidationError) as context:
+                    resolve_section_heading_level(soup)
+                self.assertEqual(context.exception.preceding_h2_count, 7)
+                self.assertEqual(context.exception.h1_text, title)
+                self.assertEqual(str(soup), before)
+
+    def test_uncertain_mixed_hierarchies_have_no_suggestion(self):
+        for html in (
+            "<h2>Preamble</h2><h1>Step 1</h1>",
+            "<h2>Step 1</h2><h2>Step 2</h2><h1>Appendix</h1><h2>Child</h2>",
+            "<h2>Preamble</h2><h1>Step 1</h1><h1>Step 2</h1>",
+        ):
+            with self.subTest(html=html):
+                with self.assertRaises(ValidationError) as context:
+                    resolve_section_heading_level(BeautifulSoup(html, "html.parser"))
+                self.assertIsNone(context.exception.preceding_h2_count)
+
+    def test_suggestion_count_excludes_blank_and_table_headings(self):
+        soup = BeautifulSoup(
+            "<h2>Step 1</h2><h2> </h2>"
+            "<table><tr><td><h1>Table title</h1><h2>Table detail</h2></td></tr></table>"
+            "<h2>Step 2</h2><h1>Endnotes</h1><h2> </h2>",
+            "html.parser",
+        )
+        with self.assertRaises(ValidationError) as context:
+            resolve_section_heading_level(soup)
+        self.assertEqual(context.exception.preceding_h2_count, 2)
+        self.assertEqual(context.exception.h1_text, "Endnotes")
+
+    def test_leading_h1_title_with_many_h2s_remains_valid(self):
+        soup = BeautifulSoup(
+            "<h1>Document title</h1>" + "".join(f"<h2>Step {i}</h2>" for i in range(7)),
+            "html.parser",
+        )
+        self.assertEqual(resolve_section_heading_level(soup), "h1")
+
     def test_h1_only_document_is_valid(self):
         soup = BeautifulSoup("<h1>Step 1</h1><p>Body</p><h1>Step 2</h1>", "html.parser")
 
@@ -191,7 +240,10 @@ class ResolveSectionHeadingLevelTests(TestCase):
         self.assertIn("Heading 2 before its first Heading 1", message)
         self.assertIn('Heading 2 "Step 1: Review the Opportunity"', message)
         self.assertIn('Heading 1 "Appendix A: Award data"', message)
-        self.assertIn("apply the same heading level to all main sections", message)
+        # What to do about it is the error page's job, not the exception's: the
+        # headings travel as data so the page can show them as details.
+        self.assertEqual(context.exception.h2_text, "Step 1: Review the Opportunity")
+        self.assertEqual(context.exception.h1_text, "Appendix A: Award data")
 
 
 class TestsCleanTableCells(TestCase):
@@ -1255,6 +1307,175 @@ class HTMLNofoFileTests(TestCase):
                 section.get("subsections")[0].get("name"),
                 section_info[index].get("subsections_first_title"),
             )
+
+
+class RepairAcfRequiredAlignmentListsTests(TestCase):
+    def _html(
+        self,
+        *,
+        number="HHS-2027-ACF-ECD-TH-0003",
+        opdiv="Administration for Children and Families (ACF)",
+        section_heading="Step 1: Review the Opportunity",
+        first_label="Program integrity and fiscal stewardship:",
+        section_tag="h1",
+        agency_tag="h2",
+        title_tag="p",
+        list_tag="ul",
+    ):
+        required_title = (
+            "Required alignment with ACF Vision, Mission, Values, "
+            "Priorities, and Guiding Principles"
+        )
+        if title_tag == "p":
+            title_markup = f"<p><strong>{required_title}</strong></p>"
+        else:
+            title_markup = f"<{title_tag}>{required_title}</{title_tag}>"
+
+        return f"""
+            <p>Opportunity Number: {number}</p>
+            <p>Opdiv: {opdiv}</p>
+            <{section_tag}>{section_heading}</{section_tag}>
+            <{agency_tag}>Agency priorities</{agency_tag}>
+            {title_markup}
+            <p>The recipient of this award must implement any funds awarded under
+            this NOFO to effectuate program goals or agency priorities in accordance
+            with <a href="https://acf.gov/about/acf-vision-mission-values">ACF's
+            vision, mission, values, priorities, &amp; guiding principles</a> when
+            authorized. This source wording must be preserved.</p>
+            <p>Consistent with ACF's values, adhere to the following principle:</p>
+            <{list_tag}><li><strong>{first_label}</strong> Administer funds carefully.</li></{list_tag}>
+            <p>The recipient must also adhere to these principles:</p>
+            <{list_tag}>
+              <li><strong>Evidence-based and outcome-focused practices:</strong>
+              Use evidence.</li>
+              <li><strong>Partnership and local leadership:</strong>
+              Coordinate locally.</li>
+            </{list_tag}>
+            <p>The recipient must also advance these objectives:</p>
+            <{list_tag}>
+              <li><strong>Family stability and child well-being:</strong>
+              Strengthen families.</li>
+              <li><strong>Work, self-sufficiency, and economic mobility:</strong>
+              Support employment.</li>
+              <li><strong>High-quality early care and learning:</strong>
+              Support early learning.</li>
+            </{list_tag}>
+            <p>Demonstrate ongoing compliance.</p>
+            <{agency_tag}>Program description</{agency_tag}>
+            <p>Following content.</p>
+        """
+
+    def test_converts_matching_acf_bullets_to_continuing_numbered_lists(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+
+        lists = soup.find_all(["ol", "ul"])
+        self.assertEqual([tag.name for tag in lists], ["ol", "ol", "ol"])
+        self.assertEqual([tag.get("start") for tag in lists], [None, "2", "4"])
+        self.assertIn("This source wording must be preserved.", soup.get_text())
+        self.assertEqual(
+            soup.find("a", href=True)["href"],
+            "https://acf.gov/about/acf-vision-mission-values",
+        )
+
+    def test_real_pipeline_produces_expected_editor_markup(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+        soup, _ = process_nofo_html(soup, top_heading_level="h1")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h1"),
+            top_heading_level="h1",
+        )
+        agency_priorities = sections[0]["subsections"][0]
+
+        markdown_body = get_as_markdown(agency_priorities["body"])
+
+        self.assertIn("1. **Program integrity and fiscal stewardship:**", markdown_body)
+        self.assertIn('<ol start="2">', markdown_body)
+        self.assertIn('<ol start="4">', markdown_body)
+        self.assertIn(
+            "(https://acf.gov/about/acf-vision-mission-values)", markdown_body
+        )
+        self.assertIn("This source wording must be preserved.", markdown_body)
+
+    def test_real_pipeline_repairs_current_acf_word_export_shape(self):
+        soup = BeautifulSoup(
+            self._html(
+                section_tag="h2",
+                agency_tag="h3",
+                title_tag="h4",
+                list_tag="ol",
+            ),
+            "html.parser",
+        )
+        soup, _ = process_nofo_html(soup, top_heading_level="h2")
+        sections = get_subsections_from_sections(
+            get_sections_from_soup(soup, top_heading_level="h2"),
+            top_heading_level="h2",
+        )
+        required_alignment = next(
+            subsection
+            for subsection in sections[0]["subsections"]
+            if subsection["name"].startswith("Required alignment with ACF")
+        )
+
+        markdown_body = get_as_markdown(required_alignment["body"])
+
+        self.assertIn("1. **Program integrity and fiscal stewardship:**", markdown_body)
+        self.assertIn('<ol start="2">', markdown_body)
+        self.assertIn('<ol start="4">', markdown_body)
+
+    def test_recognizes_acf_from_opdiv_without_acf_opportunity_number(self):
+        soup = BeautifulSoup(self._html(number="HHS-2027-UNKNOWN-0001"), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 3)
+        self.assertTrue(
+            is_acf_nofo_metadata(
+                "HHS-2027-UNKNOWN-0001",
+                "Administration for Children and Families (ACF)",
+            )
+        )
+
+    def test_does_not_change_non_acf_nofo(self):
+        soup = BeautifulSoup(
+            self._html(number="HHS-2027-HRSA-0001", opdiv="HRSA"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_does_not_change_agency_priorities_outside_step_one(self):
+        soup = BeautifulSoup(
+            self._html(section_heading="Step 2: Get Ready to Apply"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_does_not_change_content_when_a_principle_label_differs(self):
+        soup = BeautifulSoup(
+            self._html(first_label="A different fiscal principle:"), "html.parser"
+        )
+
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(len(soup.find_all("ol")), 0)
+        self.assertEqual(len(soup.find_all("ul")), 3)
+
+    def test_is_idempotent_for_already_repaired_content(self):
+        soup = BeautifulSoup(self._html(), "html.parser")
+
+        repair_acf_required_alignment_lists(soup)
+        first_result = str(soup)
+        repair_acf_required_alignment_lists(soup)
+
+        self.assertEqual(str(soup), first_result)
 
 
 def _get_sections_dict():
@@ -3156,6 +3377,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
                 "delete",
@@ -3189,19 +3411,26 @@ class TestBuildNofoActionLinks(TestCase):
         )
         self._assert_link(
             links[4],
+            key="add_appendix",
+            label="Add Appendix",
+            url_name="nofos:section_add_appendix",
+        )
+        self.assertEqual(links[4]["method"], "post")
+        self._assert_link(
+            links[5],
             key="reimport",
             label="Re-import NOFO",
             url_name="nofos:nofo_import_overwrite",
         )
         self._assert_link(
-            links[5],
+            links[6],
             key="export",
             label="Export Word doc",
             url_name="nofos:nofo_export",
             external=True,
         )
         self._assert_link(
-            links[6],
+            links[7],
             key="delete",
             label="Delete NOFO",
             url_name="nofos:nofo_archive",
@@ -3220,6 +3449,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
             ],
@@ -3237,6 +3467,7 @@ class TestBuildNofoActionLinks(TestCase):
                 "compare",
                 "duplicate",
                 "add_end_notes",
+                "add_appendix",
                 "reimport",
                 "export",
             ],
@@ -3249,7 +3480,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_doge_has_findreplace_compare(self):
@@ -3259,7 +3497,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_published_has_no_actions(self):
@@ -3279,7 +3524,14 @@ class TestBuildNofoActionLinks(TestCase):
         links = get_nofo_action_links(self.nofo)
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "add_end_notes", "export"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_end_notes",
+                "add_appendix",
+                "export",
+            ],
         )
 
     def test_cancelled_has_no_actions(self):
@@ -3303,7 +3555,15 @@ class TestBuildNofoActionLinks(TestCase):
         self.assertNotIn("add_end_notes", [l["key"] for l in links])
         self.assertEqual(
             [l["key"] for l in links],
-            ["find-replace", "compare", "duplicate", "reimport", "export", "delete"],
+            [
+                "find-replace",
+                "compare",
+                "duplicate",
+                "add_appendix",
+                "reimport",
+                "export",
+                "delete",
+            ],
         )
 
     def test_add_end_notes_absent_when_html_id_exists_under_another_name(self):
@@ -3386,6 +3646,199 @@ class TestFindExternalLinks(TestCase):
         links = find_external_links(nofo, with_status=False)
 
         self.assertEqual(len(links), 0)
+
+    def test_find_external_links_includes_google_docs_links(self):
+        """Google Docs URLs are ordinary external links. See issue #908."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            "<p>Section 1 body with link to "
+            '<a href="https://docs.google.com/document/d/some-document">Draft NOFO</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(
+            links[0]["url"], "https://docs.google.com/document/d/some-document"
+        )
+        self.assertEqual(links[0]["domain"], "docs.google.com")
+        self.assertEqual(links[0]["link_text"], "Draft NOFO")
+        # not an invalid destination: it gets a normal status check
+        self.assertFalse(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_about_blank_as_invalid_destination(self):
+        """
+        "about:blank" is surfaced here, flagged so it is never requested.
+        See issue #908.
+        """
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="about:blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "about:blank")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertEqual(links[0]["domain"], "")
+        self.assertTrue(links[0]["invalid_destination"])
+        self.assertEqual(links[0]["error"], INVALID_LINK_ERROR)
+
+    def test_find_external_links_ignores_about_blank_without_visible_text(self):
+        """An empty about:blank anchor is an artifact, not a link to fix."""
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with an empty <a href="about:blank"></a> anchor</p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    # --- Links that name no destination (issue #908) -----------------------
+    #
+    # These are built as stored subsection bodies rather than through
+    # create_nofo(), because create_nofo() runs the HTML->Markdown import
+    # conversion first, and that step FLATTENS an anchor with an empty or
+    # missing href to plain text (see
+    # test_import_flattens_destination_less_anchors_to_plain_text below).
+    # What these functions actually read is the stored body, where such a
+    # link arrives as markdown "[text]()" or as raw HTML typed in the editor.
+
+    def _nofo_with_body(self, body):
+        nofo = Nofo.objects.create(title="No-destination Nofo", opdiv="Test OpDiv")
+        section = Section.objects.create(nofo=nofo, name="Test Section", order=1)
+        Subsection.objects.create(
+            section=section, name="Links", tag="h3", body=body, order=2
+        )
+        return nofo
+
+    def test_import_flattens_destination_less_anchors_to_plain_text(self):
+        """
+        Pins why the tests below bypass create_nofo(): on import, an anchor
+        with an empty or missing href loses its <a> entirely, so it can only
+        reach a stored body by being authored in the editor.
+        """
+        self.assertEqual(
+            md('<p>link to <a href="">Apply here</a></p>'), "link to Apply here"
+        )
+        self.assertEqual(md("<p>an <a>Apply here</a> link</p>"), "an Apply here link")
+        # a whitespace href survives the conversion, and re-parses as href=""
+        self.assertEqual(
+            md('<p>link to <a href="   ">Apply here</a></p>'),
+            "link to [Apply here](   )",
+        )
+
+    def test_find_external_links_includes_empty_markdown_target(self):
+        """`[text]()` renders as href="" -- a link naming no destination."""
+        nofo = self._nofo_with_body("An [Apply here]() link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertTrue(links[0]["invalid_destination"])
+        self.assertEqual(links[0]["error"], INVALID_LINK_ERROR)
+
+    def test_find_external_links_includes_whitespace_markdown_target(self):
+        """`[text](   )` also renders as href="" once markdown parses it."""
+        nofo = self._nofo_with_body("An [Apply here](   ) link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_empty_href_in_raw_html(self):
+        nofo = self._nofo_with_body('An <a href="">Apply here</a> link.')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_includes_missing_href_in_raw_html(self):
+        """
+        An <a> with visible text and no href at all goes nowhere. 'url' is
+        reported as "" rather than a "#" placeholder never in the document.
+        """
+        nofo = self._nofo_with_body("An <a>Apply here</a> link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0]["url"], "")
+        self.assertEqual(links[0]["link_text"], "Apply here")
+        self.assertTrue(links[0]["invalid_destination"])
+
+    def test_find_external_links_ignores_href_less_bookmark_target(self):
+        """
+        An href-less anchor carrying an id/name is a bookmark *target*, not a
+        link -- and some targets keep their original visible label. Reporting
+        those as "no destination" links would be a false positive. See the
+        "category 2b" tests in tests_nofos/test_templatetags.py.
+        """
+        nofo = self._nofo_with_body('Body. <a id="bookmark=id.2xcytpi">Bookmark</a>')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_ignores_empty_href_without_visible_text(self):
+        nofo = self._nofo_with_body('Body with an empty <a href=""></a> anchor.')
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_still_ignores_hash_only_href(self):
+        """
+        "#" is a real fragment, not a missing destination: it stays with the
+        broken-internal-links panel and out of the external-links list.
+        """
+        nofo = self._nofo_with_body("An [Apply here](#) link.")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 0)
+
+    def test_find_external_links_about_blank_is_matched_case_insensitively(self):
+        self_sections = self.sections
+        self_sections[0]["subsections"][0]["body"] = [
+            '<p>Section 1 body with link to <a href="About:Blank">Apply here</a></p>'
+        ]
+
+        nofo = create_nofo("Test Nofo", self_sections, opdiv="Test OpDiv")
+        links = find_external_links(nofo, with_status=False)
+
+        self.assertEqual(len(links), 1)
+        self.assertTrue(links[0]["invalid_destination"])
+
+    @patch("nofos.nofo.requests.head")
+    def test_find_external_links_with_status_does_not_request_invalid_destinations(
+        self, mock_head
+    ):
+        """
+        No HTTP request is made for a link with no destination, but real
+        external links in the same NOFO are still checked.
+        """
+        mock_head.return_value = MagicMock(status_code=200, history=[], url="")
+
+        nofo = self._nofo_with_body(
+            "An [Apply here](about:blank) link, [an empty one](), "
+            '<a href="">a blank one</a>, <a>an href-less one</a>, '
+            "and [Groundhog Day](https://groundhog-day.com)."
+        )
+        links = find_external_links(nofo, with_status=True)
+
+        self.assertEqual(len(links), 5)
+        requested_urls = [call.args[0] for call in mock_head.call_args_list]
+        self.assertEqual(requested_urls, ["https://groundhog-day.com"])
+
+        invalid = [link for link in links if link["invalid_destination"]]
+        self.assertEqual(len(invalid), 4)
+        for link in invalid:
+            self.assertEqual(link["status"], "")
+            self.assertEqual(link["error"], INVALID_LINK_ERROR)
 
 
 class TestFindBrokenLinks(TestCase):
@@ -3477,34 +3930,54 @@ class TestFindBrokenLinks(TestCase):
             order=11,
         )
 
+        # The three "no destination" shapes. None belongs in the broken-links
+        # panel, so none of them changes the count asserted below -- which is
+        # exactly why they are in the fixture.
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with an empty href",
+            tag="h3",
+            body='This is an <a href="">Empty href link</a>.',
+            order=12,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with a whitespace href",
+            tag="h3",
+            body='This is a <a href="   ">Whitespace href link</a>.',
+            order=13,
+        )
+
+        Subsection.objects.create(
+            section=section,
+            name="Subsection with no href at all",
+            tag="h3",
+            body="This is an <a>Href-less link</a>.",
+            order=14,
+        )
+
     def test_find_broken_links_identifies_broken_links(self):
         nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
         broken_links = find_broken_links(nofo)
-        self.assertEqual(len(broken_links), 9)
+        self.assertEqual(len(broken_links), 7)
+        self.assertEqual(broken_links[0]["link_href"], "#h.broken-link")
         self.assertEqual(broken_links[1]["link_href"], "#id.broken-link")
         self.assertEqual(broken_links[2]["link_href"], "/contacts")
         self.assertEqual(
             broken_links[3]["link_href"],
-            "https://docs.google.com/document/d/some-document",
-        )
-        self.assertEqual(
-            broken_links[4]["link_href"],
-            "about:blank",
-        )
-        self.assertEqual(
-            broken_links[5]["link_href"],
             "#_Paper_Submissions",
         )
         self.assertEqual(
-            broken_links[6]["link_href"],
+            broken_links[4]["link_href"],
             "#fake",
         )
         self.assertEqual(
-            broken_links[7]["link_href"],
+            broken_links[5]["link_href"],
             "bookmark://_Collaborations",
         )
         self.assertEqual(
-            broken_links[8]["link_href"],
+            broken_links[6]["link_href"],
             "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
         )
 
@@ -3518,8 +3991,6 @@ class TestFindBrokenLinks(TestCase):
                 link["link_href"].startswith("#h.")
                 or link["link_href"].startswith("#id.")
                 or link["link_href"].startswith("/")
-                or link["link_href"].startswith("https://docs.google.com")
-                or link["link_href"].startswith("about:blank")
                 or link["link_href"].startswith("#_")
                 or link["link_href"].startswith("#fake")
                 or link["link_href"].startswith("bookmark")
@@ -3527,6 +3998,100 @@ class TestFindBrokenLinks(TestCase):
             )
         ]
         self.assertEqual(len(valid_links), 0)
+
+    def test_find_broken_links_excludes_google_docs_links(self):
+        """
+        Google Docs URLs point outside the NOFO, so they are external links,
+        not broken internal anchors. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn(
+            "https://docs.google.com/document/d/some-document", broken_hrefs
+        )
+        for href in broken_hrefs:
+            self.assertFalse(href.startswith("https://docs.google.com"))
+
+    def test_find_broken_links_excludes_about_blank_links(self):
+        """
+        "about:blank" is a missing destination in the source document, not a
+        link into the NOFO. See GitHub issue #908.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertNotIn("about:blank", broken_hrefs)
+
+    def test_find_broken_links_excludes_every_no_destination_shape(self):
+        """
+        An empty href, a whitespace-only href, and no href at all are all
+        "no destination" links, reported with the external links rather than
+        in the broken-internal-links panel.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken = find_broken_links(nofo)
+        broken_hrefs = [link["link_href"] for link in broken]
+        broken_text = [link["link_text"] for link in broken]
+
+        for href in ("", "   ", "about:blank"):
+            self.assertNotIn(href, broken_hrefs)
+
+        for text in (
+            "Empty href link",
+            "Whitespace href link",
+            "Href-less link",
+            "About:Blank link",
+        ):
+            self.assertNotIn(text, broken_text)
+
+    def test_find_broken_links_no_destination_shapes_are_external(self):
+        """All three are reported on the external-links side instead."""
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        invalid = [
+            link
+            for link in find_external_links(nofo, with_status=False)
+            if link["invalid_destination"]
+        ]
+
+        self.assertEqual(
+            sorted(link["link_text"] for link in invalid),
+            [
+                "About:Blank link",
+                "Empty href link",
+                "Href-less link",
+                "Whitespace href link",
+            ],
+        )
+
+    def test_find_broken_links_still_flags_other_external_schemes(self):
+        """
+        Excluding Google Docs must not exclude every http(s) URL: "file://"
+        and "bookmark://" links are still broken.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        broken_hrefs = [link["link_href"] for link in find_broken_links(nofo)]
+
+        self.assertIn("bookmark://_Collaborations", broken_hrefs)
+        self.assertIn(
+            "file:///C:\\Users\\pcraig3\\Downloads\\HYPERLINK#_Attachment_5:_Data",
+            broken_hrefs,
+        )
+
+    def test_find_broken_links_google_docs_and_about_blank_are_external(self):
+        """
+        The two hrefs dropped from find_broken_links() are still reported:
+        both show up in find_external_links() instead.
+        """
+        nofo = Nofo.objects.get(title="Test Nofo TestFindBrokenLinks")
+        external_hrefs = [
+            link["url"] for link in find_external_links(nofo, with_status=False)
+        ]
+
+        self.assertIn(
+            "https://docs.google.com/document/d/some-document", external_hrefs
+        )
+        self.assertIn("about:blank", external_hrefs)
 
 
 class TestFindH7Headers(TestCase):
@@ -4115,6 +4680,21 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_theme = "portrait-acf-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
+    def test_suggest_acf_opdiv_returns_acf_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "HHS-2027-UNKNOWN-0001",
+                opdiv="Administration for Children and Families (ACF)",
+            ),
+            "portrait-acf-white",
+        )
+
+    def test_suggest_opdiv_containing_acf_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("HHS-2027-UNKNOWN-0001", opdiv="SACFunding"),
+            "portrait-nih-white",
+        )
+
     def test_suggest_nofo_number_acl_returns_acl_theme(self):
         nofo_number = "HHS-2024-ACL-NIDILRR-REGE-0078"
         nofo_theme = "portrait-acl-white"
@@ -4231,9 +4811,19 @@ class HTMLSuggestThemeTests(TestCase):
 
 
 class HTMLSuggestCoverTests(TestCase):
-    def test_suggest_nofo_cover_cdc_returns_medium(self):
-        nofo_cover = "nofo--cover-page--medium"
+    def test_suggest_nofo_cover_cdc_returns_text(self):
+        nofo_cover = "nofo--cover-page--text"
         self.assertEqual(suggest_nofo_cover("portrait-cdc-blue"), nofo_cover)
+
+    def test_suggest_nofo_cover_all_cdc_themes_return_text(self):
+        """Every CDC theme variant, portrait or legacy landscape, defaults to text only."""
+        cdc_themes = [theme for theme, _ in THEME_CHOICES if "cdc-" in theme.lower()]
+        # Guard against the theme list being renamed out from under this test
+        self.assertIn("portrait-cdc-blue", cdc_themes)
+
+        for theme in cdc_themes:
+            with self.subTest(theme=theme):
+                self.assertEqual(suggest_nofo_cover(theme), "nofo--cover-page--text")
 
     def test_suggest_nofo_cover_cms_returns_medium(self):
         nofo_cover = "nofo--cover-page--medium"
@@ -4687,6 +5277,47 @@ class SuggestNofoTaglineTests(TestCase):
         soup = BeautifulSoup(html, "html.parser")
         self.assertEqual(suggest_nofo_tagline(soup), "The best NOFO ever")
 
+    def test_tagline_is_underscore_placeholder(self):
+        html = "<div><p>Tagline: _________</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_single_underscore(self):
+        html = "<div><p>Tagline: _</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_placeholder_with_surrounding_whitespace(self):
+        html = "<div><p>Tagline:    _________   </p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_runs_split_by_spaces(self):
+        html = "<div><p>Tagline: ____ ____</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_is_underscore_placeholder_broken_up_by_spans(self):
+        html = "<div><p><span>Tagline: </span><span>____</span><span>_____</span></p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "")
+
+    def test_tagline_with_underscores_and_other_characters_is_preserved(self):
+        html = "<div><p>Tagline: Apply by ____ to be considered</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "Apply by ____ to be considered")
+
+    def test_tagline_of_only_underscores_and_a_word_is_preserved(self):
+        html = "<div><p>Tagline: ____ TBD</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_tagline(soup), "____ TBD")
+
+    def test_tagline_underscore_placeholder_does_not_affect_other_fields(self):
+        html = "<div><p>Agency: _________</p><p>Subagency: _________</p></div>"
+        soup = BeautifulSoup(html, "html.parser")
+        self.assertEqual(suggest_nofo_agency(soup), "_________")
+        self.assertEqual(suggest_nofo_subagency(soup), "_________")
+
 
 class SuggestNofoAuthorTests(TestCase):
     def test_author_present_in_paragraph(self):
@@ -4829,7 +5460,7 @@ class SuggestNofoFieldsTests(TestCase):
         )
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
-        self.assertEqual(self.nofo.before_you_begin, "full")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
 
     def test_suggest_all_nofo_fields_with_missing_data(self):
         # HTML content with some missing fields
@@ -4860,15 +5491,53 @@ class SuggestNofoFieldsTests(TestCase):
         # still get set
         self.assertEqual(self.nofo.theme, "portrait-hrsa-white")
         self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
-        self.assertEqual(self.nofo.before_you_begin, "full")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
 
-    def test_suggest_all_nofo_fields_nih_group_sets_before_you_begin_era(self):
-        """A NOFO belonging to the NIH group defaults its BYB page to the eRA variant."""
+    def test_suggest_all_nofo_fields_hrsa_theme_takes_priority_over_nih_group(self):
+        """HRSA document metadata determines the variant, regardless of uploader."""
         self.nofo.group = "nih"
         suggest_all_nofo_fields(self.nofo, self.soup)
         self.nofo.save()
 
-        self.assertEqual(self.nofo.before_you_begin, "era")
+        self.assertEqual(self.nofo.before_you_begin, "hrsa")
+
+    def test_suggest_all_nofo_fields_cdc_nofo_defaults_to_text_cover(self):
+        """A newly imported CDC NOFO gets the CDC theme and the text-only cover."""
+        cdc_html = """
+            <html>
+                <body>
+                    <p>Opportunity Name: Cowpolk Public Health 2024-2025</p>
+                    <p>Opportunity Number: CDC-RFA-DP-25-001</p>
+                    <p>OpDiv: Centers for Disease Control and Prevention (CDC)</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(cdc_html, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
+
+    def test_suggest_all_nofo_fields_does_not_reset_cdc_cover_on_reimport(self):
+        """A CDC NOFO that already picked an image cover keeps it when re-imported."""
+        self.nofo.number = "CDC-RFA-DP-25-001"
+        self.nofo.theme = "portrait-cdc-blue"
+        self.nofo.cover = "nofo--cover-page--medium"
+        self.nofo.save()
+
+        cdc_html = """
+            <html>
+                <body>
+                    <p>Opportunity Name: Cowpolk Public Health 2024-2025</p>
+                    <p>Opportunity Number: CDC-RFA-DP-25-001</p>
+                    <p>OpDiv: Centers for Disease Control and Prevention (CDC)</p>
+                </body>
+            </html>
+        """
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(cdc_html, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--medium")
 
     def test_suggest_all_nofo_fields_overwrite_empty_fields(self):
         suggest_all_nofo_fields(self.nofo, self.soup)

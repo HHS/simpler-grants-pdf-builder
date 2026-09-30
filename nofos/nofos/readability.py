@@ -6,6 +6,7 @@ from importlib import import_module
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template.loader import render_to_string
@@ -15,6 +16,9 @@ METRICS_DISTRIBUTION = "hhs-nofo-metrics"
 PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
+# Bump when Builder changes what it renders for measurement, independently of
+# the package/profile versions. Persisted results from older renderers stay history.
+INPUT_CONTRACT_VERSION = "reader-content-v4"
 GOAL_OPERATORS = frozenset({"at_least", "at_most", "at_most_by_category"})
 GOAL_METRIC_IDS = frozenset(
     {
@@ -151,12 +155,26 @@ def normalize_readability_metric_goals(configuration):
 
 
 def render_nofo_export_document(nofo):
-    """Render the same document fragment used by Builder's Word export."""
+    """Render reader content, including the designed introduction, for metrics."""
+    from nofos.nofo import get_step_2_section
 
-    return render_to_string(
+    rendered = render_to_string(
         "nofos/includes/nofo_export_document.html",
-        {"nofo": nofo},
-    ).encode("utf-8")
+        {
+            "nofo": nofo,
+            "for_readability_metrics": True,
+            "step_2_section": get_step_2_section(nofo),
+        },
+    )
+    # Imported/stored HTML can contain editor tooltip markup. These annotations
+    # are not reader content; leave their links and the stored source untouched.
+    fragment = BeautifulSoup(rendered, "html.parser")
+    tooltips = fragment.select('.usa-tooltip__body[role="tooltip"]')
+    if not tooltips:
+        return rendered.encode("utf-8")
+    for tooltip in tooltips:
+        tooltip.decompose()
+    return str(fragment).encode("utf-8")
 
 
 def analyze_nofo_readability(nofo):
@@ -227,8 +245,8 @@ def record_readability_snapshot(nofo, user=None):
 
     Calculates and persists a snapshot only when the current revision has not
     already been measured under this measurement contract (profile + package
-    version); an already-measured revision returns the stored snapshot without
-    re-running the package.
+    version + Builder input contract); an already-measured revision returns the
+    stored snapshot without re-running the package.
 
     Returns a (payload, snapshot) tuple. `snapshot` is None when the NOFO moved
     to a new revision while the package was running: the payload is still
@@ -248,7 +266,7 @@ def record_readability_snapshot(nofo, user=None):
     metrics_version = get_metrics_package_version()
 
     existing = NofoReadabilityScore.objects.current_for(
-        nofo, PROFILE_REFERENCE, metrics_version
+        nofo, PROFILE_REFERENCE, metrics_version, INPUT_CONTRACT_VERSION
     )
     if existing:
         return existing.result, existing
@@ -270,6 +288,7 @@ def record_readability_snapshot(nofo, user=None):
         nofo_revision=revision,
         profile_reference=PROFILE_REFERENCE,
         package_version=metrics_version,
+        input_contract_version=INPUT_CONTRACT_VERSION,
         defaults={
             "created_by": user if (user and user.is_authenticated) else None,
             "schema_version": payload.get("schema_version", ""),

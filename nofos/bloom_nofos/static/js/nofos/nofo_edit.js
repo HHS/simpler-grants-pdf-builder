@@ -2,7 +2,7 @@
 // 1. Operates the "NOFO actions" open/close menu
 // 2. Controls tablist for broken links and heading issues to check in your NOFO
 // 3. Copies the heading ids for sections and subsections (those link buttons you see)
-// 4. Copies all the flagged internal links to clipboard
+// 4. Copies warning issue lists to clipboard
 // 5. Controls when the "Top" link appears on the bottom right as you scroll
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------------------------------------------------
@@ -149,12 +149,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ------------------------------------------------------------
-  // 4. Copies all the flagged internal links to clipboard
+  // 4. Copies warning issue lists to clipboard
   // ------------------------------------------------------------
   const alertButtons = document.querySelectorAll(
     ".usa-alert__body .usa-button--content_copy"
   );
   alertButtons.forEach((button) => {
+    const buttonLabel = button.textContent;
     button.addEventListener("click", function () {
       // Find the nearest parent with the class '.usa-alert__body'
       const alertBox = this.closest(".usa-alert__body");
@@ -174,9 +175,9 @@ document.addEventListener("DOMContentLoaded", function () {
         .writeText(`${summaryText}\n\n${listText}`)
         .then(() => {
           // Change button text on success
-          button.innerHTML = "Copied!";
+          button.textContent = "Copied!";
           // Revert text after 1 second
-          setTimeout(() => (button.innerHTML = "Copy links"), 1000);
+          setTimeout(() => (button.textContent = buttonLabel), 1000);
         })
         .catch((err) => console.error("Failed to copy text: " + err));
 

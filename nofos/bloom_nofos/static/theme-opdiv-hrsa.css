@@ -172,6 +172,25 @@ h6 {
 
 /* Before you begin page */
 
+section.before-you-begin--hrsa {
+  padding-top: 0;
+}
+
+.before-you-begin--hrsa h3 {
+  font-family: inherit;
+  font-size: 13pt;
+  font-weight: 600;
+  line-height: inherit;
+  color: inherit;
+  margin: 15px 0 5px;
+  break-after: avoid;
+}
+
+.before-you-begin--hrsa .before-you-begin--requirements + p {
+  orphans: 3;
+  widows: 3;
+}
+
 /* Section title page */
 
 /* Section contents */

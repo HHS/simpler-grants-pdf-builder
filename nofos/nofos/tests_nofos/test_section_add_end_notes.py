@@ -103,8 +103,8 @@ class NofoAddEndNotesSectionViewTests(TestCase):
         modifications_section.refresh_from_db()
         appendix_section.refresh_from_db()
         self.assertEqual(endnotes_section.order, 2)
-        self.assertEqual(modifications_section.order, 3)
-        self.assertEqual(appendix_section.order, 4)
+        self.assertEqual(appendix_section.order, 3)
+        self.assertEqual(modifications_section.order, 4)
 
     def test_get_redirects_when_endnotes_section_already_exists(self):
         Section.objects.create(

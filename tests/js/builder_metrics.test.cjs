@@ -8,9 +8,9 @@ const template = readFileSync(join(__dirname,
   '../../nofos/nofos/templates/nofos/builder_metrics.html'), 'utf8');
 const source = template.match(/<script>([\s\S]*?)<\/script>/)[1];
 
-function render(values, disclosures = [], events = {}) {
+function render(values, disclosures = [], events = {}, extra = {}) {
   const cards = [];
-  const raw = { months: values.map((_, i) => `Month ${i + 1}`) };
+  const raw = { months: values.map((_, i) => `Month ${i + 1}`), ...extra };
   for (const key of ['totalUsers', 'activeUsers', 'nofosCreated',
     'timeToPdfHours', 'errorRatePct', 'avgWarnings']) raw[key] = values;
   const document = {
@@ -63,6 +63,27 @@ test('monthly tables are inside closed disclosures with metric-specific labels',
     assert.match(card, /<summary><span>View monthly data<span class="usa-sr-only"> for .+<\/span><\/span><\/summary>/);
     assert.match(card, /<\/table><\/details><p class="metrics-chart-def/);
     assert.equal([...card.matchAll(/<th scope="row">/g)].length, 12);
+  }
+});
+
+test('only the error-rate card offers the drill-down, and only when given a URL', () => {
+  const url = '/nofos/metrics/import-errors?group=cdc';
+  const cards = render([1, 2], [], {}, { importErrorsUrl: url });
+  const linked = cards.filter(card => card.includes('Review import errors'));
+
+  assert.equal(linked.length, 1);
+  assert.match(linked[0], /<h3>Blocking import errors<\/h3>/);
+  // Sits between the monthly-data disclosure and the definition, so the reader
+  // meets it after the numbers and before the footnote.
+  assert.match(linked[0], new RegExp(
+    '</details><p class="font-sans-2xs margin-top-1"><a href="'
+    + url.replace('?', '\\?') + '">Review import errors</a></p>'
+    + '<p class="metrics-chart-def'));
+});
+
+test('a payload without the drill-down URL renders no link at all', () => {
+  for (const card of render([1, 2])) {
+    assert.doesNotMatch(card, /Review import errors|href="undefined"/);
   }
 });
 

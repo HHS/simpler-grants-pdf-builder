@@ -1,18 +1,17 @@
 import io
 import json
+import logging
 import uuid
 from datetime import datetime
 
-import docraptor
-from bloom_nofos.context_processors import template_context
 from bloom_nofos.error_helpers import (
-    DOCUMENT_STRUCTURE_RECOVERY_STEPS,
     MistaggedHeadingError,
-    render_blocking_import_error,
+    render_import_error,
     render_import_server_error,
     render_mistagged_heading_error,
 )
 from bloom_nofos.html_diff import has_diff, html_diff
+from bloom_nofos.import_errors import IMPORT_ERROR_CATALOG
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
 from bs4 import BeautifulSoup
@@ -22,12 +21,12 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, prefetch_related_objects
 from django.forms.models import model_to_dict
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import dateformat, dateparse, timezone
 from django.utils.html import format_html
@@ -84,12 +83,15 @@ from .forms import (
     SubsectionEditForm,
 )
 from .metrics import (
+    METRICS_SINCE,
     active_users_by_month,
     avg_warnings_by_month,
     import_error_rate_by_month,
+    import_errors_by_code,
     months_from,
     nofos_created_by_month,
     opdiv_choices,
+    recent_import_errors,
     time_to_first_live_pdf_by_month,
     total_users_by_month,
 )
@@ -128,10 +130,10 @@ from .nofo import (
     get_nofo_action_links,
     get_sections_from_soup,
     get_side_nav_links,
-    get_step_2_section,
     get_subsection_action_availability,
     get_subsections_from_sections,
     modifications_update_announcement_text,
+    nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
@@ -150,7 +152,9 @@ from .nofo import (
     suggest_nofo_title,
     upload_cover_image_to_s3,
 )
+from .nofo_document_context import get_nofo_document_context
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
+from .pdf_service import PDFGenerationError, generate_nofo_pdf
 from .policy_language import (
     get_policy_language_export_summary,
     refresh_policy_language_tags,
@@ -171,7 +175,7 @@ GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
 ###########################################################
 
 
-def duplicate_nofo(original_nofo, is_successor=False):
+def duplicate_nofo(original_nofo, is_successor=False, duplicated_by=None):
     with transaction.atomic():
         # Clone the NOFO
         new_nofo = Nofo.objects.get(pk=original_nofo.pk)
@@ -190,6 +194,8 @@ def duplicate_nofo(original_nofo, is_successor=False):
                 # only add "copy" if the original has a short_name
                 new_nofo.short_name += " (copy)"
             new_nofo.status = "draft"
+            new_nofo.coach = ""
+            new_nofo.designer = (getattr(duplicated_by, "full_name", "") or "").strip()
 
         new_nofo.save()
 
@@ -337,27 +343,7 @@ class NofosDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # add theme information to the context
-        # theme is formatted like "landscape-cdc-blue"
-        orientation, opdiv, colour = self.object.theme.split("-")
-
-        context["nofo_theme_base"] = "{}-{}".format(opdiv, colour)
-
-        # get the name of the opdiv (eg, "cdc", "hrsa", etc)
-        context["nofo_opdiv"] = opdiv
-        # get the orientation (eg, "landscape" or "portrait")
-        context["nofo_theme_orientation"] = orientation
-
-        context["nofo_cover_image"] = get_cover_image(self.object)
-
-        context["step_2_section"] = get_step_2_section(self.object)
-
-        context["assistance_listing_on_cover_enabled"] = (
-            config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED
-            and config.HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED
-        )
-
+        context.update(get_nofo_document_context(self.object))
         return context
 
 
@@ -582,6 +568,107 @@ class NofosArchiveView(
         return redirect(self.success_url)
 
 
+# ValidationError.code -> the import error code it becomes.
+#
+# These three already produced a blocking error page in every import flow, so
+# Composer and Compare keep getting them too.
+SHARED_PARSE_VALIDATION_ERROR_CODES = {
+    "docx_conversion": "IMPORT-DOCX-CONVERSION",
+    "strict_formatting": "IMPORT-STRICT-FORMATTING",
+    "ambiguous_heading_hierarchy": "IMPORT-AMBIGUOUS-HEADINGS",
+}
+
+# Failures that NOFO Builder's own import views now name specifically (#913),
+# instead of folding them into one unnamed flash message. Composer and Compare
+# keep their existing inline behaviour: they import different documents and
+# carry their own COMPOSER-* / COMPARE-* codes, so naming a document problem
+# for them is separate work.
+BUILDER_PARSE_VALIDATION_ERROR_CODES = {
+    "no_file": "IMPORT-NO-FILE",
+    "unsupported_file_type": "IMPORT-FILE-TYPE",
+    "no_sections": "IMPORT-NO-SECTIONS",
+}
+
+# Routine "the document (or the click) wasn't right" failures. They are worth a
+# log line for the metrics trail, but they are not defects, so they don't page
+# anyone at error level. IMPORT-DOCX-CONVERSION stays at error level, as before.
+WARNING_LEVEL_IMPORT_ERROR_CODES = {
+    "IMPORT-AMBIGUOUS-HEADINGS",
+    "IMPORT-NO-FILE",
+    "IMPORT-FILE-TYPE",
+    "IMPORT-NO-SECTIONS",
+}
+
+
+def document_validation_details(error):
+    """
+    Turn a model-validation failure into detail rows a NOFO writer can act on.
+
+    `_raise_document_validation_error` already flattens the field errors into
+    readable sentences; this just caps how many we show, so a document with
+    dozens of problems doesn't bury the recovery steps.
+    """
+    return [
+        {"label": "What we found", "value": message}
+        for message in getattr(error, "messages", [])[:5]
+    ]
+
+
+def parse_error_details(error, error_code, uploaded_file=None):
+    """
+    Build the per-failure detail rows shown above the recovery steps.
+
+    The catalog owns the copy that is the same every time; this owns the part
+    that is specific to the document in front of the user - the two headings
+    that clash, the file type they actually picked.
+
+    Deliberately absent: the style names behind IMPORT-STRICT-FORMATTING. Those
+    are converter internals, and keeping them off the page is an existing
+    decision this change leaves alone.
+    """
+    if error_code == "IMPORT-AMBIGUOUS-HEADINGS":
+        h2_text = getattr(error, "h2_text", "")
+        h1_text = getattr(error, "h1_text", "")
+        if not (h2_text or h1_text):
+            return []
+        details = [
+            {"label": "First Heading 2", "value": h2_text},
+            {"label": "First Heading 1", "value": h1_text},
+        ]
+        preceding_h2_count = getattr(error, "preceding_h2_count", None)
+        if preceding_h2_count is not None:
+            details.append(
+                {
+                    "label": "Likely Word fix",
+                    "value": (
+                        f"“{h1_text}” uses Heading 1 after {preceding_h2_count} "
+                        "headings that use Heading 2. If these are all main sections, "
+                        f"in Word, select “{h1_text}” and apply the Heading 2 style. "
+                        "Save the document, then import it again."
+                    ),
+                }
+            )
+        return details
+
+    if error_code == "IMPORT-FILE-TYPE":
+        details = []
+        filename = getattr(uploaded_file, "name", "")
+        content_type = getattr(uploaded_file, "content_type", "")
+        if filename:
+            details.append({"label": "File selected", "value": filename})
+        if content_type:
+            details.append({"label": "Detected file type", "value": content_type})
+        return details
+
+    if error_code == "IMPORT-VALIDATION-OTHER":
+        return [
+            {"label": "What we found", "value": message}
+            for message in getattr(error, "messages", [])[:5]
+        ]
+
+    return []
+
+
 def log_import_attempt(
     request, *, filename, is_reimport=False, nofo=None, error_code="", warning_count=0
 ):
@@ -606,8 +693,10 @@ class BaseNofoImportView(View):
 
     template_name = "nofos/nofo_import.html"
     redirect_url_name = "nofos:nofo_import"
-    # Only NOFO Builder's own import views (not Composer or Compare) should
-    # log ImportAttempt rows - those tools import different kinds of documents.
+    # Marks NOFO Builder's own import views, as opposed to Composer's and
+    # Compare's - those tools import different kinds of documents. It gates two
+    # things: whether the attempt is recorded as an ImportAttempt, and whether a
+    # parse failure gets one of NOFO Builder's catalogued error pages (#913).
     track_import_metrics = False
     # Overridden by NofosImportOverwriteView. Read by post()'s own failure
     # branches below so a parsing-stage failure during a reimport is logged
@@ -687,113 +776,60 @@ class BaseNofoImportView(View):
             error_codes = {
                 error.code for error in getattr(e, "error_list", []) if error.code
             }
-            error_message = ",".join(e.messages)
 
-            if "docx_conversion" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    context="BaseNofoImportView:ValidationError:IMPORT-DOCX-CONVERSION",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-DOCX-CONVERSION",
+            known_codes = dict(SHARED_PARSE_VALIDATION_ERROR_CODES)
+            if self.track_import_metrics:
+                known_codes.update(BUILDER_PARSE_VALIDATION_ERROR_CODES)
+
+            error_code = next(
+                (
+                    import_error_code
+                    for code, import_error_code in known_codes.items()
+                    if code in error_codes
+                ),
+                None,
+            )
+
+            if error_code is None:
+                if not self.track_import_metrics:
+                    # Composer and Compare still surface these inline on their
+                    # own import form.
+                    messages.error(request, ",".join(e.messages))
+                    return redirect(
+                        self.get_redirect_url_name(), **self.get_redirect_url_kwargs()
                     )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t import this Word document",
-                    summary=(
-                        "NOFO Builder could not read the selected Word document. "
-                        "The document was not imported."
-                    ),
-                    error_code="IMPORT-DOCX-CONVERSION",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word and confirm that it opens normally.",
-                        "Save it as a new .docx file, then select the new file.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
 
-            if "strict_formatting" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    context="BaseNofoImportView:ValidationError:IMPORT-STRICT-FORMATTING",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-STRICT-FORMATTING",
-                    )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t import this document",
-                    summary=(
-                        "The Word document contains formatting that NOFO Builder "
-                        "cannot safely process while strict import checks are enabled."
-                    ),
-                    error_code="IMPORT-STRICT-FORMATTING",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word.",
-                        "Ask a NOFO designer or administrator to review its custom formatting and styles.",
-                        "Save the document, then select it again.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
+                # In NOFO Builder, the catch-all still gets a page and a code the
+                # user can quote. It is the safety net, not the default: a failure
+                # that keeps landing here has earned a code of its own. See
+                # bloom_nofos/import_errors.py and documentation/IMPORT_ERROR_CODES.md.
+                error_code = "IMPORT-VALIDATION-OTHER"
 
-            if "ambiguous_heading_hierarchy" in error_codes:
-                log_exception(
-                    request,
-                    e,
-                    level="warning",
-                    context="BaseNofoImportView:ValidationError:IMPORT-AMBIGUOUS-HEADINGS",
-                    status=422,
-                )
-                if self.track_import_metrics:
-                    log_import_attempt(
-                        request,
-                        filename=attempt_filename,
-                        is_reimport=self.is_reimport,
-                        nofo=getattr(self, "nofo", None),
-                        error_code="IMPORT-AMBIGUOUS-HEADINGS",
-                    )
-                return render_blocking_import_error(
-                    request,
-                    title="We couldn’t safely determine the document structure",
-                    summary=error_message,
-                    error_code="IMPORT-AMBIGUOUS-HEADINGS",
-                    status=422,
-                    recovery_steps=[
-                        "Open the document in Word and review the Heading 1 and Heading 2 styles named above.",
-                        "Apply one consistent heading level to all main sections.",
-                        "Save the document, then select it again.",
-                    ],
-                    retry_url=self.get_retry_url(),
-                )
-
-            # These errors show up as inline validation errors
+            log_exception(
+                request,
+                e,
+                level=(
+                    "warning"
+                    if error_code in WARNING_LEVEL_IMPORT_ERROR_CODES
+                    else "error"
+                ),
+                context=f"BaseNofoImportView:ValidationError:{error_code}",
+                status=IMPORT_ERROR_CATALOG[error_code]["status"],
+            )
             if self.track_import_metrics:
                 log_import_attempt(
                     request,
                     filename=attempt_filename,
                     is_reimport=self.is_reimport,
                     nofo=getattr(self, "nofo", None),
-                    error_code="IMPORT-VALIDATION-OTHER",
+                    error_code=error_code,
                 )
-            messages.error(request, error_message)
-            return redirect(
-                self.get_redirect_url_name(), **self.get_redirect_url_kwargs()
+
+            return render_import_error(
+                request,
+                error_code,
+                error_details=parse_error_details(e, error_code, uploaded_file),
+                retry_url=self.get_retry_url(),
             )
 
         except Exception as e:
@@ -837,7 +873,9 @@ class BaseNofoImportView(View):
         """
         sections = get_sections_from_soup(soup, top_heading_level)
         if not len(sections):
-            raise ValidationError("That file does not contain a NOFO.")
+            raise ValidationError(
+                "That file does not contain a NOFO.", code="no_sections"
+            )
         return get_subsections_from_sections(sections, top_heading_level)
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
@@ -878,7 +916,7 @@ class NofosImportNewView(BaseNofoImportView):
             # group must be set before suggest_all_nofo_fields() so it can key
             # group-specific defaults (e.g. the NIH "before you begin" page) off it
             nofo.group = request.user.group
-            suggest_all_nofo_fields(nofo, soup)
+            suggest_all_nofo_fields(nofo, soup, first_time_import=True)
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
@@ -933,38 +971,19 @@ class NofosImportNewView(BaseNofoImportView):
                 log_import_attempt(
                     request, filename=filename, error_code="IMPORT-OPDIV-BLANK"
                 )
-                return render_blocking_import_error(
+                return render_import_error(
                     request,
-                    title="We couldn’t import this NOFO",
-                    summary=(
-                        "NOFO Builder couldn’t reliably read a value from the "
-                        "‘Opdiv:’ field on page 1 of the Word document. The value "
-                        "may be missing or separated from the label in a way "
-                        "Builder can’t recognize."
-                    ),
-                    error_code="IMPORT-OPDIV-BLANK",
-                    status=400,
-                    recovery_steps=[
-                        "Open the Word document.",
-                        "Put the agency’s operating division on the same line as "
-                        "‘Opdiv:’ (for example, ‘Opdiv: Administration for "
-                        "Children and Families’ or ‘Opdiv: CDC’).",
-                        "Save the document, then select it again.",
-                    ],
+                    "IMPORT-OPDIV-BLANK",
                     retry_url=self.get_retry_url(),
                 )
 
             log_import_attempt(
                 request, filename=filename, error_code="IMPORT-CREATE-INVALID"
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t create this NOFO",
-                summary=(
-                    "NOFO Builder could not create a valid NOFO from the uploaded document."
-                ),
-                error_code="IMPORT-CREATE-INVALID",
-                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                "IMPORT-CREATE-INVALID",
+                error_details=document_validation_details(e),
                 retry_url=self.get_retry_url(),
             )
         except Exception as e:
@@ -1024,15 +1043,12 @@ class NofosImportOverwriteView(
                 nofo=nofo,
                 error_code="REIMPORT-STATUS-BLOCKED",
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t re-import this NOFO",
-                summary="{} NOFOs can’t be re-imported.".format(
-                    nofo.get_status_display()
-                ),
-                error_code="REIMPORT-STATUS-BLOCKED",
-                retry_url=reverse("nofos:nofo_edit", kwargs={"pk": nofo.id}),
-                retry_label="Return to the NOFO",
+                "REIMPORT-STATUS-BLOCKED",
+                summary_context={"status": nofo.get_status_display()},
+                retry_url=reverse("nofos:nofo_edit_status", kwargs={"pk": nofo.id}),
+                retry_label="Change this NOFO’s status",
             )
 
         if_preserve_page_breaks = request.POST.get("preserve_page_breaks") == "on"
@@ -1091,7 +1107,7 @@ class NofosImportOverwriteView(
 
                 add_headings_to_document(nofo)
                 add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup)
+                suggest_all_nofo_fields(nofo, soup, first_time_import=False)
                 nofo.filename = filename
                 nofo.save()
 
@@ -1148,14 +1164,10 @@ class NofosImportOverwriteView(
                 nofo=nofo,
                 error_code="REIMPORT-DOCUMENT-INVALID",
             )
-            return render_blocking_import_error(
+            return render_import_error(
                 request,
-                title="We couldn’t re-import this NOFO",
-                summary=(
-                    "NOFO Builder could not replace this NOFO with the uploaded document."
-                ),
-                error_code="REIMPORT-DOCUMENT-INVALID",
-                recovery_steps=DOCUMENT_STRUCTURE_RECOVERY_STEPS,
+                "REIMPORT-DOCUMENT-INVALID",
+                error_details=document_validation_details(e),
                 retry_url=reverse(
                     "nofos:nofo_import_overwrite", kwargs={"pk": nofo.id}
                 ),
@@ -1242,7 +1254,7 @@ class NofoDuplicateView(
     def get(self, request, pk):
         original = get_object_or_404(Nofo, pk=pk)
 
-        new_nofo = duplicate_nofo(original)
+        new_nofo = duplicate_nofo(original, duplicated_by=request.user)
 
         return redirect("nofos:nofo_duplicate_title", pk=new_nofo.pk)
 
@@ -2183,7 +2195,7 @@ class NofoRemovePageBreaksView(
         return redirect("nofos:nofo_edit", pk=nofo.id)
 
 
-class NofoSearchView(SuperuserRequiredMixin, ListView):
+class NofoSearchView(ListView):
     model = Nofo
     template_name = "nofos/nofo_search.html"
     context_object_name = "nofo_list"
@@ -2191,6 +2203,11 @@ class NofoSearchView(SuperuserRequiredMixin, ListView):
     def get_queryset(self):
         # Start with non-archived NOFOs
         queryset = Nofo.objects.filter(archived__isnull=True)
+
+        # Non-bloom users can only search within their own group. Bloom users
+        # retain their existing cross-group search visibility.
+        if self.request.user.group != "bloom":
+            queryset = queryset.filter(group=self.request.user.group)
 
         # Search query
         query = self.request.GET.get("query", "").strip()
@@ -2242,6 +2259,9 @@ class CheckNOFOLinksDetailView(GroupAccessObjectMixin, DetailView):
         context = super().get_context_data(**kwargs)
         with_status = cast_to_boolean(self.request.GET.get("with_status", ""))
         context["links"] = find_external_links(self.object, with_status)
+        context["invalid_destination_links"] = [
+            link for link in context["links"] if link.get("invalid_destination")
+        ]
         context["with_status"] = with_status
         return context
 
@@ -2279,11 +2299,6 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
         if mode not in ["attachment", "inline"]:
             mode = "attachment"
 
-        doc_api = docraptor.DocApi()
-        doc_api.api_client.configuration.username = settings.DOCRAPTOR_API_KEY
-        # The request now contains the complete NOFO; do not log its payload.
-        doc_api.api_client.configuration.debug = False
-
         # DOCRAPTOR_LIVE_MODE config var can be set by superadmins, but is_test_pdf query param gets the last word
         is_test_pdf = not config.DOCRAPTOR_LIVE_MODE
         is_test_pdf = cast_to_boolean(request.GET.get("is_test_pdf", is_test_pdf))
@@ -2298,39 +2313,11 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 "Server error printing NOFO. Can't print a NOFO on localhost."
             )
 
-        # Authorization has already run in GroupAccessObjectMixin. Render the
-        # same document as the detail page here, rather than asking DocRaptor to
-        # fetch a protected URL (which can return the login page). Deliberately
-        # do not attach the request or run its context processors: credentials,
-        # CSRF tokens, and user-specific controls must not leave the application.
-        # Keep this document-only context aligned with NofosDetailView when its
-        # rendering changes; request/context-processor additions do not run here.
-        document_view = NofosDetailView()
-        document_view.object = nofo
-        document_context = document_view.get_context_data()
-        document_context.pop("view", None)
-        # This helper only returns explicit application metadata/settings and
-        # does not read its request argument. Preserve the base-page metadata.
-        document_context.update(template_context(None))
-        document_content = render_to_string("nofos/nofo_pdf.html", document_context)
-
         try:
-            response = doc_api.create_doc(
-                {
-                    "test": is_test_pdf,  # test documents are free but watermarked
-                    "document_content": document_content,
-                    "document_type": "pdf",
-                    "javascript": False,
-                    "pipeline": 11,
-                    "prince_options": {
-                        "baseurl": nofo_url,  # resolve relative assets and links
-                        "media": "print",  # use print styles instead of screen styles
-                        "profile": "PDF/UA-1",
-                    },
-                },
+            generated = generate_nofo_pdf(
+                nofo, base_url=nofo_url, is_test_pdf=is_test_pdf
             )
-
-            pdf_file = io.BytesIO(response)
+            pdf_file = io.BytesIO(generated.content)
 
             # Build response
             response = HttpResponse(pdf_file, content_type="application/pdf")
@@ -2347,12 +2334,21 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             )
 
             return response
-        except docraptor.rest.ApiException as e:
-            log_exception(
-                request,
-                e,
-                context="PrintNofoAsPDFView:docraptor.rest.ApiException",
-                status=400,
+        except PDFGenerationError as error:
+            # Vendor errors may echo submitted HTML or credentials. Record only
+            # safe diagnostics, not the exception message or traceback.
+            logging.getLogger("django.request").error(
+                "DocRaptor PDF generation failed",
+                extra={
+                    "context": "PrintNofoAsPDFView:docraptor.rest.ApiException",
+                    "exception_type": "PDFGenerationError",
+                    "method": request.method,
+                    "path": request.path,
+                    "retryable": error.is_retryable,
+                    "status": 400,
+                    "user_id": str(request.user.pk),
+                    "vendor_status": error.status_code,
+                },
             )
             return HttpResponseBadRequest(
                 "Server error printing NOFO. Check logs for error messages."
@@ -2362,6 +2358,41 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 ###########################################################
 ##################### SECTION VIEWS #######################
 ###########################################################
+
+
+def _order_trailing_sections(nofo):
+    """Keep Endnotes, Appendix, then Modifications at the document's end.
+
+    Called while the parent NOFO row is locked. Temporary, unused order values
+    avoid colliding with the unique (nofo, order) constraint during reordering.
+    """
+    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    tail_ids = ("endnotes", "appendix", "modifications")
+
+    def tail_id(section):
+        if section.html_id in tail_ids:
+            return section.html_id
+        # Imported sections can have generated IDs like "7--modifications".
+        # The modifications action itself recognizes the section by name.
+        if section.name.strip().casefold() in ("endnotes", "modifications"):
+            return section.name.strip().casefold()
+        return None
+
+    ordered = [section for section in sections if tail_id(section) is None]
+    ordered.extend(
+        section
+        for html_id in tail_ids
+        for section in sections
+        if tail_id(section) == html_id
+    )
+    if [section.pk for section in sections] == [section.pk for section in ordered]:
+        return
+
+    unused_order = max(section.order or 0 for section in sections) + 1
+    for offset, section in enumerate(ordered):
+        Section.objects.filter(pk=section.pk).update(order=unused_order + offset)
+    for order, section in enumerate(ordered, start=1):
+        Section.objects.filter(pk=section.pk).update(order=order)
 
 
 class NofoAddEndNotesSectionView(
@@ -2430,27 +2461,15 @@ class NofoAddEndNotesSectionView(
             if response:
                 return response
 
-            # Slot Endnotes directly above Modifications when it exists.
-            sections = self.nofo.sections.select_for_update()
-            modifications_section = sections.filter(name="Modifications").first()
-
-            if modifications_section:
-                order = modifications_section.order
-                # Shift in descending order to preserve the unique (nofo, order)
-                # constraint even when Modifications is not currently last.
-                for section in sections.filter(order__gte=order).order_by("-order"):
-                    section.order += 1
-                    section.save(update_fields=["order"])
-            else:
-                order = Section.get_next_order(self.nofo)
-
             self.section = Section.objects.create(
                 nofo=self.nofo,
                 name=END_NOTES_SECTION_NAME,
                 html_id=END_NOTES_SECTION_HTML_ID,
                 has_section_page=False,
-                order=order,
+                order=Section.get_next_order(self.nofo),
             )
+
+            _order_trailing_sections(self.nofo)
 
             form.instance.section = self.section
             form.instance.name = ""
@@ -2482,6 +2501,57 @@ class NofoAddEndNotesSectionView(
         context["nofo"] = self.nofo
         context["cancel_url"] = self.get_cancel_url()
         return context
+
+
+class NofoAddAppendixSectionView(
+    GroupAccessObjectMixin,
+    PreventIfArchivedOrCancelledMixin,
+    PreventIfPublishedMixin,
+    View,
+):
+    """Create the fixed Appendix section directly from the NOFO actions menu."""
+
+    http_method_names = ["post"]
+    published_error_message = "Appendix can’t be added to published NOFOs."
+    archived_error_message = "Appendix can’t be added to archived NOFOs."
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+
+    def post(self, request, *args, **kwargs):
+        with transaction.atomic():
+            # Lock the parent row, then repeat guards inside the transaction.
+            # This serializes simultaneous requests for the same NOFO.
+            nofo = Nofo.objects.select_for_update().get(pk=self.nofo.pk)
+            if nofo.archived:
+                return self.render_response(self.archived_error_message)
+            if nofo.status == "cancelled":
+                return self.render_response(self.cancelled_error_message)
+            if nofo.status == "published":
+                return self.render_response(self.published_error_message)
+            if nofo_has_appendix_section(nofo):
+                messages.warning(request, "This NOFO already has an Appendix section.")
+                return redirect("nofos:nofo_edit", pk=nofo.pk)
+
+            section = Section.objects.create(
+                nofo=nofo,
+                name="Appendix",
+                html_id="appendix",
+                has_section_page=False,
+                order=Section.get_next_order(nofo),
+            )
+            _order_trailing_sections(nofo)
+
+        messages.success(
+            request,
+            "Added new section: “<a href='#{}'>{}</a>”".format(
+                section.html_id, section.name
+            ),
+        )
+        return redirect(
+            "{}#{}".format(reverse("nofos:nofo_edit", args=[nofo.pk]), section.html_id)
+        )
 
 
 class NofoSectionDetailView(GroupAccessObjectMixin, DetailView):
@@ -2903,10 +2973,9 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
 
     template_name = "nofos/builder_metrics.html"
 
-    # When NOFO Builder metrics tracking started (see #865) - not a hard
-    # cutoff, just where the trend starts; months_from() has no upper bound,
-    # so later months just keep appending as they occur.
-    metrics_since = datetime(2026, 9, 1)
+    # Shared with the import-errors drill-down so the two can't report over
+    # different windows. See metrics.METRICS_SINCE.
+    metrics_since = METRICS_SINCE
 
     def get(self, request, *args, **kwargs):
         self.selected_group = request.GET.get("group", "all")
@@ -2941,5 +3010,77 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "timeToPdfHours": time_to_first_live_pdf_by_month(months, group),
             "errorRatePct": import_error_rate_by_month(months, group),
             "avgWarnings": avg_warnings_by_month(months, group),
+            # Carried in the payload, not hardcoded in the template's JS, so the
+            # link keeps pointing at the OpDiv the reader is actually looking at
+            # after the filter re-renders the cards.
+            "importErrorsUrl": "{}?group={}".format(
+                reverse("nofos:builder_metrics_import_errors"), group
+            ),
         }
+        return context
+
+
+class BuilderMetricsImportErrorsView(MetricsViewerRequiredMixin, TemplateView):
+    """
+    Which errors are behind the "Blocking import errors" rate (see #912).
+
+    The chart says how often imports fail; this says why, so one recurring
+    fixable problem can be told apart from a scatter of unrelated ones. Reads
+    the same attempts, window and OpDiv filter as the chart, so the numbers
+    reconcile.
+    """
+
+    template_name = "nofos/builder_metrics_import_errors.html"
+    metrics_since = METRICS_SINCE
+
+    # Enough to see a pattern without an unbounded table. The summary above it
+    # counts every failure in the window regardless of this.
+    attempts_per_page = 50
+
+    def get(self, request, *args, **kwargs):
+        self.selected_group = request.GET.get("group", "all")
+        if self.selected_group not in {"all", *dict(opdiv_choices())}:
+            return HttpResponseBadRequest("Choose a valid OpDiv group.")
+
+        response = super().get(request, *args, **kwargs)
+        response["Cache-Control"] = "private, no-store"
+        response["Vary"] = "Cookie"
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        months = months_from(timezone.make_aware(self.metrics_since))
+        group = self.selected_group
+
+        summary = import_errors_by_code(months, group)
+        for row in summary:
+            entry = IMPORT_ERROR_CATALOG.get(row["code"])
+            # A code with no catalog entry is either retired or never got one.
+            # Say so rather than leaving the cell blank, so the gap is visible.
+            row["meaning"] = entry["title"] if entry else "Not in the error catalog"
+
+        page = Paginator(
+            recent_import_errors(months, group), self.attempts_per_page
+        ).get_page(self.request.GET.get("page"))
+        for attempt in page:
+            # Metrics viewers see every OpDiv's numbers, but opening a NOFO still
+            # goes through the normal group check - so only link where the link
+            # would actually work.
+            attempt.viewer_can_open_nofo = bool(
+                attempt.nofo
+                and has_group_permission_func(self.request.user, attempt.nofo)
+            )
+
+        context.update(
+            {
+                "opdiv_choices": opdiv_choices(),
+                "selected_group": group,
+                "group_label": "All OpDivs" if group == "all" else group.upper(),
+                "since_month": months[0][0],
+                "error_summary": summary,
+                "total_failures": sum(row["attempts"] for row in summary),
+                "attempts_page": page,
+            }
+        )
         return context
