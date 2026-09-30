@@ -930,6 +930,10 @@ section.section .section--title-page::before {
   margin-top: 15px;
 }
 
+.section--content--intro--without-tagline {
+  margin-bottom: 25px;
+}
+
 .section--content--intro .nofo--tagline {
   font-size: 14pt;
   border-top: 1px solid var(--color--light-grey);
