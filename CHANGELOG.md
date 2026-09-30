@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.46.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.45.0...nofos-v3.46.0) (2026-09-30)
+
+
+### Features
+
+* add gated content-free PDF pilot metrics ([#990](https://github.com/HHS/simpler-grants-pdf-builder/issues/990)) ([b9b696f](https://github.com/HHS/simpler-grants-pdf-builder/commit/b9b696f403e7a7e8dbd45a7245d3dfe50d8398ec))
+* make the import-errors OpDiv filter match the metrics dashboard ([#994](https://github.com/HHS/simpler-grants-pdf-builder/issues/994)) ([50c8222](https://github.com/HHS/simpler-grants-pdf-builder/commit/50c822245bace032c5037172fd714184ee3cf6eb))
+
+
+### Bug Fixes
+
+* add spacing below metadata without tagline ([#996](https://github.com/HHS/simpler-grants-pdf-builder/issues/996)) ([c154b41](https://github.com/HHS/simpler-grants-pdf-builder/commit/c154b414aa513dd13fd5c2907bcbc365f00e0d0f))
+* assign SAMHSA theme from OpDiv metadata ([#995](https://github.com/HHS/simpler-grants-pdf-builder/issues/995)) ([69891dc](https://github.com/HHS/simpler-grants-pdf-builder/commit/69891dcc3470cec0983b59a695e784c23f2b99b2))
+* upgrade PyJWT to 2.15.1 to resolve Anchore findings ([#1003](https://github.com/HHS/simpler-grants-pdf-builder/issues/1003)) ([2cc7bc0](https://github.com/HHS/simpler-grants-pdf-builder/commit/2cc7bc06f7b416904fc5c36d760a35f5c8ed5181))
+
+
+### Miscellaneous Chores
+
+* bump the python-minor-and-patch group across 1 directory with 3 updates ([70be937](https://github.com/HHS/simpler-grants-pdf-builder/commit/70be93717f03c6caf185378a4940e02b2ea02c4e))
+
 ## [3.45.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.44.0...nofos-v3.45.0) (2026-09-29)
 
 
