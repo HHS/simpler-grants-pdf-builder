@@ -272,6 +272,14 @@ To manually deploy to production, create a new file `./nofos/bloom_nofos/.env.pr
 
   - default `""`: this means zero IPs are safelisted
 
+- `GRABZIT_APPLICATION_KEY` and `GRABZIT_APPLICATION_SECRET`: credentials for the GrabzIt Word conversion provider. Do not share production credentials with another environment.
+
+  - default `""`: Word export is unavailable without both values.
+
+- `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS`: exact comma-separated hostnames allowed to use the configured GrabzIt credentials. The application enforces this on the server before writing provider-side cookies or requesting a conversion.
+
+  - default `"nofos.simpler.grants.gov"`: production remains available; development, training, grantee, and unknown hosts fail closed. Set this explicitly to an empty string outside production until that environment has dedicated credentials.
+
 - `API_TOKEN`: Bearer token to allow API access.
 
   - default `""`: this will block any and all API access.

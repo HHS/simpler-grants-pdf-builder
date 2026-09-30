@@ -594,6 +594,16 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 # Grabzit API keys for DOCX conversion
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
+# Keep the shared GrabzIt account production-only until each environment has
+# dedicated credentials. Unknown hosts fail closed in the export helper.
+GRABZIT_WORD_EXPORT_ALLOWED_HOSTS = tuple(
+    host.strip().lower().rstrip(".")
+    for host in env.get_value(
+        "GRABZIT_WORD_EXPORT_ALLOWED_HOSTS",
+        default="nofos.simpler.grants.gov",
+    ).split(",")
+    if host.strip()
+)
 
 # Advisory only: estimated words in the subsection's Markdown source, using the
 # same whitespace count as floating callouts. This is not a publishing limit.
