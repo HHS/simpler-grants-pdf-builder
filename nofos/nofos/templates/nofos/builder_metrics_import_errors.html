@@ -74,21 +74,31 @@
     // focused, and only the latest selection may update the results, even when
     // earlier requests finish out of order.
     var currentRequest = ++requestNumber;
+    var requestedGroup = select.value;
     var url = new URL(window.location.href);
-    url.searchParams.set('group', select.value);
+    url.searchParams.set('group', requestedGroup);
     // A different OpDiv has different pages; start from its first.
     url.searchParams.delete('page');
     status.className = 'usa-sr-only';
     status.textContent = 'Updating import errors…';
     try {
       var response = await fetch(url, {headers: {'X-Requested-With': 'fetch'}});
-      if (!response.ok) throw new Error('Import errors request failed');
+      if (!response.ok || response.redirected) throw new Error('Import errors request failed');
       var html = await response.text();
       if (currentRequest !== requestNumber) return;
+      // An expired session can return a complete login page with a 200 status.
+      // Validate the fragment before replacing the previous results, so error
+      // recovery can still read the group that is actually on screen.
+      var fragment = new DOMParser().parseFromString(html, 'text/html');
+      var scope = fragment.querySelector('[data-group]');
+      var label = fragment.getElementById('metrics-applied-group');
+      if (!scope || scope.getAttribute('data-group') !== requestedGroup || !label) {
+        throw new Error('Unexpected import errors response');
+      }
       results.innerHTML = html;
       window.history.replaceState(null, '', url);
       status.textContent = 'Import errors updated for '
-        + document.getElementById('metrics-applied-group').textContent + '.';
+        + label.textContent + '.';
     } catch (error) {
       if (currentRequest !== requestNumber) return;
       select.value = shownGroup();

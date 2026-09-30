@@ -113,7 +113,27 @@ const { join } = require('node:path');
       assert.equal(await page.locator('.metrics-filter, #metrics-group').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().left>=0 && el.getBoundingClientRect().right<=innerWidth)),true);
     }
     await shot(page, 'cdc-mobile.png');
+
+    // Session expiry redirects the fetch to a 200 login page, not a fragment.
+    // Keep the tables intact and allow retry after signing back in.
+    await page.setViewportSize({width:1280,height:1050});
+    const savedCookies=await page.context().cookies();
+    const beforeExpiry=await results.innerText();
+    const beforeExpiryUrl=page.url();
+    await page.context().clearCookies();
+    await select.selectOption('nih');
+    await page.waitForFunction(()=>document.getElementById('metrics-filter-status').textContent.startsWith('Unable to update'));
+    assert.equal(await results.innerText(),beforeExpiry);
+    assert.equal(page.url(),beforeExpiryUrl);
+    assert.equal(await select.inputValue(),'cdc');
+    assert.equal(await results.getByRole('heading',{name:'Login',exact:true}).count(),0);
+    await shot(page, 'session-expiry.png');
+    await page.context().addCookies(savedCookies);
+    await select.selectOption('nih');
+    await updated('NIH');
+    assert.equal(await label.textContent(),'NIH');
+    await shot(page, 'session-retry.png');
     assert.deepEqual(errors,[]);
-    console.log('PASS: no Apply button, in-place filtering without navigation, page reset, URL reload, failure/retry, empty agency, out-of-order responses, keyboard focus, print scope, dashboard-matching filter size, responsive bounds, no JS errors.');
+    console.log('PASS: no Apply button, in-place filtering without navigation, page reset, URL reload, failure/retry, empty agency, out-of-order responses, keyboard focus, print scope, dashboard-matching filter size, responsive bounds, session expiry/retry, no JS errors.');
   } finally { await browser.close(); }
 })();

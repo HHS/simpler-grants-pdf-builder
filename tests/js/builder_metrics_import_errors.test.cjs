@@ -46,14 +46,28 @@ function setup({ href = 'https://example.test/nofos/metrics/import-errors?group=
   function fetch(url, options) {
     return new Promise((resolve, reject) => pending.push({ url: String(url), options, resolve, reject }));
   }
-  runInNewContext(source, { document, window, fetch, URL });
+  class DOMParser {
+    parseFromString(html) {
+      return {
+        querySelector() {
+          const group = html.match(/data-group="([^"]*)"/);
+          return group ? { getAttribute: () => group[1] } : null;
+        },
+        getElementById() {
+          const label = html.match(/id="metrics-applied-group">([^<]*)</);
+          return label ? { textContent: label[1] } : null;
+        },
+      };
+    }
+  }
+  runInNewContext(source, { document, window, fetch, URL, DOMParser });
 
   async function choose(value) {
     select.value = value;
     const done = onChange();
     return { done, request: pending[pending.length - 1] };
   }
-  const respond = (request, html, ok = true) => request.resolve({ ok, text: async () => html });
+  const respond = (request, html, ok = true, redirected = false) => request.resolve({ ok, redirected, text: async () => html });
 
   return { select, resultsEl, status, history, pending, choose, respond };
 }
@@ -151,3 +165,30 @@ test('a select value restored by the browser is reset to the results on screen',
 
   assert.equal(page.select.value, 'all');
 });
+
+for (const [name, html, redirected] of [
+  ['a login redirect ending in HTTP 200', '<html><body>Login</body></html>', true],
+  ['a full login page without a redirect', '<html><body>Login</body></html>', false],
+  ['a fragment missing its label', '<p data-group="nih">NIH</p>', false],
+  ['a fragment for the wrong group', results('cdc', 'CDC'), false],
+]) {
+  test(`${name} preserves results, selection and URL and permits retry`, async () => {
+    const page = setup();
+    const original = page.resultsEl.innerHTML;
+    const first = await page.choose('nih');
+    page.respond(first.request, html, true, redirected);
+    await first.done;
+
+    assert.equal(page.resultsEl.innerHTML, original);
+    assert.equal(page.select.value, 'all');
+    assert.deepEqual([...page.history], []);
+    assert.equal(page.status.className, 'font-sans-2xs');
+    assert.match(page.status.textContent, /^Unable to update/);
+
+    const retry = await page.choose('nih');
+    page.respond(retry.request, results('nih', 'NIH', 'NIH TABLES'));
+    await retry.done;
+    assert.match(page.resultsEl.innerHTML, /NIH TABLES/);
+    assert.equal(page.status.textContent, 'Import errors updated for NIH.');
+  });
+}
