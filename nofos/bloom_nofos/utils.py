@@ -1,13 +1,24 @@
+import io
+import logging
 import os
 import re
 import sys
+import zipfile
 from socket import gaierror, gethostbyname, gethostname
 from urllib.parse import urlparse
+from xml.etree import ElementTree
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseServerError
 from google.cloud import secretmanager
 from GrabzIt import GrabzItClient, GrabzItDOCXOptions
+
+logger = logging.getLogger(__name__)
+DOCX_DOCUMENT_PATH = "word/document.xml"
+DOCX_REQUIRED_PATHS = {"[Content_Types].xml", DOCX_DOCUMENT_PATH}
+WORDPROCESSINGML_TEXT_TAG = (
+    "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t"
+)
 
 
 def cast_to_boolean(value_str):
@@ -104,6 +115,39 @@ def get_login_gov_keys(environment: str = "dev", testing: bool = "test" in sys.a
     return private_key, public_key
 
 
+def _normalize_hostname(host):
+    return (host or "").split(":", 1)[0].lower().rstrip(".")
+
+
+def is_grabzit_word_export_enabled(host):
+    """Return whether this host may use the configured GrabzIt credentials."""
+    allowed_hosts = set(settings.GRABZIT_WORD_EXPORT_ALLOWED_HOSTS)
+    return bool(
+        settings.GRABZIT_APPLICATION_KEY
+        and settings.GRABZIT_APPLICATION_SECRET
+        and _normalize_hostname(host) in allowed_hosts
+    )
+
+
+def is_valid_docx(content):
+    """Reject blank or malformed provider output before offering a download."""
+    if not content:
+        return False
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            if not DOCX_REQUIRED_PATHS.issubset(archive.namelist()):
+                return False
+            document = ElementTree.fromstring(archive.read(DOCX_DOCUMENT_PATH))
+    except (ElementTree.ParseError, KeyError, zipfile.BadZipFile, zipfile.LargeZipFile):
+        return False
+
+    return any(
+        node.text and node.text.strip()
+        for node in document.iter(WORDPROCESSINGML_TEXT_TAG)
+    )
+
+
 def generate_docx_download_response(
     *,
     request,
@@ -115,6 +159,19 @@ def generate_docx_download_response(
     """
     Convert a URL to DOCX using GrabzIt and return it as an attachment response.
     """
+    request_host = _normalize_hostname(request.get_host())
+    if not is_grabzit_word_export_enabled(request_host):
+        logger.warning(
+            "GrabzIt Word export blocked for unconfigured host",
+            extra={
+                "export_host": request_host,
+                "allowed_export_hosts": settings.GRABZIT_WORD_EXPORT_ALLOWED_HOSTS,
+            },
+        )
+        return HttpResponse(
+            "Word export is not available in this environment.", status=503
+        )
+
     session_value = request.COOKIES.get("sessionid")
     csrf_value = request.COOKIES.get("csrftoken")
 
@@ -124,13 +181,11 @@ def generate_docx_download_response(
         )
 
     parsed = urlparse(export_url)
-    export_host = parsed.hostname
+    export_host = _normalize_hostname(parsed.hostname)
     export_scheme = parsed.scheme
 
     if not export_host or export_scheme != "https":
         return HttpResponseServerError("Invalid export URL for DOCX conversion.")
-
-    request_host = request.get_host().split(":")[0]
 
     # Defensive check: the cookies we are copying came from this incoming request,
     # so the request host should match the host GrabzIt will fetch.
@@ -160,19 +215,36 @@ def generate_docx_download_response(
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element
 
-    grabzit.URLToDOCX(export_url, options)
-
     file_path = f"/tmp/{tmp_name}.docx"
-    grabzit.SaveTo(file_path)
-
-    with open(file_path, "rb") as f:
-        content = f.read()
-
-    # Optional cleanup (safe even if it fails)
     try:
-        os.remove(file_path)
-    except OSError:
-        pass
+        grabzit.URLToDOCX(export_url, options)
+        if not grabzit.SaveTo(file_path):
+            raise RuntimeError("GrabzIt did not save the DOCX result")
+
+        with open(file_path, "rb") as f:
+            content = f.read()
+    except Exception:
+        logger.exception(
+            "GrabzIt Word export request failed",
+            extra={"export_host": export_host},
+        )
+        return HttpResponse(
+            "Word export could not be completed. Please try again later.", status=502
+        )
+    finally:
+        try:
+            os.remove(file_path)
+        except OSError:
+            pass
+
+    if not is_valid_docx(content):
+        logger.error(
+            "GrabzIt returned an invalid or empty DOCX",
+            extra={"export_host": export_host, "response_size": len(content)},
+        )
+        return HttpResponse(
+            "Word export could not be completed. Please try again later.", status=502
+        )
 
     response = HttpResponse(
         content,

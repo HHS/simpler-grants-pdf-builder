@@ -122,6 +122,16 @@ The deployment pipeline:
 | `grantee1` | [nofos.grantee1.simpler.grants.gov](https://nofos.grantee1.simpler.grants.gov) | External stakeholder pilot | Dedicated environment for a specific grantee group |
 | `prod` | [nofos.simpler.grants.gov](https://nofos.simpler.grants.gov) | Production | Clean domain, no environment subdomain |
 
+### Word export environment isolation
+
+GrabzIt stores the authentication cookies used for URL-to-DOCX conversion on the provider side. Production credentials must not be installed in another environment. Configure `GRABZIT_APPLICATION_KEY`, `GRABZIT_APPLICATION_SECRET`, and `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS` together:
+
+- Production uses its production-only credentials and allows only `nofos.simpler.grants.gov`.
+- Development, staging, training, and grantee environments leave the allowlist empty until each environment has dedicated GrabzIt credentials. The UI reports that Word export is unavailable, and the server rejects direct requests before contacting GrabzIt.
+- When dedicated non-production credentials are provisioned, configure only that environment's exact hostname in its allowlist. Never add a non-production hostname to the production deployment's allowlist.
+
+If production Word exports fail after a provider configuration change, first remove or disable Word export in the non-production environment and verify through approved secret-management and deployment metadata that production references its production-only credentials. Never expose credential or authentication-cookie values in source control, command output, application logs, screenshots, issues, or pull requests; rotate credentials through the approved secret-management process if exposure is suspected. Invalid or blank provider output is rejected by the application rather than downloaded as a successful Word document.
+
 ### Monitoring
 
 Each environment exposes a public health check endpoint that requires no authentication:

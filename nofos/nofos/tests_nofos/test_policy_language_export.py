@@ -5,11 +5,17 @@ from bs4 import BeautifulSoup
 from constance.test import override_config
 from django.contrib.staticfiles import finders
 from django.http import HttpResponse
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from users.models import BloomUser
 
-from nofos.models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
+from nofos.models import (
+    Nofo,
+    PolicyLanguageSlot,
+    PolicyLanguageVariant,
+    Section,
+    Subsection,
+)
 from nofos.nofo import _build_document
 from nofos.readability import ReadabilityMetricsUnavailable
 from nofos.views import duplicate_nofo
@@ -24,34 +30,53 @@ class PolicyLanguageImportTaggingTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-IMPORT-TAG", name="Import Tag Test Slot", slot_type="fixed",
-            required=False, flag_prominently=False, template_version="v1",
+            slot_key="TEST-IMPORT-TAG",
+            name="Import Tag Test Slot",
+            slot_type="fixed",
+            required=False,
+            flag_prominently=False,
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
-            slot=cls.slot, canonical_text="This exact canonical sentence must be present."
+            slot=cls.slot,
+            canonical_text="This exact canonical sentence must be present.",
         )
 
     @staticmethod
     def _section_input(subsection_name, body):
-        return [{
-            "name": "Section One", "order": 1, "has_section_page": False,
-            "subsections": [{
-                "name": subsection_name, "order": 1, "body": body, "tag": "h4",
-            }],
-        }]
+        return [
+            {
+                "name": "Section One",
+                "order": 1,
+                "has_section_page": False,
+                "subsections": [
+                    {
+                        "name": subsection_name,
+                        "order": 1,
+                        "body": body,
+                        "tag": "h4",
+                    }
+                ],
+            }
+        ]
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
     def test_flag_off_does_not_tag_even_on_exact_match(self):
         nofo = Nofo.objects.create(
-            title="Flag off import", short_name="flag-off-import", number="TEST-TAG-001",
-            opdiv="TEST", group="bloom", status="draft",
+            title="Flag off import",
+            short_name="flag-off-import",
+            number="TEST-TAG-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
         _build_document(
             nofo,
             self._section_input(
                 "Import Tag Test Slot", "This exact canonical sentence must be present."
             ),
-            SectionModel=Section, SubsectionModel=Subsection,
+            SectionModel=Section,
+            SubsectionModel=Subsection,
         )
         subsection = Subsection.objects.get(section__nofo=nofo)
         self.assertEqual(subsection.policy_language_status, "none")
@@ -60,15 +85,20 @@ class PolicyLanguageImportTaggingTests(TestCase):
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_tags_exact_match_as_intact(self):
         nofo = Nofo.objects.create(
-            title="Flag on import", short_name="flag-on-import", number="TEST-TAG-002",
-            opdiv="TEST", group="bloom", status="draft",
+            title="Flag on import",
+            short_name="flag-on-import",
+            number="TEST-TAG-002",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
         _build_document(
             nofo,
             self._section_input(
                 "Import Tag Test Slot", "This exact canonical sentence must be present."
             ),
-            SectionModel=Section, SubsectionModel=Subsection,
+            SectionModel=Section,
+            SubsectionModel=Subsection,
         )
         subsection = Subsection.objects.get(section__nofo=nofo)
         self.assertEqual(subsection.policy_language_status, "intact")
@@ -77,20 +107,30 @@ class PolicyLanguageImportTaggingTests(TestCase):
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_flag_on_ordinary_content_stays_none(self):
         nofo = Nofo.objects.create(
-            title="Ordinary import", short_name="ordinary-import", number="TEST-TAG-003",
-            opdiv="TEST", group="bloom", status="draft",
+            title="Ordinary import",
+            short_name="ordinary-import",
+            number="TEST-TAG-003",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
         _build_document(
             nofo,
             self._section_input(
                 "Program Summary", "This program funds community health workers."
             ),
-            SectionModel=Section, SubsectionModel=Subsection,
+            SectionModel=Section,
+            SubsectionModel=Subsection,
         )
         subsection = Subsection.objects.get(section__nofo=nofo)
         self.assertEqual(subsection.policy_language_status, "none")
 
 
+@override_settings(
+    GRABZIT_APPLICATION_KEY="synthetic-key",
+    GRABZIT_APPLICATION_SECRET="synthetic-secret",
+    GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=("testserver",),
+)
 class NofoExportPolicyLanguageRenderingTests(TestCase):
     """Full export-view rendering: flag on/off, stripped vs. flagged vs.
     ordinary content, the watermark, and the generated clearance summary."""
@@ -98,13 +138,17 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = BloomUser.objects.create_user(
-            email="policy-export-test@example.com", password="testpass123",
-            group="bloom", force_password_reset=False,
+            email="policy-export-test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
         )
 
         cls.sam_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-SAM-SLOT", name="SAM.gov registration requirement",
-            slot_type="fixed", template_version="v1",
+            slot_key="TEST-SAM-SLOT",
+            name="SAM.gov registration requirement",
+            slot_type="fixed",
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
             slot=cls.sam_slot,
@@ -116,8 +160,10 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         )
 
         cls.altered_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-ALTERED-SLOT", name="Initial review",
-            slot_type="fixed", template_version="v1",
+            slot_key="TEST-ALTERED-SLOT",
+            name="Initial review",
+            slot_type="fixed",
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
             slot=cls.altered_slot, canonical_text="Standard initial-review text."
@@ -126,7 +172,9 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         cls.prominent_slot = PolicyLanguageSlot.objects.create(
             slot_key="TEST-PROMINENT-SLOT",
             name="Funding preferences/priorities for alignment with agency priorities",
-            slot_type="fixed", flag_prominently=True, template_version="v1",
+            slot_type="fixed",
+            flag_prominently=True,
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
             slot=cls.prominent_slot, canonical_text="Standard funding-preferences text."
@@ -135,39 +183,63 @@ class NofoExportPolicyLanguageRenderingTests(TestCase):
         # Required, but deliberately never matched by any subsection below -
         # exercises the clearance summary's missing-required-slot listing.
         cls.missing_required_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-MISSING-REQUIRED-SLOT", name="Missing Required Slot",
-            slot_type="fixed", required=True, template_version="v1",
+            slot_key="TEST-MISSING-REQUIRED-SLOT",
+            name="Missing Required Slot",
+            slot_type="fixed",
+            required=True,
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
             slot=cls.missing_required_slot, canonical_text="Text nobody imported."
         )
 
         cls.nofo = Nofo.objects.create(
-            title="Policy export view test NOFO", short_name="policy-export-view-test",
-            number="TEST-VIEW-001", opdiv="TEST", group="bloom", status="draft",
+            title="Policy export view test NOFO",
+            short_name="policy-export-view-test",
+            number="TEST-VIEW-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
         section = Section.objects.create(
-            nofo=cls.nofo, name="Before You Get Started",
-            html_id="before-you-get-started", order=1,
+            nofo=cls.nofo,
+            name="Before You Get Started",
+            html_id="before-you-get-started",
+            order=1,
         )
         Subsection.objects.create(
-            section=section, name=cls.sam_slot.name, tag="h4",
-            body=cls.sam_slot.variants.first().canonical_text, order=1,
-            policy_language_status="intact", policy_language_slot=cls.sam_slot,
+            section=section,
+            name=cls.sam_slot.name,
+            tag="h4",
+            body=cls.sam_slot.variants.first().canonical_text,
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=cls.sam_slot,
         )
         Subsection.objects.create(
-            section=section, name=cls.altered_slot.name, tag="h4",
-            body="This text has clearly been rewritten by the program office.", order=2,
-            policy_language_status="may_be_altered", policy_language_slot=cls.altered_slot,
+            section=section,
+            name=cls.altered_slot.name,
+            tag="h4",
+            body="This text has clearly been rewritten by the program office.",
+            order=2,
+            policy_language_status="may_be_altered",
+            policy_language_slot=cls.altered_slot,
         )
         Subsection.objects.create(
-            section=section, name=cls.prominent_slot.name, tag="h4",
-            body="A modified version of the funding preferences language.", order=3,
-            policy_language_status="may_be_altered", policy_language_slot=cls.prominent_slot,
+            section=section,
+            name=cls.prominent_slot.name,
+            tag="h4",
+            body="A modified version of the funding preferences language.",
+            order=3,
+            policy_language_status="may_be_altered",
+            policy_language_slot=cls.prominent_slot,
         )
         Subsection.objects.create(
-            section=section, name="Program Summary", tag="h4",
-            body="This program funds community health workers in rural areas.", order=4,
+            section=section,
+            name="Program Summary",
+            tag="h4",
+            body="This program funds community health workers in rural areas.",
+            order=4,
             policy_language_status="none",
         )
 
@@ -465,12 +537,18 @@ class NofoExportPolicyLanguagePostTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = BloomUser.objects.create_user(
-            email="policy-export-post-test@example.com", password="testpass123",
-            group="bloom", force_password_reset=False,
+            email="policy-export-post-test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
         )
         cls.nofo = Nofo.objects.create(
-            title="Policy export POST test", short_name="policy-export-post-test",
-            number="TEST-POST-001", opdiv="TEST", group="bloom", status="draft",
+            title="Policy export POST test",
+            short_name="policy-export-post-test",
+            number="TEST-POST-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
 
     def setUp(self):
@@ -501,18 +579,34 @@ class NofoExportPolicyLanguagePostTests(TestCase):
         self.assertEqual(captured["filename_base"], self.nofo.short_name)
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    @override_settings(
+        GRABZIT_APPLICATION_KEY="synthetic-key",
+        GRABZIT_APPLICATION_SECRET="synthetic-secret",
+        GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=("nofos.simpler.grants.gov",),
+    )
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_direct_post_is_rejected_on_unconfigured_host(self, client_class):
+        resp = self.client.post(self.export_url, {"export_action": "download"})
+
+        self.assertEqual(resp.status_code, 503)
+        client_class.assert_not_called()
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
     def test_download_stripped_action_builds_stripped_export_url(self):
         captured = {}
         with patch(
             "nofos.views.generate_docx_download_response",
             side_effect=self._fake_generate(captured),
         ):
-            resp = self.client.post(self.export_url, {"export_action": "download_stripped"})
+            resp = self.client.post(
+                self.export_url, {"export_action": "download_stripped"}
+            )
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(captured["export_url"].endswith("?policy_stripped=1"))
         self.assertEqual(
-            captured["filename_base"], f"{self.nofo.short_name} (Policy Language Stripped)"
+            captured["filename_base"],
+            f"{self.nofo.short_name} (Policy Language Stripped)",
         )
 
     @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=False)
@@ -537,12 +631,16 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = BloomUser.objects.create_user(
-            email="policy-freshness-test@example.com", password="testpass123",
-            group="bloom", force_password_reset=False,
+            email="policy-freshness-test@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
         )
         cls.sam_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-FRESHNESS-SLOT", name="SAM.gov registration requirement",
-            slot_type="fixed", template_version="v1",
+            slot_key="TEST-FRESHNESS-SLOT",
+            name="SAM.gov registration requirement",
+            slot_type="fixed",
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
             slot=cls.sam_slot,
@@ -560,12 +658,18 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
     @staticmethod
     def _make_nofo(short_name, number):
         nofo = Nofo.objects.create(
-            title=f"Freshness test {short_name}", short_name=short_name,
-            number=number, opdiv="TEST", group="bloom", status="draft",
+            title=f"Freshness test {short_name}",
+            short_name=short_name,
+            number=number,
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
         section = Section.objects.create(
-            nofo=nofo, name="Before You Get Started",
-            html_id="before-you-get-started", order=1,
+            nofo=nofo,
+            name="Before You Get Started",
+            html_id="before-you-get-started",
+            order=1,
         )
         return nofo, section
 
@@ -574,9 +678,13 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         # Imported intact (matches canonical text exactly)...
         nofo, section = self._make_nofo("edit-staleness", "TEST-FRESH-001")
         subsection = Subsection.objects.create(
-            section=section, name=self.sam_slot.name, tag="h4",
-            body=self.sam_slot.variants.first().canonical_text, order=1,
-            policy_language_status="intact", policy_language_slot=self.sam_slot,
+            section=section,
+            name=self.sam_slot.name,
+            tag="h4",
+            body=self.sam_slot.variants.first().canonical_text,
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=self.sam_slot,
         )
 
         # ...then edited afterward, the way a program office would in the
@@ -606,9 +714,13 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
     def test_duplicated_nofo_reflects_edits_made_after_duplication(self):
         original, section = self._make_nofo("dup-original", "TEST-FRESH-002")
         Subsection.objects.create(
-            section=section, name=self.sam_slot.name, tag="h4",
-            body=self.sam_slot.variants.first().canonical_text, order=1,
-            policy_language_status="intact", policy_language_slot=self.sam_slot,
+            section=section,
+            name=self.sam_slot.name,
+            tag="h4",
+            body=self.sam_slot.variants.first().canonical_text,
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=self.sam_slot,
         )
 
         duplicate = duplicate_nofo(original)
@@ -638,9 +750,13 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         nofo, section = self._make_nofo("canonical-revision", "TEST-FRESH-003")
         old_canonical_text = self.sam_slot.variants.first().canonical_text
         Subsection.objects.create(
-            section=section, name=self.sam_slot.name, tag="h4",
-            body=old_canonical_text, order=1,
-            policy_language_status="intact", policy_language_slot=self.sam_slot,
+            section=section,
+            name=self.sam_slot.name,
+            tag="h4",
+            body=old_canonical_text,
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=self.sam_slot,
         )
 
         # HHS revises this slot's wording - supersede it, the same way
@@ -649,8 +765,11 @@ class NofoExportPolicyLanguageFreshnessTests(TestCase):
         self.sam_slot.is_current = False
         self.sam_slot.save(update_fields=["is_current"])
         new_slot = PolicyLanguageSlot.objects.create(
-            slot_key=self.sam_slot.slot_key, name=self.sam_slot.name, slot_type="fixed",
-            required=True, template_version="TEST-REVISED",
+            slot_key=self.sam_slot.slot_key,
+            name=self.sam_slot.name,
+            slot_type="fixed",
+            required=True,
+            template_version="TEST-REVISED",
         )
         PolicyLanguageVariant.objects.create(
             slot=new_slot,
