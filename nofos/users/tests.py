@@ -1,8 +1,12 @@
+import json
+import time
 from unittest.mock import MagicMock, patch
 
+import jwt
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from jwt.algorithms import RSAAlgorithm
 from users.auth.backend import LoginGovBackend
 from users.auth.login_gov import LoginGovClient
 
@@ -125,6 +129,145 @@ class LoginGovClientTests(TestCase):
 
         self.assertEqual(decoded["sub"], "test_sub")
         self.assertEqual(decoded["email"], "test@example.com")
+
+
+@override_settings(**test_login_gov_settings_with_key)
+@patch("users.auth.login_gov.load_pem_private_key")
+@patch("users.auth.login_gov.requests.get")
+class LoginGovIdTokenSignatureTests(TestCase):
+    """Validate real signed ID tokens without mocking PyJWT."""
+
+    KID = "login_gov_kid"
+    NONCE = "test_nonce"
+
+    def setUp(self):
+        self.client_private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048
+        )
+        self.login_gov_private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048
+        )
+        jwk = json.loads(RSAAlgorithm.to_jwk(self.login_gov_private_key.public_key()))
+        jwk["kid"] = self.KID
+        self.certs = {"keys": [jwk]}
+
+    def _mock_certs(self, mock_get, mock_load_key):
+        mock_response = MagicMock()
+        mock_response.json.return_value = self.certs
+        mock_get.return_value = mock_response
+        mock_load_key.return_value = self.client_private_key
+
+    def _claims(self, **overrides):
+        now = int(time.time())
+        claims = {
+            "iss": "https://test.login.gov/",
+            "aud": "test_client_id",
+            "sub": "test_sub",
+            "email": "test@example.com",
+            "nonce": self.NONCE,
+            "iat": now,
+            "exp": now + 300,
+        }
+        claims.update(overrides)
+        return claims
+
+    def _sign(self, claims, key=None, kid=KID):
+        return jwt.encode(
+            claims,
+            key or self.login_gov_private_key,
+            algorithm="RS256",
+            headers={"kid": kid},
+        )
+
+    def _assert_rejected(self, id_token):
+        client = LoginGovClient()
+        with self.assertRaises(ValueError) as context:
+            client.validate_id_token(id_token, self.NONCE)
+        self.assertIn("Invalid ID token", str(context.exception))
+
+    def test_valid_token(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        client = LoginGovClient()
+
+        decoded = client.validate_id_token(self._sign(self._claims()), self.NONCE)
+
+        self.assertEqual(decoded["sub"], "test_sub")
+        self.assertEqual(decoded["email"], "test@example.com")
+        mock_get.assert_called_once_with(
+            "https://test.login.gov/api/openid_connect/certs"
+        )
+
+    def test_rejects_wrong_nonce(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        self._assert_rejected(self._sign(self._claims(nonce="other_nonce")))
+
+    def test_rejects_wrong_audience(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        self._assert_rejected(self._sign(self._claims(aud="other_client_id")))
+
+    def test_rejects_wrong_issuer(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        self._assert_rejected(self._sign(self._claims(iss="https://evil.example/")))
+
+    def test_rejects_expired_token(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        now = int(time.time())
+        self._assert_rejected(self._sign(self._claims(iat=now - 600, exp=now - 300)))
+
+    def test_rejects_token_signed_by_other_key(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self._assert_rejected(self._sign(self._claims(), key=other_key))
+
+    def test_rejects_unknown_kid(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        self._assert_rejected(self._sign(self._claims(), kid="unknown_kid"))
+
+    def test_rejects_tampered_payload(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        header, _, signature = self._sign(self._claims()).split(".")
+        forged_payload = self._sign(self._claims(email="attacker@example.com")).split(
+            "."
+        )[1]
+        self._assert_rejected(f"{header}.{forged_payload}.{signature}")
+
+    def test_rejects_hs256_token(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        id_token = jwt.encode(
+            self._claims(),
+            "a-shared-secret-that-is-at-least-32-bytes",
+            algorithm="HS256",
+            headers={"kid": self.KID},
+        )
+        self._assert_rejected(id_token)
+
+    def test_rejects_unsigned_token(self, mock_get, mock_load_key):
+        self._mock_certs(mock_get, mock_load_key)
+        id_token = jwt.encode(
+            self._claims(), None, algorithm="none", headers={"kid": self.KID}
+        )
+        self._assert_rejected(id_token)
+
+    @patch("users.auth.login_gov.requests.post")
+    def test_get_token_client_assertion_is_signed(
+        self, mock_post, mock_get, mock_load_key
+    ):
+        self._mock_certs(mock_get, mock_load_key)
+        mock_post.return_value = MagicMock()
+
+        LoginGovClient().get_token("test_code")
+
+        token_url = "https://test.login.gov/api/openid_connect/token"
+        assertion = mock_post.call_args.kwargs["data"]["client_assertion"]
+        decoded = jwt.decode(
+            assertion,
+            self.client_private_key.public_key(),
+            algorithms=["RS256"],
+            audience=token_url,
+            issuer="test_client_id",
+        )
+        self.assertEqual(decoded["sub"], "test_client_id")
+        self.assertEqual(mock_post.call_args.args[0], token_url)
 
 
 class LoginGovBackendTests(TestCase):
