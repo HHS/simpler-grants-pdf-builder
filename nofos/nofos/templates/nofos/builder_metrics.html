@@ -105,19 +105,7 @@
       This history is separate from application logs and database backups.</p>
   </details>
 
-  <div id="metrics-filter" class="metrics-filter margin-bottom-3">
-    <div class="metrics-filter-control">
-      <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
-      <select class="usa-select" name="group" id="metrics-group" aria-describedby="metrics-filter-hint">
-        <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
-        {% for value, label in opdiv_choices %}
-        <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
-  <span id="metrics-filter-hint" class="usa-sr-only">Selecting an OpDiv updates all metrics on this page.</span>
-  <p id="metrics-filter-status" role="status" aria-live="polite" class="usa-sr-only"></p>
+  {% include "nofos/includes/metrics_opdiv_filter.html" with opdiv_choices=opdiv_choices selected_group=selected_group hint="Selecting an OpDiv updates all metrics on this page." only %}
   <p class="metrics-print-scope font-sans-sm text-bold margin-bottom-3">OpDiv group: <span id="metrics-applied-group">{{ metrics_data.groupLabel }}</span></p>
   <h2 class="font-heading-md margin-top-0 margin-bottom-2">This month at a glance</h2>
   <div class="grid-row grid-gap-2 margin-bottom-3" id="metrics-kpi-row"></div>

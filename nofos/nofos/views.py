@@ -3031,6 +3031,9 @@ class BuilderMetricsImportErrorsView(MetricsViewerRequiredMixin, TemplateView):
     """
 
     template_name = "nofos/builder_metrics_import_errors.html"
+    # What the OpDiv filter swaps in without a reload, so it re-renders the
+    # tables through the same template as a full page load (#993).
+    results_template_name = "nofos/includes/builder_metrics_import_errors_results.html"
     metrics_since = METRICS_SINCE
 
     # Enough to see a pattern without an unbounded table. The summary above it
@@ -3044,8 +3047,13 @@ class BuilderMetricsImportErrorsView(MetricsViewerRequiredMixin, TemplateView):
 
         response = super().get(request, *args, **kwargs)
         response["Cache-Control"] = "private, no-store"
-        response["Vary"] = "Cookie"
+        response["Vary"] = "X-Requested-With, Cookie"
         return response
+
+    def get_template_names(self):
+        if self.request.headers.get("X-Requested-With") == "fetch":
+            return [self.results_template_name]
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
