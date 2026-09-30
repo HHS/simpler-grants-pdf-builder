@@ -166,6 +166,44 @@ remains. Ben can review the local Word evidence independently of deployment.
 
 ## Draft review gates
 
+### September 30 refresh and local verification
+
+Refreshed against main at `b9b696f4`. This section supersedes the older
+remaining-browser-check list; September 10/14 results below are historical
+evidence, not current deployment clearance.
+
+The rebuilt Linux application image uses the current lockfile and pinned
+Pandoc 3.11. All 32 focused Word-export tests passed with Pandoc installed and
+network access disabled. New committed route tests cover Composer instructions
+and placeholders, Writer edited values and tables, cross-group rejection, and
+Composer-admin access. The full suite passed 2,223 tests with two skips, and all
+30 JavaScript tests passed. An independent review of
+the implementation and new route tests found no blocker for a default-off
+foundation.
+
+Chrome downloaded actual DOCX files through normal, clearance, Composer and
+Writer buttons against this image using an isolated copy of synthetic fixtures.
+The downloads retained the 100 long-document markers; normal/clearance retained
+two raster images, and Writer retained one. Composer retained `{Amount}`.
+The clearance-specific button returned the pre-decisional review notice.
+Screenshots and coverage limits are in
+[September 30 evidence](word-export-evidence/2026-09-30/README.md).
+This is browser and DOCX-structure verification, not a new desktop Word layout
+review or shared-dev deployment.
+
+The network-disabled resource probe was repeated with two CPUs and a 1 GiB
+memory limit, without extra swap. Direct conversion of 2,058,817 HTML bytes
+completed in 3.99–4.32 seconds at approximately 306 MiB peak child RSS. Oversized
+9,264,687-byte inputs were rejected before launching Pandoc. Cross-process
+admission allowed exactly one holder, rejected additional entrants, and was
+reusable afterward. Direct parallel conversion deliberately bypasses admission;
+child RSS is not whole-container memory and this is not deployed HTTP capacity.
+
+Default-off merge and provider rollout are separate. Shared-dev capacity and
+operating verification, packaged-source distribution, the supported-image scope,
+and a reviewed production cutover remain rollout work. No shared environment or
+stored feature flag was changed, and GrabzIt remains the flag-off provider.
+
 ### September 14 integration verification
 
 The branch was refreshed against main at `9f76194d`, including the separate TLS
@@ -211,7 +249,7 @@ The [implementation decision](adr/2026-09-10-local-word-export.md) records the
 Pandoc-first agreement and the remaining rollout conditions.
 
 - Decide whether remote/SVG images are required; if so, add safe support and verification before rollout. Bundled and embedded raster images are supported; other sources fail explicitly.
-- Complete browser verification of Composer/Writer/clearance workflows beyond their successful server-side export/import checks.
+- Browser downloads for Composer, Writer and clearance were verified locally on September 30; repeat the required scenarios in the intended deployed runtime before rollout.
 - Expand representative full-length fixtures. A committed structural fixture and actual conversion/page-break/access/clearance regression checks now complement timeout cleanup, image-path restrictions, feature routing, numbering preservation, and client error handling tests.
 - Complete representative real-document and full-page visual/link/image review. Normal, Composer, and Writer synthetic Word edit/save/import checks passed, and one real CDC document passed route-level conversion/re-import; this does not establish all-workflow fidelity.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.

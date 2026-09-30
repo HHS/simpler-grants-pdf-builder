@@ -209,3 +209,116 @@ class PandocClearanceRouteTests(TestCase):
         self.user.save()
         response = self.client.post(self.url, {"export_action": "download"})
         self.assertEqual(response.status_code, 403)
+
+
+@skipUnless(
+    shutil.which(getattr(settings, "PANDOC_BINARY", "pandoc")),
+    "Requires the Pandoc binary bundled in the application image",
+)
+@override_config(PANDOC_WORD_EXPORT_ENABLED=True)
+class PandocComposerWriterRouteTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from composer.models import (
+            ContentGuide,
+            ContentGuideInstance,
+            ContentGuideSection,
+            ContentGuideSubsection,
+        )
+        from users.models import BloomUser
+
+        cls.user = BloomUser.objects.create_user(
+            email="pandoc-admin@example.test",
+            password=None,
+            group="hrsa",
+            is_composer_admin=True,
+            force_password_reset=False,
+        )
+        cls.guide = ContentGuide.objects.create(
+            title="Synthetic Word export guide",
+            group="hrsa",
+            opdiv="HRSA",
+        )
+        cls.writer = ContentGuideInstance.objects.create(
+            title="Synthetic Word export draft",
+            group="hrsa",
+            opdiv="HRSA",
+        )
+        for document, parent, body in (
+            (cls.guide, "content_guide", "Editable amount {Amount}"),
+            (cls.writer, "content_guide_instance", "Edited amount 125000"),
+        ):
+            section = ContentGuideSection.objects.create(
+                **{parent: document},
+                name="Step 1: Review the Opportunity",
+                html_id="step-1",
+                order=1,
+            )
+            ContentGuideSubsection.objects.create(
+                section=section,
+                name="Funding details",
+                tag="h3",
+                order=1,
+                body=body
+                + "\n\n| Activity | Amount |\n| --- | --- |\n| Synthetic services | 125000 |",
+                instructions="Explain the requested funding.",
+                edit_mode="full",
+            )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def download(self, route, document, data):
+        response = self.client.post(reverse(route, args=[document.pk]), data)
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        with ZipFile(io.BytesIO(response.content)) as archive:
+            xml = ET.fromstring(archive.read("word/document.xml"))
+        text = " ".join(node.text or "" for node in xml.iter(W + "t"))
+        return xml, " ".join(text.split())
+
+    def test_composer_download_retains_instructions_and_placeholders(self):
+        xml, text = self.download(
+            "composer:composer_export",
+            self.guide,
+            {"export_action": "download"},
+        )
+        self.assertIn("Editable amount {Amount}", text)
+        self.assertIn("Explain the requested funding.", text)
+        # Composer also uses a table to frame its writer instructions.
+        self.assertTrue(
+            any(
+                "Synthetic services"
+                in " ".join(node.text or "" for node in table.iter(W + "t"))
+                for table in xml.iter(W + "tbl")
+            )
+        )
+
+    def test_writer_download_retains_edited_values_and_tables(self):
+        xml, text = self.download(
+            "composer:writer_preview",
+            self.writer,
+            {"action": "download"},
+        )
+        self.assertIn("Edited amount 125000", text)
+        self.assertIn("Synthetic services", text)
+        self.assertEqual(len(list(xml.iter(W + "tbl"))), 1)
+
+    def test_other_group_cannot_download_composer_or_writer(self):
+        self.user.group = "acf"
+        self.user.save()
+        for route, document, data in (
+            ("composer:composer_export", self.guide, {"export_action": "download"}),
+            ("composer:writer_preview", self.writer, {"action": "download"}),
+        ):
+            with self.subTest(route=route):
+                response = self.client.post(reverse(route, args=[document.pk]), data)
+                self.assertEqual(response.status_code, 403)
+
+    def test_composer_download_requires_composer_admin(self):
+        self.user.is_composer_admin = False
+        self.user.save()
+        response = self.client.post(
+            reverse("composer:composer_export", args=[self.guide.pk]),
+            {"export_action": "download"},
+        )
+        self.assertEqual(response.status_code, 403)
