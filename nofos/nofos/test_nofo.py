@@ -4773,6 +4773,27 @@ class HTMLSuggestThemeTests(TestCase):
             "portrait-hrsa-white",
         )
 
+    def test_suggest_opdiv_samhsa_full_name_returns_samhsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme(
+                "SM-26-002",
+                opdiv="Substance Abuse and Mental Health Services Administration (SAMHSA)",
+            ),
+            "portrait-samhsa-white",
+        )
+
+    def test_suggest_opdiv_samhsa_abbreviation_returns_samhsa_light_theme(self):
+        self.assertEqual(
+            suggest_nofo_theme("UNKNOWN-001", opdiv="SAMHSA"),
+            "portrait-samhsa-white",
+        )
+
+    def test_suggest_opdiv_containing_samhsa_substring_does_not_match(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv="SAMHSAffiliate"),
+            "portrait-cdc-blue",
+        )
+
     def test_suggest_opdiv_nih_takes_precedence_over_hrsa(self):
         self.assertEqual(
             suggest_nofo_theme(
@@ -5500,6 +5521,31 @@ class SuggestNofoFieldsTests(TestCase):
         self.nofo.save()
 
         self.assertEqual(self.nofo.before_you_begin, "hrsa")
+
+    def test_suggest_all_nofo_fields_uses_samhsa_opdiv_theme(self):
+        samhsa_html = """
+            <html>
+                <body>
+                    <p>Opportunity Number: SM-26-002</p>
+                    <p>OpDiv:</p>
+                    <p>Substance Abuse and Mental Health Services Administration (SAMHSA)</p>
+                    <p>Metadata Author: Substance Abuse and Mental Health Services Administration (SAMHSA)</p>
+                </body>
+            </html>
+        """
+
+        suggest_all_nofo_fields(self.nofo, BeautifulSoup(samhsa_html, "html.parser"))
+        self.nofo.save()
+
+        self.assertEqual(
+            self.nofo.opdiv,
+            "Substance Abuse and Mental Health Services Administration (SAMHSA)",
+        )
+        self.assertEqual(
+            self.nofo.author,
+            "Substance Abuse and Mental Health Services Administration (SAMHSA)",
+        )
+        self.assertEqual(self.nofo.theme, "portrait-samhsa-white")
 
     def test_suggest_all_nofo_fields_cdc_nofo_defaults_to_text_cover(self):
         """A newly imported CDC NOFO gets the CDC theme and the text-only cover."""
