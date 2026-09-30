@@ -152,6 +152,27 @@ class NofoMetadataWarningTests(TestCase):
         )
         self.assertFalse(soup.select("[required]"))
 
+    def test_metadata_edit_form_uses_updated_guidance_and_subject_textarea(self):
+        response = self.client.get(self.metadata_url)
+        form = response.context["form"]
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        self.assertEqual(
+            form.fields["author"].help_text,
+            "Use your agency or OpDiv’s full name (and acronym in parenthesis).",
+        )
+        self.assertEqual(
+            form.fields["subject"].help_text,
+            "Use this formula: A notice of funding opportunity from the "
+            "[Agency or OpDiv] to [short purpose of the NOFO].",
+        )
+        self.assertEqual(
+            form.fields["keywords"].help_text,
+            "Choose 8-10 specific terms or phrases from the NOFO. Separate by commas.",
+        )
+        self.assertIsNotNone(soup.find("textarea", attrs={"name": "subject"}))
+        self.assertIsNotNone(soup.find("textarea", attrs={"name": "keywords"}))
+
     def test_incomplete_metadata_cannot_be_saved(self):
         response = self.client.post(
             self.metadata_url,
