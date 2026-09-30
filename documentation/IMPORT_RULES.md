@@ -484,7 +484,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-042 — Cover theme suggestion
 - **Type:** extraction
-- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym.
+- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `samhsa`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym. SAMHSA is recognized from the full "Substance Abuse and Mental Health Services Administration" OpDiv name or a standalone `SAMHSA` OpDiv acronym.
 - **Action:** Suggest the matching portrait theme.
 - **Source:** `nofo.py::suggest_nofo_theme`, `is_acf_nofo_metadata`
 - **Status:** active
