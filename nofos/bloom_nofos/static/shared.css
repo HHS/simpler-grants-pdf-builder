@@ -176,6 +176,10 @@
   background-color: var(--color--nih-grey);
 }
 
+.bg-group--samhsa {
+  background-color: var(--color--samhsa-blue);
+}
+
 .bg-group--staging {
   background-color: var(--color--staging-coral);
 }

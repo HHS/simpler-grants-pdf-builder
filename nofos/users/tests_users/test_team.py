@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
+from nofos.models import Nofo
+
 
 class BloomUserTeamBaseTests(TestCase):
     def setUp(self):
@@ -142,6 +144,56 @@ class BloomUserTeamCreateViewTests(BloomUserTeamBaseTests):
         self.assertTrue(user.force_password_reset)
         self.assertIsNone(user.login_gov_user_id)
         self.assertTrue(user.check_password("testpass123"))
+
+    def test_superuser_can_create_samhsa_user_with_samhsa_only_nofo_access(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.post(
+            self.url,
+            {
+                "email": "samhsa-user@example.com",
+                "full_name": "SAMHSA User",
+                "group": "samhsa",
+                "password1": "testpass123",
+                "password2": "testpass123",
+            },
+        )
+
+        self.assertRedirects(response, reverse("users:user_team"))
+        user = BloomUser.objects.get(email="samhsa-user@example.com")
+        self.assertEqual(user.group, "samhsa")
+        user.force_password_reset = False
+        user.save(update_fields=["force_password_reset"])
+
+        samhsa_nofo = Nofo.objects.create(
+            short_name="SAMHSA NOFO",
+            title="SAMHSA NOFO",
+            opdiv="SAMHSA",
+            group="samhsa",
+        )
+        other_nofo = Nofo.objects.create(
+            short_name="Other NOFO",
+            title="Other NOFO",
+            opdiv="CDC",
+            group="cdc",
+        )
+
+        self.client.force_login(user)
+        index_response = self.client.get(reverse("nofos:nofo_index"))
+
+        self.assertQuerySetEqual(index_response.context["nofo_list"], [samhsa_nofo])
+        self.assertEqual(
+            self.client.get(
+                reverse("nofos:nofo_view", args=[samhsa_nofo.pk])
+            ).status_code,
+            200,
+        )
+        self.assertEqual(
+            self.client.get(
+                reverse("nofos:nofo_view", args=[other_nofo.pk])
+            ).status_code,
+            403,
+        )
 
     def test_superuser_can_create_superuser_in_bloom_group(self):
         self.client.force_login(self.superuser)

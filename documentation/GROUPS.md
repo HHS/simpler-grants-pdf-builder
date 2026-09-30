@@ -68,6 +68,7 @@ poetry run python manage.py makemigrations
 
 - `users.BloomUser`
 - `nofos.Nofo`
+- `nofos.ExternalSourceHandoff`
 - `compare.CompareDocument`
 - `composer.ContentGuide`
 - `composer.ContentGuideInstance`
@@ -80,9 +81,9 @@ Review the generated migration files before applying them.
 poetry run python manage.py migrate
 ```
 
-### 4. Add a theme color and CSS class to `shared.css`
+### 4. Add or reuse a theme color and add a CSS class to `shared.css`
 
-Each group has a theme color used to visually tag users and NOFOs in the UI. Add a new CSS variable at the top of `nofos/bloom_nofos/static/shared.css`, then add a corresponding class using the group's slug.
+Each group has a theme color used to visually tag users and NOFOs in the UI. If the agency already has a design theme, reuse its existing color variable. Otherwise, add a new CSS variable at the top of `nofos/bloom_nofos/static/shared.css`. Then add a corresponding class using the group's slug.
 
 For example, for a group with slug `"acf"`:
 
@@ -95,5 +96,15 @@ For example, for a group with slug `"acf"`:
   background-color: var(--color--acf-blue);
 }
 ```
+
+### 5. Verify group assignment and access boundaries
+
+Add automated coverage that confirms:
+
+- A superuser can create a user and assign the new group
+- The new user can list and open NOFOs in their group
+- The new user cannot list or open NOFOs from another group
+
+Run the affected tests and `poetry run python nofos/manage.py makemigrations --check` before opening the pull request.
 
 For a reference example, see [PR #698 — Adding NIH as a new group](https://github.com/HHS/simpler-grants-pdf-builder/pull/698).

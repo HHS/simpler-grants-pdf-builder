@@ -177,7 +177,7 @@ automatic reclassification or correction interface.
 
 ## OpDiv filtering (#886)
 
-The dashboard defaults to All OpDivs and offers the eight agency groups from
+The dashboard defaults to All OpDivs and offers the nine agency groups from
 `GROUP_CHOICES`, excluding Bloomworks and staging. Changing the dropdown updates all six
 metrics in place and stores `?group=cdc` (for example) in the URL. Both HTML and
 JSON responses require the existing metrics-viewer permission. Invalid/internal

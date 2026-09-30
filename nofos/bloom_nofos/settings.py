@@ -740,6 +740,7 @@ GROUP_CHOICES = [
     ("hrsa", "HRSA: Health Resources and Services Administration"),
     ("ihs", "IHS: Indian Health Service"),
     ("nih", "NIH: National Institutes of Health"),
+    ("samhsa", "SAMHSA: Substance Abuse and Mental Health Services Administration"),
     ("staging", "Staging environment"),
 ]
 
