@@ -275,6 +275,7 @@ To manually deploy to production, create a new file `./nofos/bloom_nofos/.env.pr
 - `GRABZIT_APPLICATION_KEY` and `GRABZIT_APPLICATION_SECRET`: credentials for the GrabzIt Word conversion provider. Do not share production credentials with another environment.
 
   - default `""`: Word export is unavailable without both values.
+  - Store values only in the approved secret manager. Never commit, log, screenshot, or include them in issues or pull requests.
 
 - `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS`: exact comma-separated hostnames allowed to use the configured GrabzIt credentials. The application enforces this on the server before writing provider-side cookies or requesting a conversion.
 

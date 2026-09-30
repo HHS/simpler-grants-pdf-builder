@@ -24,7 +24,8 @@ title convention.
 Do not test GrabzIt Word export from a non-production environment using production credentials.
 `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS` is enforced server-side; keep it empty outside production until
 that environment has dedicated GrabzIt credentials. See `DEPLOYMENT.md` § Word export environment
-isolation.
+isolation. Never include credential or authentication-cookie values in source control, logs,
+screenshots, issues, or pull requests.
 
 ## NOFO import rules
 

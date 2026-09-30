@@ -130,7 +130,7 @@ GrabzIt stores the authentication cookies used for URL-to-DOCX conversion on the
 - Development, staging, training, and grantee environments leave the allowlist empty until each environment has dedicated GrabzIt credentials. The UI reports that Word export is unavailable, and the server rejects direct requests before contacting GrabzIt.
 - When dedicated non-production credentials are provisioned, configure only that environment's exact hostname in its allowlist. Never add a non-production hostname to the production deployment's allowlist.
 
-If production Word exports fail after a provider configuration change, first remove or disable Word export in the non-production environment, verify that production has the production-only key and secret, and inspect GrabzIt's cookies for the production domain without copying cookie values into logs or tickets. Invalid or blank provider output is rejected by the application rather than downloaded as a successful Word document.
+If production Word exports fail after a provider configuration change, first remove or disable Word export in the non-production environment and verify through approved secret-management and deployment metadata that production references its production-only credentials. Never expose credential or authentication-cookie values in source control, command output, application logs, screenshots, issues, or pull requests; rotate credentials through the approved secret-management process if exposure is suspected. Invalid or blank provider output is rejected by the application rather than downloaded as a successful Word document.
 
 ### Monitoring
 
