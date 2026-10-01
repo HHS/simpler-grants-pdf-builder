@@ -212,7 +212,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ## Footnotes & Endnotes
 
-The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers native Word/Google Docs notes (IMPORT-015 through IMPORT-017 and IMPORT-053) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`docs/endnote-import.md`](../docs/endnote-import.md).
+The example that prompted this document: detecting a footnote/endnote list and formatting it consistently. Covers native Word/Google Docs notes (IMPORT-015 through IMPORT-017 and IMPORT-053) and manually authored bracketed references like `[1]` (IMPORT-049 through IMPORT-051), a separate mechanism documented for authors in [`endnote-import.md`](endnote-import.md).
 
 ### IMPORT-015 — Synthesize missing "Endnotes" heading
 - **Type:** conversion

@@ -19,6 +19,13 @@ from CHANGELOG.md despite a valid title. If that happens, add a `BEGIN_COMMIT_OV
 See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules, and the hotfix
 title convention.
 
+## Documentation belongs in `documentation/`
+
+Put repository documentation in the top-level `documentation/` directory. Do not create a
+top-level `docs/` directory. Add durable guides to `documentation/README.md`; use
+`documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
+for PR-specific screenshots and validation notes.
+
 ## Word export safety
 
 Do not test GrabzIt Word export from a non-production environment using production credentials.
