@@ -134,5 +134,7 @@ These aren't technical questions, but they take the longest to arrange:
 ## Not in scope
 
 - Sending Word documents into Builder (tracked separately)
-- Publishing to Grants.gov or Simpler.Grants.gov
+- Direct publication from NOFO Builder to Grants.gov or Simpler.Grants.gov.
+  Announcement Services may publish the retrieved PDF through its existing
+  processes; that downstream workflow is outside the scope of this proposal.
 - Any public access to pre-decisional PDFs
