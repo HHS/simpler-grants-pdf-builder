@@ -410,6 +410,62 @@ class NofoMarkdownConverterTHTest(TestCase):
         self.assertEqual(md_body.strip(), expected_html.strip())
 
 
+class NofoMarkdownConverterPointsColumnTest(TestCase):
+    def test_scoring_table_gets_points_class(self):
+        html = (
+            "<table><tr><th><p><strong>Reviewers will evaluate the extent to which the applicant provides:</strong></p></th>"
+            "<th><p><strong>Point value</strong></p></th></tr>"
+            "<tr><td><p>Relevant experience and capacity.</p></td><td><p>10 points</p></td></tr>"
+            "<tr><td><p>Experience or capacity to implement the evaluation plan.</p></td><td><p>5 points</p></td></tr></table>"
+        )
+        expected_markdown = (
+            "| **Reviewers will evaluate the extent to which the applicant provides:** | **Point value** {: .col--points } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience and capacity. | 10 points |\n"
+            "| Experience or capacity to implement the evaluation plan. | 5 points |"
+        )
+        self.assertEqual(md(html).strip(), expected_markdown)
+
+    def test_three_column_scoring_table(self):
+        html = (
+            "<table><tr><th>Criterion</th><th>Description</th><th>Points</th></tr>"
+            "<tr><td>Work plan</td><td>A work plan that aligns</td><td>10 points</td></tr></table>"
+        )
+        expected_markdown = (
+            "| Criterion {: .w-33 } | Description {: .w-33 } | Points {: .col--points } |\n"
+            "| --- | --- | --- |\n"
+            "| Work plan | A work plan that aligns | 10 points |"
+        )
+        self.assertEqual(md(html).strip(), expected_markdown)
+
+    def test_long_points_text_is_not_marked(self):
+        html = (
+            "<table><tr><th>Criteria</th><th>Point value</th></tr>"
+            "<tr><td>A budget</td><td>Up to 5 points, see the budget section</td></tr></table>"
+        )
+        expected_markdown = (
+            "| Criteria | Point value |\n"
+            "| --- | --- |\n"
+            "| A budget | Up to 5 points, see the budget section |"
+        )
+        self.assertEqual(md(html).strip(), expected_markdown)
+
+    def test_th_in_body_row_is_not_marked(self):
+        html = (
+            "<table><tr><th>Criteria</th><th>Points</th></tr>"
+            "<tr><td>Work plan</td><th>10 points</th></tr></table>"
+        )
+        self.assertEqual(md(html).count("col--points"), 1)
+
+    def test_spanned_table_is_not_marked(self):
+        html = (
+            "<table><tr><th>Criteria</th><th>Points</th></tr>"
+            "<tr><td colspan='2'>Section A</td></tr>"
+            "<tr><td>Work plan</td><td>10 points</td></tr></table>"
+        )
+        self.assertNotIn("col--points", md(html))
+
+
 class NofoMarkdownConverterOLTest(TestCase):
     maxDiff = None
 

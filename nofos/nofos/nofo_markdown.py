@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
 from .import_transforms import APPLICATION_CHECKLIST_CHILD_CLASS
+from .templatetags.utils import POINTS_COLUMN_CLASS, get_points_column_indexes
 
 # this is copied from __init__.py in markdownify
 # https://github.com/matthewwithanm/python-markdownify/blob/2d654a6b7e822e1547199da855c9d304d162cb27/markdownify/__init__.py#L9
@@ -50,6 +51,19 @@ def get_width_class(th):
 
         # default to w-33
         return "w-33"
+
+    def _is_points_column_th(th):
+        table = th.find_parent("table")
+        if not table or th.parent is not table.find("tr"):
+            return False
+
+        header_cells = th.parent.find_all(["th", "td"], recursive=False)
+        index = next(i for i, cell in enumerate(header_cells) if cell is th)
+        return index in get_points_column_indexes(table)
+
+    # "Point value" columns in scoring tables shrink to fit their content
+    if _is_points_column_th(th):
+        return POINTS_COLUMN_CLASS
 
     num_cols = _get_num_columns_th(th)
     width_class = _get_width_class_from_num_columns(num_cols)

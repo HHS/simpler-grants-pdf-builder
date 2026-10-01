@@ -4,9 +4,11 @@ from bs4 import BeautifulSoup, Tag
 from django.contrib.staticfiles import finders
 from django.test import TestCase
 from django.utils.safestring import SafeString
+from martor.utils import markdownify
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
+from nofos.templatetags.add_classes_to_tables import add_classes_to_tables
 from nofos.templatetags.replace_unicode_with_icon import (
     has_checkbox,
     is_before_sublist,
@@ -24,6 +26,7 @@ from nofos.templatetags.utils import (
     add_caption_to_table,
     add_class_to_list,
     add_class_to_nofo_title,
+    add_class_to_points_columns,
     add_class_to_table,
     add_class_to_table_rows,
     convert_paragraph_to_searchable_hr,
@@ -33,6 +36,7 @@ from nofos.templatetags.utils import (
     get_breadcrumb_text,
     get_footnote_type,
     get_parent_td,
+    get_points_column_indexes,
     is_floating_callout_box,
     is_footnote_ref,
     match_numbered_sublist,
@@ -907,6 +911,254 @@ class TestAddClassToTableRows(TestCase):
         table_rows = soup.find_all("tr")
         self.assertNotEqual(add_class_to_table_rows(table_rows[0]), "table-row--empty")
         self.assertEqual(add_class_to_table_rows(table_rows[1]), "table-row--empty")
+
+
+class GetPointsColumnIndexesTests(TestCase):
+    def _get_indexes(self, html):
+        return get_points_column_indexes(
+            BeautifulSoup(html, "html.parser").find("table")
+        )
+
+    def _two_col_table(self, header="Point value", cell="5 points"):
+        return (
+            "<table><tr><th>Criteria</th><th>{}</th></tr>"
+            "<tr><td>Something</td><td>{}</td></tr></table>".format(header, cell)
+        )
+
+    def test_scoring_table(self):
+        html = """
+        <table>
+            <thead>
+                <tr>
+                    <th><strong>Reviewers will evaluate the extent to which the applicant provides:</strong></th>
+                    <th><strong>Point value</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>A work plan that aligns with the strategies.</td><td>5 points</td></tr>
+                <tr><td>A proposed use of funds.</td><td>10 points</td></tr>
+            </tbody>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [1])
+
+    def test_header_variations(self):
+        headers = [
+            "Point value",
+            "Points",
+            "Points value",
+            "Point values",
+            "Maximum points",
+            "Max points",
+            "Points possible",
+            "Points available",
+            "POINT VALUE:",
+            "**Point value**",
+            "Point\u00a0value",
+        ]
+        for header in headers:
+            with self.subTest(header=header):
+                self.assertEqual(self._get_indexes(self._two_col_table(header)), [1])
+
+    def test_non_matching_headers(self):
+        headers = [
+            "Score",
+            "Weight",
+            "Max score",
+            "Points of contact",
+            "Description of points",
+            "Key points",
+        ]
+        for header in headers:
+            with self.subTest(header=header):
+                self.assertEqual(self._get_indexes(self._two_col_table(header)), [])
+
+    def test_cell_variations(self):
+        cells = [
+            "10 points",
+            "1 point",
+            "5",
+            "0-10 points",
+            "0–10 points",
+            "0 – 10 points",
+            "Up to 5 points",
+            "3 pts",
+            "3 pts.",
+        ]
+        for cell in cells:
+            with self.subTest(cell=cell):
+                self.assertEqual(self._get_indexes(self._two_col_table(cell=cell)), [1])
+
+    def test_empty_cells_are_ignored(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th>Points</th></tr>
+            <tr><td>A work plan</td><td>5 points</td></tr>
+            <tr><td>A budget</td><td></td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [1])
+
+    def test_long_text_cell_skips_column(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th>Point value</th></tr>
+            <tr><td>A work plan</td><td>5 points</td></tr>
+            <tr><td>A budget</td><td>Up to 5 points, see the budget section for details</td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [])
+
+    def test_all_empty_cells_skips_column(self):
+        self.assertEqual(self._get_indexes(self._two_col_table(cell="")), [])
+
+    def test_header_only_table_skips_column(self):
+        html = "<table><tr><th>Criteria</th><th>Points</th></tr></table>"
+        self.assertEqual(self._get_indexes(html), [])
+
+    def test_three_column_table(self):
+        html = """
+        <table>
+            <tr><th>Criterion</th><th>Description</th><th>Points</th></tr>
+            <tr><td>Work plan</td><td>A work plan that aligns</td><td>10 points</td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [2])
+
+    def test_points_column_not_last(self):
+        html = """
+        <table>
+            <tr><th>Points</th><th>Criteria</th></tr>
+            <tr><td>10</td><td>A work plan</td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [0])
+
+    def test_colspan_skips_table(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th>Points</th></tr>
+            <tr><td colspan="2">Section A</td></tr>
+            <tr><td>A work plan</td><td>10 points</td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [])
+
+    def test_uneven_rows_skip_table(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th>Points</th></tr>
+            <tr><td>A work plan</td></tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [])
+
+    def test_nested_table_rows_are_ignored(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th>Points</th></tr>
+            <tr>
+                <td><table><tr><td>Nested</td><td>Long nested text here</td></tr></table></td>
+                <td>10 points</td>
+            </tr>
+        </table>
+        """
+        self.assertEqual(self._get_indexes(html), [1])
+
+
+class AddClassToPointsColumnsTests(TestCase):
+    """Render-time styling of columns that were marked on import."""
+
+    def _render(self, markdown):
+        return BeautifulSoup(
+            add_classes_to_tables(markdownify(markdown)), "html.parser"
+        )
+
+    def _get_points_cell_texts(self, soup):
+        return [
+            cell.get_text(strip=True) for cell in soup.find_all(class_="col--points")
+        ]
+
+    def test_marked_column_gets_class_on_body_cells(self):
+        soup = self._render(
+            "| **Reviewers will evaluate:** | **Point value** {: .col--points } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |\n"
+            "| Experience or capacity. | 5 points |"
+        )
+        self.assertEqual(
+            self._get_points_cell_texts(soup),
+            ["Point value", "10 points", "5 points"],
+        )
+        self.assertIn("table--small", soup.find("table")["class"])
+
+    def test_unmarked_table_is_unchanged(self):
+        # existing NOFOs don't have the class, so nothing changes for them
+        soup = self._render(
+            "| **Reviewers will evaluate:** | **Point value** |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |"
+        )
+        self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_user_width_class_wins(self):
+        soup = self._render(
+            "| Criteria | Point value {: .col--points .w-25 } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |"
+        )
+        self.assertEqual(soup.find_all("th")[1]["class"], ["w-25"])
+        self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_user_replaced_marker_with_width_class(self):
+        soup = self._render(
+            "| Criteria | Point value {: .w-25 } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |"
+        )
+        self.assertEqual(soup.find_all("th")[1]["class"], ["w-25"])
+        self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_long_text_edit_turns_off_column(self):
+        soup = self._render(
+            "| Criteria | Point value {: .col--points } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |\n"
+            "| A budget. | Up to 5 points, see the budget section for details |"
+        )
+        self.assertFalse(soup.find_all("th")[1].has_attr("class"))
+        self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_empty_cells_are_not_marked(self):
+        soup = self._render(
+            "| Criteria | Point value {: .col--points } |\n"
+            "| --- | --- |\n"
+            "| Relevant experience. | 10 points |\n"
+            "| Collaborations. |  |"
+        )
+        self.assertEqual(
+            self._get_points_cell_texts(soup), ["Point value", "10 points"]
+        )
+
+    def test_marked_three_column_table(self):
+        soup = self._render(
+            "| Criterion {: .w-33 } | Description {: .w-33 } | Points {: .col--points } |\n"
+            "| --- | --- | --- |\n"
+            "| Work plan | A work plan that aligns | 10 points |"
+        )
+        self.assertEqual(self._get_points_cell_texts(soup), ["Points", "10 points"])
+
+    def test_spanned_table_drops_marker(self):
+        html = """
+        <table>
+            <tr><th>Criteria</th><th class="col--points">Points</th></tr>
+            <tr><td colspan="2">Section A</td></tr>
+            <tr><td>A work plan</td><td>10 points</td></tr>
+        </table>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        add_class_to_points_columns(soup.find("table"))
+        self.assertEqual(soup.find_all(class_="col--points"), [])
 
 
 class ModifyHtmlTests(TestCase):
