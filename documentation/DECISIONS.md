@@ -4,6 +4,33 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-01 — Auto-size "Point value" columns in scoring tables
+
+**Context:** Merit review scoring tables usually end with a narrow **Point value**
+or **Points** column. That column had no width rule, so short cells like
+"10 points" wrapped onto two lines in the PDF. The column's width also changed
+with the table's size: in a full-width `table--large` table it was even
+narrower, and cells still wrapped. Users had to fix each table by hand or turn
+on full-width tables for the whole section (#1007).
+
+**Decision:** At render time, `add_class_to_points_columns()` adds
+`col--points` to a column when its header reads like "Point value" / "Points"
+and every body cell is short and point-like ("10 points", "5", "Up to 5
+points"). The CSS sets `width: 1%` on the column and `white-space: nowrap` on
+its body cells, so the column shrinks to fit its widest cell and the
+description column gets the rest. The header can still wrap.
+
+We chose fit-to-content over a fixed percentage (for example `w-20`) because a
+fixed percentage gives a different width in each table size. We chose render
+time over import time so the rule also fixes NOFOs that are already imported and
+tables users edit by hand. The rule is skipped when a body cell has longer text
+(so `nowrap` can't push a table past the page edge), when the header already
+has a `w-*` width class (so user-set widths win), and for tables with
+`colspan`/`rowspan`. Only "Point(s)" headers are matched. See
+[TABLES.md](TABLES.md).
+
+---
+
 ## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
 
 **Context:** The public `/readability/` page invited users to upload a draft NOFO,

@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 from .utils import (
     _add_class_if_not_exists_to_tag,
+    add_class_to_points_columns,
     add_class_to_table,
     add_class_to_table_rows,
 )
@@ -17,6 +18,7 @@ def add_classes_to_tables(html_string):
     for table in soup.find_all("table"):
         table_class = add_class_to_table(table)
         _add_class_if_not_exists_to_tag(table, table_class, "table")
+        add_class_to_points_columns(table)
 
         for table_row in table.find_all("tr"):
             table_row_class = add_class_to_table_rows(table_row)

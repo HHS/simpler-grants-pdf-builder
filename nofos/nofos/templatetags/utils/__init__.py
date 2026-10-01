@@ -151,6 +151,74 @@ def add_class_to_table_rows(table_row):
         return "table-row--empty"
 
 
+# "Point value", "Points", "Points value", "Maximum points", "Points possible", etc.
+POINTS_COLUMN_HEADER_PATTERN = re.compile(
+    r"^(max(imum)?\s+)?points?(\s+(value|values|possible|available))?$"
+)
+# "10 points", "5", "0–10 points", "Up to 5 points", "3 pts", etc.
+POINTS_COLUMN_CELL_PATTERN = re.compile(
+    r"^(up to\s+)?\d+(\s*[-–—]\s*\d+)?(\s*(points?|pts\.?))?$"
+)
+POINTS_COLUMN_CLASS = "col--points"
+
+
+def _normalize_points_cell_text(cell):
+    text = cell.get_text(" ", strip=True).lower()
+    text = re.sub(r"[*:]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def add_class_to_points_columns(table):
+    """
+    Adds a "col--points" class to every cell in a table's points column(s),
+    so that short values like "10 points" don't wrap onto two lines.
+
+    A column is a points column when:
+    - its header cell (first row) reads like "Point value", "Points", "Maximum points", etc.
+    - every non-empty body cell is short and point-like: "10 points", "5", "0–10 points", "Up to 5 points"
+    - the header does not already have a user-set width class (eg, "w-20")
+
+    Tables with colspan or rowspan cells are skipped, since columns can't be lined up reliably.
+    """
+
+    def _get_cells(row):
+        return row.find_all(["th", "td"], recursive=False)
+
+    rows = [row for row in table.find_all("tr") if row.find_parent("table") is table]
+    if len(rows) < 2:
+        return
+
+    for row in rows:
+        for cell in _get_cells(row):
+            if cell.get("colspan", "1") != "1" or cell.get("rowspan", "1") != "1":
+                return
+
+    header_cells = _get_cells(rows[0])
+    body_rows = [_get_cells(row) for row in rows[1:]]
+    if any(len(cells) != len(header_cells) for cells in body_rows):
+        return
+
+    for index, header_cell in enumerate(header_cells):
+        if not POINTS_COLUMN_HEADER_PATTERN.match(
+            _normalize_points_cell_text(header_cell)
+        ):
+            continue
+
+        if any(c.startswith("w-") for c in header_cell.get("class", [])):
+            continue
+
+        column_cells = [cells[index] for cells in body_rows]
+        column_texts = [_normalize_points_cell_text(cell) for cell in column_cells]
+        non_empty_texts = [text for text in column_texts if text]
+        if not non_empty_texts or not all(
+            POINTS_COLUMN_CELL_PATTERN.match(text) for text in non_empty_texts
+        ):
+            continue
+
+        for cell in [header_cell] + column_cells:
+            _add_class_if_not_exists_to_tags(cell, POINTS_COLUMN_CLASS, "th|td")
+
+
 def convert_paragraph_to_searchable_hr(p):
     def _create_hr_and_span(hr_class, span_text):
         hr_html = '<hr class="{} page-break--hr">'.format(hr_class)
