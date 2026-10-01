@@ -1,5 +1,4 @@
-{% load static %}
-
+{% if PANDOC_WORD_EXPORT_ENABLED or GRABZIT_WORD_EXPORT_ENABLED %}
 <form
   method="post"
   action="{{ action_url }}"
@@ -13,7 +12,6 @@
     aria-controls="docx-modal{{ id_suffix }}"
     {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
     data-open-modal
-    {% if 'localhost' in request.get_host %}disabled{% endif %}
   >
     {{ button_label|default:"Download<span class='hide-on-tablet'> Word</span>"|safe }}
   </button>
@@ -88,3 +86,16 @@
     </div><!-- end of usa-modal__main -->
   </div>
 </div>
+{% else %}
+  <button
+    type="button"
+    class="usa-button{% if not primary %} usa-button--outline{% endif %} font-sans-2xs text-normal inline-block"
+    aria-describedby="docx-unavailable{{ id_suffix }}"
+    disabled
+  >
+    {{ button_label|default:"Download<span class='hide-on-tablet'> Word</span>"|safe }}
+  </button>
+  <p id="docx-unavailable{{ id_suffix }}" class="font-sans-3xs margin-top-1">
+    Word export is not available in this environment.
+  </p>
+{% endif %}

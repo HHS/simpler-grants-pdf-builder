@@ -4,6 +4,66 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-01 — Remove unused Login.gov sign-in and keep email/password sign-in
+
+**Context:** NOFO Builder had a Login.gov sign-in option, but it was never
+enabled for users. No deployed environment set its key or `LOGIN_GOV_*`
+settings, so the button never appeared. Its code was the only reason
+`pyjwt` and `google-cloud-secret-manager` (used to fetch the Login.gov
+private key) were installed. Together with the Google Cloud and gRPC packages
+that Secret Manager pulls in, they added 12 packages to the production image
+and to the Anchore scan surface, including a recent PyJWT finding. There is no
+near-term plan to adopt Login.gov.
+
+**Decision:** Remove Login.gov sign-in: the client, login and callback views
+and URLs, settings and key loading, the Google Secret Manager helper, the
+sign-in button, the README setup section and the related tests. Drop `pyjwt`
+and `google-cloud-secret-manager`. NOFO Builder no longer uses Google Cloud for
+anything.
+
+Keep email/password sign-in exactly as it was. The authentication backend keeps
+its `users.auth.backend.LoginGovBackend` path even though it now only handles
+passwords: Django stores that path in each session, and renaming it would sign
+out every active user. Keep the `BloomUser.login_gov_user_id` column, with no
+migration, so a future identity-provider integration can reuse it.
+
+If Login.gov or another single sign-on provider is adopted later, add it as new
+work rather than restoring this code, which was never used in production.
+
+---
+
+## 2026-10-01 — Auto-size "Point value" columns in scoring tables
+
+**Context:** Merit review scoring tables usually end with a narrow **Point value**
+or **Points** column. That column had no width rule, so short cells like
+"10 points" wrapped onto two lines in the PDF. The column's width also changed
+with the table's size: in a full-width `table--large` table it was even
+narrower, and cells still wrapped. Users had to fix each table by hand or turn
+on full-width tables for the whole section (#1007).
+
+**Decision:** On import and re-import, a column whose header reads like
+"Point value" / "Points", and whose body cells are all short point values
+("10 points", "5", "Up to 5 points"), gets a `{: .col--points }` marker on its
+header in the Markdown. At render time, `add_class_to_points_columns()` copies
+the class to the column's body cells. The CSS sets `width: 1%` on the column and
+`white-space: nowrap` on its body cells, so the column shrinks to fit its widest
+cell and the description column gets the rest. The header can still wrap.
+
+We chose fit-to-content over a fixed percentage (for example `w-20`) because a
+fixed percentage gives a different width in each table size.
+
+We chose to detect on import, not on every render, so existing NOFOs don't
+change: they have no marker, and rendering never adds one. Because the marker
+is in the Markdown, users control it in the editor like the existing `w-*`
+width classes. They can remove it, or replace it with a `w-*` class, which wins
+if both are present. Rendering also drops the class if a body cell is later
+edited to hold longer text, so `nowrap` can't push a table past the page edge.
+Tables with `colspan`/`rowspan` are skipped. Only "Point(s)" headers are
+matched. See [TABLES.md](TABLES.md) and IMPORT-054 in
+[IMPORT_RULES.md](IMPORT_RULES.md).
+
+---
+
 ## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
 
 **Context:** The public `/readability/` page invited users to upload a draft NOFO,

@@ -213,6 +213,16 @@ table.table--large {
   width: 100%;
 }
 
+/* Shrink "Point value" columns to fit, and keep cells like "10 points" on one line */
+table th.col--points,
+table td.col--points {
+  width: 1%;
+}
+
+table td.col--points {
+  white-space: nowrap;
+}
+
 table.table--with-caption caption {
   font-weight: 700;
   margin-bottom: 10px;
@@ -928,6 +938,10 @@ section.section .section--title-page::before {
 
 .section--content .section--content--intro {
   margin-top: 15px;
+}
+
+.section--content--intro--without-tagline {
+  margin-bottom: 25px;
 }
 
 .section--content--intro .nofo--tagline {

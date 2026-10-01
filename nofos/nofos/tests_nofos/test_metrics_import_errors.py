@@ -248,6 +248,121 @@ class ImportErrorPageTests(ImportErrorDrilldownTestCase):
         self.assertEqual(response["Cache-Control"], "private, no-store")
 
 
+class ImportErrorFilterTests(ImportErrorDrilldownTestCase):
+    """
+    The OpDiv filter works like the dashboard's (#993): no Apply button, and a
+    change swaps in the tables for the new group without a reload. The swap is
+    driven by tests/js/builder_metrics_import_errors.test.cjs; this covers
+    what the server hands back for it.
+    """
+
+    partial = {"X-Requested-With": "fetch"}
+
+    def test_filter_has_no_apply_button_and_matches_the_dashboard(self):
+        self.authorize()
+
+        errors_page = self.client.get(self.url, {"group": "cdc"}).content.decode()
+        dashboard = self.client.get(
+            reverse("nofos:builder_metrics"), {"group": "cdc"}
+        ).content.decode()
+
+        self.assertNotIn("Apply", errors_page)
+        self.assertNotIn("<form", errors_page)
+        for markup in (
+            'id="metrics-filter" class="metrics-filter',
+            'class="metrics-filter-control"',
+            'aria-describedby="metrics-filter-hint"',
+            'id="metrics-filter-status" role="status" aria-live="polite"',
+            '<option value="cdc" selected>',
+        ):
+            self.assertIn(markup, errors_page)
+            self.assertIn(markup, dashboard)
+        self.assertIn(
+            "Selecting an OpDiv updates all import errors on this page.", errors_page
+        )
+
+    def test_full_page_carries_the_print_scope_for_the_selected_opdiv(self):
+        self.authorize()
+
+        content = self.client.get(self.url, {"group": "nih"}).content.decode()
+
+        self.assertIn(
+            'data-group="nih">OpDiv group: <span id="metrics-applied-group">NIH</span>',
+            content,
+        )
+
+    def test_partial_request_returns_only_the_results(self):
+        self.authorize()
+
+        response = self.client.get(self.url, {"group": "nih"}, headers=self.partial)
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("IMPORT-NO-SECTIONS", content)
+        self.assertNotIn("IMPORT-OPDIV-BLANK", content)
+        self.assertIn('data-group="nih"', content)
+        self.assertIn("Recent failed attempts", content)
+        # Just the swappable region: no page chrome, and no second filter.
+        self.assertNotIn("<html", content)
+        self.assertNotIn('id="metrics-group"', content)
+        self.assertNotIn('id="metrics-errors-results"', content)
+
+    def test_partial_renders_the_same_tables_as_the_full_page(self):
+        self.authorize()
+
+        full = self.client.get(self.url, {"group": "cdc"}).content.decode()
+        partial = self.client.get(
+            self.url, {"group": "cdc"}, headers=self.partial
+        ).content.decode()
+
+        self.assertIn(partial.strip(), full)
+
+    def test_partial_empty_state_names_the_opdiv(self):
+        self.authorize()
+
+        content = self.client.get(
+            self.url, {"group": "acf"}, headers=self.partial
+        ).content.decode()
+
+        self.assertIn("No import errors recorded for ACF", content)
+
+    def test_partial_request_still_rejects_an_unknown_opdiv(self):
+        self.authorize()
+
+        response = self.client.get(self.url, {"group": "nope"}, headers=self.partial)
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_partial_request_still_requires_metrics_access(self):
+        self.client.force_login(self.nih_user)
+
+        response = self.client.get(self.url, headers=self.partial)
+
+        self.assertNotEqual(response.status_code, 200)
+
+    def test_partial_pagination_keeps_the_selected_opdiv(self):
+        self.authorize()
+        with freeze_time("2026-09-11 12:00:00"):
+            for index in range(60):
+                self.record_failure(
+                    self.cdc_user, "IMPORT-UNEXPECTED", f"bulk-{index}.docx"
+                )
+
+        content = self.client.get(
+            self.url, {"group": "cdc"}, headers=self.partial
+        ).content.decode()
+
+        self.assertIn("?group=cdc&amp;page=2", content)
+
+    def test_responses_vary_on_the_partial_header(self):
+        self.authorize()
+
+        for headers in ({}, self.partial):
+            response = self.client.get(self.url, headers=headers)
+            self.assertEqual(response["Cache-Control"], "private, no-store")
+            self.assertEqual(response["Vary"], "X-Requested-With, Cookie")
+
+
 @freeze_time("2026-09-20 12:00:00")
 class MetricsPageLinkTests(TestCase):
     def setUp(self):

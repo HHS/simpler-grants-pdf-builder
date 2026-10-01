@@ -71,7 +71,8 @@ class WordExportTests(SimpleTestCase):
                 if enabled:
                     self.assertIs(response, local.return_value)
                 else:
-                    self.assertIn(b"Missing session/csrf", response.content)
+                    self.assertEqual(response.status_code, 503)
+                    self.assertIn(b"Word export is not available", response.content)
 
     def test_missing_binary_is_actionable(self):
         with patch(

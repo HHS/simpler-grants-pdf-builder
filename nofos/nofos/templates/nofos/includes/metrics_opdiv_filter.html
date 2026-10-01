@@ -1,0 +1,22 @@
+{% comment %}
+  The OpDiv filter shared by the metrics dashboard and its import-errors
+  drill-down, so the two can't drift apart (#993). There is no submit button:
+  each page's script re-renders its results when the select changes.
+
+  Expects: opdiv_choices, selected_group, and hint (what a change updates, for
+  screen readers). Each page styles .metrics-filter / .metrics-filter-control
+  and hides them in print.
+{% endcomment %}
+<div id="metrics-filter" class="metrics-filter margin-bottom-3">
+  <div class="metrics-filter-control">
+    <label class="usa-label margin-top-0" for="metrics-group">OpDiv group</label>
+    <select class="usa-select" name="group" id="metrics-group" aria-describedby="metrics-filter-hint">
+      <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All OpDivs</option>
+      {% for value, label in opdiv_choices %}
+      <option value="{{ value }}" {% if selected_group == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+<span id="metrics-filter-hint" class="usa-sr-only">{{ hint }}</span>
+<p id="metrics-filter-status" role="status" aria-live="polite" class="usa-sr-only"></p>

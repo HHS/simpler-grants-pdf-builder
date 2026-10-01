@@ -29,7 +29,7 @@ from .logs import (
     ReadabilityRequestFilter,
     SuppressWellKnown404Filter,
 )
-from .utils import cast_to_boolean, get_internal_ip, get_login_gov_keys
+from .utils import cast_to_boolean, get_internal_ip
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -594,6 +594,16 @@ DOCRAPTOR_API_KEY = env.get_value("DOCRAPTOR_API_KEY", default="")
 # Grabzit API keys for DOCX conversion
 GRABZIT_APPLICATION_KEY = env.get_value("GRABZIT_APPLICATION_KEY", default="")
 GRABZIT_APPLICATION_SECRET = env.get_value("GRABZIT_APPLICATION_SECRET", default="")
+# Keep the shared GrabzIt account production-only until each environment has
+# dedicated credentials. Unknown hosts fail closed in the export helper.
+GRABZIT_WORD_EXPORT_ALLOWED_HOSTS = tuple(
+    host.strip().lower().rstrip(".")
+    for host in env.get_value(
+        "GRABZIT_WORD_EXPORT_ALLOWED_HOSTS",
+        default="nofos.simpler.grants.gov",
+    ).split(",")
+    if host.strip()
+)
 
 # Advisory only: estimated words in the subsection's Markdown source, using the
 # same whitespace count as floating callouts. This is not a publishing limit.
@@ -745,53 +755,18 @@ GROUP_CHOICES = [
     ("hrsa", "HRSA: Health Resources and Services Administration"),
     ("ihs", "IHS: Indian Health Service"),
     ("nih", "NIH: National Institutes of Health"),
+    ("samhsa", "SAMHSA: Substance Abuse and Mental Health Services Administration"),
     ("staging", "Staging environment"),
 ]
-
-# Determine environment.  Until login.gov is fully deployed, we'll use staging as "prod"
-ENVIRONMENT = "staging" if is_prod else "dev"
-
-# Get Login.gov keys - always try Secret Manager first
-LOGIN_GOV_PRIVATE_KEY, LOGIN_GOV_PUBLIC_KEY = get_login_gov_keys(ENVIRONMENT)
-
-if LOGIN_GOV_PRIVATE_KEY and "test" not in sys.argv:
-    print("=====")
-    print(
-        "Login.gov: enabled; env: {}; private_key: secrets manager".format(ENVIRONMENT)
-    )
-
-# If Secret Manager failed and we're in dev, try local files
-if not LOGIN_GOV_PRIVATE_KEY and ENVIRONMENT == "dev":
-    try:
-        with open(
-            BASE_DIR / "bloom_nofos" / "certs" / "login-gov-private-key-dev.pem"
-        ) as f:
-            LOGIN_GOV_PRIVATE_KEY = f.read()
-            print("Login.gov enabled; env: {}; private_key: local".format(ENVIRONMENT))
-    except Exception as e:
-        print("Login.gov disabled; env: {}; private_key: None".format(ENVIRONMENT))
-
 
 # Login/Logout URLs and settings
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-# Configure Login.gov based on key availability
-LOGIN_GOV = {
-    "ENABLED": bool(LOGIN_GOV_PRIVATE_KEY),
-    "CLIENT_ID": env("LOGIN_GOV_CLIENT_ID", default=""),
-    "OIDC_URL": env(
-        "LOGIN_GOV_OIDC_URL", default="https://idp.int.identitysandbox.gov"
-    ),
-    "REDIRECT_URI": env("LOGIN_GOV_REDIRECT_URI", default=""),
-    "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
-    "PRIVATE_KEY": LOGIN_GOV_PRIVATE_KEY,
-}
-print("=====")
-
-
-# Add Login.gov authentication backend
+# Email/password authentication. The class keeps its historical name because
+# Django stores the backend path in each session; renaming it would sign out
+# every active user.
 AUTHENTICATION_BACKENDS = [
     "users.auth.backend.LoginGovBackend",
     "django.contrib.auth.backends.ModelBackend",

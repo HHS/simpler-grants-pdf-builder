@@ -2141,6 +2141,12 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-hrsa-white"
 
+    if (
+        "substance abuse and mental health services administration" in opdiv_lower
+        or re.search(r"\bsamhsa\b", opdiv_lower)
+    ):
+        return "portrait-samhsa-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 

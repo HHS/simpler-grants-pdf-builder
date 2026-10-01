@@ -255,3 +255,20 @@ Pandoc-first agreement and the remaining rollout conditions.
 - Review packaged Pandoc licensing, deployment architecture, and resource controls; retain an operational rollback plan. Disabling the flag restores the prior provider configuration, with its pre-existing operational constraints.
 
 No provider cutover, account retirement, or production readiness is implied by this draft.
+
+### October 1 integration refresh
+
+Merged main at `33b7e9a9`, including its GrabzIt host/credential restrictions and
+invalid-DOCX rejection. The local Pandoc flag is evaluated before the vendor
+guard. The download form is available when either local export is enabled or
+the vendor is configured for that host. With the local flag off, the vendor
+restrictions remain unchanged. Local conversion never falls back to the vendor.
+
+Added regressions for the local button without vendor credentials and for no
+vendor call on an otherwise vendor-authorized host. Verification with current
+locked dependencies passed the full 2,273-test Django suite (two skips), all 118
+focused application tests in the rebuilt image with networking disabled, and
+all 41 JavaScript tests. Independent merge review found no blocking issue.
+The September 30 browser screenshots remain the latest browser evidence; they
+were not recaptured for this integration refresh. No deployment, shared flag
+change or provider cutover was performed.

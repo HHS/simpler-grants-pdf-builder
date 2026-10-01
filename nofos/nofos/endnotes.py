@@ -4,7 +4,7 @@ Analysis is read-only: it can also be used on saved content without migrating it
 
 Implements import rules IMPORT-049 through IMPORT-051 in
 documentation/IMPORT_RULES.md (at the repo root). Update those entries if
-you change this file's behavior. See also docs/endnote-import.md for the
+you change this file's behavior. See also documentation/endnote-import.md for the
 author-facing authoring convention this module detects.
 """
 

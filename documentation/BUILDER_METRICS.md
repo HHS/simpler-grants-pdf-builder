@@ -43,6 +43,13 @@ The page has two tables:
 It reads the same attempts, the same month window, and the same internal/staging
 exclusions as the chart, so the two reconcile. The OpDiv filter works the same way
 and is carried through the link, so arriving from `?group=cdc` keeps you on CDC.
+Both pages share the filter markup (`nofos/includes/metrics_opdiv_filter.html`)
+and its behavior: there is no Apply button, choosing an OpDiv updates both tables
+in place and rewrites the URL to that group's first page, and a failed update
+keeps the previous results. For the in-place update the page requests itself with
+`X-Requested-With: fetch` and gets back only the tables
+(`nofos/includes/builder_metrics_import_errors_results.html`), so they are rendered
+by the same template as a full page load.
 
 Filenames are as the user submitted them and may name a draft NOFO. The page is
 behind the same `nofos.view_builder_metrics` permission as the dashboard.
@@ -170,7 +177,7 @@ automatic reclassification or correction interface.
 
 ## OpDiv filtering (#886)
 
-The dashboard defaults to All OpDivs and offers the eight agency groups from
+The dashboard defaults to All OpDivs and offers the nine agency groups from
 `GROUP_CHOICES`, excluding Bloomworks and staging. Changing the dropdown updates all six
 metrics in place and stores `?group=cdc` (for example) in the URL. Both HTML and
 JSON responses require the existing metrics-viewer permission. Invalid/internal

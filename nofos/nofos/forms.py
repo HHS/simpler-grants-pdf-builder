@@ -305,9 +305,13 @@ class NofoMetadataForm(forms.ModelForm):
     class Meta:
         model = Nofo
         fields = ["author", "subject", "keywords"]
+        help_texts = {
+            "author": "Use your agency or OpDiv’s full name (and acronym in parenthesis).",
+            "subject": "Use this formula: A notice of funding opportunity from the [Agency or OpDiv] to [short purpose of the NOFO].",
+            "keywords": "Choose 8-10 specific terms or phrases from the NOFO. Separate by commas.",
+        }
         widgets = {
             "author": forms.TextInput(),
-            "subject": forms.TextInput(),
         }
 
 
