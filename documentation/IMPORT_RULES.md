@@ -71,6 +71,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-025 | conversion | Tables | Callout box titled "Key facts"/"Key dates" → forced to `h4`, canonical casing | `nofo.py` |
 | IMPORT-026 | repair | Tables | `<span>` inside table cells → unwrapped | `nofo.py` |
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
+| IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
 | IMPORT-028 | repair | Links | Google Docs tracking-redirect URLs → unwrapped to real destination | `nofo.py` |
 | IMPORT-029 | repair | Links | Consecutive same-href links merged; whitespace before punctuation trimmed | `nofo.py` |
 | IMPORT-030 | repair | Links | Bookmark/heading/table-heading anchor IDs transferred to surviving parent elements | `nofo.py` |
@@ -350,6 +351,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** During Markdown conversion, any cell in a table has `colspan`/`rowspan` ≠ "1" (Markdown tables can't express spans).
 - **Action:** Whole table kept as raw prettified HTML; header cells get an auto-assigned width CSS class based on column count (3→`w-33`, 4→`w-25`, 5→`w-20`) and specific header text overrides ("Component"→`w-45`, "How to upload/submit..."→`w-40`, "page limit"→`w-15`).
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_table/convert_th`, `get_width_class`
+- **Status:** active
+
+### IMPORT-054 — Points columns in scoring tables marked to fit their content
+- **Type:** conversion
+- **Trigger:** During Markdown conversion, a table with no `colspan`/`rowspan` cells has a column whose first-row header reads like "Point value", "Points", "Points value", "Maximum points" or "Points possible" (case-insensitive, ignoring `*` and `:`), and every non-empty body cell in that column is a short point value ("10 points", "5", "0–10 points", "Up to 5 points", "3 pts").
+- **Action:** That header cell gets `col--points` instead of a column-count width class, written into the Markdown as `{: .col--points }`. At render time, `add_class_to_points_columns()` copies the class to the column's body cells, and the CSS shrinks the column to fit and keeps body cells on one line. Users can remove the marker or replace it with a `w-*` class in the editor (a `w-*` class wins if both are present). NOFOs imported before this rule have no marker and are unchanged. See [TABLES.md](TABLES.md).
+- **Source:** `nofo_markdown.py::get_width_class`, `templatetags/utils/__init__.py::get_points_column_indexes`
 - **Status:** active
 
 ---

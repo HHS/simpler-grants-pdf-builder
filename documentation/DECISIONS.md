@@ -13,21 +13,26 @@ with the table's size: in a full-width `table--large` table it was even
 narrower, and cells still wrapped. Users had to fix each table by hand or turn
 on full-width tables for the whole section (#1007).
 
-**Decision:** At render time, `add_class_to_points_columns()` adds
-`col--points` to a column when its header reads like "Point value" / "Points"
-and every body cell is short and point-like ("10 points", "5", "Up to 5
-points"). The CSS sets `width: 1%` on the column and `white-space: nowrap` on
-its body cells, so the column shrinks to fit its widest cell and the
-description column gets the rest. The header can still wrap.
+**Decision:** On import and re-import, a column whose header reads like
+"Point value" / "Points", and whose body cells are all short point values
+("10 points", "5", "Up to 5 points"), gets a `{: .col--points }` marker on its
+header in the Markdown. At render time, `add_class_to_points_columns()` copies
+the class to the column's body cells. The CSS sets `width: 1%` on the column and
+`white-space: nowrap` on its body cells, so the column shrinks to fit its widest
+cell and the description column gets the rest. The header can still wrap.
 
 We chose fit-to-content over a fixed percentage (for example `w-20`) because a
-fixed percentage gives a different width in each table size. We chose render
-time over import time so the rule also fixes NOFOs that are already imported and
-tables users edit by hand. The rule is skipped when a body cell has longer text
-(so `nowrap` can't push a table past the page edge), when the header already
-has a `w-*` width class (so user-set widths win), and for tables with
-`colspan`/`rowspan`. Only "Point(s)" headers are matched. See
-[TABLES.md](TABLES.md).
+fixed percentage gives a different width in each table size.
+
+We chose to detect on import, not on every render, so existing NOFOs don't
+change: they have no marker, and rendering never adds one. Because the marker
+is in the Markdown, users control it in the editor like the existing `w-*`
+width classes. They can remove it, or replace it with a `w-*` class, which wins
+if both are present. Rendering also drops the class if a body cell is later
+edited to hold longer text, so `nowrap` can't push a table past the page edge.
+Tables with `colspan`/`rowspan` are skipped. Only "Point(s)" headers are
+matched. See [TABLES.md](TABLES.md) and IMPORT-054 in
+[IMPORT_RULES.md](IMPORT_RULES.md).
 
 ---
 

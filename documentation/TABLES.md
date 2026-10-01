@@ -1,8 +1,8 @@
 # Automatic Table Styling
 
-NOFO Builder adds CSS classes to tables automatically so they look right in the PDF without manual formatting. Some classes are added once, when a NOFO is imported. Others are added every time a page or PDF is rendered, so they also apply to NOFOs that were imported before the rule existed, and to tables users edit by hand.
+NOFO Builder adds CSS classes to tables automatically so they look right in the PDF without manual formatting. Some classes are added once, when a NOFO is imported or re-imported, and written into the Markdown so users can change them. Others are added every time a page or PDF is rendered.
 
-Import-time rules are cataloged in [IMPORT_RULES.md](IMPORT_RULES.md). This page covers the render-time rules, plus the import-time width classes they interact with.
+Import-time rules are cataloged in [IMPORT_RULES.md](IMPORT_RULES.md). This page gathers every table styling rule in one place, from both stages.
 
 ---
 
@@ -35,9 +35,24 @@ These run in the `add_classes_to_tables` and `add_captions_to_tables` template f
 
 ### Points columns
 
-`add_class_to_points_columns()` finds scoring columns like "Point value" and adds `col--points` to every cell in that column, header included. The CSS shrinks the column to fit its content and keeps body cells on one line, so "10 points" doesn't wrap onto two lines. The header can still wrap.
+The column is marked once, on import (see [Points columns on import](#points-columns-on-import) below). At render time, `add_class_to_points_columns()` styles marked columns only. It copies `col--points` from the header to the column's non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap.
 
-A column is a points column when all of these are true:
+The class is dropped from the column, so it wraps normally again, when:
+- the header also has a width class (`w-*`), so the user's width wins
+- a body cell no longer looks like a point value, for example after an edit to "Up to 5 points, see the budget section", so long text can't push the table past the page edge
+- the table has `colspan`/`rowspan` cells
+
+Tables without the marker are never changed. That includes every NOFO imported before this rule existed.
+
+---
+
+## Import-time width classes
+
+When a NOFO is imported or re-imported, `get_width_class()` in `nofos/nofos/nofo_markdown.py` adds a class to each header cell. These are written into the Markdown (for example `| Component {: .w-45 } |`), so users can see and change them in the editor. See IMPORT-027 and IMPORT-054 in [IMPORT_RULES.md](IMPORT_RULES.md).
+
+### Points columns on import
+
+`get_points_column_indexes()` (`nofos/nofos/templatetags/utils/__init__.py`) finds scoring columns. A column is a points column when both of these are true:
 
 1. Its header cell (first row), lowercased with `*`, `:` and extra whitespace removed, matches
    `^(max(imum)?\s+)?points?(\s+(value|values|possible|available))?$`.
@@ -45,27 +60,21 @@ A column is a points column when all of these are true:
 2. Every non-empty body cell in the column is short and point-like, matching
    `^(up to\s+)?\d+(\s*[-–—]\s*\d+)?(\s*(points?|pts\.?))?$`.
    For example: "10 points", "5", "0–10 points", "Up to 5 points", "3 pts".
-3. The header cell doesn't already have a width class (`w-*`).
 
-The rule is skipped for the whole table when any cell has a `colspan` or `rowspan`, or when rows have different numbers of cells, since columns can't be lined up reliably.
+Tables with `colspan`/`rowspan` cells, or rows with different numbers of cells, are skipped. The header of a points column gets `col--points`, for example `| **Point value** {: .col--points } |`. This works for any column count and any column position.
 
-It works for any column count and any column position. One exception: imported tables with 3–5 columns already get a `w-*` class on every header (see below), so rule 3 skips them. Those widths are wide enough that points cells don't wrap.
-
----
-
-## Import-time width classes
-
-When a NOFO is imported, `get_width_class()` in `nofos/nofos/nofo_markdown.py` adds a width class to each header cell, based on column count:
+### Other header cells
 
 - 3 columns: `w-33`, with header text overrides for application checklists: "Component" → `w-45`, "How to upload…"/"How to submit…" → `w-40`, "Page limit" → `w-15`
 - 4 columns: `w-25`
 - 5 columns: `w-20`
 
-These are written into the Markdown (for example `| Component {: .w-45 } |`), so users can see and change them. See IMPORT-027 in [IMPORT_RULES.md](IMPORT_RULES.md).
+A points column gets `col--points` instead of these.
 
 ---
 
 ## How users can override these
 
-- **Set a column width:** add a width class to a header cell in the Markdown editor, for example `| Point value {: .w-25 } |`. Any class from `w-5` to `w-100` (in steps of 5, plus `w-33` and `w-66`) works. A width class on a points column header turns off the points-column rule for that column.
+- **Set a column width:** add a width class to a header cell in the Markdown editor, for example `| Point value {: .w-25 } |`. Any class from `w-5` to `w-100` (in steps of 5, plus `w-33` and `w-66`) works.
+- **Points columns:** remove `{: .col--points }` to turn it off, or replace it with a width class such as `{: .w-25 }` to set a fixed width. If both are there, the width class wins. To turn it on for a NOFO imported before this rule, add `{: .col--points }` to the points column's header.
 - **Make every table in a section full width:** on the section page, check **Use full-width tables for this section**. This adds `section--tables-full-width` to the section, which makes `table--small`, `table--large` and `table--criterion` tables 100% wide. Points columns still shrink to fit inside a full-width table.
