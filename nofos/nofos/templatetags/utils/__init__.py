@@ -151,6 +151,141 @@ def add_class_to_table_rows(table_row):
         return "table-row--empty"
 
 
+# "Point value", "Points", "Points value", "Maximum points", "Points possible", etc.
+POINTS_COLUMN_HEADER_PATTERN = re.compile(
+    r"^(max(imum)?\s+)?points?(\s+(value|values|possible|available))?$"
+)
+# "10 points", "5", "0–10 points", "Up to 5 points", "3 pts", etc.
+POINTS_COLUMN_CELL_PATTERN = re.compile(
+    r"^(up to\s+)?\d+(\s*[-–—]\s*\d+)?(\s*(points?|pts\.?))?$"
+)
+POINTS_COLUMN_CLASS = "col--points"
+
+
+def _normalize_points_cell_text(cell):
+    text = cell.get_text(" ", strip=True).lower()
+    text = re.sub(r"[*:]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _get_points_table_rows(table):
+    """
+    Returns a table's rows as lists of cells, or None if the columns can't be
+    lined up reliably (colspan/rowspan cells, or rows with different lengths).
+    Rows of nested tables are ignored.
+    """
+    rows = [
+        row.find_all(["th", "td"], recursive=False)
+        for row in table.find_all("tr")
+        if row.find_parent("table") is table
+    ]
+    if len(rows) < 2:
+        return None
+
+    for cells in rows:
+        for cell in cells:
+            if cell.get("colspan", "1") != "1" or cell.get("rowspan", "1") != "1":
+                return None
+
+    if any(len(cells) != len(rows[0]) for cells in rows[1:]):
+        return None
+
+    return rows
+
+
+def is_points_cell_text(cell):
+    return bool(POINTS_COLUMN_CELL_PATTERN.match(_normalize_points_cell_text(cell)))
+
+
+def get_points_column_indexes(table):
+    """
+    Returns the indexes of a table's points columns. Used on import.
+
+    A column is a points column when:
+    - its header cell (first row) reads like "Point value", "Points", "Maximum points", etc.
+    - every non-empty body cell is short and point-like: "10 points", "5", "0–10 points", "Up to 5 points"
+
+    Tables with colspan or rowspan cells are skipped, since columns can't be lined up reliably.
+    """
+    rows = _get_points_table_rows(table)
+    if not rows:
+        return []
+
+    indexes = []
+    for index, header_cell in enumerate(rows[0]):
+        if not POINTS_COLUMN_HEADER_PATTERN.match(
+            _normalize_points_cell_text(header_cell)
+        ):
+            continue
+
+        column_cells = [cells[index] for cells in rows[1:]]
+        non_empty_cells = [
+            cell for cell in column_cells if _normalize_points_cell_text(cell)
+        ]
+        if non_empty_cells and all(is_points_cell_text(c) for c in non_empty_cells):
+            indexes.append(index)
+
+    return indexes
+
+
+def add_class_to_points_columns(table):
+    """
+    Styles points columns that were marked on import. Used when rendering.
+
+    On import, a points column's header gets a "col--points" class in the
+    Markdown (eg, "| Point value {: .col--points } |"). Here, we copy that class
+    to the column's body cells, so the CSS can keep them on one line.
+
+    Users control this in the Markdown editor:
+    - remove "{: .col--points }" to turn it off
+    - add a width class (eg, "{: .w-25 }") to set a width instead; the width class wins
+
+    If a body cell is edited to hold longer text, the class is dropped from the
+    whole column so it goes back to normal wrapping (no overflow past the page edge).
+
+    Tables without the class (including every NOFO imported before this rule) are unchanged.
+    """
+
+    def _remove_points_class(cell):
+        classes = [c for c in cell.get("class", []) if c != POINTS_COLUMN_CLASS]
+        if classes:
+            cell["class"] = classes
+        elif cell.has_attr("class"):
+            del cell["class"]
+
+    rows = [row for row in table.find_all("tr") if row.find_parent("table") is table]
+    if not rows:
+        return
+
+    header_cells = rows[0].find_all(["th", "td"], recursive=False)
+    points_headers = [
+        (index, cell)
+        for index, cell in enumerate(header_cells)
+        if POINTS_COLUMN_CLASS in cell.get("class", [])
+    ]
+    if not points_headers:
+        return
+
+    rows = _get_points_table_rows(table)
+
+    for index, header_cell in points_headers:
+        if not rows or any(c.startswith("w-") for c in header_cell.get("class", [])):
+            # a user-set width wins, and we can't line up columns with spans
+            _remove_points_class(header_cell)
+            continue
+
+        column_cells = [cells[index] for cells in rows[1:]]
+        non_empty_cells = [
+            cell for cell in column_cells if _normalize_points_cell_text(cell)
+        ]
+        if not all(is_points_cell_text(cell) for cell in non_empty_cells):
+            _remove_points_class(header_cell)
+            continue
+
+        for cell in non_empty_cells:
+            _add_class_if_not_exists_to_tags(cell, POINTS_COLUMN_CLASS, "th|td")
+
+
 def convert_paragraph_to_searchable_hr(p):
     def _create_hr_and_span(hr_class, span_text):
         hr_html = '<hr class="{} page-break--hr">'.format(hr_class)
