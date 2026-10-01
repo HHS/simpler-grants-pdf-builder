@@ -84,23 +84,4 @@
           </p>
       </div>
   </form>
-
-  {% if LOGIN_GOV_ENABLED %}
-      <!-- Login.gov login button -->
-      <div class="margin-top-4 login-gov-container">
-          <p class="text-center">- or -</p>
-          <a href="{% url 'users:login_gov' %}" class="usa-button usa-button--outline width-full">
-              Sign in with Login.gov
-          </a>
-
-          <div class="margin-top-2 text-center">
-              <small class="text-base-dark">
-                  Don't have a Login.gov account?
-                  <a href="https://idp.int.identitysandbox.gov/sign_up/enter_email" target="_blank" rel="noopener noreferrer">
-                      Create one here
-                  </a>
-              </small>
-          </div>
-      </div>
-  {% endif %}
 {% endblock %}

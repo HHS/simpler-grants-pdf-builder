@@ -4,6 +4,34 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-01 — Remove unused Login.gov sign-in and keep email/password sign-in
+
+**Context:** NOFO Builder had a Login.gov sign-in option, but it was never
+enabled for users. No deployed environment set its key or `LOGIN_GOV_*`
+settings, so the button never appeared. Its code was the only reason
+`pyjwt` and `google-cloud-secret-manager` (used to fetch the Login.gov
+private key) were installed. Together with the Google Cloud and gRPC packages
+that Secret Manager pulls in, they added 12 packages to the production image
+and to the Anchore scan surface, including a recent PyJWT finding. There is no
+near-term plan to adopt Login.gov.
+
+**Decision:** Remove Login.gov sign-in: the client, login and callback views
+and URLs, settings and key loading, the Google Secret Manager helper, the
+sign-in button, the README setup section and the related tests. Drop `pyjwt`
+and `google-cloud-secret-manager`. NOFO Builder no longer uses Google Cloud for
+anything.
+
+Keep email/password sign-in exactly as it was. The authentication backend keeps
+its `users.auth.backend.LoginGovBackend` path even though it now only handles
+passwords: Django stores that path in each session, and renaming it would sign
+out every active user. Keep the `BloomUser.login_gov_user_id` column, with no
+migration, so a future identity-provider integration can reuse it.
+
+If Login.gov or another single sign-on provider is adopted later, add it as new
+work rather than restoring this code, which was never used in production.
+
+---
+
 ## 2026-10-01 — Auto-size "Point value" columns in scoring tables
 
 **Context:** Merit review scoring tables usually end with a narrow **Point value**

@@ -735,98 +735,6 @@ files = [
 python-dateutil = ">=2.7"
 
 [[package]]
-name = "google-api-core"
-version = "2.31.0"
-description = "Google API client core library"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "google_api_core-2.31.0-py3-none-any.whl", hash = "sha256:ef79fb3784c71cbac89cbd03301ba0c8fb8ad2aa95d7f9204dd9628f7adf59ab"},
-    {file = "google_api_core-2.31.0.tar.gz", hash = "sha256:2be84ee0f584c48e6bde1b36766e23348b361fb7e55e56135fc76ce1c397f9c2"},
-]
-
-[package.dependencies]
-google-auth = ">=2.14.1,<3.0.0"
-googleapis-common-protos = ">=1.63.2,<2.0.0"
-grpcio = {version = ">=1.75.1,<2.0.0", optional = true, markers = "python_version >= \"3.14\" and extra == \"grpc\""}
-grpcio-status = {version = ">=1.75.1,<2.0.0", optional = true, markers = "python_version >= \"3.14\" and extra == \"grpc\""}
-proto-plus = {version = ">=1.25.0,<2.0.0", markers = "python_version >= \"3.13\""}
-protobuf = ">=5.29.6,<8.0.0"
-requests = ">=2.33.0,<3.0.0"
-
-[package.extras]
-async-rest = ["aiohttp (>=3.13.4)", "google-auth[aiohttp] (>=2.14.1,<3.0.0)"]
-grpc = ["grpcio (>=1.41.0,<2.0.0)", "grpcio (>=1.49.1,<2.0.0) ; python_version >= \"3.11\"", "grpcio (>=1.75.1,<2.0.0) ; python_version >= \"3.14\"", "grpcio-status (>=1.41.0,<2.0.0)", "grpcio-status (>=1.49.1,<2.0.0) ; python_version >= \"3.11\"", "grpcio-status (>=1.75.1,<2.0.0) ; python_version >= \"3.14\""]
-
-[[package]]
-name = "google-auth"
-version = "2.53.0"
-description = "Google Authentication Library"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "google_auth-2.53.0-py3-none-any.whl", hash = "sha256:6e7449917c599b35126a99ec268ec6880301f2fea41dce198fe8fd83ff642b68"},
-    {file = "google_auth-2.53.0.tar.gz", hash = "sha256:e7e6aa16f6bee7b2b264830fd04f08087a1d5a836df516251a5d15327b246c9c"},
-]
-
-[package.dependencies]
-cryptography = ">=38.0.3"
-pyasn1-modules = ">=0.2.1"
-
-[package.extras]
-aiohttp = ["aiohttp (>=3.8.0,<4.0.0)", "requests (>=2.20.0,<3.0.0)"]
-cryptography = ["cryptography (>=38.0.3)"]
-enterprise-cert = ["pyopenssl"]
-pyjwt = ["pyjwt (>=2.0)"]
-pyopenssl = ["pyopenssl (>=20.0.0)"]
-reauth = ["pyu2f (>=0.1.5)"]
-requests = ["requests (>=2.20.0,<3.0.0)"]
-rsa = ["rsa (>=3.1.4,<5)"]
-testing = ["aiohttp (<3.10.0)", "aiohttp (>=3.8.0,<4.0.0)", "aioresponses", "flask", "freezegun", "grpcio", "packaging", "pyjwt (>=2.0)", "pyopenssl (<24.3.0)", "pyopenssl (>=20.0.0)", "pytest", "pytest-asyncio", "pytest-cov", "pytest-localserver", "pyu2f (>=0.1.5)", "requests (>=2.20.0,<3.0.0)", "responses", "urllib3"]
-urllib3 = ["packaging", "urllib3"]
-
-[[package]]
-name = "google-cloud-secret-manager"
-version = "2.29.0"
-description = "Google Cloud Secret Manager API client library"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "google_cloud_secret_manager-2.29.0-py3-none-any.whl", hash = "sha256:21bac2d0adb0bb3c13c346d7223832f197c2266534528a1bf1402774e06395a3"},
-    {file = "google_cloud_secret_manager-2.29.0.tar.gz", hash = "sha256:ee64133af8fdb3780affb65ec6ccf10ab15a0113d8edeba388665f4be87ce1be"},
-]
-
-[package.dependencies]
-google-api-core = {version = ">=2.17.1,<3.0.0", extras = ["grpc"]}
-google-auth = ">=2.14.1,!=2.24.0,!=2.25.0,<3.0.0"
-grpc-google-iam-v1 = ">=0.14.0,<1.0.0"
-grpcio = {version = ">=1.75.1,<2.0.0", markers = "python_version >= \"3.14\""}
-proto-plus = {version = ">=1.25.0,<2.0.0", markers = "python_version >= \"3.13\""}
-protobuf = ">=4.25.8,<8.0.0"
-
-[[package]]
-name = "googleapis-common-protos"
-version = "1.75.0"
-description = "Common protobufs used in Google APIs"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "googleapis_common_protos-1.75.0-py3-none-any.whl", hash = "sha256:961ed60399c457ceb0ee8f285a84c870aabc9c6a832b9d37bb281b5bebde43ed"},
-    {file = "googleapis_common_protos-1.75.0.tar.gz", hash = "sha256:53a062ff3c32552fbd62c11fe23768b78e4ddf0494d5e5fd97d3f4689c75fbbd"},
-]
-
-[package.dependencies]
-grpcio = {version = ">=1.44.0,<2.0.0", optional = true, markers = "extra == \"grpc\""}
-protobuf = ">=4.25.8,<8.0.0"
-
-[package.extras]
-grpc = ["grpcio (>=1.44.0,<2.0.0)"]
-
-[[package]]
 name = "grabzit"
 version = "3.5.9"
 description = "GrabzIt enables allows you to programmatically convert web pages and HTML into images, DOCX, videos, rendered HTML, PDFs, CSVs and spreadsheets. Additionally GrabzIt allows you to convert online videos into animated GIFs"
@@ -836,107 +744,6 @@ groups = ["main"]
 files = [
     {file = "grabzit-3.5.9.tar.gz", hash = "sha256:cd92040184721d7037b76c099ccc8403217dd02e9d8145be6e5aad65be5d09ae"},
 ]
-
-[[package]]
-name = "grpc-google-iam-v1"
-version = "0.14.4"
-description = "IAM API client library"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "grpc_google_iam_v1-0.14.4-py3-none-any.whl", hash = "sha256:412facc320fcbd94034b4df3d557662051d4d8adfa86e0ddb4dca70a3f739964"},
-    {file = "grpc_google_iam_v1-0.14.4.tar.gz", hash = "sha256:392b3796947ed6334e61171d9ab06bf7eb357f554e5fc7556ad7aab6d0e17038"},
-]
-
-[package.dependencies]
-googleapis-common-protos = {version = ">=1.63.2,<2.0.0", extras = ["grpc"]}
-grpcio = ">=1.44.0,<2.0.0"
-protobuf = ">=4.25.8,<8.0.0"
-
-[[package]]
-name = "grpcio"
-version = "1.81.0"
-description = "HTTP/2-based RPC framework"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "grpcio-1.81.0-cp310-cp310-linux_armv7l.whl", hash = "sha256:b4108e5d9d0f651b7eea749116181fe6c315b145661a80ec31f05ec2dbe21af7"},
-    {file = "grpcio-1.81.0-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:b76ea9d55cd08fcdbda25d28e0f76679536710acb7fbd5b1f70cb4ac49317265"},
-    {file = "grpcio-1.81.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:4e032feb3bfb4e2749b140a2302a6baa8ead1b9781ff5cf7094e4402b5e9372e"},
-    {file = "grpcio-1.81.0-cp310-cp310-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:725801c7086d7e4cd160e42bb2f54e0aeb976b9568df3cc6f843b15d29b79fb1"},
-    {file = "grpcio-1.81.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f750a091fff3a3991731abc1f818bdc64874bb3528162732cb4d45f2e07821a6"},
-    {file = "grpcio-1.81.0-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:8226ba097eed660ef14d36c6a69b85038552bb8b6d17b44a5aa6f9abf48b8e08"},
-    {file = "grpcio-1.81.0-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:40edffb4ec3689373825d367c4457727047a6e554f03245265ecc8cc03215f22"},
-    {file = "grpcio-1.81.0-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:f85570a016d794c29b1e76cf22f67af4486ddbe779e0f30674f138fa4e1769ec"},
-    {file = "grpcio-1.81.0-cp310-cp310-win32.whl", hash = "sha256:3755c9669307cad18e7e009860fdea98118978d2300451bd8530a53048e741e7"},
-    {file = "grpcio-1.81.0-cp310-cp310-win_amd64.whl", hash = "sha256:909bb3222b53235498d2c5817a0596d82b0aaea490ba93fdf1b060e2938a543c"},
-    {file = "grpcio-1.81.0-cp311-cp311-linux_armv7l.whl", hash = "sha256:794e6aa648e8df47d8f908dc8c3b42347d04ec58438f1dcd4e445f09b4f6b0ce"},
-    {file = "grpcio-1.81.0-cp311-cp311-macosx_11_0_universal2.whl", hash = "sha256:cd78145b7f7784661c524624f3526c9c6f891b30a4b54cb93a40806d0d0d61e9"},
-    {file = "grpcio-1.81.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:638ccc1b86f7540170a169cb900799b9296a1381e47879ce60b0de9d3db73d33"},
-    {file = "grpcio-1.81.0-cp311-cp311-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:21ec30b9ea320c8207ea7cd05873ad64aa69fdd0e81b6758b3347983ba20b50a"},
-    {file = "grpcio-1.81.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:dbdb99986548a7e87f8343805ef315fd4eb50ffaabf4fb1206e42f2542bb805d"},
-    {file = "grpcio-1.81.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:c36f5d5e97944cbda2d4096b4ae262e6e68506246b61582acf1b8591607f3ccc"},
-    {file = "grpcio-1.81.0-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:9f355384e5543ab77a755a7085225ecc19f32b76032e851cbd8145715d79dec8"},
-    {file = "grpcio-1.81.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:77eb4e9fe61486bd1198cc7236ebb0f70e66234e63c0348f40bc2553ed16a88b"},
-    {file = "grpcio-1.81.0-cp311-cp311-win32.whl", hash = "sha256:7915a2e63acdc05264a206e1bddfd8e1fb8a29e406c18d72d30f8c124e021374"},
-    {file = "grpcio-1.81.0-cp311-cp311-win_amd64.whl", hash = "sha256:5e925a70fe99fe5794f7beca0ea034c75f068afcc356d79047e73f99cdcca34c"},
-    {file = "grpcio-1.81.0-cp312-cp312-linux_armv7l.whl", hash = "sha256:57b3b0e73a518fa286959b40c3eddd02703504ca186e8b7b2945954519bd8b2c"},
-    {file = "grpcio-1.81.0-cp312-cp312-macosx_11_0_universal2.whl", hash = "sha256:8bb1789c94322a13336a2b6c58d9c14d68f8628b6e24205a799c69f5bf8516ce"},
-    {file = "grpcio-1.81.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:e4d053900a0d24b75d7521139a3872150301b3d6bde3bed5e12318fb25791e4d"},
-    {file = "grpcio-1.81.0-cp312-cp312-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:db217c2e52931719f9937bd12082cd4d7b495b35803d5760686975c285924bf8"},
-    {file = "grpcio-1.81.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:19f201da7b4e5c0559198abe5a97157e726f3abe6e8f5e832d4a50740f6dcc22"},
-    {file = "grpcio-1.81.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:275144b0115353339dbb8a6f28a9cf8997b5bf40e37f8f66ac0b0ea57e95b43f"},
-    {file = "grpcio-1.81.0-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:5192857589f223e5a98ff0e31f6e551b19040e647d17bfe10116c8a2ce3b8696"},
-    {file = "grpcio-1.81.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:c6ff087cb1f563f47b504b4e29e684129fc5ae4863faf3ebca08a327764ee6cb"},
-    {file = "grpcio-1.81.0-cp312-cp312-win32.whl", hash = "sha256:98c6240f563178fc5877bd50e6ff274463e53e1472128f4110742450739659fa"},
-    {file = "grpcio-1.81.0-cp312-cp312-win_amd64.whl", hash = "sha256:87e33b7afcfb3585121b5f007d2c52b8c534104d18f556e840d35193ca2a9141"},
-    {file = "grpcio-1.81.0-cp313-cp313-linux_armv7l.whl", hash = "sha256:62bbe463c9f0f2ff24e31bd25f8dd8b4bae78900e315915a3195a0ef1471a855"},
-    {file = "grpcio-1.81.0-cp313-cp313-macosx_11_0_universal2.whl", hash = "sha256:43c121e135ae44d1559b430db2b2dfad7421cbbe40e1deba506c7dc62b439719"},
-    {file = "grpcio-1.81.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f345de40ef2e65f63645d53d251824e6070e07804827c5b00ec2e44555f9f901"},
-    {file = "grpcio-1.81.0-cp313-cp313-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:8c0855a350886f713b9e458e2a10d208009dcaa849f574e39cd6067db1fe1279"},
-    {file = "grpcio-1.81.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:a524cd530900bd24511fcb7f2ed144da4ea37711c4b094475d0bceca7a93a170"},
-    {file = "grpcio-1.81.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:e7746ba3e6efc9e2b748eff59470a2b8684d5a9ec607c6580bcaa5be175820bc"},
-    {file = "grpcio-1.81.0-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:aaaa4f7f2057d795952e4eacf3f342be8b5b156992f6ac85023c8b98794ebd47"},
-    {file = "grpcio-1.81.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:0fba53cb96004b2b7fb758b46b2288cb49d0b658316a4e73f3ef67230616ee65"},
-    {file = "grpcio-1.81.0-cp313-cp313-win32.whl", hash = "sha256:c197e2ef75a442528072b29e9755da299110e8610e8bcbb59a6b4cf55384f005"},
-    {file = "grpcio-1.81.0-cp313-cp313-win_amd64.whl", hash = "sha256:194eddfacc84d80f50512e9fd4ee851d5f2499f18f299c95aa8fb4748f0537e0"},
-    {file = "grpcio-1.81.0-cp314-cp314-linux_armv7l.whl", hash = "sha256:a9351055f52660b58f3d4890ea66188b5134399f82b11aa0c55bd4b99eff5390"},
-    {file = "grpcio-1.81.0-cp314-cp314-macosx_11_0_universal2.whl", hash = "sha256:300f3337b6425fd16ead9a4f9b2ac25801acb64aa5bc0b99eb69901645b2b1d2"},
-    {file = "grpcio-1.81.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:97bbd623f7ded558fd4f7cb5a4f600c4d4de65c5dd364c83a5b14b2a10a2d3b5"},
-    {file = "grpcio-1.81.0-cp314-cp314-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:ff83d889e3ebf6341c8c7864ad8031591ad5ca61599072fc511644d1eb962d2b"},
-    {file = "grpcio-1.81.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:c4fe218c5a35e1d87a5a26544237f1fa41dfd9cbd3c856b0810a30061f8b0aaf"},
-    {file = "grpcio-1.81.0-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:b8b025b6af43ee0ad4a70307025d77bcab5adde7c4597786010d802c203e9fc5"},
-    {file = "grpcio-1.81.0-cp314-cp314-musllinux_1_2_i686.whl", hash = "sha256:3d4e0ce5a40a998cf608c8ba60ecfe18fdf364a9aa193ae4ac3faeecd0e86757"},
-    {file = "grpcio-1.81.0-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:aa948712c8e5fa40ec250870bda14bc7578e1bb832a8912d9d2a0f720518edbe"},
-    {file = "grpcio-1.81.0-cp314-cp314-win32.whl", hash = "sha256:fbbe81314a9d92156abce8b62c09364eb8bafc0ca2a19919a45ec64b5c6cb664"},
-    {file = "grpcio-1.81.0-cp314-cp314-win_amd64.whl", hash = "sha256:b93cee313cae4e113fbb3a0ce1ea5633db6f63cfde2b2dc1d817429026b2a50b"},
-    {file = "grpcio-1.81.0.tar.gz", hash = "sha256:a5acd7efd3b1fe9b4eb0bcaaa1507eed68a0ad0678b654c3f7b464df9ba9dca5"},
-]
-
-[package.dependencies]
-typing-extensions = ">=4.12,<5.0"
-
-[package.extras]
-protobuf = ["grpcio-tools (>=1.81.0)"]
-
-[[package]]
-name = "grpcio-status"
-version = "1.81.0"
-description = "Status proto mapping for gRPC"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "grpcio_status-1.81.0-py3-none-any.whl", hash = "sha256:10eb4c2309db902dc26c1873e80a821bf794be772c10dfd83030f7f59f165fab"},
-    {file = "grpcio_status-1.81.0.tar.gz", hash = "sha256:b6fe9788cfdd1f0f63c0528a1e0bfdb41e8ff0583e920d2d8e8888598c01bb69"},
-]
-
-[package.dependencies]
-googleapis-common-protos = ">=1.5.5"
-grpcio = ">=1.81.0"
-protobuf = ">=6.33.5,<8.0.0"
 
 [[package]]
 name = "gunicorn"
@@ -1349,42 +1156,6 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
-name = "proto-plus"
-version = "1.28.0"
-description = "Beautiful, Pythonic protocol buffers"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "proto_plus-1.28.0-py3-none-any.whl", hash = "sha256:a630604310899e73c59ec302e5765c058d412b2f090b9c79c8822589f14955b8"},
-    {file = "proto_plus-1.28.0.tar.gz", hash = "sha256:38e5696342835b08fc116f30a25665b29531cda9d5d5643e9b81fc312385abd9"},
-]
-
-[package.dependencies]
-protobuf = ">=4.25.8,<8.0.0"
-
-[package.extras]
-testing = ["google-api-core (>=1.31.5)"]
-
-[[package]]
-name = "protobuf"
-version = "7.35.0"
-description = ""
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "protobuf-7.35.0-cp310-abi3-macosx_10_9_universal2.whl", hash = "sha256:66be6c513931c794fa92c080ffee41671390da3d79da219cf9c0c0907f035dda"},
-    {file = "protobuf-7.35.0-cp310-abi3-manylinux2014_aarch64.whl", hash = "sha256:fcbe42a4ac09d3ec9c987ddfcd956afd0b15f1ff613bd8371bde9405ffd5c8e5"},
-    {file = "protobuf-7.35.0-cp310-abi3-manylinux2014_s390x.whl", hash = "sha256:4cbf5cc286130e06a6c9bbefac442431173906dfcc979712183d4adcc01b37ee"},
-    {file = "protobuf-7.35.0-cp310-abi3-manylinux2014_x86_64.whl", hash = "sha256:6c0f98f10c8a05ea30f8993dfef2de093d27b490fdae78bb60c8343795d55011"},
-    {file = "protobuf-7.35.0-cp310-abi3-win32.whl", hash = "sha256:4c4617b83ade0e279d1d2bfe04025a1adb87f9ed657de038620dc0ff959357f6"},
-    {file = "protobuf-7.35.0-cp310-abi3-win_amd64.whl", hash = "sha256:f05bcadf9a2a6b8dda047007075135fb7d08c73d9177aabc067e1be46881a201"},
-    {file = "protobuf-7.35.0-py3-none-any.whl", hash = "sha256:c13f325cf242bad135c350629eeb5d54b24228eb472fb3e2e9ebbd4c5dc20ca0"},
-    {file = "protobuf-7.35.0.tar.gz", hash = "sha256:a2efd84605f41e559f1881b0912b44099d0a2ac9bf46b3474823f10fb393b0e6"},
-]
-
-[[package]]
 name = "psycopg2"
 version = "2.9.13"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
@@ -1400,33 +1171,6 @@ files = [
     {file = "psycopg2-2.9.13-cp315-cp315-win_amd64.whl", hash = "sha256:0d2fc7eedfaca0586dcf1476454598428d0d8471d3b5cb55f92015a5f9d0af40"},
     {file = "psycopg2-2.9.13.tar.gz", hash = "sha256:d36784fc2dae69523ba4b79c7d1d1b4d6e83e87836874f111262f4db940b16a6"},
 ]
-
-[[package]]
-name = "pyasn1"
-version = "0.6.4"
-description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "pyasn1-0.6.4-py3-none-any.whl", hash = "sha256:deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b"},
-    {file = "pyasn1-0.6.4.tar.gz", hash = "sha256:9c447d8431c947fe4c8febc4ed9e760bc29011a5b01e5c74b67025bd9fb8ce81"},
-]
-
-[[package]]
-name = "pyasn1-modules"
-version = "0.4.2"
-description = "A collection of ASN.1-based protocols modules"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "pyasn1_modules-0.4.2-py3-none-any.whl", hash = "sha256:29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a"},
-    {file = "pyasn1_modules-0.4.2.tar.gz", hash = "sha256:677091de870a80aae844b1ca6134f54652fa2c8c5a52aa396440ac3106e941e6"},
-]
-
-[package.dependencies]
-pyasn1 = ">=0.6.1,<0.7.0"
 
 [[package]]
 name = "pycparser"
@@ -1597,21 +1341,6 @@ files = [
 typing-extensions = ">=4.14.1"
 
 [[package]]
-name = "pyjwt"
-version = "2.15.1"
-description = "JSON Web Token implementation in Python"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "pyjwt-2.15.1-py3-none-any.whl", hash = "sha256:42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193"},
-    {file = "pyjwt-2.15.1.tar.gz", hash = "sha256:4f259e80cdfb6b3fc18a7de51fd1ef9ec79652f25019bae68975ca2468a34df8"},
-]
-
-[package.extras]
-crypto = ["cryptography (>=3.4.0)"]
-
-[[package]]
 name = "pypdf"
 version = "6.16.1"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
@@ -1682,23 +1411,18 @@ six = ">=1.5"
 
 [[package]]
 name = "python-discovery"
-version = "1.4.0"
+version = "1.6.1"
 description = "Python interpreter discovery"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "python_discovery-1.4.0-py3-none-any.whl", hash = "sha256:26ed78d703e234879a66244c7d4114563fb13ec5cd30a2d1357e5fb4850782da"},
-    {file = "python_discovery-1.4.0.tar.gz", hash = "sha256:eb8bc7daad3c226c147e45bb4e970a1feb1bf4048ee178e6db59e197b8010ce3"},
+    {file = "python_discovery-1.6.1-py3-none-any.whl", hash = "sha256:d43fcdef879fe795352bd13ccf8d185ba5a9f86f36cfcd00529f596e737442b3"},
+    {file = "python_discovery-1.6.1.tar.gz", hash = "sha256:cf87d3627dfb4412437fdd5b13eae402607722998d21567993aedbc59b23c15e"},
 ]
 
 [package.dependencies]
 filelock = ">=3.15.4"
-platformdirs = ">=4.3.6,<5"
-
-[package.extras]
-docs = ["furo (>=2025.12.19)", "sphinx (>=9.1)", "sphinx-autodoc-typehints (>=3.6.3)", "sphinxcontrib-mermaid (>=2)", "sphinxcontrib-towncrier (>=0.4)", "towncrier (>=25.8)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.5.4)", "pytest (>=8.3.5)", "pytest-mock (>=3.14)", "setuptools (>=75.1)"]
 
 [[package]]
 name = "python-json-logger"
@@ -2079,21 +1803,22 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 
 [[package]]
 name = "virtualenv"
-version = "21.4.2"
+version = "21.14.2"
 description = "Virtual Python Environment builder"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "virtualenv-21.4.2-py3-none-any.whl", hash = "sha256:854210ca524a1a4d0d744734f4acbc721c3ffe163b85bbf5d56d14d5ae2f0fae"},
-    {file = "virtualenv-21.4.2.tar.gz", hash = "sha256:38e6ee0a555615c0ea9da2ac7e9998fe8dc3b911dd33ad8eaad2020957653b0c"},
+    {file = "virtualenv-21.14.2-py3-none-any.whl", hash = "sha256:6a8b7fd4e4ee00ebcdc1c5ee8cffd035d1fe130e354e8c9a44f510aac8affdc1"},
+    {file = "virtualenv-21.14.2.tar.gz", hash = "sha256:571930928b11e43db690073ad8228162eca8a3f8fd3a87acdeae07df7dd57068"},
 ]
 
 [package.dependencies]
 distlib = ">=0.3.7,<1"
-filelock = {version = ">=3.24.2,<4", markers = "python_version >= \"3.10\""}
+filelock = {version = ">=3.24.2,<5", markers = "python_version >= \"3.10\""}
+packaging = ">=23.1"
 platformdirs = ">=3.9.1,<5"
-python-discovery = ">=1.4"
+python-discovery = ">=1.6"
 
 [[package]]
 name = "webencodings"
@@ -2145,4 +1870,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "d43a30abe1762af57c6cacc55a523cf6f1fae82310cdf3d9709abaeddf605fb4"
+content-hash = "c50e36839e5f9e301fc69c3d5f1ba1d323c9145d37b14937dc500448358f2971"
