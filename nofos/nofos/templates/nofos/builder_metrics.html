@@ -79,7 +79,12 @@
 
   <nav class="metrics-other-pages margin-bottom-3" aria-label="Other metrics pages">
     <h2 class="font-heading-sm">Other metrics</h2>
-    <ul><li><a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a></li></ul>
+    <ul>
+      <li><a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a></li>
+      {% if readability_metrics_enabled %}
+      <li><a href="{% url 'nofos:builder_metrics_readability_scores' %}">Saved NOFO readability metrics</a></li>
+      {% endif %}
+    </ul>
   </nav>
 
   <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">

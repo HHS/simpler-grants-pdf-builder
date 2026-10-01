@@ -2,7 +2,7 @@
 
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
-The package is pinned to the Agile Six `v0.5.2` release. The feature remains
+The package is pinned to the Agile Six `v0.5.4` release. The feature remains
 disabled by default so environments can opt into the provisional metrics UI
 independently.
 
@@ -79,18 +79,13 @@ Flesch-Kincaid grade level, and passive sentences, plus sentences per paragraph
 metric-specific unavailable status, a scope explanation for metrics that use
 different denominators, and collapsed package notes. The browser reads only the
 endpoint response; metric calculation and source rendering remain server-side.
-The package profile and version remain available in the API response for
-diagnostics but are not shown to editors.
+The package profile and version remain available in the API response and are
+shown in saved history so editors can identify a measurement change.
 
-The panel does not assign pass/fail bands. It tells the editor that metrics are
-saved for their current version and to calculate again after editing or
-reimporting, and its status line reports "Calculated for your current version."
-on success. That copy deliberately avoids the words "revision" and "snapshot"
-throughout: both are internal vocabulary, and snapshot retention is not
-something an editor can act on until reviewing earlier snapshots ships.
-Retention itself is unchanged and still documented under
-[Stored snapshots](#stored-snapshots); `revision` also remains the field name in
-the API response, which editors do not see.
+The panel does not assign pass/fail bands. Calculation and an explicit saved
+review checkpoint are separate actions. Editors can calculate again after
+editing or reimporting and save selected results for their review package.
+Retention is documented under [Stored snapshots](#stored-snapshots).
 Reloading the page resets the panel; reopening it retrieves the stored result if
 the revision and measurement contract are unchanged, or calculates a new result
 otherwise. Target comparisons use current configuration, not the goals saved
@@ -185,5 +180,66 @@ Before enabling the feature outside local development:
 
 Apply migration `0132_noforeadabilityscore` before serving the new endpoint. The
 feature flag remains disabled by default; deploying the migration does not
-enable the panel. The panel displays the current response only. Historical
-charts, backfills, save-time triggers, and background jobs are out of scope.
+enable the panel. Historical charts, backfills, document-save triggers, and
+background jobs are out of scope.
+
+## Saved review checkpoints
+
+Calculating metrics remains exploratory. Select **Save these results** to keep
+a review checkpoint. The server reuses the calculation for the current NOFO
+and measurement setup, or calculates it if the NOFO has changed. It never
+takes metric values from the browser. A content change during that request
+returns a retry message instead of keeping results for stale content.
+
+`NofoReadabilityCheckpoint` references the unchanged `NofoReadabilityScore` row
+and records the saver, save time, and status at save. Calculation time and save
+time are separate. Repeating a save for the same calculation returns the first
+checkpoint without changing its time, user, or status. Existing calculations
+are not backfilled into saved history. Partial results may be saved;
+unavailable metrics show **Unavailable**, never zero.
+
+The panel lists recent saved checkpoints from all users. **See all snapshots**
+opens `/nofos/<uuid>/readability-scores`. History is newest first and includes
+the saver, saved status, six values, completeness, and measurement setup.
+Deleting a user retains their records with **Deleted user**. Archiving retains
+history; deleting the NOFO deletes its calculation and checkpoint records.
+
+Each record is compared with the immediately previous saved record, not the
+previous calculation. Comparisons use current `HHS_NOFO_METRIC_GOALS`, not the
+historic goals stored with the calculation. Lower values are better for
+`at_most` and `at_most_by_category`; higher values are better for `at_least`.
+The category-dependent grade-level thresholds are alternative upper limits,
+not a bounded range. Sentences per paragraph comes from the stored words-per-
+sentence component. Metrics without targets, unavailable values, and conflicting
+target directions are not counted. Changed values also have text indicating
+**Higher than previous** or **Lower than previous**. Nothing depends on color.
+
+A changed profile, package, input contract, result schema, or result basis is
+labeled **Measurement updated: not compared**. When no metrics can be compared,
+the record says **No comparable metrics**, not **No change**.
+
+## Saved readability overview
+
+`/nofos/metrics/readability-scores` lists NOFOs with at least one saved checkpoint,
+including archived NOFOs. It shows current NOFO status, saved-record count, last
+save time, the latest saved six values, and the change from the previous saved
+record. Latest saved results may differ from the current NOFO. A partial latest
+checkpoint is shown rather than silently falling back to an older complete one.
+Links lead to the per-NOFO history page.
+
+The overview uses the existing `nofos.view_builder_metrics` permission. Superusers
+and Metrics viewers can see it; membership in a NOFO's OpDiv alone does not grant
+access. Per-NOFO history permits normal NOFO access or Metrics-viewer access;
+the latter grants read access only, not permission to save.
+
+The overview paginates NOFOs in groups of 50 before loading only the two latest
+checkpoints for each visible NOFO. It selects six values and provenance from
+the result JSON in the database instead of loading every full report. **Print
+this page** prints the displayed page only. Both history pages use private,
+`no-store` responses.
+
+All saved-checkpoint UI stays behind `HHS_NOFO_METRICS_ENABLED`. When off, the
+save endpoint returns `503 readability_metrics_disabled`, the new pages return
+404 for authorized users, and their navigation is hidden. Saved data is retained.
+This feature is separate from the anonymous PDF-readability pilot and does not
+enable that pilot or its outcome recording.

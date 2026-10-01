@@ -578,6 +578,7 @@ DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
     "nofos.NofoReadabilityScore",
+    "nofos.NofoReadabilityCheckpoint",
     "nofos.MetricsActor",
     "nofos.MetricsNofo",
     "nofos.MetricsActivity",

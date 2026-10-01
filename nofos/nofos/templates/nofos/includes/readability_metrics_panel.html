@@ -2,6 +2,8 @@
   id="readability-metrics-panel"
   class="usa-accordion usa-accordion--bordered margin-bottom-2"
   data-metrics-endpoint="{% url 'nofos:nofo_readability_metrics' nofo.id %}"
+  data-save-endpoint="{% url 'nofos:nofo_readability_metrics_save' nofo.id %}"
+  data-history-endpoint="{% url 'nofos:nofo_readability_history' nofo.id %}?fragment=1"
   data-csrf-token="{{ csrf_token }}"
 >
   <summary class="usa-accordion__button">
@@ -22,8 +24,9 @@
 
   <div class="usa-accordion__content usa-prose">
     <p class="margin-top-0">
-      NOFO Builder saves metrics for your current version. After editing or
-      reimporting the NOFO, calculate your metrics again for updated results.
+      Check readability for the current NOFO. Select Save these results to keep
+      a record for your review package. After editing or reimporting the NOFO,
+      calculate your metrics again for updated results.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
       <button
@@ -102,6 +105,11 @@
         </summary>
         <ul class="usa-list margin-top-1" data-metrics-warnings-list></ul>
       </details>
+      <button class="usa-button margin-top-2" type="button" data-save-readability hidden>Save these results</button>
+      <p class="font-sans-xs" data-save-readability-status aria-live="polite" role="status"></p>
     </div>
+    <section data-readability-saved-history aria-label="Saved readability snapshots">
+      {% include 'nofos/includes/readability_saved_snapshots.html' %}
+    </section>
   </div>
 </details>

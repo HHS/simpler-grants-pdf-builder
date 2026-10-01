@@ -1202,13 +1202,38 @@ class NofoReadabilityScore(models.Model):
     @property
     def is_current(self):
         """Whether content and the installed measurement contract are current."""
-        from .readability import INPUT_CONTRACT_VERSION, get_metrics_package_version
+        from .readability import (
+            INPUT_CONTRACT_VERSION,
+            PROFILE_REFERENCE,
+            get_metrics_package_version,
+        )
 
         return (
             self.nofo_revision == self.nofo.updated
+            and self.profile_reference == PROFILE_REFERENCE
             and self.input_contract_version == INPUT_CONTRACT_VERSION
             and self.package_version == get_metrics_package_version()
         )
+
+
+class NofoReadabilityCheckpoint(models.Model):
+    """An explicit review checkpoint referencing an unchanged calculation."""
+
+    score = models.OneToOneField(
+        NofoReadabilityScore, on_delete=models.CASCADE, related_name="checkpoint"
+    )
+    saved_at = models.DateTimeField(auto_now_add=True)
+    saved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    nofo_status_at_save = models.CharField(max_length=32, choices=STATUS_CHOICES)
+
+    class Meta:
+        ordering = ["-saved_at", "-pk"]
 
 
 class PdfReadabilityAttempt(models.Model):

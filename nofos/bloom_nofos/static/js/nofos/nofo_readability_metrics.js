@@ -14,6 +14,10 @@
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
+  const saveButton = panel.querySelector("[data-save-readability]");
+  const saveStatus = panel.querySelector("[data-save-readability-status]");
+  const savedHistory = panel.querySelector("[data-readability-saved-history]");
+  let displayedResult = null;
   let hasRequestedMetrics = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
@@ -193,9 +197,67 @@
     scopeContainer.hidden = false;
   };
 
+  const showResult = (payload) => {
+    panel.querySelectorAll("[data-metric-id]").forEach((container) => {
+      const metricId = container.dataset.metricId;
+      showMetric(metricId, metricForDisplay(metricId, payload.metrics));
+    });
+    showScopeSummary(payload.metrics);
+    showWarnings(payload.warnings);
+    results.hidden = false;
+    displayedResult = payload;
+    if (saveButton) saveButton.hidden = false;
+  };
+
+  const saveMetrics = async () => {
+    if (!displayedResult || saveButton.disabled || button.disabled) return;
+    saveButton.disabled = true;
+    button.disabled = true;
+    saveStatus.textContent = "Saving results…";
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(panel.dataset.saveEndpoint, {
+        method: "POST",
+        headers: { Accept: "application/json", "X-CSRFToken": panel.dataset.csrfToken },
+        signal: controller.signal,
+      });
+      let payload = {};
+      try { payload = await response.json(); } catch { /* Use the HTTP fallback below. */ }
+      if (!response.ok) throw new Error(payload.message || `Request failed (${response.status}).`);
+      if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Recalculate and try again.");
+      const changed = JSON.stringify(displayedResult.metrics) !== JSON.stringify(payload.result.metrics);
+      showResult(payload.result);
+      const message = payload.already_saved ? "These results are already saved." : "Results saved for your review package.";
+      saveStatus.textContent = changed ? `${message} The NOFO changed since the calculation. The values above show the saved results.` : message;
+      // Reload the server's escaped, permission-checked projection rather than
+      // maintaining a second formatter and comparison engine in the browser.
+      try {
+        const historyResponse = await fetch(panel.dataset.historyEndpoint, {
+          headers: { Accept: "text/html" }, signal: controller.signal,
+        });
+        if (!historyResponse.ok) throw new Error("History unavailable");
+        savedHistory.innerHTML = await historyResponse.text();
+      } catch {
+        saveStatus.textContent += " Refresh the page to update the saved snapshots list.";
+      }
+    } catch (error) {
+      saveStatus.textContent = error.name === "AbortError"
+        ? "Saving took too long to confirm. Try again; the same results won't be saved twice."
+        : `Results could not be saved. ${error.message}`;
+    } finally {
+      window.clearTimeout(timeoutId);
+      saveButton.disabled = false;
+      button.disabled = false;
+    }
+  };
+
   const calculateMetrics = async () => {
     hasRequestedMetrics = true;
     button.disabled = true;
+    if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
+    if (saveStatus) saveStatus.textContent = "";
+    displayedResult = null;
     status.textContent = "Calculating metrics…";
     const controller = new AbortController();
     const timeoutId = window.setTimeout(
@@ -224,14 +286,7 @@
         throw new Error(payload.message || `Request failed (${response.status}).`);
       }
 
-      panel.querySelectorAll("[data-metric-id]").forEach((container) => {
-        const metricId = container.dataset.metricId;
-        showMetric(metricId, metricForDisplay(metricId, payload.metrics));
-      });
-
-      showScopeSummary(payload.metrics);
-      showWarnings(payload.warnings);
-      results.hidden = false;
+      showResult(payload);
       status.textContent = "Calculated for your current version.";
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate";
@@ -249,10 +304,12 @@
     } finally {
       window.clearTimeout(timeoutId);
       button.disabled = false;
+      if (saveButton) saveButton.disabled = false;
     }
   };
 
   button.addEventListener("click", calculateMetrics);
+  if (saveButton) saveButton.addEventListener("click", saveMetrics);
   panel.addEventListener("toggle", () => {
     if (panel.open && !hasRequestedMetrics) {
       void calculateMetrics();
