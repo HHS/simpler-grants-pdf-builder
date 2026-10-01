@@ -16,11 +16,15 @@ Questions are marked ❓ and labeled **Q1–Q4f** in the diagram, and listed in
 ## What we propose
 
 - **AS pulls PDFs from Builder.** AS asks Builder whether an approved PDF
-  exists for a comp ID, then downloads it from Builder. AS never connects to
-  DocRaptor (our PDF renderer) or to our file storage.
-- **Each PDF is fixed once created.** If a NOFO changes after approval,
-  Builder creates a new PDF with a new artifact ID, checksum and generation
-  time. The previous PDF stays available until the replacement is stored.
+  exists for a comp ID, then downloads it through Builder. AS never connects to
+  DocRaptor (our PDF renderer) and never receives DocRaptor or storage
+  credentials. The default is to stream the PDF through Builder. A short-lived
+  download link is an option only if it keeps that same trust boundary and
+  security approves it (see Q4b).
+- **Each PDF is fixed once created.** A new PDF is made only when a
+  replacement revision of the NOFO is approved, not for every edit after
+  approval. The new PDF gets a new artifact ID, checksum and generation time.
+  The previous PDF stays available until the replacement is stored.
 - **AS gets its own machine identity.** Access is limited to the records
   and OpDivs AS is approved for. Every attempt is logged. A request outside
   that scope reveals nothing, including whether the record exists.
@@ -78,8 +82,8 @@ sequenceDiagram
     end
 
     rect rgba(128,128,128,0.12)
-    Note over AS,B: NOFO changes after approval
-    B->>D: Render updated NOFO
+    Note over AS,B: Replacement revision of the NOFO is approved
+    B->>D: Render approved replacement revision
     D-->>B: PDF bytes
     B->>S: Store as a new artifact ID (old one is kept)
     B->>B: Mark new PDF current, old one superseded
@@ -99,7 +103,7 @@ Please add answers in the right-hand column, or reply on issue #962.
 | Q2 | Setup | What outbound IP addresses will AS call from? Does AS need a private connection (VPN or private link) rather than HTTPS over the internet? | Decides network rules and any allowlisting in the lower environment and in production. | |
 | Q3 | Approval | Is the comp ID unique and stable for the life of an announcement? Is it assigned before the NOFO is approved in Builder? | The comp ID is the key AS uses to look up a PDF. If it's missing at approval or can change, we need a different link between the two systems. | |
 | Q4a | Download | What is the largest PDF AS can accept? | Most NOFO PDFs are well under typical limits, but long NOFOs with images can be large. | |
-| Q4b | Download | What request and download timeouts does AS use? | Decides whether we stream the PDF directly or offer a short-lived download link. | |
+| Q4b | Download | What request and download timeouts does AS use? | Decides whether streaming through Builder is enough or a short-lived download link is needed. Either way, the final option must keep the agreed trust boundary: AS gets no DocRaptor or storage credentials. | |
 | Q4c | Check | How often would AS check for a new or updated PDF? Would a notification from Builder be preferred? | Sets rate limits and whether polling alone is enough. | |
 | Q4d | Attach | Does AS scan received files for malware? | Decides whether Builder also needs to scan, or whether one side is enough. | |
 | Q4e | Receipt | Does AS need to confirm it received a PDF? | Tells us whether to build a receipt acknowledgment and record it in the audit log. | |
@@ -112,8 +116,9 @@ These aren't technical questions, but they take the longest to arrange:
 - A technical contact and a security contact (ISSO) on each side.
 - Whatever interconnection agreement (ISA or MOU) the two systems require.
 - Agreement that early testing uses a lower environment and synthetic NOFOs
-  only. No credentials are issued and no real PDFs are shared until security
-  and records owners approve the contract (#957).
+  only. Credentials scoped to synthetic data in a lower environment can be
+  issued for that testing. No real PDFs are exposed until security and records
+  owners approve the lifecycle (#957).
 
 ## Current status
 
