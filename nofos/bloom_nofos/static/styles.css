@@ -2363,10 +2363,6 @@ del + ins > br {
   display: block;
 }
 
-.login-gov-container {
-  max-width: 30rem;
-}
-
 .nofo_compare h1 {
   color: var(--color--text-default);
 }

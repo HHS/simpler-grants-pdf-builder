@@ -1,338 +1,55 @@
-import json
-import time
-from unittest.mock import MagicMock, patch
-
-import jwt
-from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
-from jwt.algorithms import RSAAlgorithm
+from django.test import TestCase
 from users.auth.backend import LoginGovBackend
-from users.auth.login_gov import LoginGovClient
 
 User = get_user_model()
 
-test_login_gov_settings = {
-    "LOGIN_GOV": {
-        "CLIENT_ID": "test_client_id",
-        "OIDC_URL": "https://test.login.gov",
-        "REDIRECT_URI": "http://localhost:8000/users/login/callback",
-        "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
-    }
-}
-
-test_login_gov_settings_with_key = {
-    "LOGIN_GOV": {
-        "CLIENT_ID": "test_client_id",
-        "OIDC_URL": "https://test.login.gov",
-        "REDIRECT_URI": "http://localhost:8000/users/login/callback",
-        "ACR_VALUES": "http://idmanagement.gov/ns/assurance/ial/1",
-        "PRIVATE_KEY": "test_private_key",
-        "PUBLIC_KEY": "test_public_key",
-    }
-}
-
-
-@override_settings(**test_login_gov_settings)
-class LoginGovClientTests(TestCase):
-    def setUp(self):
-        # Create a test RSA key for JWT operations
-        self.private_key = rsa.generate_private_key(
-            public_exponent=65537, key_size=2048
-        )
-
-    def test_init_without_private_key(self):
-        """Test that LoginGovClient raises an exception when private key is not found."""
-        with self.assertRaises(Exception) as context:
-            LoginGovClient()
-        self.assertTrue(
-            "Private key not configured in settings.LOGIN_GOV['PRIVATE_KEY']"
-            in str(context.exception)
-        )
-
-    @override_settings(**test_login_gov_settings_with_key)
-    @patch("users.auth.login_gov.load_pem_private_key")
-    @patch("users.auth.login_gov.requests.get")
-    def test_get_login_gov_public_key(self, mock_get, mock_load_key):
-        """Test fetching Login.gov public key."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "keys": [{"kty": "RSA", "n": "test_n", "e": "AQAB", "kid": "test_kid"}]
-        }
-        mock_get.return_value = mock_response
-        mock_load_key.return_value = self.private_key
-
-        client = LoginGovClient()
-        key = client._get_login_gov_public_key("test_kid")
-        self.assertIsNotNone(key)
-
-    @override_settings(**test_login_gov_settings_with_key)
-    @patch("users.auth.login_gov.load_pem_private_key")
-    def test_get_authorization_url(self, mock_load_key):
-        """Test generating authorization URL."""
-        mock_load_key.return_value = self.private_key
-
-        client = LoginGovClient()
-        url, state, nonce = client.get_authorization_url()
-
-        self.assertTrue(
-            url.startswith("https://test.login.gov/openid_connect/authorize")
-        )
-        self.assertIn("client_id=test_client_id", url)
-        self.assertIn("response_type=code", url)
-        self.assertIn("state=" + state, url)
-        self.assertIn("nonce=" + nonce, url)
-
-    @override_settings(**test_login_gov_settings_with_key)
-    @patch("users.auth.login_gov.load_pem_private_key")
-    @patch("users.auth.login_gov.requests.post")
-    @patch("users.auth.login_gov.jwt.encode")
-    def test_get_token(self, mock_jwt_encode, mock_post, mock_load_key):
-        """Test exchanging code for tokens."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "access_token": "test_access_token",
-            "id_token": "test_id_token",
-        }
-        mock_post.return_value = mock_response
-        mock_load_key.return_value = self.private_key
-        mock_jwt_encode.return_value = "test.jwt.token"
-
-        client = LoginGovClient()
-        tokens = client.get_token("test_code")
-
-        self.assertEqual(tokens["access_token"], "test_access_token")
-        self.assertEqual(tokens["id_token"], "test_id_token")
-
-    @override_settings(**test_login_gov_settings_with_key)
-    @patch("users.auth.login_gov.load_pem_private_key")
-    @patch("users.auth.login_gov.jwt.get_unverified_header")
-    @patch("users.auth.login_gov.jwt.decode")
-    @patch("users.auth.login_gov.requests.get")
-    def test_validate_id_token(self, mock_get, mock_decode, mock_header, mock_load_key):
-        """Test validating ID token."""
-        mock_header.return_value = {"kid": "test_kid"}
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "keys": [{"kty": "RSA", "n": "test_n", "e": "AQAB", "kid": "test_kid"}]
-        }
-        mock_get.return_value = mock_response
-        mock_decode.return_value = {
-            "sub": "test_sub",
-            "email": "test@example.com",
-            "nonce": "test_nonce",
-        }
-        mock_load_key.return_value = self.private_key
-
-        client = LoginGovClient()
-        decoded = client.validate_id_token("test.jwt.token", "test_nonce")
-
-        self.assertEqual(decoded["sub"], "test_sub")
-        self.assertEqual(decoded["email"], "test@example.com")
-
-
-@override_settings(**test_login_gov_settings_with_key)
-@patch("users.auth.login_gov.load_pem_private_key")
-@patch("users.auth.login_gov.requests.get")
-class LoginGovIdTokenSignatureTests(TestCase):
-    """Validate real signed ID tokens without mocking PyJWT."""
-
-    KID = "login_gov_kid"
-    NONCE = "test_nonce"
-
-    def setUp(self):
-        self.client_private_key = rsa.generate_private_key(
-            public_exponent=65537, key_size=2048
-        )
-        self.login_gov_private_key = rsa.generate_private_key(
-            public_exponent=65537, key_size=2048
-        )
-        jwk = json.loads(RSAAlgorithm.to_jwk(self.login_gov_private_key.public_key()))
-        jwk["kid"] = self.KID
-        self.certs = {"keys": [jwk]}
-
-    def _mock_certs(self, mock_get, mock_load_key):
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.certs
-        mock_get.return_value = mock_response
-        mock_load_key.return_value = self.client_private_key
-
-    def _claims(self, **overrides):
-        now = int(time.time())
-        claims = {
-            "iss": "https://test.login.gov/",
-            "aud": "test_client_id",
-            "sub": "test_sub",
-            "email": "test@example.com",
-            "nonce": self.NONCE,
-            "iat": now,
-            "exp": now + 300,
-        }
-        claims.update(overrides)
-        return claims
-
-    def _sign(self, claims, key=None, kid=KID):
-        return jwt.encode(
-            claims,
-            key or self.login_gov_private_key,
-            algorithm="RS256",
-            headers={"kid": kid},
-        )
-
-    def _assert_rejected(self, id_token):
-        client = LoginGovClient()
-        with self.assertRaises(ValueError) as context:
-            client.validate_id_token(id_token, self.NONCE)
-        self.assertIn("Invalid ID token", str(context.exception))
-
-    def test_valid_token(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        client = LoginGovClient()
-
-        decoded = client.validate_id_token(self._sign(self._claims()), self.NONCE)
-
-        self.assertEqual(decoded["sub"], "test_sub")
-        self.assertEqual(decoded["email"], "test@example.com")
-        mock_get.assert_called_once_with(
-            "https://test.login.gov/api/openid_connect/certs"
-        )
-
-    def test_rejects_wrong_nonce(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        self._assert_rejected(self._sign(self._claims(nonce="other_nonce")))
-
-    def test_rejects_wrong_audience(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        self._assert_rejected(self._sign(self._claims(aud="other_client_id")))
-
-    def test_rejects_wrong_issuer(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        self._assert_rejected(self._sign(self._claims(iss="https://evil.example/")))
-
-    def test_rejects_expired_token(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        now = int(time.time())
-        self._assert_rejected(self._sign(self._claims(iat=now - 600, exp=now - 300)))
-
-    def test_rejects_token_signed_by_other_key(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        self._assert_rejected(self._sign(self._claims(), key=other_key))
-
-    def test_rejects_unknown_kid(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        self._assert_rejected(self._sign(self._claims(), kid="unknown_kid"))
-
-    def test_rejects_tampered_payload(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        header, _, signature = self._sign(self._claims()).split(".")
-        forged_payload = self._sign(self._claims(email="attacker@example.com")).split(
-            "."
-        )[1]
-        self._assert_rejected(f"{header}.{forged_payload}.{signature}")
-
-    def test_rejects_hs256_token(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        id_token = jwt.encode(
-            self._claims(),
-            "a-shared-secret-that-is-at-least-32-bytes",
-            algorithm="HS256",
-            headers={"kid": self.KID},
-        )
-        self._assert_rejected(id_token)
-
-    def test_rejects_unsigned_token(self, mock_get, mock_load_key):
-        self._mock_certs(mock_get, mock_load_key)
-        id_token = jwt.encode(
-            self._claims(), None, algorithm="none", headers={"kid": self.KID}
-        )
-        self._assert_rejected(id_token)
-
-    @patch("users.auth.login_gov.requests.post")
-    def test_get_token_client_assertion_is_signed(
-        self, mock_post, mock_get, mock_load_key
-    ):
-        self._mock_certs(mock_get, mock_load_key)
-        mock_post.return_value = MagicMock()
-
-        LoginGovClient().get_token("test_code")
-
-        token_url = "https://test.login.gov/api/openid_connect/token"
-        assertion = mock_post.call_args.kwargs["data"]["client_assertion"]
-        decoded = jwt.decode(
-            assertion,
-            self.client_private_key.public_key(),
-            algorithms=["RS256"],
-            audience=token_url,
-            issuer="test_client_id",
-        )
-        self.assertEqual(decoded["sub"], "test_client_id")
-        self.assertEqual(mock_post.call_args.args[0], token_url)
-
 
 class LoginGovBackendTests(TestCase):
+    """The backend keeps its historical name; it now only handles passwords."""
+
     def setUp(self):
         self.backend = LoginGovBackend()
-        # Create a test user
-        self.existing_user = User.objects.create(
+        self.existing_user = User.objects.create_user(
             email="existing@bloomworks.digital",
-            group="Bloomworks",
+            password="correct-password",
+            group="bloom",
         )
 
-    def test_group_assignment_bloomworks(self):
-        """Test group assignment for Bloomworks domain"""
-        group = self.backend._get_group_from_email("test@bloomworks.digital")
-        self.assertEqual(group, "bloom")
-
-    def test_group_assignment_hrsa(self):
-        """Test group assignment for HRSA domain"""
-        group = self.backend._get_group_from_email("test@hrsa.gov")
-        self.assertEqual(group, "hrsa")
-
-    def test_group_assignment_unknown_domain(self):
-        """Test group assignment for unknown domain defaults to bloom"""
-        group = self.backend._get_group_from_email("test@unknown.com")
-        self.assertEqual(group, "bloom")
-
-    def test_authenticate_login_gov_existing_user(self):
-        """Test authenticating existing user with Login.gov"""
-        login_gov_data = {
-            "email": "existing@bloomworks.digital",
-            "sub": "test-sub-id",
-        }
-        user = self.backend.authenticate(None, login_gov_data=login_gov_data)
-        self.assertIsNotNone(user)
-        self.assertEqual(user.email, "existing@bloomworks.digital")
-        self.assertEqual(user.login_gov_user_id, "test-sub-id")
-
-    def test_authenticate_login_gov_new_user(self):
-        """Test authenticating new user with Login.gov"""
-        login_gov_data = {
-            "email": "new@hrsa.gov",
-            "sub": "test-sub-id",
-        }
-        user = self.backend.authenticate(None, login_gov_data=login_gov_data)
-        self.assertIsNotNone(user)
-        self.assertEqual(user.email, "new@hrsa.gov")
-        self.assertEqual(user.group, "hrsa")
-        self.assertEqual(user.login_gov_user_id, "test-sub-id")
-        self.assertTrue(user.is_active)
-        self.assertFalse(user.force_password_reset)
-
-    def test_authenticate_login_gov_invalid_data(self):
-        """Test authentication fails with invalid Login.gov data"""
-        # Missing email
-        self.assertIsNone(
-            self.backend.authenticate(None, login_gov_data={"sub": "test-sub-id"})
+    def test_authenticate_with_correct_password(self):
+        user = self.backend.authenticate(
+            None, username="existing@bloomworks.digital", password="correct-password"
         )
-        # Missing sub
+        self.assertEqual(user, self.existing_user)
+
+    def test_authenticate_with_wrong_password(self):
         self.assertIsNone(
             self.backend.authenticate(
-                None, login_gov_data={"email": "test@example.com"}
+                None, username="existing@bloomworks.digital", password="wrong"
             )
         )
-        # Empty data
-        self.assertIsNone(self.backend.authenticate(None, login_gov_data={}))
+
+    def test_authenticate_inactive_user(self):
+        self.existing_user.is_active = False
+        self.existing_user.save()
+        self.assertIsNone(
+            self.backend.authenticate(
+                None,
+                username="existing@bloomworks.digital",
+                password="correct-password",
+            )
+        )
+
+    def test_login_gov_data_no_longer_authenticates(self):
+        self.assertIsNone(
+            self.backend.authenticate(
+                None,
+                login_gov_data={
+                    "email": "existing@bloomworks.digital",
+                    "sub": "test-sub-id",
+                },
+            )
+        )
 
     def test_get_user_exists(self):
         """Test getting existing user by ID"""
