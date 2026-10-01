@@ -86,7 +86,7 @@ The panel does not assign pass/fail bands. Calculation and an explicit saved
 review checkpoint are separate actions. Editors can calculate again after
 editing or reimporting and save selected results for their review package.
 Retention is documented under [Stored snapshots](#stored-snapshots).
-Reloading the page resets the panel; reopening it retrieves the stored result if
+Opening or reopening the panel checks the current NOFO and retrieves the stored result if
 the revision and measurement contract are unchanged, or calculates a new result
 otherwise. Target comparisons use current configuration, not the goals saved
 with a previous snapshot.
@@ -186,7 +186,7 @@ background jobs are out of scope.
 ## Saved review checkpoints
 
 Calculating metrics remains exploratory. Select **Save these results** to keep
-a review checkpoint. The server reuses the calculation for the current NOFO
+a review checkpoint. The panel says **Snapshot saved** after saving. The server reuses the calculation for the current NOFO
 and measurement setup, or calculates it if the NOFO has changed. It never
 takes metric values from the browser. A content change during that request
 returns a retry message instead of keeping results for stale content.
@@ -200,7 +200,7 @@ unavailable metrics show **Unavailable**, never zero.
 
 The panel lists recent saved checkpoints from all users. **See all snapshots**
 opens `/nofos/<uuid>/readability-scores`. History is newest first and includes
-the saver, saved status, six values, completeness, and measurement setup.
+the saver, five metric values, and calculation version with expandable audit details.
 Deleting a user retains their records with **Deleted user**. Archiving retains
 history; deleting the NOFO deletes its calculation and checkpoint records.
 
@@ -221,8 +221,8 @@ the record says **No comparable metrics**, not **No change**.
 ## Saved readability overview
 
 `/nofos/metrics/readability-scores` lists NOFOs with at least one saved checkpoint,
-including archived NOFOs. It shows current NOFO status, saved-record count, last
-save time, the latest saved six values, and the change from the previous saved
+including archived NOFOs. It shows saved-record count, last
+save time, the latest five saved metric values, and the change from the previous saved
 record. Latest saved results may differ from the current NOFO. A partial latest
 checkpoint is shown rather than silently falling back to an older complete one.
 Links lead to the per-NOFO history page.
@@ -233,7 +233,7 @@ access. Per-NOFO history permits normal NOFO access or Metrics-viewer access;
 the latter grants read access only, not permission to save.
 
 The overview paginates NOFOs in groups of 50 before loading only the two latest
-checkpoints for each visible NOFO. It selects six values and provenance from
+checkpoints for each visible NOFO. It selects five metric values and provenance from
 the result JSON in the database instead of loading every full report. **Print
 this page** prints the displayed page only. Both history pages use private,
 `no-store` responses.
@@ -243,3 +243,27 @@ save endpoint returns `503 readability_metrics_disabled`, the new pages return
 404 for authorized users, and their navigation is hidden. Saved data is retained.
 This feature is separate from the anonymous PDF-readability pilot and does not
 enable that pilot or its outcome recording.
+
+### Review display and keyboard interaction
+
+The panel, recent snapshots, full history and overview display the same five
+metrics: word count, words per sentence, sentences per paragraph, Flesch-Kincaid
+grade level and passive sentences. Flesch Reading Ease remains in the immutable
+calculation data but is excluded from displayed metrics and improvement counts.
+Status at save and completeness remain stored but are omitted from the history
+UI; unavailable displayed values still say **Unavailable**. The overview omits
+current status and the archived/partial labels in NOFO cells. Horizontal scrolling
+is unchanged; there are no sticky columns or changed-since-save labels.
+
+History identifies the **Calculation version** with **Metrics v<package version>**
+and a keyboard-operable **View details** disclosure for the full measurement
+contract. Comparisons still check the entire contract, not only the package.
+The empty panel hides **See all snapshots** until a snapshot exists.
+
+Each panel opening checks current content through the existing server cache.
+Saving compares source revisions to announce recalculation even if metric values
+stay identical. A status-only change still creates no new checkpoint. The save
+button uses `aria-disabled` and a submission guard while saving, so it retains
+keyboard focus without moving focus back if the user navigates elsewhere.
+Confirmation is announced through the existing polite status region; it is not
+an additional Tab stop. Actual screen-reader speech requires manual verification.

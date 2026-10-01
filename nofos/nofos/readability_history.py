@@ -17,7 +17,6 @@ DISPLAY_METRICS = (
     ("word_count", "Word count"),
     ("words_per_sentence", "Words per sentence"),
     ("sentences_per_paragraph", "Sentences per paragraph"),
-    ("flesch_reading_ease", "Flesch Reading Ease"),
     ("flesch_kincaid_grade_level", "Flesch-Kincaid grade level"),
     ("passive_sentence_percentage", "Passive sentences"),
 )

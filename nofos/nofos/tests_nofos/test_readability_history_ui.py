@@ -121,7 +121,54 @@ class ReadabilityHistoryUiTests(TestCase):
                 "nofos/includes/readability_saved_snapshots.html", context
             )
         self.assertIn("Deleted user", html)
-        self.assertIn("Partial results", html)
+        self.assertNotIn("Partial results", html)
         self.assertIn("Unavailable", html)
-        self.assertIn("Flesch Reading Ease", html)
+        self.assertNotIn("Flesch Reading Ease", html)
         self.assertIn("Current version", html)
+
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
+    def test_empty_panel_has_no_history_link_and_saved_panel_omits_status_and_completeness(
+        self,
+    ):
+        context, _ = self.get_context("?fragment=1")
+        with patch("django.urls.reverse", return_value="/history"):
+            empty = render_to_string(
+                "nofos/includes/readability_saved_snapshots.html", context
+            )
+        self.assertIn("No saved snapshots yet", empty)
+        self.assertNotIn("See all snapshots", empty)
+        self.checkpoint(user=self.user)
+        context, _ = self.get_context("?fragment=1")
+        with patch("django.urls.reverse", return_value="/history"):
+            saved = render_to_string(
+                "nofos/includes/readability_saved_snapshots.html", context
+            )
+        self.assertIn("See all snapshots", saved)
+        self.assertNotIn("Complete results", saved)
+        self.assertNotIn("In review", saved)
+        self.assertEqual(len(context["readability_checkpoints"][0]["metrics"]), 5)
+
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
+    def test_history_has_five_metrics_and_expandable_calculation_version(self):
+        from bs4 import BeautifulSoup
+
+        self.checkpoint(user=self.user)
+        context, _ = self.get_context()
+        with patch("django.urls.reverse", return_value="/history"):
+            html = render_to_string("nofos/nofo_readability_history.html", context)
+        soup = BeautifulSoup(html, "html.parser")
+        headers = [th.get_text() for th in soup.select("table thead th")]
+        self.assertEqual(len(headers), 9)
+        self.assertNotIn("Completeness", headers)
+        self.assertNotIn("Status at save", headers)
+        self.assertNotIn("Flesch Reading Ease", headers)
+        self.assertIn("Calculation version", headers)
+        self.assertEqual(
+            len(
+                soup.select(
+                    "table tbody tr:first-child > th, table tbody tr:first-child > td"
+                )
+            ),
+            9,
+        )
+        self.assertIsNotNone(soup.select_one("table td details summary"))

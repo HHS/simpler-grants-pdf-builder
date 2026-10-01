@@ -20,28 +20,26 @@
   <p>Each row shows the latest saved results, which may differ from the current NOFO. Changes compare the latest two saved records using the current targets. Unavailable values are not compared.</p>
   <p>{{ scores_page.paginator.count }} NOFO{{ scores_page.paginator.count|pluralize }} with saved results. Page {{ scores_page.number }} of {{ scores_page.paginator.num_pages }}.</p>
 </div>
-<button class="usa-button usa-button--outline scores-print" type="button" onclick="window.print()">Print this page</button>
+<button class="usa-button usa-button--outline scores-print margin-top-2" type="button" onclick="window.print()">Print this page</button>
 <div class="scores-scroll" tabindex="0" role="region" aria-label="Saved readability metrics table">
   <table class="usa-table scores-table">
     <caption>Latest saved readability metrics by NOFO</caption>
     <thead><tr>
-      <th scope="col">NOFO</th><th scope="col">OpDiv group</th><th scope="col">Current status</th>
-      <th scope="col">Saved records</th><th scope="col">Last saved</th><th scope="col">Change from previous</th>
+      <th scope="col">NOFO</th><th scope="col">OpDiv group</th>
+      <th scope="col">Saved records</th><th scope="col">Last saved</th><th scope="col">Change from previous save</th>
       {% for metric_id, label in metric_columns %}<th scope="col">{{ label }}</th>{% endfor %}
     </tr></thead>
     <tbody>
       {% for row in score_rows %}<tr>
         <th scope="row"><a href="{% url 'nofos:nofo_readability_history' row.nofo.id %}">{{ row.nofo.title|default:row.nofo.short_name }}</a>
           {% if row.nofo.short_name and row.nofo.title %}<div class="text-normal">{{ row.nofo.short_name }}</div>{% endif %}
-          {% if row.nofo.archived %}<div class="usa-tag bg-base-lighter text-ink">Archived</div>{% endif %}
-          {% if not row.latest.is_complete %}<div class="text-normal">Some metrics unavailable</div>{% endif %}
         </th>
         <td>{{ row.nofo.get_group_display }}{% if row.nofo.opdiv %}<div>{{ row.nofo.opdiv }}</div>{% endif %}</td>
-        <td>{{ row.nofo.get_status_display }}</td><td>{{ row.count }}</td>
+        <td>{{ row.count }}</td>
         <td><time datetime="{{ row.latest.saved_at|date:'c' }}">{{ row.latest.saved_at|date:'M j, Y, g:i a' }}</time></td>
         <td>{{ row.latest.change_summary.label }}</td>
         {% for metric in row.latest.metrics %}<td>{{ metric.display }}{% if metric.change %}<div>{{ metric.change }}</div>{% endif %}</td>{% endfor %}
-      </tr>{% empty %}<tr><td colspan="12">No saved readability results yet.</td></tr>{% endfor %}
+      </tr>{% empty %}<tr><td colspan="10">No saved readability results yet.</td></tr>{% endfor %}
     </tbody>
   </table>
 </div>

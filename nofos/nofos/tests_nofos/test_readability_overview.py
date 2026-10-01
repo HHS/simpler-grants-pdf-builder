@@ -114,7 +114,7 @@ class ReadabilityOverviewTests(TestCase):
         self.checkpoint()
         Nofo.objects.filter(pk=self.nofo.pk).update(archived=timezone.now().date())
         response = self.client.get(self.url())
-        self.assertContains(response, "Archived")
+        self.assertNotContains(response, ">Archived</div>")
         self.assertContains(response, "Synthetic CDC NOFO")
 
     @patch(
@@ -143,3 +143,18 @@ class ReadabilityOverviewTests(TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(second.number, 2)
         self.assertEqual(rows[0]["count"], 3)
+
+    def test_overview_has_five_metrics_and_no_current_status_or_nofo_badges(self):
+        from bs4 import BeautifulSoup
+
+        self.checkpoint(complete=False)
+        response = self.client.get(self.url())
+        soup = BeautifulSoup(response.content, "html.parser")
+        headers = [th.get_text() for th in soup.select("table thead th")]
+        self.assertEqual(len(headers), 10)
+        self.assertNotIn("Current status", headers)
+        self.assertNotIn("Flesch Reading Ease", headers)
+        self.assertIn("Change from previous save", headers)
+        self.assertNotIn(
+            "Some metrics unavailable", soup.select_one("tbody th").get_text()
+        )

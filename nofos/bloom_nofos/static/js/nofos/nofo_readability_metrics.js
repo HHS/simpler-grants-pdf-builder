@@ -18,7 +18,7 @@
   const saveStatus = panel.querySelector("[data-save-readability-status]");
   const savedHistory = panel.querySelector("[data-readability-saved-history]");
   let displayedResult = null;
-  let hasRequestedMetrics = false;
+  let saving = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
     try {
@@ -210,8 +210,9 @@
   };
 
   const saveMetrics = async () => {
-    if (!displayedResult || saveButton.disabled || button.disabled) return;
-    saveButton.disabled = true;
+    if (!displayedResult || saving || saveButton.disabled || button.disabled) return;
+    saving = true;
+    saveButton.setAttribute("aria-disabled", "true");
     button.disabled = true;
     saveStatus.textContent = "Saving results…";
     const controller = new AbortController();
@@ -226,10 +227,11 @@
       try { payload = await response.json(); } catch { /* Use the HTTP fallback below. */ }
       if (!response.ok) throw new Error(payload.message || `Request failed (${response.status}).`);
       if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Recalculate and try again.");
-      const changed = JSON.stringify(displayedResult.metrics) !== JSON.stringify(payload.result.metrics);
+      const changed = displayedResult.source?.revision !== payload.result.source?.revision;
       showResult(payload.result);
-      const message = payload.already_saved ? "These results are already saved." : "Results saved for your review package.";
-      saveStatus.textContent = changed ? `${message} The NOFO changed since the calculation. The values above show the saved results.` : message;
+      status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
+      const message = payload.already_saved ? "These results are already saved." : "Snapshot saved.";
+      saveStatus.textContent = changed ? `${message} The NOFO changed, so we recalculated before saving.` : message;
       // Reload the server's escaped, permission-checked projection rather than
       // maintaining a second formatter and comparison engine in the browser.
       try {
@@ -247,13 +249,14 @@
         : `Results could not be saved. ${error.message}`;
     } finally {
       window.clearTimeout(timeoutId);
-      saveButton.disabled = false;
+      saving = false;
+      saveButton.setAttribute("aria-disabled", "false");
       button.disabled = false;
     }
   };
 
   const calculateMetrics = async () => {
-    hasRequestedMetrics = true;
+    if (saving || button.disabled) return;
     button.disabled = true;
     if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
     if (saveStatus) saveStatus.textContent = "";
@@ -287,7 +290,7 @@
       }
 
       showResult(payload);
-      status.textContent = "Calculated for your current version.";
+      status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate";
       button.classList.add("usa-button--outline");
@@ -311,7 +314,7 @@
   button.addEventListener("click", calculateMetrics);
   if (saveButton) saveButton.addEventListener("click", saveMetrics);
   panel.addEventListener("toggle", () => {
-    if (panel.open && !hasRequestedMetrics) {
+    if (panel.open && !saving && !button.disabled) {
       void calculateMetrics();
     }
   });

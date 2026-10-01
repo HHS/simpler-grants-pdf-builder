@@ -165,7 +165,7 @@ class ReadabilityCheckpointTests(TestCase):
 
     def test_partial_record_can_be_saved_and_zero_is_not_unavailable(self):
         self.analyze.return_value = build_payload(
-            {"flesch_reading_ease": "unavailable"}
+            {"flesch_kincaid_grade_level": "unavailable"}
         )
         self.analyze.return_value["metrics"]["word_count"]["value"] = 0
         self.save()
@@ -288,18 +288,18 @@ class ReadabilityHistoryComparisonTests(TestCase):
             ),
         )
 
-    def test_lower_and_higher_better_and_category_grade_lower_better(self):
+    def test_lower_better_and_category_grade_lower_better(self):
         old = self.row(
             word_count=100, flesch_reading_ease=40, flesch_kincaid_grade_level=12
         )
         new = self.row(
             word_count=90, flesch_reading_ease=42, flesch_kincaid_grade_level=11
         )
-        self.assertEqual(self.compare(new, old)["improved"], 3)
+        self.assertEqual(self.compare(new, old)["improved"], 2)
 
     def test_mixed_and_no_change(self):
-        old = self.row(word_count=100, flesch_reading_ease=40)
-        new = self.row(word_count=90, flesch_reading_ease=38)
+        old = self.row(word_count=100, passive_sentence_percentage=4)
+        new = self.row(word_count=90, passive_sentence_percentage=5)
         self.assertEqual(
             self.compare(new, old)["label"],
             "Improved on 1 metric · Worse on 1 metric",
@@ -330,3 +330,8 @@ class ReadabilityHistoryComparisonTests(TestCase):
                 self.compare(new, old)["label"], "Measurement updated: not compared"
             )
         self.assertEqual(self.compare(old, None)["label"], "First snapshot")
+
+    def test_hidden_reading_ease_does_not_affect_summary(self):
+        old = self.row(word_count=100, flesch_reading_ease=40)
+        new = self.row(word_count=100, flesch_reading_ease=80)
+        self.assertEqual(self.compare(new, old)["label"], "No change")
