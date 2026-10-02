@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.47.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.46.0...nofos-v3.47.0) (2026-10-02)
+
+
+### Features
+
+* add SAMHSA user group ([#1004](https://github.com/HHS/simpler-grants-pdf-builder/issues/1004)) ([0c74ff0](https://github.com/HHS/simpler-grants-pdf-builder/commit/0c74ff00696048807aea8ae21e02b9be134c1194))
+* add saved readability checkpoints and history ([#1014](https://github.com/HHS/simpler-grants-pdf-builder/issues/1014)) ([b714111](https://github.com/HHS/simpler-grants-pdf-builder/commit/b714111ebdce01b5a938ecbf413a6a700b0227ce))
+* auto-size "Point value" columns in scoring tables ([#1008](https://github.com/HHS/simpler-grants-pdf-builder/issues/1008)) ([dd8c867](https://github.com/HHS/simpler-grants-pdf-builder/commit/dd8c867143642c5076e0b2bc441c725905f73606))
+
+
+### Bug Fixes
+
+* protect production GrabzIt Word export ([#1002](https://github.com/HHS/simpler-grants-pdf-builder/issues/1002)) ([9391867](https://github.com/HHS/simpler-grants-pdf-builder/commit/9391867299dc87c7446ec041e8b5a35b0c7ff79c)), closes [#1000](https://github.com/HHS/simpler-grants-pdf-builder/issues/1000)
+* temporarily safelist unreleased Python tarfile fix ([#1017](https://github.com/HHS/simpler-grants-pdf-builder/issues/1017)) ([a25cb05](https://github.com/HHS/simpler-grants-pdf-builder/commit/a25cb05e600e5a547e91fa21a03a8621181ec146))
+* update NOFO metadata field guidance ([#1001](https://github.com/HHS/simpler-grants-pdf-builder/issues/1001)) ([de47d52](https://github.com/HHS/simpler-grants-pdf-builder/commit/de47d52f1d3654632aa6fc7d456f7569eeb1d186))
+* upgrade virtualenv and remove unused Login.gov sign-in ([#1011](https://github.com/HHS/simpler-grants-pdf-builder/issues/1011)) ([08cd880](https://github.com/HHS/simpler-grants-pdf-builder/commit/08cd880952a67a6cdf87899e3f9c0f9839012a40))
+
+
+### Documentation
+
+* clarify PDF publishing scope ([#1015](https://github.com/HHS/simpler-grants-pdf-builder/issues/1015)) ([94721a5](https://github.com/HHS/simpler-grants-pdf-builder/commit/94721a55b54dc2769cbdae24a755bedc7cab37b8))
+* consolidate repository documentation ([#1016](https://github.com/HHS/simpler-grants-pdf-builder/issues/1016)) ([33b7e9a](https://github.com/HHS/simpler-grants-pdf-builder/commit/33b7e9a9887eb877e90da5b3865b0439ad640aa2))
+* draft approved PDF retrieval proposal for Announcement Services ([#1010](https://github.com/HHS/simpler-grants-pdf-builder/issues/1010)) ([755ce2d](https://github.com/HHS/simpler-grants-pdf-builder/commit/755ce2d35cb5e856d7ebeb80af2a6498eb4fe6e9))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.93 to 1.43.96 in the python-minor-and-patch group across 1 directory ([#1006](https://github.com/HHS/simpler-grants-pdf-builder/issues/1006)) ([de4bc0b](https://github.com/HHS/simpler-grants-pdf-builder/commit/de4bc0bc77bb7adf56b797e2bc6c01e1444fa56f))
+* bump pypdf from 6.16.1 to 6.19.0 ([#1012](https://github.com/HHS/simpler-grants-pdf-builder/issues/1012)) ([4ae72c0](https://github.com/HHS/simpler-grants-pdf-builder/commit/4ae72c0aec7836c603f7a3beb546e38cf2d59809))
+* bump urllib3 from 2.7.0 to 2.8.0 ([95c4a85](https://github.com/HHS/simpler-grants-pdf-builder/commit/95c4a85c8b2f5962aa5bcb96b917bb783bb2884c))
+
 ## [3.46.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.45.0...nofos-v3.46.0) (2026-09-30)
 
 
