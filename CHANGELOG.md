@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.47.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.47.0...nofos-v3.47.1) (2026-10-02)
+
+
+### Bug Fixes
+
+* exclude Bloomworks and staging NOFOs from saved readability metrics ([#1018](https://github.com/HHS/simpler-grants-pdf-builder/issues/1018)) ([eddac8f](https://github.com/HHS/simpler-grants-pdf-builder/commit/eddac8f71344f0fd7253b767536100fd13b70865))
+
+
+### Documentation
+
+* clarify readability history across NOFO lifecycle ([#1019](https://github.com/HHS/simpler-grants-pdf-builder/issues/1019)) ([831aae2](https://github.com/HHS/simpler-grants-pdf-builder/commit/831aae23d6e60f5e6aa818092c5da84b6c4f49ed))
+
 ## [3.47.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.46.0...nofos-v3.47.0) (2026-10-02)
 
 
