@@ -17,6 +17,8 @@
    * against this page's colored chart lines/bars for no benefit.
    * Only layout/behavior that has no USWDS equivalent is custom CSS below.
    */
+  .metrics-other-pages a { font-weight: 700; text-decoration: none; }
+  .metrics-other-pages a:hover { text-decoration: underline; }
   .metrics-print-scope { display: none; }
   .metrics-filter { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
   .metrics-filter .usa-select { max-width: 100%; }
@@ -78,8 +80,13 @@
   </div>
 
   <nav class="metrics-other-pages margin-bottom-3" aria-label="Other metrics pages">
-    <h2 class="font-heading-sm">Other metrics</h2>
-    <ul><li><a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a></li></ul>
+    <p class="margin-y-0">
+      {% if readability_metrics_enabled %}
+      <a href="{% url 'nofos:builder_metrics_readability_scores' %}">NOFO readability metrics</a>
+      <span aria-hidden="true"> | </span>
+      {% endif %}
+      <a href="{% url 'nofos:builder_metrics_readability_pilot' %}">PDF readability pilot usage</a>
+    </p>
   </nav>
 
   <details class="margin-bottom-3 border-1px border-base-lighter radius-md padding-2">

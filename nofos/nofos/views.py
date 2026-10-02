@@ -166,6 +166,7 @@ from .readability import (
     normalize_readability_metric_goals,
     record_readability_snapshot,
 )
+from .readability_history import checkpoint_rows
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -464,6 +465,62 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
         return response
 
 
+class NofoReadabilityMetricsSaveView(GroupAccessObjectMixin, View):
+    """Explicit save; browser-supplied numbers are never accepted."""
+
+    def post(self, request, *args, **kwargs):
+        from .readability import ReadabilityRevisionChanged, save_readability_checkpoint
+        from .readability_history import checkpoint_queryset, project_checkpoint
+
+        if not config.HHS_NOFO_METRICS_ENABLED:
+            response = JsonResponse(
+                {
+                    "code": "readability_metrics_disabled",
+                    "message": "Readability metrics are not enabled in this environment.",
+                },
+                status=503,
+            )
+            response["Cache-Control"] = "no-store"
+            return response
+        nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
+        try:
+            payload, checkpoint, created = save_readability_checkpoint(
+                nofo, request.user
+            )
+        except ReadabilityMetricsUnavailable as error:
+            response = JsonResponse(
+                {"code": "readability_metrics_unavailable", "message": str(error)},
+                status=503,
+            )
+        except ReadabilityMetricsAnalysisError as error:
+            response = JsonResponse(error.payload, status=422)
+        except ReadabilityRevisionChanged as error:
+            response = JsonResponse(
+                {"code": "readability_revision_changed", "message": str(error)},
+                status=409,
+            )
+        else:
+            row = checkpoint_queryset().get(pk=checkpoint.pk)
+            previous = (
+                checkpoint_queryset()
+                .filter(score__nofo=nofo)
+                .filter(
+                    Q(saved_at__lt=checkpoint.saved_at)
+                    | Q(saved_at=checkpoint.saved_at, pk__lt=checkpoint.pk)
+                )
+                .first()
+            )
+            response = JsonResponse(
+                {
+                    "result": payload,
+                    "checkpoint": project_checkpoint(row, previous),
+                    "already_saved": not created,
+                }
+            )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
 class NofosEditView(GroupAccessObjectMixin, DetailView):
     model = Nofo
     template_name = "nofos/nofo_edit.html"
@@ -471,6 +528,8 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
+        if config.HHS_NOFO_METRICS_ENABLED:
+            context["readability_checkpoints"] = checkpoint_rows(self.object, limit=5)
         context["readability_metric_goals"] = normalize_readability_metric_goals(
             settings.HHS_NOFO_METRIC_GOALS
         )
@@ -2992,6 +3051,7 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
 
         start = timezone.make_aware(self.metrics_since)
         months = months_from(start)

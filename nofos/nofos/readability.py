@@ -307,3 +307,42 @@ def _read_revision(nofo):
     return (
         type(nofo).objects.filter(pk=nofo.pk).values_list("updated", flat=True).first()
     )
+
+
+class ReadabilityRevisionChanged(RuntimeError):
+    """Content changed during measurement; retry instead of saving stale values."""
+
+
+def save_readability_checkpoint(nofo, user):
+    """Measure current content, then explicitly keep it without modifying the cache.
+
+    Measurement is outside the short transaction. The final revision, permission,
+    and status check uses a fresh parent row. Existing edit paths do not all lock
+    that row before changing children, so this is not a document-wide edit lock.
+    """
+    from django.core.exceptions import PermissionDenied
+    from django.db import transaction
+
+    from .mixins import has_group_permission_func
+    from .models import Nofo, NofoReadabilityCheckpoint
+
+    if not has_group_permission_func(user, nofo):
+        raise PermissionDenied("You don’t have permission to save this NOFO.")
+    payload, score = record_readability_snapshot(nofo, user=user)
+    if score is None:
+        raise ReadabilityRevisionChanged(
+            "The NOFO changed. Recalculate and save again."
+        )
+    with transaction.atomic():
+        current = Nofo.objects.select_for_update().get(pk=nofo.pk)
+        if not has_group_permission_func(user, current):
+            raise PermissionDenied("You don’t have permission to save this NOFO.")
+        if current.updated != score.nofo_revision:
+            raise ReadabilityRevisionChanged(
+                "The NOFO changed. Recalculate and save again."
+            )
+        checkpoint, created = NofoReadabilityCheckpoint.objects.get_or_create(
+            score=score,
+            defaults={"saved_by": user, "nofo_status_at_save": current.status},
+        )
+    return payload, checkpoint, created

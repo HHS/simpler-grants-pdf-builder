@@ -2,10 +2,22 @@ from django.urls import path
 
 from . import views
 from .pdf_readability_metrics import PdfReadabilityMetricsView
+from .readability_history_views import NofoReadabilityHistoryView
+from .readability_overview import BuilderReadabilityScoresView
 
 app_name = "nofos"
 
 urlpatterns = [
+    path(
+        "metrics/readability-scores",
+        BuilderReadabilityScoresView.as_view(),
+        name="builder_metrics_readability_scores",
+    ),
+    path(
+        "<uuid:pk>/readability-scores",
+        NofoReadabilityHistoryView.as_view(),
+        name="nofo_readability_history",
+    ),
     path(
         "metrics/readability-pilot",
         PdfReadabilityMetricsView.as_view(),
@@ -67,6 +79,11 @@ urlpatterns = [
         name="nofo_readability_metrics",
     ),
     path("<uuid:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
+    path(
+        "<uuid:pk>/readability-metrics/save",
+        views.NofoReadabilityMetricsSaveView.as_view(),
+        name="nofo_readability_metrics_save",
+    ),
     path(
         "<uuid:pk>/edit/coach-designer",
         views.NofoEditCoachDesignerView.as_view(),

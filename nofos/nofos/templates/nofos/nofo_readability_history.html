@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load nofo_name %}
+{% block title %}Saved readability snapshots for {{ nofo|nofo_name }}{% endblock %}
+{% block css %}
+<style>
+  .readability-history-scroll { overflow-x: auto; }
+  .readability-history-table th, .readability-history-table td { vertical-align: top; }
+  @page { size: landscape; margin: 0.5in; }
+  @media print {
+    .back-link, .readability-history-pagination, header.usa-header, footer.usa-footer { display: none !important; }
+    .readability-history-scroll { overflow: visible; }
+    .readability-history-table { table-layout: fixed; width: 100%; font-size: 8pt; }
+    .readability-history-table th, .readability-history-table td { padding: 0.25rem; overflow-wrap: anywhere; }
+    .readability-history-table td span { font-size: inherit !important; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+{% if can_edit_nofo %}
+  {% url 'nofos:nofo_edit' nofo.id as back_href %}
+  {% include "includes/page_heading.html" with title="Saved readability snapshots" back_text="Back to NOFO" back_href=back_href only %}
+{% else %}
+  {% url 'nofos:builder_metrics_readability_scores' as back_href %}
+  {% include "includes/page_heading.html" with title="Saved readability snapshots" back_text="Back to saved readability metrics" back_href=back_href only %}
+{% endif %}
+<div class="usa-prose">
+  <h2>{{ nofo|nofo_name }}</h2>
+  {% if nofo.archived %}<p class="usa-tag bg-base-lighter text-ink">Archived NOFO</p>{% endif %}
+  <p>These are deliberately saved review checkpoints, not every calculation. Changes use the current metric targets. A change in the measuring setup is not compared.</p>
+</div>
+<div class="readability-history-scroll" tabindex="0" role="region" aria-label="Saved readability snapshots table">
+  <table class="usa-table readability-history-table">
+    <caption>Saved snapshots, newest first</caption>
+    <thead><tr><th scope="col">Saved at</th><th scope="col">Saved by</th><th scope="col">Change from previous save</th><th scope="col">Word count</th><th scope="col">Words per sentence</th><th scope="col">Sentences per paragraph</th><th scope="col">Flesch-Kincaid grade level</th><th scope="col">Passive sentences</th><th scope="col">Calculation version</th></tr></thead>
+    <tbody>
+      {% for checkpoint in readability_checkpoints %}
+      <tr>
+        <th scope="row">{{ checkpoint.saved_at|date:"M j, Y, g:i a T" }}{% if checkpoint.is_current %}<span class="display-block">Current version</span>{% endif %}</th>
+        <td>{{ checkpoint.saved_by }}</td><td>{{ checkpoint.change_summary.label }}</td>
+        {% for metric in checkpoint.metrics %}<td>{{ metric.display }}{% if metric.change %}<span class="display-block font-sans-xs">{{ metric.change }}</span>{% endif %}</td>{% endfor %}
+        <td>Metrics v{{ checkpoint.package_version }}
+          <details><summary>View details</summary>
+            <div>Profile: {{ checkpoint.profile_reference }}<br>Input processing: {{ checkpoint.input_contract_version }}<br>Schema: {{ checkpoint.schema_version }}<br>Result basis: {{ checkpoint.result_basis }}</div>
+          </details>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="9">No saved snapshots yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if history_page.has_other_pages %}
+<nav class="readability-history-pagination margin-top-2" aria-label="Saved readability history pages">
+  {% if history_page.has_previous %}<a href="?page={{ history_page.previous_page_number }}">Previous</a>{% endif %}
+  Page {{ history_page.number }} of {{ history_page.paginator.num_pages }}
+  {% if history_page.has_next %}<a href="?page={{ history_page.next_page_number }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

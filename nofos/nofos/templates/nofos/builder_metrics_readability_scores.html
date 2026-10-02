@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Saved readability metrics{% endblock %}
+{% block css %}
+<style>
+  .scores-scroll { overflow-x: auto; }
+  .scores-table { width: 100%; }
+  .scores-table th, .scores-table td { vertical-align: top; }
+  @media print {
+    .scores-scroll { overflow: visible; }
+    .scores-pagination, .scores-print, .back-link, header.usa-header, footer.usa-footer { display: none !important; }
+    .scores-table { font-size: 9pt; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+{% url 'nofos:builder_metrics' as metrics_href %}
+{% include 'includes/page_heading.html' with title='Saved readability metrics' back_text='Back to usage & quality metrics' back_href=metrics_href only %}
+<div class="usa-prose">
+  <p>Review checkpoints saved by NOFO editors. Calculations that have not been saved are not listed.</p>
+  <p>Each row shows the latest saved results, which may differ from the current NOFO. Changes compare the latest two saved records using the current targets. Unavailable values are not compared.</p>
+  <p>{{ scores_page.paginator.count }} NOFO{{ scores_page.paginator.count|pluralize }} with saved results. Page {{ scores_page.number }} of {{ scores_page.paginator.num_pages }}.</p>
+</div>
+<button class="usa-button usa-button--outline scores-print margin-top-2" type="button" onclick="window.print()">Print this page</button>
+<div class="scores-scroll" tabindex="0" role="region" aria-label="Saved readability metrics table">
+  <table class="usa-table scores-table">
+    <caption>Latest saved readability metrics by NOFO</caption>
+    <thead><tr>
+      <th scope="col">NOFO</th><th scope="col">OpDiv group</th>
+      <th scope="col">Saved records</th><th scope="col">Last saved</th><th scope="col">Change from previous save</th>
+      {% for metric_id, label in metric_columns %}<th scope="col">{{ label }}</th>{% endfor %}
+    </tr></thead>
+    <tbody>
+      {% for row in score_rows %}<tr>
+        <th scope="row"><a href="{% url 'nofos:nofo_readability_history' row.nofo.id %}">{{ row.nofo.title|default:row.nofo.short_name }}</a>
+          {% if row.nofo.short_name and row.nofo.title %}<div class="text-normal">{{ row.nofo.short_name }}</div>{% endif %}
+        </th>
+        <td>{{ row.nofo.get_group_display }}{% if row.nofo.opdiv %}<div>{{ row.nofo.opdiv }}</div>{% endif %}</td>
+        <td>{{ row.count }}</td>
+        <td><time datetime="{{ row.latest.saved_at|date:'c' }}">{{ row.latest.saved_at|date:'M j, Y, g:i a' }}</time></td>
+        <td>{{ row.latest.change_summary.label }}</td>
+        {% for metric in row.latest.metrics %}<td>{{ metric.display }}{% if metric.change %}<div>{{ metric.change }}</div>{% endif %}</td>{% endfor %}
+      </tr>{% empty %}<tr><td colspan="10">No saved readability results yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if scores_page.has_other_pages %}
+<nav class="scores-pagination margin-top-2" aria-label="Saved readability metrics pages">
+  {% if scores_page.has_previous %}<a href="?page={{ scores_page.previous_page_number }}">Previous</a>{% endif %}
+  Page {{ scores_page.number }} of {{ scores_page.paginator.num_pages }}
+  {% if scores_page.has_next %}<a href="?page={{ scores_page.next_page_number }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

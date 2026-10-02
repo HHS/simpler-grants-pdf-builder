@@ -14,7 +14,11 @@
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
-  let hasRequestedMetrics = false;
+  const saveButton = panel.querySelector("[data-save-readability]");
+  const saveStatus = panel.querySelector("[data-save-readability-status]");
+  const savedHistory = panel.querySelector("[data-readability-saved-history]");
+  let displayedResult = null;
+  let saving = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
     try {
@@ -193,9 +197,70 @@
     scopeContainer.hidden = false;
   };
 
-  const calculateMetrics = async () => {
-    hasRequestedMetrics = true;
+  const showResult = (payload) => {
+    panel.querySelectorAll("[data-metric-id]").forEach((container) => {
+      const metricId = container.dataset.metricId;
+      showMetric(metricId, metricForDisplay(metricId, payload.metrics));
+    });
+    showScopeSummary(payload.metrics);
+    showWarnings(payload.warnings);
+    results.hidden = false;
+    displayedResult = payload;
+    if (saveButton) saveButton.hidden = false;
+  };
+
+  const saveMetrics = async () => {
+    if (!displayedResult || saving || saveButton.disabled || button.disabled) return;
+    saving = true;
+    saveButton.setAttribute("aria-disabled", "true");
     button.disabled = true;
+    saveStatus.textContent = "Saving results…";
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(panel.dataset.saveEndpoint, {
+        method: "POST",
+        headers: { Accept: "application/json", "X-CSRFToken": panel.dataset.csrfToken },
+        signal: controller.signal,
+      });
+      let payload = {};
+      try { payload = await response.json(); } catch { /* Use the HTTP fallback below. */ }
+      if (!response.ok) throw new Error(payload.message || `Request failed (${response.status}).`);
+      if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Recalculate and try again.");
+      const changed = displayedResult.source?.revision !== payload.result.source?.revision;
+      showResult(payload.result);
+      status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
+      const message = payload.already_saved ? "These results are already saved." : "Snapshot saved.";
+      saveStatus.textContent = changed ? `${message} The NOFO changed, so we recalculated before saving.` : message;
+      // Reload the server's escaped, permission-checked projection rather than
+      // maintaining a second formatter and comparison engine in the browser.
+      try {
+        const historyResponse = await fetch(panel.dataset.historyEndpoint, {
+          headers: { Accept: "text/html" }, signal: controller.signal,
+        });
+        if (!historyResponse.ok) throw new Error("History unavailable");
+        savedHistory.innerHTML = await historyResponse.text();
+      } catch {
+        saveStatus.textContent += " Refresh the page to update the saved snapshots list.";
+      }
+    } catch (error) {
+      saveStatus.textContent = error.name === "AbortError"
+        ? "Saving took too long to confirm. Try again; the same results won't be saved twice."
+        : `Results could not be saved. ${error.message}`;
+    } finally {
+      window.clearTimeout(timeoutId);
+      saving = false;
+      saveButton.setAttribute("aria-disabled", "false");
+      button.disabled = false;
+    }
+  };
+
+  const calculateMetrics = async () => {
+    if (saving || button.disabled) return;
+    button.disabled = true;
+    if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
+    if (saveStatus) saveStatus.textContent = "";
+    displayedResult = null;
     status.textContent = "Calculating metrics…";
     const controller = new AbortController();
     const timeoutId = window.setTimeout(
@@ -224,15 +289,8 @@
         throw new Error(payload.message || `Request failed (${response.status}).`);
       }
 
-      panel.querySelectorAll("[data-metric-id]").forEach((container) => {
-        const metricId = container.dataset.metricId;
-        showMetric(metricId, metricForDisplay(metricId, payload.metrics));
-      });
-
-      showScopeSummary(payload.metrics);
-      showWarnings(payload.warnings);
-      results.hidden = false;
-      status.textContent = "Calculated for your current version.";
+      showResult(payload);
+      status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
       summaryStatus.textContent = "Calculated";
       button.textContent = "Recalculate";
       button.classList.add("usa-button--outline");
@@ -249,12 +307,14 @@
     } finally {
       window.clearTimeout(timeoutId);
       button.disabled = false;
+      if (saveButton) saveButton.disabled = false;
     }
   };
 
   button.addEventListener("click", calculateMetrics);
+  if (saveButton) saveButton.addEventListener("click", saveMetrics);
   panel.addEventListener("toggle", () => {
-    if (panel.open && !hasRequestedMetrics) {
+    if (panel.open && !saving && !button.disabled) {
       void calculateMetrics();
     }
   });
