@@ -78,6 +78,40 @@ class ReadabilityOverviewTests(TestCase):
         self.assertFalse(rows[0]["latest"]["is_complete"])
         self.assertEqual(rows[0]["latest"]["metrics"][0]["display"], "Unavailable")
 
+    def test_bloomworks_and_staging_nofos_are_excluded(self):
+        self.checkpoint()
+        for group in ("bloom", "staging"):
+            nofo = Nofo.objects.create(
+                title=f"Synthetic {group} NOFO",
+                number=f"TEST-{group}",
+                opdiv="CDC",
+                group=group,
+            )
+            self.checkpoint(nofo)
+        page, rows = readability_overview_page(None)
+        self.assertEqual(page.paginator.count, 1)
+        self.assertEqual([row["nofo"] for row in rows], [self.nofo])
+        response = self.client.get(self.url())
+        self.assertContains(response, "Synthetic CDC NOFO")
+        self.assertNotContains(response, "Synthetic bloom NOFO")
+        self.assertNotContains(response, "Synthetic staging NOFO")
+        self.assertContains(response, "1 NOFO with saved results.")
+
+    def test_exclusion_follows_current_group(self):
+        self.checkpoint()
+        Nofo.objects.filter(pk=self.nofo.pk).update(group="bloom")
+        self.assertEqual(readability_overview_page(None)[0].paginator.count, 0)
+        Nofo.objects.filter(pk=self.nofo.pk).update(group="cdc")
+        self.assertEqual(readability_overview_page(None)[0].paginator.count, 1)
+
+    def test_explains_exclusions_and_preservation(self):
+        response = self.client.get(self.url())
+        self.assertContains(
+            response,
+            "NOFOs in the Bloomworks or staging group are excluded",
+        )
+        self.assertContains(response, "How saved readability metrics are preserved")
+
     def test_permissions_and_private_response(self):
         self.checkpoint()
         response = self.client.get(self.url())

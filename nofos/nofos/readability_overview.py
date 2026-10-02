@@ -9,6 +9,7 @@ from django.db.models.functions import RowNumber
 from django.http import Http404
 from django.views.generic import TemplateView
 
+from .metrics_signals import EXCLUDED_GROUPS
 from .mixins import MetricsViewerRequiredMixin
 from .models import Nofo
 from .readability_history import (
@@ -26,6 +27,9 @@ def readability_overview_page(page_number):
             last_saved=Max("readability_scores__checkpoint__saved_at"),
         )
         .filter(saved_count__gt=0)
+        # Bloomworks and staging NOFOs are internal, so they stay out of this
+        # list the same way they stay out of the usage & quality metrics.
+        .exclude(group__in=EXCLUDED_GROUPS)
         .only("id", "title", "short_name", "group", "opdiv", "status", "archived")
         .order_by("-last_saved", "id")
     )
