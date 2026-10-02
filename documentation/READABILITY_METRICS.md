@@ -218,6 +218,62 @@ A changed profile, package, input contract, result schema, or result basis is
 labeled **Measurement updated: not compared**. When no metrics can be compared,
 the record says **No comparable metrics**, not **No change**.
 
+## NOFO lifecycle and readability history
+
+Readability history belongs to a specific NOFO database record (UUID), not its
+name, content, or relationship to another NOFO. Calculation snapshots and explicit
+saved checkpoints are separate records. Only saved checkpoints qualify a NOFO
+for `/nofos/metrics/readability-scores`.
+
+| Action | Calculation snapshots and saved checkpoints | Saved readability overview |
+| --- | --- | --- |
+| Archive a NOFO | Retained on the same NOFO. Archiving is a soft delete. | The NOFO remains eligible for listing. |
+| Delete a NOFO through the application/ORM | Deleted with the NOFO: deletion cascades from NOFO to calculation snapshots to saved checkpoints. | Its row disappears on the next page request; counts and pagination are recalculated. |
+| Delete the user who calculated or saved results | Retained; the corresponding user reference becomes null. Saved history displays **Deleted user** for a deleted saver. | The NOFO remains eligible for listing. |
+| Use **Duplicate NOFO** | The copy receives a new UUID and copied content, but no calculation snapshots or saved checkpoints. The original keeps its own history. | The copy is absent until it has its own saved checkpoint; it then qualifies as a separate NOFO row. |
+| Calculate metrics on the copy | Creates or reuses a calculation scoped to the copy's UUID and revision. Identical content does not reuse the original NOFO's calculation. | Calculation alone does not add the copy to the overview. |
+| Save metrics on the copy | Starts the copy's own saved history. Later saves compare only with earlier checkpoints on that copy. | The copy's row shows its own latest saved results and comparisons. |
+
+For example, duplicating a NOFO with three saved checkpoints leaves all three on
+the original and zero on the copy. Saving the copy's first checkpoint gives it
+one checkpoint, with no previous saved record for comparison. There is no
+inherited baseline or automatic comparison to the original. Deleting either
+record does not delete the other's readability history.
+
+Eligibility also depends on the page's access rules and filters. The group
+exclusion proposed in [PR #1018](https://github.com/HHS/simpler-grants-pdf-builder/pull/1018)
+is not yet in `main` at the time of this documentation change: it excludes
+Bloomworks (`bloom`) and staging (`staging`) using the NOFO's **current** group.
+Under that change, moving a NOFO into an excluded group hides its row without
+deleting history; moving it out makes its saved history eligible again. Archived
+NOFOs and duplicates follow the same group filter. Checkpoints do not capture a
+group at save time. This differs from the historical group attribution used by
+the [usage & quality metrics](BUILDER_METRICS.md).
+
+There is no automatic age-based cutoff for these saved records. This database
+history is separate from application logs and database backups; it is not an
+independent archive that survives NOFO deletion.
+
+### Implementation references for maintainers
+
+- [`NofoReadabilityScore` and `NofoReadabilityCheckpoint`](../nofos/nofos/models.py)
+  define the cascading NOFO/score relationships and nullable user references.
+- [`duplicate_nofo()`](../nofos/nofos/views.py) copies the NOFO, sections and
+  subsections; it does not copy readability records.
+- [`record_readability_snapshot()`](../nofos/nofos/readability.py) scopes stored
+  calculations to the NOFO and measurement contract.
+- [`checkpoint_rows()`](../nofos/nofos/readability_history.py) filters history by
+  `score__nofo`; comparisons do not traverse original/copy relationships.
+- [`readability_overview_page()`](../nofos/nofos/readability_overview.py) queries
+  existing NOFOs with saved checkpoints and loads their latest two checkpoints.
+
+When changing duplication, deletion, retention, or overview filtering, review
+these relationships together and update this lifecycle contract. Existing
+retention coverage is in
+[`test_readability_metrics.py`](../nofos/nofos/tests_nofos/test_readability_metrics.py),
+[`test_readability_checkpoints.py`](../nofos/nofos/tests_nofos/test_readability_checkpoints.py),
+and [`test_readability_overview.py`](../nofos/nofos/tests_nofos/test_readability_overview.py).
+
 ## Saved readability overview
 
 `/nofos/metrics/readability-scores` lists NOFOs with at least one saved checkpoint,

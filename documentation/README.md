@@ -11,7 +11,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
 - [IMPORT_RULES.md](IMPORT_RULES.md) — Every automatic content rule applied when a NOFO is imported (footnote/endnote handling, list/table repair, metadata suggestion, etc.)
 - [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
-- [READABILITY_METRICS.md](READABILITY_METRICS.md) — The integration boundary with the standalone `hhs-nofo-metrics` package, and the source contract it depends on
+- [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; saved readability history, deletion, archiving, and duplication behavior
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
 - [WORD_IMPORT_DRIFT.md](WORD_IMPORT_DRIFT.md) — Code-review findings on likely differences between Word author intent and imported NOFO structure
