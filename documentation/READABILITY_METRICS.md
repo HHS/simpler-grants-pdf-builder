@@ -244,6 +244,13 @@ save endpoint returns `503 readability_metrics_disabled`, the new pages return
 This feature is separate from the anonymous PDF-readability pilot and does not
 enable that pilot or its outcome recording.
 
+Saved checkpoints, per-NOFO history, and the saved-results overview belong only
+to the authenticated Builder readability feature (#1009, implemented in #1014).
+They are outside the anonymous PDF pilot release epic (#968) and must not be
+exposed through `/readability/` or counted toward that epic's acceptance criteria.
+The pilot's content-free usage monitoring is separate from saved metric results.
+See [the pilot runbook](PDF_READABILITY_PILOT.md) for its scope and release gates.
+
 ### Review display and keyboard interaction
 
 The panel, recent snapshots, full history and overview display the same five

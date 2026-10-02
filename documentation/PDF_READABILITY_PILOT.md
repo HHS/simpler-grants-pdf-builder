@@ -5,6 +5,14 @@ immediate readability report, and use the browser's **Print / save as PDF** dial
 to keep a copy. It does not create a NOFO or saved report history. An unlinked URL
 is still public; direct distribution is not access control.
 
+Saved readability checkpoints, per-NOFO history, and the saved-results overview
+(#1009 / #1014) belong only to the authenticated Builder feature documented in
+[Readability metrics](READABILITY_METRICS.md#saved-review-checkpoints). They are
+outside this pilot and its release epic (#968), must not be exposed through
+`/readability/`, and do not satisfy the pilot's release acceptance criteria.
+Content-free pilot usage monitoring does not store metric results or report
+history. Browser **Print / save as PDF** saves a local copy, not server-side history.
+
 ## Default-off release
 
 ### Content-free outcome monitoring (draft approval gate, #985)
