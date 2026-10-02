@@ -16,10 +16,23 @@
 {% url 'nofos:builder_metrics' as metrics_href %}
 {% include 'includes/page_heading.html' with title='Saved readability metrics' back_text='Back to usage & quality metrics' back_href=metrics_href only %}
 <div class="usa-prose">
-  <p>Review checkpoints saved by NOFO editors. Calculations that have not been saved are not listed.</p>
+  <p>Review checkpoints saved by NOFO editors. Calculations that have not been saved are not listed.
+    NOFOs in the Bloomworks or staging group are excluded, matching the usage &amp; quality metrics.</p>
   <p>Each row shows the latest saved results, which may differ from the current NOFO. Changes compare the latest two saved records using the current targets. Unavailable values are not compared.</p>
   <p>{{ scores_page.paginator.count }} NOFO{{ scores_page.paginator.count|pluralize }} with saved results. Page {{ scores_page.number }} of {{ scores_page.paginator.num_pages }}.</p>
 </div>
+<details class="margin-y-3 border-1px border-base-lighter radius-md padding-2">
+  <summary class="text-bold">How saved readability metrics are preserved</summary>
+  <p>Saved checkpoints stay listed when a NOFO is archived, and when the person
+    who saved them is deleted. Deleting a NOFO deletes its saved checkpoints.</p>
+  <p>Unlike the usage &amp; quality metrics, this page uses each NOFO’s current
+    group, not its group when a checkpoint was saved. Internal and staging are
+    excluded: NOFOs in the Bloomworks or staging group are not listed. Moving a
+    NOFO into either group removes it from this page, and moving it out lists it
+    again with all of its saved checkpoints.</p>
+  <p>There is no automatic age-based cutoff for saved checkpoints.
+    This history is separate from application logs and database backups.</p>
+</details>
 <button class="usa-button usa-button--outline scores-print margin-top-2" type="button" onclick="window.print()">Print this page</button>
 <div class="scores-scroll" tabindex="0" role="region" aria-label="Saved readability metrics table">
   <table class="usa-table scores-table">
