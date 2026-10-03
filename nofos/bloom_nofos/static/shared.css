@@ -365,3 +365,11 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
     text-decoration: line-through;
   }
 }
+
+/* Print buttons with the readability hint stacked underneath, right-aligned,
+   so the hint never squeezes into the header row next to the buttons. */
+.print-buttons {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+}

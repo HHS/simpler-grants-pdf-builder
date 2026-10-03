@@ -352,17 +352,19 @@ def save_readability_checkpoint(nofo, user, trigger="manual"):
     return payload, checkpoint, created
 
 
-def save_import_checkpoint(request, nofo, trigger):
-    """Best effort: keep a starting snapshot for an import or re-import.
+def save_automatic_checkpoint(request, nofo, trigger):
+    """Best effort: keep a snapshot after an import, re-import or PDF download.
 
-    The import has already succeeded, so a metrics failure is logged and never
-    surfaced as an import failure. Returns the checkpoint, or None if nothing
-    was saved.
+    The user's action has already succeeded, so a metrics failure is logged and
+    never surfaced as a failed import or download. An unchanged NOFO reuses its
+    existing checkpoint rather than saving another. Returns the checkpoint, or
+    None if nothing was saved.
     """
     from bloom_nofos.logs import log_exception
     from constance import config
+    from django.core.exceptions import PermissionDenied
 
-    if not config.HHS_NOFO_METRICS_ENABLED:
+    if not config.HHS_NOFO_METRICS_ENABLED or not request.user.is_authenticated:
         return None
     try:
         _payload, checkpoint, _created = save_readability_checkpoint(
@@ -372,12 +374,13 @@ def save_import_checkpoint(request, nofo, trigger):
         ReadabilityMetricsUnavailable,
         ReadabilityMetricsAnalysisError,
         ReadabilityRevisionChanged,
+        PermissionDenied,
     ) as error:
         log_exception(
             request,
             error,
             level="warning",
-            context=f"save_import_checkpoint:{trigger}",
+            context=f"save_automatic_checkpoint:{trigger}",
         )
         return None
     return checkpoint

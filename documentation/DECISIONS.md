@@ -4,6 +4,36 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-03 — Also save a readability checkpoint on Download PDF
+
+**Context:** Import and re-import checkpoints give each NOFO a baseline, but
+the version that matters most for showing improvement is the one that was
+actually produced. **Download PDF** (the finished, non-watermarked PDF) is that
+moment. It is also what the usage metrics count as a NOFO's first live PDF.
+The download returns a file without reloading the page, so nothing can confirm
+a save afterwards, and the button sits in a tight segmented group (HTML /
+Preview PDF / Download PDF).
+
+**Decision:** Save a checkpoint after each successful **Download PDF**, using
+the same rule as every other save: one checkpoint per NOFO version, so a
+download saves only if the NOFO has changed since its version was last saved.
+**Preview PDF** never saves. Record these with `trigger` `download`.
+
+Tell users before they click, with one line under the button group:
+"Downloading also saves a readability snapshot." It is tied to the button with
+`aria-describedby`. After the next page load, the accordion heading, panel
+notice and labels say **on PDF download**, as they do for imports.
+
+Alternatives considered: renaming the button "Download PDF and save metrics"
+(too long for the segmented group, which already shortens labels on tablets),
+a confirmation dialog on every download (friction that people learn to click
+through), an opt-out checkbox (rejected because the save is wanted on every
+changed download), and a new checkpoint on every download even when nothing
+changed (duplicates with identical numbers; downloads themselves are already
+counted in the usage metrics).
+
+---
+
 ## 2026-10-03 — Save a readability checkpoint automatically on import and re-import
 
 **Context:** Readability checkpoints were saved only when an editor selected

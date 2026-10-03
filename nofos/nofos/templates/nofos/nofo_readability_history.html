@@ -26,7 +26,7 @@
 <div class="usa-prose">
   <h2>{{ nofo|nofo_name }}</h2>
   {% if nofo.archived %}<p class="usa-tag bg-base-lighter text-ink">Archived NOFO</p>{% endif %}
-  <p>These are saved review checkpoints, not every calculation. Builder saves one automatically when a NOFO is imported or re-imported; every other snapshot was saved by a person. Changes use the current metric targets. A change in the measuring setup is not compared.</p>
+  <p>These are saved review checkpoints, not every calculation. Builder saves one automatically when a NOFO is imported or re-imported, and when its PDF is downloaded after a change; every other snapshot was saved by a person. Changes use the current metric targets. A change in the measuring setup is not compared.</p>
 </div>
 <div class="readability-history-scroll" tabindex="0" role="region" aria-label="Saved readability snapshots table">
   <table class="usa-table readability-history-table">
@@ -36,7 +36,7 @@
       {% for checkpoint in readability_checkpoints %}
       <tr>
         <th scope="row">{{ checkpoint.saved_at|date:"M j, Y, g:i a T" }}{% if checkpoint.is_current %}<span class="display-block">Current version</span>{% endif %}</th>
-        <td>{{ checkpoint.saved_by }}{% if checkpoint.is_automatic %}<span class="display-block font-sans-xs">Automatic, {{ checkpoint.trigger_label|lower }}</span>{% endif %}</td><td>{{ checkpoint.change_summary.label }}</td>
+        <td>{{ checkpoint.saved_by }}{% if checkpoint.is_automatic %}<span class="display-block font-sans-xs">Automatic, {{ checkpoint.trigger_phrase }}</span>{% endif %}</td><td>{{ checkpoint.change_summary.label }}</td>
         {% for metric in checkpoint.metrics %}<td>{{ metric.display }}{% if metric.change %}<span class="display-block font-sans-xs">{{ metric.change }}</span>{% endif %}</td>{% endfor %}
         <td>Metrics v{{ checkpoint.package_version }}
           <details><summary>View details</summary>

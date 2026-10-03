@@ -1,3 +1,4 @@
+<div class="print-buttons">
 <ul class="usa-button-group usa-button-group--segmented usa-button-group--print-buttons">
   {% if request.resolver_match.url_name != 'nofo_view' %}
     <li class="usa-button-group__item">
@@ -15,9 +16,15 @@
   <li class="usa-button-group__item">
     <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment&is_test_pdf=false">
       {% csrf_token %}
-      <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if 'localhost' in request.get_host %}disabled{% endif %}>
+      <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if readability_metrics_enabled %}aria-describedby="download-pdf-readability-hint"{% endif %} {% if 'localhost' in request.get_host %}disabled{% endif %}>
         Download PDF
       </button>
     </form>
   </li>
 </ul>
+{% if readability_metrics_enabled and request.user.is_authenticated %}
+  <p id="download-pdf-readability-hint" class="font-sans-3xs text-base-dark margin-top-05 margin-bottom-0">
+    Downloading also saves a readability snapshot.
+  </p>
+{% endif %}
+</div>

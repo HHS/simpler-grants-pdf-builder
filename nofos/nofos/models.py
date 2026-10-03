@@ -1235,18 +1235,21 @@ class NofoReadabilityCheckpoint(models.Model):
     TRIGGER_MANUAL = "manual"
     TRIGGER_IMPORT = "import"
     TRIGGER_REIMPORT = "reimport"
+    TRIGGER_DOWNLOAD = "download"
     TRIGGER_CHOICES = [
         (TRIGGER_MANUAL, "Saved by a user"),
         (TRIGGER_IMPORT, "Saved automatically on import"),
         (TRIGGER_REIMPORT, "Saved automatically on re-import"),
+        (TRIGGER_DOWNLOAD, "Saved automatically on PDF download"),
     ]
     trigger = models.CharField(
         max_length=16,
         choices=TRIGGER_CHOICES,
         default=TRIGGER_MANUAL,
         help_text=(
-            "What created this checkpoint. Imports and re-imports save one "
-            "automatically so every NOFO has a starting point to compare against."
+            "What created this checkpoint. Imports, re-imports and finished PDF "
+            "downloads save one automatically when the NOFO has changed, so "
+            "every NOFO has a starting point and a record of what was produced."
         ),
     )
 

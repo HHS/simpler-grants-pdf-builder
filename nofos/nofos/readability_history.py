@@ -140,12 +140,40 @@ def change_summary(row, previous, goals):
     return {"label": label, "improved": improved, "worse": worse}
 
 
+# How each automatic save is described: a lowercase phrase for labels and
+# headings ("on PDF download" must keep its capitals, so templates must not use
+# |lower), and the event for sentences ("when the PDF was downloaded").
+AUTOMATIC_TRIGGER_TEXT = {
+    NofoReadabilityCheckpoint.TRIGGER_IMPORT: (
+        "on import",
+        "this NOFO was imported",
+        "imported this NOFO",
+    ),
+    NofoReadabilityCheckpoint.TRIGGER_REIMPORT: (
+        "on re-import",
+        "this NOFO was re-imported",
+        "re-imported this NOFO",
+    ),
+    NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD: (
+        "on PDF download",
+        "the PDF was downloaded",
+        "downloaded the PDF",
+    ),
+}
+
+
+def automatic_trigger_text(trigger):
+    phrase, event, action = AUTOMATIC_TRIGGER_TEXT.get(trigger, ("", "", ""))
+    return {"trigger_phrase": phrase, "trigger_event": event, "trigger_action": action}
+
+
 def project_checkpoint(row, previous=None, goals=None):
     if goals is None:
         goals = normalize_readability_metric_goals(settings.HHS_NOFO_METRIC_GOALS)
     compatible = previous is not None and all(
         row.get(name) == previous.get(name) for name in CONTRACT_FIELDS
     )
+    trigger = row.get("trigger", NofoReadabilityCheckpoint.TRIGGER_MANUAL)
     metrics = []
     for metric_id, label in DISPLAY_METRICS:
         value = metric_value(row, metric_id)
@@ -167,13 +195,9 @@ def project_checkpoint(row, previous=None, goals=None):
         "score_id": row["score_id"],
         "saved_at": row["saved_at"],
         "saved_by": row.get("saved_by_email") or "Deleted user",
-        "trigger": row.get("trigger", NofoReadabilityCheckpoint.TRIGGER_MANUAL),
-        "is_automatic": row.get("trigger", NofoReadabilityCheckpoint.TRIGGER_MANUAL)
-        != NofoReadabilityCheckpoint.TRIGGER_MANUAL,
-        "trigger_label": {
-            NofoReadabilityCheckpoint.TRIGGER_IMPORT: "On import",
-            NofoReadabilityCheckpoint.TRIGGER_REIMPORT: "On re-import",
-        }.get(row.get("trigger"), ""),
+        "trigger": trigger,
+        "is_automatic": trigger != NofoReadabilityCheckpoint.TRIGGER_MANUAL,
+        **automatic_trigger_text(trigger),
         "status": row["nofo_status_at_save"],
         "status_label": dict(STATUS_CHOICES).get(
             row["nofo_status_at_save"], row["nofo_status_at_save"]
