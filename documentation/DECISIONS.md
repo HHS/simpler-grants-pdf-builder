@@ -4,6 +4,43 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-03 — Save a readability checkpoint automatically on import and re-import
+
+**Context:** Readability checkpoints were saved only when an editor selected
+**Save these results**. The team needs to see how readability improves over
+time, and that depended on editors remembering to save a first checkpoint as a
+baseline. Saving automatically
+fixes that, but risks two kinds of confusion: users might not know a save
+happened, and a closed accordion that said "Calculated" would imply Builder
+calculates in the background, when calculation otherwise only happens when
+someone opens the panel.
+
+**Decision:** Save a checkpoint automatically after a NOFO is first imported
+and after each re-import, and nowhere else. Record what created each
+checkpoint in a new `trigger` field (`manual`, `import`, `reimport`). The save
+is best effort: a metrics failure is logged and never fails the import.
+
+Make the closed accordion heading describe the latest **save**, not a
+calculation, for example "Last saved Oct 3 automatically on import". That is
+true whether or not anyone has opened the panel, so it does not change what
+users should expect about when calculations run. Inside the panel, an info
+notice explains the automatic save and says new snapshots are only saved when
+the user selects **Save these results** or re-imports. Automatic checkpoints
+are labeled in the snapshot list, history page and overview. The success
+messages say a snapshot was saved: "View NOFO: *name*. Readability snapshot
+saved." after a new import, and a longer sentence after a re-import. Neither
+appears if the save failed.
+
+Alternatives considered: a "Calculated and saved" heading (rejected because it
+implies background calculation), saving on every document edit (rejected as
+noisy and outside the user's control), and a longer new-import message,
+"Readability metrics were saved automatically as a starting snapshot"
+(rejected as a run-on next to the "View NOFO" link; the panel notice gives the
+detail). See
+`READABILITY_METRICS.md` § Automatic checkpoints on import and re-import.
+
+---
+
 ## 2026-10-01 — Remove unused Login.gov sign-in and keep email/password sign-in
 
 **Context:** NOFO Builder had a Login.gov sign-in option, but it was never

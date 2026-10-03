@@ -11,6 +11,8 @@
   const scopeContainer = panel.querySelector("[data-metrics-scope-container]");
   const scopeSummary = panel.querySelector("[data-metrics-scope-summary]");
   const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
+  const summarySaved = panel.querySelector("[data-metrics-summary-saved]");
+  const autoSaveNotice = panel.querySelector("[data-auto-save-notice]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
@@ -230,8 +232,18 @@
       const changed = displayedResult.source?.revision !== payload.result.source?.revision;
       showResult(payload.result);
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
-      const message = payload.already_saved ? "These results are already saved." : "Snapshot saved.";
+      const automaticVerb = { import: "imported", reimport: "re-imported" }[payload.checkpoint.trigger];
+      const message = !payload.already_saved
+        ? "Snapshot saved."
+        : automaticVerb
+          ? `These results were already saved automatically when this NOFO was ${automaticVerb}. Nothing has changed since.`
+          : "These results are already saved.";
       saveStatus.textContent = changed ? `${message} The NOFO changed, so we recalculated before saving.` : message;
+      if (!payload.already_saved) {
+        if (summarySaved) summarySaved.textContent = "· Saved just now";
+        // The notice describes the latest snapshot; a person's save replaces it.
+        if (autoSaveNotice) autoSaveNotice.hidden = true;
+      }
       // Reload the server's escaped, permission-checked projection rather than
       // maintaining a second formatter and comparison engine in the browser.
       try {
@@ -292,6 +304,9 @@
       showResult(payload);
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
       summaryStatus.textContent = "Calculated";
+      if (summarySaved?.textContent.trim().startsWith("Last saved")) {
+        summarySaved.textContent = `· ${summarySaved.textContent.trim()}`;
+      }
       button.textContent = "Recalculate";
       button.classList.add("usa-button--outline");
     } catch (error) {

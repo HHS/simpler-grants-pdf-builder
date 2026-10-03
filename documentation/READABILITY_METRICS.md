@@ -63,9 +63,12 @@ while analysis is running, that result is returned but is not stored. Failed
 calculations do not create snapshots. Results with unavailable metrics are
 retained, but are not treated as the latest complete measurement.
 
-Snapshots are not created automatically on save or in the background. Archiving
-a NOFO retains its snapshots; deleting it deletes its snapshots. Deleting a user
-retains their snapshots with a null requesting user.
+Snapshots are not created on document saves or in the background. The only
+calculations that run without opening the panel are the ones at import and
+re-import, which also save a checkpoint (see
+[Automatic checkpoints on import and re-import](#automatic-checkpoints-on-import-and-re-import)).
+Archiving a NOFO retains its snapshots; deleting it deletes its snapshots.
+Deleting a user retains their snapshots with a null requesting user.
 
 ## Edit-screen panel
 
@@ -81,6 +84,13 @@ different denominators, and collapsed package notes. The browser reads only the
 endpoint response; metric calculation and source rendering remain server-side.
 The package profile and version remain available in the API response and are
 shown in saved history so editors can identify a measurement change.
+
+The accordion's closed heading describes the latest saved checkpoint, not a
+calculation: for example **Last saved Oct 3 automatically on import**, or
+**Not calculated** when the NOFO has no saved checkpoints. This line is
+rendered by the server and stays accurate whether or not anyone has opened the
+panel. After the panel calculates, the heading reads **Calculated · Last
+saved …**; after someone saves, **Calculated · Saved just now**.
 
 The panel does not assign pass/fail bands. Calculation and an explicit saved
 review checkpoint are separate actions. Editors can calculate again after
@@ -183,6 +193,10 @@ feature flag remains disabled by default; deploying the migration does not
 enable the panel. Historical charts, backfills, document-save triggers, and
 background jobs are out of scope.
 
+Apply migration `0148_readability_checkpoint_trigger` before serving automatic
+import checkpoints. It adds `NofoReadabilityCheckpoint.trigger` with a default of
+`manual`, so every existing checkpoint keeps its meaning: saved by a person.
+
 ## Saved review checkpoints
 
 Calculating metrics remains exploratory. Select **Save these results** to keep
@@ -197,6 +211,55 @@ time are separate. Repeating a save for the same calculation returns the first
 checkpoint without changing its time, user, or status. Existing calculations
 are not backfilled into saved history. Partial results may be saved;
 unavailable metrics show **Unavailable**, never zero.
+
+### Automatic checkpoints on import and re-import
+
+When `HHS_NOFO_METRICS_ENABLED` is on, Builder saves a checkpoint automatically
+after a NOFO is first imported and after it is re-imported, so every NOFO has a
+baseline and each new uploaded version can be compared with the last. These are
+the only automatic saves. Builder never saves a checkpoint because the panel was
+opened, a calculation ran, or the NOFO was edited.
+
+- **What is saved:** the same server-side calculation and checkpoint that
+  **Save these results** creates, with `trigger` set to `import` or `reimport`.
+  The importing user is recorded as the saver.
+- **When:** after the import has been written. A re-import's checkpoint is taken
+  outside the re-import transaction, so a slow or failed calculation never holds
+  the NOFO's rows or rolls back the re-import.
+- **Failures:** best effort. If the metrics package is missing, rejects the
+  document, or the NOFO changes during measurement, Builder logs a warning
+  (`save_import_checkpoint:import` or `:reimport`) and the import succeeds
+  without a checkpoint. Users are only told a snapshot was saved when one was.
+- **New imports:** the checkpoint describes the document as uploaded. Naming the
+  NOFO afterward advances its revision, so this checkpoint is not marked
+  **Current version**. It is the as-imported baseline. After the user names the
+  NOFO, the success message reads "View NOFO: *name*. Readability snapshot
+  saved."
+- **Re-imports:** the success message adds "Readability metrics were saved
+  automatically as a snapshot, so you can compare this version with earlier
+  ones." The checkpoint is compared with the previous saved checkpoint like any
+  other.
+- **Not backfilled:** NOFOs imported before this change have no import
+  checkpoint.
+
+How users are told:
+
+- The new-import success message ends with "Readability snapshot saved." and
+  the re-import success message says a snapshot was saved automatically. Both
+  appear only when a checkpoint was actually saved.
+- The closed accordion heading names the latest save, including **automatically
+  on import** or **automatically on re-import**.
+- While the latest checkpoint is automatic, an info notice at the top of the
+  panel says when it was saved and that new snapshots are only saved when the
+  user selects **Save these results** or re-imports the NOFO. The notice is
+  hidden once a person saves.
+- Automatic checkpoints are labeled **Automatic · on import** or **Automatic ·
+  on re-import** in the panel's snapshot list, and **Automatic, on import** or
+  **Automatic, on re-import** on the per-NOFO history page and the saved
+  readability overview.
+- If someone selects **Save these results** when the latest automatic
+  checkpoint already covers the current NOFO, the panel says the results were
+  already saved automatically and nothing has changed since.
 
 The panel lists recent saved checkpoints from all users. **See all snapshots**
 opens `/nofos/<uuid>/readability-scores`. History is newest first and includes
@@ -221,16 +284,19 @@ the record says **No comparable metrics**, not **No change**.
 ## NOFO lifecycle and readability history
 
 Readability history belongs to a specific NOFO database record (UUID), not its
-name, content, or relationship to another NOFO. Calculation snapshots and explicit
-saved checkpoints are separate records. Only saved checkpoints qualify a NOFO
-for `/nofos/metrics/readability-scores`.
+name, content, or relationship to another NOFO. Calculation snapshots and saved
+checkpoints are separate records. Only saved checkpoints, made by a person or
+automatically on import or re-import, qualify a NOFO for
+`/nofos/metrics/readability-scores`.
 
 | Action | Calculation snapshots and saved checkpoints | Saved readability overview |
 | --- | --- | --- |
+| Import a new NOFO | Calculates and saves an automatic `import` checkpoint when metrics are enabled. A failed calculation saves nothing and does not fail the import. | The NOFO is listed once its import checkpoint exists. |
+| Re-import a NOFO | Calculates and saves an automatic `reimport` checkpoint on the same NOFO, compared with its previous saved checkpoint. | The row shows the re-import checkpoint as the latest save. |
 | Archive a NOFO | Retained on the same NOFO. Archiving is a soft delete. | The NOFO remains eligible for listing. |
 | Delete a NOFO through the application/ORM | Deleted with the NOFO: deletion cascades from NOFO to calculation snapshots to saved checkpoints. | Its row disappears on the next page request; counts and pagination are recalculated. |
 | Delete the user who calculated or saved results | Retained; the corresponding user reference becomes null. Saved history displays **Deleted user** for a deleted saver. | The NOFO remains eligible for listing. |
-| Use **Duplicate NOFO** | The copy receives a new UUID and copied content, but no calculation snapshots or saved checkpoints. The original keeps its own history. | The copy is absent until it has its own saved checkpoint; it then qualifies as a separate NOFO row. |
+| Use **Duplicate NOFO** | The copy receives a new UUID and copied content, but no calculation snapshots or saved checkpoints. Duplicating is not an import, so no automatic checkpoint is saved. The original keeps its own history. | The copy is absent until it has its own saved checkpoint; it then qualifies as a separate NOFO row. |
 | Calculate metrics on the copy | Creates or reuses a calculation scoped to the copy's UUID and revision. Identical content does not reuse the original NOFO's calculation. | Calculation alone does not add the copy to the overview. |
 | Save metrics on the copy | Starts the copy's own saved history. Later saves compare only with earlier checkpoints on that copy. | The copy's row shows its own latest saved results and comparisons. |
 
@@ -240,12 +306,12 @@ one checkpoint, with no previous saved record for comparison. There is no
 inherited baseline or automatic comparison to the original. Deleting either
 record does not delete the other's readability history.
 
-Eligibility also depends on the page's access rules and filters. The group
-exclusion proposed in [PR #1018](https://github.com/HHS/simpler-grants-pdf-builder/pull/1018)
-is not yet in `main` at the time of this documentation change: it excludes
-Bloomworks (`bloom`) and staging (`staging`) using the NOFO's **current** group.
-Under that change, moving a NOFO into an excluded group hides its row without
-deleting history; moving it out makes its saved history eligible again. Archived
+Eligibility also depends on the page's access rules and filters. Since
+[PR #1018](https://github.com/HHS/simpler-grants-pdf-builder/pull/1018), the
+overview excludes Bloomworks (`bloom`) and staging (`staging`) NOFOs using the
+NOFO's **current** group. Imports by Bloomworks and staging users still save
+automatic checkpoints, but those NOFOs are not listed. Moving a NOFO into an
+excluded group hides its row without deleting history; moving it out makes its saved history eligible again. Archived
 NOFOs and duplicates follow the same group filter. Checkpoints do not capture a
 group at save time. This differs from the historical group attribution used by
 the [usage & quality metrics](BUILDER_METRICS.md).
@@ -262,6 +328,8 @@ independent archive that survives NOFO deletion.
   subsections; it does not copy readability records.
 - [`record_readability_snapshot()`](../nofos/nofos/readability.py) scopes stored
   calculations to the NOFO and measurement contract.
+- [`save_import_checkpoint()`](../nofos/nofos/readability.py) saves the
+  best-effort automatic checkpoint after an import or re-import.
 - [`checkpoint_rows()`](../nofos/nofos/readability_history.py) filters history by
   `score__nofo`; comparisons do not traverse original/copy relationships.
 - [`readability_overview_page()`](../nofos/nofos/readability_overview.py) queries
@@ -277,7 +345,10 @@ and [`test_readability_overview.py`](../nofos/nofos/tests_nofos/test_readability
 ## Saved readability overview
 
 `/nofos/metrics/readability-scores` lists NOFOs with at least one saved checkpoint,
-including archived NOFOs. It shows saved-record count, last
+including archived NOFOs. Because imports save a checkpoint automatically, this
+includes NOFOs imported while metrics were enabled even if no one has saved
+results by hand. The saved-record count includes automatic checkpoints, and the
+last-save cell says when the latest one was automatic. It shows saved-record count, last
 save time, the latest five saved metric values, and the change from the previous saved
 record. Latest saved results may differ from the current NOFO. A partial latest
 checkpoint is shown rather than silently falling back to an older complete one.
