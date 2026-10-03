@@ -1232,6 +1232,24 @@ class NofoReadabilityCheckpoint(models.Model):
     )
     nofo_status_at_save = models.CharField(max_length=32, choices=STATUS_CHOICES)
 
+    TRIGGER_MANUAL = "manual"
+    TRIGGER_IMPORT = "import"
+    TRIGGER_REIMPORT = "reimport"
+    TRIGGER_CHOICES = [
+        (TRIGGER_MANUAL, "Saved by a user"),
+        (TRIGGER_IMPORT, "Saved automatically on import"),
+        (TRIGGER_REIMPORT, "Saved automatically on re-import"),
+    ]
+    trigger = models.CharField(
+        max_length=16,
+        choices=TRIGGER_CHOICES,
+        default=TRIGGER_MANUAL,
+        help_text=(
+            "What created this checkpoint. Imports and re-imports save one "
+            "automatically so every NOFO has a starting point to compare against."
+        ),
+    )
+
     class Meta:
         ordering = ["-saved_at", "-pk"]
 

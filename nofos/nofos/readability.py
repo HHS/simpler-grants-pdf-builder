@@ -313,7 +313,7 @@ class ReadabilityRevisionChanged(RuntimeError):
     """Content changed during measurement; retry instead of saving stale values."""
 
 
-def save_readability_checkpoint(nofo, user):
+def save_readability_checkpoint(nofo, user, trigger="manual"):
     """Measure current content, then explicitly keep it without modifying the cache.
 
     Measurement is outside the short transaction. The final revision, permission,
@@ -343,6 +343,41 @@ def save_readability_checkpoint(nofo, user):
             )
         checkpoint, created = NofoReadabilityCheckpoint.objects.get_or_create(
             score=score,
-            defaults={"saved_by": user, "nofo_status_at_save": current.status},
+            defaults={
+                "saved_by": user,
+                "nofo_status_at_save": current.status,
+                "trigger": trigger,
+            },
         )
     return payload, checkpoint, created
+
+
+def save_import_checkpoint(request, nofo, trigger):
+    """Best effort: keep a starting snapshot for an import or re-import.
+
+    The import has already succeeded, so a metrics failure is logged and never
+    surfaced as an import failure. Returns the checkpoint, or None if nothing
+    was saved.
+    """
+    from bloom_nofos.logs import log_exception
+    from constance import config
+
+    if not config.HHS_NOFO_METRICS_ENABLED:
+        return None
+    try:
+        _payload, checkpoint, _created = save_readability_checkpoint(
+            nofo, request.user, trigger=trigger
+        )
+    except (
+        ReadabilityMetricsUnavailable,
+        ReadabilityMetricsAnalysisError,
+        ReadabilityRevisionChanged,
+    ) as error:
+        log_exception(
+            request,
+            error,
+            level="warning",
+            context=f"save_import_checkpoint:{trigger}",
+        )
+        return None
+    return checkpoint

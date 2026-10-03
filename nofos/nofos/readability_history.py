@@ -62,7 +62,13 @@ def checkpoint_queryset():
             )
         )
     return NofoReadabilityCheckpoint.objects.annotate(**fields).values(
-        "id", "score_id", "saved_at", "saved_by_id", "nofo_status_at_save", *fields
+        "id",
+        "score_id",
+        "saved_at",
+        "saved_by_id",
+        "nofo_status_at_save",
+        "trigger",
+        *fields,
     )
 
 
@@ -161,6 +167,13 @@ def project_checkpoint(row, previous=None, goals=None):
         "score_id": row["score_id"],
         "saved_at": row["saved_at"],
         "saved_by": row.get("saved_by_email") or "Deleted user",
+        "trigger": row.get("trigger", NofoReadabilityCheckpoint.TRIGGER_MANUAL),
+        "is_automatic": row.get("trigger", NofoReadabilityCheckpoint.TRIGGER_MANUAL)
+        != NofoReadabilityCheckpoint.TRIGGER_MANUAL,
+        "trigger_label": {
+            NofoReadabilityCheckpoint.TRIGGER_IMPORT: "On import",
+            NofoReadabilityCheckpoint.TRIGGER_REIMPORT: "On re-import",
+        }.get(row.get("trigger"), ""),
         "status": row["nofo_status_at_save"],
         "status_label": dict(STATUS_CHOICES).get(
             row["nofo_status_at_save"], row["nofo_status_at_save"]

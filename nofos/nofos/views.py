@@ -104,7 +104,14 @@ from .mixins import (
     SuperuserRequiredMixin,
     has_group_permission_func,
 )
-from .models import THEME_CHOICES, ImportAttempt, Nofo, Section, Subsection
+from .models import (
+    THEME_CHOICES,
+    ImportAttempt,
+    Nofo,
+    NofoReadabilityCheckpoint,
+    Section,
+    Subsection,
+)
 from .nofo import (
     END_NOTES_PLACEHOLDER_BODY,
     END_NOTES_SECTION_HTML_ID,
@@ -165,6 +172,7 @@ from .readability import (
     analyze_nofo_readability,
     normalize_readability_metric_goals,
     record_readability_snapshot,
+    save_import_checkpoint,
 )
 from .readability_history import checkpoint_rows
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
@@ -989,6 +997,9 @@ class NofosImportNewView(BaseNofoImportView):
                 nofo=nofo,
                 warning_count=warning_count,
             )
+            save_import_checkpoint(
+                request, nofo, NofoReadabilityCheckpoint.TRIGGER_IMPORT
+            )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 
@@ -1181,7 +1192,18 @@ class NofosImportOverwriteView(
                     warning_count=warning_count,
                 )
 
-            messages.success(request, f"Re-imported NOFO from file: {nofo.filename}")
+            # Outside the reimport transaction: a slow or failed calculation
+            # must not hold the NOFO's rows or roll back the reimport.
+            checkpoint = save_import_checkpoint(
+                request, nofo, NofoReadabilityCheckpoint.TRIGGER_REIMPORT
+            )
+            message = f"Re-imported NOFO from file: {nofo.filename}"
+            if checkpoint:
+                message += (
+                    ". Readability metrics were saved automatically as a snapshot,"
+                    " so you can compare this version with earlier ones."
+                )
+            messages.success(request, message)
             return redirect("nofos:nofo_edit", pk=nofo.id)
 
         except MistaggedHeadingError as e:

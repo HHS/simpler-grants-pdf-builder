@@ -16,7 +16,7 @@
 {% url 'nofos:builder_metrics' as metrics_href %}
 {% include 'includes/page_heading.html' with title='Saved readability metrics' back_text='Back to usage & quality metrics' back_href=metrics_href only %}
 <div class="usa-prose">
-  <p>Review checkpoints saved by NOFO editors. Calculations that have not been saved are not listed.
+  <p>Review checkpoints saved by NOFO editors, plus one saved automatically each time a NOFO is imported or re-imported. Calculations that have not been saved are not listed.
     NOFOs in the Bloomworks or staging group are excluded, matching the usage &amp; quality metrics.</p>
   <p>Each row shows the latest saved results, which may differ from the current NOFO. Changes compare the latest two saved records using the current targets. Unavailable values are not compared.</p>
   <p>{{ scores_page.paginator.count }} NOFO{{ scores_page.paginator.count|pluralize }} with saved results. Page {{ scores_page.number }} of {{ scores_page.paginator.num_pages }}.</p>
@@ -49,7 +49,7 @@
         </th>
         <td>{{ row.nofo.get_group_display }}{% if row.nofo.opdiv %}<div>{{ row.nofo.opdiv }}</div>{% endif %}</td>
         <td>{{ row.count }}</td>
-        <td><time datetime="{{ row.latest.saved_at|date:'c' }}">{{ row.latest.saved_at|date:'M j, Y, g:i a' }}</time></td>
+        <td><time datetime="{{ row.latest.saved_at|date:'c' }}">{{ row.latest.saved_at|date:'M j, Y, g:i a' }}</time>{% if row.latest.is_automatic %}<div>Automatic, {{ row.latest.trigger_label|lower }}</div>{% endif %}</td>
         <td>{{ row.latest.change_summary.label }}</td>
         {% for metric in row.latest.metrics %}<td>{{ metric.display }}{% if metric.change %}<div>{{ metric.change }}</div>{% endif %}</td>{% endfor %}
       </tr>{% empty %}<tr><td colspan="10">No saved readability results yet.</td></tr>{% endfor %}
