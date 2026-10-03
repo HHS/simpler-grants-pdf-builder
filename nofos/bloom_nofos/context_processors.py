@@ -17,5 +17,6 @@ def template_context(request):
     return {
         "GITHUB_SHA": settings.GITHUB_SHA,
         "GRABZIT_WORD_EXPORT_ENABLED": grabzit_word_export_enabled,
+        "PANDOC_WORD_EXPORT_ENABLED": config.PANDOC_WORD_EXPORT_ENABLED,
         "VERSION": get_version(),
     }

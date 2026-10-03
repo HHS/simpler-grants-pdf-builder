@@ -1,5 +1,6 @@
 import io
 import zipfile
+from types import SimpleNamespace
 from unittest.mock import ANY, call, mock_open, patch
 
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
@@ -39,6 +40,13 @@ VALID_DOCX = make_docx()
 )
 class DocxTransportTests(SimpleTestCase):
     def setUp(self):
+        # Exercise the provider path without querying Constance's database backend.
+        config_patch = patch(
+            "constance.config",
+            SimpleNamespace(PANDOC_WORD_EXPORT_ENABLED=False),
+        )
+        config_patch.start()
+        self.addCleanup(config_patch.stop)
         self.request = RequestFactory().get("/", HTTP_HOST="synthetic.example")
         self.request.COOKIES = {
             "sessionid": "synthetic-session",
@@ -94,6 +102,23 @@ class DocxTransportTests(SimpleTestCase):
         response = self.export()
 
         self.assertEqual(response.status_code, 503)
+        client_class.assert_not_called()
+
+    @patch("bloom_nofos.word_export.pandoc_download_response")
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_local_export_never_calls_configured_vendor(self, client_class, local):
+        with patch(
+            "constance.config", SimpleNamespace(PANDOC_WORD_EXPORT_ENABLED=True)
+        ):
+            response = self.export()
+
+        self.assertIs(response, local.return_value)
+        local.assert_called_once_with(
+            self.request,
+            "https://synthetic.example/export",
+            "#download_target",
+            "synthetic",
+        )
         client_class.assert_not_called()
 
     @patch("bloom_nofos.utils.os.remove")

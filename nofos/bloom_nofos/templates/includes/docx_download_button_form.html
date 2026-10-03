@@ -1,4 +1,4 @@
-{% if GRABZIT_WORD_EXPORT_ENABLED %}
+{% if PANDOC_WORD_EXPORT_ENABLED or GRABZIT_WORD_EXPORT_ENABLED %}
 <form
   method="post"
   action="{{ action_url }}"
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Error state -->
-        <div data-docx-state="error" hidden>
+        <div data-docx-state="error" role="alert" hidden>
           <p class="text-red" data-docx-error-text>
             Something went wrong generating the document.
           </p>
