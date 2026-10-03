@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.48.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.47.1...nofos-v3.48.0) (2026-10-03)
+
+
+### Features
+
+* auto-save a readability snapshot on import and re-import ([#1021](https://github.com/HHS/simpler-grants-pdf-builder/issues/1021)) ([1dfb51e](https://github.com/HHS/simpler-grants-pdf-builder/commit/1dfb51eb61cbbbc2683e00f04445f944fb61bb85))
+* save a readability snapshot when the PDF is downloaded ([#1024](https://github.com/HHS/simpler-grants-pdf-builder/issues/1024)) ([43178cc](https://github.com/HHS/simpler-grants-pdf-builder/commit/43178cce42eb2c149e1223c8d161b5cad7014bd8))
+
+
+### Bug Fixes
+
+* temporarily safelist unreleased Python tempfile fix ([#1022](https://github.com/HHS/simpler-grants-pdf-builder/issues/1022)) ([8620f9d](https://github.com/HHS/simpler-grants-pdf-builder/commit/8620f9d9133384914424f6ba6f0b64f89859dde7))
+
 ## [3.47.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.47.0...nofos-v3.47.1) (2026-10-02)
 
 
