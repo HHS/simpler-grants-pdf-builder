@@ -26,14 +26,17 @@ true whether or not anyone has opened the panel, so it does not change what
 users should expect about when calculations run. Inside the panel, an info
 notice explains the automatic save and says new snapshots are only saved when
 the user selects **Save these results** or re-imports. Automatic checkpoints
-are labeled in the snapshot list, history page and overview, and the
-re-import success message mentions the save.
+are labeled in the snapshot list, history page and overview. The success
+messages say a snapshot was saved: "View NOFO: *name*. Readability snapshot
+saved." after a new import, and a longer sentence after a re-import. Neither
+appears if the save failed.
 
 Alternatives considered: a "Calculated and saved" heading (rejected because it
 implies background calculation), saving on every document edit (rejected as
-noisy and outside the user's control), and adding the notice to the new-import
-"View NOFO" message (deferred: after a first import users land on the NOFO
-list, and the panel notice covers it the first time they open the NOFO). See
+noisy and outside the user's control), and a longer new-import message,
+"Readability metrics were saved automatically as a starting snapshot"
+(rejected as a run-on next to the "View NOFO" link; the panel notice gives the
+detail). See
 `READABILITY_METRICS.md` § Automatic checkpoints on import and re-import.
 
 ---

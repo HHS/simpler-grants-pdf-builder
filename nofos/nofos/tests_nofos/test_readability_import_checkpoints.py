@@ -70,6 +70,32 @@ class ReadabilityImportCheckpointTests(TestCase):
         self.assertEqual(checkpoint.saved_by, self.user)
         self.assertEqual(checkpoint.score.nofo_revision, nofo.updated)
 
+    def name_nofo(self, nofo):
+        return self.client.post(
+            reverse("nofos:nofo_import_title", kwargs={"pk": nofo.pk}),
+            {"title": "Synthetic import", "short_name": "Synthetic"},
+        )
+
+    def test_new_import_banner_says_snapshot_saved(self):
+        nofo = self.import_nofo()
+
+        response = self.name_nofo(nofo)
+
+        self.assertIn(
+            "Synthetic</a>. Readability snapshot saved.",
+            " ".join(self.messages_for(response)),
+        )
+
+    def test_new_import_banner_omits_snapshot_when_none_was_saved(self):
+        self.analyze.side_effect = ReadabilityMetricsUnavailable("not installed")
+        nofo = self.import_nofo()
+
+        response = self.name_nofo(nofo)
+
+        messages = " ".join(self.messages_for(response))
+        self.assertIn("View NOFO:", messages)
+        self.assertNotIn("Readability snapshot saved", messages)
+
     def test_reimport_saves_a_reimport_checkpoint_and_says_so(self):
         nofo = self.import_nofo()
 

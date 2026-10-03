@@ -1374,15 +1374,18 @@ class BaseNofoImportTitleView(BaseNofoEditView):
     def form_valid(self, form):
         nofo = self.save_title(form)
 
-        if self.success_message:
-            messages.success(
-                self.request,
-                self.success_message.format(
-                    nofo_id=nofo.id, nofo_name=nofo.short_name or nofo.title
-                ),
-            )
+        message = self.get_success_message(nofo)
+        if message:
+            messages.success(self.request, message)
 
         return self.handle_success(nofo)
+
+    def get_success_message(self, nofo):
+        if not self.success_message:
+            return None
+        return self.success_message.format(
+            nofo_id=nofo.id, nofo_name=nofo.short_name or nofo.title
+        )
 
     def handle_success(self, nofo):
         """
@@ -1396,6 +1399,15 @@ class NofoImportTitleView(BaseNofoImportTitleView):
     template_name = "nofos/nofo_import_title.html"
 
     success_message = "View NOFO: <a href='/nofos/{nofo_id}/edit'>{nofo_name}</a>"
+
+    def get_success_message(self, nofo):
+        message = super().get_success_message(nofo)
+        # Only claim a save that happened: the import's checkpoint is best effort.
+        if NofoReadabilityCheckpoint.objects.filter(
+            score__nofo=nofo, trigger=NofoReadabilityCheckpoint.TRIGGER_IMPORT
+        ).exists():
+            message += ". Readability snapshot saved."
+        return message
 
     def handle_success(self, nofo):
         if nofo.number.startswith("NOFO #"):

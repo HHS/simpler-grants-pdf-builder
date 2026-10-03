@@ -232,7 +232,9 @@ opened, a calculation ran, or the NOFO was edited.
   without a checkpoint. Users are only told a snapshot was saved when one was.
 - **New imports:** the checkpoint describes the document as uploaded. Naming the
   NOFO afterward advances its revision, so this checkpoint is not marked
-  **Current version**. It is the as-imported baseline.
+  **Current version**. It is the as-imported baseline. After the user names the
+  NOFO, the success message reads "View NOFO: *name*. Readability snapshot
+  saved."
 - **Re-imports:** the success message adds "Readability metrics were saved
   automatically as a snapshot, so you can compare this version with earlier
   ones." The checkpoint is compared with the previous saved checkpoint like any
@@ -242,6 +244,9 @@ opened, a calculation ran, or the NOFO was edited.
 
 How users are told:
 
+- The new-import success message ends with "Readability snapshot saved." and
+  the re-import success message says a snapshot was saved automatically. Both
+  appear only when a checkpoint was actually saved.
 - The closed accordion heading names the latest save, including **automatically
   on import** or **automatically on re-import**.
 - While the latest checkpoint is automatic, an info notice at the top of the
