@@ -373,3 +373,9 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
   flex-direction: column;
   align-items: flex-end;
 }
+
+/* In the HTML view's header the hint is the last thing above the header's
+   bottom border, so give it room instead of sitting on the line. */
+.usa-nav .print-buttons #download-pdf-readability-hint {
+  margin-bottom: 0.5rem;
+}
