@@ -232,11 +232,11 @@
       const changed = displayedResult.source?.revision !== payload.result.source?.revision;
       showResult(payload.result);
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
-      const automaticVerb = { import: "imported", reimport: "re-imported" }[payload.checkpoint.trigger];
+      const automaticEvent = payload.checkpoint.is_automatic && payload.checkpoint.trigger_event;
       const message = !payload.already_saved
         ? "Snapshot saved."
-        : automaticVerb
-          ? `These results were already saved automatically when this NOFO was ${automaticVerb}. Nothing has changed since.`
+        : automaticEvent
+          ? `These results were already saved automatically when ${automaticEvent}. Nothing has changed since.`
           : "These results are already saved.";
       saveStatus.textContent = changed ? `${message} The NOFO changed, so we recalculated before saving.` : message;
       if (!payload.already_saved) {

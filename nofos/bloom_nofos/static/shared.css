@@ -365,3 +365,24 @@ ul ul ul ul ul ul:not([type]):not(.usa-list--unstyled) {
     text-decoration: line-through;
   }
 }
+
+/* Print buttons with the readability hint stacked underneath, right-aligned,
+   so the hint never squeezes into the header row next to the buttons. */
+.print-buttons {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* In the HTML view's header the hint is the last thing above the header's
+   bottom border, so give it room instead of sitting on the line. */
+.usa-nav .print-buttons #download-pdf-readability-hint {
+  margin-bottom: 0.5rem;
+}
+
+/* The hint makes the button block taller than "Edit this NOFO". Align the
+   header items on their text baseline so the link stays level with the
+   button labels instead of centering on the buttons plus hint. */
+.usa-nav:has(> .print-buttons) {
+  align-items: baseline;
+}

@@ -4,6 +4,76 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-03 — Also save a readability checkpoint on Download PDF, without asking users to label milestones
+
+**Context:** Import and re-import checkpoints give each NOFO a baseline, but
+the versions that matter most for showing improvement are the ones that were
+actually produced. The team identified two moments in a NOFO's life where
+readability results are most useful:
+
+1. when the NOFO is sent to OMB for review; and
+2. after OMB's edits are incorporated into the final NOFO.
+
+Both moments involve producing a finished PDF with **Download PDF** (the
+non-watermarked PDF). That is also what the usage metrics count as a NOFO's
+first live PDF.
+
+The team also raised a follow-on question: depending on how operating
+divisions use the tool, a NOFO could collect many saved results, so how would
+anyone tell which ones correspond to those two moments? The obvious answer is
+to ask users to mark a save as "sent to OMB" or "final". But NOFO staff move
+between several systems to get a NOFO approved and announced (for example
+GrantSolutions and announcement services, as well as NOFO Builder). An extra
+labeling step would add work, depend on people remembering it at the right
+time, and produce gaps whenever they didn't.
+
+The download also returns a file without reloading the page, so nothing can
+confirm a save afterwards. The button sits in a tight segmented group (HTML /
+Preview PDF / Download PDF).
+
+**Decision:** Save a checkpoint after each successful **Download PDF**, using
+the same rule as every other save: one checkpoint per NOFO version, so a
+download saves only if the NOFO has changed since its version was last saved.
+**Preview PDF** never saves. Record these with `trigger` `download`. Because a
+PDF is downloaded at both milestones, both get a checkpoint without users doing
+anything new.
+
+Do not ask users to label checkpoints with lifecycle milestones. Identifying
+which checkpoints line up with OMB review and the final version is an
+admin and analysis task, not a user step. Each checkpoint already records what
+is needed to do that:
+- when it was saved;
+- who saved it;
+- what triggered it (`manual`, `import`, `reimport`, `download`); and
+- the NOFO's status at save (for example **In review** or **Published**). This
+  is stored but not yet shown in the interface.
+
+Tell users about the save before they click, with one line under the button
+group: "Downloading also saves a readability snapshot." It is tied to the
+button with `aria-describedby`. After the next page load, the accordion
+heading, panel notice and labels say **on PDF download**, as they do for
+imports.
+
+Alternatives considered:
+- **A milestone label users pick when saving or downloading** ("sent to OMB",
+  "final"): rejected for now, for the reasons above.
+- **Renaming the button** "Download PDF and save metrics": too long for the
+  segmented group, which already shortens labels on tablets.
+- **A confirmation dialog on every download:** friction that people learn to
+  click through.
+- **An opt-out checkbox:** rejected because the save is wanted on every changed
+  download.
+- **A new checkpoint on every download, even when nothing changed:** duplicates
+  with identical numbers; downloads themselves are already counted in the usage
+  metrics.
+
+Revisit if admins can't reliably match checkpoints to those two moments from
+the saved time, trigger and status at save. Options then include showing status
+at save on the history page, or an admin-only way to mark a checkpoint, either
+of which keeps the work off NOFO staff.
+
+---
+
 ## 2026-10-03 — Save a readability checkpoint automatically on import and re-import
 
 **Context:** Readability checkpoints were saved only when an editor selected

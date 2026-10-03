@@ -4,10 +4,10 @@
   <details class="margin-bottom-2 border-1px border-base-lighter padding-2">
     <summary class="text-bold">
       {{ checkpoint.saved_at|date:"M j, Y, g:i a T" }}
-      {% if checkpoint.is_automatic %}<span class="usa-tag bg-primary-lighter text-ink margin-left-1">Automatic &middot; {{ checkpoint.trigger_label|lower }}</span>{% endif %}
+      {% if checkpoint.is_automatic %}<span class="usa-tag bg-primary-lighter text-ink margin-left-1">Automatic &middot; {{ checkpoint.trigger_phrase }}</span>{% endif %}
       <span class="display-block text-normal">{{ checkpoint.change_summary.label }}</span>
     </summary>
-    <p>{% if checkpoint.is_automatic %}Saved automatically when {{ checkpoint.saved_by }} {% if checkpoint.trigger == "reimport" %}re-imported{% else %}imported{% endif %} this NOFO.{% else %}Saved by {{ checkpoint.saved_by }}.{% endif %}
+    <p>{% if checkpoint.is_automatic %}Saved automatically when {{ checkpoint.saved_by }} {{ checkpoint.trigger_action }}.{% else %}Saved by {{ checkpoint.saved_by }}.{% endif %}
       {% if checkpoint.is_current %}<span class="usa-tag bg-base-lighter text-ink">Current version</span>{% endif %}
     </p>
     <dl class="grid-row grid-gap-2">

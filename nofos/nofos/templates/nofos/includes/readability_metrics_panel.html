@@ -18,7 +18,7 @@
       <span
         class="font-sans-2xs text-normal text-base-dark"
         data-metrics-summary-saved
-      >{% if latest %}Last saved {{ latest.saved_at|date:"M j" }}{% if latest.is_automatic %} automatically {{ latest.trigger_label|lower }}{% endif %}{% endif %}</span>
+      >{% if latest %}Last saved {{ latest.saved_at|date:"M j" }}{% if latest.is_automatic %} automatically {{ latest.trigger_phrase }}{% endif %}{% endif %}</span>
       {% endwith %}
     </h2>
   </summary>
@@ -32,11 +32,11 @@
     <div class="usa-alert usa-alert--info usa-alert--slim margin-top-0 margin-bottom-2" data-auto-save-notice>
       <div class="usa-alert__body">
         <p class="usa-alert__text">
-          A snapshot was saved automatically when this NOFO was
-          {% if latest.trigger == "reimport" %}re-imported{% else %}imported{% endif %}
-          ({{ latest.saved_at|date:"M j, Y, g:i a" }}). It gives you a starting
-          point to compare against. New snapshots are only saved when you select
-          <strong>Save these results</strong> or re-import the NOFO.
+          A snapshot was saved automatically when {{ latest.trigger_event }}
+          ({{ latest.saved_at|date:"M j, Y, g:i a" }}). It gives you a point to
+          compare against. New snapshots are only saved when you select
+          <strong>Save these results</strong>, download the PDF, or re-import the
+          NOFO, and only if the NOFO has changed.
         </p>
       </div>
     </div>
@@ -46,7 +46,8 @@
       Opening this panel checks readability for the current NOFO. Select
       Save these results to keep a snapshot. Saving checks the current NOFO
       and recalculates if it has changed. A snapshot is also saved
-      automatically when a NOFO is imported or re-imported.
+      automatically when a NOFO is imported or re-imported, and when its PDF is
+      downloaded after a change.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
       <button

@@ -172,7 +172,7 @@ from .readability import (
     analyze_nofo_readability,
     normalize_readability_metric_goals,
     record_readability_snapshot,
-    save_import_checkpoint,
+    save_automatic_checkpoint,
 )
 from .readability_history import checkpoint_rows
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
@@ -353,6 +353,7 @@ class NofosDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(get_nofo_document_context(self.object))
+        context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
         return context
 
 
@@ -997,7 +998,7 @@ class NofosImportNewView(BaseNofoImportView):
                 nofo=nofo,
                 warning_count=warning_count,
             )
-            save_import_checkpoint(
+            save_automatic_checkpoint(
                 request, nofo, NofoReadabilityCheckpoint.TRIGGER_IMPORT
             )
 
@@ -1194,7 +1195,7 @@ class NofosImportOverwriteView(
 
             # Outside the reimport transaction: a slow or failed calculation
             # must not hold the NOFO's rows or roll back the reimport.
-            checkpoint = save_import_checkpoint(
+            checkpoint = save_automatic_checkpoint(
                 request, nofo, NofoReadabilityCheckpoint.TRIGGER_REIMPORT
             )
             message = f"Re-imported NOFO from file: {nofo.filename}"
@@ -2425,6 +2426,14 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
                 user=request.user,
                 is_test_pdf=is_test_pdf,
             )
+
+            # Download PDF (a finished, non-watermarked attachment) also keeps a
+            # readability snapshot. Preview PDF does not. Only a successful
+            # download saves, and an unchanged NOFO reuses its snapshot.
+            if mode == "attachment" and not is_test_pdf:
+                save_automatic_checkpoint(
+                    request, nofo, NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD
+                )
 
             return response
         except PDFGenerationError as error:
