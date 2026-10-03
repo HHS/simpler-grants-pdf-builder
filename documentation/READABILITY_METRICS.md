@@ -332,8 +332,8 @@ record does not delete the other's readability history.
 Eligibility also depends on the page's access rules and filters. Since
 [PR #1018](https://github.com/HHS/simpler-grants-pdf-builder/pull/1018), the
 overview excludes Bloomworks (`bloom`) and staging (`staging`) NOFOs using the
-NOFO's **current** group. Imports by Bloomworks and staging users still save
-automatic checkpoints, but those NOFOs are not listed. Moving a NOFO into an
+NOFO's **current** group. Importing, re-importing or downloading Bloomworks and
+staging NOFOs still saves automatic checkpoints, but those NOFOs are not listed. Moving a NOFO into an
 excluded group hides its row without deleting history; moving it out makes its saved history eligible again. Archived
 NOFOs and duplicates follow the same group filter. Checkpoints do not capture a
 group at save time. This differs from the historical group attribution used by
@@ -353,6 +353,12 @@ independent archive that survives NOFO deletion.
   calculations to the NOFO and measurement contract.
 - [`save_automatic_checkpoint()`](../nofos/nofos/readability.py) saves the
   best-effort automatic checkpoint after an import, re-import or PDF download.
+  It is called from `NofosImportNewView`, `NofosImportOverwriteView.reimport_nofo()`
+  and, for finished attachments only, `PrintNofoAsPDFView` in
+  [`views.py`](../nofos/nofos/views.py).
+- [`AUTOMATIC_TRIGGER_TEXT`](../nofos/nofos/readability_history.py) holds the
+  wording for each automatic trigger ("on PDF download", "the PDF was
+  downloaded"). Add new triggers there rather than in templates.
 - [`checkpoint_rows()`](../nofos/nofos/readability_history.py) filters history by
   `score__nofo`; comparisons do not traverse original/copy relationships.
 - [`readability_overview_page()`](../nofos/nofos/readability_overview.py) queries
@@ -364,6 +370,10 @@ retention coverage is in
 [`test_readability_metrics.py`](../nofos/nofos/tests_nofos/test_readability_metrics.py),
 [`test_readability_checkpoints.py`](../nofos/nofos/tests_nofos/test_readability_checkpoints.py),
 and [`test_readability_overview.py`](../nofos/nofos/tests_nofos/test_readability_overview.py).
+Automatic saves are covered in
+[`test_readability_import_checkpoints.py`](../nofos/nofos/tests_nofos/test_readability_import_checkpoints.py)
+and
+[`test_readability_download_checkpoints.py`](../nofos/nofos/tests_nofos/test_readability_download_checkpoints.py).
 
 ## Saved readability overview
 
