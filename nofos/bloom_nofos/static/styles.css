@@ -1079,7 +1079,7 @@ label.usa-label {
 }
 
 .nofo_edit caption {
-  top: var(--nofo-caption-top, 125px);
+  top: var(--nofo-caption-top, 85px);
 }
 
 .nofo_edit caption div,
@@ -1092,6 +1092,13 @@ label.usa-label {
   width: 100%;
   align-items: baseline;
   gap: 12px;
+}
+
+/* Paint the caption directly below the toolbar, without a transparent margin
+   through which scrolling subsection text can show. */
+.nofo_edit caption div {
+  margin-top: 0;
+  padding-top: 8px;
 }
 
 .nofo_edit caption div > *,
