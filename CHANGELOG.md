@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.49.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.49.0...nofos-v3.49.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* keep PDF downloads quiet and sticky section captions flush ([#1031](https://github.com/HHS/simpler-grants-pdf-builder/issues/1031)) ([baa2b29](https://github.com/HHS/simpler-grants-pdf-builder/commit/baa2b29af57e05b28a5779e5c173f8d39e1a8a80))
+* mark “Latest updates” footer links as external using the same USWDS ([772ccab](https://github.com/HHS/simpler-grants-pdf-builder/commit/772ccabdcfdf3142c23ad39acfb37a12f29a5de3))
+* mark Latest updates footer links as external ([#1027](https://github.com/HHS/simpler-grants-pdf-builder/issues/1027)) ([772ccab](https://github.com/HHS/simpler-grants-pdf-builder/commit/772ccabdcfdf3142c23ad39acfb37a12f29a5de3))
+* refresh readability saves and keep section headings visible after PDF download ([#1030](https://github.com/HHS/simpler-grants-pdf-builder/issues/1030)) ([85bf5f0](https://github.com/HHS/simpler-grants-pdf-builder/commit/85bf5f03bbed5e34139198add13dc580dc9fd261))
+
 ## [3.49.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.48.0...nofos-v3.49.0) (2026-10-05)
 
 
