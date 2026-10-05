@@ -4,7 +4,7 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
-## 2026-10-05 — Show an automatic "What's new" banner for 10 business days after each release
+## 2026-10-05 — Show an automatic "What's new" banner for 5 business days after each release
 
 **Context:** The only way to find out what changed in NOFO Builder today is the
 "Latest updates" link in the footer, which is easy to miss. When improvements
@@ -15,16 +15,16 @@ communication", but nothing in the app tells users a release happened. The
 team wanted a site-wide banner, like the one on design.va.gov, that links to
 CHANGELOG.md and doesn't depend on someone remembering to turn it on and off.
 
-**Decision:** Add a USWDS site alert (info, slim) under the government banner
-and above the header on every `base.html` page, including signed-out pages. Its
-link opens CHANGELOG.md on GitHub in a new tab. The banner:
+**Decision:** Add a USWDS site alert (info, slim) directly below the site
+header on every `base.html` page, including signed-out pages. Its link opens
+CHANGELOG.md on GitHub in a new tab. The banner:
 
 - turns on by itself, using the newest dated release heading in the deployed
   `CHANGELOG.md`;
-- stays on through the 10th business day (weekdays that aren't US federal
-  holidays, in Eastern time);
+- stays on through the 5th business day (weekdays that aren't US federal
+  holidays, in Eastern time), so about one working week;
 - restarts when a newer release comes out during the window;
-- can't be dismissed; and
+- can't be dismissed, and is hidden when a page is printed; and
 - can be turned off for everyone (`CHANGELOG_BANNER_ENABLED`) or given a
   different length (`CHANGELOG_BANNER_BUSINESS_DAYS`) by a superadmin in
   Constance, without a deploy.
@@ -47,12 +47,14 @@ Alternatives considered:
   Dismissal would need a per-user "last seen version" field.
 
 Known trade-offs:
-- **Releases currently come out faster than the window ends.** Since September
-  2026, releases have come out every 1–4 business days, and the default cadence
-  in DEPLOYMENT.md is weekly. Both are shorter than 10 business days, so with
-  "restart on every release" the banner would rarely or never turn off. If
-  that's not what we want, options include a shorter window, only counting
-  releases that have a **Features** section, or a cooldown between banners.
+- **Why 5 business days, not 10.** Since September 2026, releases have come
+  out every 1–4 business days, and the default cadence in DEPLOYMENT.md is
+  weekly. With a 10-day window that restarts on every release, the banner would
+  never turn off. Five days matches the weekly cadence, so the banner turns off
+  in any week without a release. While releases come out several times a week
+  it will still be on most of the time. If that's a problem, options include
+  only counting releases that have a **Features** section, or a cooldown
+  between banners.
 - The window counts from the release date in the heading, not the deploy date,
   so a late deploy gets a shorter window.
 - `CHANGELOG.md` was removed from `.dockerignore` so the app can read it.

@@ -741,7 +741,7 @@ CONSTANCE_CONFIG = {
         bool,
     ),
     "CHANGELOG_BANNER_BUSINESS_DAYS": (
-        10,
+        5,
         'How many business days (weekdays, excluding US federal holidays) the "What\'s new" banner shows after the newest CHANGELOG.md entry date.',
         int,
     ),

@@ -148,7 +148,7 @@ def banner_end_date(release_date, business_days):
         day += timedelta(days=1)
 
 
-def get_active_release(today=None, business_days=10):
+def get_active_release(today=None, business_days=5):
     """
     Return the release to announce if today falls inside its banner window,
     otherwise None. Future-dated entries never show.

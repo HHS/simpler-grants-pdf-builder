@@ -1,7 +1,10 @@
 from datetime import date
+from pathlib import Path
 from unittest.mock import patch
 
+from constance import config
 from constance.test import override_config
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from freezegun import freeze_time
@@ -129,6 +132,14 @@ class BusinessDayTests(TestCase):
         # Sat Oct 3: counting starts Mon Oct 5
         self.assertEqual(banner_end_date(date(2026, 10, 3), 10), date(2026, 10, 19))
 
+    def test_end_date_default_five_business_days(self):
+        # Mon Oct 5 through Fri Oct 9
+        self.assertEqual(banner_end_date(date(2026, 10, 5), 5), date(2026, 10, 9))
+
+    def test_end_date_five_business_days_skips_holiday(self):
+        # Thu Oct 8, Fri Oct 9, (Mon Oct 12 Columbus Day), Tue 13, Wed 14, Thu 15
+        self.assertEqual(banner_end_date(date(2026, 10, 8), 5), date(2026, 10, 15))
+
     def test_end_date_one_business_day(self):
         self.assertEqual(banner_end_date(date(2026, 10, 5), 1), date(2026, 10, 5))
 
@@ -138,33 +149,38 @@ class GetActiveReleaseTests(TestCase):
     def test_active_on_release_day(self, _):
         self.assertEqual(get_active_release(today=date(2026, 10, 5)), RELEASE)
 
-    def test_active_on_last_business_day(self, _):
-        self.assertEqual(get_active_release(today=date(2026, 10, 19)), RELEASE)
+    def test_active_on_fifth_business_day(self, _):
+        self.assertEqual(get_active_release(today=date(2026, 10, 9)), RELEASE)
 
     def test_inactive_after_window(self, _):
-        self.assertIsNone(get_active_release(today=date(2026, 10, 20)))
+        self.assertIsNone(get_active_release(today=date(2026, 10, 10)))
 
     def test_inactive_for_future_dated_entry(self, _):
         self.assertIsNone(get_active_release(today=date(2026, 10, 2)))
 
     def test_custom_business_days(self, _):
         self.assertEqual(
-            get_active_release(today=date(2026, 10, 20), business_days=11), RELEASE
+            get_active_release(today=date(2026, 10, 19), business_days=10), RELEASE
+        )
+        self.assertIsNone(
+            get_active_release(today=date(2026, 10, 20), business_days=10)
         )
         self.assertIsNone(get_active_release(today=date(2026, 10, 5), business_days=0))
 
-    @freeze_time("2026-10-20 02:00:00")  # still Oct 19 in Eastern time
+    @freeze_time("2026-10-10 02:00:00")  # still Fri Oct 9 in Eastern time
     def test_today_uses_eastern_time(self, _):
         self.assertEqual(get_active_release(), RELEASE)
 
-    @freeze_time("2026-10-20 05:00:00")  # Oct 20, 1am Eastern
+    @freeze_time("2026-10-10 05:00:00")  # Sat Oct 10, 1am Eastern
     def test_today_uses_eastern_time_after_midnight(self, _):
         self.assertIsNone(get_active_release())
 
     def test_newer_entry_restarts_the_window(self, mock_latest):
-        # 3.34.0's window would end Oct 19; a 3.35.0 entry on Oct 16 restarts it.
-        mock_latest.return_value = ChangelogRelease("3.35.0", date(2026, 10, 16))
-        self.assertEqual(get_active_release(today=date(2026, 10, 29)).version, "3.35.0")
+        # 3.34.0's window ends Fri Oct 9. A 3.35.0 entry on Thu Oct 8 restarts
+        # it: Oct 8, 9, 13, 14, 15 (Oct 12 is Columbus Day).
+        self.assertIsNone(get_active_release(today=date(2026, 10, 14)))
+        mock_latest.return_value = ChangelogRelease("3.35.0", date(2026, 10, 8))
+        self.assertEqual(get_active_release(today=date(2026, 10, 14)).version, "3.35.0")
 
 
 @patch("bloom_nofos.changelog_banner.get_latest_release", return_value=RELEASE)
@@ -196,6 +212,22 @@ class ChangelogBannerContextTests(TestCase):
         self.assertContains(response, f'href="{CHANGELOG_URL}"')
         self.assertContains(response, 'target="_blank"')
         self.assertContains(response, "(opens in a new tab)")
+
+    def test_default_window_is_five_business_days(self, *_):
+        self.assertEqual(config.CHANGELOG_BANNER_BUSINESS_DAYS, 5)
+
+    def test_banner_renders_directly_below_the_header(self, *_):
+        html = self.client.get(reverse("users:login")).content.decode()
+        # The gov banner also uses <header>, so start from the site header
+        site_header = html.partition('<header class="usa-header')[2]
+        after_header = site_header.partition("</header>")[2].lstrip()
+        self.assertTrue(after_header.startswith('<section class="usa-site-alert'))
+
+    def test_banner_is_hidden_when_printing(self, *_):
+        css = (Path(settings.BASE_DIR) / "bloom_nofos/static/styles.css").read_text()
+        self.assertRegex(
+            css, r"@media print\s*{\s*\.changelog-banner\s*{\s*display:\s*none"
+        )
 
     @override_config(CHANGELOG_BANNER_ENABLED=False)
     def test_banner_not_rendered_when_toggled_off(self, *_):

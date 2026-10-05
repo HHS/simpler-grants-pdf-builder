@@ -3,10 +3,11 @@
 Local Chromium screenshots from October 5, 2026, taken with the Django dev
 server (SQLite) on this branch. The repository's real `CHANGELOG.md` was used
 with no changes and no time freezing. Its newest release is 3.48.0 from
-October 3, 2026, so October 5 is business day 2 of that release's window.
+Saturday, October 3, 2026, so the 5-business-day window runs from Monday,
+October 5 through Friday, October 9. October 5 is day 1.
 
 - [Signed-out Login page](login-signed-out.png) (1280px): the banner sits
-  under the government banner and above the site header.
+  directly below the site header.
 - [Signed-in NOFO index](nofo-index-signed-in.png) (1280px).
 - [NOFO Compare index](compare-index.png) (1280px): the banner shows across
   Builder, Compare and Composer because they all extend `base.html`.
@@ -14,6 +15,9 @@ October 3, 2026, so October 5 is business day 2 of that release's window.
   focus outline.
 - [Login page on a phone](login-mobile.png) (390px, 2x): the text wraps and the
   external-link icon stays next to the link text.
+- [Metrics page in print preview](print-preview-metrics.png): Chromium print
+  media. The banner is hidden, along with the header and footer that page
+  already hides when printing.
 
 Clicking the link opened a new browser tab (Playwright `popup` event). This
 sandbox can't reach GitHub, so that tab's content isn't shown.
