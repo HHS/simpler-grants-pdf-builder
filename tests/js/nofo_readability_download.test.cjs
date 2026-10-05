@@ -52,7 +52,8 @@ test('download confirms save and refreshes collapsed summary, notice and history
   assert.equal(ui.calls[0].options.method, 'POST');
   assert.equal(ui.calls[0].options.body.form.action, '/print?mode=attachment&is_test_pdf=false');
   assert.deepEqual(ui.calls.map(c => c.url), ['/print?mode=attachment&is_test_pdf=false', '/history?fragment=panel']);
-  assert.match(ui.status.textContent, /results are saved/);
+  assert.equal(ui.status.textContent, "");
+  assert.equal(ui.status.hidden, true);
   assert.equal(ui.downloadButton.attributes['aria-disabled'], 'false');
   assert.ok(ui.timers.some(timer => timer.delay === 60000));
 });
@@ -69,11 +70,12 @@ test('metrics failure still downloads PDF and never claims a new save', async ()
   assert.match(ui.status.textContent, /snapshot could not be saved/);
   assert.equal(ui.named['[data-metrics-summary-status]'].textContent, 'Not calculated');
 });
-test('history refresh failure preserves download and confirms successful save', async () => {
+test('history refresh failure preserves download and offers a refresh', async () => {
   const ui = setup([pdf(), new Error('Offline')]);
   await ui.submit();
   assert.equal(ui.downloads.length, 1);
-  assert.match(ui.status.textContent, /results are saved.*Refresh the page/);
+  assert.match(ui.status.textContent, /Refresh the page/);
+  assert.equal(ui.status.hidden, false);
 });
 test('PDF failure does not refresh history or download error HTML', async () => {
   for (const response of [{ ok: false }, { ok: true, headers: { get: () => 'text/html' } }, new Error('Offline')]) {
@@ -91,6 +93,8 @@ test('duplicate submissions are ignored while the PDF is being generated', async
   const pending = ui.submit();
   await ui.submit();
   assert.equal(ui.calls.length, 1);
+  assert.equal(ui.status.textContent, '');
+  assert.equal(ui.status.hidden, true);
   assert.equal(ui.downloadButton.attributes['aria-disabled'], 'true');
   finish(pdf());
   await pending;

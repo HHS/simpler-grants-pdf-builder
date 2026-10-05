@@ -337,10 +337,10 @@
     downloadForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (downloading) return;
-      downloadStatus.hidden = false;
+      downloadStatus.hidden = true;
+      downloadStatus.textContent = "";
       downloading = true;
       downloadButton.setAttribute("aria-disabled", "true");
-      downloadStatus.textContent = "Preparing PDF and saving readability results…";
       try {
         const response = await fetch(downloadForm.action, {
           method: "POST",
@@ -362,11 +362,12 @@
         // Give the browser time to start consuming the object URL.
         window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
         const saved = response.headers.get("X-Readability-Checkpoint");
-        downloadStatus.textContent = saved === "saved"
-          ? "PDF ready. Readability results are saved."
-          : saved === "unavailable"
-            ? "PDF ready, but a readability snapshot could not be saved. Try Save these results in the readability panel."
-            : "PDF ready. Automatic readability saving is unavailable.";
+        if (saved !== "saved") {
+          downloadStatus.hidden = false;
+          downloadStatus.textContent = saved === "unavailable"
+            ? "A readability snapshot could not be saved. Try Save these results in the readability panel."
+            : "Automatic readability saving is unavailable.";
+        }
         // This GET reads saved checkpoints only; it never calculates or saves.
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -388,11 +389,13 @@
           autoSaveNotice.hidden = false;
           savedHistory.innerHTML = freshHistory.innerHTML;
         } catch {
-          downloadStatus.textContent += " Refresh the page to update the saved snapshots list.";
+          downloadStatus.hidden = false;
+          downloadStatus.textContent = `${downloadStatus.textContent} Refresh the page to update the saved snapshots list.`.trim();
         } finally {
           window.clearTimeout(timeoutId);
         }
       } catch {
+        downloadStatus.hidden = false;
         downloadStatus.textContent = "The PDF download could not be confirmed. Try downloading again; unchanged results won't be saved twice.";
       } finally {
         downloading = false;
