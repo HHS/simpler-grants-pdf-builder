@@ -4,7 +4,6 @@ nofos/nofos.json
 nofos/users.json
 nofos/db.sqlite3
 nofos/debug_output.html
-CHANGELOG.md
 README.md
 TODO.md
 Dockerfile

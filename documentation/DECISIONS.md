@@ -4,6 +4,69 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-05 — Show an automatic "Latest release" banner for 5 business days after each release
+
+**Context:** The only way to find out what changed in NOFO Builder today is the
+"Latest updates" link in the footer, which is easy to miss. When improvements
+go unnoticed, users don't get their value, and we can't tell which changes
+matter to them. Both of those matter as more teams start using NOFO Builder.
+DEPLOYMENT.md already treats merging the release PR as "user-facing
+communication", but nothing in the app tells users a release happened. The
+team wanted a site-wide banner, like the one on design.va.gov, that links to
+CHANGELOG.md and doesn't depend on someone remembering to turn it on and off.
+
+**Decision:** Add a USWDS site alert (info, slim) directly below the site
+header on every `base.html` page, including signed-out pages. Its link opens
+CHANGELOG.md on GitHub in a new tab. The banner:
+
+- turns on by itself, using the newest dated release heading in the deployed
+  `CHANGELOG.md`;
+- stays on through the 5th business day (weekdays that aren't US federal
+  holidays, in Eastern time), so about one working week;
+- restarts when a newer release comes out during the window;
+- can't be dismissed, and is hidden when a page is printed;
+- starts with **Latest release:**, followed by the version, the release date
+  and a "See what's new" link; and
+- can be turned off for everyone (`CHANGELOG_BANNER_ENABLED`) or given a
+  different length from 0 to 30 business days
+  (`CHANGELOG_BANNER_BUSINESS_DAYS`) in Constance, without a deploy. Only
+  superusers can change these. OpDiv Admins can't open Django admin.
+
+Details are in [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md).
+
+Alternatives considered:
+- **Read the CHANGELOG.md bundled with the deployed app (chosen):** no network
+  calls, scheduler or database writes. Because production deploys are manual,
+  this is the only option that announces only what users can actually use.
+- **Ask GitHub for the latest CHANGELOG.md:** it would announce releases that
+  are merged but not deployed, and it adds a runtime dependency on GitHub and
+  its rate limits.
+- **Have a GitHub Action flip a flag when the release PR merges:** this needs
+  deploy credentials in CI and has the same problem of announcing undeployed
+  releases.
+- **Only a manual on/off switch:** depends on someone remembering, which is
+  the problem we're solving. The Constance switch is kept as an override.
+- **Let users dismiss it:** rejected for now, so everyone sees each update.
+  Dismissal would need a per-user "last seen version" field.
+
+Known trade-offs:
+- **Why 5 business days, not 10.** Since September 2026, releases have come
+  out every 1–4 business days, and the default cadence in DEPLOYMENT.md is
+  weekly. With a 10-day window that restarts on every release, the banner would
+  never turn off. Five days matches the weekly cadence, so the banner turns off
+  in any week without a release. While releases come out several times a week
+  it will still be on most of the time. If that's a problem, options include
+  only counting releases that have a **Features** section, or a cooldown
+  between banners.
+- The window counts from the release date in the heading, not the deploy date,
+  so a late deploy gets a shorter window.
+- `CHANGELOG.md` was removed from `.dockerignore` so the app can read it.
+- Federal holidays are calculated in code. One-off closures aren't counted.
+- We don't measure clicks yet. Showing that the banner works will need
+  analytics or a tracked redirect link.
+
+---
+
 ## 2026-10-03 — Also save a readability checkpoint on Download PDF, without asking users to label milestones
 
 **Context:** Import and re-import checkpoints give each NOFO a baseline, but

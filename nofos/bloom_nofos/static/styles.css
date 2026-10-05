@@ -20,6 +20,13 @@
   --color--usa-accent-warm-hover: #c05600;
 }
 
+/* "Latest release" site alert (includes/changelog_banner.html): never print it */
+@media print {
+  .changelog-banner {
+    display: none !important;
+  }
+}
+
 html:not(.html--nofo_edit) {
   scroll-behavior: smooth;
 }

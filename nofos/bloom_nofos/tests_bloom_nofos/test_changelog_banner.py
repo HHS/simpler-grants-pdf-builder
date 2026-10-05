@@ -1,0 +1,286 @@
+from datetime import date
+from pathlib import Path
+from unittest.mock import patch
+
+from constance import config
+from constance.forms import ConstanceForm
+from constance.test import override_config
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from django.urls import reverse
+from freezegun import freeze_time
+from users.models import BloomUser
+
+from ..changelog_banner import (
+    CHANGELOG_URL,
+    ChangelogRelease,
+    banner_end_date,
+    federal_holidays,
+    get_active_release,
+    get_latest_release,
+    is_business_day,
+    parse_latest_release,
+)
+from ..context_processors import get_changelog_banner
+
+CHANGELOG_TEXT = """# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+- Something not out yet
+
+## [3.34.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.33.0...nofos-v3.34.0) (2026-10-05)
+
+
+### Features
+
+* a thing ([#1](https://github.com/HHS/simpler-grants-pdf-builder/issues/1))
+
+## [3.33.0] - 2026-05-26
+
+### Fixed
+
+- Another thing
+"""
+
+RELEASE = ChangelogRelease("3.34.0", date(2026, 10, 5))
+
+
+class ParseLatestReleaseTests(TestCase):
+    def test_returns_newest_dated_release(self):
+        self.assertEqual(parse_latest_release(CHANGELOG_TEXT), RELEASE)
+
+    def test_keep_a_changelog_heading_format(self):
+        text = "## [3.33.0] - 2026-05-26\n\n### Added\n"
+        self.assertEqual(
+            parse_latest_release(text), ChangelogRelease("3.33.0", date(2026, 5, 26))
+        )
+
+    def test_release_please_heading_format(self):
+        text = (
+            "## [3.48.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/"
+            "nofos-v3.47.1...nofos-v3.48.0) (2026-10-03)\n"
+        )
+        self.assertEqual(
+            parse_latest_release(text), ChangelogRelease("3.48.0", date(2026, 10, 3))
+        )
+
+    def test_mixed_formats_pick_newest(self):
+        # The real file switched formats at 3.34.0
+        text = "## [3.34.0](https://x) (2026-09-03)\n\n## [3.33.0] - 2026-05-26\n"
+        self.assertEqual(parse_latest_release(text).version, "3.34.0")
+
+    def test_ignores_unreleased_and_undated_headings(self):
+        text = "## [Unreleased]\n\n## [4.0.0]\n\n## [3.0.0] - 2026-01-02\n"
+        self.assertEqual(
+            parse_latest_release(text), ChangelogRelease("3.0.0", date(2026, 1, 2))
+        )
+
+    def test_does_not_rely_on_entry_order(self):
+        text = "## [1.0.0] - 2026-01-02\n\n## [1.1.0] - 2026-03-04\n"
+        self.assertEqual(parse_latest_release(text).version, "1.1.0")
+
+    def test_skips_invalid_dates(self):
+        text = "## [2.0.0] - 2026-13-45\n\n## [1.0.0] - 2026-01-02\n"
+        self.assertEqual(parse_latest_release(text).version, "1.0.0")
+
+    def test_no_releases(self):
+        self.assertIsNone(parse_latest_release("# Changelog\n"))
+        self.assertIsNone(parse_latest_release(""))
+        self.assertIsNone(parse_latest_release(None))
+
+    def test_repo_changelog_has_a_parseable_release(self):
+        # Guards against the CHANGELOG.md heading format drifting.
+        get_latest_release.cache_clear()
+        self.addCleanup(get_latest_release.cache_clear)
+        self.assertIsNotNone(get_latest_release())
+
+
+class BusinessDayTests(TestCase):
+    def test_federal_holidays_2026(self):
+        self.assertEqual(
+            sorted(federal_holidays(2026)),
+            [
+                date(2026, 1, 1),
+                date(2026, 1, 19),
+                date(2026, 2, 16),
+                date(2026, 5, 25),
+                date(2026, 6, 19),
+                date(2026, 7, 3),  # July 4 is a Saturday
+                date(2026, 9, 7),
+                date(2026, 10, 12),
+                date(2026, 11, 11),
+                date(2026, 11, 26),
+                date(2026, 12, 25),
+            ],
+        )
+
+    def test_new_years_on_saturday_is_observed_prior_december(self):
+        # Jan 1, 2028 is a Saturday
+        self.assertIn(date(2027, 12, 31), federal_holidays(2027))
+
+    def test_weekends_are_not_business_days(self):
+        self.assertFalse(is_business_day(date(2026, 10, 3)))  # Saturday
+        self.assertFalse(is_business_day(date(2026, 10, 4)))  # Sunday
+        self.assertTrue(is_business_day(date(2026, 10, 5)))  # Monday
+
+    def test_end_date_counts_release_day_and_skips_holidays(self):
+        # Mon Oct 5 is day 1; Mon Oct 12 (Columbus Day) is skipped
+        self.assertEqual(banner_end_date(date(2026, 10, 5), 10), date(2026, 10, 19))
+
+    def test_end_date_for_weekend_release_starts_next_business_day(self):
+        # Sat Oct 3: counting starts Mon Oct 5
+        self.assertEqual(banner_end_date(date(2026, 10, 3), 10), date(2026, 10, 19))
+
+    def test_end_date_default_five_business_days(self):
+        # Mon Oct 5 through Fri Oct 9
+        self.assertEqual(banner_end_date(date(2026, 10, 5), 5), date(2026, 10, 9))
+
+    def test_end_date_five_business_days_skips_holiday(self):
+        # Thu Oct 8, Fri Oct 9, (Mon Oct 12 Columbus Day), Tue 13, Wed 14, Thu 15
+        self.assertEqual(banner_end_date(date(2026, 10, 8), 5), date(2026, 10, 15))
+
+    def test_end_date_one_business_day(self):
+        self.assertEqual(banner_end_date(date(2026, 10, 5), 1), date(2026, 10, 5))
+
+
+@patch("bloom_nofos.changelog_banner.get_latest_release", return_value=RELEASE)
+class GetActiveReleaseTests(TestCase):
+    def test_active_on_release_day(self, _):
+        self.assertEqual(get_active_release(today=date(2026, 10, 5)), RELEASE)
+
+    def test_active_on_fifth_business_day(self, _):
+        self.assertEqual(get_active_release(today=date(2026, 10, 9)), RELEASE)
+
+    def test_inactive_after_window(self, _):
+        self.assertIsNone(get_active_release(today=date(2026, 10, 10)))
+
+    def test_inactive_for_future_dated_entry(self, _):
+        self.assertIsNone(get_active_release(today=date(2026, 10, 2)))
+
+    def test_custom_business_days(self, _):
+        self.assertEqual(
+            get_active_release(today=date(2026, 10, 19), business_days=10), RELEASE
+        )
+        self.assertIsNone(
+            get_active_release(today=date(2026, 10, 20), business_days=10)
+        )
+        self.assertIsNone(get_active_release(today=date(2026, 10, 5), business_days=0))
+
+    @freeze_time("2026-10-10 02:00:00")  # still Fri Oct 9 in Eastern time
+    def test_today_uses_eastern_time(self, _):
+        self.assertEqual(get_active_release(), RELEASE)
+
+    @freeze_time("2026-10-10 05:00:00")  # Sat Oct 10, 1am Eastern
+    def test_today_uses_eastern_time_after_midnight(self, _):
+        self.assertIsNone(get_active_release())
+
+    def test_newer_entry_restarts_the_window(self, mock_latest):
+        # 3.34.0's window ends Fri Oct 9. A 3.35.0 entry on Thu Oct 8 restarts
+        # it: Oct 8, 9, 13, 14, 15 (Oct 12 is Columbus Day).
+        self.assertIsNone(get_active_release(today=date(2026, 10, 14)))
+        mock_latest.return_value = ChangelogRelease("3.35.0", date(2026, 10, 8))
+        self.assertEqual(get_active_release(today=date(2026, 10, 14)).version, "3.35.0")
+
+
+@patch("bloom_nofos.changelog_banner.get_latest_release", return_value=RELEASE)
+@freeze_time("2026-10-06 12:00:00")
+@override_config(CHANGELOG_BANNER_ENABLED=True)  # off by default in tests
+class ChangelogBannerContextTests(TestCase):
+    def test_banner_context_when_enabled(self, *_):
+        self.assertEqual(
+            get_changelog_banner(),
+            {
+                "version": "3.34.0",
+                "release_date": date(2026, 10, 5),
+                "url": CHANGELOG_URL,
+            },
+        )
+
+    @override_config(CHANGELOG_BANNER_ENABLED=False)
+    def test_toggle_off_hides_banner(self, *_):
+        self.assertIsNone(get_changelog_banner())
+
+    @override_config(CHANGELOG_BANNER_BUSINESS_DAYS=1)
+    def test_business_days_setting_is_used(self, *_):
+        self.assertIsNone(get_changelog_banner())
+
+    def test_banner_renders_on_unauthenticated_login_page(self, *_):
+        response = self.client.get(reverse("users:login"))
+        self.assertContains(response, "usa-site-alert--info")
+        self.assertContains(response, "<strong>Latest release:</strong>", html=False)
+        self.assertContains(response, "NOFO Builder version 3.34.0 (October 5, 2026)")
+        self.assertContains(response, "See what’s new")
+        self.assertContains(response, f'href="{CHANGELOG_URL}"')
+        self.assertContains(response, 'target="_blank"')
+        self.assertContains(response, "(opens in a new tab)")
+
+    def test_default_window_is_five_business_days(self, *_):
+        self.assertEqual(config.CHANGELOG_BANNER_BUSINESS_DAYS, 5)
+
+    def test_banner_renders_directly_below_the_header(self, *_):
+        html = self.client.get(reverse("users:login")).content.decode()
+        # The gov banner also uses <header>, so start from the site header
+        site_header = html.partition('<header class="usa-header')[2]
+        after_header = site_header.partition("</header>")[2].lstrip()
+        self.assertTrue(after_header.startswith('<section class="usa-site-alert'))
+
+    def test_banner_is_hidden_when_printing(self, *_):
+        css = (Path(settings.BASE_DIR) / "bloom_nofos/static/styles.css").read_text()
+        self.assertRegex(
+            css, r"@media print\s*{\s*\.changelog-banner\s*{\s*display:\s*none"
+        )
+
+    @override_config(CHANGELOG_BANNER_ENABLED=False)
+    def test_banner_not_rendered_when_toggled_off(self, *_):
+        response = self.client.get(reverse("users:login"))
+        self.assertNotContains(response, "usa-site-alert--info")
+
+
+@patch("bloom_nofos.changelog_banner.get_latest_release", return_value=RELEASE)
+@freeze_time("2026-10-06 12:00:00")
+class ChangelogBannerTestDefaultTests(TestCase):
+    def test_off_by_default_while_running_tests(self, _):
+        # Keeps every other page-rendering test independent of today's date
+        self.assertIsNone(get_changelog_banner())
+        response = self.client.get(reverse("users:login"))
+        self.assertNotContains(response, "changelog-banner")
+
+
+class ChangelogBannerAdminSettingsTests(TestCase):
+    CONFIG_URL = "/admin/constance/config/"
+
+    def make_user(self, email, **extra):
+        return BloomUser.objects.create_user(
+            email=email,
+            password="testpass123",
+            group=extra.pop("group", "hrsa"),
+            force_password_reset=False,
+            **extra,
+        )
+
+    def test_business_days_field_allows_0_to_30(self):
+        field = ConstanceForm(initial={}).fields["CHANGELOG_BANNER_BUSINESS_DAYS"]
+        self.assertEqual(field.clean(0), 0)
+        self.assertEqual(field.clean(30), 30)
+        for value in (-1, 31):
+            with self.assertRaises(ValidationError):
+                field.clean(value)
+
+    def test_superuser_can_open_the_settings(self):
+        self.client.force_login(
+            self.make_user("super@example.com", group="bloom", is_superuser=True)
+        )
+        response = self.client.get(self.CONFIG_URL)
+        self.assertContains(response, "CHANGELOG_BANNER_BUSINESS_DAYS")
+
+    def test_opdiv_admin_cannot_open_the_settings(self):
+        self.client.force_login(
+            self.make_user("opdiv-admin@example.com", is_opdiv_admin=True)
+        )
+        response = self.client.get(self.CONFIG_URL)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])
