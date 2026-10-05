@@ -3,11 +3,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from constance import config
+from constance.forms import ConstanceForm
 from constance.test import override_config
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from freezegun import freeze_time
+from users.models import BloomUser
 
 from ..changelog_banner import (
     CHANGELOG_URL,
@@ -208,7 +211,9 @@ class ChangelogBannerContextTests(TestCase):
     def test_banner_renders_on_unauthenticated_login_page(self, *_):
         response = self.client.get(reverse("users:login"))
         self.assertContains(response, "usa-site-alert--info")
-        self.assertContains(response, "See what’s new in version 3.34.0")
+        self.assertContains(response, "<strong>Latest release:</strong>", html=False)
+        self.assertContains(response, "NOFO Builder version 3.34.0 (October 5, 2026)")
+        self.assertContains(response, "See what’s new")
         self.assertContains(response, f'href="{CHANGELOG_URL}"')
         self.assertContains(response, 'target="_blank"')
         self.assertContains(response, "(opens in a new tab)")
@@ -243,3 +248,39 @@ class ChangelogBannerTestDefaultTests(TestCase):
         self.assertIsNone(get_changelog_banner())
         response = self.client.get(reverse("users:login"))
         self.assertNotContains(response, "changelog-banner")
+
+
+class ChangelogBannerAdminSettingsTests(TestCase):
+    CONFIG_URL = "/admin/constance/config/"
+
+    def make_user(self, email, **extra):
+        return BloomUser.objects.create_user(
+            email=email,
+            password="testpass123",
+            group=extra.pop("group", "hrsa"),
+            force_password_reset=False,
+            **extra,
+        )
+
+    def test_business_days_field_allows_0_to_30(self):
+        field = ConstanceForm(initial={}).fields["CHANGELOG_BANNER_BUSINESS_DAYS"]
+        self.assertEqual(field.clean(0), 0)
+        self.assertEqual(field.clean(30), 30)
+        for value in (-1, 31):
+            with self.assertRaises(ValidationError):
+                field.clean(value)
+
+    def test_superuser_can_open_the_settings(self):
+        self.client.force_login(
+            self.make_user("super@example.com", group="bloom", is_superuser=True)
+        )
+        response = self.client.get(self.CONFIG_URL)
+        self.assertContains(response, "CHANGELOG_BANNER_BUSINESS_DAYS")
+
+    def test_opdiv_admin_cannot_open_the_settings(self):
+        self.client.force_login(
+            self.make_user("opdiv-admin@example.com", is_opdiv_admin=True)
+        )
+        response = self.client.get(self.CONFIG_URL)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])

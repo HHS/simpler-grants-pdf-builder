@@ -20,7 +20,7 @@
   --color--usa-accent-warm-hover: #c05600;
 }
 
-/* "What's new" site alert (includes/changelog_banner.html): never print it */
+/* "Latest release" site alert (includes/changelog_banner.html): never print it */
 @media print {
   .changelog-banner {
     display: none !important;

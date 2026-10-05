@@ -1,5 +1,5 @@
 """
-"What's new" site banner, driven by the newest dated entry in CHANGELOG.md.
+"Latest release" site banner, driven by the newest dated entry in CHANGELOG.md.
 
 The banner turns on automatically when a new release heading is published to
 CHANGELOG.md (release-please writes these, for example

@@ -4,7 +4,7 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
-## 2026-10-05 — Show an automatic "What's new" banner for 5 business days after each release
+## 2026-10-05 — Show an automatic "Latest release" banner for 5 business days after each release
 
 **Context:** The only way to find out what changed in NOFO Builder today is the
 "Latest updates" link in the footer, which is easy to miss. When improvements
@@ -24,10 +24,13 @@ CHANGELOG.md on GitHub in a new tab. The banner:
 - stays on through the 5th business day (weekdays that aren't US federal
   holidays, in Eastern time), so about one working week;
 - restarts when a newer release comes out during the window;
-- can't be dismissed, and is hidden when a page is printed; and
+- can't be dismissed, and is hidden when a page is printed;
+- starts with **Latest release:**, followed by the version, the release date
+  and a "See what's new" link; and
 - can be turned off for everyone (`CHANGELOG_BANNER_ENABLED`) or given a
-  different length (`CHANGELOG_BANNER_BUSINESS_DAYS`) by a superadmin in
-  Constance, without a deploy.
+  different length from 0 to 30 business days
+  (`CHANGELOG_BANNER_BUSINESS_DAYS`) in Constance, without a deploy. Only
+  superusers can change these. OpDiv Admins can't open Django admin.
 
 Details are in [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md).
 

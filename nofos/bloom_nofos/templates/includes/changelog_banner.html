@@ -1,15 +1,16 @@
 {% comment %}
-  Site-wide "What's new" banner. Uses the USWDS site alert (info, slim) component.
+  Site-wide "Latest release" banner. Uses the USWDS site alert (info, slim) component.
   Shown by the CHANGELOG_BANNER context variable; see documentation/CHANGELOG_BANNER.md.
   Not dismissible on purpose.
 {% endcomment %}
 {% if CHANGELOG_BANNER %}
-  <section class="usa-site-alert usa-site-alert--info usa-site-alert--slim changelog-banner" aria-label="Site alert: what’s new">
+  <section class="usa-site-alert usa-site-alert--info usa-site-alert--slim changelog-banner" aria-label="Site alert: latest release">
     <div class="usa-alert">
       <div class="usa-alert__body">
         <p class="usa-alert__text">
-          <strong>NOFO Builder was updated on {{ CHANGELOG_BANNER.release_date|date:"F j, Y" }}.</strong>
-          <a class="usa-link usa-link--external" href="{{ CHANGELOG_BANNER.url }}" target="_blank" rel="noopener noreferrer">See what’s new in version {{ CHANGELOG_BANNER.version }}<span class="usa-sr-only"> (opens in a new tab)</span></a>
+          <strong>Latest release:</strong>
+          NOFO Builder version {{ CHANGELOG_BANNER.version }} ({{ CHANGELOG_BANNER.release_date|date:"F j, Y" }})
+          <a class="usa-link usa-link--external margin-left-1" href="{{ CHANGELOG_BANNER.url }}" target="_blank" rel="noopener noreferrer">See what’s new<span class="usa-sr-only"> (opens in a new tab)</span></a>
         </p>
       </div>
     </div>

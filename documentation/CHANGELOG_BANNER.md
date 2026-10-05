@@ -1,4 +1,4 @@
-# "What's new" changelog banner
+# "Latest release" banner
 
 After a new release is deployed, NOFO Builder shows a banner at the top of every page saying the site was updated. It links to [CHANGELOG.md](../CHANGELOG.md) on GitHub, which opens in a new tab. The banner turns itself on and off. Nobody has to remember to do it.
 
@@ -6,7 +6,7 @@ Screenshots: [review-evidence/changelog-banner](review-evidence/changelog-banner
 
 ## What users see
 
-> ⓘ **NOFO Builder was updated on October 3, 2026.** [See what's new in version 3.48.0](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md#changelog)
+> ⓘ **Latest release:** NOFO Builder version 3.48.0 (October 3, 2026) [See what's new](https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md#changelog)
 
 - **Component:** USWDS [Site alert](https://designsystem.digital.gov/components/site-alert/), info and slim variants (`usa-site-alert--info usa-site-alert--slim`). It uses the site's existing USWDS styles, with no custom CSS. It's the USWDS equivalent of the VA Design System banner on design.va.gov.
 - **Placement:** directly below the site header, on every page that extends `base.html`. That includes signed-out pages like **Login**.
@@ -33,16 +33,24 @@ Because the app reads the bundled file, the banner only appears once a release i
 
 The window is counted from the **release date in the heading**, not the deploy date. A release deployed several days after it was cut gets a shorter window. A release deployed more than 5 business days after it was cut never shows a banner.
 
-## Turning it off
+## Changing or turning it off
 
-In Django admin, go to **Constance › Config**:
+Only **superusers** can change these settings. Django admin requires staff
+status, and NOFO Builder gives staff status only to superusers, so OpDiv Admins
+and Composer Admins can't open the page. A test covers this.
+
+In Django admin, go to **Constance › Config** (`/admin/constance/config/`):
 
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `CHANGELOG_BANNER_ENABLED` | `True` (`False` while running tests) | Uncheck to hide the banner for everyone, even during a window. |
-| `CHANGELOG_BANNER_BUSINESS_DAYS` | `5` | How many business days the banner shows. `0` also turns it off. |
+| `CHANGELOG_BANNER_BUSINESS_DAYS` | `5` | How many business days the banner shows, from `0` to `30`. `0` also turns it off. Values outside that range are rejected when you save. |
 
 Changes take effect on the next page load, without a deploy.
+
+Once a superuser saves a value, it stays until someone changes it in admin
+again, even if the code default changes later. **Reset to default** next to a
+setting goes back to the code default.
 
 ## Code
 
@@ -53,7 +61,7 @@ Changes take effect on the next page load, without a deploy.
 | `nofos/bloom_nofos/templates/includes/changelog_banner.html` | Banner markup |
 | `nofos/bloom_nofos/templates/base.html` | Includes the banner, right after the site header |
 | `nofos/bloom_nofos/static/styles.css` | Hides the banner when printing |
-| `nofos/bloom_nofos/settings.py` | `CHANGELOG_BANNER_*` Constance settings |
+| `nofos/bloom_nofos/settings.py` | `CHANGELOG_BANNER_*` Constance settings, and the 0–30 limit (`CONSTANCE_ADDITIONAL_FIELDS`) |
 | `.dockerignore` | `CHANGELOG.md` must **not** be listed here, or deployed environments can't read it and the banner never shows |
 | `nofos/bloom_nofos/tests_bloom_nofos/test_changelog_banner.py` | Tests, including one that fails if the real `CHANGELOG.md` heading format stops parsing |
 

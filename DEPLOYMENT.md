@@ -71,7 +71,7 @@ Once CI is green, you can merge your own PR. No human approval is required. The 
 - **If a `feat:` in the batch improves the user experience**, merge the release PR (and request the corresponding production deploy — see below) as soon as it's ready. Don't wait for a fixed cadence just to sit on something users would benefit from seeing sooner.
 - **If the batch is only `fix:`/`chore:`-type changes with no user-visible feature**, there's less urgency — it's fine to let those accumulate and merge on the regular cadence below, or bundle them into the next feature release, whichever comes first.
 - **Otherwise, default to a weekly cadence** rather than letting the release PR sit open indefinitely. Merging it only cuts a CHANGELOG.md entry and a git tag — it does not deploy anything by itself (see Deployment below) — so there's no risk in merging promptly.
-- **Merging the release PR also drives the "What's new" banner.** Once a release is deployed, every page shows a banner linking to CHANGELOG.md, from the release date through the 5th business day after it. A newer release restarts the window. Superadmins can turn it off in Django admin (**Constance › Config › `CHANGELOG_BANNER_ENABLED`**). See [documentation/CHANGELOG_BANNER.md](documentation/CHANGELOG_BANNER.md).
+- **Merging the release PR also drives the "Latest release" banner.** Once a release is deployed, every page shows a banner linking to CHANGELOG.md, from the release date through the 5th business day after it. A newer release restarts the window. Superadmins can turn it off in Django admin (**Constance › Config › `CHANGELOG_BANNER_ENABLED`**). See [documentation/CHANGELOG_BANNER.md](documentation/CHANGELOG_BANNER.md).
 
 ---
 

@@ -645,7 +645,7 @@ HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED", default=False)
 )
 
-# "What's new" banner (documentation/CHANGELOG_BANNER.md). On by default, but
+# "Latest release" banner (documentation/CHANGELOG_BANNER.md). On by default, but
 # off while running tests: it turns on whenever CHANGELOG.md's newest release is
 # recent, so leaving it on would make page-rendering tests depend on the date.
 # Banner tests turn it on with override_config.
@@ -737,14 +737,22 @@ CONSTANCE_CONFIG = {
     ),
     "CHANGELOG_BANNER_ENABLED": (
         CHANGELOG_BANNER_ENABLED_DEFAULT,
-        'Show the site-wide "What\'s new" banner after a new dated entry is added to CHANGELOG.md. Uncheck to hide it for all users.',
+        'Show the site-wide "Latest release" banner after a new dated entry is added to CHANGELOG.md. Uncheck to hide it for all users.',
         bool,
     ),
     "CHANGELOG_BANNER_BUSINESS_DAYS": (
         5,
-        'How many business days (weekdays, excluding US federal holidays) the "What\'s new" banner shows after the newest CHANGELOG.md entry date.',
-        int,
+        'How many business days (weekdays, excluding US federal holidays) the "Latest release" banner shows after the newest CHANGELOG.md entry date. 0 to 30; 0 turns the banner off.',
+        "changelog_banner_business_days",
     ),
+}
+
+# Custom Constance admin form fields
+CONSTANCE_ADDITIONAL_FIELDS = {
+    "changelog_banner_business_days": [
+        "django.forms.IntegerField",
+        {"min_value": 0, "max_value": 30},
+    ],
 }
 
 # Django codemirror

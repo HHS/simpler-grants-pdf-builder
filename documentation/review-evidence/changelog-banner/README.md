@@ -1,4 +1,4 @@
-# "What's new" changelog banner
+# "Latest release" banner
 
 Local Chromium screenshots from October 5, 2026, taken with the Django dev
 server (SQLite) on this branch. The repository's real `CHANGELOG.md` was used
@@ -18,6 +18,11 @@ October 5 through Friday, October 9. October 5 is day 1.
 - [Metrics page in print preview](print-preview-metrics.png): Chromium print
   media. The banner is hidden, along with the header and footer that page
   already hides when printing.
+
+- [Constance settings in Django admin](admin-constance-settings.png), signed in
+  as a superuser: both banner settings with their help text. The business-days
+  input has `min="0" max="30"`. Typing 31 shows the browser message "Value must
+  be less than or equal to 30", and the server rejects it too (unit test).
 
 Clicking the link opened a new browser tab (Playwright `popup` event). This
 sandbox can't reach GitHub, so that tab's content isn't shown.
