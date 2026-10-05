@@ -645,6 +645,12 @@ HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED_DEFAULT = cast_to_boolean(
     env.get_value("HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED", default=False)
 )
 
+# "What's new" banner (documentation/CHANGELOG_BANNER.md). On by default, but
+# off while running tests: it turns on whenever CHANGELOG.md's newest release is
+# recent, so leaving it on would make page-rendering tests depend on the date.
+# Banner tests turn it on with override_config.
+CHANGELOG_BANNER_ENABLED_DEFAULT = "test" not in sys.argv
+
 DEFAULT_HHS_NOFO_METRIC_GOALS = {
     "word_count": {
         "label": "Target",
@@ -728,6 +734,16 @@ CONSTANCE_CONFIG = {
         HHS_NOFO_ASSISTANCE_LISTING_ON_COVER_ENABLED_DEFAULT,
         "Whether the assistance listing number is displayed on the NOFO's public PDF cover page. Only relevant once HHS_NOFO_ASSISTANCE_LISTING_ENABLED is also on.",
         bool,
+    ),
+    "CHANGELOG_BANNER_ENABLED": (
+        CHANGELOG_BANNER_ENABLED_DEFAULT,
+        'Show the site-wide "What\'s new" banner after a new dated entry is added to CHANGELOG.md. Uncheck to hide it for all users.',
+        bool,
+    ),
+    "CHANGELOG_BANNER_BUSINESS_DAYS": (
+        10,
+        'How many business days (weekdays, excluding US federal holidays) the "What\'s new" banner shows after the newest CHANGELOG.md entry date.',
+        int,
     ),
 }
 

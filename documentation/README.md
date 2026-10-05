@@ -6,6 +6,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 `review-evidence/`.
 
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
+- [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "What's new" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
