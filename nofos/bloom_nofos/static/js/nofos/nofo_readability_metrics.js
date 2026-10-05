@@ -331,14 +331,11 @@
   // confirm the save and refresh only saved state, preserving the open panel,
   // current calculation, focus, and scroll position.
   const downloadForm = document.querySelector("[data-download-pdf]");
-  const downloadStatus = document.querySelector("[data-pdf-download-status]");
-  if (downloadForm && downloadStatus && window.URL?.createObjectURL) {
+  if (downloadForm && window.URL?.createObjectURL) {
     const downloadButton = downloadForm.querySelector("button[type=submit]");
     downloadForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (downloading) return;
-      downloadStatus.hidden = true;
-      downloadStatus.textContent = "";
       downloading = true;
       downloadButton.setAttribute("aria-disabled", "true");
       try {
@@ -361,13 +358,6 @@
         link.remove();
         // Give the browser time to start consuming the object URL.
         window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
-        const saved = response.headers.get("X-Readability-Checkpoint");
-        if (saved !== "saved") {
-          downloadStatus.hidden = false;
-          downloadStatus.textContent = saved === "unavailable"
-            ? "A readability snapshot could not be saved. Try Save these results in the readability panel."
-            : "Automatic readability saving is unavailable.";
-        }
         // This GET reads saved checkpoints only; it never calculates or saves.
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -389,14 +379,13 @@
           autoSaveNotice.hidden = false;
           savedHistory.innerHTML = freshHistory.innerHTML;
         } catch {
-          downloadStatus.hidden = false;
-          downloadStatus.textContent = `${downloadStatus.textContent} Refresh the page to update the saved snapshots list.`.trim();
+          // Keep the existing saved state when the refresh fails. Feedback
+          // placement is deferred; do not add messages to the sticky header.
         } finally {
           window.clearTimeout(timeoutId);
         }
       } catch {
-        downloadStatus.hidden = false;
-        downloadStatus.textContent = "The PDF download could not be confirmed. Try downloading again; unchanged results won't be saved twice.";
+        // Download feedback is deferred pending a less crowded UI location.
       } finally {
         downloading = false;
         downloadButton.setAttribute("aria-disabled", "false");

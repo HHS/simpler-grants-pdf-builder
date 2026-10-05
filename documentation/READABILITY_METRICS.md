@@ -263,10 +263,11 @@ How users are told:
   only when metrics are enabled. On the Edit NOFO page, the download also
   updates the readability heading,
   automatic-save notice, and saved snapshot list without reloading the page or
-  opening the panel. Normal downloads show no progress or success text. A
-  message appears only for an unavailable save or download, or to ask the user
-  to refresh if saved history could not be retrieved. Sticky section captions follow the toolbar height, including
-  wrapped hints and download status messages. The HTML view retains the normal
+  opening the panel. Download progress, success, and failure messages are
+  deferred pending a decision about their placement
+  ([issue #1032](https://github.com/HHS/simpler-grants-pdf-builder/issues/1032)). If saved history cannot
+  be refreshed, its previous display remains. Sticky section captions follow
+  the toolbar height, including wrapped hints. The HTML view retains the normal
   file download.
 - The new-import success message ends with "Readability snapshot saved." and
   the re-import success message says a snapshot was saved automatically. Both

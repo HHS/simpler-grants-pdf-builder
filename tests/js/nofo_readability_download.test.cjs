@@ -14,6 +14,7 @@ function setup(responses, { open = false } = {}) {
   const panel = { open, dataset: { savedStateEndpoint: '/history?fragment=panel', csrfToken: 'token' }, querySelector: selector => named[selector] ||= element(), querySelectorAll: () => [], addEventListener() {} };
   panel.querySelector('[data-metrics-summary-status]').textContent = 'Not calculated';
   const status = element(), downloadButton = element();
+  status.hidden = true;
   let submit;
   const form = { action: '/print?mode=attachment&is_test_pdf=false', querySelector: () => downloadButton, addEventListener: (event, handler) => { submit = handler; } };
   const calls = [], downloads = [], urls = [], timers = [];
@@ -67,15 +68,16 @@ test('metrics failure still downloads PDF and never claims a new save', async ()
   const ui = setup([pdf('unavailable'), state(false)]);
   await ui.submit();
   assert.equal(ui.downloads.length, 1);
-  assert.match(ui.status.textContent, /snapshot could not be saved/);
+  assert.equal(ui.status.textContent, "");
+  assert.equal(ui.status.hidden, true);
   assert.equal(ui.named['[data-metrics-summary-status]'].textContent, 'Not calculated');
 });
-test('history refresh failure preserves download and offers a refresh', async () => {
+test('history refresh failure preserves download without header messaging', async () => {
   const ui = setup([pdf(), new Error('Offline')]);
   await ui.submit();
   assert.equal(ui.downloads.length, 1);
-  assert.match(ui.status.textContent, /Refresh the page/);
-  assert.equal(ui.status.hidden, false);
+  assert.equal(ui.status.textContent, "");
+  assert.equal(ui.status.hidden, true);
 });
 test('PDF failure does not refresh history or download error HTML', async () => {
   for (const response of [{ ok: false }, { ok: true, headers: { get: () => 'text/html' } }, new Error('Offline')]) {
@@ -83,7 +85,8 @@ test('PDF failure does not refresh history or download error HTML', async () => 
     await ui.submit();
     assert.equal(ui.downloads.length, 0);
     assert.equal(ui.calls.length, 1);
-    assert.match(ui.status.textContent, /could not be confirmed/);
+    assert.equal(ui.status.textContent, "");
+    assert.equal(ui.status.hidden, true);
     assert.equal(ui.downloadButton.attributes['aria-disabled'], 'false');
   }
 });
@@ -104,7 +107,8 @@ test('feature flag changing during download does not claim a snapshot', async ()
   const ui = setup([pdf(null), { ok: false }]);
   await ui.submit();
   assert.equal(ui.downloads.length, 1);
-  assert.match(ui.status.textContent, /saving is unavailable/);
+  assert.equal(ui.status.textContent, "");
+  assert.equal(ui.status.hidden, true);
 });
 
 test('a displayed calculation stays visible and keeps Calculated beside refreshed saved date', async () => {
