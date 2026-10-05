@@ -1,0 +1,15 @@
+    {% with latest=readability_checkpoints.0 %}
+    {% if latest.is_automatic %}
+    <div class="usa-alert usa-alert--info usa-alert--slim margin-top-0 margin-bottom-2" data-auto-save-notice>
+      <div class="usa-alert__body">
+        <p class="usa-alert__text">
+          A snapshot was saved automatically when {{ latest.trigger_event }}
+          ({{ latest.saved_at|date:"M j, Y, g:i a" }}). It gives you a point to
+          compare against. New snapshots are only saved when you select
+          <strong>Save these results</strong>, download the PDF, or re-import the
+          NOFO, and only if the NOFO has changed.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}

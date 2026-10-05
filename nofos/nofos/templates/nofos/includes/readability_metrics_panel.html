@@ -4,22 +4,14 @@
   data-metrics-endpoint="{% url 'nofos:nofo_readability_metrics' nofo.id %}"
   data-save-endpoint="{% url 'nofos:nofo_readability_metrics_save' nofo.id %}"
   data-history-endpoint="{% url 'nofos:nofo_readability_history' nofo.id %}?fragment=1"
+  data-saved-state-endpoint="{% url 'nofos:nofo_readability_history' nofo.id %}?fragment=panel"
   data-csrf-token="{{ csrf_token }}"
 >
   <summary class="usa-accordion__button">
     <h2 class="usa-accordion--heading margin-top-0">
       Readability metrics
       <span class="usa-tag bg-gold text-ink margin-left-1">Beta</span>
-      {% with latest=readability_checkpoints.0 %}
-      <span
-        class="font-sans-2xs text-normal text-base-dark margin-left-1"
-        data-metrics-summary-status
-      >{% if not latest %}Not calculated{% endif %}</span>
-      <span
-        class="font-sans-2xs text-normal text-base-dark"
-        data-metrics-summary-saved
-      >{% if latest %}Last saved {{ latest.saved_at|date:"M j" }}{% if latest.is_automatic %} automatically {{ latest.trigger_phrase }}{% endif %}{% endif %}</span>
-      {% endwith %}
+      {% include 'nofos/includes/readability_saved_summary.html' %}
     </h2>
   </summary>
   {% if readability_metric_goals %}
@@ -27,21 +19,9 @@
   {% endif %}
 
   <div class="usa-accordion__content usa-prose">
-    {% with latest=readability_checkpoints.0 %}
-    {% if latest.is_automatic %}
-    <div class="usa-alert usa-alert--info usa-alert--slim margin-top-0 margin-bottom-2" data-auto-save-notice>
-      <div class="usa-alert__body">
-        <p class="usa-alert__text">
-          A snapshot was saved automatically when {{ latest.trigger_event }}
-          ({{ latest.saved_at|date:"M j, Y, g:i a" }}). It gives you a point to
-          compare against. New snapshots are only saved when you select
-          <strong>Save these results</strong>, download the PDF, or re-import the
-          NOFO, and only if the NOFO has changed.
-        </p>
-      </div>
+    <div data-auto-save-container>
+      {% include 'nofos/includes/readability_automatic_notice.html' %}
     </div>
-    {% endif %}
-    {% endwith %}
     <p class="margin-top-0">
       Opening this panel checks readability for the current NOFO. Select
       Save these results to keep a snapshot. Saving checks the current NOFO

@@ -14,7 +14,7 @@
     </form>
   </li>
   <li class="usa-button-group__item">
-    <form method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment&is_test_pdf=false">
+    <form data-download-pdf method="post" action="{% url 'nofos:print_pdf' nofo.id %}?mode=attachment&is_test_pdf=false">
       {% csrf_token %}
       <button type="submit" class="usa-button usa-button--outline font-sans-xs text-normal" {% if readability_metrics_enabled %}aria-describedby="download-pdf-readability-hint"{% endif %} {% if 'localhost' in request.get_host %}disabled{% endif %}>
         Download PDF
@@ -27,4 +27,5 @@
     Downloading also saves a readability snapshot.
   </p>
 {% endif %}
+  <p data-pdf-download-status class="font-sans-xs margin-bottom-0" role="status" aria-live="polite" hidden></p>
 </div>

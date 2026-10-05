@@ -68,6 +68,7 @@ class ReadabilityDownloadCheckpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"%PDF-1.4 fake pdf")
+        self.assertEqual(response["X-Readability-Checkpoint"], "saved")
         checkpoint = self.checkpoints().get()
         self.assertEqual(checkpoint.trigger, NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD)
         self.assertEqual(checkpoint.saved_by, self.user)
@@ -121,6 +122,7 @@ class ReadabilityDownloadCheckpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"%PDF-1.4 fake pdf")
         self.assertFalse(self.checkpoints().exists())
+        self.assertEqual(response["X-Readability-Checkpoint"], "unavailable")
 
     @override_config(HHS_NOFO_METRICS_ENABLED=False)
     def test_disabled_metrics_save_nothing_and_hide_the_hint(self):
@@ -172,3 +174,60 @@ class ReadabilityDownloadCheckpointTests(TestCase):
         self.assertEqual(
             payload["checkpoint"]["trigger_event"], "the PDF was downloaded"
         )
+
+    def test_read_only_panel_fragment_refreshes_all_saved_state(self):
+        url = (
+            reverse("nofos:nofo_readability_history", kwargs={"pk": self.nofo.pk})
+            + "?fragment=panel"
+        )
+        before = self.client.get(url)
+        self.assertContains(before, "Not calculated")
+        self.assertContains(before, "data-auto-save-container")
+        self.assertFalse(self.checkpoints().exists())
+        self.analyze.assert_not_called()
+
+        self.download()
+        self.analyze.reset_mock()
+        after = self.client.get(url)
+        self.assertContains(after, "automatically on PDF download")
+        self.assertContains(after, "when the PDF was downloaded")
+        self.assertContains(after, "Automatic &middot; on PDF download")
+        self.assertEqual(after["Cache-Control"], "private, no-store")
+        self.assertEqual(self.checkpoints().count(), 1)
+        self.analyze.assert_not_called()
+
+    def test_panel_fragment_preserves_existing_manual_save(self):
+        save_readability_checkpoint(self.nofo, self.user)
+        self.download()
+        url = (
+            reverse("nofos:nofo_readability_history", kwargs={"pk": self.nofo.pk})
+            + "?fragment=panel"
+        )
+        response = self.client.get(url)
+        self.assertContains(response, "Last saved")
+        self.assertNotContains(response, "automatically on PDF download")
+        self.assertEqual(self.checkpoints().count(), 1)
+
+    def test_panel_fragment_requires_nofo_access(self):
+        other = BloomUser.objects.create_user(
+            email="other@example.com",
+            password="test",
+            group="cdc",
+            force_password_reset=False,
+        )
+        self.client.force_login(other)
+        url = (
+            reverse("nofos:nofo_readability_history", kwargs={"pk": self.nofo.pk})
+            + "?fragment=panel"
+        )
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+    @override_config(HHS_NOFO_METRICS_ENABLED=False)
+    def test_disabled_metrics_has_no_confirmation_header_or_fragment(self):
+        response = self.download()
+        self.assertNotIn("X-Readability-Checkpoint", response)
+        url = (
+            reverse("nofos:nofo_readability_history", kwargs={"pk": self.nofo.pk})
+            + "?fragment=panel"
+        )
+        self.assertEqual(self.client.get(url).status_code, 404)

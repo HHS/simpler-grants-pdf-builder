@@ -260,15 +260,19 @@ How users are told:
 - A line under the HTML / Preview PDF / Download PDF buttons, on the edit page
   and the HTML view, reads "Downloading also saves a readability snapshot." It
   is linked to the **Download PDF** button with `aria-describedby` and shown
-  only when metrics are enabled. The download returns a file without
-  reloading the page, so this line is how users learn about the save before
-  they choose to download.
+  only when metrics are enabled. On the Edit NOFO page, the download also
+  updates the readability heading,
+  automatic-save notice, and saved snapshot list without reloading the page or
+  opening the panel. A status message confirms saved results, reports an
+  unavailable save, or asks the user to refresh if saved history could not be
+  retrieved. The HTML view retains the normal file download.
 - The new-import success message ends with "Readability snapshot saved." and
   the re-import success message says a snapshot was saved automatically. Both
   appear only when a checkpoint was actually saved.
 - The closed accordion heading names the latest save, including **automatically
   on import**, **automatically on re-import** or **automatically on PDF
-  download**. It updates the next time the page loads.
+  download**. It updates after a download on the Edit NOFO page, including
+  while the panel is collapsed; elsewhere it updates the next time the page loads.
 - While the latest checkpoint is automatic, an info notice at the top of the
   panel says when it was saved and that new snapshots are only saved when the
   user selects **Save these results**, downloads the PDF, or re-imports the
