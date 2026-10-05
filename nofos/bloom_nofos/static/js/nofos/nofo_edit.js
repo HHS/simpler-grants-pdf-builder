@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (printToolbar) {
     const updateCaptionOffset = () => {
       const style = window.getComputedStyle(printToolbar);
-      const offset = parseFloat(style.top) + printToolbar.getBoundingClientRect().height
-        + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+      const offset = parseFloat(style.top) + printToolbar.getBoundingClientRect().height;
       document.documentElement.style.setProperty("--nofo-caption-top", `${Math.ceil(offset)}px`);
     };
     updateCaptionOffset();
