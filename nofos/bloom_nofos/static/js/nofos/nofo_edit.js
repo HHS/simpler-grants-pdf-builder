@@ -5,6 +5,24 @@
 // 4. Copies warning issue lists to clipboard
 // 5. Controls when the "Top" link appears on the bottom right as you scroll
 document.addEventListener("DOMContentLoaded", function () {
+  // Keep section captions below the sticky print toolbar as its hint and
+  // download status wrap or appear. ResizeObserver also covers browser zoom.
+  const printToolbar = document.querySelector(".nofo_edit--print-buttons");
+  if (printToolbar) {
+    const updateCaptionOffset = () => {
+      const style = window.getComputedStyle(printToolbar);
+      const offset = parseFloat(style.top) + printToolbar.getBoundingClientRect().height
+        + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+      document.documentElement.style.setProperty("--nofo-caption-top", `${Math.ceil(offset)}px`);
+    };
+    updateCaptionOffset();
+    if (window.ResizeObserver) {
+      new ResizeObserver(updateCaptionOffset).observe(printToolbar);
+    } else {
+      window.addEventListener("resize", updateCaptionOffset);
+    }
+  }
+
   // ------------------------------------------------------------
   // 1. Operates the "NOFO actions" open/close menu
   // ------------------------------------------------------------

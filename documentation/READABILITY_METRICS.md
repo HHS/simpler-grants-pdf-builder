@@ -265,7 +265,9 @@ How users are told:
   automatic-save notice, and saved snapshot list without reloading the page or
   opening the panel. A status message confirms saved results, reports an
   unavailable save, or asks the user to refresh if saved history could not be
-  retrieved. The HTML view retains the normal file download.
+  retrieved. Sticky section captions follow the toolbar height, including
+  wrapped hints and download status messages. The HTML view retains the normal
+  file download.
 - The new-import success message ends with "Readability snapshot saved." and
   the re-import success message says a snapshot was saved automatically. Both
   appear only when a checkpoint was actually saved.
