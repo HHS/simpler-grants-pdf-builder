@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.49.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.48.0...nofos-v3.49.0) (2026-10-05)
+
+
+### Features
+
+* show a "Latest release" banner for 5 business days after each release  ([#1025](https://github.com/HHS/simpler-grants-pdf-builder/issues/1025)) ([0238404](https://github.com/HHS/simpler-grants-pdf-builder/commit/0238404a13a01ae05f2be64ec055e724291d9a72))
+
 ## [3.48.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.47.1...nofos-v3.48.0) (2026-10-03)
 
 
