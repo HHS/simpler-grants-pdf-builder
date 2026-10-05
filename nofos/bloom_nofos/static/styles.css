@@ -1079,7 +1079,7 @@ label.usa-label {
 }
 
 .nofo_edit caption {
-  top: 85px;
+  top: var(--nofo-caption-top, 125px);
 }
 
 .nofo_edit caption div,

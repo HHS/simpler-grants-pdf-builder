@@ -2431,9 +2431,13 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
             # readability snapshot. Preview PDF does not. Only a successful
             # download saves, and an unchanged NOFO reuses its snapshot.
             if mode == "attachment" and not is_test_pdf:
-                save_automatic_checkpoint(
+                checkpoint = save_automatic_checkpoint(
                     request, nofo, NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD
                 )
+                if config.HHS_NOFO_METRICS_ENABLED and request.user.is_authenticated:
+                    response["X-Readability-Checkpoint"] = (
+                        "saved" if checkpoint else "unavailable"
+                    )
 
             return response
         except PDFGenerationError as error:

@@ -25,9 +25,13 @@ class NofoReadabilityHistoryView(View):
         if not can_edit and not request.user.has_perm("nofos.view_builder_metrics"):
             raise PermissionDenied("You don't have permission to view this NOFO.")
         context = {"nofo": nofo, "can_edit_nofo": can_edit}
-        if request.GET.get("fragment") == "1":
+        if request.GET.get("fragment") in {"1", "panel"}:
             context["readability_checkpoints"] = checkpoint_rows(nofo, limit=5)
-            template = "nofos/includes/readability_saved_snapshots.html"
+            template = (
+                "nofos/includes/readability_saved_state.html"
+                if request.GET.get("fragment") == "panel"
+                else "nofos/includes/readability_saved_snapshots.html"
+            )
         else:
             query = checkpoint_queryset().filter(score__nofo=nofo)
             page = Paginator(query, 50).get_page(request.GET.get("page"))

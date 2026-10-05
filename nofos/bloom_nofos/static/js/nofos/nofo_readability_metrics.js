@@ -12,7 +12,7 @@
   const scopeSummary = panel.querySelector("[data-metrics-scope-summary]");
   const summaryStatus = panel.querySelector("[data-metrics-summary-status]");
   const summarySaved = panel.querySelector("[data-metrics-summary-saved]");
-  const autoSaveNotice = panel.querySelector("[data-auto-save-notice]");
+  const autoSaveNotice = panel.querySelector("[data-auto-save-container]");
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
@@ -21,6 +21,7 @@
   const savedHistory = panel.querySelector("[data-readability-saved-history]");
   let displayedResult = null;
   let saving = false;
+  let downloading = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
     try {
@@ -212,7 +213,7 @@
   };
 
   const saveMetrics = async () => {
-    if (!displayedResult || saving || saveButton.disabled || button.disabled) return;
+    if (!displayedResult || downloading || saving || saveButton.disabled || button.disabled) return;
     saving = true;
     saveButton.setAttribute("aria-disabled", "true");
     button.disabled = true;
@@ -268,7 +269,7 @@
   };
 
   const calculateMetrics = async () => {
-    if (saving || button.disabled) return;
+    if (downloading || saving || button.disabled) return;
     button.disabled = true;
     if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
     if (saveStatus) saveStatus.textContent = "";
@@ -326,10 +327,84 @@
     }
   };
 
+  // A native attachment response leaves the page in place. Fetch it so we can
+  // confirm the save and refresh only saved state, preserving the open panel,
+  // current calculation, focus, and scroll position.
+  const downloadForm = document.querySelector("[data-download-pdf]");
+  const downloadStatus = document.querySelector("[data-pdf-download-status]");
+  if (downloadForm && downloadStatus && window.URL?.createObjectURL) {
+    const downloadButton = downloadForm.querySelector("button[type=submit]");
+    downloadForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (downloading) return;
+      downloadStatus.hidden = false;
+      downloading = true;
+      downloadButton.setAttribute("aria-disabled", "true");
+      downloadStatus.textContent = "Preparing PDF and saving readability results…";
+      try {
+        const response = await fetch(downloadForm.action, {
+          method: "POST",
+          body: new FormData(downloadForm),
+          headers: { Accept: "application/pdf" },
+        });
+        if (!response.ok || !response.headers.get("Content-Type")?.startsWith("application/pdf")) {
+          throw new Error("PDF unavailable");
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const disposition = response.headers.get("Content-Disposition") || "";
+        link.download = disposition.match(/filename="([^"\r\n]+)"/)?.[1] || "nofo.pdf";
+        document.body.append(link);
+        link.click();
+        link.remove();
+        // Give the browser time to start consuming the object URL.
+        window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+        const saved = response.headers.get("X-Readability-Checkpoint");
+        downloadStatus.textContent = saved === "saved"
+          ? "PDF ready. Readability results are saved."
+          : saved === "unavailable"
+            ? "PDF ready, but a readability snapshot could not be saved. Try Save these results in the readability panel."
+            : "PDF ready. Automatic readability saving is unavailable.";
+        // This GET reads saved checkpoints only; it never calculates or saves.
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        try {
+          const stateResponse = await fetch(panel.dataset.savedStateEndpoint, {
+            headers: { Accept: "text/html" }, signal: controller.signal,
+          });
+          if (!stateResponse.ok) throw new Error("Saved history unavailable");
+          const state = new DOMParser().parseFromString(await stateResponse.text(), "text/html");
+          const freshSaved = state.querySelector("[data-metrics-summary-saved]");
+          const freshStatus = state.querySelector("[data-metrics-summary-status]");
+          const freshNotice = state.querySelector("[data-auto-save-container]");
+          const freshHistory = state.querySelector("[data-readability-saved-history]");
+          if (!freshSaved || !freshStatus || !freshNotice || !freshHistory) throw new Error("Incomplete saved state");
+          summarySaved.textContent = freshSaved.textContent.trim();
+          if (displayedResult && summarySaved.textContent) summarySaved.textContent = `· ${summarySaved.textContent}`;
+          summaryStatus.textContent = displayedResult ? "Calculated" : freshStatus.textContent.trim();
+          autoSaveNotice.innerHTML = freshNotice.innerHTML;
+          autoSaveNotice.hidden = false;
+          savedHistory.innerHTML = freshHistory.innerHTML;
+        } catch {
+          downloadStatus.textContent += " Refresh the page to update the saved snapshots list.";
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      } catch {
+        downloadStatus.textContent = "The PDF download could not be confirmed. Try downloading again; unchanged results won't be saved twice.";
+      } finally {
+        downloading = false;
+        downloadButton.setAttribute("aria-disabled", "false");
+      }
+    });
+  }
+
   button.addEventListener("click", calculateMetrics);
   if (saveButton) saveButton.addEventListener("click", saveMetrics);
   panel.addEventListener("toggle", () => {
-    if (panel.open && !saving && !button.disabled) {
+    if (panel.open && !downloading && !saving && !button.disabled) {
       void calculateMetrics();
     }
   });

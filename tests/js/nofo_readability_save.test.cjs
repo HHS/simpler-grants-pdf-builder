@@ -16,7 +16,7 @@ function setup(responses) {
     querySelector: selector => named[selector] || (named[selector] = element()), querySelectorAll: () => [], addEventListener(event, handler) { if (event === "toggle") listeners.toggle = handler; } };
   const elements = { 'readability-metrics-panel': panel, 'calculate-readability-metrics': calculate, 'readability-metrics-results': results, 'readability-metrics-status': element() };
   const calls = [];
-  runInNewContext(source, { document: { getElementById: id => elements[id] || null }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
+  runInNewContext(source, { document: { querySelector: () => null, getElementById: id => elements[id] || null }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
   return { panel, listeners, save, saveStatus, calculate, results, history, calls };
 }
 const result = value => ({ source: { revision: String(value) }, metrics: { word_count: { value, status: 'calculated' } }, warnings: [] });

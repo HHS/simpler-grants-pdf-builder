@@ -1,0 +1,11 @@
+      {% with latest=readability_checkpoints.0 %}
+      <span
+        class="font-sans-2xs text-normal text-base-dark margin-left-1"
+        data-metrics-summary-status
+      >{% if not latest %}Not calculated{% endif %}</span>
+      <span
+        class="font-sans-2xs text-normal text-base-dark"
+        aria-live="polite"
+        data-metrics-summary-saved
+      >{% if latest %}Last saved {{ latest.saved_at|date:"M j" }}{% if latest.is_automatic %} automatically {{ latest.trigger_phrase }}{% endif %}{% endif %}</span>
+      {% endwith %}
