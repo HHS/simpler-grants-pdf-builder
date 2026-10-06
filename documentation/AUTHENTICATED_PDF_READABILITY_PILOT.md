@@ -132,12 +132,14 @@ issues, never real PDFs or report contents in public evidence. Disable the
 authenticated flag to end the round and recheck authorized unavailability and
 unauthorized denial. Keep the public flag off throughout.
 
-### Dev rollout checklist
+### Production rollout checklist
 
 These are preparation steps, not a record of deployed verification or enablement.
-Use dev for the first restricted round; do not turn on production or public uploads.
+The intended pilot runs in production for approved authenticated participants.
+A development rehearsal is useful but does not replace production verification.
+Keep public uploads disabled.
 
-1. After review and merge, verify dev's deployed revision and migration 0150.
+1. After review and merge, verify production's deployed revision and migration 0150.
    Check that the participant group exists without automatically added users.
 2. Check applicable deployed parser isolation, upload/concurrency bounds,
    temporary-file cleanup and safe request/edge logging using #970/#971.
@@ -147,10 +149,56 @@ Use dev for the first restricted round; do not turn on production or public uplo
 4. For usage recording, confirm the authenticated retention window and notice,
    configure the two independent environment settings, run authenticated cleanup
    in dry-run mode, and verify the scheduled source-specific cleanup. Do not
-   change public recording settings. If recording cannot be configured, document
-   that limitation rather than claiming the dashboard captures pilot outcomes.
+   change public recording settings. Recording is required for this pilot: do not launch participant uploads until
+   recording and scheduled cleanup have been verified.
 5. Confirm the public flag remains off. Enable only the authenticated flag and
    run the documented access, CSRF, report/copy/print and source-filter checks.
    Keep real document contents out of public evidence.
 6. Share the direct URL only with approved participants. End or pause the round
    by disabling the authenticated flag; revoke access when no longer needed.
+
+
+### Where production configuration is applied
+
+Builder deployment infrastructure lives in
+[HHS/simpler-grants-gov](https://github.com/HHS/simpler-grants-gov), separately
+from this application PR. The following locations were inspected on October 6,
+2026; source inspection does not confirm deployed AWS state.
+
+1. In [`infra/nofos/app-config/prod.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/app-config/prod.tf),
+   add the two authenticated recording settings to
+   `service_override_extra_environment_variables`. Use string values: recording
+   `"true"` and an explicitly approved positive integer retention period.
+   Retention is a required rollout decision, not an implicit application default.
+2. In [`infra/nofos/app-config/env-config/scheduled_jobs.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/app-config/env-config/scheduled_jobs.tf),
+   add an authenticated cleanup job scoped to production (for example using
+   `var.environment == "prod"`). The existing map is empty. Use the container
+   command `["python", "nofos/manage.py", "cleanup_pdf_readability_attempts",
+   "--source", "authenticated"]` and a daily schedule such as `rate(1 day)`.
+   The Docker image works from `/app`, with the virtual environment on PATH;
+   `nofos/manage.py` is therefore the correct path for the job.
+3. The existing service infrastructure consumes this job map through
+   [`infra/nofos/service/main.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/service/main.tf).
+   Review the infrastructure plan for production-only changes, apply through the
+   approved deployment workflow, and verify the scheduled task receives the same
+   retention configuration, database access, and application image as the service.
+4. Use the **Deploy NOFOs** workflow in that repository for the production release
+   containing this application change. Confirm migrations and runtime environment
+   settings, run cleanup with `--source authenticated --dry-run`, and verify an
+   actual scheduled cleanup execution succeeds. Watch job failures through the
+   existing operational monitoring; the usage dashboard alone cannot confirm
+   cleanup or detect requests rejected before the application workflow.
+5. In production Django administration, grant approved accounts **Can use PDF
+   readability pilot** and dashboard reviewers **Can view metrics**. Enable
+   `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED` in Constance only after
+   required recording, cleanup, and applicable safeguards are verified. Leave
+   `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off. Verify a successful and a handled
+   unsuccessful authenticated test upload appear under the Authenticated source
+   filter at `/nofos/metrics/readability-pilot` without document content.
+
+This Builder PR supplies the application, participant checkbox, cleanup command,
+and rollout instructions. It does not change the companion infrastructure repo,
+apply Terraform, deploy production, choose retention, or enable live switches.
+Turning the authenticated upload switch off pauses the pilot immediately. Turning
+recording off requires changing its production environment value and redeploying;
+existing rows still require scheduled cleanup.
