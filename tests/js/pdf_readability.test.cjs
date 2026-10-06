@@ -8,11 +8,11 @@ const source = readFileSync(join(__dirname,
   '../../nofos/bloom_nofos/static/js/pdf_readability.js'), 'utf8');
 
 function setup({ form = true, error = false, report = false, valid = true,
-  clipboard = true, clipboardRejects = false, notesOpen = true } = {}) {
+  clipboard = true, clipboardRejects = false, notesOpen = true, fileSelected = true } = {}) {
   const listeners = {};
   const submitButton = { disabled: false };
   const status = { textContent: '' };
-  const summary = { focused: false, focus() { this.focused = true; } };
+  const summary = { focused: false, attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, focus() { this.focused = true; } };
   const copyStatus = { textContent: '' };
   const fallback = {
     hidden: true, value: '', focused: false, selected: false,
@@ -20,12 +20,13 @@ function setup({ form = true, error = false, report = false, valid = true,
   };
   const notes = { open: notesOpen };
   const elements = { 'analyze-pdf-button': submitButton, 'pdf-submit-status': status };
+  elements.pdf = { files: fileSelected ? [{}] : [] };
   const node = (textContent) => ({ textContent });
   if (form) elements['pdf-readability-form'] = {
     checkValidity: () => valid,
     addEventListener: (event, handler) => { listeners[`form:${event}`] = handler; },
   };
-  if (error) elements['readability-error-summary'] = summary;
+  if (error) elements['pdf--error'] = summary;
   if (report) {
     elements['print-readability-report'] = {
       addEventListener: (event, handler) => { listeners[`print:${event}`] = handler; },
@@ -88,8 +89,27 @@ test('invalid submission does not disable correction', () => {
   assert.equal(state.status.textContent, '');
 });
 
-test('error summary receives focus after server error', () => {
-  assert.equal(setup({ error: true }).summary.focused, true);
+test('inline upload error receives focus after server error', () => {
+  const state = setup({ error: true });
+  assert.equal(state.summary.focused, true);
+  assert.equal(state.summary.attributes.tabindex, '-1');
+});
+
+test('missing file reaches server validation without pending progress', () => {
+  const state = setup({ fileSelected: false });
+  let prevented = false;
+  state.listeners['form:submit']({ preventDefault() { prevented = true; } });
+  assert.equal(prevented, false);
+  assert.equal(state.submitButton.disabled, false);
+  assert.equal(state.status.textContent, '');
+});
+
+test('duplicate submission is prevented while analysis is pending', () => {
+  const state = setup();
+  state.listeners['form:submit']();
+  let prevented = false;
+  state.listeners['form:submit']({ preventDefault() { prevented = true; } });
+  assert.equal(prevented, true);
 });
 
 test('report print button invokes the browser print dialog', () => {
