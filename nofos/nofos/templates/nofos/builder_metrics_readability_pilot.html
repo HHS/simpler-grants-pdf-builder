@@ -40,7 +40,7 @@
 </div>
 <p>Selected source: <strong>{{ metrics.source|capfirst }}</strong> · All retained attempts.</p>
 {% if metrics.source == 'all' or metrics.source == 'public' %}{% if not metrics.recording_enabled %}<p class="border-left-05 border-info padding-left-2">Public recording is off. New public attempts will not appear here.</p>{% endif %}{% endif %}
-{% if metrics.source == 'all' or metrics.source == 'authenticated' %}{% if not metrics.authenticated_recording_enabled or not metrics.authenticated_retention_days %}<p class="border-left-05 border-info padding-left-2">Authenticated recording is off or retention is not configured. New authenticated attempts will not appear here.</p>{% endif %}{% endif %}
+{% if metrics.source == 'all' or metrics.source == 'authenticated' %}{% if not metrics.authenticated_recording_enabled %}<p class="border-left-05 border-info padding-left-2">Authenticated recording is off. New authenticated attempts will not appear here.</p>{% endif %}{% endif %}
 <div class="grid-row grid-gap-2 margin-top-3">
   <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Upload attempts</h2><p class="font-heading-xl margin-y-1">{{ metrics.total_attempts }}</p></div>
   <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Reports returned</h2><p class="font-heading-xl margin-y-1">{{ metrics.successes }}</p><p>{{ metrics.success_rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</p></div>
@@ -77,7 +77,7 @@
 <p class="font-sans-2xs">Workflow duration includes parsing and rendering, not just analysis. Percentiles use nearest rank across all retained attempts for the selected source.</p>
 <h2 class="font-heading-md margin-top-4">Pilot status and recording settings</h2>
 <table class="pilot-table"><thead><tr><th scope="col">Source</th><th scope="col">Uploads</th><th scope="col">Recording</th></tr></thead><tbody><tr><th scope="row">Public</th><td>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Authenticated</th><td>{{ metrics.authenticated_enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.authenticated_recording_enabled|yesno:"Enabled,Disabled" }}</td></tr></tbody></table>
-<p>Public retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days{% else %}Not configured{% endif %}. Authenticated retention: {% if metrics.authenticated_retention_days %}{{ metrics.authenticated_retention_days }} days{% else %}Not configured{% endif %}. Scheduled cleanup must be verified.</p>
+<p>Public retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days{% else %}Not configured{% endif %}. Authenticated retention: {% if metrics.authenticated_retention_days %}{{ metrics.authenticated_retention_days }} days (optional cleanup){% else %}No automatic expiration{% endif %}.</p>
 <details class="margin-top-2 font-sans-2xs"><summary>Recent technical details</summary><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome code</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></details>
 {{ metrics|json_script:"pilot-chart-data" }}
 {% endblock %}

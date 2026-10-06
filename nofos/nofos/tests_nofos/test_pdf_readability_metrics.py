@@ -189,7 +189,7 @@ class MetricsTests(TestCase):
         self.assertContains(page, "Back to usage &amp; quality metrics")
         self.assertContains(page, 'href="/nofos/metrics"')
         self.assertContains(page, "Public retention: Not configured")
-        self.assertContains(page, "Authenticated retention: Not configured")
+        self.assertContains(page, "Authenticated retention: No automatic expiration")
         self.assertContains(page, "OpDiv filtering isn't available")
         self.assertContains(page, ".back-link, .pilot-pagination")
         self.assertEqual(page["Cache-Control"], "private, no-store")

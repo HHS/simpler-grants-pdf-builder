@@ -92,16 +92,18 @@ Authenticated recording uses independent environment settings:
 - `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=False` by default.
 - `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` has no default.
 
-Authenticated recording requires a positive integer retention window as well as
-the recording switch. The upload notice explains content-free recording when
-configured on. This is not approval of a window or cleanup schedule. Public
-recording settings remain unchanged. Source-specific cleanup reuses the existing
-command:
+Authenticated recording requires only the recording switch. Leave the optional
+`AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset for this production
+pilot: content-free usage records have no automatic expiration. Uploaded PDFs
+and document contents are not retained. No authenticated cleanup schedule is
+required. This is the pilot's chosen behavior, not a claim about HHS policy.
+
+If a future decision introduces expiration, configure a positive retention
+period and explicitly schedule the existing source-specific cleanup command:
 
 ```text
 python manage.py cleanup_pdf_readability_attempts --source authenticated --dry-run
 python manage.py cleanup_pdf_readability_attempts --source authenticated
-python manage.py cleanup_pdf_readability_attempts --source public --dry-run
 ```
 
 Default cleanup targets public and legacy/unknown rows using public retention,
@@ -119,10 +121,10 @@ temporary-file cleanup and safe application/edge logging under #970/#971.
 Public-pilot-only requirements under #968 are not automatically prerequisites,
 but sign-in does not replace applicable safeguards.
 
-For recording, agree the authenticated window under #985, configure it and verify
-a scheduled cleanup invocation with `--source authenticated`. This change does
-not install a scheduler or approve a retention period. Confirm public recording
-remains unchanged.
+Enable authenticated recording and verify successful and unsuccessful outcomes
+appear in the dashboard. Keep authenticated retention unset and do not install
+an authenticated cleanup schedule for this pilot. Confirm public recording and
+retention remain unchanged.
 
 Enable only the authenticated Constance setting for the agreed validation round.
 Check approved-user upload, report, copy and print/save; signed-out and
@@ -143,14 +145,12 @@ Keep public uploads disabled.
    Check that the participant group exists without automatically added users.
 2. Check applicable deployed parser isolation, upload/concurrency bounds,
    temporary-file cleanup and safe request/edge logging using #970/#971.
-   Record results against the actual dev revision, not local screenshots.
+   Record results against the actual production revision, not local screenshots.
 3. Record the operating contact, approved accounts and supported test documents.
    Grant only pilot upload permission unless dashboard access is separately needed.
-4. For usage recording, confirm the authenticated retention window and notice,
-   configure the two independent environment settings, run authenticated cleanup
-   in dry-run mode, and verify the scheduled source-specific cleanup. Do not
-   change public recording settings. Recording is required for this pilot: do not launch participant uploads until
-   recording and scheduled cleanup have been verified.
+4. Set authenticated outcome recording on and leave authenticated retention
+   unset. Verify recording before launching participant uploads. No authenticated
+   record-cleanup job is required; do not change public recording or cleanup.
 5. Confirm the public flag remains off. Enable only the authenticated flag and
    run the documented access, CSRF, report/copy/print and source-filter checks.
    Keep real document contents out of public evidence.
@@ -166,39 +166,25 @@ from this application PR. The following locations were inspected on October 6,
 2026; source inspection does not confirm deployed AWS state.
 
 1. In [`infra/nofos/app-config/prod.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/app-config/prod.tf),
-   add the two authenticated recording settings to
-   `service_override_extra_environment_variables`. Use string values: recording
-   `"true"` and an explicitly approved positive integer retention period.
-   Retention is a required rollout decision, not an implicit application default.
-2. In [`infra/nofos/app-config/env-config/scheduled_jobs.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/app-config/env-config/scheduled_jobs.tf),
-   add an authenticated cleanup job scoped to production (for example using
-   `var.environment == "prod"`). The existing map is empty. Use the container
-   command `["python", "nofos/manage.py", "cleanup_pdf_readability_attempts",
-   "--source", "authenticated"]` and a daily schedule such as `rate(1 day)`.
-   The Docker image works from `/app`, with the virtual environment on PATH;
-   `nofos/manage.py` is therefore the correct path for the job.
-3. The existing service infrastructure consumes this job map through
-   [`infra/nofos/service/main.tf`](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/service/main.tf).
-   Review the infrastructure plan for production-only changes, apply through the
-   approved deployment workflow, and verify the scheduled task receives the same
-   retention configuration, database access, and application image as the service.
-4. Use the **Deploy NOFOs** workflow in that repository for the production release
-   containing this application change. Confirm migrations and runtime environment
-   settings, run cleanup with `--source authenticated --dry-run`, and verify an
-   actual scheduled cleanup execution succeeds. Watch job failures through the
-   existing operational monitoring; the usage dashboard alone cannot confirm
-   cleanup or detect requests rejected before the application workflow.
-5. In production Django administration, grant approved accounts **Can use PDF
+   add `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = "true"` to
+   `service_override_extra_environment_variables`. Leave
+   `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset. No authenticated
+   scheduled cleanup job is needed for this pilot.
+2. Review and apply the companion infrastructure change through the approved
+   workflow, then deploy the Builder revision using **Deploy NOFOs** with the
+   production target. Verify the running service has recording enabled.
+3. In production Django administration, grant approved accounts **Can use PDF
    readability pilot** and dashboard reviewers **Can view metrics**. Enable
-   `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED` in Constance only after
-   required recording, cleanup, and applicable safeguards are verified. Leave
-   `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off. Verify a successful and a handled
-   unsuccessful authenticated test upload appear under the Authenticated source
-   filter at `/nofos/metrics/readability-pilot` without document content.
+   `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED` in Constance after verifying
+   applicable safeguards. Leave `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off.
+4. Verify successful and handled unsuccessful authenticated test uploads appear
+   under the Authenticated filter at `/nofos/metrics/readability-pilot` without
+   document content. Operational monitoring must also cover requests rejected
+   before the application workflow.
 
-This Builder PR supplies the application, participant checkbox, cleanup command,
-and rollout instructions. It does not change the companion infrastructure repo,
-apply Terraform, deploy production, choose retention, or enable live switches.
-Turning the authenticated upload switch off pauses the pilot immediately. Turning
-recording off requires changing its production environment value and redeploying;
-existing rows still require scheduled cleanup.
+This Builder PR supplies the application, participant checkbox and rollout
+instructions. Production environment configuration belongs in the companion
+infrastructure repository; this PR does not apply Terraform or enable live
+switches. Disabling the authenticated upload switch pauses the pilot immediately.
+Disabling recording requires updating its environment setting and redeploying.
+Existing authenticated usage records remain available without automatic expiration.

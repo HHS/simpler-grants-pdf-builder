@@ -222,13 +222,13 @@ class AuthenticatedPilotTests(TestCase):
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
 
     @override_settings(AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None)
-    def test_auth_recording_requires_retention_but_report_does_not(self):
+    def test_auth_recording_without_expiration(self):
         self.login()
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             self.assertEqual(
                 self.client.post(self.url, {"pdf": self.upload()}).status_code, 200
             )
-        self.assertFalse(PdfReadabilityAttempt.objects.exists())
+        self.assertEqual(PdfReadabilityAttempt.objects.get().source, "authenticated")
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @override_settings(PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=True)

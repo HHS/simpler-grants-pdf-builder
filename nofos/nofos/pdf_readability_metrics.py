@@ -51,14 +51,6 @@ def record_attempt(outcome, http_status, started, source="public"):
     )
     if not enabled:
         return
-    # New authenticated recording cannot retain outcomes indefinitely. Public
-    # recording keeps its existing explicit opt-in and operating contract.
-    days = retention_days(source)
-    if authenticated and (type(days) is not int or days <= 0):
-        logger.warning(
-            "Authenticated PDF readability recording needs configured retention."
-        )
-        return
     try:
         with transaction.atomic():
             PdfReadabilityAttempt.objects.create(
