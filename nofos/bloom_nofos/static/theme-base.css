@@ -932,6 +932,13 @@ section.section .section--title-page::before {
   margin-bottom: 20px;
 }
 
+/* Main content headings need more separation from the preceding text.
+   Use margins, not padding: Prince discards them at page starts. */
+.section--content > h2,
+.section--content > h3 {
+  margin-top: 28px;
+}
+
 .section--content h3:first-of-type {
   margin-top: 0;
 }
