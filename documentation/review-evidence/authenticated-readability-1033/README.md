@@ -112,3 +112,12 @@ tests passed. No shared switches or operational settings were changed.
 - [Revised upload page](upload-revised.png)
 - [Expanded supporting information](upload-revised-details.png)
 - [Mobile upload page](upload-revised-mobile.png)
+
+### Lightweight contextual help correction
+
+Replaced the two boxed USWDS accordions with native `details`/`summary`
+disclosures, matching the approved mockup's Additional Info appearance. This is
+local contextual-help styling, not an imported VA web component. Essential upload
+requirements and sharing notice remain visible. Regenerated all three revised
+screenshots; desktop/mobile disclosure interaction and containment checks passed,
+as did the 35 public/authenticated page tests.
