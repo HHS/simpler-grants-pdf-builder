@@ -187,7 +187,8 @@ def _pdf_readability_form(request):
         "max_upload_mb": max_upload_mb,
         "upload_hint": (
             f"One PDF, up to {max_upload_mb} MB. "
-            "The report measures text recovered from the file."
+            "Scanned PDFs need optical character recognition (OCR) "
+            "to make their text selectable before uploading."
         ),
     }
     status = 200

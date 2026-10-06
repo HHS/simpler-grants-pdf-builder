@@ -116,42 +116,44 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
         self.assertContains(response, "One PDF, up to 15 MB")
-        self.assertContains(response, "Upload a draft or published NOFO PDF")
+        self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
             response,
-            "intended for HHS notices of funding opportunity",
+            "Use a text-based HHS NOFO PDF",
         )
         self.assertContains(
             response,
             "Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible",
         )
-        self.assertContains(
-            response,
-            "<strong>This report does not validate format compliance or make a clearance decision.</strong>",
-            html=True,
-        )
+        self.assertNotContains(response, "make a clearance decision")
         self.assertNotContains(response, "Login")
         self.assertNotContains(response, "All NOFOs")
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_upload_form_shows_privacy_notice_before_file_input(self):
+    def test_upload_form_shows_notice_and_details_before_submission(self):
         response = self.client.get(self.url)
         content = response.content.decode()
         self.assertContains(response, 'id="readability-privacy-notice"')
-        self.assertContains(response, "Your file and your privacy")
+        self.assertContains(response, "How we handle your PDF")
+        self.assertContains(response, "optical character recognition (OCR)")
+        self.assertContains(response, 'aria-controls="readability-pdf-requirements"')
+        self.assertLess(
+            content.index('id="pdf"'), content.index('id="readability-privacy-notice"')
+        )
         self.assertContains(
             response,
             "Follow your agency’s rules for sharing pre-decisional NOFO content.",
         )
         self.assertContains(
             response,
-            "Your PDF is processed temporarily on HHS-operated systems. "
-            "It isn’t sent to any outside service.",
+            "Your PDF is processed temporarily on HHS-operated systems; "
+            "no report history is kept.",
         )
         self.assertContains(
-            response, "It isn’t added to NOFO Builder, and no report history is kept."
+            response,
+            "Your PDF isn’t sent to any outside service or added to NOFO Builder.",
         )
         self.assertContains(
             response,
@@ -163,11 +165,11 @@ class PdfReadabilityPageTests(TestCase):
             response, 'href="https://forms.office.com/r/KH4icQuZ0S" target="_blank"'
         )
         self.assertEqual(content.count("(opens in a new tab)"), 2)
-        # The notice replaces the earlier plain-paragraph wording.
+        # Essential notice and optional handling details precede submission.
         self.assertNotContains(response, "no report history is retained")
         self.assertLess(
             content.index('id="readability-privacy-notice"'),
-            content.index('id="pdf-readability-form"'),
+            content.index('id="analyze-pdf-button"'),
         )
 
     def test_noindex_headers_cover_disabled_errors_and_unsupported_methods(self):

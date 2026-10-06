@@ -78,7 +78,7 @@ class AuthenticatedPilotTests(TestCase):
         self.login()
         self.assertEqual(self.client.get(self.public_url).status_code, 503)
         response = self.client.get(self.url)
-        self.assertContains(response, "signed-in pilot")
+        self.assertContains(response, "How we handle your PDF")
         self.assertContains(response, "do not include your identity")
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertIn("noindex", response["X-Robots-Tag"])

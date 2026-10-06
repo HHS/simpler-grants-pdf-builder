@@ -90,3 +90,25 @@ Evidence: [native preview](native-print-preview.png),
 [exported PDF](report-exported.pdf), [page 1](report-pdf-page-1.png),
 [page 2](report-pdf-page-2.png). Older screenshots above predate the branding fix;
 this follow-up records the latest reviewed application revision.
+
+## Revised upload page
+
+The upload page now leads with a short introduction and the existing shared
+“Drag file here or choose from folder” component. Essential sharing/temporary
+processing information stays visible before submission. Supporting content uses
+USWDS accordions titled “How we handle your PDF” and “PDF requirements.” OCR is
+spelled out on first use; the original help wording is below the form. Privacy
+and feedback links retain external-link decoration and new-tab announcements.
+The shared template applies this presentation to both upload routes.
+
+Screenshots show the actual Django template and repository CSS/JavaScript,
+rendered locally with synthetic context and recording enabled to include that
+notice. This screenshot pass did not use a live account or upload a document.
+Desktop (1440px) and mobile (390px) layouts were visually reviewed; both accordion
+buttons opened/closed their content, the existing USWDS file-picker initialized,
+and the mobile page had no horizontal overflow. All 35 public/authenticated page
+tests passed. No shared switches or operational settings were changed.
+
+- [Revised upload page](upload-revised.png)
+- [Expanded supporting information](upload-revised-details.png)
+- [Mobile upload page](upload-revised-mobile.png)
