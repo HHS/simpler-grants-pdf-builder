@@ -16,6 +16,15 @@ participants. Email domain, OpDiv and sign-in alone do not grant access. Remove
 membership and any direct pilot permission to revoke access; deactivate accounts
 when required. Existing superuser permission behavior is retained.
 
+To grant access in Django administration, open **Users**, select the participant
+(or add their account), check **Can use PDF readability pilot** under
+**Permissions**, and save. To revoke access, uncheck that box and save. This only
+removes membership in the participant group; any direct permission or other
+permission-granting group must also be removed. The form warns when separate
+permission grants exist. Superusers retain automatic access. Keep **Can view
+metrics** unchecked unless dashboard access is also intended. The participant
+checkbox does not enable the pilot feature switch or outcome recording.
+
 This group grants no dashboard permission. Viewing usage still requires
 `nofos.view_builder_metrics`, normally through **Metrics viewers**. Dashboard
 permission does not grant upload access.

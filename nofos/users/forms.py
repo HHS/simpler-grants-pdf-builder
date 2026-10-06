@@ -31,6 +31,16 @@ class MetricsAccessForm(forms.ModelForm):
         ),
     )
 
+    can_use_pdf_readability_pilot = forms.BooleanField(
+        label="Can use PDF readability pilot",
+        required=False,
+        help_text=(
+            "Adds this user to the PDF readability pilot participants group. "
+            "Allows PDF uploads when the authenticated pilot is enabled; "
+            "does not grant metrics dashboard access. Superusers have access automatically."
+        ),
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
@@ -53,6 +63,28 @@ class MetricsAccessForm(forms.ModelForm):
                     "Unchecking this box will not remove that separate access."
                 )
 
+            self.initial["can_use_pdf_readability_pilot"] = self.instance.groups.filter(
+                name="PDF readability pilot participants"
+            ).exists()
+            if (
+                self.instance.user_permissions.filter(
+                    content_type__app_label="nofos",
+                    codename="use_pdf_readability_pilot",
+                ).exists()
+                or self.instance.groups.exclude(
+                    name="PDF readability pilot participants"
+                )
+                .filter(
+                    permissions__content_type__app_label="nofos",
+                    permissions__codename="use_pdf_readability_pilot",
+                )
+                .exists()
+            ):
+                self.fields["can_use_pdf_readability_pilot"].help_text += (
+                    " This user also has pilot permission granted separately. "
+                    "Unchecking this box will not remove that separate access."
+                )
+
     def _save_m2m(self):
         super()._save_m2m()
         metrics_viewers = Group.objects.get(name="Metrics viewers")
@@ -60,6 +92,11 @@ class MetricsAccessForm(forms.ModelForm):
             self.instance.groups.add(metrics_viewers)
         else:
             self.instance.groups.remove(metrics_viewers)
+        participants = Group.objects.get(name="PDF readability pilot participants")
+        if self.cleaned_data["can_use_pdf_readability_pilot"]:
+            self.instance.groups.add(participants)
+        else:
+            self.instance.groups.remove(participants)
 
 
 class BloomUserCreationForm(MetricsAccessForm, UserCreationForm):
