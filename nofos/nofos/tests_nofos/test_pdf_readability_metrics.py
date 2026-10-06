@@ -179,12 +179,17 @@ class MetricsTests(TestCase):
                     (302, 403),
                 )
 
+    @override_settings(
+        PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+        AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+    )
     def test_links_and_empty_state(self):
         self.login_viewer()
         page = self.client.get(self.url)
         self.assertContains(page, "Back to usage &amp; quality metrics")
         self.assertContains(page, 'href="/nofos/metrics"')
-        self.assertContains(page, "Retention is not yet configured")
+        self.assertContains(page, "Public retention: Not configured")
+        self.assertContains(page, "Authenticated retention: Not configured")
         self.assertContains(page, "OpDiv filtering isn't available")
         self.assertContains(page, ".back-link, .pilot-pagination")
         self.assertEqual(page["Cache-Control"], "private, no-store")
