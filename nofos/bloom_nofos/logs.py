@@ -7,6 +7,10 @@ from pythonjsonlogger import jsonlogger
 logger = logging.getLogger("django.request")
 
 
+def is_pdf_readability_request(request):
+    return request.path_info.rstrip("/") in {"/readability", "/nofos/readability"}
+
+
 def configure_logging(config):
     """Keep existing handlers while protecting framework request errors too."""
     logging.config.dictConfig(config)
@@ -62,7 +66,7 @@ class ReadabilityRequestFilter(logging.Filter):
 
     def filter(self, record):
         request = getattr(record, "request", None)
-        if request is None or request.path_info.rstrip("/") != "/readability":
+        if request is None or not is_pdf_readability_request(request):
             return True
         record.msg = "HTTP Request"
         record.args = ()

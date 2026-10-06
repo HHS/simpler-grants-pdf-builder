@@ -1,9 +1,13 @@
+import logging
 import math
 import os
 import time
 import unicodedata
 
 from constance import config
+from django.conf import settings
+from django.contrib.auth.decorators import login_required, permission_required
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -17,6 +21,8 @@ from nofos.pdf_readability import (
     analyze_uploaded_pdf,
 )
 from nofos.pdf_readability_metrics import record_attempt
+
+logger = logging.getLogger("django.request.pdf_readability")
 
 PDF_METRIC_PRESENTATION = (
     ("word_count", "Word count", "Estimated number of words recovered from the PDF."),
@@ -98,31 +104,91 @@ def _metric_rows(report):
 @csrf_exempt
 def pdf_readability(request):
     """Public, deliberately unlinked entry point for one ephemeral PDF report."""
+    return _pdf_readability_workflow(
+        request, config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED, "public"
+    )
+
+
+@never_cache
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+@login_required
+@permission_required("nofos.use_pdf_readability_pilot", raise_exception=True)
+def authenticated_pdf_readability(request):
+    """Restricted entry point; authorize before parsing multipart uploads."""
+    return _pdf_readability_workflow(
+        request,
+        config.HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED,
+        "authenticated",
+    )
+
+
+def _pdf_readability_workflow(request, enabled, source):
     started = time.monotonic()
-    if not config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED:
+    if not enabled and source == "public":
         response = render(request, "pdf_readability_unavailable.html", status=503)
         response["Cache-Control"] = "no-store"
         if request.method == "POST":
-            record_attempt("disabled", response.status_code, started)
+            _record_pdf_attempt(source, "disabled", response.status_code, started)
         return response
 
     if request.method == "POST":
         # Must be installed before CSRF middleware reads multipart request.POST.
         request.upload_handlers.insert(0, PdfSizeLimitUploadHandler(request))
-    response = _pdf_readability_form(request)
+    request.pdf_readability_source = source
+    request.pdf_readability_enabled = enabled
+    try:
+        response = _pdf_readability_form(request)
+    except Exception:
+        # Include unexpected formatting/rendering failures without relying on
+        # the same template or exposing uploaded content in a debug response.
+        if request.method == "POST":
+            request.pdf_readability_outcome = "internal_error"
+        logger.warning("PDF readability request failed unexpectedly.")
+        response = HttpResponse(
+            "PDF analysis failed unexpectedly. Please try again later.",
+            status=500,
+            content_type="text/plain",
+        )
     if request.method == "POST" and hasattr(request, "pdf_readability_outcome"):
-        record_attempt(request.pdf_readability_outcome, response.status_code, started)
+        _record_pdf_attempt(
+            source, request.pdf_readability_outcome, response.status_code, started
+        )
+    response["Cache-Control"] = "no-store"
     return response
+
+
+def _record_pdf_attempt(source, outcome, status, started):
+    if source == "public":
+        record_attempt(outcome, status, started)
+    else:
+        record_attempt(outcome, status, started, source=source)
 
 
 @csrf_protect
 def _pdf_readability_form(request):
+    if not request.pdf_readability_enabled:
+        if request.method == "POST":
+            request.pdf_readability_outcome = "disabled"
+        return render(request, "pdf_readability_unavailable.html", status=503)
     max_upload_mb = MAX_UPLOAD_BYTES // (1024 * 1024)
     context = {
+        "authenticated_pilot": request.pdf_readability_source == "authenticated",
+        "pilot_url_name": (
+            "nofos:authenticated_pdf_readability"
+            if request.pdf_readability_source == "authenticated"
+            else "pdf_readability"
+        ),
+        "outcome_recording_enabled": (
+            settings.AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED
+            if request.pdf_readability_source == "authenticated"
+            else settings.PDF_READABILITY_ATTEMPT_RECORDING_ENABLED
+        ),
         "max_upload_mb": max_upload_mb,
         "upload_hint": (
             f"One PDF, up to {max_upload_mb} MB. "
-            "The report measures text recovered from the file."
+            "Scanned PDFs need optical character recognition (OCR) "
+            "to make their text selectable before uploading."
         ),
     }
     status = 200
@@ -149,6 +215,15 @@ def _pdf_readability_form(request):
                 status = error.http_status
                 if error.code == "busy":
                     retry_after = "15"
+            except Exception:
+                # Parser/application failures must not expose document content,
+                # identifiers, arbitrary exception messages or tracebacks.
+                request.pdf_readability_outcome = "internal_error"
+                context["error"] = (
+                    "PDF analysis failed unexpectedly. Please try again later."
+                )
+                status = 500
+                logger.warning("PDF readability analysis failed unexpectedly.")
             else:
                 request.pdf_readability_outcome = "success"
                 context.update(

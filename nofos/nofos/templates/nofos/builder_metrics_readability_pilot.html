@@ -2,33 +2,143 @@
 {% block title %}PDF readability pilot usage{% endblock %}
 {% block css %}
 <style>
-  .pilot-table { width: 100%; border-collapse: collapse; }
+  .pilot-table, .metrics-data-table { width: 100%; border-collapse: collapse; }
   .pilot-table th, .pilot-table td { text-align: left; padding: .5rem; border-bottom: 1px solid #ccc; vertical-align: top; }
   .pilot-scroll { overflow-x: auto; }
-  @media print { .back-link, .pilot-pagination, header.usa-header, footer.usa-footer { display: none !important; } }
+  .pilot-source-filter { width: 24rem; max-width: 100%; }
+  .metrics-chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; }
+  .metrics-chart-card h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+  .metrics-chart-card svg { width: 100%; height: auto; display: block; }
+  .metrics-data-table { margin-top: .75rem; }
+  .metrics-data-table caption { text-align: left; font-weight: 700; }
+  .metrics-data-table th, .metrics-data-table td { text-align: left; padding: .25rem; }
+  .pilot-chart-label { fill: var(--color--text-grey); font-size: 12px; }
+  .pilot-chart-grid { stroke: var(--color--light-grey); }
+  .pilot-chart-bar { fill: var(--color--usa-link); }
+  @media print { .no-print, .back-link, .pilot-pagination, header.usa-header, footer.usa-footer { display: none !important; } .metrics-chart-card { break-inside: avoid; } }
 </style>
 {% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
 {% include "includes/page_heading.html" with title="PDF readability pilot usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
-<div class="usa-prose">
-  <p>Stored pilot flag: <strong>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</strong>.
-    Outcome recording: <strong>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</strong>.</p>
-  <p>OpDiv filtering isn't available: these anonymous outcomes have no document or user association.</p>
-  <p>{% if metrics.retention_days %}Configured retention window: {{ metrics.retention_days }} days. Cleanup requires the approved operational schedule.{% else %}Retention is not yet configured; privacy approval and cleanup scheduling are required before recording is enabled.{% endif %}</p>
-  <p>All figures cover currently retained outcomes. Rates use all recorded attempts, including disabled and busy responses. CSRF and upstream rejections are not counted. Weeks start Monday; dates use the application time zone.</p>
-  <h2>Usage and capacity</h2>
-  <p>{{ metrics.total_attempts }} attempts. Success rate: {{ metrics.success_rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}.</p>
-  <ul>{% for row in metrics.capacity %}<li>{{ row.code }}: {{ row.rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}</li>{% endfor %}</ul>
-  <p>Duration p50: {{ metrics.p50_duration_ms|default_if_none:"—" }} ms; p95: {{ metrics.p95_duration_ms|default_if_none:"—" }} ms (nearest-rank, all recorded attempts).</p>
+<details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
+  <summary class="text-bold">About these metrics</summary>
+  <div class="usa-prose">
+    <p>Figures cover currently retained outcomes, not lifetime usage. Rates include all recorded attempts, including disabled and busy responses. CSRF, authentication, permission and upstream rejections are not counted.</p>
+    <p>Source describes the upload route, not whether a visitor happened to be signed in. Unknown records have no established source. OpDiv filtering isn't available: outcomes have no document or user association. Internal pilot participants are included.</p>
+    <p>Chart windows are the last 30 days and 12 weeks. Missing observations show “No data,” not zero: recording may have been off or retention may have removed records. The current day and week are in progress. Weeks start Monday; dates use the application time zone.</p>
+    <p>All-source breakdown: {% for row in metrics.sources %}{{ row.label }}: {{ row.attempts }}{% if not forloop.last %} · {% endif %}{% endfor %}.</p>
+  </div>
+</details>
+<div class="pilot-source-filter no-print margin-bottom-2">
+  <label class="usa-label margin-top-0" for="pilot-source">Upload source</label>
+  <span class="usa-sr-only" id="pilot-source-hint">Selecting an upload source updates all metrics on this page.</span>
+  <select class="usa-select" id="pilot-source" name="source" aria-describedby="pilot-source-hint">
+    <option value="all" {% if metrics.source == 'all' %}selected{% endif %}>All sources</option>
+    {% for row in metrics.sources %}<option value="{{ row.code }}" {% if metrics.source == row.code %}selected{% endif %}>{{ row.label }}</option>{% endfor %}
+  </select>
 </div>
-<div class="grid-row grid-gap margin-top-3">
-  <section class="tablet:grid-col-6"><h2>Attempts per day</h2><table class="pilot-table"><thead><tr><th scope="col">Day</th><th scope="col">Attempts</th></tr></thead><tbody>{% for row in metrics.daily %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}</th><td>{{ row.attempts }}</td></tr>{% empty %}<tr><td colspan="2">No recorded attempts.</td></tr>{% endfor %}</tbody></table></section>
-  <section class="tablet:grid-col-6"><h2>Attempts per week</h2><table class="pilot-table"><thead><tr><th scope="col">Week beginning</th><th scope="col">Attempts</th></tr></thead><tbody>{% for row in metrics.weekly %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}</th><td>{{ row.attempts }}</td></tr>{% empty %}<tr><td colspan="2">No recorded attempts.</td></tr>{% endfor %}</tbody></table></section>
+<p>Selected source: <strong>{{ metrics.source|capfirst }}</strong> · All retained attempts.</p>
+{% if metrics.source == 'all' or metrics.source == 'public' %}{% if not metrics.recording_enabled %}<p class="border-left-05 border-info padding-left-2">Public recording is off. New public attempts will not appear here.</p>{% endif %}{% endif %}
+{% if metrics.source == 'all' or metrics.source == 'authenticated' %}{% if not metrics.authenticated_recording_enabled %}<p class="border-left-05 border-info padding-left-2">Authenticated recording is off. New authenticated attempts will not appear here.</p>{% endif %}{% endif %}
+<div class="grid-row grid-gap-2 margin-top-3">
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Upload attempts</h2><p class="font-heading-xl margin-y-1">{{ metrics.total_attempts }}</p></div>
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Reports returned</h2><p class="font-heading-xl margin-y-1">{{ metrics.successes }}</p><p>{{ metrics.success_rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</p></div>
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Unsuccessful uploads</h2><p class="font-heading-xl margin-y-1">{{ metrics.unsuccessful }}</p><p>No report returned</p></div>
 </div>
-<h2>Outcomes by code</h2>
-<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Outcome</th><th scope="col">Meaning</th><th scope="col">Attempts</th><th scope="col">Rate</th></tr></thead><tbody>{% for row in metrics.outcomes %}<tr><th scope="row"><code>{{ row.code }}</code></th><td>{{ row.meaning }}</td><td>{{ row.attempts }}</td><td>{{ row.rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}</td></tr>{% endfor %}</tbody></table></div>
-<h2>Recent attempts</h2>
-<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
-{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="PDF readability attempts pages">{% if attempts_page.has_previous %}<a href="?page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+<h2 class="font-heading-md margin-top-4">What prevented a report</h2>
+{% if metrics.unsuccessful %}
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Reason</th><th scope="col">Attempts</th><th scope="col">Share of all attempts</th></tr></thead><tbody>{% for row in metrics.outcomes %}{% if row.code != 'success' and row.attempts %}<tr><th scope="row">{{ row.label }}</th><td>{{ row.attempts }}</td><td>{{ row.rate_pct }}%</td></tr>{% endif %}{% endfor %}</tbody></table></div>
+{% else %}<p>{% if metrics.total_attempts %}No unsuccessful uploads recorded.{% else %}No recorded attempts for this source.{% endif %}</p>{% endif %}
+<details class="margin-top-2 font-sans-2xs"><summary>Error codes and explanations</summary><table class="pilot-table"><thead><tr><th scope="col">Code</th><th scope="col">Meaning</th><th scope="col">Attempts</th></tr></thead><tbody>{% for row in metrics.outcomes %}<tr><th scope="row"><code>{{ row.code }}</code></th><td>{{ row.meaning }}</td><td>{{ row.attempts }}</td></tr>{% endfor %}</tbody></table></details>
+<h2 class="font-heading-md margin-top-4">Recent upload attempts</h2>
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Source</th><th scope="col">Result</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.source|capfirst }}</td><td>{% for outcome in metrics.outcomes %}{% if outcome.code == row.outcome %}{{ outcome.label }}{% endif %}{% endfor %}</td></tr>{% empty %}<tr><td colspan="3">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
+{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="PDF readability attempts pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+<h2 class="font-heading-md margin-top-4">Usage over time</h2>
+<div class="metrics-chart-grid">
+  <section class="metrics-chart-card border-1px border-base-lighter radius-md padding-2">
+    <h3>Daily uploads · Last 30 days</h3><p class="font-sans-2xs text-italic margin-y-05">Current day in progress</p>
+    <svg id="pilot-daily-chart" role="img" aria-label="Daily retained upload attempts over the last 30 days"></svg>
+    <details class="metrics-data-details margin-top-2 font-sans-2xs"><summary><span>View daily data<span class="usa-sr-only"> for upload attempts</span></span></summary>
+      <table class="metrics-data-table"><caption>Daily upload attempts</caption><thead><tr><th scope="col">Day</th><th scope="col">Value</th></tr></thead><tbody>{% for row in metrics.chart_daily %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}{% if forloop.last %} (in progress){% endif %}</th><td>{{ row.attempts|default_if_none:"No data" }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+  <section class="metrics-chart-card border-1px border-base-lighter radius-md padding-2">
+    <h3>Weekly uploads · Last 12 weeks</h3><p class="font-sans-2xs text-italic margin-y-05">Current week in progress</p>
+    <svg id="pilot-weekly-chart" role="img" aria-label="Weekly retained upload attempts over the last 12 weeks"></svg>
+    <details class="metrics-data-details margin-top-2 font-sans-2xs"><summary><span>View weekly data<span class="usa-sr-only"> for upload attempts</span></span></summary>
+      <table class="metrics-data-table"><caption>Weekly upload attempts</caption><thead><tr><th scope="col">Week beginning</th><th scope="col">Value</th></tr></thead><tbody>{% for row in metrics.chart_weekly %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}{% if forloop.last %} (in progress){% endif %}</th><td>{{ row.attempts|default_if_none:"No data" }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+</div>
+<p class="font-sans-2xs">Chart gaps mean no retained observations; they do not establish zero usage.</p>
+<h2 class="font-heading-md margin-top-4">Processing time and availability</h2>
+<table class="pilot-table"><tbody><tr><th scope="row">Median workflow duration</th><td>{{ metrics.p50_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr><tr><th scope="row">95th percentile workflow duration</th><td>{{ metrics.p95_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr>{% for row in metrics.capacity %}<tr><th scope="row">{{ row.label }}</th><td>{{ row.rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</td></tr>{% endfor %}</tbody></table>
+<p class="font-sans-2xs">Workflow duration includes parsing and rendering, not just analysis. Percentiles use nearest rank across all retained attempts for the selected source.</p>
+<h2 class="font-heading-md margin-top-4">Pilot status and recording settings</h2>
+<table class="pilot-table"><thead><tr><th scope="col">Source</th><th scope="col">Uploads</th><th scope="col">Recording</th></tr></thead><tbody><tr><th scope="row">Public</th><td>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Authenticated</th><td>{{ metrics.authenticated_enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.authenticated_recording_enabled|yesno:"Enabled,Disabled" }}</td></tr></tbody></table>
+<p>Public retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days{% else %}Not configured{% endif %}. Authenticated retention: {% if metrics.authenticated_retention_days %}{{ metrics.authenticated_retention_days }} days (optional cleanup){% else %}No automatic expiration{% endif %}.</p>
+<details class="margin-top-2 font-sans-2xs"><summary>Recent technical details</summary><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome code</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></details>
+{{ metrics|json_script:"pilot-chart-data" }}
+{% endblock %}
+{% block js_footer %}
+<script>
+(function () {
+  var select = document.getElementById('pilot-source');
+  select.addEventListener('change', function () {
+    var url = new URL(window.location.href);
+    url.searchParams.set('source', select.value);
+    url.searchParams.delete('page');
+    window.location.assign(url.toString());
+  });
+  var data = JSON.parse(document.getElementById('pilot-chart-data').textContent);
+  var ns = 'http://www.w3.org/2000/svg';
+  function chart(id, rows) {
+    var svg = document.getElementById(id);
+    var width = Math.max(280, svg.parentElement.clientWidth - 32), height = 210;
+    var left = 40, top = 25, bottom = 45, plotWidth = width - left - 16, plotHeight = height - top - bottom;
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.replaceChildren();
+    function add(tag, attrs, text) {
+      var el = document.createElementNS(ns, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); });
+      if (text !== undefined) el.textContent = text;
+      svg.appendChild(el); return el;
+    }
+    var observed = rows.filter(function (row) { return row.attempts !== null; });
+    var max = Math.max(1, ...observed.map(function (row) { return row.attempts; }));
+    var ticks = Array.from(new Set([0, Math.ceil(max / 2), max]));
+    ticks.forEach(function (value) {
+      var y = top + plotHeight * (1 - value / max);
+      add('line', {x1:left, x2:width-16, y1:y, y2:y, class:'pilot-chart-grid'});
+      add('text', {x:left-8, y:y+4, 'text-anchor':'end', class:'pilot-chart-label'}, value);
+    });
+    add('text', {x:left, y:14, class:'pilot-chart-label'}, 'Attempts');
+    var step = plotWidth / rows.length;
+    rows.forEach(function (row, i) {
+      if (row.attempts === null) return;
+      var bar = add('rect', {x:left+i*step+2, y:top+plotHeight*(1-row.attempts/max), width:Math.max(1,step-4), height:plotHeight*row.attempts/max, class:'pilot-chart-bar'});
+      var title = document.createElementNS(ns, 'title'); title.textContent = row.period + ': ' + row.attempts + ' attempts'; bar.appendChild(title);
+    });
+    [0, Math.floor((rows.length-1)/2), rows.length-1].forEach(function (i) {
+      add('text', {x:left+(i+.5)*step, y:height-15, 'text-anchor':i===0?'start':i===rows.length-1?'end':'middle', class:'pilot-chart-label'}, rows[i].period.slice(5));
+    });
+    if (!observed.length) add('text', {x:left+plotWidth/2, y:top+plotHeight/2, 'text-anchor':'middle', class:'pilot-chart-label'}, 'No data');
+  }
+  function draw() { chart('pilot-daily-chart', data.chart_daily); chart('pilot-weekly-chart', data.chart_weekly); }
+  draw();
+  new ResizeObserver(draw).observe(document.querySelector('.metrics-chart-grid'));
+  var disclosureState = null;
+  window.addEventListener('beforeprint', function () {
+    if (disclosureState !== null) return;
+    disclosureState = Array.from(document.querySelectorAll('.metrics-data-details')).map(function (el) {
+      var state = {element:el, open:el.open}; el.open = true; return state;
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    if (disclosureState === null) return;
+    disclosureState.forEach(function (state) { state.element.open = state.open; }); disclosureState = null;
+  });
+})();
+</script>
 {% endblock %}

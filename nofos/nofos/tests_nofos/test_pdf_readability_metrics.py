@@ -31,10 +31,11 @@ class AttemptTests(TestCase):
         self.assertFalse(should_audit(PdfReadabilityAttempt()))
         self.assertEqual(
             {f.name for f in PdfReadabilityAttempt._meta.fields},
-            {"id", "created_at", "outcome", "http_status", "duration_ms"},
+            {"id", "created_at", "source", "outcome", "http_status", "duration_ms"},
         )
         self.assertEqual(
-            set(PDF_READABILITY_OUTCOMES), {"success", "disabled", *_ERRORS}
+            set(PDF_READABILITY_OUTCOMES),
+            {"success", "disabled", "internal_error", *_ERRORS},
         )
 
     def test_disabled_recorded_get_not_recorded(self):
@@ -178,12 +179,17 @@ class MetricsTests(TestCase):
                     (302, 403),
                 )
 
+    @override_settings(
+        PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+        AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+    )
     def test_links_and_empty_state(self):
         self.login_viewer()
         page = self.client.get(self.url)
         self.assertContains(page, "Back to usage &amp; quality metrics")
         self.assertContains(page, 'href="/nofos/metrics"')
-        self.assertContains(page, "Retention is not yet configured")
+        self.assertContains(page, "Public retention: Not configured")
+        self.assertContains(page, "Authenticated retention: No automatic expiration")
         self.assertContains(page, "OpDiv filtering isn't available")
         self.assertContains(page, ".back-link, .pilot-pagination")
         self.assertEqual(page["Cache-Control"], "private, no-store")
@@ -195,6 +201,42 @@ class MetricsTests(TestCase):
             main.content.index(b"Other metrics pages"),
             main.content.index(b"How historical metrics are preserved"),
         )
+
+    def test_chart_windows_preserve_unknown_coverage_and_source_filter(self):
+        self.login_viewer()
+        for source in ("public", "authenticated"):
+            PdfReadabilityAttempt.objects.create(
+                source=source, outcome="success", http_status=200, duration_ms=10
+            )
+        old = PdfReadabilityAttempt.objects.create(
+            source="authenticated", outcome="busy", http_status=429, duration_ms=10
+        )
+        PdfReadabilityAttempt.objects.filter(pk=old.pk).update(
+            created_at=timezone.now() - timedelta(days=100)
+        )
+        data = self.client.get(
+            self.url, {"source": "authenticated"}, HTTP_ACCEPT="application/json"
+        ).json()
+        self.assertEqual(data["total_attempts"], 2)
+        self.assertEqual(data["unsuccessful"], 1)
+        self.assertEqual(len(data["chart_daily"]), 30)
+        self.assertEqual(len(data["chart_weekly"]), 12)
+        self.assertEqual(data["chart_daily"][-1]["attempts"], 1)
+        self.assertEqual(data["chart_weekly"][-1]["attempts"], 1)
+        self.assertTrue(
+            all(row["attempts"] is None for row in data["chart_daily"][:-1])
+        )
+        self.assertEqual(data["chart_daily"][-1]["period"], str(timezone.localdate()))
+        self.assertEqual(
+            data["chart_weekly"][-1]["period"],
+            str(timezone.localdate() - timedelta(days=timezone.localdate().weekday())),
+        )
+        page = self.client.get(self.url, {"source": "authenticated"})
+        self.assertContains(
+            page, 'class="metrics-data-details margin-top-2 font-sans-2xs"', count=2
+        )
+        self.assertContains(page, "About these metrics")
+        self.assertContains(page, "No data")
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_json_aggregates_pagination_and_denominator(self):
@@ -218,7 +260,7 @@ class MetricsTests(TestCase):
         self.assertEqual(len(data["recent_attempts"]), 50)
         self.assertEqual(
             set(data["recent_attempts"][0]),
-            {"created_at", "outcome", "http_status", "duration_ms"},
+            {"created_at", "source", "outcome", "http_status", "duration_ms"},
         )
         self.assertEqual(
             len(

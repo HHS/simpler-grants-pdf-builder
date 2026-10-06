@@ -16,15 +16,20 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--dry-run", action="store_true")
+        parser.add_argument(
+            "--source", choices=("public", "authenticated", "unknown"), default="public"
+        )
 
     def handle(self, *args, **options):
-        days = retention_days()
+        source = options["source"]
+        days = retention_days(source)
         if type(days) is not int or days <= 0:
             raise CommandError(
-                "Configure an approved positive PDF_READABILITY_ATTEMPT_RETENTION_DAYS first."
+                "Configure an approved positive retention window for this source first."
             )
         rows = PdfReadabilityAttempt.objects.filter(
-            created_at__lt=timezone.now() - timedelta(days=days)
+            source__in=["public", "unknown"] if source == "public" else [source],
+            created_at__lt=timezone.now() - timedelta(days=days),
         )
         count = rows.count()
         if not options["dry_run"]:

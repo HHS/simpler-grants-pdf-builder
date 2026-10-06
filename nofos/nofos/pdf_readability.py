@@ -65,6 +65,7 @@ PDF_READABILITY_OUTCOMES = {
     "success": "A readability report was returned.",
     **{code: message for code, (message, _) in _ERRORS.items()},
     "disabled": "The PDF readability pilot is disabled.",
+    "internal_error": "PDF analysis failed unexpectedly.",
 }
 
 
