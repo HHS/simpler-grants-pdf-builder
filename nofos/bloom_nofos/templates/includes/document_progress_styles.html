@@ -1,0 +1,55 @@
+<style>
+  /* Download modal */
+  .usa-modal__footer .usa-button[hidden] {
+    visibility: hidden;
+  }
+
+  /* Track stays the same */
+  .docx-horse-track {
+    position: relative;
+    height: 56px;
+    overflow: hidden;
+    margin-top: 8px;
+    border-radius: 6px;
+  }
+
+  .docx-horse-track.is-running {
+    cursor: wait;
+  }
+
+  /* Default: centered, no animation */
+  .docx-loading-horse {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scaleX(-1); /* centered + flipped */
+    height: 48px;
+    width: auto;
+    animation: none;
+  }
+
+  /* Start running only when modal is opened (we add .is-running) */
+  .docx-horse-track.is-running .docx-loading-horse {
+    /* snap to the start position, then animate */
+    left: -60px;
+    transform: translateY(-50%) scaleX(-1);
+    animation: docxHorseRun 20s linear infinite;
+  }
+
+  @keyframes docxHorseRun {
+    from {
+      left: -60px;
+    }
+    to {
+      left: calc(100% - 77px);
+    }
+  }
+
+  /* When finished: stop looping and glide to the right edge */
+  .docx-horse-track.is-finished .docx-loading-horse {
+    animation: none;
+    left: calc(100% - 77px);
+    transform: translateY(-50%) scaleX(-1);
+    transition: left 250ms ease-out;
+  }
+</style>

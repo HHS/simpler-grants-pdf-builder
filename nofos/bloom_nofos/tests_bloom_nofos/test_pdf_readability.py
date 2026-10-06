@@ -138,9 +138,13 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'id="readability-privacy-notice"')
         self.assertContains(response, "How we handle your PDF")
         self.assertContains(response, "optical character recognition (OCR)")
-        self.assertContains(response, "<summary>PDF requirements</summary>", html=True)
         self.assertContains(
-            response, "<summary>How we handle your PDF</summary>", html=True
+            response, "<summary><span>PDF requirements</span></summary>", html=True
+        )
+        self.assertContains(
+            response,
+            "<summary><span>How we handle your PDF</span></summary>",
+            html=True,
         )
         self.assertLess(
             content.index('id="pdf"'), content.index('id="readability-privacy-notice"')

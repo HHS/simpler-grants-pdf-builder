@@ -64,7 +64,7 @@
 
         {% if report.warnings %}
           <details class="readability-warnings margin-top-4" id="readability-calculation-notes">
-            <summary class="font-heading-lg">Calculation notes ({{ report.warnings|length }})</summary>
+            <summary><span>Calculation notes ({{ report.warnings|length }})</span></summary>
             <ul class="usa-list" id="readability-warning-list">
               {% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}
             </ul>
@@ -98,7 +98,7 @@
         {% include "includes/file_input.html" with id="pdf" label="Choose a PDF" hint=upload_hint accept=".pdf,application/pdf" error=error required=True only %}
         <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your PDF is processed temporarily on HHS-operated systems; no report history is kept.</p>
         <details class="readability-additional-info margin-top-2">
-          <summary>How we handle your PDF</summary>
+          <summary><span>How we handle your PDF</span></summary>
           <div id="readability-privacy-details" class="usa-prose">
             <ul class="usa-list">
               <li>Your PDF isn’t sent to any outside service or added to NOFO Builder.</li>
@@ -112,7 +112,7 @@
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
       </form>
       <details class="readability-additional-info margin-top-3 readability-form">
-          <summary>PDF requirements</summary>
+          <summary><span>PDF requirements</span></summary>
           <div id="readability-pdf-requirements" class="usa-prose">
           <p>Use a text-based HHS NOFO PDF. Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
@@ -120,6 +120,29 @@
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
     {% endif %}
+      {% include "includes/document_progress_styles.html" %}
+      <button type="button" id="readability-progress-trigger" aria-controls="readability-progress-modal" data-open-modal hidden>Show analysis progress</button>
+      <div class="usa-modal" id="readability-progress-modal" aria-labelledby="readability-progress-heading" aria-describedby="readability-progress-body" data-force-action>
+        <div class="usa-modal__content">
+          <div class="usa-modal__main">
+            <h2 class="usa-modal__heading" id="readability-progress-heading">Analyzing your PDF…</h2>
+            <div class="usa-prose" id="readability-progress-body">
+              {% if report %}
+              <p>Your report is ready.</p>
+              {% else %}
+              <p>This may take a few seconds. Your report will appear when analysis finishes.</p>
+              <div class="docx-horse-track is-running" aria-hidden="true">
+                <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+              </div>
+              <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
+              {% endif %}
+            </div>
+            <div class="usa-modal__footer text-center">
+              <button type="button" class="usa-button" id="readability-progress-ok" data-close-modal {% if not report %}hidden{% endif %}>OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
 {% endblock %}
 
