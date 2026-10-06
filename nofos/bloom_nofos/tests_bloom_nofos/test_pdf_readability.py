@@ -73,7 +73,7 @@ class PdfReadabilityPageTests(TestCase):
         response = self.client.post(self.url, {"pdf": sample_pdf()})
         self.assertEqual(response.status_code, 503)
         self.assertContains(response, "Service status", status_code=503)
-        self.assertContains(response, "HHS | NOFO Builder", status_code=503)
+        self.assertContains(response, "NOFO Builder", status_code=503)
         self.assertContains(response, "Back to top", status_code=503)
         self.assertContains(response, "Latest updates", status_code=503)
         self.assertContains(
@@ -108,8 +108,8 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "styles.css")
         self.assertNotContains(response, "theme-base.css")
         self.assertNotContains(response, "fonts.googleapis.com")
-        self.assertContains(response, "<span>HHS | NOFO Builder</span>", html=True)
-        self.assertNotContains(response, ">HHS | NOFO Builder</a>")
+        self.assertContains(response, "<span>NOFO Builder</span>", html=True)
+        self.assertNotContains(response, ">NOFO Builder</a>")
         self.assertContains(response, "Back to top")
         self.assertContains(response, "Latest updates")
         self.assertContains(response, 'for="pdf"')
@@ -231,7 +231,7 @@ class PdfReadabilityPageTests(TestCase):
             response,
             'class="usa-button usa-button--outline" href="/readability/"',
         )
-        self.assertContains(response, "HHS | NOFO Builder")
+        self.assertContains(response, "NOFO Builder")
         self.assertContains(response, "Calculation notes (1)")
         self.assertNotContains(response, 'id="readability-calculation-notes" open')
         self.assertNotContains(response, "Flesch Reading Ease")
