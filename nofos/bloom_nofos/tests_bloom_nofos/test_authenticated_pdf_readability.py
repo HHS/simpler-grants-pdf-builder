@@ -291,6 +291,8 @@ class SourceDashboardTests(TestCase):
                     data
                     | {
                         "daily": page.context["metrics"]["daily"],
+                        "chart_daily": page.context["metrics"]["chart_daily"],
+                        "chart_weekly": page.context["metrics"]["chart_weekly"],
                         "weekly": page.context["metrics"]["weekly"],
                         "recent_attempts": page.context["metrics"]["recent_attempts"],
                     },

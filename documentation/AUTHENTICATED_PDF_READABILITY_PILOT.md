@@ -50,6 +50,14 @@ and is visible in printed output. Its labeled source breakdown covers all
 retained rows. Other counts, rates, outcomes, daily/weekly totals, percentiles and
 recent attempts use the selected source.
 
+The dashboard leads with attempts, reports returned and unsuccessful uploads.
+Daily and weekly charts cover the last 30 days and 12 weeks, including the current
+period. Missing retained observations display as No data, not zero usage. The
+underlying tables use the existing metrics-page disclosures; printing opens them
+and restores their previous state afterward. Full daily/weekly JSON totals remain
+available. About these metrics appears above the source filter, while processing
+and recording settings remain visible.
+
 Source means the upload route, not the session: a signed-in public-route visitor
 still creates a public outcome. Migration 0150 marks existing rows public because
 the pre-migration application recorded only that route. New unattributed inserts

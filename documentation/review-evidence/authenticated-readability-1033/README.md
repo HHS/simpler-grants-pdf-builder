@@ -121,3 +121,20 @@ local contextual-help styling, not an imported VA web component. Essential uploa
 requirements and sharing notice remain visible. Regenerated all three revised
 screenshots; desktop/mobile disclosure interaction and containment checks passed,
 as did the 35 public/authenticated page tests.
+
+
+### Revised pilot usage dashboard
+
+Simplified the summary and outcome labels, moved contextual guidance above the
+source filter, and replaced long time-series tables with bounded daily/weekly
+charts. Data disclosures match the existing metrics dashboard and expand for
+printing, then restore their prior state. Missing observations remain unknown.
+
+- [Revised dashboard](metrics-revised.png)
+- [Mobile dashboard](metrics-revised-mobile.png)
+
+These screenshots render the actual Django template with repository assets and
+synthetic context, without a live account or uploaded document. All 34 focused
+metrics/authenticated-pilot tests passed. Browser checks verified chart rendering,
+disclosures, print-state restoration, and mobile containment without JavaScript
+errors. Deployed data and operational settings were not exercised.

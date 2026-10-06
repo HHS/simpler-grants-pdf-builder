@@ -3,6 +3,7 @@
 import logging
 import math
 import time
+from datetime import timedelta
 
 from constance import config
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncWeek
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.generic import TemplateView
 
 from .mixins import MetricsViewerRequiredMixin
@@ -18,6 +20,23 @@ from .models import PdfReadabilityAttempt
 from .pdf_readability import PDF_READABILITY_OUTCOMES
 
 logger = logging.getLogger("django.request.pdf_readability_metrics")
+
+OUTCOME_LABELS = {
+    "success": "Report returned",
+    "invalid_pdf": "Invalid PDF",
+    "too_large": "PDF exceeds the size limit",
+    "too_many_pages": "PDF exceeds the page limit",
+    "encrypted": "Password-protected PDF",
+    "no_text": "No extractable text",
+    "format_unsupported": "PDF not recognized as an HHS NOFO",
+    "format_indeterminate": "PDF format could not be confirmed",
+    "format_unavailable": "Document recognition unavailable",
+    "timeout": "Analysis timed out",
+    "busy": "Analyzer busy",
+    "unavailable": "Service unavailable",
+    "disabled": "Pilot disabled",
+    "internal_error": "Unexpected analysis failure",
+}
 
 
 def record_attempt(outcome, http_status, started, source="public"):
@@ -105,6 +124,32 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
                 .order_by("period")
             )
 
+        def chart_periods(truncation, count, weekly=False):
+            today = timezone.localdate()
+            end = today - timedelta(days=today.weekday()) if weekly else today
+            step = 7 if weekly else 1
+            start = end - timedelta(days=step * (count - 1))
+            rows = (
+                attempts.filter(created_at__date__gte=start)
+                .annotate(period=truncation("created_at"))
+                .values("period")
+                .annotate(attempts=Count("pk"))
+                .order_by("period")
+            )
+            counts_by_date = {
+                timezone.localtime(row["period"]).date(): row["attempts"]
+                for row in rows
+            }
+            # Missing observations cannot establish zero usage: recording and
+            # retention may have removed coverage for that period.
+            return [
+                {
+                    "period": end - timedelta(days=step * i),
+                    "attempts": counts_by_date.get(end - timedelta(days=step * i)),
+                }
+                for i in reversed(range(count))
+            ]
+
         page = Paginator(attempts, 50).get_page(request.GET.get("page"))
         data = {
             "source": selected_source,
@@ -122,6 +167,9 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "retention_days": retention_days(),
             "total_attempts": total,
             "successes": counts.get("success", 0),
+            "unsuccessful": total - counts.get("success", 0),
+            "chart_daily": chart_periods(TruncDay, 30),
+            "chart_weekly": chart_periods(TruncWeek, 12, weekly=True),
             "success_rate_pct": rate(counts.get("success", 0)),
             "daily": periods(TruncDay),
             "weekly": periods(TruncWeek),
@@ -129,13 +177,20 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
                 {
                     "code": code,
                     "meaning": meaning,
+                    "label": OUTCOME_LABELS.get(
+                        code, code.replace("_", " ").capitalize()
+                    ),
                     "attempts": counts.get(code, 0),
                     "rate_pct": rate(counts.get(code, 0)),
                 }
                 for code, meaning in PDF_READABILITY_OUTCOMES.items()
             ],
             "capacity": [
-                {"code": code, "rate_pct": rate(counts.get(code, 0))}
+                {
+                    "code": code,
+                    "label": OUTCOME_LABELS[code],
+                    "rate_pct": rate(counts.get(code, 0)),
+                }
                 for code in ("busy", "timeout", "unavailable")
             ],
             "p50_duration_ms": percentile(0.5),

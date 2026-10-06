@@ -202,6 +202,42 @@ class MetricsTests(TestCase):
             main.content.index(b"How historical metrics are preserved"),
         )
 
+    def test_chart_windows_preserve_unknown_coverage_and_source_filter(self):
+        self.login_viewer()
+        for source in ("public", "authenticated"):
+            PdfReadabilityAttempt.objects.create(
+                source=source, outcome="success", http_status=200, duration_ms=10
+            )
+        old = PdfReadabilityAttempt.objects.create(
+            source="authenticated", outcome="busy", http_status=429, duration_ms=10
+        )
+        PdfReadabilityAttempt.objects.filter(pk=old.pk).update(
+            created_at=timezone.now() - timedelta(days=100)
+        )
+        data = self.client.get(
+            self.url, {"source": "authenticated"}, HTTP_ACCEPT="application/json"
+        ).json()
+        self.assertEqual(data["total_attempts"], 2)
+        self.assertEqual(data["unsuccessful"], 1)
+        self.assertEqual(len(data["chart_daily"]), 30)
+        self.assertEqual(len(data["chart_weekly"]), 12)
+        self.assertEqual(data["chart_daily"][-1]["attempts"], 1)
+        self.assertEqual(data["chart_weekly"][-1]["attempts"], 1)
+        self.assertTrue(
+            all(row["attempts"] is None for row in data["chart_daily"][:-1])
+        )
+        self.assertEqual(data["chart_daily"][-1]["period"], str(timezone.localdate()))
+        self.assertEqual(
+            data["chart_weekly"][-1]["period"],
+            str(timezone.localdate() - timedelta(days=timezone.localdate().weekday())),
+        )
+        page = self.client.get(self.url, {"source": "authenticated"})
+        self.assertContains(
+            page, 'class="metrics-data-details margin-top-2 font-sans-2xs"', count=2
+        )
+        self.assertContains(page, "About these metrics")
+        self.assertContains(page, "No data")
+
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_json_aggregates_pagination_and_denominator(self):
         self.login_viewer()
