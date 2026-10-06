@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.49.1...nofos-v3.50.0) (2026-10-06)
+
+
+### Features
+
+* add restricted authenticated PDF readability pilot ([#1035](https://github.com/HHS/simpler-grants-pdf-builder/issues/1035)) ([1c59834](https://github.com/HHS/simpler-grants-pdf-builder/commit/1c598342006844b2434c557321cb8a93b0fad911))
+* align PDF checker navigation, disclosures, and progress feedback ([#1037](https://github.com/HHS/simpler-grants-pdf-builder/issues/1037)) ([2b2d7f1](https://github.com/HHS/simpler-grants-pdf-builder/commit/2b2d7f16db4405e7d01f529a37d09b6f468d4367))
+
+
+### Bug Fixes
+
+* increase main content heading spacing without page-start gaps ([#1034](https://github.com/HHS/simpler-grants-pdf-builder/issues/1034)) ([e3bd48d](https://github.com/HHS/simpler-grants-pdf-builder/commit/e3bd48dff9325e4e0c7f4e45ca3977bdde093ca0))
+
 ## [3.49.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.49.0...nofos-v3.49.1) (2026-10-05)
 
 
