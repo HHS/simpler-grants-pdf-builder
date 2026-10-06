@@ -284,6 +284,10 @@ class Nofo(BaseNofo):
                 "view_builder_metrics",
                 "Can view NOFO Builder usage & quality metrics",
             ),
+            (
+                "use_pdf_readability_pilot",
+                "Can use the authenticated PDF readability pilot",
+            ),
         ]
 
     title = models.TextField(
@@ -1264,6 +1268,16 @@ class PdfReadabilityAttempt(models.Model):
     outcome = models.CharField(max_length=32)
     http_status = models.PositiveSmallIntegerField()
     duration_ms = models.PositiveIntegerField()
+    source = models.CharField(
+        max_length=16,
+        choices=[
+            ("public", "Public"),
+            ("authenticated", "Authenticated"),
+            ("unknown", "Unknown"),
+        ],
+        default="unknown",
+        db_index=True,
+    )
 
     class Meta:
         ordering = ["-created_at", "-pk"]

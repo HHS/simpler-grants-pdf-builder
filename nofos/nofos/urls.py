@@ -1,3 +1,4 @@
+from bloom_nofos.views import authenticated_pdf_readability
 from django.urls import path
 
 from . import views
@@ -8,6 +9,11 @@ from .readability_overview import BuilderReadabilityScoresView
 app_name = "nofos"
 
 urlpatterns = [
+    path(
+        "readability/",
+        authenticated_pdf_readability,
+        name="authenticated_pdf_readability",
+    ),
     path(
         "metrics/readability-scores",
         BuilderReadabilityScoresView.as_view(),

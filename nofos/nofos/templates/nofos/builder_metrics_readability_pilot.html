@@ -5,20 +5,33 @@
   .pilot-table { width: 100%; border-collapse: collapse; }
   .pilot-table th, .pilot-table td { text-align: left; padding: .5rem; border-bottom: 1px solid #ccc; vertical-align: top; }
   .pilot-scroll { overflow-x: auto; }
-  @media print { .back-link, .pilot-pagination, header.usa-header, footer.usa-footer { display: none !important; } }
+  @media print { .no-print, .back-link, .pilot-pagination, header.usa-header, footer.usa-footer { display: none !important; } }
 </style>
 {% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
 {% include "includes/page_heading.html" with title="PDF readability pilot usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
 <div class="usa-prose">
-  <p>Stored pilot flag: <strong>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</strong>.
-    Outcome recording: <strong>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</strong>.</p>
-  <p>OpDiv filtering isn't available: these anonymous outcomes have no document or user association.</p>
-  <p>{% if metrics.retention_days %}Configured retention window: {{ metrics.retention_days }} days. Cleanup requires the approved operational schedule.{% else %}Retention is not yet configured; privacy approval and cleanup scheduling are required before recording is enabled.{% endif %}</p>
+  <p>Public pilot: <strong>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</strong>. Public recording: <strong>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</strong>.</p>
+  <p>Authenticated pilot: <strong>{{ metrics.authenticated_enabled|yesno:"Enabled,Disabled" }}</strong>. Authenticated recording: <strong>{{ metrics.authenticated_recording_enabled|yesno:"Enabled,Disabled" }}</strong>.</p>
+  <p>OpDiv filtering isn't available: outcomes have no document or user association. Internal pilot participants are included.</p>
+  <form method="get" class="no-print">
+    <label class="usa-label" for="pilot-source">Upload source</label>
+    <select class="usa-select" id="pilot-source" name="source">
+      <option value="all" {% if metrics.source == 'all' %}selected{% endif %}>All sources</option>
+      {% for row in metrics.sources %}<option value="{{ row.code }}" {% if metrics.source == row.code %}selected{% endif %}>{{ row.label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="usa-button margin-top-1">Apply filter</button>
+  </form>
+  <p>Selected source: <strong>{{ metrics.source|capfirst }}</strong>. Counts below use this source, except the labeled all-source breakdown.</p>
+  <h2>Source breakdown (all retained attempts)</h2>
+  <ul>{% for row in metrics.sources %}<li>{{ row.label }}: {{ row.attempts }}</li>{% endfor %}</ul>
+  <p>Source describes the upload route, not whether a visitor happened to be signed in. Unknown records have no established source and appear only in All or Unknown.</p>
+  <p>Public retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days. Cleanup requires the approved operational schedule.{% else %}Not configured; privacy approval and cleanup scheduling are required before public recording is enabled.{% endif %}</p>
+  <p>Authenticated retention: {% if metrics.authenticated_retention_days %}{{ metrics.authenticated_retention_days }} days. Scheduled cleanup must be verified.{% else %}Not configured; authenticated outcome recording will not store attempts.{% endif %}</p>
   <p>All figures cover currently retained outcomes. Rates use all recorded attempts, including disabled and busy responses. CSRF and upstream rejections are not counted. Weeks start Monday; dates use the application time zone.</p>
   <h2>Usage and capacity</h2>
-  <p>{{ metrics.total_attempts }} attempts. Success rate: {{ metrics.success_rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}.</p>
+  <p>{{ metrics.total_attempts }} attempt{{ metrics.total_attempts|pluralize }}, {{ metrics.successes }} success{{ metrics.successes|pluralize:"es" }}. Success rate: {{ metrics.success_rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}.</p>
   <ul>{% for row in metrics.capacity %}<li>{{ row.code }}: {{ row.rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}</li>{% endfor %}</ul>
   <p>Duration p50: {{ metrics.p50_duration_ms|default_if_none:"—" }} ms; p95: {{ metrics.p95_duration_ms|default_if_none:"—" }} ms (nearest-rank, all recorded attempts).</p>
 </div>
@@ -29,6 +42,6 @@
 <h2>Outcomes by code</h2>
 <div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Outcome</th><th scope="col">Meaning</th><th scope="col">Attempts</th><th scope="col">Rate</th></tr></thead><tbody>{% for row in metrics.outcomes %}<tr><th scope="row"><code>{{ row.code }}</code></th><td>{{ row.meaning }}</td><td>{{ row.attempts }}</td><td>{{ row.rate_pct|default_if_none:"—" }}{% if metrics.total_attempts %}%{% endif %}</td></tr>{% endfor %}</tbody></table></div>
 <h2>Recent attempts</h2>
-<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
-{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="PDF readability attempts pages">{% if attempts_page.has_previous %}<a href="?page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Source</th><th scope="col">Outcome</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.source|capfirst }}</td><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="5">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
+{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="PDF readability attempts pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 {% endblock %}

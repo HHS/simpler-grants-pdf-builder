@@ -1,0 +1,116 @@
+# Authenticated PDF readability pilot
+
+Issue #1033 adds a restricted validation route. It reuses the existing PDF
+analyzer, temporary files, recognition rules, report, copy action and browser
+print/save action. It does not create a NOFO, save metric scores, add report
+history or enable public `/readability/` uploads.
+
+## Accounts, permissions and switches
+
+Share `/nofos/readability/` directly. It has no navigation link. Both GET and POST
+require an active Builder account and `nofos.use_pdf_readability_pilot`.
+Administrators grant this permission through the **PDF readability pilot
+participants** group created by migration 0150. Provision accounts through the
+existing approved Builder process, then add only approved Agile Six or Gartner
+participants. Email domain, OpDiv and sign-in alone do not grant access. Remove
+membership and any direct pilot permission to revoke access; deactivate accounts
+when required. Existing superuser permission behavior is retained.
+
+This group grants no dashboard permission. Viewing usage still requires
+`nofos.view_builder_metrics`, normally through **Metrics viewers**. Dashboard
+permission does not grant upload access.
+
+`HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED` is a default-off Constance
+setting independent of the public flag. Authorized users see an unavailable page
+when disabled. Authorized POSTs require CSRF even while disabled. Authentication
+and permission checks precede multipart parsing and analysis. The existing size
+handler is installed before the nested CSRF check reads the body.
+
+## Supported PDFs and processing
+
+Use text-based HHS NOFO PDFs. Existing configurable recognition checks the first
+two pages for NOFO signals such as opportunity number, Assistance Listing number
+and Grants.gov reference. These rules are not broadened. See
+[PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
+[PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
+
+Limits remain one PDF, 15 MiB, 150 pages, a 15-second bounded analyzer worker and
+the existing shared analysis slot. Both routes use the same slot. Unsupported,
+uncertain, scanned/no-text, encrypted, malformed, oversized, busy, timeout and
+unavailable cases retain their useful messages. Unexpected analyzer failures
+return a fixed message and `internal_error`, without exception text or traceback.
+Reports retain scope and reliability explanations; PDF and source-native Builder
+measurements can differ. Authentication does not establish parser containment.
+
+## Usage, failures and privacy
+
+The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,
+Public and Unknown filters in HTML and JSON. Selected source survives pagination
+and is visible in printed output. Its labeled source breakdown covers all
+retained rows. Other counts, rates, outcomes, daily/weekly totals, percentiles and
+recent attempts use the selected source.
+
+Source means the upload route, not the session: a signed-in public-route visitor
+still creates a public outcome. Migration 0150 marks existing rows public because
+the pre-migration application recorded only that route. New unattributed inserts
+default to unknown. Unknown rows appear only in All or Unknown filters.
+
+Authorized POSTs reaching the workflow record one outcome after processing:
+success, handled validation/analysis/capacity failure, disabled response, or a
+sanitized unexpected workflow failure. GETs, authentication/permission denials,
+CSRF failures, malformed requests outside the workflow and upstream/WAF
+rejections are not counted. Operational monitoring must cover those. Duration is
+workflow processing time, including form parsing and rendering, not pure parser
+execution. Recording failure does not prevent a report from being returned.
+
+Stored facts are timestamp, source, fixed outcome code, HTTP status and duration.
+There is no filename, document text, metric value, IP, account/session ID or raw
+exception. Internal/staging participant activity is included without changing
+the main Builder dashboard's OpDiv eligibility or denominators. Both upload
+routes have privacy headers and sanitized request/framework logging;
+authenticated upload logs omit user IDs. Infrastructure logs remain separate.
+
+Authenticated recording uses independent environment settings:
+
+- `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=False` by default.
+- `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` has no default.
+
+Authenticated recording requires a positive integer retention window as well as
+the recording switch. The upload notice explains content-free recording when
+configured on. This is not approval of a window or cleanup schedule. Public
+recording settings remain unchanged. Source-specific cleanup reuses the existing
+command:
+
+```text
+python manage.py cleanup_pdf_readability_attempts --source authenticated --dry-run
+python manage.py cleanup_pdf_readability_attempts --source authenticated
+python manage.py cleanup_pdf_readability_attempts --source public --dry-run
+```
+
+Default cleanup targets public and legacy/unknown rows using public retention,
+preserving its existing operational contract. Explicit `--source unknown` targets
+unknown only. Authenticated cleanup uses its separate window and cannot delete
+public/unknown rows; public cleanup cannot delete authenticated rows.
+
+## Activation and validation
+
+Implementation and synthetic local checks do not enable a shared pilot. Before
+enabling, record the pilot operator, target environment, approved participants
+and documents, support contact, notice/retention decision and restricted evidence
+location. Verify the deployed revision, applicable parser isolation, limits,
+temporary-file cleanup and safe application/edge logging under #970/#971.
+Public-pilot-only requirements under #968 are not automatically prerequisites,
+but sign-in does not replace applicable safeguards.
+
+For recording, agree the authenticated window under #985, configure it and verify
+a scheduled cleanup invocation with `--source authenticated`. This change does
+not install a scheduler or approve a retention period. Confirm public recording
+remains unchanged.
+
+Enable only the authenticated Constance setting for the agreed validation round.
+Check approved-user upload, report, copy and print/save; signed-out and
+unapproved-user denial; CSRF rejection; supported and negative fixtures; source
+filtering and dashboard authorization. Record content-free findings and follow-up
+issues, never real PDFs or report contents in public evidence. Disable the
+authenticated flag to end the round and recheck authorized unavailability and
+unauthorized denial. Keep the public flag off throughout.

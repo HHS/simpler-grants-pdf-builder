@@ -57,6 +57,12 @@ PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
 PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
     "PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
 )
+AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
+    "AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
+)
+AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
+    "AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
@@ -713,6 +719,11 @@ CONSTANCE_CONFIG = {
     "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
         HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
         "Whether the standalone, signed-out PDF readability pilot is available. Uploads and reports are not saved.",
+        bool,
+    ),
+    "HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED": (
+        False,
+        "Whether the restricted signed-in PDF readability pilot is available. Requires explicit pilot permission and does not enable the public route.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (

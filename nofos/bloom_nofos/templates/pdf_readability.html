@@ -75,13 +75,14 @@
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / save as PDF</button>
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
-          <a class="usa-link text-bold" href="{% url 'pdf_readability' %}">Analyze another PDF</a>
+          <a class="usa-link text-bold" href="{% url pilot_url_name %}">Analyze another PDF</a>
         </div>
         <p id="readability-copy-status" role="status" aria-live="polite" class="no-print"></p>
         <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>
       </article>
     {% else %}
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
+      {% if authenticated_pilot %}<p>This signed-in pilot is for approved participants only. Use the shared URL to return here.</p>{% endif %}
       <p class="usa-intro">Upload a draft or published NOFO PDF to get an immediate readability report you can print or save as a PDF.</p>
       <p>This pilot is intended for HHS notices of funding opportunity. We use a few basic details in the PDF to screen out unrelated documents.</p>
       <p>Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
@@ -105,6 +106,7 @@
           <ul class="usa-list">
             <li>Your PDF is processed temporarily on HHS-operated systems. It isn’t sent to any outside service.</li>
             <li>It isn’t added to NOFO Builder, and no report history is kept.</li>
+            {% if outcome_recording_enabled %}<li>We record when an upload is attempted, whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores.</li>{% endif %}
             <li>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</li>
           </ul>
           <p class="usa-alert__text"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>

@@ -10,6 +10,8 @@ from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.template import loader
 from django.utils.deprecation import MiddlewareMixin
 
+from .logs import is_pdf_readability_request
+
 _local = threading.local()
 
 
@@ -21,7 +23,7 @@ class PdfReadabilityResponseMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        if request.path_info.rstrip("/") == "/readability":
+        if is_pdf_readability_request(request):
             response["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet"
             response["Cache-Control"] = "no-store"
         return response
@@ -92,7 +94,7 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
         super().__init__(get_response)
 
     def _build_log_metadata(self, request, status, response_time_ms):
-        is_readability = request.path_info.rstrip("/") == "/readability"
+        is_readability = is_pdf_readability_request(request)
         metadata = {
             "method": request.method,
             "url": request.path if is_readability else request.get_full_path(),
@@ -100,7 +102,11 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
             "response_time": f"{response_time_ms:.3f}ms",
         }
 
-        if hasattr(request, "user") and request.user.is_authenticated:
+        if (
+            not is_readability
+            and hasattr(request, "user")
+            and request.user.is_authenticated
+        ):
             metadata["user_id"] = str(request.user.id)
 
         if getattr(settings, "is_prod", False) and not is_readability:
@@ -122,8 +128,8 @@ class JSONRequestLoggingMiddleware(MiddlewareMixin):
 
         error_data = self._build_log_metadata(request, 500, response_time_ms)
         error_data["exception_type"] = exception.__class__.__name__
-        # Never render arbitrary exception content for anonymous PDF requests.
-        if request.path_info.rstrip("/") != "/readability":
+        # Never render arbitrary exception content for PDF upload requests.
+        if not is_pdf_readability_request(request):
             error_data.update(
                 {
                     "exception_message": str(exception),

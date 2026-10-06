@@ -31,10 +31,11 @@ class AttemptTests(TestCase):
         self.assertFalse(should_audit(PdfReadabilityAttempt()))
         self.assertEqual(
             {f.name for f in PdfReadabilityAttempt._meta.fields},
-            {"id", "created_at", "outcome", "http_status", "duration_ms"},
+            {"id", "created_at", "source", "outcome", "http_status", "duration_ms"},
         )
         self.assertEqual(
-            set(PDF_READABILITY_OUTCOMES), {"success", "disabled", *_ERRORS}
+            set(PDF_READABILITY_OUTCOMES),
+            {"success", "disabled", "internal_error", *_ERRORS},
         )
 
     def test_disabled_recorded_get_not_recorded(self):
@@ -218,7 +219,7 @@ class MetricsTests(TestCase):
         self.assertEqual(len(data["recent_attempts"]), 50)
         self.assertEqual(
             set(data["recent_attempts"][0]),
-            {"created_at", "outcome", "http_status", "duration_ms"},
+            {"created_at", "source", "outcome", "http_status", "duration_ms"},
         )
         self.assertEqual(
             len(

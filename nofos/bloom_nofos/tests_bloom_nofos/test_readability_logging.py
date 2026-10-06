@@ -52,9 +52,45 @@ class ReadabilityLoggingTests(SimpleTestCase):
         payload = json.loads(CustomJsonFormatter().format(record))
         self.assertNotIn("secret", json.dumps(payload))
 
+    def test_authenticated_pilot_logs_never_link_upload_to_user(self):
+        from types import SimpleNamespace
+
+        request = self.request("/nofos/readability/")
+        request.user = SimpleNamespace(is_authenticated=True, id="secret-user-id")
+        with override_settings(is_prod=True), self.assertLogs(
+            "django.request", level="INFO"
+        ) as logs:
+            self.middleware.process_response(request, HttpResponse())
+            self.middleware.process_exception(
+                request, RuntimeError("secret document text")
+            )
+        for record in logs.records:
+            self.assert_safe(record)
+            self.assertNotIn("user_id", record.__dict__)
+
+    def test_authenticated_framework_error_is_sanitized(self):
+        record = logging.LogRecord(
+            "django.request",
+            logging.ERROR,
+            __file__,
+            1,
+            "secret failure",
+            (),
+            (RuntimeError, RuntimeError("secret"), None),
+        )
+        record.request = self.request("/nofos/readability/")
+        ReadabilityRequestFilter().filter(record)
+        self.assert_safe(record)
+        self.assertIsNone(record.exc_info)
+
     def test_readability_response_logs_are_safe_in_all_environments(self):
         for prod in (False, True):
-            for path in ("/readability/", "/readability"):
+            for path in (
+                "/readability/",
+                "/readability",
+                "/nofos/readability/",
+                "/nofos/readability",
+            ):
                 for status in (200, 400, 503):
                     with self.subTest(prod=prod, path=path, status=status):
                         with override_settings(is_prod=prod):
