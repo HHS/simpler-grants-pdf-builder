@@ -31,5 +31,3 @@
 }
 
 /* Lightweight contextual help, using native disclosure semantics. */
-.readability-additional-info > summary { color: #005ea2; cursor: pointer; padding: .5rem 0; }
-.readability-additional-info[open] > .usa-prose { border-left: 3px solid #73b3e7; padding-left: 1rem; }
