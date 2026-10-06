@@ -53,8 +53,10 @@ measurements can differ. Authentication does not establish parser containment.
 
 The upload page shows the existing Word export progress-modal design after browser
 validation succeeds, with “Analyzing your PDF…” and the loading animation. It
-shows no estimated percentage. Users can hide progress while processing continues;
-the report or error replaces the page when the request finishes. Submission is
+shows no estimated percentage. The loading modal has no dismissal button.
+The report response shows “Your report is ready” with an OK button and closes
+automatically after three seconds, matching Word export. Errors replace the
+upload page with the existing error message. Submission is
 disabled while pending and restored when returning through browser Back.
 
 ## Usage, failures and privacy

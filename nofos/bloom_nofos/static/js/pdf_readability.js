@@ -22,6 +22,21 @@
     if (modal?.classList.contains("is-visible")) modal.querySelector("[data-close-modal]")?.click();
   });
 
+  const report = document.getElementById("report-title");
+  if (report) {
+    const showReady = () => {
+      document.getElementById("readability-progress-trigger")?.click();
+      window.setTimeout(() => {
+        const modal = document.getElementById("readability-progress-modal");
+        if (modal?.classList.contains("is-visible")) {
+          document.getElementById("readability-progress-ok")?.click();
+        }
+      }, 3000);
+    };
+    if (document.readyState === "complete") showReady();
+    else window.addEventListener("load", showReady, { once: true });
+  }
+
   const errorSummary = document.getElementById("readability-error-summary");
   if (errorSummary) errorSummary.focus();
 
