@@ -118,6 +118,25 @@
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
         </div>
         </details>
+      {% include "includes/document_progress_styles.html" %}
+      <button type="button" id="readability-progress-trigger" aria-controls="readability-progress-modal" data-open-modal hidden>Show analysis progress</button>
+      <div class="usa-modal" id="readability-progress-modal" aria-labelledby="readability-progress-heading" aria-describedby="readability-progress-body">
+        <div class="usa-modal__content">
+          <div class="usa-modal__main">
+            <h2 class="usa-modal__heading" id="readability-progress-heading">Analyzing your PDF…</h2>
+            <div class="usa-prose" id="readability-progress-body">
+              <p>This may take a few seconds. Your report will appear when analysis finishes.</p>
+              <div class="docx-horse-track is-running" aria-hidden="true">
+                <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+              </div>
+              <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
+            </div>
+            <div class="usa-modal__footer">
+              <button type="button" class="usa-button usa-button--outline" data-close-modal>Hide progress</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
     {% endif %}
   </div>

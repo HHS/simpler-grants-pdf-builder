@@ -1,12 +1,26 @@
 (() => {
   const form = document.getElementById("pdf-readability-form");
   if (form) {
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", (event) => {
       if (!form.checkValidity()) return;
+      if (document.getElementById("analyze-pdf-button").disabled) {
+        event.preventDefault();
+        return;
+      }
+      document.getElementById("readability-progress-trigger")?.click();
       document.getElementById("analyze-pdf-button").disabled = true;
       document.getElementById("pdf-submit-status").textContent = "Analyzing your PDF…";
     });
   }
+
+  // Browsers may restore the submitting page from their back/forward cache.
+  window.addEventListener("pageshow", (event) => {
+    if (!form || !event.persisted) return;
+    document.getElementById("analyze-pdf-button").disabled = false;
+    document.getElementById("pdf-submit-status").textContent = "";
+    const modal = document.getElementById("readability-progress-modal");
+    if (modal?.classList.contains("is-visible")) modal.querySelector("[data-close-modal]")?.click();
+  });
 
   const errorSummary = document.getElementById("readability-error-summary");
   if (errorSummary) errorSummary.focus();

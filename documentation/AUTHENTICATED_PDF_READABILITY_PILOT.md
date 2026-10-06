@@ -51,6 +51,12 @@ return a fixed message and `internal_error`, without exception text or traceback
 Reports retain scope and reliability explanations; PDF and source-native Builder
 measurements can differ. Authentication does not establish parser containment.
 
+The upload page shows the existing Word export progress-modal design after browser
+validation succeeds, with “Analyzing your PDF…” and the loading animation. It
+shows no estimated percentage. Users can hide progress while processing continues;
+the report or error replaces the page when the request finishes. Submission is
+disabled while pending and restored when returning through browser Back.
+
 ## Usage, failures and privacy
 
 The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,
