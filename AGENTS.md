@@ -26,6 +26,13 @@ top-level `docs/` directory. Add durable guides to `documentation/README.md`; us
 `documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
 for PR-specific screenshots and validation notes.
 
+## UI patterns
+
+Before adding or changing file-upload error feedback, read
+[documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse the shared
+file-input component. Extend the catalog when introducing another verified pattern;
+do not assume undocumented screens follow it.
+
 ## Word export safety
 
 Do not test GrabzIt Word export from a non-production environment using production credentials.
