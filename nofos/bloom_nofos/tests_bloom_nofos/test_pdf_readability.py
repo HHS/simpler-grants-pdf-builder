@@ -285,7 +285,7 @@ class PdfReadabilityPageTests(TestCase):
                 analyze.side_effect = PdfReadabilityError(code)
                 response = self.client.post(self.url, {"pdf": sample_pdf()})
                 self.assertContains(response, phrase, status_code=status)
-                self.assertContains(response, 'role="alert"', status_code=status)
+                self.assertContains(response, 'id="pdf--error"', status_code=status)
                 self.assertNotContains(
                     response, "Readability measures", status_code=status
                 )
