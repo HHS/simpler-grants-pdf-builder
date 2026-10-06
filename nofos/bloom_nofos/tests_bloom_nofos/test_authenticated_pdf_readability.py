@@ -103,7 +103,7 @@ class AuthenticatedPilotTests(TestCase):
             response = self.client.post(self.url, {"pdf": self.upload()})
         self.assertContains(response, "Readability report")
         self.assertContains(response, f'href="{self.url}"')
-        self.assertContains(response, "Print / save as PDF")
+        self.assertContains(response, "Print / Save as PDF")
         self.assertContains(response, "Copy metrics")
         row = PdfReadabilityAttempt.objects.get()
         self.assertEqual((row.source, row.outcome), ("authenticated", "success"))
