@@ -67,3 +67,26 @@ deployed isolation/edge logging. Follow
 [the operating instructions](../../AUTHENTICATED_PDF_READABILITY_PILOT.md) for
 environment-specific checks. These are distinct from implementation acceptance
 and the later participant validation round.
+
+## Follow-up verification of current PR revision
+
+October 6, 2026, PR head `cf1ef36915dca1388101b0455673185298c17bf8`:
+
+- An independent code-review agent found no actionable blocking findings and
+  reran all 79 focused Django tests successfully. This was not deployed-environment
+  or production PostgreSQL verification. CI on that revision passed the test,
+  image-build, title and security scan jobs.
+- Chrome's native print preview showed a two-page report including all five
+  metrics. The macOS save sheet stayed disabled, even in a writable test folder;
+  that native file-dialog save is still unverified, not an established app defect.
+- Exported the actual report through Chrome's `Page.printToPDF` interface. The
+  resulting two-page, 50,819-byte PDF contains all five metric labels/values,
+  reliability/scope explanations and expanded calculation notes. Both pages
+  were rendered and visually checked: no blank pages or clipped content.
+- All data is synthetic. Local authenticated uploads were disabled again after
+  verification. No shared environment was changed.
+
+Evidence: [native preview](native-print-preview.png),
+[exported PDF](report-exported.pdf), [page 1](report-pdf-page-1.png),
+[page 2](report-pdf-page-2.png). Older screenshots above predate the branding fix;
+this follow-up records the latest reviewed application revision.
