@@ -59,6 +59,12 @@ automatically after three seconds, matching Word export. Errors replace the
 upload page with the existing error message. Submission is
 disabled while pending and restored when returning through browser Back.
 
+Missing-file submissions use the shared inline file-upload error state, matching
+NOFO Compare: red form-group styling, an error message associated with the file
+input, and focus on the inline error. No browser-required tooltip or duplicate
+error alert is shown. Empty submissions do not open the analysis progress modal;
+server validation still rejects missing and multiple files before analysis.
+
 ## Usage, failures and privacy
 
 The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,

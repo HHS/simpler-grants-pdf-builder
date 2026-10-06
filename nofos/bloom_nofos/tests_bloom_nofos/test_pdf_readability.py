@@ -201,7 +201,12 @@ class PdfReadabilityPageTests(TestCase):
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_post_rejects_missing_or_multiple_files(self):
-        self.assertEqual(self.client.post(self.url).status_code, 400)
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "usa-form-group--error", status_code=400)
+        self.assertContains(response, 'id="pdf--error"', status_code=400)
+        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        self.assertNotContains(response, "readability-error-summary", status_code=400)
         with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
             response = self.client.post(
                 self.url, {"pdf": [sample_pdf("one.pdf"), sample_pdf("two.pdf")]}

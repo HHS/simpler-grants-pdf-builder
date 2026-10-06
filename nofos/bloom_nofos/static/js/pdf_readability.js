@@ -3,6 +3,8 @@
   if (form) {
     form.addEventListener("submit", (event) => {
       if (!form.checkValidity()) return;
+      // Let the server render the shared inline upload error for a missing file.
+      if (!document.getElementById("pdf").files.length) return;
       if (document.getElementById("analyze-pdf-button").disabled) {
         event.preventDefault();
         return;
@@ -37,8 +39,11 @@
     else window.addEventListener("load", showReady, { once: true });
   }
 
-  const errorSummary = document.getElementById("readability-error-summary");
-  if (errorSummary) errorSummary.focus();
+  const uploadError = document.getElementById("pdf--error");
+  if (uploadError) {
+    uploadError.setAttribute("tabindex", "-1");
+    uploadError.focus();
+  }
 
   const printButton = document.getElementById("print-readability-report");
   if (printButton) printButton.addEventListener("click", () => window.print());
