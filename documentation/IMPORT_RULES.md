@@ -450,8 +450,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-037 — "De minimis" auto-italicization
 - **Type:** conversion
-- **Trigger:** The literal text "de minimis" (case-insensitive) appears anywhere and isn't already wrapped in `<em>`.
-- **Action:** Wrapped in `<em>` — a hardcoded, domain-specific house-style rule.
+- **Trigger:** The literal text "de minimis" (case-insensitive) appears in a text node outside `<em>`, `<script>`, or `<style>`.
+- **Action:** Wrapped in `<em>` — a hardcoded, domain-specific house-style rule. Only text nodes are changed; attributes (including temporary heading search text), comments, and existing emphasis remain untouched.
 - **Source:** `nofo.py::add_em_to_de_minimis`
 - **Status:** active
 

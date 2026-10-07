@@ -36,6 +36,16 @@ user is shown when an import is blocked. A rule there can be the reason a code
 here fires - `IMPORT-011` is why `IMPORT-AMBIGUOUS-HEADINGS` exists - but the two
 registries are maintained separately.
 
+## Import error page layout
+
+Import error pages use H2 headings for recovery steps ("What to do next") and
+support ("Need help resolving this error?"). The support section has a top divider
+and extra spacing after the retry link, and groups the contact instructions with
+the error code. It is rendered by `includes/import_error_support.html`, scoped to
+`import_error.html`; general 400/500 pages keep `includes/error_support.html`.
+Retry controls are bold navigation links because they open the relevant form;
+they do not automatically retry an upload.
+
 ## The codes
 
 ### `IMPORT-NO-FILE`

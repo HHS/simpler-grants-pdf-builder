@@ -6672,6 +6672,29 @@ class TestAddStrongsToSoup(TestCase):
 
 
 class TestAddEmToDeMinimis(TestCase):
+    def test_preserves_attributes_and_escaped_text(self):
+        html = (
+            '<p title="de minimis" data-builder-search-text="de minimis requirements">'
+            "de minimis &amp; &lt;requirements&gt;; De Minimis.</p>"
+        )
+        soup = add_em_to_de_minimis(BeautifulSoup(html, "html.parser"))
+        self.assertEqual(soup.p["title"], "de minimis")
+        self.assertEqual(soup.p["data-builder-search-text"], "de minimis requirements")
+        self.assertEqual(soup.p.get_text(), "de minimis & <requirements>; De Minimis.")
+        self.assertEqual(
+            [tag.text for tag in soup.find_all("em")], ["de minimis", "De Minimis"]
+        )
+        self.assertIsNone(soup.find("requirements"))
+
+    def test_preserves_nested_emphasis_and_non_content_nodes(self):
+        html = (
+            '<p><em class="existing"><strong>de minimis</strong></em></p>'
+            "<!-- de minimis --><style>/* de minimis */</style>"
+            '<script>const label = "de minimis";</script>'
+        )
+        soup = add_em_to_de_minimis(BeautifulSoup(html, "html.parser"))
+        self.assertEqual(str(soup), html)
+
     def test_transforms_de_minimis_spans_to_em(self):
         html = "<p>Some text <span>de minimis</span> rate and <span>De Minimis</span> threshold.</p>"
         expected_html = "<p>Some text <span><em>de minimis</em></span> rate and <span><em>De Minimis</em></span> threshold.</p>"

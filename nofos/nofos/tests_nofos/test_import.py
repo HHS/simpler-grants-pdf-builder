@@ -678,6 +678,22 @@ class TestNofoImportMissingAltText(TestCase):
 
 
 class TestBlockingImportErrorPages(TestCase):
+    def test_de_minimis_heading_search_snippet_stays_plain_text(self):
+        heading = "de minimis requirements " + "A" * 401
+        upload = SimpleUploadedFile(
+            "de-minimis.html",
+            (
+                "<p>Opportunity name: Test</p><p>Opdiv: CDC</p>"
+                f"<h1>Parent section</h1><h2>{heading}</h2>"
+            ).encode(),
+            content_type="text/html",
+        )
+        response = self.client.post(self.import_url, {"nofo-import": upload})
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(
+            response.context["heading_errors"][0]["search_snippet"], heading[:50]
+        )
+
     def test_batch_heading_fields_are_safely_escaped(self):
         from bloom_nofos.error_helpers import (
             MistaggedHeadingError,

@@ -31,3 +31,26 @@ General warning logs include heading kind, source tag, parent section order, cha
 ## Tests
 
 Regression coverage includes batch reporting, source levels before heading demotion, manual breaks, search length, escaping, content-free logging, and the existing failed re-import rollback tests. Final suite results are recorded in the PR.
+
+## Review follow-up: recovery and support layout
+
+- Recovery steps now begin with an H2, "What to do next".
+- "Try the import again" is a bold navigation link to the upload form, consistent
+  with the PDF checker's "Analyze another PDF" link; it does not retry an upload.
+- The import-only support component has an H2, a top divider, and spacing after
+  the retry link. Contact instructions and the error code are grouped together.
+  General 400/500 pages retain their existing support component.
+- "de minimis" emphasis now changes text nodes only, preserving plain search
+  snippets and other attributes. Regression coverage includes an actual HTML
+  upload, escaped text, repeated matches, and existing nested emphasis.
+- Chrome screenshots below render the real Django error template and local
+  stylesheet with synthetic heading data. Desktop width: 1200px; mobile: 375px.
+  Heading hierarchy, retry destination, support placement, and absence of mobile
+  horizontal overflow were checked. This is not a human screen-reader test.
+
+![Revised import error layout, desktop](import-error-layout-desktop.png)
+
+![Revised import error layout, mobile](import-error-layout-mobile.png)
+
+Follow-up validation: full Django suite **2,377 tests, OK (2 skipped)**;
+pre-commit checks and diff whitespace checks passed.

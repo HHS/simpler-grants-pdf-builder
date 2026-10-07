@@ -36,7 +36,7 @@
 	{% endif %}
 
 	{% if recovery_steps %}
-		<p>What to do next:</p>
+		<h2 class="font-heading-lg margin-top-4">What to do next</h2>
 		<ol class="usa-list">
 			{% for step in recovery_steps %}
 				<li>{{ step }}</li>
@@ -45,9 +45,8 @@
 	{% endif %}
 
 	{% if retry_url %}
-		<p><a class="usa-button" href="{{ retry_url }}">{{ retry_label }}</a></p>
+		<p><a class="usa-link text-bold" href="{{ retry_url }}">{{ retry_label }}</a></p>
 	{% endif %}
 
-	<p><strong>Error code:</strong> <code>{{ error_code }}</code></p>
-	{% include 'includes/error_support.html' %}
+	{% include 'includes/import_error_support.html' %}
 {% endblock %}

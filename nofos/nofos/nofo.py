@@ -2967,22 +2967,27 @@ def add_strongs_to_soup(soup):
 
 
 def add_em_to_de_minimis(soup):
-    def _replace_de_minimis(match):
-        # Check if the matched string is already inside an <em> tag
-        if match.group(0).startswith("<em>") and match.group(0).endswith("</em>"):
-            return match.group(0)  # return the match unchanged
-        return f"<em>{match.group(0)}</em>"  # Wrap in <em> tags if not already wrapped
-
-    # Correct the regex to prevent changing already wrapped instances
-    new_html = re.sub(
-        r"(?<!<em>)de minimis(?!<\/em>)",
-        _replace_de_minimis,
-        str(soup),
-        flags=re.IGNORECASE,
-    )
-
-    # Return soup object
-    return BeautifulSoup(new_html, "html.parser")
+    # Work on text nodes so attributes (including Word Find snippets) stay plain.
+    soup = BeautifulSoup(str(soup), "html.parser")
+    pattern = re.compile(r"de minimis", re.IGNORECASE)
+    for node in soup.find_all(string=pattern):
+        if type(node) is not NavigableString or node.find_parent(
+            ["em", "script", "style"]
+        ):
+            continue
+        text = str(node)
+        offset = 0
+        for match in pattern.finditer(text):
+            if match.start() > offset:
+                node.insert_before(NavigableString(text[offset : match.start()]))
+            emphasis = soup.new_tag("em")
+            emphasis.string = match.group()
+            node.insert_before(emphasis)
+            offset = match.end()
+        if offset < len(text):
+            node.insert_before(NavigableString(text[offset:]))
+        node.extract()
+    return soup
 
 
 def clean_heading_tags(soup):
