@@ -124,7 +124,7 @@ class PdfReadabilityPageTests(TestCase):
         )
         self.assertContains(
             response,
-            "Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible",
+            "Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible",
         )
         self.assertNotContains(response, "make a clearance decision")
         self.assertNotContains(response, "Login")

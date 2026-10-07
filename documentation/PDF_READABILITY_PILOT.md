@@ -68,11 +68,16 @@ not install ingress rate limiting or authorize production enablement.
 
 The launch approach is a deliberately loose NOFO check, not approved-template
 recognition. Before analysis, the bounded worker inspects descriptive PDF
-metadata and extractable text from the first two pages for four distinct
-signals: an HHS agency or division in metadata, a labeled opportunity number, a
+metadata and extractable text from the first five pages for four distinct
+signals: an HHS agency or division in metadata or opening-page text, a labeled opportunity number, a
 labeled Assistance Listing number, and a Grants.gov reference. Any two signals
 allow analysis. Repeating one signal in multiple fields does not increase the
 count, and filename alone never counts.
+
+The bounded five-page window accommodates cover and contents pages in ordinary
+Word print exports. Agency metadata and agency page text are alternative sources
+of one signal, never two votes. This does not admit blank templates without two
+different identification signal types. See drafting-stage evidence in #1059.
 
 The field shapes are grounded in the [Simpler.Grants.gov Opportunities v1
 OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/post_v1_opportunities_search):

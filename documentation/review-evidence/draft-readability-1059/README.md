@@ -15,5 +15,16 @@ The test fixture contains 17 applicant prose words and six heading words, with
 three sentences, two prose paragraphs, 21 syllables, and one passive sentence.
 This verifies the small controlled reference, not private-document accuracy.
 
+- [Print-style recognition](print-recognition.jpg): authenticated Chrome upload
+  of an untagged, synthetic four-page PDF without descriptive agency metadata.
+  The opportunity number is on page one and agency name on page three. The
+  subprocess returns a report with the expected low-reliability warning.
+  Inferred paragraph boundaries differ from the tagged reference, so this does
+  not establish five-metric parity for untagged exports.
+
+After the recognition fix, the six local private exports retain their expected
+recognition results: five supported and the blank guide unsupported. The real
+Word print export also completes analysis. No private content is committed.
+
 No application flags outside the isolated local database changed. No deployment
 or clearance determination was made. See the durable guide for matrix gaps.

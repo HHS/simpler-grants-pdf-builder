@@ -257,6 +257,13 @@ promise deletion timing. Those remain #968 release gates.
 
 ## 2026-09-24 — Use a loose two-signal NOFO check for the PDF readability pilot
 
+**2026-10-07 amendment (#1059):** A real Word print export drops agency metadata
+and places agency details after cover and contents pages. Inspect at most five
+opening pages and accept an agency name in page text as an alternative to agency
+metadata. Count that agency signal once and retain the two-different-types
+threshold. This is not an approval to enable the public route or to treat the
+recognition gate as format or policy validation. The original decision follows.
+
 **Context:** The unauthenticated `/readability/` pilot needs modest protection
 against use as a general-purpose PDF analyzer, but strict FY27 template or
 semantic-heading recognition would reject legitimate HHS NOFOs, especially

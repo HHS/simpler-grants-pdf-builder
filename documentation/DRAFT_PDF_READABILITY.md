@@ -19,7 +19,8 @@ the same measurement scope. Shorter or incomplete drafts are not necessarily
 closer to publication readiness. Review the reported reliability and denominators.
 
 Recognition currently checks distinct NOFO identification signals on the first
-two pages and in descriptive metadata. A blank content guide can lack those
+five pages and in descriptive metadata. An agency name in opening-page text can
+replace agency metadata lost in print exports, but never counts twice. A blank content guide can lack those
 signals. A rejection is not a finding that it is unrelated to HHS, and OCR does
 not supply missing identifiers. Use an identifiable draft with genuine available
 details; do not invent identifiers to obtain a report.
@@ -51,7 +52,8 @@ the per-user permission check and disabled public route.
 
 ## Evidence limits and remaining investigation
 
-Two reproducible gaps prevent a general draft-export parity claim:
+Validation found two gaps. Recognition is repaired in this slice; table-cell
+continuity still needs adoption of a corrected metrics release:
 
 - **Cross-page table-cell sentence scope.** With package 0.5.4, the same reference
   prose tagged as table cells loses its four-word opening fragment when a
@@ -67,7 +69,9 @@ Two reproducible gaps prevent a general draft-export parity claim:
   it retained only the opportunity-number signal. Both have 38 pages; the print
   output has no structure tree. This is a recognition comparison, not a metric
   accuracy comparison. The online accessibility export was not used. Agency
-  names in visible page text currently do not substitute for agency metadata.
+  details appear on page three. The revised bounded five-page check now accepts
+  this output using agency page text plus opportunity number. It receives the
+  generic profile and low-reliability warning, not a tagged-accuracy claim.
 
 The wrapped and cross-page synthetic fixtures were rendered and every page
 visually inspected. A representative table page of the private Word print
