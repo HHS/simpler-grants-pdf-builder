@@ -8,7 +8,6 @@ from contextlib import ExitStack
 from unittest import expectedFailure
 from unittest.mock import patch
 
-import markdown
 from bs4 import BeautifulSoup
 from compare.models import CompareDocument
 from composer.models import ContentGuide
@@ -18,6 +17,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
+from martor.templatetags.martortags import safe_markdown
 
 from nofos.models import Nofo
 from nofos.nofo import process_nofo_html, resolve_section_heading_level
@@ -40,9 +40,7 @@ def translate(html):
         for subsection in section["subsections"]
     ]
     rendered = BeautifulSoup(
-        markdown.markdown(
-            "\n\n".join(md(body) for body in bodies), extensions=["extra"]
-        ),
+        safe_markdown("\n\n".join(md(body) for body in bodies)),
         "html.parser",
     )
     return soup, sections, rendered
