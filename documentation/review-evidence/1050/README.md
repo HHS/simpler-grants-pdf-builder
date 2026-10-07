@@ -26,6 +26,10 @@ existing converter's representation. This does not add a semantic HTML
 bodies are not automatically repaired. No DocRaptor or Word-export API was
 called.
 
+The fix covers a caption immediately before the first row. Tables with a
+`colgroup` before direct `tr` children have a separate existing row-detection
+limitation, with or without a caption; that markup is not repaired here.
+
 ## Regression evidence
 
 The focused suite covers direct and figure-wrapped tables with and without
