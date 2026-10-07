@@ -168,13 +168,19 @@ IMPORT_ERROR_CATALOG = {
         "summary": (
             "The document contains heading text that is far longer than a "
             "heading should be. This usually means a paragraph was formatted as "
-            "a heading by mistake. The affected text is shown above."
+            "a heading by mistake. Review all the headings listed below."
         ),
         "status": 422,
         "recovery_steps": (
-            "Open the document in Word and find the affected text shown above.",
-            "If it is paragraph text, change its style to ‘Normal’. If it is "
-            "genuinely a heading, shorten it or apply the correct heading style.",
+            "In Word, open View → Navigation Pane and select the long heading. "
+            "Or open Find (Ctrl+F or Command+F) and paste its short search snippet.",
+            "If the text is a normal paragraph, apply the Normal style.",
+            "If a heading and the paragraph after it are joined by a line break "
+            "(Shift+Enter), replace that break with a paragraph break (Enter). "
+            "Apply Normal to the paragraph only. Turn on Show/Hide ¶ to see the breaks.",
+            "Check text in tables or callout boxes for an unintended heading style. "
+            "Pasted text can also bring a heading style from another document.",
+            "If the text really is a heading, shorten it to the character limit shown.",
             "Save the document, then import it again.",
         ),
         "when": (
@@ -183,9 +189,9 @@ IMPORT_ERROR_CATALOG = {
             "heading style."
         ),
         "support": (
-            "The error page names the heading, the limit, and the offending "
-            "text, so the user can find it in Word directly. This is the most "
-            "self-serviceable import error we have."
+            "The page lists all long headings with source heading level, parent "
+            "section, counts, a short Find snippet and expandable full text. "
+            "General warning logs contain locations and counts, not document text."
         ),
     },
     "IMPORT-NO-SECTIONS": {

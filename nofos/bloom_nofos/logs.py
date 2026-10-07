@@ -43,6 +43,10 @@ def log_exception(request, e, level="error", context=None, status=None):
         log_data["status"] = status
     if context:
         log_data["context"] = context
+    from bloom_nofos.error_helpers import MistaggedHeadingError
+
+    if isinstance(e, MistaggedHeadingError):
+        log_data["heading_errors"] = e.safe_log_details()
     if hasattr(request, "user") and request.user.is_authenticated:
         log_data["user_id"] = str(request.user.id)
 

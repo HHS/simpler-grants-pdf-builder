@@ -678,6 +678,109 @@ class TestNofoImportMissingAltText(TestCase):
 
 
 class TestBlockingImportErrorPages(TestCase):
+    def test_batch_heading_fields_are_safely_escaped(self):
+        from bloom_nofos.error_helpers import (
+            MistaggedHeadingError,
+            render_mistagged_heading_error,
+        )
+        from django.test import RequestFactory
+
+        marker = '<script>alert("test")</script>'
+        error = MistaggedHeadingError(
+            headings=[
+                {
+                    "heading_kind": "subsection",
+                    "heading_order": marker,
+                    "heading_text": marker * 20,
+                    "max_length": 400,
+                    "source_tag": "h2",
+                    "section_name": marker,
+                    "section_order": marker,
+                }
+            ]
+        )
+        response = render_mistagged_heading_error(RequestFactory().get("/"), error)
+        self.assertEqual(response.status_code, 422)
+        self.assertNotIn(marker.encode(), response.content)
+        self.assertIn(b"&lt;script&gt;", response.content)
+
+    def test_all_long_headings_have_locations_and_short_search_snippets(self):
+        first = "Long section " + "A" * 251
+        second = "Long subsection " + "B" * 401
+        third = "Another subsection " + "C" * 401
+        upload = SimpleUploadedFile(
+            "multiple.html",
+            (
+                "<p>Opportunity name: Test</p><p>Opdiv: CDC</p>"
+                f"<h1>{first}</h1><h2>{second}</h2>"
+                f"<h1>Second section</h1><h3>{third}</h3><p>Body</p>"
+            ).encode(),
+            content_type="text/html",
+        )
+        response = self.client.post(self.import_url, {"nofo-import": upload})
+        self.assertEqual(response.status_code, 422)
+        headings = response.context["heading_errors"]
+        self.assertEqual(len(headings), 3)
+        self.assertEqual(
+            [h["word_style"] for h in headings], ["Heading 1", "Heading 2", "Heading 3"]
+        )
+        self.assertEqual(headings[2]["section_name"], "Second section")
+        self.assertEqual(headings[2]["section_order"], 2)
+        self.assertTrue(all(len(h["search_snippet"]) <= 50 for h in headings))
+        for text in (first, second, third):
+            self.assertContains(response, text, status_code=422)
+        self.assertContains(response, "Navigation Pane", status_code=422)
+        self.assertContains(response, "Shift+Enter", status_code=422)
+        self.assertContains(response, "callout boxes", status_code=422)
+        self.assertEqual(Nofo.objects.count(), 0)
+        self.assertEqual(Section.objects.count(), 0)
+
+    def test_manual_break_and_h2_section_preserve_source_level(self):
+        upload = SimpleUploadedFile(
+            "break.html",
+            (
+                "<p>Opportunity name: Test</p><p>Opdiv: CDC</p>"
+                "<h2>Parent section</h2><h3>Actual heading<br>"
+                + "Paragraph " * 50
+                + "</h3>"
+            ).encode(),
+            content_type="text/html",
+        )
+        response = self.client.post(self.import_url, {"nofo-import": upload})
+        self.assertEqual(response.status_code, 422)
+        heading = response.context["heading_errors"][0]
+        self.assertEqual(heading["word_style"], "Heading 3")
+        self.assertEqual(heading["section_name"], "Parent section")
+        self.assertTrue(
+            heading["search_snippet"].startswith("Actual heading Paragraph ")
+        )
+
+    def test_long_heading_logging_excludes_document_text(self):
+        from bloom_nofos.error_helpers import MistaggedHeadingError
+        from bloom_nofos.logs import log_exception
+        from django.test import RequestFactory
+
+        error = MistaggedHeadingError(
+            headings=[
+                {
+                    "heading_kind": "subsection",
+                    "heading_order": 2,
+                    "heading_text": "PRIVATE CONTENT " * 40,
+                    "max_length": 400,
+                    "source_tag": "h2",
+                    "section_order": 1,
+                    "section_name": "PRIVATE SECTION",
+                }
+            ]
+        )
+        with patch("bloom_nofos.logs.logger.warning") as warning:
+            log_exception(
+                RequestFactory().post("/nofos/import"), error, level="warning"
+            )
+        extra = warning.call_args.kwargs["extra"]
+        self.assertEqual(extra["heading_errors"][0]["characters"], 640)
+        self.assertNotIn("PRIVATE", str(extra))
+
     def setUp(self):
         self.user = BloomUser.objects.create_user(
             email="errors@example.com",

@@ -1,0 +1,33 @@
+# Long-heading import recovery (#1040)
+
+## Why
+
+One upload should list all overlong headings, so writers do not have to fix and upload the same document repeatedly. The shared import pipeline and error renderer serve Builder, re-import, Compare, and Composer. Existing character limits and transaction rollback behavior are unchanged.
+
+## Browser checks
+
+Chrome, local Docker build, synthetic account and documents only:
+
+- One HTML upload reported two long subsection headings in different sections. Each showed its original heading level, parent section, count, limit, and a search snippet capped at 50 characters.
+- A manual line break in a heading produced a space in the search snippet, rather than joining two words. Stored heading names keep their existing normalization.
+- Full heading text opened through the native details control.
+- The existing `mistagged-paragraph-heading.docx` fixture reported its 448-character Heading 2 under the correct parent section.
+- After correcting heading styles in the synthetic HTML document, import reached the normal “Name your NOFO” step.
+
+![All headings and recovery instructions](all-long-headings.jpg)
+
+![Full heading expanded](expanded-heading.jpg)
+
+![DOCX import error](word-document-error.jpg)
+
+![Corrected import](corrected-import.jpg)
+
+## Scope and limitations
+
+Heading levels are inferred from source tags, not exact custom Word style names. No copy-button JavaScript or external help article was added. These checks do not establish screen-reader compatibility or test the reported CDC/ACF production documents.
+
+General warning logs include heading kind, source tag, parent section order, character count, and limit. Document excerpts and parent section names deliberately stay out of these logs. Existing import-attempt records carry the filename and OpDiv. This differs from the issue's suggested excerpt logging, and is called out for review.
+
+## Tests
+
+Regression coverage includes batch reporting, source levels before heading demotion, manual breaks, search length, escaping, content-free logging, and the existing failed re-import rollback tests. Final suite results are recorded in the PR.
