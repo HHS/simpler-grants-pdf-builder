@@ -277,7 +277,7 @@ class PdfReadabilityPageTests(TestCase):
     @patch("bloom_nofos.views.analyze_uploaded_pdf")
     def test_format_decisions_never_show_normal_results(self, analyze):
         for code, status, phrase in (
-            ("format_unsupported", 400, "does not appear to be an HHS notice"),
+            ("format_unsupported", 400, "could not confirm this PDF is an HHS notice"),
             ("format_indeterminate", 400, "not find enough extractable information"),
             ("format_unavailable", 503, "recognition is temporarily unavailable"),
         ):
