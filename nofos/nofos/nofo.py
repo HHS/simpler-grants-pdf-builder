@@ -201,11 +201,48 @@ def resolve_section_heading_level(soup):
     )
 
 
+def unwrap_heading_containers(soup):
+    """Expose headings in ordinary div wrappers without flattening tables or lists.
+
+    Section parsing expects body-level headings. Only an uninterrupted chain of
+    ordinary divs up to the body is supported; semantic containers remain intact.
+    Referenced wrapper IDs become aliases for the first heading in that wrapper.
+    """
+    wrappers = {}
+    for heading in soup.find_all(
+        lambda tag: tag.name in {"h1", "h2", "h3", "h4", "h5", "h6"} or is_h7(tag)
+    ):
+        ancestors = []
+        parent = heading.parent
+        while (
+            parent is not None
+            and parent.name == "div"
+            and not parent.get("role")
+            and not is_h7(parent)
+        ):
+            ancestors.append(parent)
+            parent = parent.parent
+        if parent is None or parent.name not in {"body", "[document]"}:
+            continue
+        for wrapper in ancestors:
+            wrappers.setdefault(id(wrapper), (wrapper, heading))
+
+    for wrapper, heading in wrappers.values():
+        wrapper_id = wrapper.get("id")
+        if wrapper_id:
+            heading_id = heading.get("id") or wrapper_id
+            heading["id"] = heading_id
+            for link in soup.find_all("a", href=f"#{wrapper_id}"):
+                link["href"] = f"#{heading_id}"
+        wrapper.unwrap()
+
+
 def process_nofo_html(soup, top_heading_level):
     """
     Takes a soup object, cleans it up and mutates it, and returns a modified soup object.
     """
     soup = add_body_if_no_body(soup)
+    unwrap_heading_containers(soup)
 
     # When DEBUG is True, write out the soup to a local debug file
     if settings.DEBUG:
