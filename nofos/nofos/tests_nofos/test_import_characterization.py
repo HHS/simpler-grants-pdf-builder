@@ -21,7 +21,7 @@ from martor.templatetags.martortags import safe_markdown
 
 from nofos.models import Nofo
 from nofos.nofo import process_nofo_html, resolve_section_heading_level
-from nofos.nofo_markdown import md
+from nofos.nofo_markdown import MISSING_ALT_TEXT_ATTR, md
 from nofos.views import BaseNofoImportView
 
 
@@ -217,6 +217,24 @@ class ImportConsumerCharacterizationTests(TestCase):
 class ImportFidelityCharacterizationTests(SimpleTestCase):
     prefix = "<h2>Opportunity</h2><h3>Funding</h3>"
 
+    # Shared with the expected failures so unrelated parser errors fail normally.
+    fidelity_inputs = {
+        "wrapped_main_heading": "<div><h2>Opportunity</h2><h3>Eligibility</h3><p>Public agencies.</p></div><h2>Apply</h2><p>Submit online.</p>",
+        "wrapped_subheading": "<h2>Opportunity</h2><div><h3>Eligibility</h3><p>Public agencies.</p></div>",
+        "captioned_table": prefix
+        + "<table><caption>Awards</caption><tr><td>Program</td><td>Amount</td></tr><tr><td>Training</td><td>0</td></tr></table>",
+        "bare_image": prefix + '<img src="logo.png" alt="Agency logo">',
+        "list_item_anchor": prefix
+        + '<p><a href="#note-1">Read note</a></p><ol><li id="note-1">Source</li></ol>',
+    }
+
+    def test_known_lossy_inputs_complete_translation(self):
+        for shape, html in self.fidelity_inputs.items():
+            with self.subTest(shape=shape):
+                _, sections, rendered = translate(html)
+                self.assertTrue(sections)
+                self.assertIsInstance(rendered, BeautifulSoup)
+
     def test_direct_and_figure_tables_keep_values_with_different_header_policy(self):
         table = "<table><tr><td>Program</td><td>Amount</td></tr><tr><td>Training</td><td>0</td></tr></table>"
         for wrapped in (False, True):
@@ -250,13 +268,25 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
         self.assertIn("100", rendered.get_text())
 
     def test_paragraph_images_and_explicit_bookmark_survive(self):
-        _, _, rendered = translate(
+        html = (
             self.prefix
             + '<p><img src="logo.png" alt="Agency logo"></p><p><img src="decoration.png" alt=""></p><p><img src="missing.png"></p><p><a href="#note-1">Read note</a></p><p><a id="note-1"></a>Source</p>'
         )
+        soup = BeautifulSoup(html, "html.parser")
+        soup, _ = process_nofo_html(soup, resolve_section_heading_level(soup))
+        self.assertFalse(
+            soup.find("img", src="decoration.png").has_attr(MISSING_ALT_TEXT_ATTR)
+        )
+        self.assertTrue(
+            soup.find("img", src="missing.png").has_attr(MISSING_ALT_TEXT_ATTR)
+        )
+        _, _, rendered = translate(html)
         self.assertEqual(len(rendered.find_all("img")), 3)
         self.assertEqual(rendered.find("img", src="logo.png")["alt"], "Agency logo")
+        self.assertEqual(rendered.find("img", src="decoration.png")["alt"], "")
+        self.assertEqual(rendered.find("img", src="missing.png")["alt"], "")
         self.assertIsNotNone(rendered.find(id="note-1"))
+        self.assertEqual(rendered.find("a", string="Read note")["href"], "#note-1")
 
     def test_explicit_form_projection_distinguishes_zero_false_and_missing(self):
         # Projection belongs to the caller, not to Builder or a vendor runtime.
@@ -278,37 +308,25 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
 
     @expectedFailure
     def test_wrapped_main_heading_keeps_content_issue_1049(self):
-        _, _, rendered = translate(
-            "<div><h2>Opportunity</h2><h3>Eligibility</h3><p>Public agencies.</p></div><h2>Apply</h2><p>Submit online.</p>"
-        )
+        _, _, rendered = translate(self.fidelity_inputs["wrapped_main_heading"])
         self.assertIn("Public agencies.", rendered.get_text())
 
     @expectedFailure
     def test_wrapped_subheading_is_structured_issue_1049(self):
-        _, sections, _ = translate(
-            "<h2>Opportunity</h2><div><h3>Eligibility</h3><p>Public agencies.</p></div>"
-        )
+        _, sections, _ = translate(self.fidelity_inputs["wrapped_subheading"])
         self.assertIn("Eligibility", [s["name"] for s in sections[0]["subsections"]])
 
     @expectedFailure
     def test_captioned_table_stays_tabular_issue_1050(self):
-        _, _, rendered = translate(
-            self.prefix
-            + "<table><caption>Awards</caption><tr><td>Program</td><td>Amount</td></tr><tr><td>Training</td><td>0</td></tr></table>"
-        )
+        _, _, rendered = translate(self.fidelity_inputs["captioned_table"])
         self.assertIsNotNone(rendered.table)
 
     @expectedFailure
     def test_bare_image_survives_issue_1051(self):
-        _, _, rendered = translate(
-            self.prefix + '<img src="logo.png" alt="Agency logo">'
-        )
+        _, _, rendered = translate(self.fidelity_inputs["bare_image"])
         self.assertIsNotNone(rendered.find("img", src="logo.png"))
 
     @expectedFailure
     def test_list_item_anchor_survives_issue_1052(self):
-        _, _, rendered = translate(
-            self.prefix
-            + '<p><a href="#note-1">Read note</a></p><ol><li id="note-1">Source</li></ol>'
-        )
+        _, _, rendered = translate(self.fidelity_inputs["list_item_anchor"])
         self.assertIsNotNone(rendered.find(id="note-1"))
