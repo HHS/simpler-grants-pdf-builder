@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.0...nofos-v3.50.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* align PDF upload errors with shared file input styling ([#1038](https://github.com/HHS/simpler-grants-pdf-builder/issues/1038)) ([9e2b397](https://github.com/HHS/simpler-grants-pdf-builder/commit/9e2b397ebea37fbd6fffc578b035b6e7157ab541))
+* make long-heading import errors actionable ([#1040](https://github.com/HHS/simpler-grants-pdf-builder/issues/1040)) ([#1043](https://github.com/HHS/simpler-grants-pdf-builder/issues/1043)) ([db11424](https://github.com/HHS/simpler-grants-pdf-builder/commit/db114247b18062c4fceb2eab1fe1c95c6070ed5a))
+
 ## [3.50.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.49.1...nofos-v3.50.0) (2026-10-06)
 
 
