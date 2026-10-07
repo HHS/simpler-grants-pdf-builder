@@ -326,7 +326,6 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
         _, _, rendered = translate(self.fidelity_inputs["bare_image"])
         self.assertIsNotNone(rendered.find("img", src="logo.png"))
 
-    @expectedFailure
     def test_list_item_anchor_survives_issue_1052(self):
         _, _, rendered = translate(self.fidelity_inputs["list_item_anchor"])
         self.assertIsNotNone(rendered.find(id="note-1"))
