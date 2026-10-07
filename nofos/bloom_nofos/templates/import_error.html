@@ -8,6 +8,24 @@
 	<h1 class="font-heading-xl margin-y-0">{{ error_title }}</h1>
 	<p>{{ error_summary }}</p>
 
+	{% if heading_errors %}
+		<h2 class="font-heading-lg">Headings to fix ({{ heading_errors|length }})</h2>
+		<p>The heading level comes from the imported document. Custom Word styles may have different names.</p>
+		{% for heading in heading_errors %}
+			<section class="border-top border-base-light padding-y-2" style="overflow-wrap: anywhere" aria-labelledby="heading-error-{{ forloop.counter }}">
+				<h3 id="heading-error-{{ forloop.counter }}">{{ heading.detected_as }}</h3>
+				<dl>
+					<dt class="text-bold">Heading level in Word</dt><dd>{{ heading.word_style }}</dd>
+					{% if heading.heading_kind == 'subsection' %}<dt class="text-bold">Parent section {{ heading.section_order }}</dt><dd>{{ heading.section_name }}</dd>{% endif %}
+					<dt class="text-bold">Heading character limit</dt><dd>{{ heading.max_length }}</dd>
+					<dt class="text-bold">Characters found</dt><dd>{{ heading.characters }}</dd>
+					<dt class="text-bold">Search Word for:</dt><dd class="margin-left-0"><code>{{ heading.search_snippet }}</code></dd>
+				</dl>
+				<details><summary>Affected text (full heading)</summary><p>{{ heading.heading_text }}</p></details>
+			</section>
+		{% endfor %}
+	{% endif %}
+
 	{% if error_details %}
 		<dl>
 			{% for detail in error_details %}
@@ -18,7 +36,7 @@
 	{% endif %}
 
 	{% if recovery_steps %}
-		<p>What to do next:</p>
+		<h2 class="font-heading-lg margin-top-4">What to do next</h2>
 		<ol class="usa-list">
 			{% for step in recovery_steps %}
 				<li>{{ step }}</li>
@@ -27,9 +45,8 @@
 	{% endif %}
 
 	{% if retry_url %}
-		<p><a class="usa-button" href="{{ retry_url }}">{{ retry_label }}</a></p>
+		<p><a class="usa-link text-bold" href="{{ retry_url }}">{{ retry_label }}</a></p>
 	{% endif %}
 
-	<p><strong>Error code:</strong> <code>{{ error_code }}</code></p>
-	{% include 'includes/error_support.html' %}
+	{% include 'includes/import_error_support.html' %}
 {% endblock %}

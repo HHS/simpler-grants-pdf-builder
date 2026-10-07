@@ -457,6 +457,32 @@ def add_page_breaks_to_headings(document):
 
 
 def _build_document(document, sections, SectionModel, SubsectionModel):
+    # Check all names before creating any section, for every import consumer.
+    long_headings = []
+    for section in sections:
+        for kind, items, model in (
+            ("section", [section], SectionModel),
+            ("subsection", section.get("subsections", []), SubsectionModel),
+        ):
+            limit = model._meta.get_field("name").max_length
+            for item in items:
+                name = item.get("name", "Section X" if kind == "section" else "")
+                if len(name) > limit:
+                    long_headings.append(
+                        {
+                            "heading_kind": kind,
+                            "heading_order": item.get("order", ""),
+                            "heading_text": name,
+                            "max_length": limit,
+                            "source_tag": item.get("source_tag", ""),
+                            "search_text": item.get("search_text", name),
+                            "section_name": section.get("name", "Section X"),
+                            "section_order": section.get("order", ""),
+                        }
+                    )
+    if long_headings:
+        raise MistaggedHeadingError(headings=long_headings)
+
     def _get_document_field_name(SectionModel, document):
         """
         Return the field name that should be used to attach `document` to SectionModel.
@@ -831,6 +857,20 @@ def convert_table_with_all_ths_to_a_regular_table(table):
             new_tbody.append(row.extract())
 
 
+def _heading_search_text(tag):
+    """Preserve spaces at manual breaks without changing stored heading names."""
+    if "data-builder-search-text" in tag.attrs:
+        return tag.attrs.pop("data-builder-search-text")
+    return "".join(
+        (
+            " "
+            if isinstance(node, Tag) and node.name == "br"
+            else str(node) if isinstance(node, NavigableString) else ""
+        )
+        for node in tag.descendants
+    )
+
+
 def get_sections_from_soup(soup, top_heading_level="h1"):
     # build a structure that looks like our model
     sections = []
@@ -860,6 +900,8 @@ def get_sections_from_soup(soup, top_heading_level="h1"):
                 sections.append(
                     {
                         "name": section_name,
+                        "source_tag": tag.name,
+                        "search_text": _heading_search_text(tag),
                         "order": section_num + 1,
                         "html_id": tag.get("id", ""),
                         "has_section_page": has_section_page,
@@ -975,6 +1017,8 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
             return {
                 "name": key_callout_title or clean_string(heading_tag.text),
+                "source_tag": "h7" if is_h7(heading_tag) else heading_tag.name,
+                "search_text": key_callout_title or _heading_search_text(heading_tag),
                 "order": order,
                 "tag": tag_name,
                 "html_id": heading_tag.get("id", ""),
@@ -2923,22 +2967,27 @@ def add_strongs_to_soup(soup):
 
 
 def add_em_to_de_minimis(soup):
-    def _replace_de_minimis(match):
-        # Check if the matched string is already inside an <em> tag
-        if match.group(0).startswith("<em>") and match.group(0).endswith("</em>"):
-            return match.group(0)  # return the match unchanged
-        return f"<em>{match.group(0)}</em>"  # Wrap in <em> tags if not already wrapped
-
-    # Correct the regex to prevent changing already wrapped instances
-    new_html = re.sub(
-        r"(?<!<em>)de minimis(?!<\/em>)",
-        _replace_de_minimis,
-        str(soup),
-        flags=re.IGNORECASE,
-    )
-
-    # Return soup object
-    return BeautifulSoup(new_html, "html.parser")
+    # Work on text nodes so attributes (including Word Find snippets) stay plain.
+    soup = BeautifulSoup(str(soup), "html.parser")
+    pattern = re.compile(r"de minimis", re.IGNORECASE)
+    for node in soup.find_all(string=pattern):
+        if type(node) is not NavigableString or node.find_parent(
+            ["em", "script", "style"]
+        ):
+            continue
+        text = str(node)
+        offset = 0
+        for match in pattern.finditer(text):
+            if match.start() > offset:
+                node.insert_before(NavigableString(text[offset : match.start()]))
+            emphasis = soup.new_tag("em")
+            emphasis.string = match.group()
+            node.insert_before(emphasis)
+            offset = match.end()
+        if offset < len(text):
+            node.insert_before(NavigableString(text[offset:]))
+        node.extract()
+    return soup
 
 
 def clean_heading_tags(soup):
@@ -2955,6 +3004,10 @@ def clean_heading_tags(soup):
     headings = soup.find_all(re.compile(r"^h[1-6]$"))
 
     for heading in headings:
+        # Retain a searchable version before cleanup removes manual breaks.
+        # A temporary attribute survives later soup reparsing. The section
+        # parser consumes it; it is not stored as heading content.
+        heading["data-builder-search-text"] = _heading_search_text(heading)
         # Unwrap spans
         for span in heading.find_all("span"):
             span.unwrap()

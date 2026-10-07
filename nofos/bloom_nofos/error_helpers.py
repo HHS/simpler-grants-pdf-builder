@@ -22,19 +22,58 @@ class MistaggedHeadingError(ValidationError):
 
     code = "mistagged_heading"
 
-    def __init__(self, *, heading_kind, heading_order, heading_text, max_length):
+    def __init__(
+        self,
+        *,
+        heading_kind=None,
+        heading_order=None,
+        heading_text="",
+        max_length=None,
+        headings=None,
+    ):
+        self.headings = (
+            list(headings)
+            if headings is not None
+            else [
+                {
+                    "heading_kind": heading_kind,
+                    "heading_order": heading_order,
+                    "heading_text": heading_text,
+                    "max_length": max_length,
+                }
+            ]
+        )
+        first = self.headings[0]
+        heading_kind = first["heading_kind"]
+        heading_order = first["heading_order"]
+        heading_text = first["heading_text"]
+        max_length = first["max_length"]
         self.heading_kind = heading_kind
         self.heading_order = heading_order
         self.heading_text = heading_text
         self.max_length = max_length
         super().__init__(
             (
-                f"{heading_kind.title()} heading {heading_order} exceeds the "
-                f"{max_length}-character limit. This often means a paragraph "
+                f"{len(self.headings)} heading(s) exceed their character limits. "
+                "This often means a paragraph "
                 "was incorrectly styled as a heading."
             ),
             code=self.code,
         )
+
+    def safe_log_details(self):
+        """Locations and counts only; document text belongs on the error page."""
+        return [
+            {
+                "kind": item["heading_kind"],
+                "order": item["heading_order"],
+                "source_tag": item.get("source_tag", ""),
+                "section_order": item.get("section_order"),
+                "characters": len(item["heading_text"]),
+                "limit": item["max_length"],
+            }
+            for item in self.headings
+        ]
 
 
 class StrictFormattingError(ValidationError):
@@ -91,6 +130,7 @@ def render_blocking_import_error(
     retry_url=None,
     retry_label="Try the import again",
     error_details=None,
+    heading_errors=None,
 ):
     """Render a safe, actionable error page for a blocked document import."""
     return render(
@@ -105,6 +145,7 @@ def render_blocking_import_error(
             "retry_url": retry_url,
             "retry_label": retry_label,
             "error_details": error_details or [],
+            "heading_errors": heading_errors or [],
         },
     )
 
@@ -117,6 +158,7 @@ def render_import_error(
     retry_label="Try the import again",
     error_details=None,
     summary_context=None,
+    heading_errors=None,
 ):
     """
     Render the error page for a catalogued import error code.
@@ -141,6 +183,7 @@ def render_import_error(
         retry_url=retry_url,
         retry_label=retry_label,
         error_details=error_details,
+        heading_errors=heading_errors,
     )
 
 
@@ -152,19 +195,30 @@ def render_mistagged_heading_error(
     retry_label="Try the import again",
 ):
     """Render a safe, specific response for a likely mistagged paragraph."""
-    detected_as = f"{error.heading_kind.title()} heading"
-    if error.heading_order not in (None, ""):
-        detected_as = f"{detected_as} {error.heading_order}"
+    headings = []
+    for item in error.headings:
+        source_tag = item.get("source_tag", "")
+        source_level = (
+            source_tag[1:] if source_tag in {f"h{i}" for i in range(1, 8)} else ""
+        )
+        headings.append(
+            {
+                **item,
+                "detected_as": f'{item["heading_kind"].title()} heading {item["heading_order"]}',
+                "word_style": (
+                    f"Heading {source_level}" if source_level else "Not available"
+                ),
+                "characters": len(item["heading_text"]),
+                "search_snippet": " ".join(
+                    item.get("search_text", item["heading_text"]).split()
+                )[:50],
+            }
+        )
 
     return render_import_error(
         request,
         "IMPORT-HEADING-TOO-LONG",
-        error_details=[
-            {"label": "Detected as", "value": detected_as},
-            {"label": "Heading character limit", "value": str(error.max_length)},
-            {"label": "Characters found", "value": str(len(error.heading_text))},
-            {"label": "Affected text", "value": error.heading_text},
-        ],
+        heading_errors=headings,
         retry_url=retry_url,
         retry_label=retry_label,
     )

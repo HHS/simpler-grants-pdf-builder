@@ -53,6 +53,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-012 | validation | Heading Structure | No `h1` present → section level defaults to `h2` | `nofo.py` |
 | IMPORT-013 | repair | Heading Structure | Heading cleanup: unwrap spans, collapse whitespace, drop empty headings | `nofo.py` |
 | IMPORT-014 | conversion | Heading Structure | Auto-generate heading IDs; rewrite internal links to match | `nofo.py` |
+| IMPORT-055 | validation | Heading Structure | Report all over-limit section/subsection names before creating sections | `nofo.py` |
 | IMPORT-015 | conversion | Footnotes/Endnotes | Missing "Endnotes" heading + trailing footnote list detected → heading synthesized | `nofo.py` |
 | IMPORT-016 | conversion | Footnotes/Endnotes | Footnote/endnote `<ol>` → preserved as raw HTML through Markdown conversion | `nofo_markdown.py` |
 | IMPORT-017 | conversion | Footnotes/Endnotes | Footnote/endnote `<a>` → wrapped in `<sup>`, preserved as raw HTML | `nofo_markdown.py` |
@@ -198,6 +199,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** repair *(the empty-heading case is a removal)*
 - **Trigger:** Any heading (`h1`-`h6`) containing `<span>` wrappers, extra internal whitespace, or leading/trailing whitespace; or a heading that becomes empty after this cleanup.
 - **Action:** Unwrap spans, collapse whitespace to single spaces, trim; decompose (remove) the heading entirely if empty.
+- **Recovery metadata:** Preserve a search-text version with spaces at manual line breaks in a temporary attribute before cleanup. The section parser consumes that attribute for IMPORT-055 guidance; stored heading text still follows the existing cleanup rule.
 - **Source:** `nofo.py::clean_heading_tags`
 - **Status:** active
 
@@ -206,6 +208,13 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Trigger:** Every section/subsection heading, on document build.
 - **Action:** Auto-generate a slug `id` for each heading; rewrite any internal `href="#old-id"` links in the document to point at the new ids.
 - **Source:** `nofo.py::add_headings_to_document`
+- **Status:** active
+
+### IMPORT-055 — Long heading validation and recovery
+- **Type:** validation
+- **Trigger:** Any imported section or subsection name exceeds its model's existing character limit.
+- **Action:** Check every name before creating sections and raise one `IMPORT-HEADING-TOO-LONG` error containing all failures. Preserve the source heading level before Builder demotion for recovery guidance, with parent section, counts, a short search snippet and expandable full text. No heading is shortened or restyled automatically. Existing limits and transaction rollback remain unchanged. General warning logs include counts and locations, not heading or parent-section text.
+- **Source:** `nofo.py::_build_document`, `get_sections_from_soup`, `get_subsections_from_sections`; shared rendering in `bloom_nofos/error_helpers.py`
 - **Status:** active
 
 ---
@@ -441,8 +450,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-037 — "De minimis" auto-italicization
 - **Type:** conversion
-- **Trigger:** The literal text "de minimis" (case-insensitive) appears anywhere and isn't already wrapped in `<em>`.
-- **Action:** Wrapped in `<em>` — a hardcoded, domain-specific house-style rule.
+- **Trigger:** The literal text "de minimis" (case-insensitive) appears in a text node outside `<em>`, `<script>`, or `<style>`.
+- **Action:** Wrapped in `<em>` — a hardcoded, domain-specific house-style rule. Only text nodes are changed; attributes (including temporary heading search text), comments, and existing emphasis remain untouched.
 - **Source:** `nofo.py::add_em_to_de_minimis`
 - **Status:** active
 

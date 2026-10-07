@@ -36,6 +36,16 @@ user is shown when an import is blocked. A rule there can be the reason a code
 here fires - `IMPORT-011` is why `IMPORT-AMBIGUOUS-HEADINGS` exists - but the two
 registries are maintained separately.
 
+## Import error page layout
+
+Import error pages use H2 headings for recovery steps ("What to do next") and
+support ("Need help resolving this error?"). The support section has a top divider
+and extra spacing after the retry link, and groups the contact instructions with
+the error code. It is rendered by `includes/import_error_support.html`, scoped to
+`import_error.html`; general 400/500 pages keep `includes/error_support.html`.
+Retry controls are bold navigation links because they open the relevant form;
+they do not automatically retry an upload.
+
 ## The codes
 
 ### `IMPORT-NO-FILE`
@@ -149,13 +159,16 @@ later Heading 2. Other ambiguous patterns retain only the neutral steps above.
 
 > **We found text that may have the wrong heading style**
 >
-> The document contains heading text that is far longer than a heading should be. This usually means a paragraph was formatted as a heading by mistake. The affected text is shown above.
+> The document contains heading text that is far longer than a heading should be. This usually means a paragraph was formatted as a heading by mistake. Review all the headings listed below.
 
-1. Open the document in Word and find the affected text shown above.
-2. If it is paragraph text, change its style to ‘Normal’. If it is genuinely a heading, shorten it or apply the correct heading style.
-3. Save the document, then import it again.
+1. In Word, open View → Navigation Pane and select the long heading. Or open Find (Ctrl+F or Command+F) and paste its short search snippet.
+2. If the text is a normal paragraph, apply the Normal style.
+3. If a heading and the paragraph after it are joined by a line break (Shift+Enter), replace that break with a paragraph break (Enter). Apply Normal to the paragraph only. Turn on Show/Hide ¶ to see the breaks.
+4. Check text in tables or callout boxes for an unintended heading style. Pasted text can also bring a heading style from another document.
+5. If the text really is a heading, shorten it to the character limit shown.
+6. Save the document, then import it again.
 
-**What support should say:** The error page names the heading, the limit, and the offending text, so the user can find it in Word directly. This is the most self-serviceable import error we have.
+**What support should say:** The page lists all long headings with source heading level, parent section, counts, a short Find snippet and expandable full text. General warning logs contain locations and counts, not document text. Source heading levels are inferred from imported HTML, not exact custom Word style names. Existing import-attempt records retain their usual filename/OpDiv context; this change does not add document excerpts to logging.
 
 ### `IMPORT-NO-SECTIONS`
 

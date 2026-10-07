@@ -129,3 +129,53 @@ Useful references:
   and [its behavior](../nofos/bloom_nofos/static/js/nofo_export_button.js)
 - [Shared progress styles](../nofos/bloom_nofos/templates/includes/document_progress_styles.html)
 - [PDF analysis modal](../nofos/bloom_nofos/templates/pdf_readability.html)
+
+## Import recovery: buttons and strong navigation links
+
+For import recovery, choose the control based on what activating it does. An
+operation can run on the server or in JavaScript; JavaScript alone does not
+make something a button action.
+
+| User intent | Behavior | Control |
+| --- | --- | --- |
+| Import the selected file | Submits the upload form and starts processing | Submit button, styled with `usa-button` |
+| Try the import again after an error | Opens the upload form so the user can select a corrected file | Navigation link, styled with `usa-link text-bold` |
+
+### Implementation
+
+Use a native submit button for starting the import:
+
+```html
+<button type="submit" class="usa-button">Import</button>
+```
+
+Use an anchor with a real destination for returning to the upload form:
+
+```django
+<a class="usa-link text-bold" href="{{ retry_url }}">{{ retry_label }}</a>
+```
+
+Keep the link label specific to its destination. "Try the import again" opens the
+form; it does not resubmit the previous file. Preserve any destination-specific
+label, such as "Change this NOFO’s status" when that is the required next step.
+Do not use browser-history navigation: the relevant form should remain reachable
+when the error page was opened in a new tab or after other navigation.
+
+The reference is [`import_error.html`](../nofos/bloom_nofos/templates/import_error.html).
+Its recovery steps begin with an H2. The retry link precedes a separated support
+section rendered by
+[`import_error_support.html`](../nofos/bloom_nofos/templates/includes/import_error_support.html),
+with an H2, contact instructions, and the error code. This support layout is scoped
+to import errors; see [Import error page layout](IMPORT_ERROR_CODES.md#import-error-page-layout).
+The PDF checker's "Analyze another PDF" link is an existing example of the same
+strong navigation-link styling.
+
+### Verify before shipping
+
+1. Follow the retry link: verify it opens the relevant form without starting an import.
+2. Use keyboard navigation: verify visible focus and that Enter follows the link.
+3. Submit a corrected file: verify the form's submit button starts processing.
+
+This guidance covers this recovery workflow. It does not call for a site-wide
+button audit or changes to existing download, export, or other controls. Extend
+the catalog as those use cases are reviewed.
