@@ -1,3 +1,5 @@
+<!-- Contribution workflow: documentation/CONTRIBUTION_WORKFLOW.md. Use a Conventional Commit title (fix:, feat:, docs:, ...) and squash and merge. -->
+
 ## Summary
 
 <!-- What does this PR do, and why? -->

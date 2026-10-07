@@ -26,6 +26,8 @@ The `main` branch has the following rules enforced:
 
 ## Contribution Workflow
 
+For a diagram of the whole flow, from issue to changelog, and links to what to read at each step, see [documentation/CONTRIBUTION_WORKFLOW.md](documentation/CONTRIBUTION_WORKFLOW.md).
+
 ### 1. Create a feature branch
 
 Branch off of `main` and name your branch descriptively. There is no enforced naming convention in this repo, but aim for something like:
@@ -40,7 +42,7 @@ Open a PR targeting `main`. CI will run automatically on every PR.
 
 **PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)** — start the title with a type prefix, e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`, `refactor: ...`, `test: ...`, `ci: ...`. This is enforced by `.github/workflows/pr_title_lint.yml` (not a required check, so it won't block merging) and, more importantly, is what [release-please](https://github.com/googleapis/release-please) uses to group merged PRs into CHANGELOG.md entries — see `release-please-config.json` for the type-to-section mapping. A title without a recognized prefix means the change is miscategorized or silently omitted from the changelog.
 
-**This only works reliably under squash merge.** Release-please reads the commit message(s) that actually land on `main`, not the PR title — squash merge is the one method where GitHub sets the resulting commit's message to the PR title, so those line up. Under rebase, your individual commits land as-is; if they aren't themselves Conventional-Commit-formatted, the PR can pass title lint and still be silently missing from the changelog. `pr_title_lint.yml` is advisory only (not a required check) — it nudges toward a good title, but doesn't by itself guarantee correct categorization under rebase. If a PR does go missing from the changelog, you can fix it after the fact: edit the *merged* PR's description to add
+**This only works reliably under squash merge, so always squash and merge (see § 4).** Release-please reads the commit message(s) that actually land on `main`, not the PR title — squash merge is the one method where GitHub sets the resulting commit's message to the PR title, so those line up. Under rebase, your individual commits land as-is; if they aren't themselves Conventional-Commit-formatted, the PR can pass title lint and still be silently missing from the changelog. `pr_title_lint.yml` is advisory only (not a required check) — it nudges toward a good title, but doesn't by itself guarantee correct categorization under rebase. If a PR does go missing from the changelog, you can fix it after the fact: edit the *merged* PR's description to add
 ```
 BEGIN_COMMIT_OVERRIDE
 feat: whatever the PR actually did
@@ -60,7 +62,9 @@ The PR cannot be merged until this check passes.
 
 ### 4. Merge
 
-Once CI is green, you can merge your own PR. No human approval is required. The allowed merge methods are squash and rebase (merge commits are disabled at the repo level).
+Once CI is green, you can merge your own PR. No human approval is required.
+
+**Always use Squash and merge.** Squash merge makes the PR title the commit message on `main`, which is what release-please reads to build CHANGELOG.md (see § 2). The repository still allows rebase merges (merge commits are disabled), but don't use them: a rebase-merged PR whose individual commits aren't Conventional-Commit formatted silently drops out of the changelog.
 
 ---
 
