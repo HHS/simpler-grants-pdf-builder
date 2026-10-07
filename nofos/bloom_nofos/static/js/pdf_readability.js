@@ -3,11 +3,15 @@
   if (form) {
     form.addEventListener("submit", (event) => {
       if (!form.checkValidity()) return;
+      // Let the server render the shared inline upload error for a missing file.
+      if (!document.getElementById("pdf").files.length) return;
       if (document.getElementById("analyze-pdf-button").disabled) {
         event.preventDefault();
         return;
       }
       document.getElementById("readability-progress-trigger")?.click();
+      // Start the horse from the left edge when the modal opens, like Word export.
+      document.getElementById("readability-progress-horse")?.classList.add("is-running");
       document.getElementById("analyze-pdf-button").disabled = true;
       document.getElementById("pdf-submit-status").textContent = "Analyzing your PDF…";
     });
@@ -18,6 +22,7 @@
     if (!form || !event.persisted) return;
     document.getElementById("analyze-pdf-button").disabled = false;
     document.getElementById("pdf-submit-status").textContent = "";
+    document.getElementById("readability-progress-horse")?.classList.remove("is-running");
     const modal = document.getElementById("readability-progress-modal");
     if (modal?.classList.contains("is-visible")) modal.querySelector("[data-close-modal]")?.click();
   });
@@ -37,8 +42,11 @@
     else window.addEventListener("load", showReady, { once: true });
   }
 
-  const errorSummary = document.getElementById("readability-error-summary");
-  if (errorSummary) errorSummary.focus();
+  const uploadError = document.getElementById("pdf--error");
+  if (uploadError) {
+    uploadError.setAttribute("tabindex", "-1");
+    uploadError.focus();
+  }
 
   const printButton = document.getElementById("print-readability-report");
   if (printButton) printButton.addEventListener("click", () => window.print());
