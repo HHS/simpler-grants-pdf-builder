@@ -23,8 +23,11 @@ flowchart TD
     E1 -- No --> E2
     E1a --> E2{Changing user-facing<br/>import errors?}
     E2 -- Yes --> E2a[Read IMPORT_ERROR_CODES.md<br/>and the copy rules in import_errors.py]
-    E2 -- No --> F
-    E2a --> F
+    E2 -- No --> E3
+    E2a --> E3{Adding or changing UI?}
+    E3 -- Yes --> E3a[Read UI_PATTERNS.md<br/>reuse relevant documented patterns]
+    E3 -- No --> F
+    E3a --> F
 
     F[Write the code and tests] --> G{Does it change documented<br/>behavior, or need new docs?}
     G -- Yes --> G1[Update documentation/ in the same PR<br/>and link new pages from documentation/README.md]
@@ -52,6 +55,7 @@ flowchart TD
 | Branch off `main` | [`DEPLOYMENT.md` § 1. Create a feature branch](../DEPLOYMENT.md#1-create-a-feature-branch) and [§ Branch Protection Rules](../DEPLOYMENT.md#branch-protection-rules) |
 | Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md) and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
 | Changing user-facing import errors | [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the "Copy rules" at the top of [`nofos/bloom_nofos/import_errors.py`](../nofos/bloom_nofos/import_errors.py) |
+| Adding or changing UI | [`UI_PATTERNS.md`](UI_PATTERNS.md): check this growing catalog for a relevant pattern and reuse its shared component. It is not a complete inventory of the site's UI; extend it when introducing another verified pattern. |
 | Updating docs | [`documentation/README.md`](README.md): docs go in `documentation/`, never a top-level `docs/`; ADRs go in [`adr/`](adr/README.md); PR screenshots go in `review-evidence/` |
 | Run checks locally | [`DEPLOYMENT.md` § Before You Push](../DEPLOYMENT.md#before-you-push) |
 | Open the PR | [`DEPLOYMENT.md` § 2. Open a pull request](../DEPLOYMENT.md#2-open-a-pull-request), [Conventional Commits](https://www.conventionalcommits.org/), and the [PR template](../.github/pull_request_template.md) |
@@ -105,10 +109,12 @@ merge. The differences:
 
 ## Known gaps
 
-- **No general UI or error-message guide.** The only written guidance is for
-  import errors ([`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md) and the copy
-  rules in `import_errors.py`). Shared UI components and other error pages
-  have none yet.
+- **UI guidance has partial coverage.** [`UI_PATTERNS.md`](UI_PATTERNS.md)
+  documents selected patterns, including file-upload errors, loading progress
+  modals, and import recovery controls. It is a starting point for people and
+  agents, not a complete design system. Import-specific messages also have
+  [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md) and the copy rules in
+  `import_errors.py`; other use cases can be added as they are reviewed.
 - **Squash merge isn't enforced.** Turning off rebase merging in the
   repository settings would make the rule above automatic. That needs a
   repository admin.
