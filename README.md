@@ -45,6 +45,10 @@ Once a NOFO is reviewed and approved, our workflow is:
 The provisional source-native readability integration is documented in
 [Source-native readability metrics](documentation/READABILITY_METRICS.md).
 
+## Contributing
+
+See [documentation/CONTRIBUTION_WORKFLOW.md](documentation/CONTRIBUTION_WORKFLOW.md) for how changes get from an issue to `main`, and [DEPLOYMENT.md](DEPLOYMENT.md) for the details.
+
 ## Getting started
 
 ### [Install `python`](https://www.python.org)

@@ -84,18 +84,9 @@
       <h1 class="font-heading-xl">Check a PDF’s readability</h1>
       <p class="usa-intro">Upload an HHS notice of funding opportunity to get readability estimates.</p>
 
-      {% if error %}
-        <div class="usa-alert usa-alert--error margin-y-3" role="alert" id="readability-error-summary" tabindex="-1" autofocus>
-          <div class="usa-alert__body">
-            <h2 class="usa-alert__heading">We couldn’t analyze your PDF</h2>
-            <p class="usa-alert__text"><a href="#pdf">{{ error }}</a></p>
-          </div>
-        </div>
-      {% endif %}
-
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
-        {% include "includes/file_input.html" with id="pdf" label="Choose a PDF" hint=upload_hint accept=".pdf,application/pdf" error=error required=True only %}
+        {% include "includes/file_input.html" with id="pdf" label="Choose a PDF" hint=upload_hint accept=".pdf,application/pdf" error=error only %}
         <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your PDF is processed temporarily on HHS-operated systems; no report history is kept.</p>
         <details class="readability-additional-info margin-top-2">
           <summary><span>How we handle your PDF</span></summary>
@@ -131,10 +122,12 @@
               <p>Your report is ready.</p>
               {% else %}
               <p>This may take a few seconds. Your report will appear when analysis finishes.</p>
-              <div class="docx-horse-track is-running" aria-hidden="true">
-                <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+              <div class="margin-top-2">
+                <div class="docx-horse-track" id="readability-progress-horse" aria-hidden="true">
+                  <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+                </div>
+                <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
               </div>
-              <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
               {% endif %}
             </div>
             <div class="usa-modal__footer text-center">

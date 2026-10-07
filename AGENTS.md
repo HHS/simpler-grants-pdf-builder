@@ -2,6 +2,10 @@
 
 Guidance for AI coding agents (Claude Code, Codex, etc.) working in this repository.
 
+Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/CONTRIBUTION_WORKFLOW.md):
+issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
+read at each step and lists the rules that apply only to agents.
+
 ## PR titles must follow Conventional Commits
 
 Every PR title must start with a type prefix — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
@@ -16,6 +20,8 @@ individual commit lands as-is and must itself be conventional, or the PR can sil
 from CHANGELOG.md despite a valid title. If that happens, add a `BEGIN_COMMIT_OVERRIDE` /
 `END_COMMIT_OVERRIDE` block to the merged PR's description to fix it retroactively.
 
+**Always squash and merge.** Don't rebase-merge, even though the repository allows it.
+
 See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules, and the hotfix
 title convention.
 
@@ -25,6 +31,13 @@ Put repository documentation in the top-level `documentation/` directory. Do not
 top-level `docs/` directory. Add durable guides to `documentation/README.md`; use
 `documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
 for PR-specific screenshots and validation notes.
+
+## UI patterns
+
+Before adding or changing file-upload error feedback or a loading progress modal,
+read [documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse the
+shared component it names. Extend the catalog when introducing another verified pattern;
+do not assume undocumented screens follow it.
 
 ## Word export safety
 
