@@ -28,9 +28,9 @@ for PR-specific screenshots and validation notes.
 
 ## UI patterns
 
-Before adding or changing file-upload error feedback, read
-[documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse the shared
-file-input component. Extend the catalog when introducing another verified pattern;
+Before adding or changing file-upload error feedback or a loading progress modal,
+read [documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse the
+shared component it names. Extend the catalog when introducing another verified pattern;
 do not assume undocumented screens follow it.
 
 ## Word export safety

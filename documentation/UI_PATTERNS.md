@@ -68,3 +68,64 @@ Useful references:
 - [PDF interaction behavior](../nofos/bloom_nofos/static/js/pdf_readability.js)
 - [PDF page tests](../nofos/bloom_nofos/tests_bloom_nofos/test_pdf_readability.py)
 - [Import error codes](IMPORT_ERROR_CODES.md), for blocking NOFO import messages
+
+## Loading progress modals
+
+Use the running-horse progress modal when an action blocks the user for several
+seconds, such as Word export or PDF analysis. The Download Word modal in
+[`docx_download_button_form.html`](../nofos/bloom_nofos/templates/includes/docx_download_button_form.html)
+is the reference implementation; the PDF checker's analysis modal follows it.
+
+For inline progress below an import or upload form, use
+[`loading_horse.html`](../nofos/bloom_nofos/templates/includes/loading_horse.html)
+instead.
+
+### What the user sees
+
+- A USWDS modal with no close button, a heading such as “Generating Word document…”,
+  and a sentence explaining roughly how long it takes.
+- The horse runs from the left edge of the track to the right, looping until
+  the work finishes, with “Working…” centered below it.
+- On success, the modal says the result is ready and closes itself after
+  3 seconds. On failure, it shows an error and an OK button.
+
+### Implementation
+
+Include the shared styles and use the track and horse classes:
+
+```django
+{% include "includes/document_progress_styles.html" %}
+<div class="margin-top-2">
+  <div class="docx-horse-track" id="my-progress-horse" aria-hidden="true">
+    <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+  </div>
+  <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
+</div>
+```
+
+Don't render the track with `is-running` already set. Add `is-running` from
+JavaScript at the moment the modal opens, so the horse starts from the left edge
+every time, and remove it when the work ends or the page is restored with the
+Back button (`pageshow` with `event.persisted`). If the result appears in
+the same page, set `is-finished` so the horse glides to the right edge instead
+of jumping. If `is-running` is in the markup, the animation starts on page
+load and the horse appears mid-track when the modal opens.
+
+The horse is decorative: keep `aria-hidden="true"` on the track and `alt=""`
+on the image, and announce progress through a `role="status"` or `aria-live`
+region instead.
+
+### Verify before shipping
+
+1. Trigger the action: verify the modal opens and the horse starts at the left edge.
+2. Trigger it again after waiting on the page: verify the horse still starts at the left.
+3. Let it finish: verify the success state and auto-close, or the error state and OK button.
+4. Go Back after a full-page submit: verify the modal is closed and the button is enabled.
+5. Check that a screen reader announces progress and not the image.
+
+Useful references:
+
+- [Word export modal](../nofos/bloom_nofos/templates/includes/docx_download_button_form.html)
+  and [its behavior](../nofos/bloom_nofos/static/js/nofo_export_button.js)
+- [Shared progress styles](../nofos/bloom_nofos/templates/includes/document_progress_styles.html)
+- [PDF analysis modal](../nofos/bloom_nofos/templates/pdf_readability.html)
