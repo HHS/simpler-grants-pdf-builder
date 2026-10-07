@@ -122,10 +122,12 @@
               <p>Your report is ready.</p>
               {% else %}
               <p>This may take a few seconds. Your report will appear when analysis finishes.</p>
-              <div class="docx-horse-track is-running" aria-hidden="true">
-                <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+              <div class="margin-top-2">
+                <div class="docx-horse-track" id="readability-progress-horse" aria-hidden="true">
+                  <img src="{% static 'img/loading-horse.gif' %}" alt="" class="docx-loading-horse">
+                </div>
+                <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
               </div>
-              <p class="margin-top-1 text-center" aria-hidden="true">Working…</p>
               {% endif %}
             </div>
             <div class="usa-modal__footer text-center">
