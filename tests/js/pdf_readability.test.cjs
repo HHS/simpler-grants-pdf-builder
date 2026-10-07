@@ -21,6 +21,10 @@ function setup({ form = true, error = false, report = false, valid = true,
   const notes = { open: notesOpen };
   const elements = { 'analyze-pdf-button': submitButton, 'pdf-submit-status': status };
   elements.pdf = { files: fileSelected ? [{}] : [] };
+  const horseClasses = new Set();
+  elements['readability-progress-horse'] = { classList: {
+    add: (name) => horseClasses.add(name), remove: (name) => horseClasses.delete(name),
+  } };
   const node = (textContent) => ({ textContent });
   if (form) elements['pdf-readability-form'] = {
     checkValidity: () => valid,
@@ -71,7 +75,7 @@ function setup({ form = true, error = false, report = false, valid = true,
       },
     } : undefined },
   });
-  return { listeners, submitButton, status, summary, copyStatus, fallback, notes,
+  return { listeners, submitButton, status, summary, copyStatus, fallback, notes, horseClasses,
     get printCount() { return printCount; }, get copiedText() { return copiedText; } };
 }
 
@@ -80,6 +84,15 @@ test('valid submission announces progress and prevents a duplicate upload', () =
   state.listeners['form:submit']();
   assert.equal(state.submitButton.disabled, true);
   assert.equal(state.status.textContent, 'Analyzing your PDF…');
+  assert.equal(state.horseClasses.has('is-running'), true);
+});
+
+test('restored page resets the progress horse', () => {
+  const state = setup();
+  state.listeners['form:submit']();
+  state.listeners['window:pageshow']({ persisted: true });
+  assert.equal(state.submitButton.disabled, false);
+  assert.equal(state.horseClasses.has('is-running'), false);
 });
 
 test('invalid submission does not disable correction', () => {
@@ -87,6 +100,7 @@ test('invalid submission does not disable correction', () => {
   state.listeners['form:submit']();
   assert.equal(state.submitButton.disabled, false);
   assert.equal(state.status.textContent, '');
+  assert.equal(state.horseClasses.has('is-running'), false);
 });
 
 test('inline upload error receives focus after server error', () => {

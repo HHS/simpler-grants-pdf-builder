@@ -10,6 +10,8 @@
         return;
       }
       document.getElementById("readability-progress-trigger")?.click();
+      // Start the horse from the left edge when the modal opens, like Word export.
+      document.getElementById("readability-progress-horse")?.classList.add("is-running");
       document.getElementById("analyze-pdf-button").disabled = true;
       document.getElementById("pdf-submit-status").textContent = "Analyzing your PDF…";
     });
@@ -20,6 +22,7 @@
     if (!form || !event.persisted) return;
     document.getElementById("analyze-pdf-button").disabled = false;
     document.getElementById("pdf-submit-status").textContent = "";
+    document.getElementById("readability-progress-horse")?.classList.remove("is-running");
     const modal = document.getElementById("readability-progress-modal");
     if (modal?.classList.contains("is-visible")) modal.querySelector("[data-close-modal]")?.click();
   });
