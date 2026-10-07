@@ -41,11 +41,37 @@ counts and paragraph ratios are checked exactly.
 
 Controlled variants characterize ordinary font changes, retained writer notes,
 notes in a table cell, placeholder fragments, sparse drafts, and untagged output.
+Wrapped paragraphs and source-declared paragraphs or list bodies continued across
+pages preserve all five reference measures. The multipage fixtures use marked
+content references under one structure element, with list and table ancestry.
+They do not cover every Word tag structure or establish full table conformance.
 Both entry points reuse the same worker, report template, and copy behavior.
 Authenticated integration tests use the real subprocess worker while retaining
 the per-user permission check and disabled public route.
 
 ## Evidence limits and remaining investigation
+
+Two reproducible gaps prevent a general draft-export parity claim:
+
+- **Cross-page table-cell sentence scope.** With package 0.5.4, the same reference
+  prose tagged as table cells loses its four-word opening fragment when a
+  sentence continues onto the next page. Recovered word count stays 23, but
+  sentence word count falls from 17 to 13, words per sentence from 5.67 to 4.33,
+  and grade level from 1.20 to -1.19. The report warns about excluded fragments
+  but still labels reliability high. The adapter merges cross-page body/list
+  blocks, not table blocks. A characterization test records this current
+  limitation, not desired behavior; update it when the package is repaired.
+- **Conversion-dependent recognition.** One private source's LibreOffice PDF
+  was accepted with agency metadata plus an opportunity number. Word for Mac's
+  local Print > PDF > Save as PDF output from that source was rejected because
+  it retained only the opportunity-number signal. Both have 38 pages; the print
+  output has no structure tree. This is a recognition comparison, not a metric
+  accuracy comparison. The online accessibility export was not used. Agency
+  names in visible page text currently do not substitute for agency metadata.
+
+The wrapped and cross-page synthetic fixtures were rendered and every page
+visually inspected. A representative table page of the private Word print
+output was inspected locally. Private content and screenshots are not committed.
 
 Six private sources were converted locally with packaged LibreOffice. Five were
 recognized and returned low-reliability tagged estimates; one instruction-heavy

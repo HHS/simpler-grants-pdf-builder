@@ -30,9 +30,12 @@ WRITER_INSTRUCTION = "Writers must remove this note before they share the notice
 
 
 def draft_pdf(blocks=PROSE, *, tagged=True, font_size=12):
-    """Create a one-page PDF with identical reading order in both variants."""
+    """Create a PDF; newline wraps a block, form feed continues it on a page.
+
+    Continuations retain one structure element, rather than assigning a new
+    paragraph to each physical line or page. This models semantic continuity.
+    """
     writer = PdfWriter()
-    page = writer.add_blank_page(width=612, height=792)
     font = writer._add_object(
         DictionaryObject(
             {
@@ -41,9 +44,6 @@ def draft_pdf(blocks=PROSE, *, tagged=True, font_size=12):
                 NameObject("/BaseFont"): NameObject("/Helvetica"),
             }
         )
-    )
-    page[NameObject("/Resources")] = DictionaryObject(
-        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
     )
     children = ArrayObject()
     root = writer._add_object(
@@ -54,34 +54,81 @@ def draft_pdf(blocks=PROSE, *, tagged=True, font_size=12):
             }
         )
     )
-    content = []
-    for index, (tag, text) in enumerate((*IDENTIFIERS, *blocks)):
+    pages = []
+
+    def new_page():
+        page = writer.add_blank_page(width=612, height=792)
+        page[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+        )
+        content = []
+        pages.append((page, content))
+        return page, content
+
+    page, content = new_page()
+    y = 700
+    for tag, text in (*IDENTIFIERS, *blocks):
         assert text.isascii() and not any(c in text for c in "()\\")
-        children.append(
+        parent = root
+        siblings = children
+        ancestors = {"LBody": ("L", "LI"), "TD": ("Table", "TR"), "TH": ("Table", "TR")}
+        for ancestor in ancestors.get(tag, ()):
+            descendants = ArrayObject()
+            container = writer._add_object(
+                DictionaryObject(
+                    {
+                        NameObject("/Type"): NameObject("/StructElem"),
+                        NameObject("/S"): NameObject(f"/{ancestor}"),
+                        NameObject("/P"): parent,
+                        NameObject("/K"): descendants,
+                    }
+                )
+            )
+            siblings.append(container)
+            parent, siblings = container, descendants
+        references = ArrayObject()
+        siblings.append(
             writer._add_object(
                 DictionaryObject(
                     {
                         NameObject("/Type"): NameObject("/StructElem"),
                         NameObject("/S"): NameObject(f"/{tag}"),
-                        NameObject("/P"): root,
-                        NameObject("/Pg"): page.indirect_reference,
-                        NameObject("/K"): NumberObject(index),
+                        NameObject("/P"): parent,
+                        NameObject("/K"): references,
                     }
                 )
             )
         )
-        line = f"BT /F1 {font_size} Tf 50 {700-index*40} Td ({text}) Tj ET"
-        if tagged:
-            line = f"/{tag} <</MCID {index}>> BDC {line} EMC"
-        content.append(line.encode("ascii"))
+        for part_index, part in enumerate(text.split("\f")):
+            if part_index:
+                page, content = new_page()
+                y = 700
+            for line_text in part.split("\n"):
+                mcid = len(content)
+                references.append(
+                    DictionaryObject(
+                        {
+                            NameObject("/Type"): NameObject("/MCR"),
+                            NameObject("/Pg"): page.indirect_reference,
+                            NameObject("/MCID"): NumberObject(mcid),
+                        }
+                    )
+                )
+                line = f"BT /F1 {font_size} Tf 50 {y} Td ({line_text}) Tj ET"
+                if tagged:
+                    line = f"/{tag} <</MCID {mcid}>> BDC {line} EMC"
+                content.append(line.encode("ascii"))
+                y -= 20
+            y -= 20
     if tagged:
         writer._root_object[NameObject("/StructTreeRoot")] = root
         writer._root_object[NameObject("/MarkInfo")] = DictionaryObject(
             {NameObject("/Marked"): BooleanObject(True)}
         )
-    stream = DecodedStreamObject()
-    stream.set_data(b"\n".join(content))
-    page[NameObject("/Contents")] = writer._add_object(stream)
+    for page, content in pages:
+        stream = DecodedStreamObject()
+        stream.set_data(b"\n".join(content))
+        page[NameObject("/Contents")] = writer._add_object(stream)
     output = BytesIO()
     writer.write(output)
     return output.getvalue()
