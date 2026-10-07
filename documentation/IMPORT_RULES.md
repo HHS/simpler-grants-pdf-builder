@@ -407,8 +407,9 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-032 — Empty block/list-item removal
 - **Type:** removal
-- **Trigger:** A direct child of `<body>`, or any `<li>`/`<p>`, with no text and no `<img>` descendant (and not `<br>`/`<hr>`) — commonly junk left over from PDF-sourced or heavily-edited Word documents.
+- **Trigger:** A direct child of `<body>`, or any `<li>`/`<p>`, with no text and no `<img>` descendant (and not `<br>`/`<hr>`/`<img>`) — commonly junk left over from PDF-sourced or heavily-edited Word documents.
 - **Action:** Decomposed (removed entirely).
+- **Image exception:** A standalone body-level `<img>` is itself preserved, just like a paragraph-wrapped image. Existing descriptive, intentionally empty, and missing-alt handling remains unchanged (IMPORT-033/IMPORT-034).
 - **Source:** `nofo.py::decompose_empty_tags`
 - **Status:** active
 

@@ -2725,7 +2725,7 @@ def decompose_empty_tags(soup):
     body_descendents = soup.select("body > *")
 
     for tag in body_descendents:
-        if not tag.get_text().strip() and tag.name not in ["br", "hr"]:
+        if not tag.get_text().strip() and tag.name not in ["br", "hr", "img"]:
             # images have no content but should not be stripped out
             if len(tag.find_all("img")) == 0:
                 tag.decompose()
