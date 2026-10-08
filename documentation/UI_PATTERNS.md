@@ -6,6 +6,11 @@ incremental catalog of verified patterns, not an audit of every screen.
 
 ## Typography when an editor loads Bootstrap
 
+The [root README's USWDS implementation note](../README.md#a-note-on-our-implementation-of-the-us-web-design-system-uswds)
+explains the bundled static assets and how to update them. This section covers
+using those existing utilities consistently; it does not introduce a Sass or
+frontend build requirement.
+
 Builder uses Merriweather for page and section headings and Source Sans Pro for
 body copy and alert headings. Some editors load Bootstrap for Martor after the
 shared USWDS styles. Bootstrap's global heading rules can make bare `h2` elements
