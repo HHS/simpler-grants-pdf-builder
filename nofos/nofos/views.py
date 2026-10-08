@@ -54,6 +54,10 @@ from .audits import (
     get_audit_events_for_nofo,
     safe_get_changed_fields,
 )
+from .document_processing import (
+    get_sections_and_subsections_from_soup,
+    process_document_content,
+)
 from .forms import (
     NIH_ALLOWED_CHOICES,
     NIH_THEME_DEFAULTS,
@@ -123,7 +127,6 @@ from .nofo import (
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
-    decompose_before_you_begin_section,
     extract_page_break_context,
     find_broken_links,
     find_endnote_issues,
@@ -135,21 +138,16 @@ from .nofo import (
     find_subsections_with_nofo_field_value,
     get_cover_image,
     get_nofo_action_links,
-    get_sections_from_soup,
     get_side_nav_links,
     get_subsection_action_availability,
-    get_subsections_from_sections,
     modifications_update_announcement_text,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
-    process_nofo_html,
     remove_cover_image_from_s3,
     remove_page_breaks_from_subsection,
-    replace_chars,
-    replace_links,
     replace_value_in_subsections,
     resolve_section_heading_level,
     restore_subsection_metadata,
@@ -821,23 +819,17 @@ class BaseNofoImportView(View):
                 uploaded_file
             )
 
-            # 3. Clean/transform HTML
-            cleaned_content = replace_links(replace_chars(file_content))
-            soup = BeautifulSoup(cleaned_content, "html.parser")
-            # Remove this known redundant section before it can affect which
-            # heading level Builder treats as the document's main sections.
-            decompose_before_you_begin_section(soup)
-            top_heading_level = resolve_section_heading_level(soup)
-            soup, instructions_tables = process_nofo_html(soup, top_heading_level)
-
-            # 4. Build sections and subsections as python dicts
-            sections = self.get_sections_and_subsections_from_soup(
-                soup, top_heading_level
+            # 3–4. Shared content processing, independent of the uploaded file.
+            content = process_document_content(
+                file_content,
+                section_parser=self.get_sections_and_subsections_from_soup,
             )
+            soup = content.soup
+            sections = content.sections
 
             # 5. Add instructions to subsections (only implemented in Composer)
             self.add_instructions_to_subsections(
-                sections=sections, instructions_tables=instructions_tables
+                sections=sections, instructions_tables=content.instructions_tables
             )
 
         except ValidationError as e:
@@ -939,12 +931,7 @@ class BaseNofoImportView(View):
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
         """
-        sections = get_sections_from_soup(soup, top_heading_level)
-        if not len(sections):
-            raise ValidationError(
-                "That file does not contain a NOFO.", code="no_sections"
-            )
-        return get_subsections_from_sections(sections, top_heading_level)
+        return get_sections_and_subsections_from_soup(soup, top_heading_level)
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
