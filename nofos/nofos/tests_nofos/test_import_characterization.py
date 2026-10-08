@@ -314,7 +314,6 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
         _, sections, _ = translate(self.fidelity_inputs["wrapped_subheading"])
         self.assertIn("Eligibility", [s["name"] for s in sections[0]["subsections"]])
 
-    @expectedFailure
     def test_captioned_table_stays_tabular_issue_1050(self):
         _, _, rendered = translate(self.fidelity_inputs["captioned_table"])
         self.assertIsNotNone(rendered.table)
