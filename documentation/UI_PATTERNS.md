@@ -219,3 +219,26 @@ variant, and explanatory text together.
 This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
+
+## Subsection save conflicts
+
+If a subsection changed after the edit form was opened, block the save and show
+both the submitted fields and the latest saved fields. Preserve the submitted
+content in read-only textareas so it can be selected and copied. Do not refresh
+or redirect away from the user's draft.
+
+- **Review and combine changes** is the primary submit button. It opens an editor
+  initialized with the latest saved version, with the unsaved version alongside
+  it for reference. Reviewing does not save anything.
+- **Save combined version** explicitly saves the reconciled fields and checks
+  again for changes made during review.
+- **Discard my changes and return** is a secondary, outlined navigation link to
+  the NOFO edit page. It leaves the database unchanged.
+
+Use the existing USWDS alert, grid, and editor components; the comparison columns
+stack on narrow screens. Preserve all five editable fields, not just the body.
+Forms opened before deployment have no edit token: use the editor-update message
+and the same recovery flow rather than allowing an unprotected save.
+
+See [`subsection_edit.html`](../nofos/nofos/templates/nofos/subsection_edit.html)
+and [`test_subsection_edit.py`](../nofos/nofos/tests_nofos/test_subsection_edit.py).
