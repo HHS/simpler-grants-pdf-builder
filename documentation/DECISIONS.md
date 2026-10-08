@@ -4,6 +4,31 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-08: Keep section readability on demand and reuse HTML analysis
+
+**Context:** Writers need to locate difficult prose in the editor without
+adding a second metrics engine, automatic calculations or saved section scores.
+
+**Decision:** Add a flag-controlled check-all action with inline numeric grade
+estimates and individual rechecks. A small framework-independent HTML-in/plain-
+result-out function uses the existing hhs-nofo-metrics profile. Builder owns
+rendering, access, policy exclusions and freshness. No new schema, import hook,
+AI client or shared UI package is introduced. Clipboard prompts remain separate.
+
+Use current canonical policy data and the existing detector independently of
+the export flag. If canonical data is absent or current slots lack usable text,
+do not score. A non-match against configured data is not approval to edit.
+The repository's canonical source is empty, so production enablement is not part
+of this implementation. Synthetic fixtures are not production policy data.
+
+The provisional 50-word/three-sentence display floor suppresses sparse grades;
+it is not a validated reliability guarantee. Reject results when source,
+canonical data or measurement identity changes. Results are transient and do not
+affect whole-document saved readability. See [SECTION_READABILITY.md](SECTION_READABILITY.md)
+and #1066 through #1069 for scope, tests and rollout boundaries.
+
+---
+
 ## 2026-10-05 — Show an automatic "Latest release" banner for 5 business days after each release
 
 **Context:** The only way to find out what changed in NOFO Builder today is the

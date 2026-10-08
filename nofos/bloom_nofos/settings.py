@@ -701,6 +701,11 @@ HHS_NOFO_METRIC_GOALS = (
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "HHS_NOFO_SECTION_READABILITY_ENABLED": (
+        False,
+        "Show on-demand inline subsection grade estimates on the NOFO editor. Requires configured canonical policy data; saves no scores.",
+        bool,
+    ),
     "DOCRAPTOR_IPS": (
         DOCRAPTOR_IPS,
         "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",

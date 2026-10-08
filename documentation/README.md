@@ -1,5 +1,6 @@
 # Documentation
 
+
 This is the repository's canonical documentation directory. Add new repository documentation
 here—not in a top-level `docs/` directory—and link durable guides from this index. Architecture
 decision records belong in `adr/`; PR-specific screenshots and validation notes belong in
@@ -7,6 +8,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF upload pilot, access provisioning, source-aware reporting and activation checks
+- [Section readability](SECTION_READABILITY.md): on-demand subsection estimates, reusable boundary and policy coverage guard.
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log

@@ -6,6 +6,7 @@ Edit “{{ nofo|nofo_name }}”
 {% endblock %}
 
 {% block js %}
+  {% if section_readability_enabled %}<script src="{% static 'js/nofos/section_readability.js' %}?v=2" defer></script>{% endif %}
   <script src="{% static 'js/nofos/nofo_edit.js' %}?v=3" defer></script>
   <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=0.5.10" defer></script>
 {% endblock %}
@@ -669,6 +670,16 @@ Edit “{{ nofo|nofo_name }}”
   </table>
 {% endif %}
 
+{% if section_readability_enabled %}
+<form id="section-readability" class="margin-y-3" data-url="{% url 'nofos:section_readability' nofo.id %}" data-revision="{{ section_readability_revision }}">
+  {% csrf_token %}
+  <h2 class="margin-bottom-1">Section readability</h2>
+  <p>Check grade-level estimates beside each subsection. Estimates use complete sentences, not headings or fragments. Identified policy language is excluded. A result does not mean the text is approved for editing.</p>
+  <p class="font-sans-xs">Flesch–Kincaid grade-level estimates{% if section_readability_metrics_version %} · Metrics v{{ section_readability_metrics_version }}{% endif %}</p>
+  <button type="submit" class="usa-button">Check section readability</button>
+  <p id="section-readability-status" role="status" tabindex="-1" class="margin-bottom-0"></p>
+</form>
+{% endif %}
 {% for section in nofo.sections.all|dictsort:"order" %}
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived table--section">
   <caption aria-label="{{ section.name|strip_br }}">
@@ -749,6 +760,15 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
           </td>
           <td class="nofo-edit-table--subsection--body">
+            {% if section_readability_enabled %}
+            <details class="margin-bottom-2 padding-1 bg-base-lightest font-sans-xs" data-section-readability="{{ subsection.id }}" data-subsection-name="{{ subsection.name|strip_br }}">
+              <summary><span data-section-result>Readability: not checked</span></summary>
+              <div class="padding-top-1 padding-left-2">
+                <p class="margin-top-0 margin-bottom-1" data-section-explanation>Check this subsection for a Flesch–Kincaid grade-level estimate.</p>
+                <button type="button" class="usa-button usa-button--unstyled" data-section-recheck><span data-section-check-label>Check</span><span class="usa-sr-only"> {{ subsection.name|strip_br }}</span></button>
+              </div>
+            </details>
+            {% endif %}
             {{ subsection.body|safe_markdown|add_classes_to_tables|convert_paragraphs_to_hrs|add_classes_to_broken_links:broken_links|get_value_or_none:"content" }}
           </td>
           <td class="nofo-edit-table--subsection--manage">

@@ -1,5 +1,16 @@
 # Source-native readability metrics
 
+## On-demand subsection estimates
+
+The separate, default-off `HHS_NOFO_SECTION_READABILITY_ENABLED` flag adds a
+check-all action and inline rechecks to the NOFO editor. It uses the existing
+HTML metrics engine, current policy exclusions and transient results, without
+altering the whole-document snapshots described below. See
+[SECTION_READABILITY.md](SECTION_READABILITY.md) for the reusable contract,
+minimum prose, stale-response guards and canonical-policy coverage requirement.
+
+## Whole-document metrics
+
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
 The package is pinned to the Agile Six `v0.5.4` release. The feature remains
