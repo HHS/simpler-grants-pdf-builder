@@ -47,8 +47,21 @@ are not given artificial punctuation and tables keep their semantic boundaries.
 With `HHS_NOFO_SECTION_READABILITY_ENABLED` enabled, the editor offers one
 **Check section readability** button above the sections, outside the sticky
 toolbar. One POST checks all subsections in document order. Results appear
-beside their content; each can be rechecked. No calculation runs on import,
-page load or save. Results disappear on reload, editing and reimport. Restoring
+beside their content in compact gray disclosures. The collapsed line shows
+`Readability: grade 2.6 estimate`, insufficient text, or an exclusion/unavailable
+state. Full explanations and optional configured targets appear on expansion;
+the metrics version appears once above the sections.
+
+On opening the page, every subsection is `not checked`. Its disclosure offers
+**Check**. A completed result removes that action, including insufficient-text
+and excluded results; calculation failures retain **Retry**. Once every subsection
+has a completed result, the top check-all button also disappears. Individual
+results are announced and focus moves off a hidden action when needed.
+
+No calculation runs on import, page load or save. Scores are never saved:
+editing and saving keeps the revised text but reloads the page, clearing all
+scores and restoring Check for every subsection. Results also disappear on
+reload and reimport. Restoring
 a back-forward cached page clears results and requires reload.
 
 POST `/nofos/<uuid>/section-readability` uses normal NOFO group access and CSRF.

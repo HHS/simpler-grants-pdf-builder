@@ -274,6 +274,12 @@ class SectionReadabilityViewTests(TestCase):
         with patch("nofos.section_readability_views.measure_section") as scoring:
             response = self.client.get(reverse("nofos:nofo_edit", args=[self.nofo.pk]))
             self.assertContains(response, 'id="section-readability"')
+            self.assertContains(response, "Readability: not checked")
+            self.assertContains(response, "data-section-explanation")
+            self.assertContains(response, "data-section-check-label")
+            self.assertContains(
+                response, "Metrics v" + version("hhs-nofo-metrics"), count=1
+            )
             scoring.assert_not_called()
         self.assertNotContains(
             self.client.get(reverse("nofos:nofo_export", args=[self.nofo.pk])),
