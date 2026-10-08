@@ -90,8 +90,18 @@ class ImportOrchestrationTests(SimpleTestCase):
         }
         with ExitStack() as stack:
             for function, (name, result) in transforms.items():
+                module = (
+                    "nofos.views."
+                    if function
+                    in {
+                        "parse_uploaded_file_as_html_string",
+                        "add_final_subsection_to_step_3",
+                        "add_line_breaks_to_key_dates_values",
+                    }
+                    else "nofos.document_processing."
+                )
                 stack.enter_context(
-                    patch("nofos.views." + function, side_effect=step(name, result))
+                    patch(module + function, side_effect=step(name, result))
                 )
             stack.enter_context(
                 patch.object(
