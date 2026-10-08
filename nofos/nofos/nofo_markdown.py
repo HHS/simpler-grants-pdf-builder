@@ -272,6 +272,22 @@ class NofoMarkdownConverter(MarkdownConverter):
 
         return super().convert_table(el, text, parent_tags)
 
+    def convert_tr(self, el, text, parent_tags):
+        # markdownify treats any preceding sibling as an earlier table row.
+        # A caption before the first row therefore suppresses the separator
+        # that makes a Markdown table render as a table. Its text has already
+        # been converted separately; exclude only this caption while the
+        # upstream converter decides whether this is the first row.
+        previous = el.find_previous_sibling()
+        if previous is None or previous.name != "caption":
+            return super().convert_tr(el, text, parent_tags)
+
+        previous.extract()
+        try:
+            return super().convert_tr(el, text, parent_tags)
+        finally:
+            el.insert_before(previous)
+
     def convert_th(self, el, text, parent_tags):
         # automatically add width classes to table headers based on number of <th> elements
         width_class = get_width_class(th=el)

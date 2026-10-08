@@ -54,6 +54,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-013 | repair | Heading Structure | Heading cleanup: unwrap spans, collapse whitespace, drop empty headings | `nofo.py` |
 | IMPORT-014 | conversion | Heading Structure | Auto-generate heading IDs; rewrite internal links to match | `nofo.py` |
 | IMPORT-055 | validation | Heading Structure | Report all over-limit section/subsection names before creating sections | `nofo.py` |
+| IMPORT-056 | repair | Heading Structure | Expose headings inside ordinary div wrappers; preserve referenced wrapper targets | `nofo.py` |
 | IMPORT-015 | conversion | Footnotes/Endnotes | Missing "Endnotes" heading + trailing footnote list detected → heading synthesized | `nofo.py` |
 | IMPORT-016 | conversion | Footnotes/Endnotes | Footnote/endnote `<ol>` → preserved as raw HTML through Markdown conversion | `nofo_markdown.py` |
 | IMPORT-017 | conversion | Footnotes/Endnotes | Footnote/endnote `<a>` → wrapped in `<sup>`, preserved as raw HTML | `nofo_markdown.py` |
@@ -72,6 +73,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-025 | conversion | Tables | Callout box titled "Key facts"/"Key dates" → forced to `h4`, canonical casing | `nofo.py` |
 | IMPORT-026 | repair | Tables | `<span>` inside table cells → unwrapped | `nofo.py` |
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
+| IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
 | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
 | IMPORT-028 | repair | Links | Google Docs tracking-redirect URLs → unwrapped to real destination | `nofo.py` |
 | IMPORT-029 | repair | Links | Consecutive same-href links merged; whitespace before punctuation trimmed | `nofo.py` |
@@ -208,6 +210,13 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Trigger:** Every section/subsection heading, on document build.
 - **Action:** Auto-generate a slug `id` for each heading; rewrite any internal `href="#old-id"` links in the document to point at the new ids.
 - **Source:** `nofo.py::add_headings_to_document`
+- **Status:** active
+
+### IMPORT-056 — Heading-container normalization
+- **Type:** repair
+- **Trigger:** An `h1`–`h6` or synthetic H7 heading is nested in an uninterrupted chain of ordinary, role-free `div` wrappers beneath the document body.
+- **Action:** Unwrap only those ancestors, preserving content order and heading IDs so sections and subsections are parsed structurally. A wrapper ID is transferred to its first supported heading when that heading has no ID; otherwise links to the wrapper are redirected to the heading's existing ID. Tables, lists, figures, semantic-role containers, synthetic H7 headings themselves, and unrelated wrappers are not flattened. Existing Word heading demotion, table, and callout rules remain unchanged.
+- **Source:** `nofo.py::unwrap_heading_containers`, called by `process_nofo_html`
 - **Status:** active
 
 ### IMPORT-055 — Long heading validation and recovery
@@ -369,6 +378,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo_markdown.py::get_width_class`, `templatetags/utils/__init__.py::get_points_column_indexes`
 - **Status:** active
 
+### IMPORT-057 — Captioned tables retain their Markdown separator
+- **Type:** repair
+- **Trigger:** During HTML-to-Markdown conversion, a table row has a `<caption>` as its immediately preceding element sibling.
+- **Action:** Exclude that caption only while the upstream row converter determines whether this is the first row, then restore it to the source table. Keep the caption's converted text before the table and retain the existing header inference, empty-header fallback, cell values, width markers, merged-cell HTML fallback and one-cell callout rules. This repairs newly imported tables; existing saved bodies are not changed automatically.
+- **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_tr`
+- **Status:** active
+
 ---
 
 ## Link Handling
@@ -408,8 +424,9 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-032 — Empty block/list-item removal
 - **Type:** removal
-- **Trigger:** A direct child of `<body>`, or any `<li>`/`<p>`, with no text and no `<img>` descendant (and not `<br>`/`<hr>`) — commonly junk left over from PDF-sourced or heavily-edited Word documents.
+- **Trigger:** A direct child of `<body>`, or any `<li>`/`<p>`, with no text and no `<img>` descendant (and not `<br>`/`<hr>`/`<img>`) — commonly junk left over from PDF-sourced or heavily-edited Word documents.
 - **Action:** Decomposed (removed entirely).
+- **Image exception:** A standalone body-level `<img>` is itself preserved, just like a paragraph-wrapped image. Existing descriptive, intentionally empty, and missing-alt handling remains unchanged (IMPORT-033/IMPORT-034).
 - **Source:** `nofo.py::decompose_empty_tags`
 - **Status:** active
 
