@@ -222,23 +222,76 @@ required to extend this catalog.
 
 ## Subsection save conflicts
 
-If a subsection changed after the edit form was opened, block the save and show
-both the submitted fields and the latest saved fields. Preserve the submitted
-content in read-only textareas so it can be selected and copied. Do not refresh
-or redirect away from the user's draft.
+Use this recovery pattern when saving an out-of-date subsection form would
+replace newer saved content. The response stays on the subsection edit page and
+returns HTTP 409 with a USWDS warning alert. This is an editing conflict, handled
+by the editor's template rather than the import error page or import error-code
+catalog.
 
-- **Review and combine changes** is the primary submit button. It opens an editor
-  initialized with the latest saved version, with the unsaved version alongside
-  it for reference. Reviewing does not save anything.
-- **Save combined version** explicitly saves the reconciled fields and checks
-  again for changes made during review.
-- **Discard my changes and return** is a secondary, outlined navigation link to
-  the NOFO edit page. It leaves the database unchanged.
+### What the user sees
 
-Use the existing USWDS alert, grid, and editor components; the comparison columns
-stack on narrow screens. Preserve all five editable fields, not just the body.
-Forms opened before deployment have no edit token: use the editor-update message
-and the same recovery flow rather than allowing an unprotected save.
+Ordinary editing keeps the existing form and **Save subsection** action. If the
+same subsection's editable fields changed after the form was opened, show:
 
-See [`subsection_edit.html`](../nofos/nofos/templates/nofos/subsection_edit.html)
-and [`test_subsection_edit.py`](../nofos/nofos/tests_nofos/test_subsection_edit.py).
+> This subsection changed since you opened it.
+> Your changes have not been saved. Your work is preserved below. Review it
+> against the latest saved version before saving.
+
+Show both the submitted fields and the latest saved fields. Preserve the name,
+heading level, callout setting, HTML class/page-break setting, and content.
+Read-only content fields can be scrolled, selected, and copied. On narrow screens,
+stack the columns and wrap the recovery editor's toolbar.
+
+| Action | Behavior |
+| --- | --- |
+| **Review and combine changes** — primary submit button | Opens an editor initialized with the latest saved version, with the unsaved version alongside it for reference. Reviewing does not save anything. |
+| **Save combined version** — primary submit button in review | Saves the user's reconciled fields, checking again for changes made during review. A new conflict preserves that combined draft and shows the new latest saved version. |
+| **Discard my changes and return** — secondary outlined navigation link | Returns to the NOFO edit page without writing. The unsaved draft is abandoned. |
+
+Forms opened before deployment have no edit token. Use the heading **The editor
+was updated while this page was open.**, with the same preserved fields and
+recovery actions. Do not silently accept those saves.
+
+The draft stays in the recovery response and subsequent review form; it is not a
+separately saved draft in the database. Support should tell users to keep the
+page open or copy their work before leaving or refreshing. Do not direct them to
+refresh as the first recovery step. The warning does not identify another editor
+or edit time: the token alone cannot establish that attribution.
+
+### Implementation
+
+Use the existing USWDS alert, grid, and subsection editor components. The signed
+version token covers this subsection's five editable fields and its identity;
+changes to another subsection or NOFO metadata do not cause a conflict. Compare
+with the freshly fetched saved fields and save within a transaction holding the
+subsection row lock. A valid token with submitted fields already identical to
+the latest saved fields can return normally without a write.
+
+Keep the submitted version unchanged across ordinary validation errors. Only an
+explicit review action starts a form with the latest saved fields and a fresh
+token. Do not issue a fresh token for the stale draft and let a second Save click
+bypass reconciliation. Recheck on the eventual combined save.
+
+### Verify before shipping
+
+1. Save different changes from two tabs or two users: the later stale submission
+   must preserve both versions and leave the first save intact.
+2. Review: verify the editor starts with the latest saved fields, retains the
+   unsaved reference, and performs no write until Save combined version.
+3. Save another change during review: verify the combined draft is preserved and
+   another conflict is shown. Verify validation errors preserve the edit token
+   and unsaved reference.
+4. Follow Discard my changes and return: verify navigation without a write.
+5. Submit a predeployment form without a token: verify the editor-update heading
+   and recovery flow. Check that edits elsewhere in the NOFO save normally.
+6. Check narrow screens, keyboard navigation, selectable read-only content, and
+   simultaneous saves against a database that supports row locks.
+
+References:
+
+- [Before-and-after screenshots and capture notes](review-evidence/subsection-conflicts-1075/README.md)
+- [`subsection_edit.html`](../nofos/nofos/templates/nofos/subsection_edit.html)
+  and [read-only comparison fields](../nofos/nofos/templates/nofos/includes/subsection_conflict_values.html)
+- [Signed edit and recovery tokens](../nofos/nofos/subsection_conflicts.py),
+  [save handler](../nofos/nofos/views.py), and [regression tests](../nofos/nofos/tests_nofos/test_subsection_edit.py)
+- [Deployment considerations](../DEPLOYMENT.md#subsection-conflict-protection-rollout)

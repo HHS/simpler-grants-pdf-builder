@@ -4,6 +4,47 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-08 — Block stale subsection saves and preserve the draft for explicit review
+
+**Context:** A subsection form opened in another tab or by a teammate can save
+older fields over a newer edit. The subsection editor previously used last-save
+wins, with no warning or recovery step. Issue [#1075](https://github.com/HHS/simpler-grants-pdf-builder/issues/1075)
+identifies this overwrite path; the reported incident's cause still requires
+confirmation from audit history.
+
+**Decision:** Use a server-side check with a signed hash of the subsection's
+five saved editable fields and its identity. Compare and save while holding a
+subsection row lock in one transaction. This needs no version-field migration
+and detects changes to these fields even when another code path updates them.
+Use a subsection-specific token so changes elsewhere in a NOFO do not cause
+unnecessary conflicts.
+
+On conflict, preserve the submitted fields beside the latest saved version.
+**Review and combine changes** is primary because the user was trying to save
+work; **Discard my changes and return** is secondary and explicitly describes
+abandoning that draft. Review initializes the editor with the latest saved fields
+and retains the unsaved reference. **Save combined version** is an explicit write
+and repeats the conflict check. There is no automatic merge or second-click
+bypass. The preserved draft lives in the response/review form, not a separate
+database draft.
+
+**Alternatives:** Browser tab warnings or focus checks can complement the server
+check, but cannot guarantee protection across users or simultaneous saves. Edit
+locks require presence state and expiry handling. A persisted version counter
+would require a migration and consistent updates by every writer. History and
+restore could help recover earlier losses, but are separate work.
+
+**Rollout:** Deploy this first release outside 9 a.m.–5 p.m. Eastern Time. Forms
+opened before deployment have no token and enter the same recovery flow without
+silently accepting the save. If versions overlap, protection is complete only
+after old instances drain.
+
+See the [UI pattern](UI_PATTERNS.md#subsection-save-conflicts),
+[deployment guidance](../DEPLOYMENT.md#subsection-conflict-protection-rollout), and
+[before-and-after screenshots](review-evidence/subsection-conflicts-1075/README.md).
+
+---
+
 ## 2026-10-05 — Show an automatic "Latest release" banner for 5 business days after each release
 
 **Context:** The only way to find out what changed in NOFO Builder today is the
