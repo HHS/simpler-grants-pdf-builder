@@ -1,7 +1,7 @@
 """Contracts for isolating import orchestration without changing its behavior.
 
 Synthetic HTML represents input shapes, not compatibility with a vendor editor.
-Expected failures below name tracked fidelity limitations, not supported policy.
+Fidelity regressions below require the separately tracked repairs to remain intact.
 """
 
 from contextlib import ExitStack
