@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.1...nofos-v3.50.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* match readability alert to estimate reliability ([#1062](https://github.com/HHS/simpler-grants-pdf-builder/issues/1062)) ([e7c4aae](https://github.com/HHS/simpler-grants-pdf-builder/commit/e7c4aae8eb60254fd6014623c4c6f2089f7351da))
+* preserve div-wrapped import headings and content ([#1055](https://github.com/HHS/simpler-grants-pdf-builder/issues/1055)) ([d8aef56](https://github.com/HHS/simpler-grants-pdf-builder/commit/d8aef56fb8891355a53a39cc581d796875afe799))
+* preserve referenced list-item targets during import ([#1057](https://github.com/HHS/simpler-grants-pdf-builder/issues/1057)) ([de3bfc2](https://github.com/HHS/simpler-grants-pdf-builder/commit/de3bfc29756b40f5acb494954ae4d7310b1c0d94))
+* preserve standalone images during HTML import ([#1056](https://github.com/HHS/simpler-grants-pdf-builder/issues/1056)) ([250cc11](https://github.com/HHS/simpler-grants-pdf-builder/commit/250cc11a18e095b2caf124a893afc806b956e65c))
+* preserve table structure when importing HTML captions ([#1054](https://github.com/HHS/simpler-grants-pdf-builder/issues/1054)) ([669e2c3](https://github.com/HHS/simpler-grants-pdf-builder/commit/669e2c34b2ee80ad7e995e699643a5a2818797d6))
+
+
+### Documentation
+
+* link UI patterns from the contribution workflow ([#1045](https://github.com/HHS/simpler-grants-pdf-builder/issues/1045)) ([729b85d](https://github.com/HHS/simpler-grants-pdf-builder/commit/729b85d66b7d266b6c89bb75dcde7299e3f5970b))
+
+
+### Tests
+
+* characterize reusable import and translation boundaries ([#1053](https://github.com/HHS/simpler-grants-pdf-builder/issues/1053)) ([4ff55ea](https://github.com/HHS/simpler-grants-pdf-builder/commit/4ff55ea1dca4aed58fd2cc5db9a89d6b46cbd573))
+
 ## [3.50.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.0...nofos-v3.50.1) (2026-10-07)
 
 
