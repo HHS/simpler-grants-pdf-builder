@@ -536,6 +536,13 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["section_readability_enabled"] = (
+            config.HHS_NOFO_SECTION_READABILITY_ENABLED
+        )
+        if context["section_readability_enabled"]:
+            from .section_readability_views import section_inputs
+
+            context["section_readability_revision"] = section_inputs(self.object)[3]
         context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
         if config.HHS_NOFO_METRICS_ENABLED:
             context["readability_checkpoints"] = checkpoint_rows(self.object, limit=5)
