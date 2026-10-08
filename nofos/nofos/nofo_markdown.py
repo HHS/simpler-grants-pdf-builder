@@ -97,6 +97,7 @@ class NofoMarkdownConverter(MarkdownConverter):
             and not el.get("href")
             and not text.strip()
         ):
+            del el[PRESERVE_BOOKMARK_TARGET_ATTR]
             bookmark_target = BeautifulSoup("", "html.parser").new_tag("a")
             bookmark_target["id"] = el["id"]
             return str(bookmark_target)

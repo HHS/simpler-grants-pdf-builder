@@ -407,6 +407,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** An empty `<a id="...">` (no text) that is a Word bookmark target, immediately precedes a heading, or immediately precedes a table (as a "table heading" anchor) — these get removed later by empty-tag cleanup (IMPORT-032) unless rescued first.
 - **Action:** Transfer the `id` to the adjacent surviving element (next paragraph, parent heading, or paragraph before the table) before the empty anchor is decomposed, and rewrite any existing links pointing at the old id. Broken/unreferenced bookmarks are prefixed (`#__id`, `nb_bookmark_id`) so they're identifiable rather than silently dead.
+- **Referenced list items:** Move a unique, referenced non-native `<li id="...">` target to a minimal empty anchor at the start of the item, retained by the Markdown converter. Remove the copied ID from the item so HTML-preserved lists do not emit duplicate targets. Unused and duplicate IDs are not assigned new targets; native Word footnote/endnote IDs retain their existing raw-list behavior and numbering.
 - **Source:** `nofo.py::preserve_bookmark_links`, `preserve_bookmark_targets`, `preserve_heading_links`, `preserve_table_heading_links`
 - **Status:** active
 

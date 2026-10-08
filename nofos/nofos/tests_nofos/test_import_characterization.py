@@ -1,11 +1,10 @@
 """Contracts for isolating import orchestration without changing its behavior.
 
 Synthetic HTML represents input shapes, not compatibility with a vendor editor.
-Expected failures below name tracked fidelity limitations, not supported policy.
+Fidelity regressions below require the separately tracked repairs to remain intact.
 """
 
 from contextlib import ExitStack
-from unittest import expectedFailure
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
@@ -322,7 +321,6 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
         _, _, rendered = translate(self.fidelity_inputs["bare_image"])
         self.assertIsNotNone(rendered.find("img", src="logo.png"))
 
-    @expectedFailure
     def test_list_item_anchor_survives_issue_1052(self):
         _, _, rendered = translate(self.fidelity_inputs["list_item_anchor"])
         self.assertIsNotNone(rendered.find(id="note-1"))

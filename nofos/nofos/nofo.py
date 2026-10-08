@@ -3153,13 +3153,33 @@ def preserve_bookmark_targets(soup):
     ``nb_bookmark_`` parent-transfer behavior. Unreferenced Word bookmarks whose IDs begin with an
     underscore are left alone and may be discarded by Markdown conversion.
 
-    Only anchors with an ``id``, no ``href``, and no text are considered.
+    Unique referenced list-item IDs are moved to a minimal anchor at the start
+    of the item so normal Markdown list conversion does not discard them.
+    Native Word footnote/endnote IDs retain their existing raw-list handling.
     """
     referenced_ids = {
         link["href"][1:]
         for link in soup.find_all("a", href=True)
         if link["href"].startswith("#") and link["href"][1:]
     }
+
+    id_counts = {}
+    for target in soup.find_all(id=True):
+        target_id = target["id"]
+        id_counts[target_id] = id_counts.get(target_id, 0) + 1
+
+    for item in soup.find_all("li", id=True):
+        target_id = item["id"]
+        if (
+            target_id not in referenced_ids
+            or id_counts.get(target_id) != 1
+            or target_id.startswith(("footnote", "endnote"))
+        ):
+            continue
+        anchor = soup.new_tag("a", id=target_id)
+        anchor[PRESERVE_BOOKMARK_TARGET_ATTR] = ""
+        item.insert(0, anchor)
+        del item["id"]
 
     empty_links = [
         a for a in soup.find_all("a", id=True, href=False) if not a.text.strip()
