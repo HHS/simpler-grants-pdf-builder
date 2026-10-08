@@ -179,3 +179,43 @@ strong navigation-link styling.
 This guidance covers this recovery workflow. It does not call for a site-wide
 button audit or changes to existing download, export, or other controls. Extend
 the catalog as those use cases are reviewed.
+
+## Readability estimate reliability alerts
+
+The PDF readability report uses a USWDS alert to explain confidence in the
+estimates derived from extracted text. Reliability describes confidence in
+those estimates, not how readable the document is. High reliability does not
+guarantee accuracy or establish compliance, accessibility, or clearance.
+
+| Report reliability | Alert variant | Purpose |
+| --- | --- | --- |
+| High | `usa-alert--info` (blue) | Informational context for interpreting estimates |
+| Moderate | `usa-alert--info` (blue) | Informational context for interpreting estimates |
+| Low | `usa-alert--warning` (yellow) | Caution about estimates that need careful interpretation |
+
+The supported levels are high, moderate, and low; there is no “extremely low”
+level. Missing or unrecognized levels retain warning styling as a fallback.
+The presentation does not change how reliability is calculated.
+
+[USWDS alert guidance](https://designsystem.digital.gov/components/alert/#accessibility-guidance)
+defines informational alerts as non-critical status information, warnings as
+potentially critical information that might require action, and errors as
+failed actions. A low-confidence report still contains results, so its
+reliability notice uses a warning rather than a red error alert.
+
+Keep the reliability level in the heading and the explanation in the body so
+users can understand the notice without relying on color or the icon. Preserve
+the source-PDF review guidance and the existing `role="note"`; changing the
+visual variant does not make this notice an urgent announcement.
+
+The verified implementation is
+[`pdf_readability.html`](../nofos/bloom_nofos/templates/pdf_readability.html),
+with rendered-report coverage in
+[`test_pdf_readability.py`](../nofos/bloom_nofos/tests_bloom_nofos/test_pdf_readability.py).
+[Before-and-after screenshots](review-evidence/readability-reliability-alert/README.md)
+show all three levels. When changing this notice, verify the level, alert
+variant, and explanatory text together.
+
+This entry covers the readability reliability notice. Add other verified
+alert patterns here as they are reviewed; a site-wide alert audit is not
+required to extend this catalog.
