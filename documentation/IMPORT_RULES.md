@@ -54,6 +54,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-013 | repair | Heading Structure | Heading cleanup: unwrap spans, collapse whitespace, drop empty headings | `nofo.py` |
 | IMPORT-014 | conversion | Heading Structure | Auto-generate heading IDs; rewrite internal links to match | `nofo.py` |
 | IMPORT-055 | validation | Heading Structure | Report all over-limit section/subsection names before creating sections | `nofo.py` |
+| IMPORT-056 | repair | Heading Structure | Expose headings inside ordinary div wrappers; preserve referenced wrapper targets | `nofo.py` |
 | IMPORT-015 | conversion | Footnotes/Endnotes | Missing "Endnotes" heading + trailing footnote list detected → heading synthesized | `nofo.py` |
 | IMPORT-016 | conversion | Footnotes/Endnotes | Footnote/endnote `<ol>` → preserved as raw HTML through Markdown conversion | `nofo_markdown.py` |
 | IMPORT-017 | conversion | Footnotes/Endnotes | Footnote/endnote `<a>` → wrapped in `<sup>`, preserved as raw HTML | `nofo_markdown.py` |
@@ -209,6 +210,13 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Trigger:** Every section/subsection heading, on document build.
 - **Action:** Auto-generate a slug `id` for each heading; rewrite any internal `href="#old-id"` links in the document to point at the new ids.
 - **Source:** `nofo.py::add_headings_to_document`
+- **Status:** active
+
+### IMPORT-056 — Heading-container normalization
+- **Type:** repair
+- **Trigger:** An `h1`–`h6` or synthetic H7 heading is nested in an uninterrupted chain of ordinary, role-free `div` wrappers beneath the document body.
+- **Action:** Unwrap only those ancestors, preserving content order and heading IDs so sections and subsections are parsed structurally. A wrapper ID is transferred to its first supported heading when that heading has no ID; otherwise links to the wrapper are redirected to the heading's existing ID. Tables, lists, figures, semantic-role containers, synthetic H7 headings themselves, and unrelated wrappers are not flattened. Existing Word heading demotion, table, and callout rules remain unchanged.
+- **Source:** `nofo.py::unwrap_heading_containers`, called by `process_nofo_html`
 - **Status:** active
 
 ### IMPORT-055 — Long heading validation and recovery

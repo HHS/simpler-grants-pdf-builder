@@ -306,12 +306,10 @@ class ImportFidelityCharacterizationTests(SimpleTestCase):
         self.assertIn("data-source-key", str(sections))
         self.assertNotIn("data-source-key", str(rendered))
 
-    @expectedFailure
     def test_wrapped_main_heading_keeps_content_issue_1049(self):
         _, _, rendered = translate(self.fidelity_inputs["wrapped_main_heading"])
         self.assertIn("Public agencies.", rendered.get_text())
 
-    @expectedFailure
     def test_wrapped_subheading_is_structured_issue_1049(self):
         _, sections, _ = translate(self.fidelity_inputs["wrapped_subheading"])
         self.assertIn("Eligibility", [s["name"] for s in sections[0]["subsections"]])
