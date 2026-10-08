@@ -58,10 +58,7 @@ class DraftPdfReadabilityTests(SimpleTestCase):
         self.assertEqual(report["pages_total"], 2)
         self.assert_reference_metrics(report)
 
-    def test_current_cross_page_table_cell_limitation_is_reproducible(self):
-        # Characterize a known 0.5.4 limitation, not a desired result or parity
-        # claim. The adapter joins P/LBody across pages, but splits TD text.
-        # Update this observation when the upstream defect is repaired.
+    def test_table_cell_continued_across_pages_keeps_reference_metrics(self):
         report = self.report(
             (
                 ("TD", "The agency funds local\fwork. Teams can send a clear plan."),
@@ -69,17 +66,7 @@ class DraftPdfReadabilityTests(SimpleTestCase):
             )
         )
         self.assertEqual(report["pages_total"], 2)
-        self.assertEqual(report["scope"]["recovered_word_count"], 23)
-        self.assertEqual(report["scope"]["sentence_word_count"], 13)
-        self.assertEqual(report["scope"]["complete_sentence_count"], 3)
-        self.assertEqual(report["metrics"]["words_per_sentence"]["value"], 4.33)
-        self.assertEqual(
-            report["metrics"]["flesch_kincaid_grade_level"]["value"], -1.19
-        )
-        self.assertIn(
-            "Some sentence fragments were excluded from sentence-based measures.",
-            report["warnings"],
-        )
+        self.assert_reference_metrics(report)
 
     def test_tagged_reference_denominators(self):
         report = self.report()

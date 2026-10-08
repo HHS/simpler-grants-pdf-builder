@@ -18,7 +18,7 @@ from nofos.pdf_format_recognition import (
 
 TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.5.0"
 GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.4.0"
-TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.6"
+TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.7"
 METRIC_IDS = (
     "word_count",
     "words_per_sentence",

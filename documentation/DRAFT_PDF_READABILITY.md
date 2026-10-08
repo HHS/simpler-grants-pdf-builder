@@ -52,8 +52,8 @@ the per-user permission check and disabled public route.
 
 ## Evidence limits and remaining investigation
 
-Validation found two gaps. Recognition is repaired in this slice; table-cell
-continuity still needs adoption of a corrected metrics release:
+Validation found two gaps. Recognition and direct table-cell continuity are
+repaired in this slice, with metrics package 0.5.5:
 
 - **Cross-page table-cell sentence scope.** With package 0.5.4, the same reference
   prose tagged as table cells loses its four-word opening fragment when a
@@ -61,8 +61,12 @@ continuity still needs adoption of a corrected metrics release:
   sentence word count falls from 17 to 13, words per sentence from 5.67 to 4.33,
   and grade level from 1.20 to -1.19. The report warns about excluded fragments
   but still labels reliability high. The adapter merges cross-page body/list
-  blocks, not table blocks. A characterization test records this current
-  limitation, not desired behavior; update it when the package is repaired.
+  blocks, not table blocks. Package 0.5.5 restores all five controlled reference
+  measures for the same directly tagged cell continued across pages. The test
+  now checks parity instead of retaining the old defect as its expectation.
+  Distinct cells remain separate. Cells with nested paragraphs or headings stay
+  page-local because the resolver does not expose their individual identities;
+  this includes one nested paragraph that spans pages. Inline spans can join.
 - **Conversion-dependent recognition.** One private source's LibreOffice PDF
   was accepted with agency metadata plus an opportunity number. Word for Mac's
   local Print > PDF > Save as PDF output from that source was rejected because
@@ -83,8 +87,9 @@ guide lacked sufficient identification signals. Tags alone do not establish
 reading-order accuracy. These observations informed synthetic coverage, but do
 not establish metric accuracy for the source documents.
 
-The experiments used metrics package 0.5.4, tagged adapter 0.1.6, tagged profile
-0.5.0, and generic profile 0.4.0, as pinned by Builder. Representative source
+The initial experiments used metrics package 0.5.4 and tagged adapter 0.1.6.
+Builder now pins 0.5.5 with tagged adapter 0.1.7; tagged profile 0.5.0 and generic
+profile 0.4.0 are unchanged. Representative source
 pages were inspected privately. No source files, identifying details, or source
 scores are committed here.
 

@@ -2,7 +2,7 @@
 
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
-The package is pinned to the Agile Six `v0.5.4` release. The feature remains
+The package is pinned to the Agile Six `v0.5.5` release. The feature remains
 disabled by default so environments can opt into the provisional metrics UI
 independently.
 

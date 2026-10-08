@@ -28,3 +28,14 @@ Word print export also completes analysis. No private content is committed.
 
 No application flags outside the isolated local database changed. No deployment
 or clearance determination was made. See the durable guide for matrix gaps.
+
+## Released package adoption
+
+[Cross-page table report](table-055.jpg) was captured from the authenticated local
+Chrome route after adopting the published 0.5.5 wheel and tagged adapter 0.1.7.
+The real subprocess processes both pages and restores all five controlled
+reference values: 23 words, 5.7 words per sentence, 1.5 sentences per paragraph,
+grade 1.2, and 33.3% passive sentences. Sentence scope contains 17 words and
+three sentences. This fixture uses direct cell tags; nested semantic blocks
+remain a documented limitation. Earlier screenshots identify their older
+measurement version and are retained as prior evidence.

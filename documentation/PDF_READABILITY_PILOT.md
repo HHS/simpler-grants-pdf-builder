@@ -176,9 +176,12 @@ Reuse the pinned `hhs-nofo-metrics` package. PDF results are extraction-based
 estimates, not identical to Builder's semantic-HTML metrics or a compliance
 determination. Untagged PDFs need particularly clear reliability caveats.
 
-The dependency is pinned to 0.5.4, including the tagged-PDF parity fixes for
+The dependency is pinned to 0.5.5, including the tagged-PDF parity fixes for
 producer-declared cover/contents scope, cross-page paragraphs and lists, inline
-word ordering, and numeric list markers. Profiles and formulas are unchanged;
+word ordering, numeric list markers, and direct table-cell continuity across
+pages. Tagged adapter 0.1.7 preserves distinct cells and does not join cells
+containing nested semantic blocks; their identities are not exposed by the
+current resolver. Profiles and formulas are unchanged;
 extracted content and resulting PDF estimates can change. In Builder's stored
 readability snapshots, package identity distinguishes previous scores from new
 calculations. The PDF pilot does not store report history; each report identifies
