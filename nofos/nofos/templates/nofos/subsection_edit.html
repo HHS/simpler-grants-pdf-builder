@@ -23,7 +23,7 @@
       <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'nofos:nofo_edit' nofo.id %}#{{ subsection.html_id }}">Edit “{{ nofo_name_str }}”</a>
     </div>
     <div class="subsection_edit--header">
-      <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+      <h1 class="font-heading-xl text-bold margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
       {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base"><span aria-hidden="true">📦</span> Callout box</h2>{% endif %}
       {% if subsection.name %}
       <div class="subsection_edit--header--view font-sans-md">
@@ -58,15 +58,15 @@
   {% if conflict %}
     <div class="usa-alert usa-alert--warning margin-bottom-3" role="alert">
       <div class="usa-alert__body">
-        <h2 class="usa-alert__heading">{% if missing_version %}The editor was updated while this page was open.{% else %}This subsection changed since you opened it.{% endif %}</h2>
+        <h2 class="usa-alert__heading text-bold">{% if missing_version %}The editor was updated while this page was open.{% else %}This subsection changed since you opened it.{% endif %}</h2>
         <p class="usa-alert__text">Your changes have not been saved. Your work is preserved below. Review it against the latest saved version before saving.</p>
       </div>
     </div>
     <div class="grid-row grid-gap subsection-recovery">
-      <section class="tablet:grid-col-6"><h2>Your unsaved version</h2>
+      <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Your unsaved version</h2>
         {% include "nofos/includes/subsection_conflict_values.html" with values=unsaved prefix="unsaved" only %}
       </section>
-      <section class="tablet:grid-col-6"><h2>Latest saved version</h2>
+      <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Latest saved version</h2>
         {% include "nofos/includes/subsection_conflict_values.html" with values=latest prefix="latest" only %}
       </section>
     </div>
@@ -82,10 +82,10 @@
         <div class="usa-alert__body"><p class="usa-alert__text">Start with the latest saved version, then bring over the changes you want to keep from your unsaved version.</p></div>
       </div>
       <div class="grid-row grid-gap subsection-recovery">
-        <section class="tablet:grid-col-6"><h2>Your unsaved version</h2>
+        <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Your unsaved version</h2>
           {% include "nofos/includes/subsection_conflict_values.html" with values=preserved_unsaved prefix="preserved" only %}
         </section>
-        <section class="tablet:grid-col-6"><h2>Version to save</h2>
+        <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Version to save</h2>
     {% endif %}
   <form class="form" method="post">
     {% csrf_token %}

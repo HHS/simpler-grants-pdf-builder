@@ -240,7 +240,13 @@ same subsection's editable fields changed after the form was opened, show:
 Show both the submitted fields and the latest saved fields. Preserve the name,
 heading level, callout setting, HTML class/page-break setting, and content.
 Read-only content fields can be scrolled, selected, and copied. On narrow screens,
-stack the columns and wrap the recovery editor's toolbar.
+stack the columns and wrap the recovery editor's toolbar. Use `font-heading-lg`
+with `text-bold` for the comparison/review headings and `text-bold` on the alert
+heading. The editor loads Bootstrap after USWDS; without these explicit
+utilities, Bootstrap makes the section headings inherit the body font and
+reduces heading weights. Keep the page title bold with its existing
+`font-heading-xl` utility. The intended faces are Merriweather for page/section
+headings and Source Sans Pro for the alert and body copy.
 
 | Action | Behavior |
 | --- | --- |

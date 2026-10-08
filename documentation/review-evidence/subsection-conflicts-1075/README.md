@@ -65,7 +65,8 @@ conflict screen exists.
   browser captures with the original application styles and initialized editor.
 - Before renders use the parent revision's exact subsection template and
   `NofoSubsectionEditView.form_valid` handler, with the same common application
-  shell and fixture as the after renders. After renders use commit `fc14e6d2`.
+  shell and fixture as the after renders. After renders use the PR implementation,
+  including the typography correction described below.
 - Captures use rendered Django responses from an authenticated test client,
   served locally with the application's static assets. No production NOFOs,
   user data, credentials, or session-cookie values appear in these images.
@@ -73,3 +74,25 @@ conflict screen exists.
   the subsection; the protected stale POST returns HTTP 409 and retains Tab A's
   saved content. Review returns HTTP 200 without saving. A missing-token POST
   returns HTTP 409 with the submitted draft preserved.
+
+## Typography verification
+
+The subsection editor loads Bootstrap after USWDS. In the initial PR captures,
+Bootstrap overrode heading weights to 500 and made the new comparison headings
+inherit Source Sans Pro at 32px. This differed from the main NOFO edit page's
+bold Merriweather section headings. The fonts themselves were loaded; the
+mismatch was in the heading styles.
+
+The refreshed captures explicitly use the established USWDS utilities:
+
+| Element | Computed family | Size | Weight | Browser-confirmed rendered font |
+| --- | --- | --- | --- | --- |
+| Page title | Merriweather Web | 31.2px | 700 | Merriweather Bold |
+| Comparison/review heading | Merriweather Web | 21.44px | 700 | Merriweather Bold |
+| Warning heading | Source Sans Pro Web | 23.36px | 700 | Source Sans Pro Bold |
+| Warning text | Source Sans Pro Web | 16.96px | 400 | Source Sans Pro Regular |
+
+Checked computed styles against the main NOFO edit page and inspected the
+browser's actual rendered fonts, confirming custom web fonts rather than
+fallback faces. All eight screenshots have been refreshed. The recovery editor
+still fits a 390px viewport without horizontal overflow.
