@@ -5,7 +5,6 @@ Expected failures below name tracked fidelity limitations, not supported policy.
 """
 
 from contextlib import ExitStack
-from unittest import expectedFailure
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
