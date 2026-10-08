@@ -4,6 +4,40 @@ Use this guide when adding or changing Builder screens. Start with an existing
 component and its behavior before creating a new variation. This is a small,
 incremental catalog of verified patterns, not an audit of every screen.
 
+## Typography when an editor loads Bootstrap
+
+Builder uses Merriweather for page and section headings and Source Sans Pro for
+body copy and alert headings. Some editors load Bootstrap for Martor after the
+shared USWDS styles. Bootstrap's global heading rules can make bare `h2` elements
+inherit the body font and reduce heading weights to 500, even when the correct
+web fonts are successfully loaded.
+
+For new headings on these pages, use the established USWDS utilities explicitly:
+
+```html
+<h1 class="font-heading-xl text-bold">Page title</h1>
+<h2 class="font-heading-lg text-bold">Section heading</h2>
+<h2 class="usa-alert__heading text-bold">Warning heading</h2>
+```
+
+Reuse an existing page's heading scale for the same role. Alert headings retain
+USWDS's sans-serif styling; avoid applying the serif heading utility to them.
+Do not solve an editor override by adding a second font family or changing the
+shared stylesheet order without checking editor behavior and other pages.
+
+Before publishing UI screenshots, compare the computed font family, size, and
+weight with an existing Builder page that uses the same role. Confirm the actual
+rendered web font, not just the requested CSS family, and check desktop and
+narrow layouts. A page can load all its stylesheets and fonts yet still apply
+the wrong heading rule. The [subsection conflict capture notes](review-evidence/subsection-conflicts-1075/README.md#typography-verification)
+record a verified example of this failure and correction.
+
+Explicit utilities prevent this known typography override on the elements using
+them. The broader architectural fix would be isolating Bootstrap to the editor
+or replacing its global stylesheet with only the editor dependencies. That needs
+a separate change with visual and interaction checks for Martor tabs, toolbar,
+preview, fullscreen behavior, and the other Bootstrap-dependent screens.
+
 ## File-upload errors
 
 Use the shared [`file_input.html`](../nofos/bloom_nofos/templates/includes/file_input.html)
