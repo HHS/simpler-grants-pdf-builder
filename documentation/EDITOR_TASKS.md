@@ -526,6 +526,11 @@ Author, subject, and keywords are required by the NOFO metadata guidance.
 1. On the NOFO edit page, select **Preview PDF**. It opens in a new tab.
 2. To download a copy, select **Download PDF**.
 
+When readability metrics are enabled, a successful **Download PDF** also saves
+a readability snapshot in Builder; an unchanged NOFO reuses its snapshot.
+**Preview PDF** does not save a readability snapshot. Both actions record a
+PDF-generation audit event and use the configured PDF service.
+
 ---
 
 Preview and download require the configured PDF service. The controls are

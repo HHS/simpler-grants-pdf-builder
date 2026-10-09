@@ -25,6 +25,15 @@ relevant controls and redirect behavior against upstream main at 9d468df2.
 - Used Find & Replace search and checked result labels. Final replacement and
   deselection behavior were not validated; an automated deselection attempt
   did not change the checked state.
+- Opened the subsection Preview tab and confirmed the Markdown table rendered
+  with column headers and ordinary data cells.
+
+Read-only inspection of production Builder 3.50.1 confirmed the edit page's
+PDF controls and the notice that downloading saves a readability snapshot.
+Source review confirmed successful PDF generation records an audit event;
+finished downloads also save or reuse a readability snapshot. Neither PDF
+action was submitted in production. No production records were edited.
+No email attachments or production document content are included in this PR.
 
 [subsection-controls.png](subsection-controls.png) shows synthetic test content only.
 
