@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.2...nofos-v3.50.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* prevent stale subsection forms from overwriting newer edits ([#1076](https://github.com/HHS/simpler-grants-pdf-builder/issues/1076)) ([25f7d47](https://github.com/HHS/simpler-grants-pdf-builder/commit/25f7d474f4c10508b480c37271f8162cbe7ac7d1))
+
+
+### Documentation
+
+* add NOFO Builder editor task reference ([#1077](https://github.com/HHS/simpler-grants-pdf-builder/issues/1077)) ([77f19ae](https://github.com/HHS/simpler-grants-pdf-builder/commit/77f19ae64f77631f76bc88a7454cf61236c3fd43))
+
 ## [3.50.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.1...nofos-v3.50.2) (2026-10-08)
 
 
