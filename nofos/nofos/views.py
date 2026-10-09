@@ -175,6 +175,14 @@ from .readability import (
     save_automatic_checkpoint,
 )
 from .readability_history import checkpoint_rows
+from .subsection_conflicts import (
+    EDIT_FIELDS,
+    matches_version,
+    read_version,
+    recovery_token,
+    recovery_values,
+    saved_values,
+)
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -2929,12 +2937,49 @@ class NofoSubsectionEditView(
 
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("action") == "review":
+            self.object = self.get_object()
+            preserved = recovery_values(request.POST.get("recovery"), self.object)
+            if preserved is None:
+                return HttpResponseBadRequest(
+                    "Invalid recovery data. Return to the edit page."
+                )
+            # Start with the latest saved fields, never silently rebase stale text.
+            form = self.get_form_class()(
+                instance=self.object,
+                initial={"recovery": request.POST["recovery"]},
+            )
+            return self.render_to_response(self.get_context_data(form=form))
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
-        self.object = form.save(commit=False)
-        self.object.html_class = form.cleaned_data.get(
-            "html_class", ""
-        )  # "" or "page-break-before"
-        self.object.save()
+        with transaction.atomic():
+            current = get_object_or_404(
+                Subsection.objects.select_for_update(), pk=self.object.pk
+            )
+            submitted = {field: form.cleaned_data[field] for field in EDIT_FIELDS}
+            token = form.cleaned_data.get("edit_version")
+            if read_version(token, current) and submitted == saved_values(current):
+                # Retrying an already-saved form cannot discard any saved changes.
+                return redirect(self.get_return_url(current))
+            if not matches_version(token, current):
+                context = self.get_context_data(form=form)
+                context.update(
+                    conflict=True,
+                    missing_version=not token,
+                    unsaved=submitted,
+                    latest=saved_values(current),
+                    recovery=recovery_token(current, submitted),
+                    return_url=self.get_return_url(current),
+                )
+                return self.render_to_response(context, status=409)
+
+            # Use the freshly locked instance, preserving non-form fields.
+            for field, value in submitted.items():
+                setattr(current, field, value)
+            current.save(update_fields=[*EDIT_FIELDS, "html_id"])
+            self.object = current
 
         messages.add_message(
             self.request,
@@ -2947,11 +2992,19 @@ class NofoSubsectionEditView(
         url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
         return redirect("{}#{}".format(url, self.object.html_id))
 
+    def get_return_url(self, subsection):
+        url = reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        return "{}#{}".format(url, subsection.html_id)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
         context.update(get_subsection_action_availability(self.nofo))
         form = context["form"]
+        context["preserved_unsaved"] = recovery_values(
+            form["recovery"].value(), self.object
+        )
+        context["return_url"] = self.get_return_url(self.object)
         threshold = settings.CALLOUT_WORD_WARNING_THRESHOLD
         context["callout_word_warning_threshold"] = threshold
         name = (form["name"].value() or "").strip()

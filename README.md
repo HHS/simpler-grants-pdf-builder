@@ -205,6 +205,13 @@ poetry run python manage.py {runserver, makemigrations, migrate, etc}
 
 This app uses a static version of the [US Web Design System (USWDS)](https://designsystem.digital.gov) styles, downloaded on August 11, 2025. At the time of writing, we are using version 3.13.0.
 
+USWDS is served as bundled static assets; the typography guidance in
+[UI patterns](documentation/UI_PATTERNS.md#typography-when-an-editor-loads-bootstrap)
+uses utilities already included in those assets and does not require a frontend
+build pipeline. Some editor pages also load Bootstrap for Martor after USWDS,
+which can override heading fonts and weights. Follow that guide when changing
+editor UI, including its checks for computed styles and actual rendered fonts.
+
 <details>
 
 <summary>
@@ -240,7 +247,13 @@ Periodically, we refresh these files with the newer versions so that we bring in
 
 Well, yes and no. Technically, this is all you need to do, but we don't know if the new version of USWDS creates any layout issues for us. The actual diffs of what changed since the last version of USWDS is too large to meaningfully understand, so we have to do this manaully.
 
-The last step is looking through the app vs a deployed version and checking for differences in layout.
+The last step is looking through the app vs a deployed version and checking for
+differences in layout and typography, including heading and alert fonts, sizes,
+and weights. Include editor pages that load Bootstrap and check desktop and
+narrow layouts. Use the verification steps in
+[UI patterns](documentation/UI_PATTERNS.md#typography-when-an-editor-loads-bootstrap);
+loading the updated stylesheets successfully does not establish that the final
+rendered styles match.
 
 If found, you can decide if the new change is better/equivalent. If not then add CSS to revert the change.
 

@@ -34,10 +34,13 @@ for PR-specific screenshots and validation notes.
 
 ## UI patterns
 
-Before adding or changing file-upload error feedback or a loading progress modal,
-read [documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse the
-shared component it names. Extend the catalog when introducing another verified pattern;
-do not assume undocumented screens follow it.
+Before adding or changing user-facing UI, read
+[documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse relevant
+shared components and typography utilities. On editor pages that load Bootstrap,
+check computed heading/alert styles and actual rendered fonts against an existing
+Builder page; stylesheet loading alone does not prove the typography matches.
+Extend the catalog when introducing another verified pattern; do not assume
+undocumented screens follow it.
 
 ## Word export safety
 

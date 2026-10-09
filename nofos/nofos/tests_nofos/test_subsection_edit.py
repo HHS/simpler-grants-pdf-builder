@@ -1,5 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
+from django.test import (
+    TestCase,
+    TransactionTestCase,
+    override_settings,
+    skipUnlessDBFeature,
+)
 from django.urls import reverse
 from django.utils import timezone
 
@@ -133,6 +138,9 @@ class SubsectionCalloutEditingTests(TestCase):
             "tag": subsection.tag,
             "body": subsection.body,
             "html_class": subsection.html_class,
+            "edit_version": self.client.get(self.edit_url(subsection))
+            .context["form"]["edit_version"]
+            .value(),
         }
         data.update(overrides)
         if callout_box:
@@ -482,3 +490,288 @@ class SubsectionCalloutRenderingTests(TestCase):
         self.assertEqual(regular_response.status_code, 200)
         self.assertNotContains(regular_response, '<table class="callout-box">')
         self.assertEqual(regular_response.content.decode().count(self.marker), 1)
+
+
+class SubsectionConflictTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="conflicts@example.com",
+            password="testpass123",
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.force_login(self.user)
+        self.nofo = Nofo.objects.create(
+            title="Conflict test", group="bloom", opdiv="HRSA"
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Applications", order=1
+        )
+        self.subsection = Subsection.objects.create(
+            section=self.section,
+            name="Requirements",
+            tag="h3",
+            order=1,
+            body="Original content",
+        )
+        self.url = reverse(
+            "nofos:subsection_edit",
+            args=[self.nofo.pk, self.section.pk, self.subsection.pk],
+        )
+
+    def opened_form(self):
+        from nofos.subsection_conflicts import saved_values
+
+        self.subsection.refresh_from_db()
+        data = saved_values(self.subsection)
+        data["edit_version"] = (
+            self.client.get(self.url).context["form"]["edit_version"].value()
+        )
+        # HTML checkboxes submit nothing when unchecked.
+        if not data.pop("callout_box"):
+            return data
+        data["callout_box"] = "on"
+        return data
+
+    def test_two_tabs_preserve_newer_save_and_unsaved_fields(self):
+        tab_a, tab_b = self.opened_form(), self.opened_form()
+        tab_a["body"] = "Fixed links and caption"
+        self.assertEqual(self.client.post(self.url, tab_a).status_code, 302)
+        tab_b.update(
+            name="Unsaved name",
+            tag="h4",
+            callout_box="on",
+            html_class="page-break-before",
+            body="My draft <script>alert(1)</script>",
+        )
+        response = self.client.post(self.url, tab_b)
+        self.assertEqual(response.status_code, 409)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, tab_a["body"])
+        self.assertEqual(self.subsection.name, "Requirements")
+        self.assertEqual(response.context["unsaved"]["name"], "Unsaved name")
+        self.assertEqual(response.context["unsaved"]["tag"], "h4")
+        self.assertTrue(response.context["unsaved"]["callout_box"])
+        self.assertEqual(response.context["unsaved"]["html_class"], "page-break-before")
+        self.assertContains(response, "&lt;script&gt;", status_code=409)
+        self.assertNotContains(response, "<script>alert(1)</script>", status_code=409)
+        self.assertContains(response, "Review and combine changes", status_code=409)
+        self.assertContains(response, "Discard my changes and return", status_code=409)
+        self.assertNotContains(response, 'name="edit_version"', status_code=409)
+
+    def conflict(self):
+        data = self.opened_form()
+        Subsection.objects.filter(pk=self.subsection.pk).update(
+            body="Latest saved content"
+        )
+        data["body"] = "Unsaved draft"
+        return self.client.post(self.url, data)
+
+    def review(self, conflict):
+        return self.client.post(
+            self.url, {"action": "review", "recovery": conflict.context["recovery"]}
+        )
+
+    def test_review_starts_with_latest_and_save_combined(self):
+        conflict = self.conflict()
+        response = self.review(conflict)
+        self.assertEqual(response.status_code, 200)
+        form = response.context["form"]
+        self.assertEqual(form["body"].value(), "Latest saved content")
+        self.assertEqual(response.context["preserved_unsaved"]["body"], "Unsaved draft")
+        self.assertContains(response, "Save combined version")
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, "Latest saved content")
+        data = self.opened_form()
+        data.update(
+            body="Latest saved content plus my changes",
+            edit_version=form["edit_version"].value(),
+            recovery=form["recovery"].value(),
+        )
+        self.assertEqual(self.client.post(self.url, data).status_code, 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, data["body"])
+
+    def test_another_change_during_review_requires_review_again(self):
+        response = self.review(self.conflict())
+        token = response.context["form"]["edit_version"].value()
+        data = self.opened_form()
+        data.update(edit_version=token, body="Combined draft")
+        Subsection.objects.filter(pk=self.subsection.pk).update(
+            body="Another person's new edit"
+        )
+        conflict = self.client.post(self.url, data)
+        self.assertEqual(conflict.status_code, 409)
+        self.assertEqual(conflict.context["unsaved"]["body"], "Combined draft")
+        self.assertEqual(
+            conflict.context["latest"]["body"], "Another person's new edit"
+        )
+
+    def test_review_reads_changes_saved_after_conflict_screen(self):
+        conflict = self.conflict()
+        Subsection.objects.filter(pk=self.subsection.pk).update(body="Even newer text")
+        response = self.review(conflict)
+        self.assertEqual(response.context["form"]["body"].value(), "Even newer text")
+
+    def test_missing_predeployment_token_preserves_work(self):
+        data = self.opened_form()
+        del data["edit_version"]
+        data["body"] = "Work typed before deployment"
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 409)
+        self.assertContains(
+            response,
+            "The editor was updated while this page was open.",
+            status_code=409,
+        )
+        self.assertEqual(response.context["unsaved"]["body"], data["body"])
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, "Original content")
+        self.assertEqual(self.review(response).status_code, 200)
+
+    def test_unrelated_subsection_and_nofo_metadata_do_not_conflict(self):
+        data = self.opened_form()
+        Subsection.objects.create(
+            section=self.section, order=2, body="Other subsection"
+        )
+        self.nofo.title = "Changed title"
+        self.nofo.save()
+        data["body"] = "Safe change"
+        self.assertEqual(self.client.post(self.url, data).status_code, 302)
+
+    def test_each_editable_field_is_protected(self):
+        for field, value in {
+            "name": "New name",
+            "tag": "h4",
+            "callout_box": True,
+            "html_class": "page-break-before",
+            "body": "New body",
+        }.items():
+            with self.subTest(field=field):
+                data = self.opened_form()
+                Subsection.objects.filter(pk=self.subsection.pk).update(
+                    **{field: value}
+                )
+                response = self.client.post(self.url, data)
+                self.assertEqual(response.status_code, 409)
+                self.subsection.refresh_from_db()
+                self.assertEqual(getattr(self.subsection, field), value)
+
+    def test_identical_stale_submission_returns_without_conflict(self):
+        data = self.opened_form()
+        Subsection.objects.filter(pk=self.subsection.pk).update(body="Already saved")
+        data["body"] = "Already saved"
+        self.assertEqual(self.client.post(self.url, data).status_code, 302)
+
+    def test_invalid_token_cannot_save(self):
+        data = self.opened_form()
+        data.update(edit_version="tampered", body="Must not save")
+        self.assertEqual(self.client.post(self.url, data).status_code, 409)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, "Original content")
+
+    def test_token_from_another_subsection_cannot_save(self):
+        from nofos.subsection_conflicts import version_token
+
+        other = Subsection.objects.create(
+            section=self.section,
+            order=2,
+            name="Requirements",
+            tag="h3",
+            body="Original content",
+        )
+        data = self.opened_form()
+        data["edit_version"] = version_token(other)
+        self.assertEqual(self.client.post(self.url, data).status_code, 409)
+
+    def test_tampered_recovery_is_rejected(self):
+        self.assertEqual(
+            self.client.post(
+                self.url, {"action": "review", "recovery": "tampered"}
+            ).status_code,
+            400,
+        )
+
+    def test_discard_returns_without_a_write(self):
+        response = self.conflict()
+        self.assertEqual(
+            self.client.get(response.context["return_url"]).status_code, 200
+        )
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, "Latest saved content")
+
+    def test_validation_error_does_not_refresh_version_or_lose_reference(self):
+        response = self.review(self.conflict())
+        form = response.context["form"]
+        data = self.opened_form()
+        data.update(
+            name="",
+            tag="h3",
+            body="Combined draft",
+            edit_version=form["edit_version"].value(),
+            recovery=form["recovery"].value(),
+        )
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"]["body"].value(), "Combined draft")
+        self.assertEqual(
+            response.context["form"]["edit_version"].value(), data["edit_version"]
+        )
+        self.assertEqual(response.context["preserved_unsaved"]["body"], "Unsaved draft")
+
+    def test_non_form_fields_changed_since_open_are_preserved(self):
+        data = self.opened_form()
+        Subsection.objects.filter(pk=self.subsection.pk).update(
+            order=3, policy_language_status="intact"
+        )
+        data["body"] = "New content"
+        self.assertEqual(self.client.post(self.url, data).status_code, 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.order, 3)
+        self.assertEqual(self.subsection.policy_language_status, "intact")
+
+
+class SubsectionConcurrentSaveTests(TransactionTestCase):
+    setUp = SubsectionConflictTests.setUp
+    opened_form = SubsectionConflictTests.opened_form
+
+    @skipUnlessDBFeature("has_select_for_update")
+    def test_simultaneous_validated_forms_only_allow_one_save(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier
+        from unittest.mock import patch
+
+        from django.db import close_old_connections
+        from django.test import Client
+
+        from nofos.forms import SubsectionEditForm
+
+        data = self.opened_form()
+        clients = [Client(), Client()]
+        for client in clients:
+            client.force_login(self.user)
+        barrier = Barrier(2)
+        original_is_valid = SubsectionEditForm.is_valid
+
+        def validate_together(form):
+            valid = original_is_valid(form)
+            barrier.wait(timeout=10)
+            return valid
+
+        def save(index):
+            close_old_connections()
+            try:
+                response = clients[index].post(
+                    self.url, {**data, "body": f"Tab {index}"}
+                )
+                return response.status_code, index
+            finally:
+                close_old_connections()
+
+        with patch.object(SubsectionEditForm, "is_valid", validate_together):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results = list(pool.map(save, [0, 1]))
+        self.assertEqual(sorted(status for status, _ in results), [302, 409])
+        winner = next(index for status, index in results if status == 302)
+        self.subsection.refresh_from_db()
+        self.assertEqual(self.subsection.body, f"Tab {winner}")
