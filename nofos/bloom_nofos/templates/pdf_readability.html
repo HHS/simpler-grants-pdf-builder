@@ -32,6 +32,8 @@
             {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} processed.
           </p>
           <p id="readability-scope-method">{% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          <p id="readability-draft-scope">Writer instructions and placeholders left in your PDF may be included in these measures. The checker does not automatically separate them from applicant-facing content. For a check of applicant-facing writing, remove writer-only notes and template prompts from a copy before exporting it. Keep instructions that applicants need.</p>
+          <p id="readability-draft-readiness">A short or incomplete draft is not necessarily ready for publication, even if its readability scores meet your target. Compare drafts with the same content scope.</p>
           {% if report.coverage %}<p id="readability-coverage">{{ report.coverage }}</p>{% endif %}
           {% if report.scope.recovered_word_count or report.scope.recovered_word_count == 0 %}
             <p id="readability-word-scope">Word count includes all text recovered from the PDF: {{ report.scope.recovered_word_count }} words.
@@ -105,7 +107,8 @@
       <details class="readability-additional-info margin-top-3 readability-form">
           <summary><span>PDF requirements</span></summary>
           <div id="readability-pdf-requirements" class="usa-prose">
-          <p>Use a text-based HHS NOFO PDF. Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
+          <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
+          <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
         </div>
         </details>

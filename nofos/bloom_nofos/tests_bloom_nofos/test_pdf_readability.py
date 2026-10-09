@@ -124,7 +124,7 @@ class PdfReadabilityPageTests(TestCase):
         )
         self.assertContains(
             response,
-            "Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible",
+            "Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible",
         )
         self.assertNotContains(response, "make a clearance decision")
         self.assertNotContains(response, "Login")
@@ -299,7 +299,7 @@ class PdfReadabilityPageTests(TestCase):
     @patch("bloom_nofos.views.analyze_uploaded_pdf")
     def test_format_decisions_never_show_normal_results(self, analyze):
         for code, status, phrase in (
-            ("format_unsupported", 400, "does not appear to be an HHS notice"),
+            ("format_unsupported", 400, "could not confirm this PDF is an HHS notice"),
             ("format_indeterminate", 400, "not find enough extractable information"),
             ("format_unavailable", 503, "recognition is temporarily unavailable"),
         ):

@@ -16,7 +16,7 @@ from typing import Mapping
 @dataclass(frozen=True)
 class RecognitionPolicy:
     minimum_signals: int = 2
-    pages_to_inspect: int = 2
+    pages_to_inspect: int = 5
 
 
 @dataclass(frozen=True)
@@ -132,6 +132,10 @@ def recognize_nofo(
     signal_ids = []
     if _HHS_AGENCY_RE.search(descriptive_metadata):
         signal_ids.append("hhs_agency_metadata")
+    elif _HHS_AGENCY_RE.search(page_text):
+        # Print-to-PDF often drops descriptive agency metadata. Count page text
+        # as an alternative location for the same signal, never a second vote.
+        signal_ids.append("hhs_agency_page_text")
     if _OPPORTUNITY_NUMBER_RE.search(searchable_text):
         signal_ids.append("opportunity_number")
     if _ASSISTANCE_LISTING_RE.search(searchable_text):

@@ -38,8 +38,10 @@ handler is installed before the nested CSRF check reads the body.
 ## Supported PDFs and processing
 
 Use text-based HHS NOFO PDFs. Existing configurable recognition checks the first
-two pages for NOFO signals such as opportunity number, Assistance Listing number
-and Grants.gov reference. These rules are not broadened. See
+five pages for NOFO signals such as HHS agency name, opportunity number,
+Assistance Listing number and Grants.gov reference. Agency text can replace
+agency metadata lost in a print export; two different signal types are still
+required. See
 [PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
