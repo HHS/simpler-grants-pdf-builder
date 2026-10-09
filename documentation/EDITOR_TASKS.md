@@ -1,13 +1,13 @@
 # NOFO Builder editor tasks
 
-Step-by-step instructions for common fixes in NOFO Builder, written so that
-people and automated reviewers can both use them. A PDF review tool can quote
-a task's steps inside a PDF comment, so a NOFO writer knows exactly where to
-click to fix an issue.
+Step-by-step instructions for common tasks in NOFO Builder. NOFO writers,
+editors, support staff, and agents can use this reference to understand how
+to complete tasks through the interface. Stable task IDs also let other
+guides and tools link to the relevant instructions.
 
 **Source-reviewed against:** upstream `main` at `9d468df2` (October 9, 2026).
 Local browser checks used checkout `036d6684`; relevant subsection and section
-control templates were cross-checked against upstream before preparing this draft.
+control templates were cross-checked against upstream before preparing this guide.
 
 **UI validation:** October 9, 2026, local instance with synthetic content.
 Verified subsection opening, renaming, saving and return navigation; callout and
@@ -27,14 +27,14 @@ PDF generation requires the configured external PDF service and is not verified 
 - Steps describe the current UI only. If a label on screen doesn't match this
   page, trust the screen and report the mismatch.
 
-### For automated reviewers
+### For agents and tools referencing these tasks
 
-When you quote a task in a PDF comment:
+When you use a task in a suggestion, report, or comment:
 
 1. Use the **Steps** list without inventing actions. Expand referenced tasks
    so the comment includes the navigation needed to perform the fix. Fill in placeholders like
-   `<subsection name>` with values from the PDF.
-2. Keep comments short. Include at most 6 steps and link to the explicit task anchor for
+   `<subsection name>` with the relevant subsection name.
+2. Keep instructions short. Include at most 6 steps and link to the explicit task anchor for
    the rest.
 3. Check **Before you start** first. If the NOFO is published, most tasks
    need the status changed, or need modifications added, before anything can

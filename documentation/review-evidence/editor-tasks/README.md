@@ -33,7 +33,6 @@ PDF controls and the notice that downloading saves a readability snapshot.
 Source review confirmed successful PDF generation records an audit event;
 finished downloads also save or reuse a readability snapshot. Neither PDF
 action was submitted in production. No production records were edited.
-No email attachments or production document content are included in this PR.
 
 [subsection-controls.png](subsection-controls.png) shows synthetic test content only.
 
