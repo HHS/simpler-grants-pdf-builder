@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.3...nofos-v3.50.4) (2026-10-11)
+
+
+### Documentation
+
+* add a NOFO design standards page and clarify table captions ([#1084](https://github.com/HHS/simpler-grants-pdf-builder/issues/1084)) ([a80e889](https://github.com/HHS/simpler-grants-pdf-builder/commit/a80e889fb691f72a2c3a85ea064f475b0b80e5ee))
+* add a public NOFO Builder FAQ page ([#1083](https://github.com/HHS/simpler-grants-pdf-builder/issues/1083)) ([b200a8c](https://github.com/HHS/simpler-grants-pdf-builder/commit/b200a8cb0f00f0bc6042a1177d6394692f17dca3))
+* add SimplerNOFOs Style Guide as a Markdown page ([#1079](https://github.com/HHS/simpler-grants-pdf-builder/issues/1079)) ([100e2b7](https://github.com/HHS/simpler-grants-pdf-builder/commit/100e2b7826850ba83c8ff72808f842b4ffcda54a))
+* describe NOFO statuses by group and show the bold Table: caption format ([#1082](https://github.com/HHS/simpler-grants-pdf-builder/issues/1082)) ([5db4d1c](https://github.com/HHS/simpler-grants-pdf-builder/commit/5db4d1cac628ea64fed1efd613060ac841e00f82))
+* remove the HRSA-specific heading limit and clarify optional line breaks ([#1085](https://github.com/HHS/simpler-grants-pdf-builder/issues/1085)) ([48032cf](https://github.com/HHS/simpler-grants-pdf-builder/commit/48032cf1fd0c5c4669e81ab810d29549b76c5fb1))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.96 to 1.43.98 in the python-minor-and-patch group ([#1029](https://github.com/HHS/simpler-grants-pdf-builder/issues/1029)) ([a00b562](https://github.com/HHS/simpler-grants-pdf-builder/commit/a00b5625f884c68f321b085e0d1b278d431fe597))
+
 ## [3.50.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.2...nofos-v3.50.3) (2026-10-09)
 
 
