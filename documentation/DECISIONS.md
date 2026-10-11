@@ -4,6 +4,31 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — Publish a NOFO Builder FAQ as a Markdown page
+
+**Context:** Answers to common NOFO Builder questions (importing, Markdown,
+tables, page breaks, endnotes, appendices, metadata, and status) were kept in
+team help content that isn't publicly available. People and tools outside that
+space had no public page to link to.
+
+**Decision:** Add [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md), adapted from that
+help content as of October 9, 2026. The public page leaves out:
+
+- account administration and password handling;
+- help channels and request forms;
+- agency workflow and clearance steps;
+- onboarding plans and time estimates;
+- AI tool prompts;
+- links to pages that aren't public.
+
+Where an answer repeats an [editor task](EDITOR_TASKS.md), the FAQ explains
+briefly and links to the task instead of repeating its steps. Metadata guidance
+follows the [style guide](STYLE_GUIDE.md): a subject sentence in the style
+guide's format, and comma-separated keywords. The FAQ advises bold text instead
+of headings deeper than H6, consistent with the note in TASK-HEADING-LEVEL.
+
+---
+
 ## 2026-10-11 — Describe NOFO statuses by group and show the bold "Table:" caption format
 
 **Context:** The editor tasks page listed every NOFO status value. Readers mainly
