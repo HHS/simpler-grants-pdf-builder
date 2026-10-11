@@ -228,26 +228,6 @@ accessibility benefit over bold text. For more on headings and accessibility, se
 [Accessibility for front-end developers](https://digital.gov/guides/accessibility-for-teams/front-end-development)
 on digital.gov.
 
-### How do I indent a paragraph or block of text?
-
-NOFO Builder doesn't support manual indentation, but a blockquote visually sets
-a block of text apart. This is useful for content such as attestation language
-or signature blocks.
-
-Start each line you want to indent with `>` and a space. Use `>` on its own line
-for a blank line between paragraphs in the block:
-
-```markdown
-> I certify that:
-> ________ (Applicant name) agrees to the terms of this notice.
->
-> Date:
->
-> Name and title of the authorized organization representative (AOR):
->
-> Signature:
-```
-
 ### How do I continue a numbered list that's interrupted by text?
 
 Use HTML to restart the list at the right number. Replace the `2` in `start="2"`
