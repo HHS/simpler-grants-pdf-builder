@@ -13,7 +13,8 @@ labels, and which tables don't need a caption. That guidance isn't publicly
 available as text people and tools can link to.
 
 **Decision:** Add [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) with selected
-standards: heading length, visual consistency, line breaks, Grants.gov
+standards: heading length, decorative images and alt text, visual consistency,
+line breaks, Grants.gov
 capitalization, email links, download link labels (file size optional but
 consistent), table labels and caption exemptions, splitting complex tables, and
 a checklist to use before publishing. The page says it reproduces part of the

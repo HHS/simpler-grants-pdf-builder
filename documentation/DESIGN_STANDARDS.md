@@ -1,7 +1,7 @@
 # NOFO Design Standards
 
-Design and accessibility guidance for published NOFOs: headings, visual
-consistency, line breaks, links, and tables, with a checklist to use before
+Design and accessibility guidance for published NOFOs: headings, images,
+visual consistency, line breaks, links, and tables, with a checklist to use before
 publishing.
 
 > **About this page**
@@ -23,6 +23,7 @@ publishing.
 
 - [Why these standards matter](#why-these-standards-matter)
 - [Headings](#headings)
+- [Images](#images)
 - [Visual consistency](#visual-consistency)
 - [Line breaks](#line-breaks)
 - [Links](#links)
@@ -60,6 +61,19 @@ capitalization. In addition:
 - Don't start heading text with a space.
 - If content needs a level below H6, use bold text instead of a heading. See
   [What heading levels are supported?](NOFO_BUILDER_FAQ.md#what-heading-levels-are-supported)
+
+## Images
+
+The [style guide](STYLE_GUIDE.md#images-and-alt-text) recommends avoiding
+decorative images and requires alt text. In addition:
+
+- If you use an image that's only decorative, mark it as decorative so screen
+  readers skip it.
+- Any image that conveys information needs alt text, even after import. If an
+  image has no alt text when imported, NOFO Builder gives it empty alt text,
+  which screen readers treat as decorative.
+- To add or change the cover image's alt text in NOFO Builder, see
+  [TASK-COVER-ALT-TEXT](EDITOR_TASKS.md#task-cover-alt-text).
 
 ## Visual consistency
 
@@ -138,7 +152,9 @@ Check the final PDF against this list.
   ([style guide: metadata](STYLE_GUIDE.md#taglines-and-metadata)).
 - Links have descriptive text, and email addresses are linked
   ([style guide: links](STYLE_GUIDE.md#links), [links](#links)).
-- Images have alt text ([style guide: images](STYLE_GUIDE.md#images-and-alt-text)).
+- Images that convey information have alt text, and decorative images are marked
+  as decorative ([style guide: images](STYLE_GUIDE.md#images-and-alt-text),
+  [images](#images)).
 - Tables have a caption where needed and use simple structure
   ([style guide: tables](STYLE_GUIDE.md#tables), [tables](#tables)).
 - Lists use list formatting, not typed bullets or numbers
