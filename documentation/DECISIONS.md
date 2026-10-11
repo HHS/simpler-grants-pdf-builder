@@ -21,12 +21,16 @@ standards and isn't the official version, and points readers to their agency's
 grants policy office and the official FY 2027 standards for how to comply. It
 doesn't describe the standards as mandatory.
 
-The style guide is left unchanged so it still matches its source edition. The
-page leaves out guidance aimed only at documents produced outside NOFO Builder
+The page leaves out guidance aimed only at documents produced outside NOFO Builder
 (spacing, line length, color contrast, Word styles, file naming and
-compression), internal references, and help channels. A table can be labeled by
-a descriptive heading directly above it or by a bold "Table:" caption, as in
-TASK-TABLE-CAPTION.
+compression), internal references, and help channels.
+
+The [style guide's Tables section](STYLE_GUIDE.md#tables) is clarified: a
+caption can be a descriptive heading directly above the table or a bold
+"Table:" paragraph, as in TASK-TABLE-CAPTION. The source said captions were
+required for all tables while also exempting tables a heading precedes. The
+change is recorded in the style guide's new "Changes from the source edition"
+section; the rest of the guide still matches its source edition.
 
 ---
 

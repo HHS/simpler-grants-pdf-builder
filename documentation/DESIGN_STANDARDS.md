@@ -99,16 +99,16 @@ The [style guide](STYLE_GUIDE.md#links) covers link text. In addition:
 The [style guide](STYLE_GUIDE.md#tables) covers captions and simple tables. In
 addition:
 
-### Labels and captions
+### Captions
 
-Every table needs a label that says what it shows. A descriptive heading
-directly above the table works as its label. If there's no such heading, or the
-heading doesn't describe the table, add a caption above the table in bold, in
-the format "Table: Title of table." See
+Every table needs a caption: either a descriptive heading directly above the
+table, or a bold paragraph in the format "Table: Title of table." See
+[style guide: tables](STYLE_GUIDE.md#tables) and
 [TASK-TABLE-CAPTION](EDITOR_TASKS.md#task-table-caption).
 
-The following tables don't need a caption, because a heading directly precedes
-them or their purpose is clear from their type:
+The following tables don't need a "Table:" caption, because a heading directly
+precedes them or their purpose is clear from their type. This list adds to the
+style guide's list:
 
 - Callout boxes (single-cell tables).
 - Key facts and key dates.
@@ -139,7 +139,7 @@ Check the final PDF against this list.
 - Links have descriptive text, and email addresses are linked
   ([style guide: links](STYLE_GUIDE.md#links), [links](#links)).
 - Images have alt text ([style guide: images](STYLE_GUIDE.md#images-and-alt-text)).
-- Tables have a label where needed and use simple structure
+- Tables have a caption where needed and use simple structure
   ([style guide: tables](STYLE_GUIDE.md#tables), [tables](#tables)).
 - Lists use list formatting, not typed bullets or numbers
   ([style guide: lists](STYLE_GUIDE.md#lists)).

@@ -17,7 +17,8 @@ A comprehensive guide to making your NOFO easier to read.
 >   screenshots from the source are intentionally left out. The extraction did
 >   not preserve the source's hyperlinks, so links were restored by looking up
 >   the referenced resources; a few remain plain text. See
->   [Known conversion gaps](#known-conversion-gaps).
+>   [Known conversion gaps](#known-conversion-gaps) and
+>   [Changes from the source edition](#changes-from-the-source-edition).
 
 ## In this guide
 
@@ -548,13 +549,20 @@ We recommend adding internal links in the browser version because it’s easier 
 
 ### Tables
 
-Give every table a caption — a short label naming what it shows, placed directly above the table, in bold, normal-size text, using the format "Table: Title of table." Captions matter most when a table isn't close to its heading, such as when there's a paragraph or two of text in between, or when the heading itself doesn't clearly describe the table's contents. But captions are required for all tables, not just these cases.
+Give every table a caption — a short label naming what it shows, placed directly above the table. A caption can be either:
+
+- A descriptive heading directly above the table.
+- A paragraph in bold, normal-size text, using the format "Table: Title of table."
+
+Use a "Table:" caption when a table isn't close to its heading, such as when there's a paragraph or two of text in between, or when the heading itself doesn't clearly describe the table's contents. Every table needs a caption in one of these forms.
+
+Note: This section was clarified from the source edition to say that a descriptive heading can serve as a table's caption. See [Changes from the source edition](#changes-from-the-source-edition).
 
 - Keep captions in sentence case.
 
 Note: A caption can be separated from its table by up to one paragraph, but no more.
 
-The following tables don't require a caption, because a heading directly precedes them and already provides context:
+The following tables don't require a "Table:" caption, because a heading directly precedes them and already provides context:
 
 - Narratives.
 - Attachments.
@@ -720,3 +728,16 @@ references are not clickable.
 - **Source inconsistencies kept as written.** For example, the source writes
   "Step 2: Get ready to apply" in one place and "Get Ready to Apply" (title
   case, per the H1 rule) in another.
+
+## Changes from the source edition
+
+These changes clarify the source's wording. They are not in the August 25, 2026
+edition.
+
+- **Tables (October 11, 2026).** The source asked for a "Table: Title of table."
+  caption on every table and also exempted tables a heading directly precedes.
+  The section now says a caption can be either a descriptive heading directly
+  above the table or a bold "Table:" paragraph, and the list of exempt tables
+  now says they don't need a "Table:" caption. This matches
+  [TASK-TABLE-CAPTION](EDITOR_TASKS.md#task-table-caption). For more tables that
+  don't need a caption, see [NOFO design standards](DESIGN_STANDARDS.md#tables).
