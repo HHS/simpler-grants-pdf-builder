@@ -13,10 +13,10 @@ A comprehensive guide to making your NOFO easier to read.
 >   as authoritative and update this page to match.
 > - **Conversion notes:** this page was converted from a plain-text extraction
 >   of the source document. Headings, lists, and tables were reconstructed from
->   that text. The wording is unchanged except where noted. The extraction did
->   not preserve the source's hyperlinks or screenshots, so link labels below
->   appear as plain text and screenshots are described in brackets. See
->   [Known conversion gaps](#known-conversion-gaps).
+>   that text. The wording is unchanged except where noted. Images and
+>   screenshots from the source are intentionally left out. The extraction did
+>   not preserve the source's hyperlinks, so link labels below appear as plain
+>   text. See [Known conversion gaps](#known-conversion-gaps).
 
 ## In this guide
 
@@ -509,8 +509,6 @@ Make link text descriptive and meaningful.
 - For users of the browser version (Microsoft Word for the web).
 - For users of the Microsoft Desktop App.
 
-Note: These screenshots were taken on a Mac, so what you see may be slightly different.
-
 We recommend adding internal links in the browser version because it’s easier to check that the link is working correctly. However, you usually are not able to change link labels in the browser version once you’ve inserted the link. Instead, you have to delete the text with the link and add it back in. Conversely, when using the Desktop App, it’s harder to check your link locations, but easier to edit text.
 
 ##### Browser version (Microsoft Word for the web)
@@ -518,32 +516,32 @@ We recommend adding internal links in the browser version because it’s easier 
 1. **Make sure your headings are styled as headings.**
    Your headings can’t just look like headings, for example, by bolding the text. Instead, they have to use one of the built-in Word styles. Otherwise, Word will not recognize them as headings, and you will not be able to link to them.
 
-   To check the style of a piece of text while using Microsoft Word for the web, click on or highlight the text. Then click on the Home tab and look for the box that shows the style applied to the selected text. In this example, the Summary heading is correctly tagged as Heading 3, also referred to as H3. [Screenshot not included.]
+   To check the style of a piece of text while using Microsoft Word for the web, click on or highlight the text. Then click on the Home tab and look for the box that shows the style applied to the selected text. In this example, the Summary heading is correctly tagged as Heading 3, also referred to as H3.
 
    Note: While Word may allow you to create internal links using bookmarks, we do not use that method because it can delay the design and production process. Make sure you link using headings only.
 2. **Find the text you want to use as your link.**
    Highlight that text with your cursor to select it.
 3. **Go to the Insert toolbar and find the Link button.**
-   Click on the Insert toolbar and select the dropdown symbol next to Link and go to the Insert Link button. [Screenshot not included.]
+   Click on the Insert toolbar and select the dropdown symbol next to Link and go to the Insert Link button.
 4. **Select the “This Document” tab.**
-   In the Link menu, select the “This Document” tab and scroll down to the heading you want to link to. You will see a list of headings that reflects the hierarchy of your document and the text you selected as your link will appear in the “Display text:” box. Click the “Insert” button to create the link. [Screenshot not included.]
+   In the Link menu, select the “This Document” tab and scroll down to the heading you want to link to. You will see a list of headings that reflects the hierarchy of your document and the text you selected as your link will appear in the “Display text:” box. Click the “Insert” button to create the link.
 5. **Check to see that your link was inserted correctly.**
-   In the browser version of Word, when you click on a link, a pop-up will appear showing the heading the link points to. Make sure it’s correct and then confirm that the link text is correct as well. [Screenshot not included.]
+   In the browser version of Word, when you click on a link, a pop-up will appear showing the heading the link points to. Make sure it’s correct and then confirm that the link text is correct as well.
 
 ##### Microsoft Word desktop app
 
 1. **Make sure your headings are styled as headings.**
    Your headings can’t just look like headings, for example, by bolding the text. Instead, they have to use one of the built-in Word styles. Otherwise, Word will not recognize them as headings, and you will not be able to link to them.
 
-   To check the style of a piece of text while using the Word desktop app, click on or highlight the text. Select the Styles pane in the Home tab, and a panel will appear, showing the current style assigned to your text. You can also use the smaller Styles section on the Home tab, but the pane is easier to use. In this example, the Summary heading is correctly tagged as Heading 3, also referred to as H3. [Screenshot not included.]
+   To check the style of a piece of text while using the Word desktop app, click on or highlight the text. Select the Styles pane in the Home tab, and a panel will appear, showing the current style assigned to your text. You can also use the smaller Styles section on the Home tab, but the pane is easier to use. In this example, the Summary heading is correctly tagged as Heading 3, also referred to as H3.
 
    Note: While Word may allow you to create internal links using bookmarks, we do not use that method because it can delay the design and production process. Make sure you link using headings only.
 2. **Find the text you want to use as your link.**
    Highlight that text with your cursor to select it.
 3. **Go to the Insert menu and find the Hyperlink button.**
-   Click on the Insert menu and scroll down to Hyperlink and select it. [Screenshot not included.]
+   Click on the Insert menu and scroll down to Hyperlink and select it.
 4. **Select the “This Document” tab.**
-   In the Insert Hyperlink menu, select the “This Document” tab and scroll down to the heading you want to link to. You will see a list of headings that reflects the hierarchy of your document and the text you selected as your link will appear in the “Text to Display:” box. You can expand any heading that has a triangle next to it to see additional headings you can link to. Click “OK” to create the link. [Screenshot not included.]
+   In the Insert Hyperlink menu, select the “This Document” tab and scroll down to the heading you want to link to. You will see a list of headings that reflects the hierarchy of your document and the text you selected as your link will appear in the “Text to Display:” box. You can expand any heading that has a triangle next to it to see additional headings you can link to. Click “OK” to create the link.
 5. **Check to see that your link was inserted correctly.**
    In the Desktop app, the only way to test a link is to follow it. Click on the link and confirm that it goes to the correct location in your document and then confirm that the link text is correct as well.
 
@@ -569,9 +567,9 @@ The following tables don't require a caption, because a heading directly precede
 
 When possible, try to break complex tables into a few simpler tables or flatten out the header cells. This makes them more accessible and easier for people to follow.
 
-A complex table has merged cells, multiple levels of row or column headers, or other structural relationships that make it harder to associate data cells with the correct headers. [Example of a complex table not included.]
+A complex table has merged cells, multiple levels of row or column headers, or other structural relationships that make it harder to associate data cells with the correct headers.
 
-A simple table has a clear structure where each data cell can be easily associated with its row or column header. [Example of a simple table not included.]
+A simple table has a clear structure where each data cell can be easily associated with its row or column header.
 
 ### Taglines and metadata
 
@@ -711,8 +709,9 @@ references are not clickable.
   Education Act (IDEA); GovInfo; U.S. Code; Federal Register; White House;
   ACF’s Policy for Applicants Experiencing Federal Systems Issues [PDF]; CDC
   preferred term list.
-- **Screenshots not included.** The internal-links instructions and the simple
-  versus complex table examples refer to images in the source.
+- **Images intentionally omitted.** The source illustrates the internal-links
+  steps and the simple and complex table examples with screenshots. This page
+  describes them in text only.
 - **Reconstructed layout.** Tables and nested lists were rebuilt from flattened
   text. The bold-emphasis table, the bulleted-list example, and the file-naming
   table are the most likely to differ from the source layout.
