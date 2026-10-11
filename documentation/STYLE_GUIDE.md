@@ -133,7 +133,9 @@ See also [headings](#headings).
 #### Tables, labels, and terms capitalization
 
 - Use sentence case for table titles and labels.
-- Keep terms and names lowercase unless they are part of a proper noun.
+- Keep terms and names lowercase unless they are part of a proper noun. For
+  example, “federal,” “state,” and “agency” are lowercase unless they’re part of
+  an official name, following the [HHS style guide](https://www.hhs.gov/digital/style-guide/index.html).
 
 | Avoid | Use |
 | --- | --- |
@@ -141,6 +143,10 @@ See also [headings](#headings).
 | Get Federal assistance | Get federal assistance |
 | The Federal government | The federal government |
 | The federal reserve | The Federal Reserve |
+| Use State funds | Use state funds |
+| The State of Maine | The state of Maine |
+| Contact the Agency | Contact the agency |
+| The environmental protection agency | The Environmental Protection Agency |
 | Any Tribal coalition | Any tribal coalition |
 
 Note: We use lowercase for “tribe” and “tribal” in keeping with the approach of the Administration for Native Americans (ANA) within ACF, as well as the [style guide of the Indian Health Service [PDF]](https://www.ihs.gov/sites/webservices/themes/responsive2017/display_objects/documents/IHSWebsiteStyleGuide.pdf).
@@ -176,6 +182,14 @@ Consider a list when you need to break up long chunks of information.
 But be mindful not to overuse them. If you have too many lists, they can lose effectiveness.
 
 We generally follow [HHS guidance on lists](https://www.hhs.gov/digital/style-guide/index.html).
+
+Introduce each list with a lead-in. End a lead-in phrase with a colon, and end a
+complete introductory sentence with a period.
+
+| Lead-in | Example |
+| --- | --- |
+| Phrase | Your data management plan should include: |
+| Complete sentence | Your data management plan must cover three topics. |
 
 #### Bulleted lists
 
@@ -497,14 +511,17 @@ Make link text descriptive and meaningful.
 
 | Don’t | Do |
 | --- | --- |
-| For more information, \<click here\> | \<Read the federal policy.\> |
-| Check it out \<here\> | \<Search for a grant.\> |
-| Select \<this link\> | \<View lab results.\> |
+| For more information, \<click here\> | \<Read the federal policy\>. |
+| Check it out \<here\> | \<Search for a grant\>. |
+| Select \<this link\> | \<View lab results\>. |
 | \<Take a look\> | \<Make an appointment\>. |
-| | \<Read the report [PDF].\> |
+| | \<Read the report [PDF]\>. |
 
 - If you have multiple links that use the same link language, they should take the user to the same place. Otherwise change your wording.
 - Use 100 characters or less in any link label.
+- Leave ending punctuation out of the link. When link text ends a sentence, put
+  the period after the link, not in it. The same goes for a colon or comma right
+  after link text. This follows the [HHS style guide](https://www.hhs.gov/digital/style-guide/index.html).
 - If you are linking to a PDF, include “[PDF]” as part of the link itself. Example: If you experience a systems issue with Grants.gov or SAM.gov, please refer to [ACF’s Policy for Applicants Experiencing Federal Systems Issues [PDF]](https://www.hhs.gov/guidance/sites/default/files/hhs-guidance-documents//systems_issue_policy_final.pdf).
 
 #### Internal links
@@ -746,3 +763,11 @@ These changes clarify or update the source's wording. They are not in the August
   H5. That limit reflected an earlier technology constraint, not a style rule,
   so it was removed: all NOFOs use H2 through H6. The same change appears in the
   [bold formatting](#bold) guidance on when to use a heading.
+- **Links, lists, and capitalization (October 11, 2026).** Three points from
+  the [HHS style guide](https://www.hhs.gov/digital/style-guide/index.html),
+  which this guide already follows for lists, are now stated here: leave ending
+  punctuation out of link text, end a list lead-in phrase with a colon and a
+  complete introductory sentence with a period, and keep “state” and “agency”
+  lowercase unless part of an official name. The [links](#links) examples now
+  put the period after the link. Where HHS differs from this guide, such as
+  periods on list items, this guide still applies.

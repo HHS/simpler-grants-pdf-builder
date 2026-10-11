@@ -4,6 +4,25 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — State three HHS style guide points in the style guide
+
+**Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows
+the HHS.gov Web Style Guide, and NOFO reviews rely on three HHS points that the
+style guide didn't state: ending punctuation stays out of link text, a list
+lead-in phrase ends with a colon while a complete introductory sentence ends
+with a period, and "state" and "agency" are lowercase unless part of an official
+name. Reviewers had to keep a separate copy of HHS text to cite them.
+
+**Decision:** State the three points in the style guide's
+[links](STYLE_GUIDE.md#links), [lists](STYLE_GUIDE.md#lists), and
+[capitalization](STYLE_GUIDE.md#tables-labels-and-terms-capitalization)
+sections, each linking to the HHS guide, and record them in "Changes from the
+source edition." The links examples now put the period after the link, matching
+the new guidance. Where HHS and the style guide differ, such as periods on list
+items, the style guide still applies.
+
+---
+
 ## 2026-10-11 — Remove the FAQ entry on indenting text with blockquotes
 
 **Context:** The [FAQ](NOFO_BUILDER_FAQ.md#text-editor-and-markdown) answered
