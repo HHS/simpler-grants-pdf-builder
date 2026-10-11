@@ -29,6 +29,24 @@ of headings deeper than H6, consistent with the note in TASK-HEADING-LEVEL.
 
 ---
 
+## 2026-10-11 — Describe NOFO statuses by group and show the bold "Table:" caption format
+
+**Context:** The editor tasks page listed every NOFO status value. Readers mainly
+need to know what they can do: edit, re-import, or delete. Separately, the table
+caption task didn't say how to write a caption when no heading describes a table,
+even though the [style guide](STYLE_GUIDE.md#tables) calls for a bold caption in
+the format "Table: Title of table." NOFO Builder already turns a paragraph that
+starts with "Table: " directly above a table into the table's caption.
+
+**Decision:** In [EDITOR_TASKS.md](EDITOR_TASKS.md#before-you-start-nofo-status),
+group statuses into Draft, in progress or under review, and published or
+cancelled, with what each group allows, instead of listing every value. In
+TASK-TABLE-CAPTION, when no nearby heading describes the table, add a bold
+caption directly above it, such as `**Table: Research plan details**`. A "Table:"
+prefix stays optional when a nearby heading already describes the table.
+
+---
+
 ## 2026-10-11 — Publish the SimplerNOFOs Style Guide as a Markdown page
 
 **Context:** The SimplerNOFOs Style Guide was available as a Word document and a
