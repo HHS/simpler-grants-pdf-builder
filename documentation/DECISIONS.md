@@ -17,11 +17,13 @@ August 25, 2026 edition. The wording is unchanged. Headings, lists, and tables
 were rebuilt from a plain-text extraction. The page records its source edition
 and points to the published PDF on simplergrants.hhs.gov as authoritative if
 the two differ. It also lists what the conversion couldn't carry over:
-hyperlinks, screenshots, and some table layouts. Downstream tools can link to a
+hyperlinks, screenshots, and some table layouts. Images are left out on purpose.
+Most links were restored by looking up the referenced resources, so they may not
+match the exact pages the source linked to. Downstream tools can link to a
 pinned commit of this page instead of bundling a private copy.
 
-**Not yet done:** nobody has compared the page against the published PDF, and
-the missing hyperlinks haven't been restored.
+**Not yet done:** nobody has compared the page or its restored links against the
+published PDF, and four references are still plain text.
 
 ---
 
