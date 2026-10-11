@@ -4,6 +4,29 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — Publish the SimplerNOFOs Style Guide as a Markdown page
+
+**Context:** The SimplerNOFOs Style Guide was available as a Word document and a
+published PDF, but not as text that people, tools, and agents can link to and
+read in place. A NOFO PDF review skill in development kept a
+private text snapshot of the guide. That snapshot can't ship in the skill's
+installable package, so the skill had no public source to cite.
+
+**Decision:** Add [STYLE_GUIDE.md](STYLE_GUIDE.md), a Markdown conversion of the
+August 25, 2026 edition. The wording is unchanged. Headings, lists, and tables
+were rebuilt from a plain-text extraction. The page records its source edition
+and points to the published PDF on simplergrants.hhs.gov as authoritative if
+the two differ. It also lists what the conversion couldn't carry over:
+hyperlinks, screenshots, and some table layouts. Images are left out on purpose.
+Most links were restored by looking up the referenced resources, so they may not
+match the exact pages the source linked to. Downstream tools can link to a
+pinned commit of this page instead of bundling a private copy.
+
+**Not yet done:** nobody has compared the page or its restored links against the
+published PDF, and four references are still plain text.
+
+---
+
 ## 2026-10-08 — Block stale subsection saves and preserve the draft for explicit review
 
 **Context:** A subsection form opened in another tab or by a teammate can save
