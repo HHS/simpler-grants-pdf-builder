@@ -57,13 +57,16 @@ When you use a task in a suggestion, report, or comment:
 
 The status shows in the summary box near the top of the NOFO edit page.
 
-| Status | Can edit content? | Notes |
+Statuses fall into three general groups:
+
+| Status group | Can edit content? | Notes |
 | --- | --- | --- |
 | Draft | Yes | Can also be re-imported; NOFOs and subsections can be deleted |
-| Ready for QA, Active | Yes | Can be re-imported, but not deleted |
-| In review, Paused, Dep Sec | Yes | Can't be re-imported or deleted |
-| Published | **No** | Change the status, or select **Add modifications** first |
-| Cancelled | No | Export only |
+| In progress or under review | Yes | Can't be deleted. Some of these statuses also prevent re-importing |
+| Published or cancelled | **No** | To change a published NOFO, change the status or select **Add modifications** first. Cancelled NOFOs can only be exported |
+
+Each status shows a description when you select it. If a task isn't available,
+check the status first.
 
 Archived NOFOs cannot be edited or have subsections deleted. Access also depends
 on your account permissions and OpDiv group. **Delete subsection** is available
@@ -292,13 +295,19 @@ idea.
 
 1. Open the subsection containing the table ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
 2. Check whether a nearby heading above the table describes its contents.
-3. If it does not, add a short descriptive label directly above the table,
-   or update the nearby heading to describe the table accurately.
+3. If it does not, add a caption on the line directly above the table. Start it
+   with "Table:" followed by a short description, and make it bold, for example
+   `**Table: Research plan details**`. Or update the nearby heading to describe
+   the table accurately.
 4. Select **Save subsection**, then **Preview PDF** to check the result.
 
 **Notes**
 
-- A “Table:” prefix is optional. A nearby descriptive heading can serve as the caption.
+- A “Table:” prefix is optional when a nearby descriptive heading already serves
+  as the caption.
+- NOFO Builder turns a paragraph that starts with “Table: ”, directly above a
+  table, into the table's caption. See
+  [Automatic table styling](TABLES.md#captions).
 - Apply the review guidance's caption exemptions before requesting a change.
 
 <a id="task-table-full-width"></a>
