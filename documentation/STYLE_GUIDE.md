@@ -119,7 +119,7 @@ Avoid other Microsoft Word formatting like “Emphasis A” and “Emphasis B”
 Instead:
 
 - Turn it into plain text.
-- Use a sequential heading (H2 through H6 for most NOFOs) if it’s more appropriate for the context. Note that there should be no heading higher than H6.
+- Use a sequential heading (H2 through H6) if it’s more appropriate for the context. Note that there should be no heading higher than H6.
 
 ### Capitalization
 
@@ -158,8 +158,7 @@ Tip: Command + Option + C toggles between sentence case, title case, and all cap
 ### Headings
 
 - Use structured style headings for accessibility.
-- For most NOFOs, use H2 through H6 only.
-- For HRSA NOFOs, use H2 through H5 only.
+- Use H2 through H6 only.
 - Do not use H7 or higher in any NOFOs, because it cannot be made accessible in a PDF.
 - H1 uses Title Case formatting.
 - H2 through H6 uses sentence case.
@@ -167,6 +166,8 @@ Tip: Command + Option + C toggles between sentence case, title case, and all cap
 - Do not skip heading levels, such as jumping from an H1 directly to H3 without an H2 in between.
 
 See also [capitalization](#capitalization).
+
+Note: This section was updated from the source edition to remove a separate H5 limit for HRSA NOFOs. See [Changes from the source edition](#changes-from-the-source-edition).
 
 ### Lists
 
@@ -731,8 +732,8 @@ references are not clickable.
 
 ## Changes from the source edition
 
-These changes clarify the source's wording. They are not in the August 25, 2026
-edition.
+These changes clarify or update the source's wording. They are not in the August
+25, 2026 edition.
 
 - **Tables (October 11, 2026).** The source asked for a "Table: Title of table."
   caption on every table and also exempted tables a heading directly precedes.
@@ -741,3 +742,7 @@ edition.
   now says they don't need a "Table:" caption. This matches
   [TASK-TABLE-CAPTION](EDITOR_TASKS.md#task-table-caption). For more tables that
   don't need a caption, see [NOFO design standards](DESIGN_STANDARDS.md#tables).
+- **Headings (October 11, 2026).** The source limited HRSA NOFOs to H2 through
+  H5. That limit reflected an earlier technology constraint, not a style rule,
+  so it was removed: all NOFOs use H2 through H6. The same change appears in the
+  [bold formatting](#bold) guidance on when to use a heading.
