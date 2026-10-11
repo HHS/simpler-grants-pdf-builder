@@ -4,6 +4,21 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — Remove the HRSA-specific H5 heading limit from the style guide
+
+**Context:** The [style guide](STYLE_GUIDE.md#headings) said most NOFOs use H2
+through H6 but HRSA NOFOs use only H2 through H5. That limit reflected an
+earlier technology constraint, not a style or accessibility rule. HRSA NOFOs
+built in NOFO Builder use H6 headings; HRSA-26-083, for example, uses them for
+scoring sub-criteria.
+
+**Decision:** All NOFOs use H2 through H6. The HRSA line is removed from the
+Headings section, the bold-formatting guidance no longer says "for most NOFOs",
+and the change is recorded in the style guide's "Changes from the source
+edition" section.
+
+---
+
 ## 2026-10-11 — Publish selected NOFO design standards as a Markdown page
 
 **Context:** The HHS Office of Grants NOFO design and accessibility standards
