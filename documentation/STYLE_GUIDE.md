@@ -15,8 +15,9 @@ A comprehensive guide to making your NOFO easier to read.
 >   of the source document. Headings, lists, and tables were reconstructed from
 >   that text. The wording is unchanged except where noted. Images and
 >   screenshots from the source are intentionally left out. The extraction did
->   not preserve the source's hyperlinks, so link labels below appear as plain
->   text. See [Known conversion gaps](#known-conversion-gaps).
+>   not preserve the source's hyperlinks, so links were restored by looking up
+>   the referenced resources; a few remain plain text. See
+>   [Known conversion gaps](#known-conversion-gaps).
 
 ## In this guide
 
@@ -67,8 +68,8 @@ Refer to this guide to:
 Most NOFOs do not include images other than optional cover photographs.
 
 - Use only images that serve a purpose. We recommend avoiding images that are merely decorative.
-- All images must have an alternative text description, or alt text. See How to add alt text in Microsoft Word (Source: University of Minnesota).
-- Read more about Authoring Meaningful Alternative Text.
+- All images must have an alternative text description, or alt text. See [How to add alt text in Microsoft Word](https://it.umn.edu/services-technologies/how-tos/microsoft-word-add-edit-alt-text) (Source: University of Minnesota).
+- Read more about [Authoring Meaningful Alternative Text](https://www.section508.gov/create/alternative-text/).
 
 ## Formatting
 
@@ -141,7 +142,7 @@ See also [headings](#headings).
 | The federal reserve | The Federal Reserve |
 | Any Tribal coalition | Any tribal coalition |
 
-Note: We use lowercase for “tribe” and “tribal” in keeping with the approach of the Administration for Native Americans (ANA) within ACF, as well as the style guide of the Indian Health Service [PDF].
+Note: We use lowercase for “tribe” and “tribal” in keeping with the approach of the Administration for Native Americans (ANA) within ACF, as well as the [style guide of the Indian Health Service [PDF]](https://www.ihs.gov/sites/webservices/themes/responsive2017/display_objects/documents/IHSWebsiteStyleGuide.pdf).
 
 #### Internal link label capitalization
 
@@ -172,7 +173,7 @@ Consider a list when you need to break up long chunks of information.
 
 But be mindful not to overuse them. If you have too many lists, they can lose effectiveness.
 
-We generally follow HHS guidance on lists.
+We generally follow [HHS guidance on lists](https://www.hhs.gov/digital/style-guide/index.html).
 
 #### Bulleted lists
 
@@ -270,13 +271,13 @@ Use it!
 
 #### Percent
 
-Use the % symbol instead of the word “percent,” as screen readers are able to recognize the symbol. See the HHS style guide.
+Use the % symbol instead of the word “percent,” as screen readers are able to recognize the symbol. See the [HHS style guide](https://www.hhs.gov/digital/style-guide/index.html).
 
 ## Numbers
 
 ### General guidance
 
-This guidance follows the HHS style guide.
+This guidance follows the [HHS style guide](https://www.hhs.gov/digital/style-guide/index.html).
 
 - Spell out all numbers under 10.
 - Use numerals for all numbers above nine.
@@ -465,24 +466,24 @@ Teams may choose to set up their own registration page for an informational call
 - Use lowercase for “part” and “subpart.”
 - Include a link to the specific CFR.
 - Do not include the section mark (§). Symbols are not universally machine-readable and may be hard for humans to read as well.
-- Use the Code of Federal Regulations as your source for CFR references.
+- Use the [Code of Federal Regulations](https://www.ecfr.gov/) as your source for CFR references.
 - View the instructions on inserting CFR references.
 
 #### Statutes
 
 Link to:
 
-- The law’s site, if it has one, such as the Individuals with Disabilities Education Act (IDEA).
+- The law’s site, if it has one, such as the [Individuals with Disabilities Education Act (IDEA)](https://sites.ed.gov/idea/).
 - Or use one of the following:
-  - GovInfo.
-  - U.S. Code.
+  - [GovInfo](https://www.govinfo.gov/).
+  - [U.S. Code](https://uscode.house.gov/).
 
 #### Executive orders
 
 Use whichever site your agency typically uses. Otherwise use one of the following:
 
-- Federal Register.
-- White House.
+- [Federal Register](https://www.federalregister.gov/).
+- [White House](https://www.whitehouse.gov/).
 
 ### Links
 
@@ -502,7 +503,7 @@ Make link text descriptive and meaningful.
 
 - If you have multiple links that use the same link language, they should take the user to the same place. Otherwise change your wording.
 - Use 100 characters or less in any link label.
-- If you are linking to a PDF, include “[PDF]” as part of the link itself. Example: If you experience a systems issue with Grants.gov or SAM.gov, please refer to ACF’s Policy for Applicants Experiencing Federal Systems Issues [PDF].
+- If you are linking to a PDF, include “[PDF]” as part of the link itself. Example: If you experience a systems issue with Grants.gov or SAM.gov, please refer to [ACF’s Policy for Applicants Experiencing Federal Systems Issues [PDF]](https://www.hhs.gov/guidance/sites/default/files/hhs-guidance-documents//systems_issue_policy_final.pdf).
 
 #### Internal links
 
@@ -700,15 +701,14 @@ These items need someone with the original document (or the published PDF) to
 restore them. Until then, the guidance text above is complete but some
 references are not clickable.
 
-- **Hyperlinks not restored.** The source links these references, which appear
-  above as plain text: How to add alt text in Microsoft Word (University of
-  Minnesota); Authoring Meaningful Alternative Text; Indian Health Service style
-  guide [PDF]; HHS guidance on lists; "certain words" [PDF] (hyphenation);
-  HHS style guide (two places); Accessible Numbers; Code of Federal Regulations;
-  instructions on inserting CFR references; Individuals with Disabilities
-  Education Act (IDEA); GovInfo; U.S. Code; Federal Register; White House;
-  ACF’s Policy for Applicants Experiencing Federal Systems Issues [PDF]; CDC
-  preferred term list.
+- **Hyperlinks restored by lookup, not from the source.** The text extraction
+  dropped the source's link addresses. Links on this page were restored by
+  finding the referenced resource, so some may differ from the exact page the
+  source linked to. Check them against the published PDF.
+- **Links not yet restored.** These references still appear as plain text
+  because the intended target could not be confirmed: "certain words" [PDF]
+  (hyphenation); Accessible Numbers; instructions on inserting CFR references;
+  CDC preferred term list.
 - **Images intentionally omitted.** The source illustrates the internal-links
   steps and the simple and complex table examples with screenshots. This page
   describes them in text only.
