@@ -172,8 +172,8 @@ Make content and formatting changes in the source and generate a new PDF.
 By default, the home page shows NOFOs that are in progress. If yours isn't
 listed:
 
-- Check the other lists on the home page: **Published NOFOs**, **Paused NOFOs**,
-  and **Cancelled NOFOs**. Which list a NOFO appears in depends on its status.
+- Check the other lists on the home page. NOFOs are grouped by status, so a
+  published NOFO, for example, appears in a different list.
 - Select **Search NOFOs** in the top right and search by the NOFO's name or
   number.
 
@@ -696,25 +696,21 @@ To enter them in NOFO Builder, see
 ### What is the status field?
 
 The status field shows where a NOFO is in the design and review process, and it
-controls which actions are available. For example, only Draft NOFOs can be
-deleted, and Published NOFOs can't be edited unless you add modifications. It's
-at the top of each NOFO page, and each status shows a description when you
-select it.
+controls what you can do with the NOFO. It's at the top of each NOFO page, and
+each status shows a description when you select it.
 
-| Status | Meaning |
-| --- | --- |
-| Draft | The NOFO has been imported and is being designed. The only status that allows deleting. |
-| Active | Design is underway and someone is editing. |
-| Ready for QA | Design is complete and the NOFO is ready for quality review. |
-| In review | The NOFO is in agency review. |
-| Dep Sec | The NOFO is in HHS Departmental review. |
-| Published | The NOFO has been published to Grants.gov. |
-| Paused | The NOFO is on hold. |
-| Cancelled | The NOFO won't be published. |
+Statuses fall into three general groups:
+
+- **Draft:** the NOFO is being designed. You can edit it, re-import it, and
+  delete it or its subsections.
+- **In progress or under review:** you can still edit the NOFO, but you can't
+  delete it or its subsections. Some of these statuses also prevent
+  re-importing.
+- **Published or cancelled:** you can't edit or delete the NOFO. To change a
+  published NOFO, add modifications.
 
 NOFO Builder doesn't send a notification when a status changes, so let your team
-know when you update it. For what you can edit, re-import, or delete in each
-status, see
+know when you update it. For exactly what each status allows, see
 [Before you start: NOFO status](EDITOR_TASKS.md#before-you-start-nofo-status).
 
 ## Writing and style
