@@ -1,7 +1,7 @@
 # NOFO Design Standards
 
 Design and accessibility guidance for published NOFOs: headings, images,
-visual consistency, line breaks, links, and tables, with a checklist to use before
+visual consistency, line breaks, lists, links, and tables, with a checklist to use before
 publishing.
 
 > **About this page**
@@ -26,6 +26,7 @@ publishing.
 - [Images](#images)
 - [Visual consistency](#visual-consistency)
 - [Line breaks](#line-breaks)
+- [Lists](#lists)
 - [Links](#links)
 - [Tables](#tables)
 - [Before you publish](#before-you-publish)
@@ -97,6 +98,14 @@ Builder, type `<br>` where the line should break. Make this change only when
 reviewing the final PDF: if the text changes later, the break may land in the
 middle of a line.
 
+## Lists
+
+The [style guide](STYLE_GUIDE.md#lists) covers list types and punctuation. In
+addition, use real list formatting for bulleted and numbered lists. Don't type
+bullet characters (such as •, -, or *) or numbers at the start of a line.
+Screen readers announce a formatted list and how many items it has; typed
+markers are read as plain text.
+
 ## Links
 
 The [style guide](STYLE_GUIDE.md#links) covers link text. In addition:
@@ -158,7 +167,7 @@ Check the final PDF against this list.
 - Tables have a caption where needed and use simple structure
   ([style guide: tables](STYLE_GUIDE.md#tables), [tables](#tables)).
 - Lists use list formatting, not typed bullets or numbers
-  ([style guide: lists](STYLE_GUIDE.md#lists)).
+  ([style guide: lists](STYLE_GUIDE.md#lists), [lists](#lists)).
 - Endnotes are numbered in order, without reusing a number
   ([FAQ: endnotes](NOFO_BUILDER_FAQ.md#endnotes)).
 - No stranded lines, isolated headings, or excess white space

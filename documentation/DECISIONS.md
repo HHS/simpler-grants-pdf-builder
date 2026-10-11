@@ -14,7 +14,7 @@ available as text people and tools can link to.
 
 **Decision:** Add [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) with selected
 standards: heading length, decorative images and alt text, visual consistency,
-line breaks, Grants.gov
+line breaks, real list formatting, Grants.gov
 capitalization, email links, download link labels (file size optional but
 consistent), table labels and caption exemptions, splitting complex tables, and
 a checklist to use before publishing. The page says it reproduces part of the
