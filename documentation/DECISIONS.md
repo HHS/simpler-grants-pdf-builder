@@ -4,6 +4,22 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — Remove the FAQ entry on indenting text with blockquotes
+
+**Context:** The [FAQ](NOFO_BUILDER_FAQ.md#text-editor-and-markdown) answered
+"How do I indent a paragraph or block of text?" by recommending a Markdown
+blockquote (`>`) for attestation language and signature blocks. A blockquote
+marks text as a quotation, not an indent: screen readers can announce "block
+quote", and WCAG failure technique F43 names quote markup used only for
+indentation as a failure of success criterion 1.3.1. The entry's example also
+didn't render as shown: lines without `<br>` run together, and the row of
+underscores for the applicant name renders as bold-italic text.
+
+**Decision:** Remove the entry. NOFO Builder doesn't support manual indentation,
+and the FAQ no longer suggests a workaround for it.
+
+---
+
 ## 2026-10-11 — Remove the HRSA-specific H5 heading limit from the style guide
 
 **Context:** The [style guide](STYLE_GUIDE.md#headings) said most NOFOs use H2
