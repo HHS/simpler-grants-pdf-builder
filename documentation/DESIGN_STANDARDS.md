@@ -91,12 +91,12 @@ Use a line break only where the break carries meaning, such as between the
 lines of a mailing address or contact block. Don't use line breaks to add space.
 Screen readers may read through a line break without a pause.
 
-**Optional, at final PDF review:** if a paragraph ends with one short word alone
-on its last line, or a date, number, or amount splits across two lines, you can
-add a line break before the last few words so they stay together. In NOFO
-Builder, type `<br>` where the line should break. Make this change only when
-reviewing the final PDF: if the text changes later, the break may land in the
-middle of a line.
+**Optional:** if a paragraph in the PDF ends with one short word alone on its
+last line, or a date, number, or amount splits across two lines, you can add a
+line break before the last few words so they stay together. In the NOFO Builder
+subsection editor, type `<br>` where the line should break. Make this change
+after any other edits to that paragraph, since changing its text can move where
+the line breaks.
 
 ## Lists
 

@@ -17,6 +17,12 @@ Headings section, the bold-formatting guidance no longer says "for most NOFOs",
 and the change is recorded in the style guide's "Changes from the source
 edition" section.
 
+The same change clarifies the line-break note on the
+[design standards page](DESIGN_STANDARDS.md#line-breaks): the optional line break
+is typed in the NOFO Builder subsection editor after any other edits to that
+paragraph, not made while "reviewing the final PDF", which read as editing the
+PDF itself.
+
 ---
 
 ## 2026-10-11 — Publish selected NOFO design standards as a Markdown page
