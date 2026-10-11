@@ -17,6 +17,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
+- [STYLE_GUIDE.md](STYLE_GUIDE.md) — The SimplerNOFOs Style Guide (edition of August 25, 2026) as Markdown: writing, formatting, and structure conventions for NOFO content, with known conversion gaps listed at the end
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
 - [WORD_IMPORT_DRIFT.md](WORD_IMPORT_DRIFT.md) — Code-review findings on likely differences between Word author intent and imported NOFO structure
