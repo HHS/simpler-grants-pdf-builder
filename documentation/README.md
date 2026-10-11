@@ -9,6 +9,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF upload pilot, access provisioning, source-aware reporting and activation checks
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
+- [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work

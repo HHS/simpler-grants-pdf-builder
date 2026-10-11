@@ -4,6 +4,37 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — Publish selected NOFO design standards as a Markdown page
+
+**Context:** The HHS Office of Grants NOFO design and accessibility standards
+include guidance that isn't in the [style guide](STYLE_GUIDE.md) or the
+[FAQ](NOFO_BUILDER_FAQ.md), such as heading length, line breaks, download link
+labels, and which tables don't need a caption. That guidance isn't publicly
+available as text people and tools can link to.
+
+**Decision:** Add [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) with selected
+standards: heading length, decorative images and alt text, visual consistency,
+line breaks, real list formatting, Grants.gov
+capitalization, email links, download link labels (file size optional but
+consistent), table labels and caption exemptions, splitting complex tables, and
+a checklist to use before publishing. The page says it reproduces part of the
+standards and isn't the official version, and points readers to their agency's
+grants policy office and the official FY 2027 standards for how to comply. It
+doesn't describe the standards as mandatory.
+
+The page leaves out guidance aimed only at documents produced outside NOFO Builder
+(spacing, line length, color contrast, Word styles, file naming and
+compression), internal references, and help channels.
+
+The [style guide's Tables section](STYLE_GUIDE.md#tables) is clarified: a
+caption can be a descriptive heading directly above the table or a bold
+"Table:" paragraph, as in TASK-TABLE-CAPTION. The source said captions were
+required for all tables while also exempting tables a heading precedes. The
+change is recorded in the style guide's new "Changes from the source edition"
+section; the rest of the guide still matches its source edition.
+
+---
+
 ## 2026-10-11 — Publish a NOFO Builder FAQ as a Markdown page
 
 **Context:** Answers to common NOFO Builder questions (importing, Markdown,
