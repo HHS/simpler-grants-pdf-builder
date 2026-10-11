@@ -720,3 +720,7 @@ know when you update it. For exactly what each status allows, see
 The [SimplerNOFOs Style Guide](STYLE_GUIDE.md) covers writing and style for NOFOs,
 including plain language, capitalization, dates and times, lists, links, and
 tables. Use it for any content or style question not covered here.
+
+[NOFO design standards](DESIGN_STANDARDS.md) adds design and accessibility
+guidance for headings, links, line breaks, and tables, with a checklist to use
+before publishing.
