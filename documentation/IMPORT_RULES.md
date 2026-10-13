@@ -88,6 +88,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-037 | conversion | Emphasis | Literal text "de minimis" → wrapped in `<em>` | `nofo.py` |
 | IMPORT-038 | removal | Content Removal | Recognized introductory heading + bounded source body → consumed; Builder new/legacy names supported | `nofo.py` |
 | IMPORT-062 | extraction | Content Removal | Capture Builder introductory family and actual Word destinations before consumption | `introductory_page.py` |
+| IMPORT-063 | removal | Content Removal | Consume recognized Metadata source blocks in Builder's incoming content copy after capture | `nofo.py`, `views.py` |
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
 | IMPORT-058 | removal | DOCX Conversion | Verified pale-blue instruction text boxes removed before conversion; other fills preserved for review | `word_instruction_boxes.py` |
 | IMPORT-040 | repair | Field Merging | Split label/value paragraphs under "Funding details" → merged into one paragraph | `nofo.py` |
@@ -517,6 +518,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `introductory_page.py::capture_introductory_page`, `views.py::BaseNofoImportView`, `nofo.py::suggest_all_nofo_fields`
 - **Status:** active (Builder only)
 
+### IMPORT-063 — Builder Metadata source consumption
+- **Type:** removal
+- **Trigger:** Explicit Builder import/re-import with one or more recognized Metadata blocks under IMPORT-041.
+- **Action:** Keep the intact extraction soup for field resolution, validation and the existing number-mismatch confirmation session. Use a separate content copy to resolve main heading level and build sections/subsections, removing every recognized Metadata heading and its bounded field/blank paragraphs. Preserve parent sections, incidental Metadata mentions and all following headings, prose, tables, lists, media and notes. A paragraph with images/media is not a blank separator. Links targeting only consumed IDs become plain text; links with a surviving destination are retained. No hidden subsection or new persistent field is added. Composer/Compare do not opt in; saved records are untouched outside authorized re-import.
+- **Source:** `nofo.py::builder_import_content`, `_metadata_block`; `views.py::BaseNofoImportView`, `NofosConfirmReimportView`
+- **Status:** active (Builder only)
+
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
 - **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", or matches the pattern `*-specific instructions`.
@@ -551,7 +559,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 ### IMPORT-041 — Label:value field scanning
 - **Type:** extraction
 - **Trigger:** A genuine `h1`–`h6` or synthetic H7 heading reads exactly `Metadata` after whitespace/case normalization and is followed by recognized `Label: value` paragraphs. Otherwise, retain legacy label scanning (`"Opportunity Number:"`, `"Application Deadline:"`, `"Opportunity Name:"`, `"Opdiv:"`, `"Agency:"`, `"Subagency:"`, `"Subagency2:"`, `"Tagline:"`, `"Metadata Author:"`, `"Metadata Subject:"`, `"Metadata Keywords:"`). `Sub Agency` and `Sub Agency 2` are accepted alongside the unspaced legacy spellings.
-- **Action:** A recognized block supplies OpDiv, Agency, Subagency, Subagency2, title (Opportunity name), number (Opportunity number), Application Deadline, author (Metadata author), subject (Metadata subject), and keywords (Metadata keywords). Read the whole paragraph including inline formatting, split at the first colon, and sanitize per IMPORT-010. Label case and whitespace are ignored. Blank paragraphs may separate fields; any heading of any level, non-paragraph element, or non-label prose ends the block. Source content is not removed. No pagination or filename detection is used.
+- **Action:** A recognized block supplies OpDiv, Agency, Subagency, Subagency2, title (Opportunity name), number (Opportunity number), Application Deadline, author (Metadata author), subject (Metadata subject), and keywords (Metadata keywords). Read the whole paragraph including inline formatting, split at the first colon, and sanitize per IMPORT-010. Label case and whitespace are ignored. Blank paragraphs may separate fields; any heading of any level, non-paragraph element, image/media paragraph or non-label prose ends the block. Extraction retains its intact source; Builder consumes recognized blocks only in a separate section-building copy under IMPORT-063. Composer/Compare retain source content. No pagination or filename detection is used.
 
   **Precedence and defaults.** The last recognized block wins; the first occurrence of a repeated label inside that block wins, including an empty value. Blocks are never combined. Missing or blank mapped fields use the existing empty/default behavior and do not borrow front-page values. The existing title-preservation rule on re-import, required OpDiv validation, and first-import-only theme/cover suggestions remain in force. Without a recognized block, the legacy scanner and guarded next-paragraph OpDiv continuation are unchanged. Tagline and assistance-listing labels keep their separate existing extraction paths. PDF author/subject/keywords alone normalize whole-field curly-brace placeholders per IMPORT-048; other placeholders remain visible for correction. See [Word metadata import](WORD_METADATA_IMPORT.md) for mappings and saved-record behavior.
 
@@ -560,6 +568,11 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
   **Tagline exception — underscore-only placeholders.** `Tagline:` alone gets one extra check: if the extracted value is made up entirely of underscores and whitespace (`"Tagline: _________"`, the ruled blank an HHS Word template leaves for a writer to fill in), the tagline is suggested as empty instead. In isolation this step is a **repair**, the same shape as IMPORT-048 for `{placeholder}` PDF metadata values; it's documented here rather than as its own rule because it only ever runs as part of this rule's tagline extraction. IMPORT-010's sanitization keeps underscores — they are ordinary printable characters — so without this the row of underscores would be saved as the tagline and rendered on the NOFO cover. A value that merely *contains* underscores is untouched (`"Apply by ____ to be considered"` imports as written), and no other metadata field treats underscores as blank, so an underscore-only `Agency:` still imports literally. The check lives next to `suggest_nofo_tagline()` rather than in the shared scanner precisely to keep it that narrow.
 - **Source:** `nofo.py::metadata_block_fields`, `recognized_metadata_block`, `_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
 - **Status:** active
+
+  Builder captures values from the intact extraction source and consumes all
+  recognized blocks only in the section-building copy under IMPORT-063.
+  Image/media paragraphs end a block rather than acting as blank separators.
+  Composer/Compare do not opt into consumption.
 
 ### IMPORT-059 — Scoped Basic information tagline extraction
 - **Type:** extraction

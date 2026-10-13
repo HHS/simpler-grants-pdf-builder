@@ -121,6 +121,7 @@ from .nofo import (
     add_headings_to_document,
     add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
+    builder_import_content,
     consume_tagline_paragraph,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
@@ -848,14 +849,19 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
-            if isinstance(self, (NofosImportNewView, NofosImportOverwriteView)):
+            builder_import = isinstance(
+                self, (NofosImportNewView, NofosImportOverwriteView)
+            )
+            if builder_import:
                 from .introductory_page import capture_introductory_page
 
                 soup = capture_introductory_page(soup)
             # Remove this known redundant section before it can affect which
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)
-            top_heading_level = resolve_section_heading_level(soup)
+            top_heading_level = resolve_section_heading_level(
+                builder_import_content(soup) if builder_import else soup
+            )
             imported_tagline = None
             if self.extract_scoped_tagline:
                 unwrap_heading_containers(soup)
@@ -873,6 +879,7 @@ class BaseNofoImportView(View):
                 deepcopy(soup) if self.extract_scoped_tagline else soup,
                 top_heading_level,
                 consume_scoped_tagline=self.extract_scoped_tagline,
+                consume_metadata=builder_import,
             )
 
             # 5. Add instructions to subsections (only implemented in Composer)
@@ -976,13 +983,14 @@ class BaseNofoImportView(View):
 
     @staticmethod
     def get_sections_and_subsections_from_soup(
-        soup, top_heading_level, *, consume_scoped_tagline=False
+        soup, top_heading_level, *, consume_scoped_tagline=False, consume_metadata=False
     ):
         """
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
         """
-        sections = get_sections_from_soup(soup, top_heading_level)
+        content = builder_import_content(soup) if consume_metadata else soup
+        sections = get_sections_from_soup(content, top_heading_level)
         if not len(sections):
             raise ValidationError(
                 "That file does not contain a NOFO.", code="no_sections"
@@ -1374,10 +1382,10 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
 
         soup = BeautifulSoup(reimport_data["soup"], "html.parser")
-        top_heading_level = resolve_section_heading_level(soup)
+        top_heading_level = resolve_section_heading_level(builder_import_content(soup))
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
-            soup, top_heading_level, consume_scoped_tagline=True
+            soup, top_heading_level, consume_scoped_tagline=True, consume_metadata=True
         )
 
         filename = reimport_data["filename"]
