@@ -496,6 +496,30 @@ class MetadataWordImportTests(TestCase):
         )
         self.assertIn("Appendix example, not metadata", html)
 
+    def test_word_bookmarks_into_consumed_heading_and_fields_become_plain_text(self):
+        with patch(
+            "nofos.views.parse_uploaded_file_as_html_string",
+            return_value=(
+                '<h2>Program</h2><p><a href="#metadata-bookmark">Metadata link</a> '
+                '<a href="#field-bookmark">Field link</a></p>'
+                '<p><a id="metadata-bookmark"></a></p><h3>Metadata</h3>'
+                '<p><a id="field-bookmark"></a>OpDiv: HHS</p>'
+                "<p>Agency: Captured</p><h4>Appendix</h4><p>Keep me.</p>",
+                0,
+            ),
+        ):
+            response = self.client.post(
+                reverse("nofos:nofo_import"), {"nofo-import": self.upload()}
+            )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        rendered = render_stored_document(nofo)
+        self.assertIn("Metadata link", rendered.get_text())
+        self.assertIn("Field link", rendered.get_text())
+        self.assertIsNone(rendered.find("a", string="Metadata link"))
+        self.assertIsNone(rendered.find("a", string="Field link"))
+        self.assertIn("Keep me.", rendered.get_text())
+
     def test_reimport_keeps_record_and_saved_design_then_rolls_back_failures(self):
         nofo = Nofo.objects.create(
             title="Saved title",
