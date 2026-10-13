@@ -27,7 +27,7 @@ def introductory_family_from_soup(soup):
     return body.get(FAMILY_ATTRIBUTE, "") if body else ""
 
 
-def capture_introductory_page(soup, *, page_enabled=True):
+def capture_introductory_page(soup):
     """Capture only a unique structural destination, never visible link text.
 
     The private body attribute survives the existing confirmation serialization;
@@ -66,11 +66,7 @@ def capture_introductory_page(soup, *, page_enabled=True):
         if not target_id:
             continue
         for link in soup.find_all("a", href=f"#{target_id}"):
-            if (
-                page_enabled
-                and len(headings) == 1
-                and len(soup.find_all(id=target_id)) == 1
-            ):
+            if len(headings) == 1 and len(soup.find_all(id=target_id)) == 1:
                 link["href"] = f"#{INTRO_ANCHOR}"
             else:
                 link.unwrap()

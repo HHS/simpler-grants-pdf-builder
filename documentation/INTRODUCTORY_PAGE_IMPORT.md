@@ -75,3 +75,5 @@ H2 as `sectiontitle` for running footers; Word is a separate export path and doe
 not inherit Prince margin CSS. Check actual generated Word bookmarks and footer
 behavior separately using dedicated allowed-environment credentials. Template
 tests and browser HTML are not provider-generated DOCX proof.
+
+Re-importing while No BYB page is selected retains the canonical introductory link in stored content. Rendering hides the link while disabled; selecting Full or another enabled variant restores it without another import.

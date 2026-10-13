@@ -838,11 +838,7 @@ class BaseNofoImportView(View):
             if isinstance(self, (NofosImportNewView, NofosImportOverwriteView)):
                 from .introductory_page import capture_introductory_page
 
-                existing = getattr(self, "nofo", None)
-                soup = capture_introductory_page(
-                    soup,
-                    page_enabled=not existing or existing.before_you_begin != "none",
-                )
+                soup = capture_introductory_page(soup)
             # Remove this known redundant section before it can affect which
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)

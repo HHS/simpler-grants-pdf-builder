@@ -109,15 +109,14 @@ class IntroductoryDestinationTests(SimpleTestCase):
             self.assertIsNone(soup.find("a", href="#new"))
             self.assertIn("Authored label", str(soup))
 
-    def test_disabled_page_unlinks_only_actual_destination(self):
+    def test_capture_remaps_actual_destination_independently_of_page_setting(self):
         soup = capture_introductory_page(
             BeautifulSoup(
                 '<h2 id="intro">Before You Get Started</h2><h2>Step 1</h2><p><a href="#intro">Before You Get Started</a><a href="https://example.com">Before You Get Started</a><a href="#missing">Missing</a></p>',
                 "html.parser",
             ),
-            page_enabled=False,
         )
-        self.assertIsNone(soup.find("a", href="#intro"))
+        self.assertIsNotNone(soup.find("a", href="#section--before-you-begin"))
         self.assertIsNotNone(soup.find("a", href="https://example.com"))
         self.assertIsNotNone(soup.find("a", href="#missing"))
 
@@ -290,6 +289,35 @@ class IntroductoryImportTests(TestCase):
             copied = duplicate_nofo(nofo)
             self.assertEqual(copied.introductory_page_family, "get_started")
             self.assertEqual(copied.before_you_begin, variant)
+
+    def test_disabled_reimport_keeps_link_for_later_reenable(self):
+        for name in ("Before You Begin", "Before You Get Started"):
+            with self.subTest(name=name):
+                self.upload(reverse("nofos:nofo_import"), name)
+                nofo = Nofo.objects.latest("created")
+                nofo.before_you_begin = "none"
+                nofo.save()
+                response = self.upload(
+                    reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}), name
+                )
+                self.assertEqual(response.status_code, 302)
+                nofo.refresh_from_db()
+                bodies = " ".join(
+                    s.body
+                    for section in nofo.sections.all()
+                    for s in section.subsections.all()
+                )
+                self.assertIn("#section--before-you-begin", bodies)
+                url = reverse("nofos:nofo_view", kwargs={"pk": nofo.pk})
+                soup = BeautifulSoup(self.client.get(url).content, "html.parser")
+                self.assertIsNone(soup.find("a", href="#section--before-you-begin"))
+                nofo.before_you_begin = "full"
+                nofo.save()
+                soup = BeautifulSoup(self.client.get(url).content, "html.parser")
+                self.assertIsNotNone(
+                    soup.find("a", href="#section--before-you-begin", string=name)
+                )
+                self.assertIsNotNone(soup.find(id="section--before-you-begin"))
 
     def test_generated_introductory_links_are_not_reported_broken_when_enabled(self):
         from nofos.nofo import find_broken_links
