@@ -1,6 +1,6 @@
 {% load split_char_and_remove %}
 
-<section id="section--before-you-begin" class="before-you-begin{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}{% if nofo.before_you_begin == 'era' %} before-you-begin--era{% endif %}{% if nofo.before_you_begin == 'hrsa' %} before-you-begin--hrsa{% endif %}">
+<section id="section--before-you-begin" class="before-you-begin{% if nofo.introductory_page_family == 'get_started' %} before-you-begin--get-started{% endif %}{% if nofo.before_you_begin == 'sole_source' %} before-you-begin--sole-source{% endif %}{% if nofo.before_you_begin == 'era' %} before-you-begin--era{% endif %}{% if nofo.before_you_begin == 'hrsa' %} before-you-begin--hrsa{% endif %}">
   <div class="section--before-you-begin--icon">
     {% if "thin" in nofo.icon_style %}
       {% include "includes/icons/thin/0-before.svg" %}
