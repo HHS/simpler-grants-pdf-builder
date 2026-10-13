@@ -2092,6 +2092,65 @@ def sanitize_imported_text(value: str) -> str:
 METADATA_LABEL_PATTERN = re.compile(r"^\s*[^:\n]{1,80}:\s*\S*", re.IGNORECASE)
 INVALID_OPDIV_ACRONYMS = {"N/A", "NA", "NONE", "TBD", "UNKNOWN"}
 
+# These are the fields owned by a structured Metadata block. Tagline and
+# assistance-listing labels deliberately retain their independent legacy path.
+METADATA_BLOCK_LABELS = {
+    "opdiv",
+    "agency",
+    "subagency",
+    "subagency2",
+    "opportunityname",
+    "opportunitynumber",
+    "applicationdeadline",
+    "metadataauthor",
+    "metadatasubject",
+    "metadatakeywords",
+}
+
+
+def _metadata_label_key(label):
+    return re.sub(r"\s+", "", sanitize_imported_text(label)).casefold()
+
+
+def metadata_block_fields(heading):
+    """Read a Metadata heading's contiguous field paragraphs without mutation.
+
+    Any heading, non-paragraph element, or non-label prose ends the block,
+    regardless of heading level. Blank paragraphs may separate fields. None
+    means this is not a recognized block; an empty field still recognizes it.
+    """
+    if (
+        not (heading.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(heading))
+        or sanitize_imported_text(heading.get_text()).casefold() != "metadata"
+    ):
+        return None
+    fields = {}
+    for element in heading.find_next_siblings():
+        if element.name != "p":
+            break
+        text = sanitize_imported_text(element.get_text())
+        if not text:
+            continue
+        label, separator, value = text.partition(":")
+        key = _metadata_label_key(label)
+        if not separator or key not in METADATA_BLOCK_LABELS:
+            break
+        # First occurrence wins, including a blank, just like legacy scanning.
+        fields.setdefault(key, sanitize_imported_text(value))
+    return fields or None
+
+
+def recognized_metadata_block(soup):
+    """Return the last recognized block; never combine separate blocks."""
+    result = None
+    for heading in soup.find_all(
+        lambda tag: tag.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(tag)
+    ):
+        fields = metadata_block_fields(heading)
+        if fields is not None:
+            result = fields
+    return result
+
 
 def _looks_like_metadata_label(value):
     return bool(METADATA_LABEL_PATTERN.match(sanitize_imported_text(value)))
@@ -2102,8 +2161,18 @@ def _is_invalid_opdiv_placeholder(value):
 
 
 def _suggest_by_startswith_string(soup, startswith_string, use_next_paragraph=False):
+    key = _metadata_label_key(startswith_string.rstrip(":"))
+    if key in METADATA_BLOCK_LABELS:
+        fields = recognized_metadata_block(soup)
+        if fields is not None:
+            # A recognized block is authoritative, even when this field is
+            # absent or blank. Do not borrow an unrelated front-page value.
+            return fields.get(key, "")
     suggestion = ""
     regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
+    if key in {"subagency", "subagency2"}:
+        suffix = r"\s*2" if key == "subagency2" else ""
+        regex = re.compile(r"^\s*Sub\s*Agency" + suffix + r"\s*:", re.IGNORECASE)
     element = soup.find(string=regex)
 
     # look for the paragraph
@@ -3463,6 +3532,7 @@ def decompose_before_you_begin_section(soup):
       (opportunity number, agency, tagline, etc.) directly after this heading,
       sometimes with the value in the following paragraph. That content must
       be preserved.
+    - a recognized Metadata heading and field block, even at a lower level.
 
     Returns the list of extracted tags (the heading plus its section content).
     """
@@ -3492,6 +3562,8 @@ def decompose_before_you_begin_section(soup):
             ):
                 break
             if _looks_like_metadata_line(sibling):
+                break
+            if metadata_block_fields(sibling) is not None:
                 break
             tags_to_remove.append(sibling)
 
