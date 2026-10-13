@@ -16,6 +16,7 @@ import re
 import sys
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from copy import deepcopy
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
@@ -2184,17 +2185,41 @@ def metadata_block_fields(heading):
     regardless of heading level. Blank paragraphs may separate fields. None
     means this is not a recognized block; an empty field still recognizes it.
     """
+    return _metadata_block(heading)[0]
+
+
+def _metadata_block(heading):
+    """One recognition grammar for extraction and bounded source consumption."""
     if (
         not (heading.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(heading))
         or sanitize_imported_text(heading.get_text()).casefold() != "metadata"
     ):
-        return None
+        return None, []
     fields = {}
+    elements = [heading]
     for element in heading.find_next_siblings():
         if element.name != "p":
             break
+        # Text extraction alone must not mistake a diagram/media paragraph for
+        # a blank separator or consume an image embedded beside a field label.
+        if element.find(
+            [
+                "img",
+                "svg",
+                "picture",
+                "video",
+                "audio",
+                "object",
+                "embed",
+                "iframe",
+                "canvas",
+                "input",
+            ]
+        ):
+            break
         text = sanitize_imported_text(element.get_text())
         if not text:
+            elements.append(element)
             continue
         label, separator, value = text.partition(":")
         key = _metadata_label_key(label)
@@ -2202,7 +2227,40 @@ def metadata_block_fields(heading):
             break
         # First occurrence wins, including a blank, just like legacy scanning.
         fields.setdefault(key, sanitize_imported_text(value))
-    return fields or None
+        elements.append(element)
+    return fields or None, elements if fields else []
+
+
+def builder_import_content(soup):
+    """Keep the extraction source intact; consume Metadata only in Builder content.
+
+    Reusing the intact soup in the existing confirmation session preserves every
+    field read, including authoritative blanks and independent legacy fields.
+    This copy is used only to choose headings and construct incoming sections.
+    """
+    content = deepcopy(soup)
+    removed_ids = set()
+    removed = []
+    for heading in content.find_all(
+        lambda tag: tag.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(tag)
+    ):
+        fields, elements = _metadata_block(heading)
+        if fields is None:
+            continue
+        for element in elements:
+            for target in [element] + element.find_all(id=True):
+                if target.get("id"):
+                    removed_ids.add(target["id"])
+            removed.append(element)
+    for element in removed:
+        element.decompose()
+    # Do not guess another section destination or invent hidden duplicate
+    # subsections. Preserve link text; leave genuinely surviving targets alone.
+    for target_id in removed_ids:
+        if content.find(id=target_id) is None:
+            for link in content.find_all("a", href=f"#{target_id}"):
+                link.unwrap()
+    return content
 
 
 def recognized_metadata_block(soup):

@@ -27,12 +27,27 @@ community health` keeps the second colon. Blank paragraphs may separate fields.
 
 The field block ends at any following heading, table, list, or non-label prose, even
 when that heading is lower-level. Put all fields together before an appendix or notes.
-The section need not be the last part of the Word document. Import leaves its content,
-appendices, and note links intact; suppression in published output is separate work.
+The section need not be the last part of the Word document. Builder captures its fields,
+then consumes the recognized heading and its field/blank paragraphs before creating
+stored sections. Appendices, unrelated prose, tables, lists, media and note links remain
+intact. A paragraph containing images/media ends the block, not a blank separator.
+The containing program section remains. Ordinary Metadata discussion is not consumed.
 
 If more than one recognized Metadata block exists, the last block is authoritative.
 If a label repeats within that block, its first value wins, including a blank value.
 Fields are not combined across blocks or with earlier labels.
+All recognized blocks are consumed, including earlier non-authoritative blocks. Links
+whose only destination is consumed Metadata become plain text, retaining their wording.
+No hidden Metadata subsection is generated to hold an obsolete destination.
+
+## Capture and confirmation
+
+Builder keeps an intact extraction source separate from the content copy used to build
+sections and choose their heading level. The same source travels through the existing
+opportunity-number confirmation session, so validation and later field reads cannot
+fall back to front-page labels after consumption. No additional persistent fields or
+session format are needed. Introductory-page capture/cleanup runs first and preserves
+recognized Metadata for extraction. Its independent family choice survives confirmation.
 
 ## Missing fields and placeholders
 

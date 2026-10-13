@@ -17,6 +17,7 @@ from users.models import BloomUser
 from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import (
     add_headings_to_document,
+    builder_import_content,
     create_nofo,
     metadata_block_fields,
     parse_uploaded_file_as_html_string,
@@ -111,6 +112,79 @@ def parse_fixture(*, legacy=False, opdiv="HHS"):
 class MetadataBlockTests(TestCase):
     def soup(self, text):
         return BeautifulSoup(text, "html.parser")
+
+    def test_content_copy_consumes_all_recognized_blocks_without_losing_authority(self):
+        source = self.soup(
+            "<h2>Program</h2><p>Agency: Front</p><h3>Metadata</h3>"
+            "<p>OpDiv: NIH</p><p>Agency: Earlier</p><p></p>"
+            "<h3>Metadata</h3><p><strong>OpDiv:</strong> HHS</p>"
+            "<p>Agency: </p><p>Agency: Later</p><p></p>"
+            "<h3>Metadata</h3><p>Ordinary metadata discussion.</p>"
+        )
+        before = str(source)
+        content = builder_import_content(source)
+        self.assertEqual(str(source), before)
+        self.assertEqual(suggest_nofo_agency(source), "")
+        self.assertEqual(suggest_nofo_opdiv(source), "HHS")
+        self.assertEqual(len(content.find_all("h3")), 1)
+        self.assertIn("Ordinary metadata discussion.", str(content))
+        self.assertNotIn("Earlier", str(content))
+        self.assertNotIn("Later", str(content))
+
+    def test_consumption_uses_every_supported_heading_and_exact_boundaries(self):
+        for level in range(1, 8):
+            heading = (
+                f"<h{level}> mETADATA </h{level}>"
+                if level < 7
+                else '<div role="heading" aria-level="7">Metadata</div>'
+            )
+            for boundary in (
+                "<h1>Appendix</h1>",
+                "<h3>Appendix</h3>",
+                "<h6>Appendix</h6>",
+                "<p>Unrelated prose.</p>",
+                "<ul><li>List content</li></ul>",
+                "<table><tr><td>Table content</td></tr></table>",
+                '<ol><li id="footnote-1">Native note</li></ol>',
+                '<p><img alt="Program diagram" src="diagram.png"/></p>',
+                "<p><svg><title>Program diagram</title></svg></p>",
+            ):
+                with self.subTest(level=level, boundary=boundary):
+                    source = self.soup(
+                        "<h2>Program</h2>"
+                        + heading
+                        + "<p></p><p>OpDiv: HHS</p><p>Agency: </p><p></p>"
+                        + boundary
+                        + "<p>Agency: Outside</p>"
+                    )
+                    content = builder_import_content(source)
+                    self.assertIn(boundary, str(content))
+                    self.assertIn("Agency: Outside", str(content))
+                    self.assertIsNone(recognized_metadata_block(content))
+                    self.assertEqual(suggest_nofo_agency(source), "")
+
+    def test_consumed_anchor_links_keep_text_and_surviving_destinations(self):
+        source = self.soup(
+            '<h2>Program</h2><p><a href="#meta">Metadata link</a> '
+            '<a href="#field">field link</a> <a href="#appendix">appendix link</a></p>'
+            '<h3 id="meta">Metadata</h3><p id="field">OpDiv: HHS</p>'
+            '<h4 id="appendix">Appendix</h4><p>Keep content.</p>'
+        )
+        content = builder_import_content(source)
+        self.assertIn("Metadata link", content.get_text())
+        self.assertIn("field link", content.get_text())
+        self.assertIsNone(content.find("a", href="#meta"))
+        self.assertIsNone(content.find("a", href="#field"))
+        self.assertIsNotNone(content.find("a", href="#appendix"))
+
+    def test_unrecognized_mentions_and_legacy_are_not_consumed(self):
+        for text in (
+            "<h3>Metadata</h3><p>Ordinary prose.</p>",
+            "<p>Metadata</p><p>Agency: Legacy</p>",
+            "<h3>Metadata details</h3><p>OpDiv: HHS</p>",
+        ):
+            source = self.soup(text)
+            self.assertEqual(str(builder_import_content(source)), str(source))
 
     def test_heading_levels_and_normalized_inline_labels(self):
         for level in range(1, 8):
@@ -281,6 +355,12 @@ class MetadataWordImportTests(TestCase):
                 )
                 if not legacy:
                     self.assertIn("Appendix example, not metadata", bodies)
+                    self.assertFalse(
+                        Subsection.objects.filter(
+                            section__nofo=nofo, name="Metadata"
+                        ).exists()
+                    )
+                    self.assertNotIn("Metadata author:", bodies)
                 nofo.delete()
 
     def test_manual_endnotes_following_metadata_keep_their_links(self):
@@ -306,7 +386,7 @@ class MetadataWordImportTests(TestCase):
             (nofo.opdiv, nofo.agency, nofo.number),
             ("HHS", "Synthetic Agency", "TEST-1096"),
         )
-        self.assertTrue(
+        self.assertFalse(
             Subsection.objects.filter(section__nofo=nofo, name="Metadata").exists()
         )
         bodies = " ".join(
@@ -321,6 +401,124 @@ class MetadataWordImportTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertFalse(Nofo.objects.exists())
+
+    def test_confirmation_keeps_extraction_source_but_consumes_stored_content(self):
+        nofo = Nofo.objects.create(
+            title="Saved",
+            number="OLD-EXAMPLE",
+            opdiv="HHS",
+            group="bloom",
+            status="draft",
+            theme="portrait-cdc-blue",
+            before_you_begin="sole_source",
+        )
+        section = Section.objects.create(nofo=nofo, name="Original", order=1)
+        Subsection.objects.create(section=section, name="", body="Archive me", order=1)
+        url = reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk})
+        response = self.client.post(
+            url, {"nofo-import": self.upload(legacy_intro=True)}
+        )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk}),
+        )
+        captured = self.client.session["reimport_data"]
+        self.assertIn("Metadata", captured["soup"])
+        self.assertEqual(captured["new_opportunity_number"], "TEST-1096")
+        self.assertEqual(nofo.sections.get().subsections.get().body, "Archive me")
+        response = self.client.post(
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        nofo.refresh_from_db()
+        self.assertEqual(
+            (nofo.number, nofo.agency, nofo.author),
+            ("TEST-1096", "Synthetic Agency", "Example Office"),
+        )
+        self.assertEqual(
+            (nofo.theme, nofo.before_you_begin, nofo.introductory_page_family),
+            ("portrait-cdc-blue", "sole_source", "legacy"),
+        )
+        self.assertFalse(
+            Subsection.objects.filter(section__nofo=nofo, name="Metadata").exists()
+        )
+        archive = Nofo.objects.get(successor=nofo)
+        self.assertEqual(archive.sections.get().subsections.get().body, "Archive me")
+
+    def test_metadata_h1_does_not_change_program_heading_resolution(self):
+        with patch(
+            "nofos.views.parse_uploaded_file_as_html_string",
+            return_value=(
+                "<h2>Program</h2><h3>Summary</h3><p>Keep program content.</p>"
+                "<h1>Metadata</h1><p>OpDiv: HHS</p><p>Agency: Captured agency</p>"
+                "<h2>Appendix</h2><p>Keep appendix.</p>",
+                0,
+            ),
+        ):
+            response = self.client.post(
+                reverse("nofos:nofo_import"), {"nofo-import": self.upload()}
+            )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        self.assertEqual(nofo.agency, "Captured agency")
+        self.assertEqual(
+            list(nofo.sections.values_list("name", flat=True)), ["Program", "Appendix"]
+        )
+
+    def test_source_absent_from_editor_public_and_word_export_html(self):
+        from django.template.loader import render_to_string
+
+        from nofos.nofo_document_context import get_nofo_document_context
+
+        self.client.post(reverse("nofos:nofo_import"), {"nofo-import": self.upload()})
+        nofo = Nofo.objects.get()
+        for url_name in ("nofos:nofo_edit", "nofos:nofo_view", "nofos:nofo_export"):
+            response = self.client.get(reverse(url_name, kwargs={"pk": nofo.pk}))
+            self.assertEqual(response.status_code, 200)
+            rendered = BeautifulSoup(response.content, "html.parser")
+            self.assertFalse(
+                any(
+                    h.get_text(strip=True).casefold() == "metadata"
+                    for h in rendered.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
+                )
+            )
+        html = render_to_string(
+            "nofos/includes/nofo_export_document.html",
+            {"nofo": nofo, **get_nofo_document_context(nofo)},
+        )
+        # Word export intentionally adds existing metadata fields in its own
+        # Basic information block. Only the duplicate imported source is gone.
+        headings = BeautifulSoup(html, "html.parser").find_all(
+            ["h1", "h2", "h3", "h4", "h5", "h6"]
+        )
+        self.assertFalse(
+            any(h.get_text(strip=True).casefold() == "metadata" for h in headings)
+        )
+        self.assertIn("Appendix example, not metadata", html)
+
+    def test_word_bookmarks_into_consumed_heading_and_fields_become_plain_text(self):
+        with patch(
+            "nofos.views.parse_uploaded_file_as_html_string",
+            return_value=(
+                '<h2>Program</h2><p><a href="#metadata-bookmark">Metadata link</a> '
+                '<a href="#field-bookmark">Field link</a></p>'
+                '<p><a id="metadata-bookmark"></a></p><h3>Metadata</h3>'
+                '<p><a id="field-bookmark"></a>OpDiv: HHS</p>'
+                "<p>Agency: Captured</p><h4>Appendix</h4><p>Keep me.</p>",
+                0,
+            ),
+        ):
+            response = self.client.post(
+                reverse("nofos:nofo_import"), {"nofo-import": self.upload()}
+            )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        rendered = render_stored_document(nofo)
+        self.assertIn("Metadata link", rendered.get_text())
+        self.assertIn("Field link", rendered.get_text())
+        self.assertIsNone(rendered.find("a", string="Metadata link"))
+        self.assertIsNone(rendered.find("a", string="Field link"))
+        self.assertIn("Keep me.", rendered.get_text())
 
     def test_reimport_keeps_record_and_saved_design_then_rolls_back_failures(self):
         nofo = Nofo.objects.create(
@@ -384,6 +582,27 @@ class MetadataWordImportTests(TestCase):
                         (document.title, document.opdiv), (expected_title, "HRSA")
                     )
                     document.delete()
+
+    def test_actual_shared_import_posts_retain_metadata_source_content(self):
+        from compare.models import CompareSubsection
+        from composer.models import ContentGuideSubsection
+
+        self.user.is_composer_admin = True
+        self.user.save(update_fields=["is_composer_admin"])
+
+        for url_name, model in (
+            ("composer:composer_import", ContentGuideSubsection),
+            ("compare:compare_import", CompareSubsection),
+        ):
+            with self.subTest(consumer=url_name):
+                response = self.client.post(
+                    reverse(url_name), {"nofo-import": self.upload()}
+                )
+                self.assertEqual(response.status_code, 302)
+                self.assertTrue(model.objects.filter(name="Metadata").exists())
+                bodies = " ".join(model.objects.values_list("body", flat=True))
+                self.assertIn("Metadata author: Example Office", bodies)
+                self.assertIn("Appendix example, not metadata", bodies)
 
     def test_published_status_and_other_group_cannot_reimport(self):
         nofo = Nofo.objects.create(
