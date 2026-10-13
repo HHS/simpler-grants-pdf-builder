@@ -108,6 +108,22 @@ def repackage(upload, edits):
 
 
 class InstructionBoxConversionTests(TestCase):
+    def test_compatibility_tooltip_difference_preserves_one_logical_box(self):
+        modern = box("Applicant content", "<a:noFill/>").replace(
+            "</w:txbxContent>",
+            '<w:p><w:hyperlink w:anchor="resource" w:tooltip="Modern hint"><w:r><w:t>Reference</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+        )
+        legacy = box("Applicant content", 'filled="false"', vml=True).replace(
+            "</w:txbxContent>",
+            '<w:p><w:hyperlink w:anchor="resource" w:tooltip="Legacy hint"><w:r><w:t>Reference</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+        )
+        unit = f'<mc:AlternateContent><mc:Choice Requires="wps">{modern}</mc:Choice><mc:Fallback>{legacy}</mc:Fallback></mc:AlternateContent>'
+        html, _ = parse_uploaded_file_as_html_string(
+            docx("<w:p><w:r>" + unit + "</w:r></w:p>")
+        )
+        self.assertEqual(html.count("Applicant content"), 1)
+        self.assertEqual(html.count('href="#resource"'), 1)
+
     def test_drawingml_only_compatibility_fallback_preserves_one_copy(self):
         shape = box("Applicant content", "<a:noFill/>")
         unit = f'<mc:AlternateContent><mc:Choice Requires="wps">{shape}</mc:Choice><mc:Fallback>{shape}</mc:Fallback></mc:AlternateContent>'

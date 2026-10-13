@@ -243,7 +243,7 @@ def _link_keys(box, relationships):
             namespace = attribute.namespaceURI or ""
             name = attribute.localName
             if namespace == "http://www.w3.org/2000/xmlns/" or (
-                namespace == W and name == "history"
+                namespace == W and name in ("history", "tooltip")
             ):
                 continue
             value = attribute.value
