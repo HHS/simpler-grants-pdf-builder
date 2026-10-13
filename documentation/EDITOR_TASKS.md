@@ -516,6 +516,9 @@ Author, subject, and keywords are required by the NOFO metadata guidance.
 
 ### TASK-BASIC-INFO — Change the title, number, deadline, agency, or tagline
 
+New-template Tagline headings are imported into this existing field, not a
+Tagline subsection. See [tagline import and re-import behavior](TAGLINE_IMPORT.md).
+
 **Steps**
 
 1. On the NOFO edit page, find the field in the **Basic information** table.

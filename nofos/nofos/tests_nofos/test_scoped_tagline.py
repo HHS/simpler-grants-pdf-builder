@@ -367,3 +367,31 @@ class ScopedTaglineWorkflowTests(TestCase):
                 self.assertEqual(response.status_code, 302)
                 source = model.objects.get(name="Tagline")
                 self.assertIn("Stronger communities", source.body)
+
+    def test_incoming_links_to_consumed_heading_reach_basic_information(self):
+        for value in ("Value", ""):
+            for basic_id in ("", ' id="basic-original"'):
+                with self.subTest(value=value, basic_id=basic_id):
+                    html = f'<h2>Step 1: Review the Opportunity</h2><h3{basic_id}>Basic information</h3><p>Opdiv: CDC</p><h4 id="tagline-source">Tagline</h4><p>{value}</p><h3>Eligibility</h3><p><a href="#tagline-source">See tagline</a></p>'
+                    response = self.client.post(
+                        reverse("nofos:nofo_import"),
+                        {
+                            "nofo-import": SimpleUploadedFile(
+                                "tagline.html", html.encode(), content_type="text/html"
+                            )
+                        },
+                    )
+                    self.assertEqual(response.status_code, 302)
+                    nofo = Nofo.objects.latest("created")
+                    response = self.client.get(
+                        reverse("nofos:nofo_view", kwargs={"pk": nofo.pk})
+                    )
+                    soup = BeautifulSoup(response.content, "html.parser")
+                    link = soup.find("a", string="See tagline")
+                    target = soup.find(id=link["href"][1:])
+                    self.assertEqual(target.get_text(strip=True), "Basic information")
+                    self.assertFalse(
+                        Subsection.objects.filter(
+                            section__nofo=nofo, name__iexact="tagline"
+                        ).exists()
+                    )

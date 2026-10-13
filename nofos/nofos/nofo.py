@@ -2420,6 +2420,22 @@ def extract_basic_information_tagline(soup, top_heading_level):
 def consume_tagline_paragraph(soup, imported_tagline):
     if imported_tagline is None:
         return None
+    heading = soup.find(attrs={"data-nofo-tagline-source": "true"})
+    if heading is not None and heading.get("id"):
+        # A consumed source heading must not strand incoming links. Basic
+        # information remains a visible target even for an empty tagline.
+        basic = heading.find_previous(
+            lambda tag: tag.name == f"h{int(heading.name[1]) - 1}"
+            and sanitize_imported_text(tag.get_text(" ", strip=True)).casefold()
+            == "basic information"
+            and tag.parent == heading.parent
+        )
+        if basic is not None:
+            source_id = heading.attrs.pop("id")
+            target_id = basic.get("id") or source_id
+            basic["id"] = target_id
+            for link in soup.find_all("a", href="#" + source_id):
+                link["href"] = "#" + target_id
     paragraph = soup.find("p", attrs={"data-nofo-tagline-value": "true"})
     if paragraph is None:
         return ""
