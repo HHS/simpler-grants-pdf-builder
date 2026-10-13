@@ -90,7 +90,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
 | IMPORT-058 | removal | DOCX Conversion | Verified pale-blue instruction text boxes removed before conversion; other fills preserved for review | `word_instruction_boxes.py` |
 | IMPORT-040 | repair | Field Merging | Split label/value paragraphs under "Funding details" → merged into one paragraph | `nofo.py` |
-| IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields; an underscore-only `Tagline:` value → empty | `nofo.py` |
+| IMPORT-041 | extraction | Metadata Suggestion | Recognized Metadata heading/field block takes precedence over legacy `Label:` scanning; independent Tagline and assistance-listing behavior retained | `nofo.py` |
 | IMPORT-059 | extraction | Metadata Suggestion | Builder's Step 1 → Basic information → Tagline heading/paragraph → optional field, source consumed | `nofo.py`, `views.py` |
 | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
 | IMPORT-043 | extraction | Metadata Suggestion | Theme prefix → suggested cover style (text-only vs. medium) | `nofo.py` |
@@ -490,7 +490,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-038 — "Before you begin" duplicate-section removal
 - **Type:** removal
 - **Trigger:** A heading (`h1`-`h6`) whose normalized text reads exactly "before you begin" (GrantSolutions Announcement Module exports include this).
-- **Action:** Remove that heading and everything after it, up to whichever comes first: the next heading of the same or higher level, or a line that looks like a metadata label (e.g. `Opportunity Number:`) — this content is always redundant with the "Before you begin" page NOFO Builder generates itself from its own `before_you_begin` field.
+- **Action:** Remove that heading and everything after it, up to whichever comes first: the next heading of the same or higher level, a line that looks like a metadata label (e.g. `Opportunity Number:`), or a recognized Metadata heading/field block (IMPORT-041), even at a lower heading level. Preserve that heading so the block remains authoritative during metadata extraction. The removed intro content duplicates the "Before you begin" page NOFO Builder generates itself from its own `before_you_begin` field.
 - **Source:** `nofo.py::decompose_before_you_begin_section`
 - **Status:** active
 
@@ -527,13 +527,15 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-041 — Label:value field scanning
 - **Type:** extraction
-- **Trigger:** A paragraph starts with a literal label string (`"Opportunity Number:"`, `"Application Deadline:"`, `"Opportunity Name:"`, `"Opdiv:"`, `"Agency:"`, `"Subagency:"`, `"Subagency2:"`, `"Tagline:"`, `"Metadata Author:"`, `"Metadata Subject:"`, `"Metadata Keywords:"`). For `Opdiv:` specifically, if the value isn't on the same line, the next paragraph is checked too — but only accepted if it doesn't itself look like another metadata label.
-- **Action:** The suggested field is pre-filled with the text following the label (sanitized per IMPORT-010).
+- **Trigger:** A genuine `h1`–`h6` or synthetic H7 heading reads exactly `Metadata` after whitespace/case normalization and is followed by recognized `Label: value` paragraphs. Otherwise, retain legacy label scanning (`"Opportunity Number:"`, `"Application Deadline:"`, `"Opportunity Name:"`, `"Opdiv:"`, `"Agency:"`, `"Subagency:"`, `"Subagency2:"`, `"Tagline:"`, `"Metadata Author:"`, `"Metadata Subject:"`, `"Metadata Keywords:"`). `Sub Agency` and `Sub Agency 2` are accepted alongside the unspaced legacy spellings.
+- **Action:** A recognized block supplies OpDiv, Agency, Subagency, Subagency2, title (Opportunity name), number (Opportunity number), Application Deadline, author (Metadata author), subject (Metadata subject), and keywords (Metadata keywords). Read the whole paragraph including inline formatting, split at the first colon, and sanitize per IMPORT-010. Label case and whitespace are ignored. Blank paragraphs may separate fields; any heading of any level, non-paragraph element, or non-label prose ends the block. Source content is not removed. No pagination or filename detection is used.
+
+  **Precedence and defaults.** The last recognized block wins; the first occurrence of a repeated label inside that block wins, including an empty value. Blocks are never combined. Missing or blank mapped fields use the existing empty/default behavior and do not borrow front-page values. The existing title-preservation rule on re-import, required OpDiv validation, and first-import-only theme/cover suggestions remain in force. Without a recognized block, the legacy scanner and guarded next-paragraph OpDiv continuation are unchanged. Tagline and assistance-listing labels keep their separate existing extraction paths. PDF author/subject/keywords alone normalize whole-field curly-brace placeholders per IMPORT-048; other placeholders remain visible for correction. See [Word metadata import](WORD_METADATA_IMPORT.md) for mappings and saved-record behavior.
 
   **Builder tagline precedence.** If IMPORT-059 finds a scoped new-format Tagline heading, use that source even when blank. Otherwise retain this legacy `Tagline:` scanner and its underscore-only blank behavior. Composer and Compare keep their existing path.
 
   **Tagline exception — underscore-only placeholders.** `Tagline:` alone gets one extra check: if the extracted value is made up entirely of underscores and whitespace (`"Tagline: _________"`, the ruled blank an HHS Word template leaves for a writer to fill in), the tagline is suggested as empty instead. In isolation this step is a **repair**, the same shape as IMPORT-048 for `{placeholder}` PDF metadata values; it's documented here rather than as its own rule because it only ever runs as part of this rule's tagline extraction. IMPORT-010's sanitization keeps underscores — they are ordinary printable characters — so without this the row of underscores would be saved as the tagline and rendered on the NOFO cover. A value that merely *contains* underscores is untouched (`"Apply by ____ to be considered"` imports as written), and no other metadata field treats underscores as blank, so an underscore-only `Agency:` still imports literally. The check lives next to `suggest_nofo_tagline()` rather than in the shared scanner precisely to keep it that narrow.
-- **Source:** `nofo.py::_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
+- **Source:** `nofo.py::metadata_block_fields`, `recognized_metadata_block`, `_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
 - **Status:** active
 
 ### IMPORT-059 — Scoped Basic information tagline extraction
