@@ -218,6 +218,40 @@ def add_checkbox_layout_classes(td):
         )
 
 
+def wrap_checkbox_inline_content(soup):
+    """Keep a checkbox's inline label in one flex item without moving blocks."""
+    for img in soup.find_all("img", class_="usa-icon--check_box_outline_blank"):
+        line = img.find_parent(class_="usa-icon__line")
+        if line is None:
+            cell = img.find_parent("td")
+            if cell is not None:
+                line = cell.find("div", recursive=False)
+        parent = (
+            line
+            if line
+            and len(line.find_all("img", class_="usa-icon--check_box_outline_blank"))
+            == 1
+            else img.parent
+        )
+        if parent.name in {"ul", "ol", "dl", "table"}:
+            continue
+        if len(parent.find_all("img", class_="usa-icon--check_box_outline_blank")) != 1:
+            continue
+        if any(
+            isinstance(child, Tag) and child.name in BLOCK_LEVEL_TAG_NAMES
+            for child in parent.children
+        ):
+            continue
+        if parent.find(class_="usa-icon__content", recursive=False):
+            continue
+        content = soup.new_tag("span", attrs={"class": "usa-icon__content"})
+        img.extract()
+        for child in list(parent.contents):
+            content.append(child.extract())
+        parent.append(img)
+        parent.append(content)
+
+
 @register.filter()
 def replace_unicode_with_icon(html_string):
     """
@@ -303,7 +337,9 @@ def replace_unicode_with_icon(html_string):
                         )
 
                     add_checkbox_layout_classes(parent_td)
-                    wrap_text_in_span(parent_td)
+                    if not has_checkbox(parent_td):
+                        wrap_text_in_span(parent_td)
                     wrap_td_contents_in_div(parent_td)
 
+    wrap_checkbox_inline_content(soup)
     return mark_safe(str(soup))
