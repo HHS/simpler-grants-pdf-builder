@@ -108,6 +108,39 @@ def repackage(upload, edits):
 
 
 class InstructionBoxConversionTests(TestCase):
+    def test_drawingml_only_compatibility_fallback_preserves_one_copy(self):
+        shape = box("Applicant content", "<a:noFill/>")
+        unit = f'<mc:AlternateContent><mc:Choice Requires="wps">{shape}</mc:Choice><mc:Fallback>{shape}</mc:Fallback></mc:AlternateContent>'
+        html, _ = parse_uploaded_file_as_html_string(
+            docx("<w:p><w:r>" + unit + "</w:r></w:p>")
+        )
+        self.assertEqual(html.count("Applicant content"), 1)
+
+    def test_retained_copy_carries_link_namespace_from_shape_ancestor(self):
+        unit = box("Applicant prose", "<a:noFill/>").replace(
+            "<wps:wsp>", f'<wps:wsp xmlns:r="{NS["r"]}">'
+        )
+        unit = unit.replace(
+            "</w:txbxContent>",
+            '<w:p><w:hyperlink r:id="rId9000"><w:r><w:t>Applicant resource</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+        )
+        upload = docx("<w:p><w:r>" + unit + "</w:r></w:p>")
+        additions = b'<Relationship Id="rId9000" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://example.org/applicant" TargetMode="External"/>'
+        upload = repackage(
+            upload,
+            {
+                "word/document.xml": lambda data: data.replace(
+                    f' xmlns:r="{NS["r"]}"'.encode(), b"", 1
+                ),
+                "word/_rels/document.xml.rels": lambda data: data.replace(
+                    b"</Relationships>", additions + b"</Relationships>"
+                ),
+            },
+        )
+        html, _ = parse_uploaded_file_as_html_string(upload)
+        self.assertIn("Applicant prose", html)
+        self.assertIn('href="https://example.org/applicant"', html)
+
     def test_compatibility_link_ids_resolve_to_same_destination(self):
         modern = box().replace(
             "</w:txbxContent>",

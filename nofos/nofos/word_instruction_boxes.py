@@ -19,6 +19,7 @@ V = "urn:schemas-microsoft-com:vml"
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 R = "http://schemas.openxmlformats.org/package/2006/relationships"
 OFFICE_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+XMLNS = "http://www.w3.org/2000/xmlns/"
 PALE_BLUE = (220, 234, 247)  # DCEAF7, verified HHS master container fill.
 REVIEW_MESSAGE = (
     "Some Word text boxes have an unrecognized or conflicting fill. "
@@ -253,6 +254,25 @@ def _link_keys(box, relationships):
     return result
 
 
+def _conversion_copy(document, box):
+    prefix = box.prefix
+    pict = document.createElementNS(W, f"{prefix}:pict" if prefix else "pict")
+    # The subtree can use namespaces declared only on its original ancestors.
+    # Carry nearest bindings across, including links and inline drawings.
+    bindings = {}
+    parent = box
+    while parent.nodeType == parent.ELEMENT_NODE:
+        for attribute in parent.attributes.values():
+            if attribute.namespaceURI == XMLNS:
+                bindings.setdefault(attribute.name, attribute.value)
+        parent = parent.parentNode
+    for name, value in bindings.items():
+        pict.setAttributeNS(XMLNS, name, value)
+    pict.setAttributeNS(XMLNS, f"xmlns:{prefix}" if prefix else "xmlns", W)
+    pict.appendChild(box.cloneNode(deep=True))
+    return pict
+
+
 def clean_instruction_boxes(upload):
     """Return a seekable conversion copy and content-free review warnings.
 
@@ -364,28 +384,22 @@ def clean_instruction_boxes(upload):
                     box
                     for fallback in fallbacks
                     for box in _nodes(fallback, W, "txbxContent")
+                    if box.parentNode.namespaceURI == V
                 ]
                 if unit.namespaceURI != MC:
                     rendered_boxes = [
                         box for box in contents if box.parentNode.namespaceURI == V
                     ]
+                pair_available = bool(rendered_boxes)
                 for box in contents:
-                    if box in rendered_boxes or paired_agreement:
+                    if box in rendered_boxes or (paired_agreement and pair_available):
                         continue
                     # Independent boxes can have identical labels but distinct
                     # links/content. Only a verified Choice/Fallback pair is a
                     # duplicate; never deduplicate standalone/grouped boxes.
-                    prefix = box.prefix
-                    pict = document.createElementNS(
-                        W, f"{prefix}:pict" if prefix else "pict"
-                    )
-                    pict.setAttributeNS(
-                        "http://www.w3.org/2000/xmlns/",
-                        f"xmlns:{prefix}" if prefix else "xmlns",
-                        W,
-                    )
-                    pict.appendChild(box.cloneNode(deep=True))
+                    pict = _conversion_copy(document, box)
                     unit.parentNode.insertBefore(pict, unit)
+                    pair_available = True
                     removed = True  # conversion copy must be serialized
                 # Do not remove unsupported drawings: they may also contain
                 # images or other non-text content. Only their text is copied.
