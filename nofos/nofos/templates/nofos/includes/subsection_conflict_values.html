@@ -1,0 +1,8 @@
+<dl>
+  <dt class="text-bold">Subsection name</dt><dd class="margin-left-0">{{ values.name|default:"(Unnamed subsection)" }}</dd>
+  <dt class="text-bold margin-top-1">Heading level</dt><dd class="margin-left-0">{{ values.tag|default:"None" }}</dd>
+  <dt class="text-bold margin-top-1">Callout box</dt><dd class="margin-left-0">{{ values.callout_box|yesno:"Yes,No" }}</dd>
+  <dt class="text-bold margin-top-1">HTML class / page break</dt><dd class="margin-left-0">{{ values.html_class|default:"None" }}</dd>
+</dl>
+<label class="usa-label" for="{{ prefix }}-body">Subsection content (read only)</label>
+<textarea class="usa-textarea maxw-none" id="{{ prefix }}-body" rows="15" readonly>{{ values.body }}</textarea>

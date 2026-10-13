@@ -9,6 +9,7 @@ from .models import (
     Section,
     Subsection,
 )
+from .subsection_conflicts import version_token
 from .utils import get_icon_path_choices, user_is_nih_group
 
 
@@ -318,6 +319,13 @@ class NofoMetadataForm(forms.ModelForm):
 # body needs a custom field and a custom widget so don't use the factory function
 class SubsectionEditForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    edit_version = forms.CharField(widget=forms.HiddenInput, required=False)
+    recovery = forms.CharField(widget=forms.HiddenInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound and self.instance.pk:
+            self.initial["edit_version"] = version_token(self.instance)
 
     class Meta:
         model = Subsection

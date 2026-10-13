@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.50.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.3...nofos-v3.50.4) (2026-10-11)
+
+
+### Documentation
+
+* add a NOFO design standards page and clarify table captions ([#1084](https://github.com/HHS/simpler-grants-pdf-builder/issues/1084)) ([a80e889](https://github.com/HHS/simpler-grants-pdf-builder/commit/a80e889fb691f72a2c3a85ea064f475b0b80e5ee))
+* add a public NOFO Builder FAQ page ([#1083](https://github.com/HHS/simpler-grants-pdf-builder/issues/1083)) ([b200a8c](https://github.com/HHS/simpler-grants-pdf-builder/commit/b200a8cb0f00f0bc6042a1177d6394692f17dca3))
+* add SimplerNOFOs Style Guide as a Markdown page ([#1079](https://github.com/HHS/simpler-grants-pdf-builder/issues/1079)) ([100e2b7](https://github.com/HHS/simpler-grants-pdf-builder/commit/100e2b7826850ba83c8ff72808f842b4ffcda54a))
+* describe NOFO statuses by group and show the bold Table: caption format ([#1082](https://github.com/HHS/simpler-grants-pdf-builder/issues/1082)) ([5db4d1c](https://github.com/HHS/simpler-grants-pdf-builder/commit/5db4d1cac628ea64fed1efd613060ac841e00f82))
+* remove the HRSA-specific heading limit and clarify optional line breaks ([#1085](https://github.com/HHS/simpler-grants-pdf-builder/issues/1085)) ([48032cf](https://github.com/HHS/simpler-grants-pdf-builder/commit/48032cf1fd0c5c4669e81ab810d29549b76c5fb1))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.96 to 1.43.98 in the python-minor-and-patch group ([#1029](https://github.com/HHS/simpler-grants-pdf-builder/issues/1029)) ([a00b562](https://github.com/HHS/simpler-grants-pdf-builder/commit/a00b5625f884c68f321b085e0d1b278d431fe597))
+
+## [3.50.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.2...nofos-v3.50.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* prevent stale subsection forms from overwriting newer edits ([#1076](https://github.com/HHS/simpler-grants-pdf-builder/issues/1076)) ([25f7d47](https://github.com/HHS/simpler-grants-pdf-builder/commit/25f7d474f4c10508b480c37271f8162cbe7ac7d1))
+
+
+### Documentation
+
+* add NOFO Builder editor task reference ([#1077](https://github.com/HHS/simpler-grants-pdf-builder/issues/1077)) ([77f19ae](https://github.com/HHS/simpler-grants-pdf-builder/commit/77f19ae64f77631f76bc88a7454cf61236c3fd43))
+
+## [3.50.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.1...nofos-v3.50.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* match readability alert to estimate reliability ([#1062](https://github.com/HHS/simpler-grants-pdf-builder/issues/1062)) ([e7c4aae](https://github.com/HHS/simpler-grants-pdf-builder/commit/e7c4aae8eb60254fd6014623c4c6f2089f7351da))
+* preserve div-wrapped import headings and content ([#1055](https://github.com/HHS/simpler-grants-pdf-builder/issues/1055)) ([d8aef56](https://github.com/HHS/simpler-grants-pdf-builder/commit/d8aef56fb8891355a53a39cc581d796875afe799))
+* preserve referenced list-item targets during import ([#1057](https://github.com/HHS/simpler-grants-pdf-builder/issues/1057)) ([de3bfc2](https://github.com/HHS/simpler-grants-pdf-builder/commit/de3bfc29756b40f5acb494954ae4d7310b1c0d94))
+* preserve standalone images during HTML import ([#1056](https://github.com/HHS/simpler-grants-pdf-builder/issues/1056)) ([250cc11](https://github.com/HHS/simpler-grants-pdf-builder/commit/250cc11a18e095b2caf124a893afc806b956e65c))
+* preserve table structure when importing HTML captions ([#1054](https://github.com/HHS/simpler-grants-pdf-builder/issues/1054)) ([669e2c3](https://github.com/HHS/simpler-grants-pdf-builder/commit/669e2c34b2ee80ad7e995e699643a5a2818797d6))
+
+
+### Documentation
+
+* link UI patterns from the contribution workflow ([#1045](https://github.com/HHS/simpler-grants-pdf-builder/issues/1045)) ([729b85d](https://github.com/HHS/simpler-grants-pdf-builder/commit/729b85d66b7d266b6c89bb75dcde7299e3f5970b))
+
+
+### Tests
+
+* characterize reusable import and translation boundaries ([#1053](https://github.com/HHS/simpler-grants-pdf-builder/issues/1053)) ([4ff55ea](https://github.com/HHS/simpler-grants-pdf-builder/commit/4ff55ea1dca4aed58fd2cc5db9a89d6b46cbd573))
+
 ## [3.50.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.0...nofos-v3.50.1) (2026-10-07)
 
 
