@@ -23,6 +23,8 @@ NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "v": "urn:schemas-microsoft-com:vml",
     "mc": "http://schemas.openxmlformats.org/markup-compatibility/2006",
+    "wpg": "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
 }
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
@@ -53,7 +55,7 @@ def alternate(
     return f'<mc:AlternateContent><mc:Choice Requires="wps">{box(text, modern)}</mc:Choice><mc:Fallback>{box(text, legacy, True)}</mc:Fallback></mc:AlternateContent>'
 
 
-def docx(body, theme_color="0E2841", mapping="dark2"):
+def docx(body, theme_color="0E2841", mapping="dark2", extra_mappings=""):
     base = Path(settings.BASE_DIR) / "nofos/fixtures/docx/lists.docx"
     result = BytesIO()
     namespace = " ".join(f'xmlns:{prefix}="{uri}"' for prefix, uri in NS.items())
@@ -64,9 +66,9 @@ def docx(body, theme_color="0E2841", mapping="dark2"):
             if entry.filename == "word/document.xml":
                 data = document.encode()
             elif entry.filename == "word/theme/theme1.xml":
-                data = f'<a:theme xmlns:a="{NS["a"]}"><a:themeElements><a:clrScheme name="Synthetic"><a:dk2><a:srgbClr val="{theme_color}"/></a:dk2><a:lt2><a:srgbClr val="FFFFFF"/></a:lt2></a:clrScheme></a:themeElements></a:theme>'.encode()
+                data = f'<a:theme xmlns:a="{NS["a"]}"><a:themeElements><a:clrScheme name="Synthetic"><a:dk2><a:srgbClr val="{theme_color}"/></a:dk2><a:lt2><a:srgbClr val="FFFFFF"/></a:lt2><a:accent1><a:srgbClr val="DCEAF7"/></a:accent1><a:accent2><a:srgbClr val="FFFFFF"/></a:accent2><a:hlink><a:srgbClr val="DCEAF7"/></a:hlink><a:folHlink><a:srgbClr val="FFFFFF"/></a:folHlink></a:clrScheme></a:themeElements></a:theme>'.encode()
             elif entry.filename == "word/settings.xml":
-                data = f'<w:settings xmlns:w="{NS["w"]}"><w:clrSchemeMapping w:t2="{mapping}"/></w:settings>'.encode()
+                data = f'<w:settings xmlns:w="{NS["w"]}"><w:clrSchemeMapping w:t2="{mapping}" {extra_mappings}/></w:settings>'.encode()
             target.writestr(entry, data)
     return SimpleUploadedFile("synthetic.docx", result.getvalue(), content_type=MIME)
 
@@ -94,7 +96,130 @@ def template(new, replacement="Applicant-facing content."):
     return docx(body)
 
 
+def repackage(upload, edits):
+    result = BytesIO()
+    with ZipFile(upload) as source, ZipFile(result, "w") as target:
+        for entry in source.infolist():
+            data = source.read(entry)
+            if entry.filename in edits:
+                data = edits[entry.filename](data)
+            target.writestr(entry, data)
+    return SimpleUploadedFile("synthetic.docx", result.getvalue(), content_type=MIME)
+
+
 class InstructionBoxConversionTests(TestCase):
+    def test_compatibility_link_ids_resolve_to_same_destination(self):
+        modern = box().replace(
+            "</w:txbxContent>",
+            '<w:p><w:hyperlink r:id="rId9000" w:history="1"><w:r><w:t>Reference</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+        )
+        legacy = box(fill='fillcolor="#DCEAF7"', vml=True).replace(
+            "</w:txbxContent>",
+            '<w:p><w:hyperlink r:id="rId9001" w:history="0"><w:r><w:t>Reference</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+        )
+        unit = f'<mc:AlternateContent><mc:Choice Requires="wps">{modern}</mc:Choice><mc:Fallback>{legacy}</mc:Fallback></mc:AlternateContent>'
+        upload = docx("<w:p><w:r>" + unit + "</w:r></w:p>")
+        additions = b'<Relationship Id="rId9000" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://example.org/reference" TargetMode="External"/><Relationship Id="rId9001" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://example.org/reference" TargetMode="External"/>'
+        upload = repackage(
+            upload,
+            {
+                "word/_rels/document.xml.rels": lambda data: data.replace(
+                    b"</Relationships>", additions + b"</Relationships>"
+                )
+            },
+        )
+        xml, warnings = self.cleaned(upload)
+        self.assertNotIn(b"Instruction box text", xml)
+        self.assertEqual(warnings, ())
+
+    def test_theme_level_transforms_are_unknown_not_untransformed_blue(self):
+        fill = '<a:solidFill><a:schemeClr val="accent1"/></a:solidFill>'
+        upload = docx("<w:p><w:r>" + box("Applicant box", fill) + "</w:r></w:p>")
+        upload = repackage(
+            upload,
+            {
+                "word/theme/theme1.xml": lambda data: data.replace(
+                    b'<a:accent1><a:srgbClr val="DCEAF7"/>',
+                    b'<a:accent1><a:srgbClr val="DCEAF7"><a:lumOff val="100000"/></a:srgbClr>',
+                )
+            },
+        )
+        xml, warnings = self.cleaned(upload)
+        self.assertIn(b"Applicant box", xml)
+        self.assertEqual(warnings, (REVIEW_MESSAGE,))
+
+    def test_grouped_independent_boxes_with_same_text_keep_both_links(self):
+        shapes = []
+        for anchor in ("first-program", "second-program"):
+            shape = box("Application instructions", "<a:noFill/>")
+            shape = shape.removeprefix("<w:drawing>").removesuffix("</w:drawing>")
+            shape = shape.replace(
+                "</w:txbxContent>",
+                f'<w:p><w:hyperlink w:anchor="{anchor}"><w:r><w:t>Program link</w:t></w:r></w:hyperlink></w:p></w:txbxContent>',
+            )
+            shapes.append(shape)
+        upload = docx(
+            "<w:p><w:r><w:drawing><wpg:wgp>"
+            + "".join(shapes)
+            + "</wpg:wgp></w:drawing></w:r></w:p>"
+        )
+        html, _ = parse_uploaded_file_as_html_string(upload)
+        self.assertEqual(html.count("Application instructions"), 2)
+        self.assertEqual(html.count('href="#first-program"'), 1)
+        self.assertEqual(html.count('href="#second-program"'), 1)
+
+    def test_inserted_copy_reuses_nonstandard_word_namespace_prefix(self):
+        upload = docx(
+            "<w:p><w:r>"
+            + box("Preserved applicant prose", "<a:noFill/>")
+            + "</w:r></w:p>"
+        )
+        upload = repackage(
+            upload,
+            {
+                "word/document.xml": lambda data: data.replace(
+                    b"xmlns:w=", b"xmlns:doc="
+                )
+                .replace(b"<w:", b"<doc:")
+                .replace(b"</w:", b"</doc:")
+                .replace(b" w:", b" doc:")
+            },
+        )
+        html, _ = parse_uploaded_file_as_html_string(upload)
+        self.assertIn("Preserved applicant prose", html)
+
+    def test_accent_and_hyperlink_mappings_resolve_actual_white_fill(self):
+        for slot, attributes in (
+            ("accent1", 'w:accent1="accent2"'),
+            ("hlink", 'w:hyperlink="followedHyperlink"'),
+        ):
+            with self.subTest(slot=slot):
+                fill = f'<a:solidFill><a:schemeClr val="{slot}"/></a:solidFill>'
+                xml, warnings = self.cleaned(
+                    docx(
+                        "<w:p><w:r>"
+                        + box("Applicant-facing box", fill)
+                        + "</w:r></w:p>",
+                        extra_mappings=attributes,
+                    )
+                )
+                self.assertIn(b"Applicant-facing box", xml)
+                self.assertEqual(warnings, ())
+
+    def test_tint_boundaries_use_retained_source_fraction(self):
+        for amount, removed in (("0", False), ("100000", True)):
+            with self.subTest(amount=amount):
+                fill = f'<a:solidFill><a:srgbClr val="DCEAF7"><a:tint val="{amount}"/></a:srgbClr></a:solidFill>'
+                xml, warnings = self.cleaned(
+                    docx(
+                        "<w:p><w:r>"
+                        + box("Applicant-facing box", fill)
+                        + "</w:r></w:p>"
+                    )
+                )
+                self.assertEqual(b"Applicant-facing box" not in xml, removed)
+                self.assertEqual(warnings, ())
+
     def test_mixed_old_new_and_option_labels_do_not_remove_following_content(self):
         body = paragraph("Step 3", "Heading1") + table(
             "Instructions for NOFO writers: Summary"

@@ -18,6 +18,7 @@ WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
 V = "urn:schemas-microsoft-com:vml"
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 R = "http://schemas.openxmlformats.org/package/2006/relationships"
+OFFICE_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 PALE_BLUE = (220, 234, 247)  # DCEAF7, verified HHS master container fill.
 REVIEW_MESSAGE = (
     "Some Word text boxes have an unrecognized or conflicting fill. "
@@ -60,13 +61,23 @@ def _theme(archive):
     if "word/settings.xml" in names:
         settings = _xml(archive.read("word/settings.xml"))
         maps = _nodes(settings, W, "clrSchemeMapping")
-        aliases = {"dark1": "dk1", "dark2": "dk2", "light1": "lt1", "light2": "lt2"}
+        aliases = {
+            "dark1": "dk1",
+            "dark2": "dk2",
+            "light1": "lt1",
+            "light2": "lt2",
+            "hyperlink": "hlink",
+            "followedHyperlink": "folHlink",
+        }
         if maps:
             for key, attribute in (
                 ("tx1", "t1"),
                 ("tx2", "t2"),
                 ("bg1", "bg1"),
                 ("bg2", "bg2"),
+                *((f"accent{i}", f"accent{i}") for i in range(1, 7)),
+                ("hlink", "hyperlink"),
+                ("folHlink", "followedHyperlink"),
             ):
                 value = maps[0].getAttributeNS(W, attribute)
                 if value:
@@ -93,10 +104,16 @@ def _theme(archive):
                     values = _children(entry)
                     if len(values) == 1:
                         color = values[0]
-                        colors[entry.localName] = _rgb(
-                            color.getAttribute("lastClr")
-                            if color.localName == "sysClr"
-                            else color.getAttribute("val")
+                        # Theme-level transforms also affect the rendered fill.
+                        # Preserve such entries rather than guessing a base RGB.
+                        colors[entry.localName] = (
+                            None
+                            if _children(color)
+                            else _rgb(
+                                color.getAttribute("lastClr")
+                                if color.localName == "sysClr"
+                                else color.getAttribute("val")
+                            )
                         )
     return colors, mapping
 
@@ -163,7 +180,9 @@ def _drawing_fill(shape, colors, mapping):
             )
             rgb = colorsys.hls_to_rgb(h, min(1, lightness), saturation)
         elif transform.localName == "tint":
-            rgb = tuple(c + (1 - c) * amount for c in rgb)
+            # OOXML tint is the retained source fraction: zero is white,
+            # 100000 is unchanged. It is not the fraction of white added.
+            rgb = tuple(c * amount + (1 - amount) for c in rgb)
         elif transform.localName == "shade":
             rgb = tuple(c * amount for c in rgb)
         else:
@@ -215,6 +234,25 @@ def _blue(fill):
     )
 
 
+def _link_keys(box, relationships):
+    result = []
+    for link in _nodes(box, W, "hyperlink"):
+        attributes = []
+        for attribute in link.attributes.values():
+            namespace = attribute.namespaceURI or ""
+            name = attribute.localName
+            if namespace == "http://www.w3.org/2000/xmlns/" or (
+                namespace == W and name == "history"
+            ):
+                continue
+            value = attribute.value
+            if namespace == OFFICE_R and name == "id":
+                value = repr(relationships.get(value, ("unresolved", value)))
+            attributes.append((namespace, name, value))
+        result.append(tuple(sorted(attributes)))
+    return result
+
+
 def clean_instruction_boxes(upload):
     """Return a seekable conversion copy and content-free review warnings.
 
@@ -229,6 +267,16 @@ def clean_instruction_boxes(upload):
             upload.seek(0)
             return upload, ()
         colors, mapping = _theme(archive)
+        relationships = {}
+        if "word/_rels/document.xml.rels" in archive.namelist():
+            rels = _xml(archive.read("word/_rels/document.xml.rels"))
+            relationships = {
+                rel.getAttribute("Id"): (
+                    rel.getAttribute("TargetMode"),
+                    rel.getAttribute("Target"),
+                )
+                for rel in _nodes(rels, R, "Relationship")
+            }
         units = []
         uncontained = False
         for box in boxes:
@@ -278,16 +326,30 @@ def clean_instruction_boxes(upload):
                 for namespace, name in content_tags
                 for node in _nodes(unit, namespace, name)
             )
-            supported_count = len(contents) == (2 if unit.namespaceURI == MC else 1)
+            fallbacks = _nodes(unit, MC, "Fallback")
+            choices = _nodes(unit, MC, "Choice")
+            paired = (
+                unit.namespaceURI == MC
+                and len(contents) == 2
+                and len(fallbacks) == len(choices) == 1
+                and len(_nodes(fallbacks[0], W, "txbxContent")) == 1
+                and len(_nodes(choices[0], W, "txbxContent")) == 1
+            )
+            link_keys = [_link_keys(box, relationships) for box in contents]
+            paired_agreement = (
+                paired and len(set(texts)) == 1 and link_keys[0] == link_keys[1]
+            )
+            supported_count = paired if unit.namespaceURI == MC else len(contents) == 1
             if (
                 supported_count
                 and all(_blue(fill) for fill in fills)
                 and len(set(texts)) == 1
+                and (unit.namespaceURI != MC or paired_agreement)
                 and not adjacent_text
             ):
                 unit.parentNode.removeChild(unit)
                 removed = True
-            elif any(
+            elif (unit.namespaceURI == MC and not paired_agreement) or any(
                 _blue(fill)
                 or fill == "unknown"
                 or (isinstance(fill, tuple) and fill != (255, 255, 255))
@@ -298,7 +360,6 @@ def clean_instruction_boxes(upload):
                 # Mammoth reads AlternateContent's VML fallback, but silently
                 # ignores standalone DrawingML text. Supply only missing text
                 # copies as VML, retaining paragraphs, lists and relationships.
-                fallbacks = _nodes(unit, MC, "Fallback")
                 rendered_boxes = [
                     box
                     for fallback in fallbacks
@@ -308,14 +369,23 @@ def clean_instruction_boxes(upload):
                     rendered_boxes = [
                         box for box in contents if box.parentNode.namespaceURI == V
                     ]
-                rendered_texts = {texts[contents.index(box)] for box in rendered_boxes}
-                for box, text in zip(contents, texts):
-                    if text in rendered_texts:
+                for box in contents:
+                    if box in rendered_boxes or paired_agreement:
                         continue
-                    pict = document.createElementNS(W, "w:pict")
+                    # Independent boxes can have identical labels but distinct
+                    # links/content. Only a verified Choice/Fallback pair is a
+                    # duplicate; never deduplicate standalone/grouped boxes.
+                    prefix = box.prefix
+                    pict = document.createElementNS(
+                        W, f"{prefix}:pict" if prefix else "pict"
+                    )
+                    pict.setAttributeNS(
+                        "http://www.w3.org/2000/xmlns/",
+                        f"xmlns:{prefix}" if prefix else "xmlns",
+                        W,
+                    )
                     pict.appendChild(box.cloneNode(deep=True))
                     unit.parentNode.insertBefore(pict, unit)
-                    rendered_texts.add(text)
                     removed = True  # conversion copy must be serialized
                 # Do not remove unsupported drawings: they may also contain
                 # images or other non-text content. Only their text is copied.
