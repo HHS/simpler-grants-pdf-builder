@@ -2687,6 +2687,10 @@ def _get_all_id_attrs_for_nofo(nofo):
     """
     # Initialize a set to collect all unique ids
     all_ids = set()
+    if nofo.before_you_begin != "none" or nofo.number == "hrsa-application-guide":
+        from .introductory_page import INTRO_ANCHOR
+
+        all_ids.add(INTRO_ANCHOR)
 
     for section in nofo.sections.all():
         all_ids.add(section.html_id)

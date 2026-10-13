@@ -291,6 +291,26 @@ class IntroductoryImportTests(TestCase):
             self.assertEqual(copied.introductory_page_family, "get_started")
             self.assertEqual(copied.before_you_begin, variant)
 
+    def test_generated_introductory_links_are_not_reported_broken_when_enabled(self):
+        from nofos.nofo import find_broken_links
+
+        self.upload(reverse("nofos:nofo_import"))
+        nofo = Nofo.objects.latest("created")
+        self.assertEqual(find_broken_links(nofo), [])
+        subsection = nofo.sections.last().subsections.last()
+        subsection.body += "\n\n[Missing destination](#unrelated-missing)"
+        subsection.save()
+        self.assertEqual(
+            [link["link_href"] for link in find_broken_links(nofo)],
+            ["#unrelated-missing"],
+        )
+        nofo.before_you_begin = "none"
+        nofo.save()
+        self.assertIn(
+            "#section--before-you-begin",
+            [link["link_href"] for link in find_broken_links(nofo)],
+        )
+
     def test_failed_reimport_restores_saved_family_variant_and_content(self):
         self.upload(reverse("nofos:nofo_import"), "Before You Begin")
         nofo = Nofo.objects.latest("created")

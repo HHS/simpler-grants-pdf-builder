@@ -66,4 +66,5 @@ class HandoffResultMigrationTests(TransactionTestCase):
                 MigrationExecutor(connection).migrate(old)
             self.assertEqual(Result.objects.count(), 3)
         finally:
-            MigrationExecutor(connection).migrate(new)
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes())
