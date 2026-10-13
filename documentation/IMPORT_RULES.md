@@ -40,6 +40,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | ID | Type | Category | Summary | Source |
 |----|------|----------|---------|--------|
 | IMPORT-001 | conversion | DOCX Conversion | Checkbox-row indent detection → "Application Checklist Child" style | `import_transforms.py` |
+| IMPORT-060 | removal | DOCX Conversion | Builder Word import omits only the original body's first Title-styled paragraph | `import_transforms.py`, `nofo.py`, `views.py` |
 | IMPORT-002 | conversion | DOCX Conversion | Word heading *character* styles → real `h2`-`h6` | `utils.py` |
 | IMPORT-003 | conversion | DOCX Conversion | Word `heading 7`/`heading 8` paragraph styles → synthetic H7/H8 divs | `utils.py` |
 | IMPORT-004 | repair | DOCX Conversion | Mis-styled Word bullet/numbered paragraph styles → real nested `ul`/`ol` | `utils.py` |
@@ -110,6 +111,13 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Source:** `import_transforms.py::transform_word_document/_transform_table` (`_first_column_checkbox_paragraph`)
 - **Status:** active
 - **Note:** classified as conversion because it synthesizes new semantic structure (a style Word never had) from a visual cue, rather than fixing markup that was supposed to already encode that structure — but it's a defensible repair reading too, since the intent was clearly a nested list.
+
+### IMPORT-060 — Leading Word Title paragraph omission
+- **Type:** removal
+- **Trigger:** During a new NOFO Builder Word import or authorized re-import, the first content element in the original Word body is a paragraph whose direct paragraph style has the name `Title` (case-insensitive) and paragraph type. Body-level section properties do not count as content. Text, filename, font formatting, run character styles and styles merely based on Title do not qualify.
+- **Action:** Silently omit that one paragraph from an in-memory conversion copy before Mammoth emits HTML. Do not scan past a blank paragraph, table, drawing-containing paragraph or any other content element. Preserve later Title paragraphs and all surrounding content, metadata, headings, tables, links and package parts. A leading empty Title paragraph qualifies; a paragraph containing a drawing, picture or embedded object is kept conservatively. Never infer record metadata from the omitted text. HTML uploads, existing saved records, view/export behavior, re-import permissions/status checks and rollback remain unchanged. Composer, Compare and direct conversion callers retain their existing behavior unless explicitly opted in.
+- **Source:** `import_transforms.py::omit_leading_word_title`; opt-in in `nofo.py::parse_uploaded_file_as_html_string` and Builder's tracked import views in `views.py`
+- **Status:** active
 
 ### IMPORT-002 — Heading character styles → real headings
 - **Type:** conversion

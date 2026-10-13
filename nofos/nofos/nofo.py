@@ -49,6 +49,7 @@ from .endnotes import (
 )
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+    omit_leading_word_title,
     transform_word_document,
 )
 from .models import Nofo, Section, Subsection
@@ -91,7 +92,7 @@ REQUEST_HEADERS = {
 ###########################################################
 
 
-def parse_uploaded_file_as_html_string(uploaded_file):
+def parse_uploaded_file_as_html_string(uploaded_file, *, omit_leading_title=False):
     """
     Given an uploaded file, return a tuple of (raw HTML string, mammoth warning
     count). warning_count is always 0 for HTML-file uploads, since those never
@@ -113,8 +114,13 @@ def parse_uploaded_file_as_html_string(uploaded_file):
     ):
         # Convert DOCX to HTML
         try:
+            conversion_file = (
+                omit_leading_word_title(uploaded_file)
+                if omit_leading_title
+                else uploaded_file
+            )
             doc_to_html_result = mammoth.convert_to_html(
-                uploaded_file,
+                conversion_file,
                 style_map="\n".join(
                     [
                         style_map_manager.get_style_map(),

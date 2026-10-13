@@ -826,7 +826,7 @@ class BaseNofoImportView(View):
         try:
             # 2. Parse string to HTML
             file_content, warning_count = parse_uploaded_file_as_html_string(
-                uploaded_file
+                uploaded_file, omit_leading_title=self.track_import_metrics
             )
 
             # 3. Clean/transform HTML
