@@ -71,7 +71,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
-| IMPORT-025 | conversion | Tables | Callout box titled "Key facts"/"Key dates" → forced to `h4`, canonical casing | `nofo.py` |
+| IMPORT-025 | conversion | Tables | Callout box titled "Key facts"/"Key dates"/"Application due date" → forced to `h4`, canonical casing | `nofo.py` |
 | IMPORT-026 | repair | Tables | `<span>` inside table cells → unwrapped | `nofo.py` |
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
 | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
@@ -360,8 +360,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-025 — Key callout title normalization
 - **Type:** conversion
-- **Trigger:** A callout box's (IMPORT-024) heading text, cleaned and cased, reads exactly "key facts" or "key dates".
-- **Action:** Retitled to canonical capitalization ("Key facts"/"Key dates") and forced to `h4`.
+- **Trigger:** A callout box's (IMPORT-024) heading text, cleaned and cased, reads exactly "key facts", "key dates" or "application due date". Existing recognition of a matching heading/paragraph immediately before a one-cell table also applies; it remains an ordinary, non-callout heading.
+- **Action:** Retitled to canonical capitalization ("Key facts"/"Key dates"/"Application due date") and forced to `h4`. Keep the supplied deadline title rather than renaming it or synthesizing another box. Preserve date text and links to ordinary Key dates content. New imports and authorized re-imports share this behavior; no saved-record migration or template-date gate. At rendering, named Application due date callouts use the same first-section portrait sidebar as legacy Key dates; their simple date/link body does not receive the legacy colon formatting. Both source boxes, if supplied, remain in source order with no selection or deletion. Plain headings/prose are not floating callouts.
 - **Source:** `nofo.py::get_subsections_from_sections` (`key_callout_titles`)
 - **Status:** active
 

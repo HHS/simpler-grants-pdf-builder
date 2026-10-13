@@ -995,6 +995,7 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
     key_callout_titles = {
         "key facts": "Key facts",
         "key dates": "Key dates",
+        "application due date": "Application due date",
     }
 
     # if top_heading_level is h1, then include h2s in the list
