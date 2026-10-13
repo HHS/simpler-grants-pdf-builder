@@ -16,6 +16,7 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block content %}
 {% include "includes/alerts.html" with messages=messages success_heading=success_heading error_heading=error_heading stick_to_bottom=True only %}
+{% include "nofos/includes/word_import_review.html" with messages=messages is_reimport=True only %}
 
 <!-- WARNING MESSAGE FOR ARCHIVED/SUCCESSOR NOFOS -->
 {% if nofo.archived %}
