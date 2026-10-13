@@ -60,7 +60,7 @@
     {% endif %}
 
     {% endif %}
-    {% if nofo.introductory_page_family == 'get_started' %}<h3 class="section--before-you-begin--psuedo-header">Apply by the application due date</h3>{% else %}
+    {% if nofo.introductory_page_family == 'get_started' %}<h4 class="section--before-you-begin--psuedo-header">Apply by the application due date</h4>{% else %}
     {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Apply by the application due date" only %}
     {% endif %}
     {% if "|" in nofo.application_deadline %}

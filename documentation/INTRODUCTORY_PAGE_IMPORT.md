@@ -77,3 +77,5 @@ behavior separately using dedicated allowed-environment credentials. Template
 tests and browser HTML are not provider-generated DOCX proof.
 
 Re-importing while No BYB page is selected retains the canonical introductory link in stored content. Rendering hides the link while disabled; selecting Full or another enabled variant restores it without another import.
+
+The new family uses H2 for Before you get started, H3 for Get registered, and H4 for SAM.gov, Grants.gov, eRA Commons, and Apply by the application due date. It does not add a generated See Step 2 link to the registration block. Authored Step 2 links back to the introductory page remain supported. Legacy heading/link presentation remains unchanged.
