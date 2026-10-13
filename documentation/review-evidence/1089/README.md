@@ -31,13 +31,25 @@ container cleanup, not successful end-to-end import of an unselected master.
 
 ## Verification coverage
 
-Final local checks: 2,450 Django tests succeeded with three skips; all 56
-JavaScript tests passed; all 17 focused instruction-container tests passed.
+Final local checks at code commit `7b5488ea`: 2,459 Django tests succeeded with three skips; all 56
+JavaScript tests passed; all 26 focused instruction-container tests passed.
 No migration changes; touched-file pre-commit and whitespace checks passed.
 The warning matches the existing alert typography (Source Sans Pro Bold,
 23.36 px/700) and was visually checked at desktop and 390 px widths. This is
 not an accessibility certification. Local code review checked removal scope,
 namespace preservation, entity rejection, fallback handling and rollback.
+
+## Independent review fixes
+
+Astra independently reviewed the implementation and reproduced preservation
+edge cases. Corrections cover OOXML tint direction, accent/hyperlink color
+mappings, unsupported theme-level transforms, independent grouped boxes,
+source Word prefixes, DrawingML-only compatibility fallbacks, and inherited
+namespace bindings. Ben also reproduced tooltip-only compatibility differences;
+these now retain one logical box without weakening link destination comparison.
+Each reproduced case has regression coverage. No source document was modified.
+Astra's final independent follow-up at `7b5488ea` found no remaining blockers
+within the reviewed scope and independently passed all 26 focused tests.
 
 Tests cover DrawingML theme mappings and direct colors, luminance, tint/shade,
 VML, paired compatibility representations, surrounding bookmarks/text, white,
