@@ -480,6 +480,26 @@ class Nofo(BaseNofo):
         ),
     )
 
+    introductory_page_family = models.CharField(
+        max_length=20,
+        choices=[
+            ("", "Legacy (not identified by an import)"),
+            ("legacy", "Before you begin"),
+            ("get_started", "Before you get started"),
+        ],
+        default="",
+        blank=True,
+        editable=False,
+    )
+
+    @property
+    def introductory_page_title(self):
+        return (
+            "Before you get started"
+            if self.introductory_page_family == "get_started"
+            else "Before you begin"
+        )
+
     @property
     def designer_display(self):
         """Human-readable designer label.

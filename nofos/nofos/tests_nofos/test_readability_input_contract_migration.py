@@ -13,7 +13,8 @@ class ReadabilityInputContractMigrationTests(TransactionTestCase):
         return executor.loader.project_state([target]).apps
 
     def tearDown(self):
-        self.migrate(self.migrate_to)
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
         super().tearDown()
 
     def test_legacy_rows_survive_migration_and_new_contract_has_separate_identity(self):

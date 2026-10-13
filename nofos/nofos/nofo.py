@@ -1996,6 +1996,14 @@ def find_broken_links(nofo):
             all_links = soup.find_all("a")
 
             for link in all_links:
+                if (
+                    nofo.before_you_begin == "none"
+                    and nofo.number != "hrsa-application-guide"
+                    and link.get("href") == "#section--before-you-begin"
+                ):
+                    # The public renderer intentionally flattens this disabled
+                    # generated destination; it is not a broken authored link.
+                    continue
                 if link.attrs.get("href") in all_ids:
                     # skip all '#' ids that exist (if not, they are caught in the next step)
                     pass
@@ -2326,9 +2334,11 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_before_you_begin(nofo_group, nofo_theme=""):
+def suggest_nofo_before_you_begin(
+    nofo_group, nofo_theme="", introductory_page_family="legacy"
+):
     if "hrsa-" in nofo_theme.lower():
-        return "hrsa"
+        return "full" if introductory_page_family == "get_started" else "hrsa"
 
     if nofo_group == "nih":
         return "era"
@@ -2543,6 +2553,9 @@ def suggest_nofo_cover_image(nofo):
 def suggest_all_nofo_fields(
     nofo, soup, *, first_time_import=None, imported_tagline=None
 ):
+    from .introductory_page import introductory_family_from_soup
+
+    nofo.introductory_page_family = introductory_family_from_soup(soup)
     # Import views know whether this is a new record, even when a legacy record
     # still has a blank/default opportunity number.
     if first_time_import is None:
@@ -2590,7 +2603,7 @@ def suggest_all_nofo_fields(
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
-            nofo.group, nofo.theme
+            nofo.group, nofo.theme, nofo.introductory_page_family
         )  # guess the NOFO "Before you begin" page
 
 
@@ -2827,6 +2840,10 @@ def _get_all_id_attrs_for_nofo(nofo):
     """
     # Initialize a set to collect all unique ids
     all_ids = set()
+    if nofo.before_you_begin != "none" or nofo.number == "hrsa-application-guide":
+        from .introductory_page import INTRO_ANCHOR
+
+        all_ids.add(INTRO_ANCHOR)
 
     for section in nofo.sections.all():
         all_ids.add(section.html_id)
@@ -3642,8 +3659,14 @@ def _is_before_you_begin_heading(tag):
     if tag.name not in ("h1", "h2", "h3", "h4", "h5", "h6"):
         return False
 
-    heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
-    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT
+    from .introductory_page import introductory_heading_name
+
+    heading_text = introductory_heading_name(tag)
+    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT or (
+        tag.find_parent("body")
+        and tag.find_parent("body").has_attr("data-nofo-introductory-family")
+        and heading_text == "before you get started"
+    )
 
 
 def _looks_like_metadata_line(tag):
@@ -3654,7 +3677,20 @@ def _looks_like_metadata_line(tag):
     if tag.name != "p":
         return False
 
-    return _looks_like_metadata_label(tag.get_text())
+    label, separator, _ = tag.get_text(" ", strip=True).partition(":")
+    return bool(separator) and re.sub(r"\s+", "", label).casefold() in {
+        "opportunitynumber",
+        "opportunityname",
+        "applicationdeadline",
+        "opdiv",
+        "agency",
+        "subagency",
+        "subagency2",
+        "tagline",
+        "metadataauthor",
+        "metadatasubject",
+        "metadatakeywords",
+    }
 
 
 def decompose_before_you_begin_section(soup):
@@ -3701,6 +3737,14 @@ def decompose_before_you_begin_section(soup):
         tags_to_remove = [heading]
 
         for sibling in heading.find_next_siblings():
+            if sibling.name in {"h1", "h2", "h3", "h4", "h5", "h6"} and clean_string(
+                sibling.get_text(" ", strip=True)
+            ).casefold().strip(":") in {"footnote", "footnotes", "endnote", "endnotes"}:
+                break
+            if sibling.name == "ol" and sibling.find(
+                id=lambda value: value and value.startswith(("footnote", "endnote"))
+            ):
+                break
             if (
                 sibling.name in ("h1", "h2", "h3", "h4", "h5", "h6")
                 and int(sibling.name[1]) <= level
