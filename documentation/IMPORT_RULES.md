@@ -213,6 +213,10 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Source:** `nofo.py::add_headings_to_document`
 - **Status:** active
 
+  Builder's consumed source introduction is an exception: IMPORT-062 captures
+  its actual destination before normal heading-ID generation and routes inbound
+  links to the maintained introductory page's stable anchor.
+
 ### IMPORT-056 — Heading-container normalization
 - **Type:** repair
 - **Trigger:** An `h1`–`h6` or synthetic H7 heading is nested in an uninterrupted chain of ordinary, role-free `div` wrappers beneath the document body.
@@ -411,6 +415,10 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Referenced list items:** Move a unique, referenced non-native `<li id="...">` target to a minimal empty anchor at the start of the item, retained by the Markdown converter. Remove the copied ID from the item so HTML-preserved lists do not emit duplicate targets. Unused and duplicate IDs are not assigned new targets; native Word footnote/endnote IDs retain their existing raw-list behavior and numbering.
 - **Source:** `nofo.py::preserve_bookmark_links`, `preserve_bookmark_targets`, `preserve_heading_links`, `preserve_table_heading_links`
 - **Status:** active
+
+  Before normal bookmark rescue, Builder's IMPORT-062 captures bookmarks inside
+  or immediately preceding its recognized introductory heading, so consuming
+  that source section does not discard the generated page destination.
 
 ---
 
