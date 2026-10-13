@@ -81,3 +81,5 @@ Re-importing while No BYB page is selected retains the canonical introductory li
 The new family uses H2 for Before you get started, H3 for Get registered, and H4 for SAM.gov, Grants.gov, eRA Commons, and Apply by the application due date. It does not add a generated See Step 2 link to the registration block. Authored Step 2 links back to the introductory page remain supported. Legacy heading/link presentation remains unchanged.
 
 New-family portrait styling uses compact H3/H4 sizes and a smaller top gap with the original text width preserved. Full and Sole Source fit representative single-deadline previews on one page; the eRA keyboard-help callout continues on a second page. Legacy page styling is unchanged. Longer/multiple deadlines and other themes require separate layout checks.
+
+The new eRA variant deliberately starts a fresh page at the H4 eRA Commons heading. Its deadline and keyboard help follow on that page, with the introductory footer retained. Standard body line-height and paragraph/list spacing are restored; compact heading sizes, original content width, and the smaller title/icon area remain. Legacy templates do not receive this break.

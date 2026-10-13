@@ -408,6 +408,10 @@ class IntroductoryImportTests(TestCase):
             self.assertEqual([h.text for h in soup.find_all("h3")], ["Get registered"])
             self.assertIsNone(soup.find("a", href="#step-2"))
             self.assertNotIn("STEP 2 SECTION MISSING", rendered)
+            self.assertEqual(
+                bool(soup.select_one("h4.before-you-begin--era-start")),
+                variant == "era",
+            )
             self.assertNotIn("Application and funding requirements", rendered)
             self.assertIn("October 30, 2027", rendered)
             self.assertIn("Alt + Left Arrow", rendered)

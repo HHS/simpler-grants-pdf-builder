@@ -1355,9 +1355,6 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 section.before-you-begin.before-you-begin--get-started {
   padding-top: 0;
 }
-.before-you-begin--get-started .before-you-begin--content {
-  line-height: 1.3;
-}
 .before-you-begin--get-started .before-you-begin--content h3 {
   font-size: 15pt;
   font-weight: 700;
@@ -1370,12 +1367,6 @@ section.before-you-begin.before-you-begin--get-started {
   margin: 8px 0 4px;
   line-height: 1.2;
 }
-.before-you-begin--get-started .before-you-begin--content p {
-  margin: 4px 0;
-}
-.before-you-begin--get-started .before-you-begin--content ul {
-  margin: 4px 0;
-}
 .before-you-begin--get-started .callout-box--keyboard {
   margin-top: 10px;
 }
@@ -1387,4 +1378,9 @@ section.before-you-begin.before-you-begin--get-started {
 .before-you-begin--get-started .section--before-you-begin--icon svg {
   width: 45px;
   height: 45px;
+}
+
+.before-you-begin--get-started .before-you-begin--era-start {
+  break-before: page;
+  page-break-before: always;
 }
