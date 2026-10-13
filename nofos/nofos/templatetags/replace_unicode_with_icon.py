@@ -233,6 +233,8 @@ def wrap_checkbox_inline_content(soup):
             == 1
             else img.parent
         )
+        if parent.name in {"ul", "ol", "dl", "table"}:
+            continue
         if len(parent.find_all("img", class_="usa-icon--check_box_outline_blank")) != 1:
             continue
         if any(
