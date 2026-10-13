@@ -15,3 +15,5 @@ Full and Sole Source each occupy one introductory page (page 3 in the fixture). 
 ![Sole Source](sole-source.png)
 
 The 18 introductory-page tests pass. No body wording was removed and no body font reduction was applied.
+
+Font correction: initial screenshots at 4a24fb96 used fallback Helvetica Neue for some text and are superseded. Regenerated previews embed local font assets and Google font assets as data URLs. PDF font resources now include Source Sans Pro Regular/Bold and Open Sans Bold/ExtraBold, matching the selected synthetic CDC-blue theme; the initial Helvetica Neue fallback is absent. Text width and body font size remain unchanged. eRA still has its keyboard-help continuation on page 4.
