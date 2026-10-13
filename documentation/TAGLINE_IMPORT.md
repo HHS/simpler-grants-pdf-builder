@@ -15,6 +15,8 @@ body content. Any additional paragraphs remain ordinary, visible body content;
 callouts and neighboring headings are preserved. Inline links and emphasis use
 the field's existing Markdown representation. A paragraph containing an image
 is retained as body content rather than converted into a tagline.
+Links to the consumed Tagline heading lead to Basic information, which remains
+visible even when the field is blank.
 
 Use the existing Tagline row in Basic information on the NOFO editor to edit the
 saved value. It appears through the existing dedicated tagline presentation;

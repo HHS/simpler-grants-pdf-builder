@@ -2362,10 +2362,11 @@ def suggest_nofo_tagline(soup):
 
 
 def extract_basic_information_tagline(soup, top_heading_level):
-    """Consume only the scoped new-format source, before empty-tag cleanup.
+    """Mark only the scoped new-format source, before empty-tag cleanup.
 
     None means no new source (legacy fallback); an empty string is an
-    intentionally blank new source. This runs only in Builder import views.
+    intentionally blank new source. Normal repairs run before paragraph
+    consumption; sectioning then consumes the marked heading. Builder only.
     """
     section_level = int(top_heading_level[1])
     # These are internal conversion markers, never instructions from an upload.
