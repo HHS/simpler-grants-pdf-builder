@@ -64,4 +64,7 @@ Helvetica LT Condensed Bold, and Open Sans Bold; this was checked with
   dedicated non-production credentials are unavailable; production credentials
   were not used.
 
-Full-suite results and independent review are recorded in the PR handoff.
+The full suite passed: 2,487 tests, with three existing skips, in 159 seconds.
+The final two-line list-container guard was independently reviewed and the 288
+focused tests rerun after it. Independent review found no remaining blocking
+issues at implementation commit `48ccdb0a`.
