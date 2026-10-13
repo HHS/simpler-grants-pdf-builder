@@ -1996,6 +1996,14 @@ def find_broken_links(nofo):
             all_links = soup.find_all("a")
 
             for link in all_links:
+                if (
+                    nofo.before_you_begin == "none"
+                    and nofo.number != "hrsa-application-guide"
+                    and link.get("href") == "#section--before-you-begin"
+                ):
+                    # The public renderer intentionally flattens this disabled
+                    # generated destination; it is not a broken authored link.
+                    continue
                 if link.attrs.get("href") in all_ids:
                     # skip all '#' ids that exist (if not, they are caught in the next step)
                     pass
@@ -2149,6 +2157,65 @@ def sanitize_imported_text(value: str) -> str:
 METADATA_LABEL_PATTERN = re.compile(r"^\s*[^:\n]{1,80}:\s*\S*", re.IGNORECASE)
 INVALID_OPDIV_ACRONYMS = {"N/A", "NA", "NONE", "TBD", "UNKNOWN"}
 
+# These are the fields owned by a structured Metadata block. Tagline and
+# assistance-listing labels deliberately retain their independent legacy path.
+METADATA_BLOCK_LABELS = {
+    "opdiv",
+    "agency",
+    "subagency",
+    "subagency2",
+    "opportunityname",
+    "opportunitynumber",
+    "applicationdeadline",
+    "metadataauthor",
+    "metadatasubject",
+    "metadatakeywords",
+}
+
+
+def _metadata_label_key(label):
+    return re.sub(r"\s+", "", sanitize_imported_text(label)).casefold()
+
+
+def metadata_block_fields(heading):
+    """Read a Metadata heading's contiguous field paragraphs without mutation.
+
+    Any heading, non-paragraph element, or non-label prose ends the block,
+    regardless of heading level. Blank paragraphs may separate fields. None
+    means this is not a recognized block; an empty field still recognizes it.
+    """
+    if (
+        not (heading.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(heading))
+        or sanitize_imported_text(heading.get_text()).casefold() != "metadata"
+    ):
+        return None
+    fields = {}
+    for element in heading.find_next_siblings():
+        if element.name != "p":
+            break
+        text = sanitize_imported_text(element.get_text())
+        if not text:
+            continue
+        label, separator, value = text.partition(":")
+        key = _metadata_label_key(label)
+        if not separator or key not in METADATA_BLOCK_LABELS:
+            break
+        # First occurrence wins, including a blank, just like legacy scanning.
+        fields.setdefault(key, sanitize_imported_text(value))
+    return fields or None
+
+
+def recognized_metadata_block(soup):
+    """Return the last recognized block; never combine separate blocks."""
+    result = None
+    for heading in soup.find_all(
+        lambda tag: tag.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(tag)
+    ):
+        fields = metadata_block_fields(heading)
+        if fields is not None:
+            result = fields
+    return result
+
 
 def _looks_like_metadata_label(value):
     return bool(METADATA_LABEL_PATTERN.match(sanitize_imported_text(value)))
@@ -2159,8 +2226,18 @@ def _is_invalid_opdiv_placeholder(value):
 
 
 def _suggest_by_startswith_string(soup, startswith_string, use_next_paragraph=False):
+    key = _metadata_label_key(startswith_string.rstrip(":"))
+    if key in METADATA_BLOCK_LABELS:
+        fields = recognized_metadata_block(soup)
+        if fields is not None:
+            # A recognized block is authoritative, even when this field is
+            # absent or blank. Do not borrow an unrelated front-page value.
+            return fields.get(key, "")
     suggestion = ""
     regex = re.compile(r"^\s*{}".format(re.escape(startswith_string)), re.IGNORECASE)
+    if key in {"subagency", "subagency2"}:
+        suffix = r"\s*2" if key == "subagency2" else ""
+        regex = re.compile(r"^\s*Sub\s*Agency" + suffix + r"\s*:", re.IGNORECASE)
     element = soup.find(string=regex)
 
     # look for the paragraph
@@ -2257,9 +2334,11 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_before_you_begin(nofo_group, nofo_theme=""):
+def suggest_nofo_before_you_begin(
+    nofo_group, nofo_theme="", introductory_page_family="legacy"
+):
     if "hrsa-" in nofo_theme.lower():
-        return "hrsa"
+        return "full" if introductory_page_family == "get_started" else "hrsa"
 
     if nofo_group == "nih":
         return "era"
@@ -2474,6 +2553,9 @@ def suggest_nofo_cover_image(nofo):
 def suggest_all_nofo_fields(
     nofo, soup, *, first_time_import=None, imported_tagline=None
 ):
+    from .introductory_page import introductory_family_from_soup
+
+    nofo.introductory_page_family = introductory_family_from_soup(soup)
     # Import views know whether this is a new record, even when a legacy record
     # still has a blank/default opportunity number.
     if first_time_import is None:
@@ -2521,7 +2603,7 @@ def suggest_all_nofo_fields(
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
-            nofo.group, nofo.theme
+            nofo.group, nofo.theme, nofo.introductory_page_family
         )  # guess the NOFO "Before you begin" page
 
 
@@ -2758,6 +2840,10 @@ def _get_all_id_attrs_for_nofo(nofo):
     """
     # Initialize a set to collect all unique ids
     all_ids = set()
+    if nofo.before_you_begin != "none" or nofo.number == "hrsa-application-guide":
+        from .introductory_page import INTRO_ANCHOR
+
+        all_ids.add(INTRO_ANCHOR)
 
     for section in nofo.sections.all():
         all_ids.add(section.html_id)
@@ -3573,8 +3659,14 @@ def _is_before_you_begin_heading(tag):
     if tag.name not in ("h1", "h2", "h3", "h4", "h5", "h6"):
         return False
 
-    heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
-    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT
+    from .introductory_page import introductory_heading_name
+
+    heading_text = introductory_heading_name(tag)
+    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT or (
+        tag.find_parent("body")
+        and tag.find_parent("body").has_attr("data-nofo-introductory-family")
+        and heading_text == "before you get started"
+    )
 
 
 def _looks_like_metadata_line(tag):
@@ -3585,7 +3677,20 @@ def _looks_like_metadata_line(tag):
     if tag.name != "p":
         return False
 
-    return _looks_like_metadata_label(tag.get_text())
+    label, separator, _ = tag.get_text(" ", strip=True).partition(":")
+    return bool(separator) and re.sub(r"\s+", "", label).casefold() in {
+        "opportunitynumber",
+        "opportunityname",
+        "applicationdeadline",
+        "opdiv",
+        "agency",
+        "subagency",
+        "subagency2",
+        "tagline",
+        "metadataauthor",
+        "metadatasubject",
+        "metadatakeywords",
+    }
 
 
 def decompose_before_you_begin_section(soup):
@@ -3608,6 +3713,7 @@ def decompose_before_you_begin_section(soup):
       (opportunity number, agency, tagline, etc.) directly after this heading,
       sometimes with the value in the following paragraph. That content must
       be preserved.
+    - a recognized Metadata heading and field block, even at a lower level.
 
     Returns the list of extracted tags (the heading plus its section content).
     """
@@ -3631,12 +3737,22 @@ def decompose_before_you_begin_section(soup):
         tags_to_remove = [heading]
 
         for sibling in heading.find_next_siblings():
+            if sibling.name in {"h1", "h2", "h3", "h4", "h5", "h6"} and clean_string(
+                sibling.get_text(" ", strip=True)
+            ).casefold().strip(":") in {"footnote", "footnotes", "endnote", "endnotes"}:
+                break
+            if sibling.name == "ol" and sibling.find(
+                id=lambda value: value and value.startswith(("footnote", "endnote"))
+            ):
+                break
             if (
                 sibling.name in ("h1", "h2", "h3", "h4", "h5", "h6")
                 and int(sibling.name[1]) <= level
             ):
                 break
             if _looks_like_metadata_line(sibling):
+                break
+            if metadata_block_fields(sibling) is not None:
                 break
             tags_to_remove.append(sibling)
 

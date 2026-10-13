@@ -2669,6 +2669,7 @@ class TestGetAllIdAttrsForNofo(TestCase):
 
     def test_find_all_ids(self):
         expected_ids = {
+            "#section--before-you-begin",
             "#section1",
             "#subsection1",
             "#subsection_1_custom_id",

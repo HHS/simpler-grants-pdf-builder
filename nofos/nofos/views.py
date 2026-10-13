@@ -388,6 +388,9 @@ class NOFOsExportView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        if self.object.introductory_page_family:
+            context.update(get_nofo_document_context(self.object))
+
         context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
         context["strip_policy_language"] = (
             config.HHS_NOFO_POLICY_EXPORT_ENABLED
@@ -845,6 +848,10 @@ class BaseNofoImportView(View):
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
             soup = BeautifulSoup(cleaned_content, "html.parser")
+            if isinstance(self, (NofosImportNewView, NofosImportOverwriteView)):
+                from .introductory_page import capture_introductory_page
+
+                soup = capture_introductory_page(soup)
             # Remove this known redundant section before it can affect which
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)
