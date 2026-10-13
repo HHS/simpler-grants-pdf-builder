@@ -121,6 +121,42 @@ class IntroductoryDestinationTests(SimpleTestCase):
         )
         self.assertEqual(introductory_family_from_soup(soup), "")
 
+    def test_heading_levels_and_case_are_structural_not_link_text_guesses(self):
+        for level in range(1, 7):
+            soup = capture_introductory_page(
+                BeautifulSoup(
+                    f'<h{level}>bEfOrE  yOu GET started</h{level}><p><a href="#absent">Before You Get Started</a></p>',
+                    "html.parser",
+                )
+            )
+            self.assertEqual(introductory_family_from_soup(soup), "get_started")
+            self.assertEqual(soup.a["href"], "#absent")
+
+    def test_duplicate_id_is_not_remapped_to_generated_destination(self):
+        soup = capture_introductory_page(
+            BeautifulSoup(
+                '<h2 id="duplicate">Before You Get Started</h2><h2 id="duplicate">Step 1</h2><p><a href="#duplicate">Text</a></p>',
+                "html.parser",
+            )
+        )
+        self.assertIsNone(soup.find("a", href=True))
+
+    def test_lower_metadata_and_note_headings_preserve_content(self):
+        for boundary in [
+            "<h3>Metadata</h3><p>OpDiv: HRSA</p><p>Opportunity number: HRSA-27-001</p>",
+            "<h4>Endnotes</h4><p>Retain citation</p>",
+        ]:
+            soup = capture_introductory_page(
+                BeautifulSoup(
+                    f"<h2>Before You Get Started</h2><p>Consume source</p>{boundary}",
+                    "html.parser",
+                )
+            )
+            decompose_before_you_begin_section(soup)
+            self.assertNotIn("Consume source", str(soup))
+            for paragraph in BeautifulSoup(boundary, "html.parser").find_all("p"):
+                self.assertIn(paragraph.text, str(soup))
+
     def test_defaults_family_and_variant_are_independent(self):
         for family, group, theme, variant in [
             ("legacy", "nih", "portrait-hrsa-white", "hrsa"),
@@ -137,7 +173,10 @@ class IntroductoryImportTests(TestCase):
     def test_normal_word_export_has_generated_targets_only_for_explicit_families(self):
         for family in ["legacy", "get_started", ""]:
             nofo = Nofo.objects.create(
-                title="Synthetic export", introductory_page_family=family, group="bloom"
+                title="Synthetic export",
+                introductory_page_family=family,
+                group="bloom",
+                opdiv="HHS",
             )
             html = self.client.get(
                 reverse("nofos:nofo_export", kwargs={"pk": nofo.pk})
