@@ -306,10 +306,20 @@ class IntroductoryImportTests(TestCase):
         )
         nofo.before_you_begin = "none"
         nofo.save()
-        self.assertIn(
-            "#section--before-you-begin",
+        self.assertEqual(
             [link["link_href"] for link in find_broken_links(nofo)],
+            ["#unrelated-missing"],
         )
+        subsection.refresh_from_db()
+        self.assertIn("#section--before-you-begin", subsection.body)
+        self.assertIn("Before You Get Started", subsection.body)
+        nofo.before_you_begin = "full"
+        nofo.save()
+        self.assertEqual(
+            [link["link_href"] for link in find_broken_links(nofo)],
+            ["#unrelated-missing"],
+        )
+        self.assertIn("#section--before-you-begin", subsection.body)
 
     def test_failed_reimport_restores_saved_family_variant_and_content(self):
         self.upload(reverse("nofos:nofo_import"), "Before You Begin")

@@ -1939,6 +1939,14 @@ def find_broken_links(nofo):
             all_links = soup.find_all("a")
 
             for link in all_links:
+                if (
+                    nofo.before_you_begin == "none"
+                    and nofo.number != "hrsa-application-guide"
+                    and link.get("href") == "#section--before-you-begin"
+                ):
+                    # The public renderer intentionally flattens this disabled
+                    # generated destination; it is not a broken authored link.
+                    continue
                 if link.attrs.get("href") in all_ids:
                     # skip all '#' ids that exist (if not, they are caught in the next step)
                     pass
