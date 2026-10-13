@@ -2,6 +2,7 @@ import io
 import json
 import logging
 import uuid
+from copy import deepcopy
 from datetime import datetime
 
 from bloom_nofos.error_helpers import (
@@ -120,10 +121,12 @@ from .nofo import (
     add_headings_to_document,
     add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
+    consume_tagline_paragraph,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
     decompose_before_you_begin_section,
+    extract_basic_information_tagline,
     extract_page_break_context,
     find_broken_links,
     find_endnote_issues,
@@ -157,6 +160,7 @@ from .nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
+    unwrap_heading_containers,
     upload_cover_image_to_s3,
 )
 from .nofo_document_context import get_nofo_document_context
@@ -780,6 +784,7 @@ class BaseNofoImportView(View):
     # new import.
     is_reimport = False
     remove_word_instruction_boxes = False
+    extract_scoped_tagline = False
 
     def get_template_name(self):
         """
@@ -832,6 +837,7 @@ class BaseNofoImportView(View):
                 omit_leading_title=self.track_import_metrics,
                 remove_instruction_boxes=self.remove_word_instruction_boxes,
                 review_warnings=review_warnings,
+                preserve_empty_paragraphs=self.extract_scoped_tagline,
             )
             for warning in review_warnings:
                 messages.warning(request, warning, extra_tags="word-import-review")
@@ -843,11 +849,23 @@ class BaseNofoImportView(View):
             # heading level Builder treats as the document's main sections.
             decompose_before_you_begin_section(soup)
             top_heading_level = resolve_section_heading_level(soup)
+            imported_tagline = None
+            if self.extract_scoped_tagline:
+                unwrap_heading_containers(soup)
+                imported_tagline = extract_basic_information_tagline(
+                    soup, top_heading_level
+                )
             soup, instructions_tables = process_nofo_html(soup, top_heading_level)
+            if self.extract_scoped_tagline:
+                imported_tagline = consume_tagline_paragraph(soup, imported_tagline)
 
             # 4. Build sections and subsections as python dicts
             sections = self.get_sections_and_subsections_from_soup(
-                soup, top_heading_level
+                # Sectioning extracts callout headings and mutates cells. Keep
+                # Builder's metadata/confirmation source intact for re-parsing.
+                deepcopy(soup) if self.extract_scoped_tagline else soup,
+                top_heading_level,
+                consume_scoped_tagline=self.extract_scoped_tagline,
             )
 
             # 5. Add instructions to subsections (only implemented in Composer)
@@ -945,11 +963,14 @@ class BaseNofoImportView(View):
             filename,
             *args,
             warning_count=warning_count,
+            imported_tagline=imported_tagline,
             **kwargs,
         )
 
     @staticmethod
-    def get_sections_and_subsections_from_soup(soup, top_heading_level):
+    def get_sections_and_subsections_from_soup(
+        soup, top_heading_level, *, consume_scoped_tagline=False
+    ):
         """
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
@@ -959,7 +980,9 @@ class BaseNofoImportView(View):
             raise ValidationError(
                 "That file does not contain a NOFO.", code="no_sections"
             )
-        return get_subsections_from_sections(sections, top_heading_level)
+        return get_subsections_from_sections(
+            sections, top_heading_level, consume_scoped_tagline=consume_scoped_tagline
+        )
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
@@ -984,6 +1007,7 @@ class NofosImportNewView(BaseNofoImportView):
 
     track_import_metrics = True
     remove_word_instruction_boxes = True
+    extract_scoped_tagline = True
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
@@ -995,12 +1019,19 @@ class NofosImportNewView(BaseNofoImportView):
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv, group=request.user.group)
-            add_headings_to_document(nofo)
+            imported_tagline = add_headings_to_document(
+                nofo, extra_link_text=kwargs.get("imported_tagline")
+            )
             add_page_breaks_to_headings(nofo)
             # group must be set before suggest_all_nofo_fields() so it can key
             # group-specific defaults (e.g. the NIH "before you begin" page) off it
             nofo.group = request.user.group
-            suggest_all_nofo_fields(nofo, soup, first_time_import=True)
+            suggest_all_nofo_fields(
+                nofo,
+                soup,
+                first_time_import=True,
+                imported_tagline=imported_tagline,
+            )
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
@@ -1099,6 +1130,7 @@ class NofosImportOverwriteView(
     track_import_metrics = True
     remove_word_instruction_boxes = True
     is_reimport = True
+    extract_scoped_tagline = True
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -1151,6 +1183,7 @@ class NofosImportOverwriteView(
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
                 "warning_count": warning_count,
+                "imported_tagline": kwargs.get("imported_tagline"),
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
@@ -1163,6 +1196,7 @@ class NofosImportOverwriteView(
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=kwargs.get("imported_tagline"),
         )
 
     @staticmethod
@@ -1174,6 +1208,8 @@ class NofosImportOverwriteView(
         filename,
         if_preserve_page_breaks,
         warning_count=0,
+        *,
+        imported_tagline=None,
     ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
@@ -1193,9 +1229,16 @@ class NofosImportOverwriteView(
                 if if_preserve_page_breaks and page_breaks:
                     nofo = restore_subsection_metadata(nofo, page_breaks)
 
-                add_headings_to_document(nofo)
+                imported_tagline = add_headings_to_document(
+                    nofo, extra_link_text=imported_tagline
+                )
                 add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup, first_time_import=False)
+                suggest_all_nofo_fields(
+                    nofo,
+                    soup,
+                    first_time_import=False,
+                    imported_tagline=imported_tagline,
+                )
                 nofo.filename = filename
                 nofo.save()
 
@@ -1327,7 +1370,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
         top_heading_level = resolve_section_heading_level(soup)
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
-            soup, top_heading_level
+            soup, top_heading_level, consume_scoped_tagline=True
         )
 
         filename = reimport_data["filename"]
@@ -1342,6 +1385,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=reimport_data.get("imported_tagline"),
         )
 
 

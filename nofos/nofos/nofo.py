@@ -99,6 +99,7 @@ def parse_uploaded_file_as_html_string(
     omit_leading_title=False,
     remove_instruction_boxes=True,
     review_warnings=None,
+    preserve_empty_paragraphs=False,
 ):
     """
     Given an uploaded file, return a tuple of (raw HTML string, mammoth warning
@@ -139,6 +140,7 @@ def parse_uploaded_file_as_html_string(
                     ]
                 ),
                 transform_document=transform_word_document,
+                ignore_empty_paragraphs=not preserve_empty_paragraphs,
             )
         except Exception as e:
             raise ValidationError(
@@ -403,7 +405,7 @@ def replace_links(file_content):
 
 @transaction.atomic
 def add_headings_to_document(
-    document, SectionModel=Section, SubsectionModel=Subsection
+    document, SectionModel=Section, SubsectionModel=Subsection, *, extra_link_text=None
 ):
     new_ids = []
     # collect sections and subsections in arrays to facilitate bulk updating
@@ -481,6 +483,15 @@ def add_headings_to_document(
             subsections_to_update.append(subsection)
 
     SubsectionModel.objects.bulk_update(subsections_to_update, ["body"])
+    if extra_link_text is not None:
+        for patterns in compiled_patterns:
+            extra_link_text = patterns["href_pattern"].sub(
+                'href="#{}"'.format(patterns["new_id"]), extra_link_text
+            )
+            extra_link_text = patterns["hash_pattern"].sub(
+                "(#{})".format(patterns["new_id"]), extra_link_text
+            )
+        return extra_link_text
 
 
 def add_page_breaks_to_headings(document):
@@ -1000,7 +1011,9 @@ def is_callout_box_table(table):
     )
 
 
-def get_subsections_from_sections(sections, top_heading_level="h1"):
+def get_subsections_from_sections(
+    sections, top_heading_level="h1", *, consume_scoped_tagline=False
+):
     if_demote_headings = top_heading_level == "h1"
     heading_tags = ["h3", "h4", "h5", "h6"]
     key_callout_titles = {
@@ -1058,6 +1071,21 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
         body=None,
         key_callout_title=None,
     ):
+        if (
+            consume_scoped_tagline
+            and heading_tag
+            and heading_tag.get("data-nofo-tagline-source") == "true"
+        ):
+            # Keep following body content visible, without a source heading.
+            return {
+                "name": "",
+                "tag": "",
+                "html_id": "",
+                "order": order,
+                "is_callout_box": False,
+                "body": body or [],
+                "consumed_tagline": True,
+            }
         if heading_tag:
             if key_callout_title:
                 tag_name = "h4"
@@ -1182,6 +1210,17 @@ def get_subsections_from_sections(sections, top_heading_level="h1"):
 
                 section["subsections"][-1]["body"].append(tag)
 
+        if any(
+            subsection.get("consumed_tagline") for subsection in section["subsections"]
+        ):
+            section["subsections"] = [
+                subsection
+                for subsection in section["subsections"]
+                if not subsection.get("consumed_tagline") or subsection["body"]
+            ]
+            for order, subsection in enumerate(section["subsections"], 1):
+                subsection.pop("consumed_tagline", None)
+                subsection["order"] = order
     return sections
 
 
@@ -2322,6 +2361,73 @@ def suggest_nofo_tagline(soup):
     return suggestion or ""
 
 
+def extract_basic_information_tagline(soup, top_heading_level):
+    """Consume only the scoped new-format source, before empty-tag cleanup.
+
+    None means no new source (legacy fallback); an empty string is an
+    intentionally blank new source. This runs only in Builder import views.
+    """
+    section_level = int(top_heading_level[1])
+    # These are internal conversion markers, never instructions from an upload.
+    for node in soup.find_all(True):
+        node.attrs.pop("data-nofo-tagline-source", None)
+        node.attrs.pop("data-nofo-tagline-value", None)
+    in_step_one = False
+    basic_level = None
+    container = soup.body or soup
+    for tag in list(container.children):
+        if not isinstance(tag, Tag) or tag.name not in (
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+        ):
+            continue
+        level = int(tag.name[1])
+        text = sanitize_imported_text(tag.get_text(" ", strip=True)).casefold()
+        if level <= section_level:
+            in_step_one = level == section_level and bool(
+                re.fullmatch(r"step 1\s*:\s*review the opportunity", text)
+            )
+            basic_level = None
+            continue
+        if not in_step_one:
+            continue
+        if basic_level is not None and level <= basic_level:
+            basic_level = None
+        if text == "basic information" and level == section_level + 1:
+            basic_level = level
+            continue
+        if text != "tagline" or basic_level is None or level != basic_level + 1:
+            continue
+        paragraph = tag.find_next_sibling()
+        value = ""
+        if paragraph is not None and paragraph.name == "p":
+            # Keep inline emphasis/links using the field's existing Markdown
+            # representation. A paragraph containing an image is not a tagline.
+            if not paragraph.find("img"):
+                value = sanitize_imported_text(md(str(paragraph), escape_misc=False))
+                # Leave links in the soup until normal import repairs run.
+                paragraph["data-nofo-tagline-value"] = "true"
+        # Sectioning consumes this heading but retains a nameless body boundary.
+        tag["data-nofo-tagline-source"] = "true"
+        return value
+    return None
+
+
+def consume_tagline_paragraph(soup, imported_tagline):
+    if imported_tagline is None:
+        return None
+    paragraph = soup.find("p", attrs={"data-nofo-tagline-value": "true"})
+    if paragraph is None:
+        return ""
+    value = sanitize_imported_text(md(str(paragraph), escape_misc=False))
+    paragraph.decompose()
+    return value
+
+
 def suggest_nofo_author(soup):
     suggestion = _suggest_by_startswith_string(soup, "Metadata Author:")
     return normalize_pdf_metadata_value(suggestion)
@@ -2348,7 +2454,9 @@ def suggest_nofo_cover_image(nofo):
     return ""
 
 
-def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
+def suggest_all_nofo_fields(
+    nofo, soup, *, first_time_import=None, imported_tagline=None
+):
     # Import views know whether this is a new record, even when a legacy record
     # still has a blank/default opportunity number.
     if first_time_import is None:
@@ -2370,7 +2478,9 @@ def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
     nofo.agency = suggest_nofo_agency(soup)  # guess the NOFO Agency
     nofo.subagency = suggest_nofo_subagency(soup)  # guess the NOFO Subagency
     nofo.subagency2 = suggest_nofo_subagency2(soup)  # guess NOFO Subagency 2
-    nofo.tagline = suggest_nofo_tagline(soup)  # guess the NOFO tagline
+    nofo.tagline = (
+        suggest_nofo_tagline(soup) if imported_tagline is None else imported_tagline
+    )
     nofo.author = suggest_nofo_author(soup)  # guess the NOFO author
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
