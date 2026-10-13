@@ -779,6 +779,7 @@ class BaseNofoImportView(View):
     # as a reimport (and tied to the NOFO being reimported), not as a failed
     # new import.
     is_reimport = False
+    remove_word_instruction_boxes = False
 
     def get_template_name(self):
         """
@@ -825,9 +826,15 @@ class BaseNofoImportView(View):
         attempt_filename = getattr(uploaded_file, "name", "") or ""
         try:
             # 2. Parse string to HTML
+            review_warnings = []
             file_content, warning_count = parse_uploaded_file_as_html_string(
-                uploaded_file, omit_leading_title=self.track_import_metrics
+                uploaded_file,
+                omit_leading_title=self.track_import_metrics,
+                remove_instruction_boxes=self.remove_word_instruction_boxes,
+                review_warnings=review_warnings,
             )
+            for warning in review_warnings:
+                messages.warning(request, warning, extra_tags="word-import-review")
 
             # 3. Clean/transform HTML
             cleaned_content = replace_links(replace_chars(file_content))
@@ -976,6 +983,7 @@ class NofosImportNewView(BaseNofoImportView):
     """
 
     track_import_metrics = True
+    remove_word_instruction_boxes = True
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
@@ -1089,6 +1097,7 @@ class NofosImportOverwriteView(
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
     track_import_metrics = True
+    remove_word_instruction_boxes = True
     is_reimport = True
 
     def dispatch(self, request, *args, **kwargs):

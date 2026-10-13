@@ -8,6 +8,8 @@
   {% url 'nofos:nofo_index' as back_href %}
   {% include "includes/page_heading.html" with title=page_title back_text="All NOFOs" back_href=back_href only %}
 
+  {% include "nofos/includes/word_import_review.html" with messages=messages only %}
+
   <form id="nofo-name--form" method="post">
     {% csrf_token %}
 

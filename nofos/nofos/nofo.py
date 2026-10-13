@@ -67,6 +67,7 @@ from .utils import (
     strip_markdown_links,
     style_map_manager,
 )
+from .word_instruction_boxes import clean_instruction_boxes
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
 
@@ -92,7 +93,13 @@ REQUEST_HEADERS = {
 ###########################################################
 
 
-def parse_uploaded_file_as_html_string(uploaded_file, *, omit_leading_title=False):
+def parse_uploaded_file_as_html_string(
+    uploaded_file,
+    *,
+    omit_leading_title=False,
+    remove_instruction_boxes=True,
+    review_warnings=None,
+):
     """
     Given an uploaded file, return a tuple of (raw HTML string, mammoth warning
     count). warning_count is always 0 for HTML-file uploads, since those never
@@ -119,6 +126,10 @@ def parse_uploaded_file_as_html_string(uploaded_file, *, omit_leading_title=Fals
                 if omit_leading_title
                 else uploaded_file
             )
+            if remove_instruction_boxes:
+                conversion_file, box_warnings = clean_instruction_boxes(conversion_file)
+                if review_warnings is not None:
+                    review_warnings.extend(box_warnings)
             doc_to_html_result = mammoth.convert_to_html(
                 conversion_file,
                 style_map="\n".join(

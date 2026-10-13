@@ -88,6 +88,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-037 | conversion | Emphasis | Literal text "de minimis" → wrapped in `<em>` | `nofo.py` |
 | IMPORT-038 | removal | Content Removal | "Before you begin" heading + section → removed (duplicates a Builder-generated page) | `nofo.py` |
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
+| IMPORT-058 | removal | DOCX Conversion | Verified pale-blue instruction text boxes removed before conversion; other fills preserved for review | `word_instruction_boxes.py` |
 | IMPORT-040 | repair | Field Merging | Split label/value paragraphs under "Funding details" → merged into one paragraph | `nofo.py` |
 | IMPORT-041 | extraction | Metadata Suggestion | `Label:` text patterns → auto-suggested NOFO metadata fields; an underscore-only `Tagline:` value → empty | `nofo.py` |
 | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
@@ -498,6 +499,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Extracted (removed) from the document body, then matched by title to the corresponding subsection and reattached there as that subsection's "instructions" field (Composer import only).
 - **Source:** `nofo.py::decompose_instructions_tables`, `add_instructions_to_subsections`
 - **Status:** active
+
+### IMPORT-058 — Pale-blue Word instruction-container cleanup
+- **Type:** removal
+- **Trigger:** A Word text-box container resolves to the verified HHS master fill `DCEAF7` (one RGB level allowed for Word rounding). DrawingML resolves document theme relationships, color mappings and supported luminance/tint/shade transformations; VML reads explicit solid fills. Compatibility copies must agree on color and normalized text. This is per-container detection, not date, filename, agency or saved-template classification.
+- **Action:** Remove the complete recognized shape or its paired compatibility container from an in-memory DOCX conversion copy, not its enclosing paragraph/run. Preserve adjacent text, bookmarks, links and images. White, unfilled and transparent boxes remain, even with instruction-like wording/styles. Unknown/conflicting fills or compatibility text are retained with a content-free review warning. Supply a conversion-only text copy for retained DrawingML boxes that Mammoth would otherwise ignore; preserve the original uploaded file and other ZIP parts. IMPORT-039 continues unchanged, including removal of recognized old instruction tables regardless of their fill. Non-instructional one-cell tables continue through IMPORT-024/IMPORT-025.
+- **Source:** `word_instruction_boxes.py::clean_instruction_boxes`, called by `nofo.py::parse_uploaded_file_as_html_string`; Builder new/re-import views opt in. Composer and Compare retain their existing conversion behavior, including Composer table-guidance extraction/reattachment. No cleanup runs on saved records, views or exports.
+- **Status:** active for uploaded Word documents in Builder new imports and authorized re-imports; HTML uploads are unchanged. Only the verified fill pattern is removed. Gradient/pattern fills, unresolved colors, local color-map overrides, partial transparency and unsupported representations are not inferred as instructions. Removing an option label does not remove following alternative NOFO content or resolve duplicate headings. See [compatibility evidence and production procedure](review-evidence/1089/README.md).
 
 ---
 
