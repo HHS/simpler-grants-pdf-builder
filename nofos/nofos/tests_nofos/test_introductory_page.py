@@ -99,7 +99,7 @@ class IntroductoryDestinationTests(SimpleTestCase):
                     "html.parser",
                 )
             )
-            self.assertEqual(introductory_family_from_soup(soup), "legacy")
+            self.assertEqual(introductory_family_from_soup(soup), "")
             self.assertIsNone(soup.find("a", href="#new"))
             self.assertIn("Authored label", str(soup))
 
@@ -119,7 +119,7 @@ class IntroductoryDestinationTests(SimpleTestCase):
         soup = capture_introductory_page(
             BeautifulSoup("<p>Before You Get Started</p><h2>Step 1</h2>", "html.parser")
         )
-        self.assertEqual(introductory_family_from_soup(soup), "legacy")
+        self.assertEqual(introductory_family_from_soup(soup), "")
 
     def test_defaults_family_and_variant_are_independent(self):
         for family, group, theme, variant in [
@@ -134,6 +134,32 @@ class IntroductoryDestinationTests(SimpleTestCase):
 
 
 class IntroductoryImportTests(TestCase):
+    def test_normal_word_export_has_generated_targets_only_for_explicit_families(self):
+        for family in ["legacy", "get_started", ""]:
+            nofo = Nofo.objects.create(
+                title="Synthetic export", introductory_page_family=family, group="bloom"
+            )
+            html = self.client.get(
+                reverse("nofos:nofo_export", kwargs={"pk": nofo.pk})
+            ).content.decode()
+            self.assertEqual('id="section--before-you-begin"' in html, bool(family))
+            if family:
+                self.assertIn(nofo.introductory_page_title, html)
+
+    def test_disabled_page_render_preserves_stored_authored_prose(self):
+        from nofos.templatetags.introductory_page_links import introductory_page_links
+
+        nofo = Nofo(before_you_begin="none")
+        html = '<p>See <a href="#section--before-you-begin">Before You Get Started</a> to learn how. <a href="https://example.com">Other</a></p>'
+        rendered = introductory_page_links(html, nofo)
+        self.assertNotIn('href="#section--before-you-begin"', rendered)
+        self.assertIn(
+            "Before You Get Started to learn how.",
+            BeautifulSoup(rendered, "html.parser").text,
+        )
+        self.assertIn('href="https://example.com"', rendered)
+        self.assertIn('href="#section--before-you-begin"', html)
+
     def setUp(self):
         self.user = BloomUser.objects.create_user(
             email="intro-review@example.com",

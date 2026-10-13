@@ -384,6 +384,9 @@ class NOFOsExportView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        if self.object.introductory_page_family:
+            context.update(get_nofo_document_context(self.object))
+
         context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
         context["strip_policy_language"] = (
             config.HHS_NOFO_POLICY_EXPORT_ENABLED

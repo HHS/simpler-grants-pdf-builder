@@ -10,7 +10,7 @@ HEADING_NAMES = {
 
 def introductory_family_from_soup(soup):
     body = soup.body
-    return body.get(FAMILY_ATTRIBUTE, "legacy") if body else "legacy"
+    return body.get(FAMILY_ATTRIBUTE, "") if body else ""
 
 
 def capture_introductory_page(soup, *, page_enabled=True):
@@ -31,7 +31,7 @@ def capture_introductory_page(soup, *, page_enabled=True):
         if " ".join(h.get_text(" ", strip=True).casefold().split()).strip(" :.-")
         in HEADING_NAMES
     ]
-    soup.body[FAMILY_ATTRIBUTE] = "legacy"
+    soup.body[FAMILY_ATTRIBUTE] = ""
     if len(headings) == 1:
         name = " ".join(headings[0].get_text(" ", strip=True).casefold().split()).strip(
             " :.-"
@@ -64,19 +64,3 @@ def capture_introductory_page(soup, *, page_enabled=True):
             else:
                 link.unwrap()
     return soup
-
-
-def is_metadata_boundary(tag):
-    """Protect a lower-level Metadata heading when fields establish its role."""
-    from . import nofo
-
-    recognizer = getattr(nofo, "metadata_block_fields", None)
-    if recognizer:
-        return recognizer(tag) is not None
-    # Same narrow contract until the parallel metadata implementation lands.
-    if tag.name not in {"h1", "h2", "h3", "h4", "h5", "h6"}:
-        return False
-    if " ".join(tag.get_text(" ", strip=True).casefold().split()) != "metadata":
-        return False
-    following = tag.find_next_sibling()
-    return bool(following and nofo._looks_like_metadata_line(following))

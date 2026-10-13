@@ -483,10 +483,12 @@ class Nofo(BaseNofo):
     introductory_page_family = models.CharField(
         max_length=20,
         choices=[
+            ("", "Legacy (not identified by an import)"),
             ("legacy", "Before you begin"),
             ("get_started", "Before you get started"),
         ],
-        default="legacy",
+        default="",
+        blank=True,
         editable=False,
     )
 

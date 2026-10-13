@@ -3578,9 +3578,9 @@ def decompose_before_you_begin_section(soup):
         tags_to_remove = [heading]
 
         for sibling in heading.find_next_siblings():
-            from .introductory_page import is_metadata_boundary
-
-            if is_metadata_boundary(sibling):
+            if sibling.name in {"h1", "h2", "h3", "h4", "h5", "h6"} and clean_string(
+                sibling.get_text(" ", strip=True)
+            ).casefold().strip(":") in {"footnote", "footnotes", "endnote", "endnotes"}:
                 break
             if sibling.name == "ol" and sibling.find(
                 id=lambda value: value and value.startswith(("footnote", "endnote"))

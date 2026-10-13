@@ -85,7 +85,8 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-035 | conversion | Images | Inline image `src` → rewritten to static NOFO-numbered path | `nofo.py` *(not currently wired into the pipeline)* |
 | IMPORT-036 | conversion | Emphasis | CSS classes with `font-weight: 700` (&lt;18pt) → wrapped in `<strong>` | `nofo.py` |
 | IMPORT-037 | conversion | Emphasis | Literal text "de minimis" → wrapped in `<em>` | `nofo.py` |
-| IMPORT-038 | removal | Content Removal | "Before you begin" heading + section → removed (duplicates a Builder-generated page) | `nofo.py` |
+| IMPORT-038 | removal | Content Removal | Recognized introductory heading + bounded source body → consumed; Builder new/legacy names supported | `nofo.py` |
+| IMPORT-062 | extraction | Content Removal | Capture Builder introductory family and actual Word destinations before consumption | `introductory_page.py` |
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
 | IMPORT-040 | repair | Field Merging | Split label/value paragraphs under "Funding details" → merged into one paragraph | `nofo.py` |
 | IMPORT-041 | extraction | Metadata Suggestion | Recognized Metadata heading/field block takes precedence over legacy `Label:` scanning; independent Tagline and assistance-listing behavior retained | `nofo.py` |
@@ -484,6 +485,20 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `nofo.py::decompose_before_you_begin_section`
 - **Status:** active
 
+  Builder imports also recognize **Before You Get Started**, before cleanup. Only
+  the bounded source introduction is consumed: peer/higher headings, known
+  metadata labels, recognized Metadata blocks at any level and notes are
+  boundaries. Source body edits do not override maintained registration text.
+  Composer/Compare retain their legacy-only cleanup. See
+  [introductory-page authoring](INTRODUCTORY_PAGE_IMPORT.md).
+
+### IMPORT-062 — Introductory family and destination capture
+- **Type:** extraction
+- **Trigger:** Builder import with a unique real H1–H6 introductory heading, case/whitespace-insensitive, matching either supported name.
+- **Action:** Save `legacy` or `get_started` independently of registration variant; remap unique heading/bookmark destinations to `section--before-you-begin` before consuming the source body. Preserve authored link text. Missing/ambiguous signals use the empty legacy discriminator, not a global upgrade. Conflicting headings/duplicate consumed destinations become plain linked text rather than guessed destinations. Disabled-page links render as plain text without changing stored bodies. Re-import selects the incoming family while preserving the variant and existing rollback/status/permission policies; confirmation carries the family with processed soup. Existing records are not reclassified on view/export; duplication copies the family.
+- **Source:** `introductory_page.py::capture_introductory_page`, `views.py::BaseNofoImportView`, `nofo.py::suggest_all_nofo_fields`
+- **Status:** active (Builder only)
+
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
 - **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", or matches the pattern `*-specific instructions`.
@@ -545,6 +560,12 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
   *Open question:* whether duplicating an HRSA NOFO should move the copy from `"full"` to `"hrsa"`, on the grounds that a duplicate is usually where the next NOFO starts. Deliberately not decided here; the behaviour above is what ships, and `tests_nofos/test_hrsa_byb.py::BeforeYouBeginOnDuplicateTests` pins it.
 - **Source:** `nofo.py::suggest_nofo_before_you_begin`, `suggest_all_nofo_fields`; explicit new/re-import context from `views.py`; duplication in `views.py::duplicate_nofo`
 - **Status:** active
+
+  The family decision is independent. First-time recognized new-family HRSA
+  imports use full before the NIH-group fallback; recognized legacy HRSA imports
+  still use hrsa. Other group/theme defaults are unchanged. Re-import preserves
+  every saved variant; saved hrsa with the new family renders the new full
+  registration body without resetting the value or adding HRSA-only wording.
 
 ### IMPORT-045 — Cover image suggestion
 - **Type:** extraction

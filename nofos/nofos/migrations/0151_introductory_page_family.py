@@ -15,10 +15,12 @@ class Migration(migrations.Migration):
             name="introductory_page_family",
             field=models.CharField(
                 choices=[
+                    ("", "Legacy (not identified by an import)"),
                     ("legacy", "Before you begin"),
                     ("get_started", "Before you get started"),
                 ],
-                default="legacy",
+                default="",
+                blank=True,
                 editable=False,
                 max_length=20,
             ),
