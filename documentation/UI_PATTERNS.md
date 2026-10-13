@@ -259,6 +259,74 @@ This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
 
+## Leftover template instruction warning after Word import
+
+This is a fallback review warning for a successful Word import, not an import
+error. Builder retains text boxes it cannot confidently classify instead of
+risking removal of applicant-facing content. It does not block the import,
+require another upload, or have an import-error code. Keep
+[IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) focused on blocking failures.
+
+### Trigger and placement
+
+The warning appears when Word preprocessing encounters an unknown or conflicting
+text-box fill, incompatible compatibility copies, or an unsupported container.
+Recognized pale-blue instruction boxes are removed without this warning; known
+white, unfilled, and transparent content boxes are kept without it. See
+[IMPORT-058](IMPORT_RULES.md#import-058--pale-blue-word-instruction-container-cleanup)
+for the exact detection and preservation rules. The warning itself does not
+change saved content or perform cleanup when a NOFO is opened or exported.
+
+- After a new import, show the warning on **Name your NOFO**. Saving the name
+  returns the user to **All NOFOs**, so do not say the editor is the next page.
+- After a successful re-import, show it on the NOFO edit page and give steps
+  starting in the current NOFO.
+
+Use the existing yellow USWDS warning alert with a visible heading and body.
+The shared template uses `usa-alert--warning`, `text-bold` on the heading, and
+`role="alert"`. This is a Django message displayed on the destination page,
+not a permanent warning stored on the NOFO record.
+
+### Approved wording and user action
+
+**Check for leftover template instructions**
+
+Your document was imported. Some boxes were kept because we couldn’t tell
+whether they contained template instructions or NOFO content.
+
+For a new import:
+
+After saving the NOFO name, open your NOFO from **All NOFOs**. Look for notes
+meant for template managers or NOFO writers, such as “Instructions for NOFO
+writers” or template option labels. Find the subsection containing those notes
+and select **Edit** in its row. In the content editor, remove only the template
+notes, then select **Save subsection**. Keep information applicants need, such
+as application deadlines, key facts, and instructions for applying.
+
+For a re-import, replace the first sentence and the start of the second with
+“In this NOFO, look for notes meant for template managers or NOFO writers”;
+the rest of the instructions are the same.
+
+Describe the content to review and the actual editor actions. Avoid converter
+terms such as “fill” or “preserved Word text boxes.” Do not instruct users to
+delete an entire subsection that also contains applicant-facing content or to
+remove all text containing “instructions.” The navigation and button labels
+follow [TASK-SUBSECTION-EDIT](EDITOR_TASKS.md#task-subsection-edit); editing the
+content ends with **Save subsection**.
+
+### Implementation and verification
+
+- Shared alert: [`word_import_review.html`](../nofos/nofos/templates/nofos/includes/word_import_review.html).
+- Trigger/message: [`word_instruction_boxes.py`](../nofos/nofos/word_instruction_boxes.py), passed through the import views.
+- Placement: [`nofo_import_title.html`](../nofos/nofos/templates/nofos/nofo_import_title.html) and [`nofo_edit.html`](../nofos/nofos/templates/nofos/nofo_edit.html).
+- Workflow coverage: [`test_word_instruction_boxes.py`](../nofos/nofos/tests_nofos/test_word_instruction_boxes.py).
+- Local evidence and pending production checks: [issue #1089 evidence](review-evidence/1089/README.md). Earlier screenshots show the previous wording.
+
+When changing this warning, check new-import and re-import navigation separately,
+confirm uncertain content remains available for review, and verify that known
+instruction removal and content-callout preservation still work. Do not claim
+production verification from local tests or screenshots.
+
 ## Subsection save conflicts
 
 Use this recovery pattern when saving an out-of-date subsection form would
