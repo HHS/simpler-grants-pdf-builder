@@ -22,9 +22,8 @@ OFFICE_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 XMLNS = "http://www.w3.org/2000/xmlns/"
 PALE_BLUE = (220, 234, 247)  # DCEAF7, verified HHS master container fill.
 REVIEW_MESSAGE = (
-    "Some Word text boxes have an unrecognized or conflicting fill. "
-    "Their content was kept. Review the imported text against the source Word "
-    "document for writer instructions and applicant-facing content."
+    "Your document was imported. Some boxes were kept because we couldn’t tell "
+    "whether they contained template instructions or NOFO content."
 )
 
 

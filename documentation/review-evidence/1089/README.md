@@ -103,3 +103,13 @@ this change does not bypass them. No production credentials or real NOFOs were u
 5. Check unrelated pre-existing records for unchanged bodies and rendered output.
    Record expected/actual content and any limitations. Leave validation pending
    if production access or deployment has not happened.
+
+## Alert wording update
+
+The fallback alert now says **Check for leftover template instructions** and
+explains that uncertain boxes were kept. After a new import, it directs the user
+to save the NOFO name, open the record from **All NOFOs**, select **Edit** in the
+affected subsection row, remove only template notes in the content editor, and
+select **Save subsection**. On re-import, the same instructions start in the
+current NOFO editor. Applicant deadlines, key facts, and application instructions
+are explicitly preserved. Earlier screenshots above show the previous wording.
