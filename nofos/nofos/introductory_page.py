@@ -1,11 +1,25 @@
 """Builder-owned introductory page selection and source destination capture."""
 
+from bs4 import NavigableString
+
 INTRO_ANCHOR = "section--before-you-begin"
 FAMILY_ATTRIBUTE = "data-nofo-introductory-family"
 HEADING_NAMES = {
     "before you begin": "legacy",
     "before you get started": "get_started",
 }
+
+
+def introductory_heading_name(tag):
+    text = "".join(
+        (
+            str(node)
+            if isinstance(node, NavigableString)
+            else " " if node.name == "br" else ""
+        )
+        for node in tag.descendants
+    )
+    return " ".join(text.casefold().split()).strip(" :.-")
 
 
 def introductory_family_from_soup(soup):
@@ -28,14 +42,11 @@ def capture_introductory_page(soup, *, page_enabled=True):
         for h in soup.body.find_all(
             ["h1", "h2", "h3", "h4", "h5", "h6"], recursive=False
         )
-        if " ".join(h.get_text(" ", strip=True).casefold().split()).strip(" :.-")
-        in HEADING_NAMES
+        if introductory_heading_name(h) in HEADING_NAMES
     ]
     soup.body[FAMILY_ATTRIBUTE] = ""
     if len(headings) == 1:
-        name = " ".join(headings[0].get_text(" ", strip=True).casefold().split()).strip(
-            " :.-"
-        )
+        name = introductory_heading_name(headings[0])
         soup.body[FAMILY_ATTRIBUTE] = HEADING_NAMES[name]
     targets = []
     # Mammoth can emit a named bookmark inside the heading, immediately

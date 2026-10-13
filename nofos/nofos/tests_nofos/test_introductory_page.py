@@ -21,10 +21,16 @@ from nofos.views import duplicate_nofo
 
 
 def introductory_docx(
-    name="Before You Get Started", bookmark="_Toc12345", number="HRSA-27-001"
+    name="Before You Get Started",
+    bookmark="_Toc12345",
+    number="HRSA-27-001",
+    split_heading=False,
 ):
     """A real minimal DOCX with Heading 2 plus a Word internal bookmark link."""
     stream = BytesIO()
+    heading_runs = f"<w:r><w:t>{name}</w:t></w:r>"
+    if split_heading:
+        heading_runs = '<w:r><w:t xml:space="preserve">Before You Get </w:t></w:r><w:r><w:rPr><w:b/></w:rPr><w:t>Star</w:t></w:r><w:r><w:t>ted</w:t></w:r>'
     with ZipFile(stream, "w", ZIP_DEFLATED) as archive:
         archive.writestr(
             "[Content_Types].xml",
@@ -45,7 +51,7 @@ def introductory_docx(
         archive.writestr(
             "word/document.xml",
             f"""<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
-<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:bookmarkStart w:id="1" w:name="{bookmark}"/><w:r><w:t>{name}</w:t></w:r><w:bookmarkEnd w:id="1"/></w:p>
+<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:bookmarkStart w:id="1" w:name="{bookmark}"/>{heading_runs}<w:bookmarkEnd w:id="1"/></w:p>
 <w:p><w:r><w:t>Distinctive source text MUST NOT publish.</w:t></w:r></w:p>
 <w:p><w:r><w:t>To register:</w:t></w:r></w:p>
 <w:p><w:r><w:t>Another source instruction.</w:t></w:r></w:p>
@@ -131,6 +137,18 @@ class IntroductoryDestinationTests(SimpleTestCase):
             )
             self.assertEqual(introductory_family_from_soup(soup), "get_started")
             self.assertEqual(soup.a["href"], "#absent")
+
+    def test_inline_word_run_split_does_not_invent_heading_whitespace(self):
+        soup = capture_introductory_page(
+            BeautifulSoup(
+                '<h2 id="intro">Before You Get <strong>Star</strong>ted</h2><h2>Step 1</h2><p><a href="#intro">Before You Get Started</a></p>',
+                "html.parser",
+            )
+        )
+        self.assertEqual(introductory_family_from_soup(soup), "get_started")
+        self.assertEqual(soup.a["href"], "#section--before-you-begin")
+        decompose_before_you_begin_section(soup)
+        self.assertIsNone(soup.find(id="intro"))
 
     def test_duplicate_id_is_not_remapped_to_generated_destination(self):
         soup = capture_introductory_page(
@@ -286,6 +304,25 @@ class IntroductoryImportTests(TestCase):
         self.assertEqual(nofo.introductory_page_family, "legacy")
         self.assertEqual(nofo.before_you_begin, "hrsa")
         self.assertEqual(list(nofo.sections.values_list("name", flat=True)), names)
+
+    def test_actual_word_split_heading_runs_keep_family_and_link(self):
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {
+                "nofo-import": SimpleUploadedFile(
+                    "synthetic-split.docx",
+                    introductory_docx(split_heading=True),
+                    content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.latest("created")
+        self.assertEqual(nofo.introductory_page_family, "get_started")
+        bodies = " ".join(
+            s.body for section in nofo.sections.all() for s in section.subsections.all()
+        )
+        self.assertIn("#section--before-you-begin", bodies)
 
     def test_isolated_new_registration_variants_and_legacy_body(self):
         for variant in ["full", "era", "sole_source", "hrsa"]:

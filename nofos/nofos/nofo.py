@@ -3502,7 +3502,9 @@ def _is_before_you_begin_heading(tag):
     if tag.name not in ("h1", "h2", "h3", "h4", "h5", "h6"):
         return False
 
-    heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
+    from .introductory_page import introductory_heading_name
+
+    heading_text = introductory_heading_name(tag)
     return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT or (
         tag.find_parent("body")
         and tag.find_parent("body").has_attr("data-nofo-introductory-family")
