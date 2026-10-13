@@ -8,9 +8,12 @@
       {% include "includes/icons/0-before.svg" %}
     {% endif %}
   </div>
-  <h2 id="section--before-you-begin--heading">Before you begin</h2>
+  <h2 id="section--before-you-begin--heading">{{ nofo.introductory_page_title }}</h2>
   <div class="before-you-begin--content">
 
+    {% if nofo.introductory_page_family == 'get_started' %}
+      {% include "includes/byb_registration_get_started.html" %}
+    {% else %}
     {% if nofo.before_you_begin == 'full' or nofo.before_you_begin == 'hrsa' %}
       <p>If you believe you are a good candidate for this funding opportunity, secure your <a href="https://sam.gov">SAM.gov</a> and <a href="https://grants.gov">Grants.gov</a> registrations now. If you are already registered, make sure your registrations are active and up to date.</p>
     {% elif nofo.before_you_begin == 'era' %}
@@ -56,7 +59,10 @@
       {% if for_readability_metrics %}</nav>{% endif %}
     {% endif %}
 
+    {% endif %}
+    {% if nofo.introductory_page_family == 'get_started' %}<h3 class="section--before-you-begin--psuedo-header">Apply by the application due date</h3>{% else %}
     {% include "includes/byb_subheading.html" with variant=nofo.before_you_begin content="Apply by the application due date" only %}
+    {% endif %}
     {% if "|" in nofo.application_deadline %}
       <p>Applications are due by 11:59 p.m. Eastern Time:</p>
       <ul>
@@ -68,7 +74,7 @@
       <p>Applications are due by {% if nofo.before_you_begin == 'era' %}5:00 p.m. local time{% else %}11:59 p.m. Eastern Time{% endif %} on {{ nofo.application_deadline|split_char_and_remove:"-" }}.</p>
     {% endif %}
 
-    {% if nofo.before_you_begin == 'hrsa' %}
+    {% if nofo.before_you_begin == 'hrsa' and nofo.introductory_page_family != 'get_started' %}
       <h3 class="before-you-begin--requirements">Application and funding requirements</h3>
       <p>All activities proposed in your application and budget narrative must align with applicable law, including but not limited to statutes, executive orders, federal regulations and applicable judicial holdings. Accordingly, discretionary awards shall not be used to fund, promote, encourage, subsidize, or facilitate; racial preferences or other forms of racial discrimination by the recipient, including activities where race or intentional proxies for race will be used as a selection criterion for employment or program participation; denial by the recipient of the sex binary in humans, or the belief that sex is a chosen or mutable characteristic; illegal immigration; or any other initiatives that compromise public safety. If an application does not align, the application will not receive funding to the extent permitted by law and applicable court orders.</p>
     {% endif %}

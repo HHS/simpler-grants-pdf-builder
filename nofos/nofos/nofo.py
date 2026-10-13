@@ -2269,9 +2269,11 @@ def suggest_nofo_cover(nofo_theme):
     return "nofo--cover-page--medium"
 
 
-def suggest_nofo_before_you_begin(nofo_group, nofo_theme=""):
+def suggest_nofo_before_you_begin(
+    nofo_group, nofo_theme="", introductory_page_family="legacy"
+):
     if "hrsa-" in nofo_theme.lower():
-        return "hrsa"
+        return "full" if introductory_page_family == "get_started" else "hrsa"
 
     if nofo_group == "nih":
         return "era"
@@ -2400,6 +2402,9 @@ def suggest_nofo_cover_image(nofo):
 
 
 def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
+    from .introductory_page import introductory_family_from_soup
+
+    nofo.introductory_page_family = introductory_family_from_soup(soup)
     # Import views know whether this is a new record, even when a legacy record
     # still has a blank/default opportunity number.
     if first_time_import is None:
@@ -2445,7 +2450,7 @@ def suggest_all_nofo_fields(nofo, soup, *, first_time_import=None):
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
-            nofo.group, nofo.theme
+            nofo.group, nofo.theme, nofo.introductory_page_family
         )  # guess the NOFO "Before you begin" page
 
 
@@ -3498,7 +3503,11 @@ def _is_before_you_begin_heading(tag):
         return False
 
     heading_text = clean_string(tag.get_text()).strip(" :.-").lower()
-    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT
+    return heading_text == BEFORE_YOU_BEGIN_HEADING_TEXT or (
+        tag.find_parent("body")
+        and tag.find_parent("body").has_attr("data-nofo-introductory-family")
+        and heading_text == "before you get started"
+    )
 
 
 def _looks_like_metadata_line(tag):
@@ -3509,7 +3518,20 @@ def _looks_like_metadata_line(tag):
     if tag.name != "p":
         return False
 
-    return _looks_like_metadata_label(tag.get_text())
+    label, separator, _ = tag.get_text(" ", strip=True).partition(":")
+    return bool(separator) and re.sub(r"\s+", "", label).casefold() in {
+        "opportunitynumber",
+        "opportunityname",
+        "applicationdeadline",
+        "opdiv",
+        "agency",
+        "subagency",
+        "subagency2",
+        "tagline",
+        "metadataauthor",
+        "metadatasubject",
+        "metadatakeywords",
+    }
 
 
 def decompose_before_you_begin_section(soup):
@@ -3556,6 +3578,14 @@ def decompose_before_you_begin_section(soup):
         tags_to_remove = [heading]
 
         for sibling in heading.find_next_siblings():
+            from .introductory_page import is_metadata_boundary
+
+            if is_metadata_boundary(sibling):
+                break
+            if sibling.name == "ol" and sibling.find(
+                id=lambda value: value and value.startswith(("footnote", "endnote"))
+            ):
+                break
             if (
                 sibling.name in ("h1", "h2", "h3", "h4", "h5", "h6")
                 and int(sibling.name[1]) <= level
