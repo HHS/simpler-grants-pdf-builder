@@ -31,3 +31,10 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [review-evidence/](review-evidence/) — Before/after screenshots and capture notes supporting individual PRs, filed by issue number
 
 **`IMPORT_RULES.md` vs `IMPORT_ERROR_CODES.md`:** the first catalogs `IMPORT-NNN` *rules* — content the importer transforms automatically. The second catalogs the `IMPORT-NAME` *error codes* a user sees when an import is blocked outright. A rule can be the reason a code fires; they are separate registries.
+
+## Announcement Services integration
+
+- [Current manual S3 pilot workflow and AS responses (#950)](https://github.com/HHS/simpler-grants-pdf-builder/issues/950) — Source of truth for proposed Word delivery, manual designer retrieval/import, confirmed capabilities and unresolved operating decisions. Capability confirmation does not establish implementation or approval.
+- [Historical automated PDF retrieval proposal](PDF_ARTIFACT_RETRIEVAL_PROPOSAL.md) — Earlier discussion of a separate future PDF return capability under #951/#957; not the current pilot workflow or an approved contract.
+
+The earlier `ANNOUNCEMENT_SERVICES_DATA_FLOW.md` and `ANNOUNCEMENT_SERVICES_WORKFLOW.md` files are absent from `main`. Use #950 for the current pilot rather than those older diagrams.
