@@ -18,6 +18,24 @@ from nofos.nofo import (
 
 @override_settings(DEBUG=False)
 class DocumentProcessingTests(SimpleTestCase):
+    def test_builder_options_retain_source_and_consume_metadata_and_tagline(self):
+        html = (
+            "<h1>Step 1: Review the opportunity</h1>"
+            "<h2>Basic information</h2><h3>Tagline</h3><p>Apply today.</p>"
+            "<h2>Summary</h2><p>Applicant prose.</p>"
+            "<h1>Metadata</h1><p>Opdiv: CDC</p>"
+            "<p>Opportunity number: SYNTHETIC-001</p>"
+        )
+        result = process_document_content(
+            html, builder_import=True, extract_scoped_tagline=True
+        )
+        self.assertIn("Opdiv: CDC", str(result.soup))
+        self.assertNotIn("Opdiv: CDC", str(result.sections))
+        self.assertNotIn("Metadata", [section["name"] for section in result.sections])
+        self.assertIn("Applicant prose.", str(result.sections))
+        self.assertNotIn("Apply today.", str(result.sections))
+        self.assertEqual(result.imported_tagline, "Apply today.")
+
     def test_direct_content_preserves_metadata_and_excludes_redundant_section(self):
         result = process_document_content(
             "<h1>Before you begin</h1><p>Redundant text.</p>"

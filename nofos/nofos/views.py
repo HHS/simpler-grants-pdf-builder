@@ -124,6 +124,7 @@ from .nofo import (
     add_headings_to_document,
     add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
+    builder_import_content,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
@@ -173,6 +174,14 @@ from .readability import (
     save_automatic_checkpoint,
 )
 from .readability_history import checkpoint_rows
+from .subsection_conflicts import (
+    EDIT_FIELDS,
+    matches_version,
+    read_version,
+    recovery_token,
+    recovery_values,
+    saved_values,
+)
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -373,6 +382,9 @@ class NOFOsExportView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        if self.object.introductory_page_family:
+            context.update(get_nofo_document_context(self.object))
 
         context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
         context["strip_policy_language"] = (
@@ -769,6 +781,8 @@ class BaseNofoImportView(View):
     # as a reimport (and tied to the NOFO being reimported), not as a failed
     # new import.
     is_reimport = False
+    remove_word_instruction_boxes = False
+    extract_scoped_tagline = False
 
     def get_template_name(self):
         """
@@ -815,17 +829,29 @@ class BaseNofoImportView(View):
         attempt_filename = getattr(uploaded_file, "name", "") or ""
         try:
             # 2. Parse string to HTML
+            review_warnings = []
             file_content, warning_count = parse_uploaded_file_as_html_string(
-                uploaded_file
+                uploaded_file,
+                omit_leading_title=self.track_import_metrics,
+                remove_instruction_boxes=self.remove_word_instruction_boxes,
+                review_warnings=review_warnings,
+                preserve_empty_paragraphs=self.extract_scoped_tagline,
             )
+            for warning in review_warnings:
+                messages.warning(request, warning, extra_tags="word-import-review")
 
             # 3–4. Shared content processing, independent of the uploaded file.
             content = process_document_content(
                 file_content,
                 section_parser=self.get_sections_and_subsections_from_soup,
+                builder_import=isinstance(
+                    self, (NofosImportNewView, NofosImportOverwriteView)
+                ),
+                extract_scoped_tagline=self.extract_scoped_tagline,
             )
             soup = content.soup
             sections = content.sections
+            imported_tagline = content.imported_tagline
 
             # 5. Add instructions to subsections (only implemented in Composer)
             self.add_instructions_to_subsections(
@@ -922,16 +948,24 @@ class BaseNofoImportView(View):
             filename,
             *args,
             warning_count=warning_count,
+            imported_tagline=imported_tagline,
             **kwargs,
         )
 
     @staticmethod
-    def get_sections_and_subsections_from_soup(soup, top_heading_level):
+    def get_sections_and_subsections_from_soup(
+        soup, top_heading_level, *, consume_scoped_tagline=False, consume_metadata=False
+    ):
         """
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
         """
-        return get_sections_and_subsections_from_soup(soup, top_heading_level)
+        return get_sections_and_subsections_from_soup(
+            soup,
+            top_heading_level,
+            consume_scoped_tagline=consume_scoped_tagline,
+            consume_metadata=consume_metadata,
+        )
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
@@ -955,6 +989,8 @@ class NofosImportNewView(BaseNofoImportView):
     """
 
     track_import_metrics = True
+    remove_word_instruction_boxes = True
+    extract_scoped_tagline = True
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
@@ -966,12 +1002,19 @@ class NofosImportNewView(BaseNofoImportView):
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv, group=request.user.group)
-            add_headings_to_document(nofo)
+            imported_tagline = add_headings_to_document(
+                nofo, extra_link_text=kwargs.get("imported_tagline")
+            )
             add_page_breaks_to_headings(nofo)
             # group must be set before suggest_all_nofo_fields() so it can key
             # group-specific defaults (e.g. the NIH "before you begin" page) off it
             nofo.group = request.user.group
-            suggest_all_nofo_fields(nofo, soup, first_time_import=True)
+            suggest_all_nofo_fields(
+                nofo,
+                soup,
+                first_time_import=True,
+                imported_tagline=imported_tagline,
+            )
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
@@ -1068,7 +1111,9 @@ class NofosImportOverwriteView(
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
     track_import_metrics = True
+    remove_word_instruction_boxes = True
     is_reimport = True
+    extract_scoped_tagline = True
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -1121,6 +1166,7 @@ class NofosImportOverwriteView(
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
                 "warning_count": warning_count,
+                "imported_tagline": kwargs.get("imported_tagline"),
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
@@ -1133,6 +1179,7 @@ class NofosImportOverwriteView(
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=kwargs.get("imported_tagline"),
         )
 
     @staticmethod
@@ -1144,6 +1191,8 @@ class NofosImportOverwriteView(
         filename,
         if_preserve_page_breaks,
         warning_count=0,
+        *,
+        imported_tagline=None,
     ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
@@ -1163,9 +1212,16 @@ class NofosImportOverwriteView(
                 if if_preserve_page_breaks and page_breaks:
                     nofo = restore_subsection_metadata(nofo, page_breaks)
 
-                add_headings_to_document(nofo)
+                imported_tagline = add_headings_to_document(
+                    nofo, extra_link_text=imported_tagline
+                )
                 add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup, first_time_import=False)
+                suggest_all_nofo_fields(
+                    nofo,
+                    soup,
+                    first_time_import=False,
+                    imported_tagline=imported_tagline,
+                )
                 nofo.filename = filename
                 nofo.save()
 
@@ -1294,10 +1350,10 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
 
         soup = BeautifulSoup(reimport_data["soup"], "html.parser")
-        top_heading_level = resolve_section_heading_level(soup)
+        top_heading_level = resolve_section_heading_level(builder_import_content(soup))
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
-            soup, top_heading_level
+            soup, top_heading_level, consume_scoped_tagline=True, consume_metadata=True
         )
 
         filename = reimport_data["filename"]
@@ -1312,6 +1368,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=reimport_data.get("imported_tagline"),
         )
 
 
@@ -2916,12 +2973,49 @@ class NofoSubsectionEditView(
 
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("action") == "review":
+            self.object = self.get_object()
+            preserved = recovery_values(request.POST.get("recovery"), self.object)
+            if preserved is None:
+                return HttpResponseBadRequest(
+                    "Invalid recovery data. Return to the edit page."
+                )
+            # Start with the latest saved fields, never silently rebase stale text.
+            form = self.get_form_class()(
+                instance=self.object,
+                initial={"recovery": request.POST["recovery"]},
+            )
+            return self.render_to_response(self.get_context_data(form=form))
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
-        self.object = form.save(commit=False)
-        self.object.html_class = form.cleaned_data.get(
-            "html_class", ""
-        )  # "" or "page-break-before"
-        self.object.save()
+        with transaction.atomic():
+            current = get_object_or_404(
+                Subsection.objects.select_for_update(), pk=self.object.pk
+            )
+            submitted = {field: form.cleaned_data[field] for field in EDIT_FIELDS}
+            token = form.cleaned_data.get("edit_version")
+            if read_version(token, current) and submitted == saved_values(current):
+                # Retrying an already-saved form cannot discard any saved changes.
+                return redirect(self.get_return_url(current))
+            if not matches_version(token, current):
+                context = self.get_context_data(form=form)
+                context.update(
+                    conflict=True,
+                    missing_version=not token,
+                    unsaved=submitted,
+                    latest=saved_values(current),
+                    recovery=recovery_token(current, submitted),
+                    return_url=self.get_return_url(current),
+                )
+                return self.render_to_response(context, status=409)
+
+            # Use the freshly locked instance, preserving non-form fields.
+            for field, value in submitted.items():
+                setattr(current, field, value)
+            current.save(update_fields=[*EDIT_FIELDS, "html_id"])
+            self.object = current
 
         messages.add_message(
             self.request,
@@ -2934,11 +3028,19 @@ class NofoSubsectionEditView(
         url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
         return redirect("{}#{}".format(url, self.object.html_id))
 
+    def get_return_url(self, subsection):
+        url = reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        return "{}#{}".format(url, subsection.html_id)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
         context.update(get_subsection_action_availability(self.nofo))
         form = context["form"]
+        context["preserved_unsaved"] = recovery_values(
+            form["recovery"].value(), self.object
+        )
+        context["return_url"] = self.get_return_url(self.object)
         threshold = settings.CALLOUT_WORD_WARNING_THRESHOLD
         context["callout_word_warning_threshold"] = threshold
         name = (form["name"].value() or "").strip()

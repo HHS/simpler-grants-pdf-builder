@@ -9,14 +9,21 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF upload pilot, access provisioning, source-aware reporting and activation checks
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
+- [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
+- [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
 - [IMPORT_RULES.md](IMPORT_RULES.md) — Every automatic content rule applied when a NOFO is imported (footnote/endnote handling, list/table repair, metadata suggestion, etc.)
+- [TAGLINE_IMPORT.md](TAGLINE_IMPORT.md) — Legacy and Basic information tagline sources, blank precedence, editing, and re-import behavior
+- [WORD_METADATA_IMPORT.md](WORD_METADATA_IMPORT.md) — Legacy labels and trailing Metadata blocks, precedence, defaults and saved-record behavior
+- [INTRODUCTORY_PAGE_IMPORT.md](INTRODUCTORY_PAGE_IMPORT.md) — Supported Word introductory headings, destinations, maintained registration families and legacy preservation
 - [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
+- [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
-- [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including shared file-upload error states, loading progress modals, and readability reliability alerts
+- [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
+- [STYLE_GUIDE.md](STYLE_GUIDE.md) — The SimplerNOFOs Style Guide (edition of August 25, 2026) as Markdown: writing, formatting, and structure conventions for NOFO content, with known conversion gaps listed at the end
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
 - [WORD_IMPORT_DRIFT.md](WORD_IMPORT_DRIFT.md) — Code-review findings on likely differences between Word author intent and imported NOFO structure

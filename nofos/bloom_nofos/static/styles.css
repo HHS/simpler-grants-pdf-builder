@@ -1689,6 +1689,13 @@ main .back-link a::before,
   margin-bottom: 1rem;
 }
 
+/* Keep the recovery editor usable in a half-width column and on phones. */
+.subsection-recovery .martor-toolbar,
+.subsection-recovery .martor-toolbar .btn-group {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
 /* Styling the martor editing window */
 
 .main-martor--container {

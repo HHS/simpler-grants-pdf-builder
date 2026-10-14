@@ -4,6 +4,45 @@ Use this guide when adding or changing Builder screens. Start with an existing
 component and its behavior before creating a new variation. This is a small,
 incremental catalog of verified patterns, not an audit of every screen.
 
+## Typography when an editor loads Bootstrap
+
+The [root README's USWDS implementation note](../README.md#a-note-on-our-implementation-of-the-us-web-design-system-uswds)
+explains the bundled static assets and how to update them. This section covers
+using those existing utilities consistently; it does not introduce a Sass or
+frontend build requirement.
+
+Builder uses Merriweather for page and section headings and Source Sans Pro for
+body copy and alert headings. Some editors load Bootstrap for Martor after the
+shared USWDS styles. Bootstrap's global heading rules can make bare `h2` elements
+inherit the body font and reduce heading weights to 500, even when the correct
+web fonts are successfully loaded.
+
+For new headings on these pages, use the established USWDS utilities explicitly:
+
+```html
+<h1 class="font-heading-xl text-bold">Page title</h1>
+<h2 class="font-heading-lg text-bold">Section heading</h2>
+<h2 class="usa-alert__heading text-bold">Warning heading</h2>
+```
+
+Reuse an existing page's heading scale for the same role. Alert headings retain
+USWDS's sans-serif styling; avoid applying the serif heading utility to them.
+Do not solve an editor override by adding a second font family or changing the
+shared stylesheet order without checking editor behavior and other pages.
+
+Before publishing UI screenshots, compare the computed font family, size, and
+weight with an existing Builder page that uses the same role. Confirm the actual
+rendered web font, not just the requested CSS family, and check desktop and
+narrow layouts. A page can load all its stylesheets and fonts yet still apply
+the wrong heading rule. The [subsection conflict capture notes](review-evidence/subsection-conflicts-1075/README.md#typography-verification)
+record a verified example of this failure and correction.
+
+Explicit utilities prevent this known typography override on the elements using
+them. The broader architectural fix would be isolating Bootstrap to the editor
+or replacing its global stylesheet with only the editor dependencies. That needs
+a separate change with visual and interaction checks for Martor tabs, toolbar,
+preview, fullscreen behavior, and the other Bootstrap-dependent screens.
+
 ## File-upload errors
 
 Use the shared [`file_input.html`](../nofos/bloom_nofos/templates/includes/file_input.html)
@@ -219,3 +258,153 @@ variant, and explanatory text together.
 This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
+
+## Leftover template instruction warning after Word import
+
+This is a fallback review warning for a successful Word import, not an import
+error. Builder retains text boxes it cannot confidently classify instead of
+risking removal of applicant-facing content. It does not block the import,
+require another upload, or have an import-error code. Keep
+[IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) focused on blocking failures.
+
+### Trigger and placement
+
+The warning appears when Word preprocessing encounters an unknown or conflicting
+text-box fill, incompatible compatibility copies, or an unsupported container.
+Recognized pale-blue instruction boxes are removed without this warning; known
+white, unfilled, and transparent content boxes are kept without it. See
+[IMPORT-058](IMPORT_RULES.md#import-058--pale-blue-word-instruction-container-cleanup)
+for the exact detection and preservation rules. The warning itself does not
+change saved content or perform cleanup when a NOFO is opened or exported.
+
+- After a new import, show the warning on **Name your NOFO**. Saving the name
+  returns the user to **All NOFOs**, so do not say the editor is the next page.
+- After a successful re-import, show it on the NOFO edit page and give steps
+  starting in the current NOFO.
+
+Use the existing yellow USWDS warning alert with a visible heading and body.
+The shared template uses `usa-alert--warning`, `text-bold` on the heading, and
+`role="alert"`. This is a Django message displayed on the destination page,
+not a permanent warning stored on the NOFO record.
+
+### Approved wording and user action
+
+**Check for leftover template instructions**
+
+Your document was imported. Some boxes were kept because we couldn’t tell
+whether they contained template instructions or NOFO content.
+
+For a new import:
+
+After saving the NOFO name, open your NOFO from **All NOFOs**. Look for notes
+meant for template managers or NOFO writers, such as “Instructions for NOFO
+writers” or template option labels. Find the subsection containing those notes
+and select **Edit** in its row. In the content editor, remove only the template
+notes, then select **Save subsection**. Keep information applicants need, such
+as application deadlines, key facts, and instructions for applying.
+
+For a re-import, replace the first sentence and the start of the second with
+“In this NOFO, look for notes meant for template managers or NOFO writers”;
+the rest of the instructions are the same.
+
+Describe the content to review and the actual editor actions. Avoid converter
+terms such as “fill” or “preserved Word text boxes.” Do not instruct users to
+delete an entire subsection that also contains applicant-facing content or to
+remove all text containing “instructions.” The navigation and button labels
+follow [TASK-SUBSECTION-EDIT](EDITOR_TASKS.md#task-subsection-edit); editing the
+content ends with **Save subsection**.
+
+### Implementation and verification
+
+- Shared alert: [`word_import_review.html`](../nofos/nofos/templates/nofos/includes/word_import_review.html).
+- Trigger/message: [`word_instruction_boxes.py`](../nofos/nofos/word_instruction_boxes.py), passed through the import views.
+- Placement: [`nofo_import_title.html`](../nofos/nofos/templates/nofos/nofo_import_title.html) and [`nofo_edit.html`](../nofos/nofos/templates/nofos/nofo_edit.html).
+- Workflow coverage: [`test_word_instruction_boxes.py`](../nofos/nofos/tests_nofos/test_word_instruction_boxes.py).
+- Local evidence and pending production checks: [issue #1089 evidence](review-evidence/1089/README.md). Earlier screenshots show the previous wording.
+
+When changing this warning, check new-import and re-import navigation separately,
+confirm uncertain content remains available for review, and verify that known
+instruction removal and content-callout preservation still work. Do not claim
+production verification from local tests or screenshots.
+
+## Subsection save conflicts
+
+Use this recovery pattern when saving an out-of-date subsection form would
+replace newer saved content. The response stays on the subsection edit page and
+returns HTTP 409 with a USWDS warning alert. This is an editing conflict, handled
+by the editor's template rather than the import error page or import error-code
+catalog.
+
+### What the user sees
+
+Ordinary editing keeps the existing form and **Save subsection** action. If the
+same subsection's editable fields changed after the form was opened, show:
+
+> This subsection changed since you opened it.
+> Your changes have not been saved. Your work is preserved below. Review it
+> against the latest saved version before saving.
+
+Show both the submitted fields and the latest saved fields. Preserve the name,
+heading level, callout setting, HTML class/page-break setting, and content.
+Read-only content fields can be scrolled, selected, and copied. On narrow screens,
+stack the columns and wrap the recovery editor's toolbar. Use `font-heading-lg`
+with `text-bold` for the comparison/review headings and `text-bold` on the alert
+heading. The editor loads Bootstrap after USWDS; without these explicit
+utilities, Bootstrap makes the section headings inherit the body font and
+reduces heading weights. Keep the page title bold with its existing
+`font-heading-xl` utility. The intended faces are Merriweather for page/section
+headings and Source Sans Pro for the alert and body copy.
+
+| Action | Behavior |
+| --- | --- |
+| **Review and combine changes** — primary submit button | Opens an editor initialized with the latest saved version, with the unsaved version alongside it for reference. Reviewing does not save anything. |
+| **Save combined version** — primary submit button in review | Saves the user's reconciled fields, checking again for changes made during review. A new conflict preserves that combined draft and shows the new latest saved version. |
+| **Discard my changes and return** — secondary outlined navigation link | Returns to the NOFO edit page without writing. The unsaved draft is abandoned. |
+
+Forms opened before deployment have no edit token. Use the heading **The editor
+was updated while this page was open.**, with the same preserved fields and
+recovery actions. Do not silently accept those saves.
+
+The draft stays in the recovery response and subsequent review form; it is not a
+separately saved draft in the database. Support should tell users to keep the
+page open or copy their work before leaving or refreshing. Do not direct them to
+refresh as the first recovery step. The warning does not identify another editor
+or edit time: the token alone cannot establish that attribution.
+
+### Implementation
+
+Use the existing USWDS alert, grid, and subsection editor components. The signed
+version token covers this subsection's five editable fields and its identity;
+changes to another subsection or NOFO metadata do not cause a conflict. Compare
+with the freshly fetched saved fields and save within a transaction holding the
+subsection row lock. A valid token with submitted fields already identical to
+the latest saved fields can return normally without a write.
+
+Keep the submitted version unchanged across ordinary validation errors. Only an
+explicit review action starts a form with the latest saved fields and a fresh
+token. Do not issue a fresh token for the stale draft and let a second Save click
+bypass reconciliation. Recheck on the eventual combined save.
+
+### Verify before shipping
+
+1. Save different changes from two tabs or two users: the later stale submission
+   must preserve both versions and leave the first save intact.
+2. Review: verify the editor starts with the latest saved fields, retains the
+   unsaved reference, and performs no write until Save combined version.
+3. Save another change during review: verify the combined draft is preserved and
+   another conflict is shown. Verify validation errors preserve the edit token
+   and unsaved reference.
+4. Follow Discard my changes and return: verify navigation without a write.
+5. Submit a predeployment form without a token: verify the editor-update heading
+   and recovery flow. Check that edits elsewhere in the NOFO save normally.
+6. Check narrow screens, keyboard navigation, selectable read-only content, and
+   simultaneous saves against a database that supports row locks.
+
+References:
+
+- [Before-and-after screenshots and capture notes](review-evidence/subsection-conflicts-1075/README.md)
+- [`subsection_edit.html`](../nofos/nofos/templates/nofos/subsection_edit.html)
+  and [read-only comparison fields](../nofos/nofos/templates/nofos/includes/subsection_conflict_values.html)
+- [Signed edit and recovery tokens](../nofos/nofos/subsection_conflicts.py),
+  [save handler](../nofos/nofos/views.py), and [regression tests](../nofos/nofos/tests_nofos/test_subsection_edit.py)
+- [Deployment considerations](../DEPLOYMENT.md#subsection-conflict-protection-rollout)

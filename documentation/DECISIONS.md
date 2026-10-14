@@ -4,6 +4,200 @@ This file records significant architectural, product, and implementation decisio
 
 ---
 
+## 2026-10-11 — State three HHS style guide points in the style guide
+
+**Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows
+the HHS.gov Web Style Guide, and NOFO reviews rely on three HHS points that the
+style guide didn't state: ending punctuation stays out of link text, a list
+lead-in phrase ends with a colon while a complete introductory sentence ends
+with a period, and "state" and "agency" are lowercase unless part of an official
+name. Reviewers had to keep a separate copy of HHS text to cite them.
+
+**Decision:** State the three points in the style guide's
+[links](STYLE_GUIDE.md#links), [lists](STYLE_GUIDE.md#lists), and
+[capitalization](STYLE_GUIDE.md#tables-labels-and-terms-capitalization)
+sections, each linking to the HHS guide, and record them in "Changes from the
+source edition." The links examples now put the period after the link, matching
+the new guidance. Where HHS and the style guide differ, such as periods on list
+items, the style guide still applies.
+
+---
+
+## 2026-10-11 — Remove the FAQ entry on indenting text with blockquotes
+
+**Context:** The [FAQ](NOFO_BUILDER_FAQ.md#text-editor-and-markdown) answered
+"How do I indent a paragraph or block of text?" by recommending a Markdown
+blockquote (`>`) for attestation language and signature blocks. A blockquote
+marks text as a quotation, not an indent: screen readers can announce "block
+quote", and WCAG failure technique F43 names quote markup used only for
+indentation as a failure of success criterion 1.3.1. The entry's example also
+didn't render as shown: lines without `<br>` run together, and the row of
+underscores for the applicant name renders as bold-italic text.
+
+**Decision:** Remove the entry. NOFO Builder doesn't support manual indentation,
+and the FAQ no longer suggests a workaround for it.
+
+---
+
+## 2026-10-11 — Remove the HRSA-specific H5 heading limit from the style guide
+
+**Context:** The [style guide](STYLE_GUIDE.md#headings) said most NOFOs use H2
+through H6 but HRSA NOFOs use only H2 through H5. That limit reflected an
+earlier technology constraint, not a style or accessibility rule. HRSA NOFOs
+built in NOFO Builder use H6 headings; HRSA-26-083, for example, uses them for
+scoring sub-criteria.
+
+**Decision:** All NOFOs use H2 through H6. The HRSA line is removed from the
+Headings section, the bold-formatting guidance no longer says "for most NOFOs",
+and the change is recorded in the style guide's "Changes from the source
+edition" section.
+
+The same change clarifies the line-break note on the
+[design standards page](DESIGN_STANDARDS.md#line-breaks): the optional line break
+is typed in the NOFO Builder subsection editor after any other edits to that
+paragraph, not made while "reviewing the final PDF", which read as editing the
+PDF itself.
+
+---
+
+## 2026-10-11 — Publish selected NOFO design standards as a Markdown page
+
+**Context:** The HHS Office of Grants NOFO design and accessibility standards
+include guidance that isn't in the [style guide](STYLE_GUIDE.md) or the
+[FAQ](NOFO_BUILDER_FAQ.md), such as heading length, line breaks, download link
+labels, and which tables don't need a caption. That guidance isn't publicly
+available as text people and tools can link to.
+
+**Decision:** Add [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) with selected
+standards: heading length, decorative images and alt text, visual consistency,
+line breaks, real list formatting, Grants.gov
+capitalization, email links, download link labels (file size optional but
+consistent), table labels and caption exemptions, splitting complex tables, and
+a checklist to use before publishing. The page says it reproduces part of the
+standards and isn't the official version, and points readers to their agency's
+grants policy office and the official FY 2027 standards for how to comply. It
+doesn't describe the standards as mandatory.
+
+The page leaves out guidance aimed only at documents produced outside NOFO Builder
+(spacing, line length, color contrast, Word styles, file naming and
+compression), internal references, and help channels.
+
+The [style guide's Tables section](STYLE_GUIDE.md#tables) is clarified: a
+caption can be a descriptive heading directly above the table or a bold
+"Table:" paragraph, as in TASK-TABLE-CAPTION. The source said captions were
+required for all tables while also exempting tables a heading precedes. The
+change is recorded in the style guide's new "Changes from the source edition"
+section; the rest of the guide still matches its source edition.
+
+---
+
+## 2026-10-11 — Publish a NOFO Builder FAQ as a Markdown page
+
+**Context:** Answers to common NOFO Builder questions (importing, Markdown,
+tables, page breaks, endnotes, appendices, metadata, and status) were kept in
+team help content that isn't publicly available. People and tools outside that
+space had no public page to link to.
+
+**Decision:** Add [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md), adapted from that
+help content as of October 9, 2026. The public page leaves out:
+
+- account administration and password handling;
+- help channels and request forms;
+- agency workflow and clearance steps;
+- onboarding plans and time estimates;
+- AI tool prompts;
+- links to pages that aren't public.
+
+Where an answer repeats an [editor task](EDITOR_TASKS.md), the FAQ explains
+briefly and links to the task instead of repeating its steps. Metadata guidance
+follows the [style guide](STYLE_GUIDE.md): a subject sentence in the style
+guide's format, and comma-separated keywords. The FAQ advises bold text instead
+of headings deeper than H6, consistent with the note in TASK-HEADING-LEVEL.
+
+---
+
+## 2026-10-11 — Describe NOFO statuses by group and show the bold "Table:" caption format
+
+**Context:** The editor tasks page listed every NOFO status value. Readers mainly
+need to know what they can do: edit, re-import, or delete. Separately, the table
+caption task didn't say how to write a caption when no heading describes a table,
+even though the [style guide](STYLE_GUIDE.md#tables) calls for a bold caption in
+the format "Table: Title of table." NOFO Builder already turns a paragraph that
+starts with "Table: " directly above a table into the table's caption.
+
+**Decision:** In [EDITOR_TASKS.md](EDITOR_TASKS.md#before-you-start-nofo-status),
+group statuses into Draft, in progress or under review, and published or
+cancelled, with what each group allows, instead of listing every value. In
+TASK-TABLE-CAPTION, when no nearby heading describes the table, add a bold
+caption directly above it, such as `**Table: Research plan details**`. A "Table:"
+prefix stays optional when a nearby heading already describes the table.
+
+---
+
+## 2026-10-11 — Publish the SimplerNOFOs Style Guide as a Markdown page
+
+**Context:** The SimplerNOFOs Style Guide was available as a Word document and a
+published PDF, but not as text that people, tools, and agents can link to and
+read in place. A NOFO PDF review skill in development kept a
+private text snapshot of the guide. That snapshot can't ship in the skill's
+installable package, so the skill had no public source to cite.
+
+**Decision:** Add [STYLE_GUIDE.md](STYLE_GUIDE.md), a Markdown conversion of the
+August 25, 2026 edition. The wording is unchanged. Headings, lists, and tables
+were rebuilt from a plain-text extraction. The page records its source edition
+and points to the published PDF on simplergrants.hhs.gov as authoritative if
+the two differ. It also lists what the conversion couldn't carry over:
+hyperlinks, screenshots, and some table layouts. Images are left out on purpose.
+Most links were restored by looking up the referenced resources, so they may not
+match the exact pages the source linked to. Downstream tools can link to a
+pinned commit of this page instead of bundling a private copy.
+
+**Not yet done:** nobody has compared the page or its restored links against the
+published PDF, and four references are still plain text.
+
+---
+
+## 2026-10-08 — Block stale subsection saves and preserve the draft for explicit review
+
+**Context:** A subsection form opened in another tab or by a teammate can save
+older fields over a newer edit. The subsection editor previously used last-save
+wins, with no warning or recovery step. Issue [#1075](https://github.com/HHS/simpler-grants-pdf-builder/issues/1075)
+identifies this overwrite path; the reported incident's cause still requires
+confirmation from audit history.
+
+**Decision:** Use a server-side check with a signed hash of the subsection's
+five saved editable fields and its identity. Compare and save while holding a
+subsection row lock in one transaction. This needs no version-field migration
+and detects changes to these fields even when another code path updates them.
+Use a subsection-specific token so changes elsewhere in a NOFO do not cause
+unnecessary conflicts.
+
+On conflict, preserve the submitted fields beside the latest saved version.
+**Review and combine changes** is primary because the user was trying to save
+work; **Discard my changes and return** is secondary and explicitly describes
+abandoning that draft. Review initializes the editor with the latest saved fields
+and retains the unsaved reference. **Save combined version** is an explicit write
+and repeats the conflict check. There is no automatic merge or second-click
+bypass. The preserved draft lives in the response/review form, not a separate
+database draft.
+
+**Alternatives:** Browser tab warnings or focus checks can complement the server
+check, but cannot guarantee protection across users or simultaneous saves. Edit
+locks require presence state and expiry handling. A persisted version counter
+would require a migration and consistent updates by every writer. History and
+restore could help recover earlier losses, but are separate work.
+
+**Rollout:** Deploy this first release outside 9 a.m.–5 p.m. Eastern Time. Forms
+opened before deployment have no token and enter the same recovery flow without
+silently accepting the save. If versions overlap, protection is complete only
+after old instances drain.
+
+See the [UI pattern](UI_PATTERNS.md#subsection-save-conflicts),
+[deployment guidance](../DEPLOYMENT.md#subsection-conflict-protection-rollout), and
+[before-and-after screenshots](review-evidence/subsection-conflicts-1075/README.md).
+
+---
+
 ## 2026-10-05 — Show an automatic "Latest release" banner for 5 business days after each release
 
 **Context:** The only way to find out what changed in NOFO Builder today is the

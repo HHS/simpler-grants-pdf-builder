@@ -347,6 +347,18 @@ body.cms-white table td img.usa-icon--check_box_outline_blank {
   display: flex;
 }
 
+.section--content table td .usa-icon__content {
+  min-width: 0;
+}
+
+.section--content table tr td.usa-icon__td .usa-icon__content a {
+  display: inline;
+}
+
+.section--content table td img.usa-icon--check_box_outline_blank {
+  flex-shrink: 0;
+}
+
 .section--content table tr td.usa-icon__td--multi-block > div {
   display: block;
 }
@@ -1349,4 +1361,38 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   margin-top: 15px;
   line-height: 1.4;
   color: #940200;
+}
+
+/* Compact, sequential headings for the new introductory family only. */
+section.before-you-begin.before-you-begin--get-started {
+  padding-top: 0;
+}
+.before-you-begin--get-started .before-you-begin--content h3 {
+  font-size: 15pt;
+  font-weight: 700;
+  margin: 10px 0 5px;
+  line-height: 1.2;
+}
+.before-you-begin--get-started .before-you-begin--content h4 {
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 8px 0 4px;
+  line-height: 1.2;
+}
+.before-you-begin--get-started .callout-box--keyboard {
+  margin-top: 10px;
+}
+
+.before-you-begin--get-started > h2 {
+  font-size: 28pt;
+  margin: 10px 0;
+}
+.before-you-begin--get-started .section--before-you-begin--icon svg {
+  width: 45px;
+  height: 45px;
+}
+
+.before-you-begin--get-started .before-you-begin--era-start {
+  break-before: page;
+  page-break-before: always;
 }

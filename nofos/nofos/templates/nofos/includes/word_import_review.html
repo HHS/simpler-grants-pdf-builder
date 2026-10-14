@@ -1,0 +1,21 @@
+{% for message in messages %}
+  {% if "word-import-review" in message.tags %}
+    <div class="usa-alert usa-alert--warning margin-y-3" role="alert">
+      <div class="usa-alert__body">
+        <h2 class="usa-alert__heading text-bold">Check for leftover template instructions</h2>
+        <p class="usa-alert__text">{{ message }}</p>
+        <p class="usa-alert__text margin-top-1">
+          {% if is_reimport %}
+            In this NOFO, look
+          {% else %}
+            After saving the NOFO name, open your NOFO from <strong>All NOFOs</strong>. Look
+          {% endif %}
+          for notes meant for template managers or NOFO writers, such as “Instructions for NOFO writers” or template option labels.
+          Find the subsection containing those notes and select <strong>Edit</strong> in its row.
+          In the content editor, remove only the template notes, then select <strong>Save subsection</strong>.
+          Keep information applicants need, such as application deadlines, key facts, and instructions for applying.
+        </p>
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}

@@ -10,8 +10,13 @@ responses. These parser-specific results are not a public interchange schema.
 
 The shared sequence preserves character/link replacement, HTML parsing, the
 first Before you begin removal, heading-level resolution, ordered NOFO
-normalization, then section/subsection parsing. Metadata remains in the soup
-for later inference. No transformation rule or order changes.
+normalization, then section/subsection parsing. Builder opts into the existing
+introductory-page capture, scoped tagline extraction and Metadata consumption
+rules through explicit `builder_import` and `extract_scoped_tagline` arguments.
+The result carries the captured tagline. Section parsing uses the same copied
+source as the application previously did, retaining intact metadata and callout
+content for field inference and confirmation. Composer/Compare retain their
+existing defaults. No transformation rule or order changes.
 
 Builder, Composer and Compare use it through `BaseNofoImportView`. The view
 retains upload conversion, filename handling, warning counts, permissions,

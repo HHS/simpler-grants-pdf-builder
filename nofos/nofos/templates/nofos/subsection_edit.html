@@ -23,7 +23,7 @@
       <a class="usa-button--icon--before usa-button--icon--usa-blue usa-button--arrow_back" href="{% url 'nofos:nofo_edit' nofo.id %}#{{ subsection.html_id }}">Edit “{{ nofo_name_str }}”</a>
     </div>
     <div class="subsection_edit--header">
-      <h1 class="font-heading-xl margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
+      <h1 class="font-heading-xl text-bold margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
       {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base"><span aria-hidden="true">📦</span> Callout box</h2>{% endif %}
       {% if subsection.name %}
       <div class="subsection_edit--header--view font-sans-md">
@@ -55,8 +55,42 @@
     {% endif %}
   {% endif %}
 
+  {% if conflict %}
+    <div class="usa-alert usa-alert--warning margin-bottom-3" role="alert">
+      <div class="usa-alert__body">
+        <h2 class="usa-alert__heading text-bold">{% if missing_version %}The editor was updated while this page was open.{% else %}This subsection changed since you opened it.{% endif %}</h2>
+        <p class="usa-alert__text">Your changes have not been saved. Your work is preserved below. Review it against the latest saved version before saving.</p>
+      </div>
+    </div>
+    <div class="grid-row grid-gap subsection-recovery">
+      <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Your unsaved version</h2>
+        {% include "nofos/includes/subsection_conflict_values.html" with values=unsaved prefix="unsaved" only %}
+      </section>
+      <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Latest saved version</h2>
+        {% include "nofos/includes/subsection_conflict_values.html" with values=latest prefix="latest" only %}
+      </section>
+    </div>
+    <form method="post" class="margin-top-3">
+      {% csrf_token %}
+      <input type="hidden" name="recovery" value="{{ recovery }}">
+      <button class="usa-button" type="submit" name="action" value="review">Review and combine changes</button>
+      <a class="usa-button usa-button--outline" href="{{ return_url }}">Discard my changes and return</a>
+    </form>
+  {% else %}
+    {% if preserved_unsaved %}
+      <div class="usa-alert usa-alert--info margin-bottom-3">
+        <div class="usa-alert__body"><p class="usa-alert__text">Start with the latest saved version, then bring over the changes you want to keep from your unsaved version.</p></div>
+      </div>
+      <div class="grid-row grid-gap subsection-recovery">
+        <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Your unsaved version</h2>
+          {% include "nofos/includes/subsection_conflict_values.html" with values=preserved_unsaved prefix="preserved" only %}
+        </section>
+        <section class="tablet:grid-col-6"><h2 class="font-heading-lg text-bold margin-top-0 margin-bottom-2">Version to save</h2>
+    {% endif %}
   <form class="form" method="post">
     {% csrf_token %}
+    {{ form.edit_version }}
+    {{ form.recovery }}
     <fieldset class="usa-fieldset">
 
       {% if form.non_field_errors %}
@@ -90,7 +124,7 @@
       {% if not form.tag.value %}
 
         {# if there is no tag, make this a hidden field #}
-        <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ subsection.tag }}">
+        <input type="hidden" name="{{ form.tag.name }}" id="{{ form.tag.id_for_label }}" value="{{ form.tag.value|default_if_none:'' }}">
 
       {% else %}
 
@@ -118,6 +152,7 @@
                     {% endif %}
                 "
           {% endwhitespaceless %} class="usa-select border-2px" name="tag" id="tag" {% if form.errors.tag %}aria-describedby="tag--error"{% endif %}>
+            <option value="h2" {% if form.tag.value == 'h2' %}selected{% endif %}>Heading 2</option>
             <option value="h3" {% if form.tag.value == 'h3' %}selected{% endif %}>Heading 3</option>
             <option value="h4" {% if form.tag.value == 'h4' %}selected{% endif %}>Heading 4</option>
             <option value="h5" {% if form.tag.value == 'h5' %}selected{% endif %}>Heading 5</option>
@@ -194,10 +229,15 @@
       </div>
     </fieldset>
     <div class="form-group">
-      <button class="usa-button margin-top-3" type="submit">Save subsection</button>
+      <button class="usa-button margin-top-3" type="submit">{% if preserved_unsaved %}Save combined version{% else %}Save subsection{% endif %}</button>
+      {% if preserved_unsaved %}<a class="usa-button usa-button--outline" href="{{ return_url }}">Discard my changes and return</a>{% endif %}
     </div>
   </form>
 
+    {% if preserved_unsaved %}</section></div>{% endif %}
+  {% endif %}
+
+  {% if not conflict and not preserved_unsaved %}
   <hr class="margin-top-3 margin-bottom-5" />
 
   <details class="usa-accordion usa-accordion--bordered">
@@ -224,6 +264,7 @@
       </ul>
     </div>
   </details>
+  {% endif %}
 {% endblock %}
 
 {% block js_footer %}

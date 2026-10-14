@@ -20,7 +20,7 @@
         {% include "includes/icons/00-adobe-pdf.svg" %}
       {% endif %}
     {% endif %}
-    {% if break_colons %}
+    {% if break_colons and not subsection|is_application_due_date_callout %}
       {{ subsection.body|safe_markdown|callout_box_contents }}
     {% else %}
       {{ subsection.body|safe_markdown }}

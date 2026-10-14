@@ -473,7 +473,21 @@ def format_footnote_ref_html(a_tag):
         a_tag["href"] = "#ftnt{}".format(footnote_number)
 
 
+def is_application_due_date_callout(subsection):
+    return (
+        subsection.callout_box
+        and " ".join((subsection.name or "").split()).casefold()
+        == "application due date"
+    )
+
+
 def is_floating_callout_box(subsection):
+    if not subsection.callout_box:
+        return False
+    # Imported deadline titles are canonical; accept ordinary case/spacing
+    # edits too, without changing the legacy title/body matching below.
+    if is_application_due_date_callout(subsection):
+        return True
     # maybe not the best idea long-term but it works for now
     floating_subsection_strings = [
         "Key facts",
