@@ -19,6 +19,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [WORD_METADATA_IMPORT.md](WORD_METADATA_IMPORT.md) — Legacy labels and trailing Metadata blocks, precedence, defaults and saved-record behavior
 - [INTRODUCTORY_PAGE_IMPORT.md](INTRODUCTORY_PAGE_IMPORT.md) — Supported Word introductory headings, destinations, maintained registration families and legacy preservation
 - [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
+- [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery

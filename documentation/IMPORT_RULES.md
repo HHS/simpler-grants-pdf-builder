@@ -7,6 +7,7 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 **Not to be confused with import error *codes*.** The `IMPORT-NNN` IDs here are numbered rule identifiers for content transformations. The `IMPORT-NAME` strings a user sees when an import is blocked (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, and so on) are a separate namespace, catalogued in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md). A rule here can be the *reason* an error code fires; they are not the same registry.
 
 **Source files covered by this document:**
+- `nofos/nofos/document_processing.py` — shared content orchestration; rule implementations remain in their existing modules, with unchanged order and behavior. See [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md).
 - `nofos/nofos/nofo.py` — `process_nofo_html()` and the ~20 cleanup passes it runs, plus sectioning/subsectioning and metadata-suggestion logic
 - `nofos/nofos/utils.py` — `style_map_manager`, the Mammoth DOCX→HTML style-name map
 - `nofos/nofos/import_transforms.py` — pre-Mammoth DOCX document transform (`transform_word_document`)

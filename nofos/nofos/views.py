@@ -2,7 +2,6 @@ import io
 import json
 import logging
 import uuid
-from copy import deepcopy
 from datetime import datetime
 
 from bloom_nofos.error_helpers import (
@@ -54,6 +53,10 @@ from .audits import (
     get_audit_events_for_document,
     get_audit_events_for_nofo,
     safe_get_changed_fields,
+)
+from .document_processing import (
+    get_sections_and_subsections_from_soup,
+    process_document_content,
 )
 from .forms import (
     NIH_ALLOWED_CHOICES,
@@ -122,12 +125,9 @@ from .nofo import (
     add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
     builder_import_content,
-    consume_tagline_paragraph,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
-    decompose_before_you_begin_section,
-    extract_basic_information_tagline,
     extract_page_break_context,
     find_broken_links,
     find_endnote_issues,
@@ -139,21 +139,16 @@ from .nofo import (
     find_subsections_with_nofo_field_value,
     get_cover_image,
     get_nofo_action_links,
-    get_sections_from_soup,
     get_side_nav_links,
     get_subsection_action_availability,
-    get_subsections_from_sections,
     modifications_update_announcement_text,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
-    process_nofo_html,
     remove_cover_image_from_s3,
     remove_page_breaks_from_subsection,
-    replace_chars,
-    replace_links,
     replace_value_in_subsections,
     resolve_section_heading_level,
     restore_subsection_metadata,
@@ -161,7 +156,6 @@ from .nofo import (
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
     suggest_nofo_title,
-    unwrap_heading_containers,
     upload_cover_image_to_s3,
 )
 from .nofo_document_context import get_nofo_document_context
@@ -846,45 +840,22 @@ class BaseNofoImportView(View):
             for warning in review_warnings:
                 messages.warning(request, warning, extra_tags="word-import-review")
 
-            # 3. Clean/transform HTML
-            cleaned_content = replace_links(replace_chars(file_content))
-            soup = BeautifulSoup(cleaned_content, "html.parser")
-            builder_import = isinstance(
-                self, (NofosImportNewView, NofosImportOverwriteView)
+            # 3–4. Shared content processing, independent of the uploaded file.
+            content = process_document_content(
+                file_content,
+                section_parser=self.get_sections_and_subsections_from_soup,
+                builder_import=isinstance(
+                    self, (NofosImportNewView, NofosImportOverwriteView)
+                ),
+                extract_scoped_tagline=self.extract_scoped_tagline,
             )
-            if builder_import:
-                from .introductory_page import capture_introductory_page
-
-                soup = capture_introductory_page(soup)
-            # Remove this known redundant section before it can affect which
-            # heading level Builder treats as the document's main sections.
-            decompose_before_you_begin_section(soup)
-            top_heading_level = resolve_section_heading_level(
-                builder_import_content(soup) if builder_import else soup
-            )
-            imported_tagline = None
-            if self.extract_scoped_tagline:
-                unwrap_heading_containers(soup)
-                imported_tagline = extract_basic_information_tagline(
-                    soup, top_heading_level
-                )
-            soup, instructions_tables = process_nofo_html(soup, top_heading_level)
-            if self.extract_scoped_tagline:
-                imported_tagline = consume_tagline_paragraph(soup, imported_tagline)
-
-            # 4. Build sections and subsections as python dicts
-            sections = self.get_sections_and_subsections_from_soup(
-                # Sectioning extracts callout headings and mutates cells. Keep
-                # Builder's metadata/confirmation source intact for re-parsing.
-                deepcopy(soup) if self.extract_scoped_tagline else soup,
-                top_heading_level,
-                consume_scoped_tagline=self.extract_scoped_tagline,
-                consume_metadata=builder_import,
-            )
+            soup = content.soup
+            sections = content.sections
+            imported_tagline = content.imported_tagline
 
             # 5. Add instructions to subsections (only implemented in Composer)
             self.add_instructions_to_subsections(
-                sections=sections, instructions_tables=instructions_tables
+                sections=sections, instructions_tables=content.instructions_tables
             )
 
         except ValidationError as e:
@@ -989,14 +960,11 @@ class BaseNofoImportView(View):
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
         """
-        content = builder_import_content(soup) if consume_metadata else soup
-        sections = get_sections_from_soup(content, top_heading_level)
-        if not len(sections):
-            raise ValidationError(
-                "That file does not contain a NOFO.", code="no_sections"
-            )
-        return get_subsections_from_sections(
-            sections, top_heading_level, consume_scoped_tagline=consume_scoped_tagline
+        return get_sections_and_subsections_from_soup(
+            soup,
+            top_heading_level,
+            consume_scoped_tagline=consume_scoped_tagline,
+            consume_metadata=consume_metadata,
         )
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
