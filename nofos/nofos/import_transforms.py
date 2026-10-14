@@ -11,7 +11,8 @@ from zipfile import ZipFile
 
 from mammoth import documents
 
-APPLICATION_CHECKLIST_CHILD_CLASS = "application-list--left-indent"
+from .content_constants import APPLICATION_CHECKLIST_CHILD_CLASS
+
 APPLICATION_CHECKLIST_CHILD_STYLE_NAME = "Application Checklist Child"
 APPLICATION_CHECKLIST_CHILD_STYLE_MAP = (
     f"p[style-name='{APPLICATION_CHECKLIST_CHILD_STYLE_NAME}'] "
